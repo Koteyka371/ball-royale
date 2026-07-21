@@ -1,0 +1,9 @@
+with open("src/ai/game_modes.gd", "r") as f:
+    content = f.read()
+
+# Add mirror to valid ball types if such array exists
+# Let's search for "templar"
+if "templar" in content:
+    content = content.replace('"templar", ', '"templar", "mirror", ')
+with open("src/ai/game_modes.gd", "w") as f:
+    f.write(content)

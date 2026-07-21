@@ -1974,7 +1974,7 @@ class DraftRoyaleMode extends GameMode:
 		"time_mage", "assassin", "berserker", "bomber", "brawler", "chaos", "conjurer", "druid",
 		"elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
 		"monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone", "shield_drone",
-		"scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
+		"scout", "sniper", "swarm", "tank", "templar", "mirror", "trickster", "vampire",
 		"warlock", "warrior"
 	]
 	var team_rosters: Dictionary = {"Team A": [], "Team B": []}
@@ -11764,7 +11764,7 @@ class CustomMatchMode extends GameMode:
 								is_night = world.arena.is_night
 
 						var nocturnal_types = ["vampire", "assassin", "phantom", "warlock", "necromancer", "chaos", "mimic", "rogue", "ninja"]
-						var diurnal_types = ["paladin", "templar", "guardian", "warrior", "healer", "monk", "king", "sniper", "ranger"]
+						var diurnal_types = ["paladin", "templar", "mirror", "guardian", "warrior", "healer", "monk", "king", "sniper", "ranger"]
 
 						var valid_bosses = []
 						for b in balls:

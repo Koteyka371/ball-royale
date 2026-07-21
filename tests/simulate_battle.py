@@ -22,6 +22,9 @@ from arena.arena_types import get_arena # type: ignore
 
 
 BALL_TYPES = {
+    "mirror": {"hp": 170, "speed": 2.5, "damage": 16, "radius": 15,
+             "perception_radius": 230, "aggression": 0.7, "color": "white",
+             "skill": "reflect", "skill_cooldown": 5.5},
         "payload": {"hp": 2000, "speed": 0.5, "damage": 0, "radius": 20,
                 "perception_radius": 0, "aggression": 0.0, "color": "white",
                 "skill": "none", "skill_cooldown": 999.0},

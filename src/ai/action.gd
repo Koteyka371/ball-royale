@@ -2381,6 +2381,95 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if typeof(ball) == TYPE_OBJECT and "ball_type" in ball and ball.ball_type == "mirror" or (typeof(ball) == TYPE_DICTIONARY and ball.has("ball_type") and ball["ball_type"] == "mirror"):
+		var negative_statuses = ["emp_timer", "poison_timer", "slow_timer", "burn_timer", "confusion_timer", "blindness_timer", "frozen_timer", "stun_timer", "silence_timer"]
+		var has_status = false
+		for stat in negative_statuses:
+			var val = 0.0
+			if typeof(ball) == TYPE_OBJECT and stat in ball: val = ball[stat]
+			elif typeof(ball) == TYPE_DICTIONARY and ball.has(stat): val = ball[stat]
+			if val > 0:
+				has_status = true
+				break
+		if has_status:
+			var nearest_enemy = null
+			var min_dist = 9999999.0
+			var balls = []
+			if typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+			elif typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+			for b in balls:
+				var b_alive = true
+				var b_id = -1
+				var b_team = ""
+				var self_id = -1
+				var self_team = "mirror"
+				if typeof(b) == TYPE_OBJECT:
+					if "alive" in b: b_alive = b.alive
+					if "id" in b: b_id = b.id
+					if "team" in b: b_team = b.team
+					elif "ball_type" in b: b_team = b.ball_type
+				elif typeof(b) == TYPE_DICTIONARY:
+					b_alive = b.get("alive", true)
+					b_id = b.get("id", -1)
+					b_team = b.get("team", b.get("ball_type", ""))
+				if typeof(ball) == TYPE_OBJECT:
+					if "id" in ball: self_id = ball.id
+					if "team" in ball: self_team = ball.team
+				elif typeof(ball) == TYPE_DICTIONARY:
+					self_id = ball.get("id", -1)
+					self_team = ball.get("team", "mirror")
+				if b_alive and b_id != self_id and b_team != self_team:
+					var bx = 0.0
+					var by = 0.0
+					var sx = 0.0
+					var sy = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						bx = b.x
+						by = b.y
+					elif typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					if typeof(ball) == TYPE_OBJECT:
+						sx = ball.x
+						sy = ball.y
+					elif typeof(ball) == TYPE_DICTIONARY:
+						sx = ball.get("x", 0.0)
+						sy = ball.get("y", 0.0)
+					var dist = (bx - sx)*(bx - sx) + (by - sy)*(by - sy)
+					if dist < min_dist:
+						min_dist = dist
+						nearest_enemy = b
+			if nearest_enemy != null:
+				for stat in negative_statuses:
+					var val = 0.0
+					if typeof(ball) == TYPE_OBJECT and stat in ball: val = ball[stat]
+					elif typeof(ball) == TYPE_DICTIONARY and ball.has(stat): val = ball[stat]
+					if val > 0:
+						var enemy_val = 0.0
+						if typeof(nearest_enemy) == TYPE_OBJECT and stat in nearest_enemy: enemy_val = nearest_enemy[stat]
+						elif typeof(nearest_enemy) == TYPE_DICTIONARY and nearest_enemy.has(stat): enemy_val = nearest_enemy[stat]
+						if typeof(nearest_enemy) == TYPE_OBJECT: nearest_enemy[stat] = max(enemy_val, val)
+						elif typeof(nearest_enemy) == TYPE_DICTIONARY: nearest_enemy[stat] = max(enemy_val, val)
+						if typeof(ball) == TYPE_OBJECT: ball[stat] = 0.0
+						elif typeof(ball) == TYPE_DICTIONARY: ball[stat] = 0.0
+				var is_emped = false
+				var is_stunned = false
+				if typeof(ball) == TYPE_OBJECT:
+					if "is_emped" in ball: is_emped = ball.is_emped
+					if "is_stunned" in ball: is_stunned = ball.is_stunned
+				elif typeof(ball) == TYPE_DICTIONARY:
+					is_emped = ball.get("is_emped", false)
+					is_stunned = ball.get("is_stunned", false)
+				if is_emped:
+					if typeof(nearest_enemy) == TYPE_OBJECT: nearest_enemy.is_emped = true
+					elif typeof(nearest_enemy) == TYPE_DICTIONARY: nearest_enemy["is_emped"] = true
+					if typeof(ball) == TYPE_OBJECT: ball.is_emped = false
+					elif typeof(ball) == TYPE_DICTIONARY: ball["is_emped"] = false
+				if is_stunned:
+					if typeof(nearest_enemy) == TYPE_OBJECT: nearest_enemy.is_stunned = true
+					elif typeof(nearest_enemy) == TYPE_DICTIONARY: nearest_enemy["is_stunned"] = true
+					if typeof(ball) == TYPE_OBJECT: ball.is_stunned = false
+					elif typeof(ball) == TYPE_DICTIONARY: ball["is_stunned"] = false
 
     var ball_type = ""
     if "ball_type" in self.ball: ball_type = self.ball.ball_type
