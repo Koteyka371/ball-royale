@@ -23798,7 +23798,143 @@ class SlimeBossMode(GameMode):
                                     world.arena.hazards.append(proj)
 
 
+
+class EntangledHazardsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Entangled Hazards"
+        self.description = "Hazards spawn in pairs. Damage or status effects taken by a ball near one hazard are partially duplicated to balls near its paired hazard."
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+        self.prev_state = {}
+        self.hazard_pairs = []
+
+    class BallState:
+        def __init__(self, hp):
+            self.hp = hp
+
+    def _init_prev_state(self, b):
+        state = self.BallState(getattr(b, "hp", 100.0))
+        for eff in self.status_effects:
+            setattr(state, eff, getattr(b, eff, 0.0))
+        self.prev_state[b.id] = state
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.prev_state = {}
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                self._init_prev_state(b)
+
+        if not hasattr(world, "arena") or not world.arena:
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.target_radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+
+        import random
+        arena_w = getattr(world.arena, "width", 800)
+        arena_h = getattr(world.arena, "height", 600)
+
+        self.hazard_pairs = []
+        for i in range(3):
+            h1_id = 98000 + len(world.arena.hazards) * 2
+            h2_id = h1_id + 1
+
+            x1 = random.uniform(100, arena_w - 100)
+            y1 = random.uniform(100, arena_h - 100)
+            h1 = Hazard(id=h1_id, x=x1, y=y1, radius=100.0, kind="entangled_hazard", damage=0.0)
+            h1.partner_id = h2_id
+
+            x2 = random.uniform(100, arena_w - 100)
+            y2 = random.uniform(100, arena_h - 100)
+            h2 = Hazard(id=h2_id, x=x2, y=y2, radius=100.0, kind="entangled_hazard", damage=0.0)
+            h2.partner_id = h1_id
+
+            world.arena.hazards.extend([h1, h2])
+            self.hazard_pairs.append((h1_id, h2_id))
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena") or not world.arena:
+            return
+
+        import math
+
+        hazards_by_id = {h.id: h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "entangled_hazard"}
+        balls_near_hazard = {h_id: [] for h_id in hazards_by_id}
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+            for h_id, h in hazards_by_id.items():
+                hx, hy, hr = getattr(h, "x", 0.0), getattr(h, "y", 0.0), getattr(h, "radius", 100.0)
+                dist = math.hypot(bx - hx, by - hy)
+                if dist <= hr:
+                    balls_near_hazard[h_id].append(b)
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+
+            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+            nearby_h_id = None
+            for h_id, h in hazards_by_id.items():
+                hx, hy, hr = getattr(h, "x", 0.0), getattr(h, "y", 0.0), getattr(h, "radius", 100.0)
+                if math.hypot(bx - hx, by - hy) <= hr:
+                    nearby_h_id = h_id
+                    break
+
+            if nearby_h_id:
+                partner_h_id = getattr(hazards_by_id[nearby_h_id], "partner_id", None)
+                if partner_h_id and partner_h_id in balls_near_hazard:
+                    targets = [tb for tb in balls_near_hazard[partner_h_id] if getattr(tb, "alive", False) and tb.id != b.id]
+
+                    curr_hp = getattr(b, "hp", 100.0)
+                    if curr_hp < state.hp:
+                        damage_taken = state.hp - curr_hp
+                        shared_damage = damage_taken * 0.5
+                        for t in targets:
+                            t_hp = getattr(t, "hp", 100.0)
+                            if hasattr(t, "take_damage"):
+                                t.take_damage(shared_damage)
+                            else:
+                                t.hp = t_hp - shared_damage
+                                if t.hp <= 0:
+                                    t.hp = 0
+                                    t.alive = False
+
+                    for eff in self.status_effects:
+                        curr_eff = getattr(b, eff, 0.0)
+                        state_eff = getattr(state, eff, 0.0)
+                        if curr_eff > state_eff:
+                            delta_eff = (curr_eff - state_eff) * 0.5
+                            for t in targets:
+                                setattr(t, eff, getattr(t, eff, 0.0) + delta_eff)
+
+            self._init_prev_state(b)
+
 GAME_MODES = {
+    'entangled_hazards_mode': EntangledHazardsMode(),
+
 
     "slime_boss": SlimeBossMode(),
     "explosive_meteors": ExplosiveMeteorsMode(),
