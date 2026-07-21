@@ -409,6 +409,7 @@ func tick(balls: Array, kill_log: Array, current_tick: int):
     _check_camping(balls, current_tick)
     _throw_buffs_if_needed(balls, current_tick)
     _throw_hazards_if_bored(balls, current_tick)
+    _process_audience_favor(balls, current_tick)
     _process_votes(balls, current_tick)
     _process_spectator_signs(balls, current_tick)
     _process_global_modifier(balls, current_tick)
@@ -714,6 +715,18 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
 
     if streak >= 3:
         excitement_level += 20.0
+        if killer_obj != null:
+            var current_favor = 0.0
+            if typeof(killer_obj) == TYPE_OBJECT and killer_obj.has_method("get"):
+                current_favor = killer_obj.get("audience_favor") if killer_obj.get("audience_favor") != null else 0.0
+            elif typeof(killer_obj) == TYPE_DICTIONARY:
+                current_favor = killer_obj.get("audience_favor", 0.0)
+
+            var new_favor = min(100.0, current_favor + 20.0)
+            if typeof(killer_obj) == TYPE_OBJECT and killer_obj.has_method("set"):
+                killer_obj.set("audience_favor", new_favor)
+            elif typeof(killer_obj) == TYPE_DICTIONARY:
+                killer_obj["audience_favor"] = new_favor
         if world != null and world.has_method("add_event"):
             var chant_msg = "The crowd goes wild for Ball %s's %d-kill streak!" % [str(killer_id), streak]
             var killer_obj = null
@@ -807,6 +820,18 @@ func _handle_kill(kill_info: Dictionary, current_tick: int, balls: Array):
 
         if killer_team_count > 0 and total_enemies >= killer_team_count * 3:
             excitement_level += 30.0
+
+            var current_favor = 0.0
+            if typeof(killer) == TYPE_OBJECT and killer.has_method("get"):
+                current_favor = killer.get("audience_favor") if killer.get("audience_favor") != null else 0.0
+            elif typeof(killer) == TYPE_DICTIONARY:
+                current_favor = killer.get("audience_favor", 0.0)
+
+            var new_favor = min(100.0, current_favor + 30.0)
+            if typeof(killer) == TYPE_OBJECT and killer.has_method("set"):
+                killer.set("audience_favor", new_favor)
+            elif typeof(killer) == TYPE_DICTIONARY:
+                killer["audience_favor"] = new_favor
             if world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "The crowd roars for an incredible comeback attempt!", "volume": 1.2})
                 world.add_event("audio_event", {"sound": "comeback_cheer", "volume": 1.0})
@@ -1145,6 +1170,98 @@ func _resolve_vote(balls: Array):
 func _has_meta_safe(key: String) -> bool:
     return has_meta(key)
 
+
+func _process_audience_favor(balls: Array, current_tick: int):
+    for b in balls:
+        var is_alive = false
+        var is_spectator = false
+
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            is_alive = b.get("alive") if b.get("alive") != null else false
+            is_spectator = b.get("ball_type") == "spectator"
+        elif typeof(b) == TYPE_DICTIONARY:
+            is_alive = b.get("alive", false)
+            is_spectator = b.get("ball_type") == "spectator"
+
+        if not is_alive or is_spectator:
+            continue
+
+        var favor = 0.0
+        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+            favor = b.get("audience_favor") if b.get("audience_favor") != null else 0.0
+        elif typeof(b) == TYPE_DICTIONARY:
+            favor = b.get("audience_favor", 0.0)
+
+        if favor > 0:
+            favor = max(0.0, favor - 0.05)
+        elif favor < 0:
+            favor = min(0.0, favor + 0.05)
+
+        if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+            b.set("audience_favor", favor)
+        elif typeof(b) == TYPE_DICTIONARY:
+            b["audience_favor"] = favor
+
+        if favor >= 50.0:
+            if randf() < 0.05:
+                var hp = 100.0
+                var max_hp = 100.0
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    hp = b.get("hp") if b.get("hp") != null else 100.0
+                    max_hp = b.get("max_hp") if b.get("max_hp") != null else 100.0
+                elif typeof(b) == TYPE_DICTIONARY:
+                    hp = b.get("hp", 100.0)
+                    max_hp = b.get("max_hp", 100.0)
+
+                if hp < max_hp:
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+                        b.set("hp", min(hp + 1.0, max_hp))
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["hp"] = min(hp + 1.0, max_hp)
+
+                var a_timer = 0.0
+                var s_timer = 0.0
+                if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                    a_timer = b.get("attack_timer") if b.get("attack_timer") != null else 0.0
+                    s_timer = b.get("skill_timer") if b.get("skill_timer") != null else 0.0
+                elif typeof(b) == TYPE_DICTIONARY:
+                    a_timer = b.get("attack_timer", 0.0)
+                    s_timer = b.get("skill_timer", 0.0)
+
+                if a_timer > 0:
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+                        b.set("attack_timer", max(0.0, a_timer - 0.1))
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["attack_timer"] = max(0.0, a_timer - 0.1)
+                if s_timer > 0:
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set"):
+                        b.set("skill_timer", max(0.0, s_timer - 0.1))
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["skill_timer"] = max(0.0, s_timer - 0.1)
+
+        elif favor <= -50.0:
+            if randf() < 0.005:
+                var hazard_kinds = ["temporary_wall", "slow_field", "mini_bomb"]
+                var hazard_kind = hazard_kinds[randi() % hazard_kinds.size()]
+                if world != null and world.has_method("add_event"):
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    var b_id = "?"
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        b_x = float(b.get("x")) if b.get("x") != null else 0.0
+                        b_y = float(b.get("y")) if b.get("y") != null else 0.0
+                        b_id = str(b.get("id")) if b.get("id") != null else "?"
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b_x = float(b.get("x", 0.0))
+                        b_y = float(b.get("y", 0.0))
+                        b_id = str(b.get("id", "?"))
+
+                    world.add_event("spawn_hazard", {
+                        "x": b_x + (randf() * 60.0 - 30.0),
+                        "y": b_y + (randf() * 60.0 - 30.0),
+                        "kind": hazard_kind
+                    })
+                    world.add_event("crowd_throw", {"message": "The crowd hates Ball " + b_id + " and throws a hazard!"})
 
 func _process_global_modifier(balls: Array, current_tick: int):
     if global_modifier_timer > 0:

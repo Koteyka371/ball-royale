@@ -280,6 +280,7 @@ class CrowdSystem:
         self._check_camping(balls, tick)
         self._throw_buffs_if_needed(balls, tick)
         self._throw_hazards_if_bored(balls, tick)
+        self._process_audience_favor(balls, tick)
         self._process_votes(balls, tick)
         self._process_spectator_signs(balls, tick)
         self._process_global_modifier(balls, tick)
@@ -475,6 +476,8 @@ class CrowdSystem:
         # Epic Kill
         if streak >= 3:
             self.excitement_level += 20.0
+            if killer_obj:
+                killer_obj.audience_favor = min(100.0, getattr(killer_obj, "audience_favor", 0.0) + 20.0)
             if hasattr(self.world, 'add_event'):
                 # Unique ball type chants
                 chant_msg = f"The crowd goes wild for Ball {killer_id}'s {streak}-kill streak!"
@@ -509,6 +512,7 @@ class CrowdSystem:
 
             if killer_team_count > 0 and total_enemies >= killer_team_count * 3:
                 self.excitement_level += 30.0
+                killer.audience_favor = min(100.0, getattr(killer, "audience_favor", 0.0) + 30.0)
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": "The crowd roars for an incredible comeback attempt!", "volume": 1.2})
                     self.world.add_event("audio_event", {"sound": "comeback_cheer", "volume": 1.0})
@@ -721,6 +725,44 @@ class CrowdSystem:
         self.votes = {}
         self.vote_cooldown = 1000  # Long cooldown before next vote
 
+
+    def _process_audience_favor(self, balls: List[Any], tick: int):
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            favor = getattr(b, "audience_favor", 0.0)
+
+            # Decay favor towards 0
+            if favor > 0:
+                b.audience_favor = max(0.0, favor - 0.05)
+            elif favor < 0:
+                b.audience_favor = min(0.0, favor + 0.05)
+
+            favor = getattr(b, "audience_favor", 0.0)
+
+            if favor >= 50.0:
+                # Passive healing or cooldown reduction
+                if random.random() < 0.05:
+                    if getattr(b, "hp", 100) < getattr(b, "max_hp", 100):
+                        b.hp = min(getattr(b, "hp", 100) + 1.0, getattr(b, "max_hp", 100))
+
+                    if getattr(b, "attack_timer", 0.0) > 0:
+                        b.attack_timer = max(0.0, b.attack_timer - 0.1)
+                    if getattr(b, "skill_timer", 0.0) > 0:
+                        b.skill_timer = max(0.0, b.skill_timer - 0.1)
+
+            elif favor <= -50.0:
+                # Occasionally throw hazards
+                if random.random() < 0.005:
+                    hazard_kind = random.choice(["temporary_wall", "slow_field", "mini_bomb"])
+                    if hasattr(self.world, 'add_event'):
+                        self.world.add_event("spawn_hazard", {
+                            "x": getattr(b, "x", 0) + random.uniform(-30, 30),
+                            "y": getattr(b, "y", 0) + random.uniform(-30, 30),
+                            "kind": hazard_kind
+                        })
+                        self.world.add_event("crowd_throw", {"message": f"The crowd hates Ball {getattr(b, 'id', '?')} and throws a hazard!"})
 
     def _process_global_modifier(self, balls: List[Any], tick: int):
         if self.global_modifier_timer > 0:
