@@ -50774,3 +50774,108 @@ GAME_MODES["mass_decoy_event"] = MassDecoyEventMode.new()
 GAME_MODES["ice_walls"] = IceWallsMode.new()
 GAME_MODES["weather_combinations"] = WeatherCombinationsMode.new()
 GAME_MODES["linked_portals"] = LinkedPortalsMode.new()
+
+
+class WhirlpoolsMode extends GameMode:
+	var pull_strength = 200.0
+	var whirlpool_radius = 250.0
+	var center_radius = 30.0
+
+	func _init():
+		super._init()
+		name = "Whirlpools"
+		description = "Whirlpools spawn in the arena, sucking entities in, slowing them, and applying wet debuffs or damage."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not ("hazards" in world.arena):
+			world.arena.hazards = []
+
+		var width = 800.0
+		var height = 800.0
+		if "width" in world.arena: width = world.arena.width
+		if "height" in world.arena: height = world.arena.height
+
+		var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+
+		for i in range(2):
+			var hx = randf_range(200, width - 200)
+			var hy = randf_range(200, height - 200)
+			var w = Hazard.new(889000 + i, hx, hy, whirlpool_radius, "whirlpool", 0.0)
+			world.arena.hazards.append(w)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		if not ("hazards" in world.arena):
+			return
+
+		var whirlpools = []
+		for h in world.arena.hazards:
+			var kind = h.kind if typeof(h) == TYPE_OBJECT else h.get("kind", "")
+			var active = h.active if typeof(h) == TYPE_OBJECT else h.get("active", true)
+			if kind == "whirlpool" and active:
+				whirlpools.append(h)
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			else:
+				is_alive = b.get("alive") if "alive" in b else true
+
+			if not is_alive:
+				continue
+
+			if "submerge_timer" in b:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["submerge_timer"] = max(0.0, b["submerge_timer"] - delta)
+				else:
+					b.set("submerge_timer", max(0.0, b.get("submerge_timer") - delta))
+
+			if "wet_timer" in b:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["wet_timer"] = max(0.0, b["wet_timer"] - delta)
+				else:
+					b.set("wet_timer", max(0.0, b.get("wet_timer") - delta))
+
+			for w in whirlpools:
+				var wx = w.x if typeof(w) == TYPE_OBJECT else w.get("x", 0.0)
+				var wy = w.y if typeof(w) == TYPE_OBJECT else w.get("y", 0.0)
+				var wradius = w.radius if typeof(w) == TYPE_OBJECT else w.get("radius", whirlpool_radius)
+
+				var dx = wx - b.x
+				var dy = wy - b.y
+				var dist_sq = dx*dx + dy*dy
+				if dist_sq <= 0:
+					continue
+
+				var dist = sqrt(dist_sq)
+				if dist < wradius:
+					var pull_factor = 1.0 - (dist / wradius)
+					var pull_x = (dx / dist) * pull_strength * pull_factor * delta
+					var pull_y = (dy / dist) * pull_strength * pull_factor * delta
+
+					if "vx" in b: b.vx += pull_x
+					if "vy" in b: b.vy += pull_y
+
+					if "vx" in b: b.vx *= (1.0 - 0.5 * delta)
+					if "vy" in b: b.vy *= (1.0 - 0.5 * delta)
+
+					if dist < center_radius:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["submerge_timer"] = 1.5
+							b["wet_timer"] = 3.0
+						else:
+							b.set("submerge_timer", 1.5)
+							b.set("wet_timer", 3.0)
+
+						var damage_amount = 10.0 * delta
+						if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(damage_amount)
+						elif "hp" in b:
+							b.hp -= damage_amount
+
+						if "vx" in b: b.vx *= 0.5
+						if "vy" in b: b.vy *= 0.5
+
+GAME_MODES["whirlpools"] = WhirlpoolsMode.new()

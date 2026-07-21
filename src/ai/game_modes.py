@@ -25535,7 +25535,108 @@ class ChromaBossMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("chroma_boss_aura_change", {"color": boss.cosmetic_aura_color})
 
+
+class WhirlpoolsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Whirlpools"
+        self.description = "Whirlpools spawn in the arena, sucking entities in, slowing them, and applying wet debuffs or damage."
+        self.pull_strength = 200.0
+        self.whirlpool_radius = 250.0
+        self.center_radius = 30.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.active = True
+                    self.target_radius = 0.0
+
+        for i in range(2):
+            hx = random.uniform(200, getattr(world.arena, 'width', 800) - 200)
+            hy = random.uniform(200, getattr(world.arena, 'height', 800) - 200)
+            w = Hazard(
+                id=889000 + i,
+                x=hx,
+                y=hy,
+                radius=self.whirlpool_radius,
+                kind="whirlpool",
+                damage=0.0
+            )
+            world.arena.hazards.append(w)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        import math
+        whirlpools = [h for h in world.arena.hazards if getattr(h, "kind", "") == "whirlpool" and getattr(h, "active", True)]
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            if hasattr(b, "submerge_timer"):
+                b.submerge_timer = max(0.0, b.submerge_timer - delta)
+            if hasattr(b, "wet_timer"):
+                b.wet_timer = max(0.0, b.wet_timer - delta)
+
+            for w in whirlpools:
+                dx = w.x - b.x
+                dy = w.y - b.y
+                dist_sq = dx*dx + dy*dy
+                if dist_sq <= 0:
+                    continue
+
+                dist = math.sqrt(dist_sq)
+
+                if dist < w.radius:
+                    # Sucks entities towards the center
+                    pull_factor = 1.0 - (dist / w.radius)
+                    pull_x = (dx / dist) * self.pull_strength * pull_factor * delta
+                    pull_y = (dy / dist) * self.pull_strength * pull_factor * delta
+
+                    b.vx = getattr(b, "vx", 0.0) + pull_x
+                    b.vy = getattr(b, "vy", 0.0) + pull_y
+
+                    # Reducing movement speed (friction)
+                    b.vx *= (1.0 - 0.5 * delta)
+                    b.vy *= (1.0 - 0.5 * delta)
+
+                    # Center reached
+                    if dist < self.center_radius:
+                        # Briefly slowed down or submerge
+                        b.submerge_timer = 1.5
+                        b.wet_timer = 3.0
+
+                        # Apply damage
+                        damage_amount = 10.0 * delta
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = getattr(b, "hp", 100.0) - damage_amount
+
+                        # Extreme slowdown
+                        b.vx *= 0.5
+                        b.vy *= 0.5
+
+
 GAME_MODES = {
+    'whirlpools': WhirlpoolsMode(),
     "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
     'time_rewind_altar': TimeRewindAltarMode(),
