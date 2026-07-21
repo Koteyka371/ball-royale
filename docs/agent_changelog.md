@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1210] Quantum Teleportation Pads — *2026-07-21 19:08:32 UTC*
+
+Pairs of teleportation pads that can be deployed across the map. Players or hazards passing over them instantly jump to the linked pad, keeping momentum intact for creative ambushes or escapes.
+
+---
+
 ## [idea-1217] Quantum Leap Modifier — *2026-07-21 19:00:41 UTC*
 
 A rare game mode modifier where instead of standard dashes, ball abilities have a chance to trigger a randomized, short-range teleport around the arena. This creates high-stakes, unpredictable positioning during engagements, making both escapes and chases thrilling.
