@@ -40733,7 +40733,203 @@ class HealerFreezeTagMode extends GameMode:
 		return null
 
 
+
+class RoamingDoppelgangerMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Roaming Doppelganger"
+		description = "A rare elite hazard roams the map. When it spots a player, it perfectly mimics their stats, buffs, and loadout for 30 seconds. Players must outrun their doppelganger or fight an equally matched mirror."
+
+	func tick(world: Object, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		if not world.has_meta("doppelganger_spawned"):
+			world.set_meta("doppelganger_spawned", true)
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world.get("arena") != null:
+				if "width" in world.arena:
+					arena_width = world.arena.width
+				if "height" in world.arena:
+					arena_height = world.arena.height
+
+			var boss = {}
+			boss["id"] = 99999 + (randi() % 1000)
+			boss["x"] = randf_range(0.0, arena_width)
+			boss["y"] = randf_range(0.0, arena_height)
+			boss["vx"] = 0.0
+			boss["vy"] = 0.0
+			boss["radius"] = 40.0
+			boss["hp"] = 1000.0
+			boss["max_hp"] = 1000.0
+			boss["alive"] = true
+			boss["ball_type"] = "elite_doppelganger"
+			boss["team"] = "Hazard"
+			boss["speed"] = 100.0
+			boss["base_speed"] = 100.0
+			boss["damage"] = 25.0
+			boss["base_damage"] = 25.0
+			boss["perception_radius"] = 500.0
+			boss["base_perception_radius"] = 500.0
+
+			boss["mimic_target_id"] = null
+			boss["mimic_timer"] = 0.0
+			boss["is_doppelganger"] = true
+
+			world.set_meta("doppelganger_boss_id", boss["id"])
+
+			var world_balls = world.get("balls") if "balls" in world else world.balls if world.get("balls") != null else []
+			if typeof(world_balls) == TYPE_ARRAY:
+				world_balls.append(boss)
+
+		if world.has_meta("doppelganger_boss_id"):
+			var boss_id = world.get_meta("doppelganger_boss_id")
+			var boss = null
+			for b in balls:
+				var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+				if b_id == boss_id:
+					boss = b
+					break
+
+			if boss == null:
+				return
+
+			var boss_alive = boss.get("alive") if typeof(boss) == TYPE_DICTIONARY else boss.alive
+			if not boss_alive:
+				return
+
+			var boss_mimic_timer = boss.get("mimic_timer") if typeof(boss) == TYPE_DICTIONARY else boss.get("mimic_timer", 0.0)
+			if boss_mimic_timer == null: boss_mimic_timer = 0.0
+
+			if boss_mimic_timer > 0.0:
+				boss_mimic_timer = max(0.0, boss_mimic_timer - delta)
+				if typeof(boss) == TYPE_DICTIONARY:
+					boss["mimic_timer"] = boss_mimic_timer
+				else:
+					boss.set("mimic_timer", boss_mimic_timer)
+
+				if boss_mimic_timer <= 0.0:
+					if typeof(boss) == TYPE_DICTIONARY:
+						boss["mimic_target_id"] = null
+						boss["radius"] = 40.0
+						boss["speed"] = 100.0
+						boss["damage"] = 25.0
+						boss["ball_type"] = "elite_doppelganger"
+						if "inventory" in boss: boss["inventory"] = []
+						if "skills" in boss: boss["skills"] = []
+					else:
+						boss.set("mimic_target_id", null)
+						boss.set("radius", 40.0)
+						boss.set("speed", 100.0)
+						boss.set("damage", 25.0)
+						boss.set("ball_type", "elite_doppelganger")
+						if "inventory" in boss: boss.inventory = []
+						if "skills" in boss: boss.skills = []
+
+			if boss_mimic_timer <= 0.0:
+				var closest_dist = boss.get("perception_radius") if typeof(boss) == TYPE_DICTIONARY else boss.get("perception_radius", 500.0)
+				if closest_dist == null: closest_dist = 500.0
+				var closest_target = null
+
+				var boss_x = boss.get("x") if typeof(boss) == TYPE_DICTIONARY else boss.x
+				var boss_y = boss.get("y") if typeof(boss) == TYPE_DICTIONARY else boss.y
+
+				for b in balls:
+					var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+					var is_doppel = b.get("is_doppelganger") if typeof(b) == TYPE_DICTIONARY else b.get("is_doppelganger", false)
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type", "")
+					var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.get("team", "")
+					if not is_alive or is_doppel or b_type == "spectator" or b_team == "Hazard":
+						continue
+
+					var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+					var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+					var dx = b_x - boss_x
+					var dy = b_y - boss_y
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= closest_dist:
+						closest_dist = dist
+						closest_target = b
+
+				if closest_target != null:
+					var target_id = closest_target.get("id") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.id
+					if typeof(boss) == TYPE_DICTIONARY:
+						boss["mimic_target_id"] = target_id
+						boss["mimic_timer"] = 30.0
+						boss["radius"] = closest_target.get("radius") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("radius", 40.0)
+						boss["speed"] = closest_target.get("speed") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("speed", 100.0)
+						boss["base_speed"] = closest_target.get("base_speed") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("base_speed", boss["speed"])
+						boss["damage"] = closest_target.get("damage") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("damage", 25.0)
+						boss["base_damage"] = closest_target.get("base_damage") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("base_damage", boss["damage"])
+						boss["max_hp"] = closest_target.get("max_hp") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("max_hp", 100.0)
+						boss["hp"] = boss["max_hp"]
+						boss["ball_type"] = closest_target.get("ball_type") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("ball_type", "basic")
+					else:
+						boss.set("mimic_target_id", target_id)
+						boss.set("mimic_timer", 30.0)
+						boss.set("radius", closest_target.get("radius") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("radius", 40.0))
+						boss.set("speed", closest_target.get("speed") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("speed", 100.0))
+						boss.set("base_speed", closest_target.get("base_speed") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("base_speed", boss.get("speed", 100.0)))
+						boss.set("damage", closest_target.get("damage") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("damage", 25.0))
+						boss.set("base_damage", closest_target.get("base_damage") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("base_damage", boss.get("damage", 25.0)))
+						boss.set("max_hp", closest_target.get("max_hp") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("max_hp", 100.0))
+						boss.set("hp", boss.get("max_hp", 100.0))
+						boss.set("ball_type", closest_target.get("ball_type") if typeof(closest_target) == TYPE_DICTIONARY else closest_target.get("ball_type", "basic"))
+
+			var current_mimic_timer = boss.get("mimic_timer") if typeof(boss) == TYPE_DICTIONARY else boss.get("mimic_timer", 0.0)
+			if current_mimic_timer == null: current_mimic_timer = 0.0
+			var current_target_id = boss.get("mimic_target_id") if typeof(boss) == TYPE_DICTIONARY else boss.get("mimic_target_id")
+
+			var boss_x2 = boss.get("x") if typeof(boss) == TYPE_DICTIONARY else boss.x
+			var boss_y2 = boss.get("y") if typeof(boss) == TYPE_DICTIONARY else boss.y
+			var boss_speed = boss.get("speed") if typeof(boss) == TYPE_DICTIONARY else boss.get("speed", 100.0)
+
+			if current_mimic_timer > 0.0 and current_target_id != null:
+				var target = null
+				for b in balls:
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+					if b_id == current_target_id:
+						target = b
+						break
+
+				var target_alive = false
+				if target != null:
+					target_alive = target.get("alive") if typeof(target) == TYPE_DICTIONARY else target.alive
+
+				if target != null and target_alive:
+					var target_x = target.get("x") if typeof(target) == TYPE_DICTIONARY else target.x
+					var target_y = target.get("y") if typeof(target) == TYPE_DICTIONARY else target.y
+					var dx = target_x - boss_x2
+					var dy = target_y - boss_y2
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0:
+						if typeof(boss) == TYPE_DICTIONARY:
+							boss["vx"] = (dx / dist) * boss_speed
+							boss["vy"] = (dy / dist) * boss_speed
+						else:
+							boss.set("vx", (dx / dist) * boss_speed)
+							boss.set("vy", (dy / dist) * boss_speed)
+				else:
+					if typeof(boss) == TYPE_DICTIONARY:
+						boss["mimic_timer"] = 0.0
+					else:
+						boss.set("mimic_timer", 0.0)
+			else:
+				if randf() < 0.05 * delta:
+					var angle = randf_range(0.0, 2.0 * PI)
+					if typeof(boss) == TYPE_DICTIONARY:
+						boss["vx"] = cos(angle) * boss_speed
+						boss["vy"] = sin(angle) * boss_speed
+					else:
+						boss.set("vx", cos(angle) * boss_speed)
+						boss.set("vy", sin(angle) * boss_speed)
+
+
 GAME_MODES = {
+	"roaming_doppelganger": RoamingDoppelgangerMode.new(),
 	"healer_freeze_tag": HealerFreezeTagMode.new(),
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 

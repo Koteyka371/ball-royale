@@ -23823,7 +23823,143 @@ class ElasticTetherMode(GameMode):
                             b.hp = getattr(b, "hp", 100.0) - self.collision_damage
                             target.hp = getattr(target, "hp", 100.0) - self.collision_damage
 
+
+class RoamingDoppelgangerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Roaming Doppelganger"
+        self.description = "A rare elite hazard roams the map. When it spots a player, it perfectly mimics their stats, buffs, and loadout for 30 seconds. Players must outrun their doppelganger or fight an equally matched mirror."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import copy
+        import random
+
+        if not hasattr(world, "doppelganger_spawned"):
+            world.doppelganger_spawned = True
+            class DoppelgangerHazard:
+                def __init__(self, id_val, x, y):
+                    self.id = id_val
+                    self.x = x
+                    self.y = y
+                    self.vx = 0.0
+                    self.vy = 0.0
+                    self.radius = 40.0
+                    self.hp = 1000.0
+                    self.max_hp = 1000.0
+                    self.alive = True
+                    self.ball_type = "elite_doppelganger"
+                    self.team = "Hazard"
+                    self.speed = 100.0
+                    self.base_speed = 100.0
+                    self.damage = 25.0
+                    self.base_damage = 25.0
+                    self.perception_radius = 500.0
+                    self.base_perception_radius = 500.0
+
+                    self.mimic_target_id = None
+                    self.mimic_timer = 0.0
+                    self.is_doppelganger = True
+
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+            boss = DoppelgangerHazard(
+                99999 + random.randint(1, 1000),
+                random.uniform(0, arena_width),
+                random.uniform(0, arena_height)
+            )
+            world.doppelganger_boss = boss
+
+            if hasattr(world, "balls"):
+                world.balls.append(boss)
+
+        if hasattr(world, "doppelganger_boss"):
+            boss = world.doppelganger_boss
+            if not getattr(boss, "alive", False):
+                return
+
+            # If currently mimicking
+            if boss.mimic_timer > 0:
+                boss.mimic_timer = max(0.0, boss.mimic_timer - delta)
+                if boss.mimic_timer <= 0:
+                    boss.mimic_target_id = None
+                    # Revert to base stats
+                    boss.radius = 40.0
+                    boss.speed = 100.0
+                    boss.damage = 25.0
+                    boss.ball_type = "elite_doppelganger"
+                    # Reset skills/buffs if necessary
+                    if hasattr(boss, "inventory"):
+                        boss.inventory = []
+                    if hasattr(boss, "skills"):
+                        boss.skills = []
+
+            if boss.mimic_timer <= 0:
+                # Look for a target to mimic
+                closest_dist = boss.perception_radius
+                closest_target = None
+
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "is_doppelganger", False) or getattr(b, "ball_type", "") == "spectator" or getattr(b, "team", "") == "Hazard":
+                        continue
+
+                    dx = b.x - boss.x
+                    dy = b.y - boss.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+
+                    if dist <= closest_dist:
+                        closest_dist = dist
+                        closest_target = b
+
+                if closest_target is not None:
+                    boss.mimic_target_id = closest_target.id
+                    boss.mimic_timer = 30.0
+
+                    # Mimic stats perfectly
+                    boss.radius = getattr(closest_target, "radius", 40.0)
+                    boss.speed = getattr(closest_target, "speed", 100.0)
+                    boss.base_speed = getattr(closest_target, "base_speed", boss.speed)
+                    boss.damage = getattr(closest_target, "damage", 25.0)
+                    boss.base_damage = getattr(closest_target, "base_damage", boss.damage)
+                    boss.max_hp = getattr(closest_target, "max_hp", 100.0)
+                    boss.hp = boss.max_hp
+                    boss.ball_type = getattr(closest_target, "ball_type", "basic")
+
+                    if hasattr(closest_target, "inventory"):
+                        boss.inventory = copy.deepcopy(closest_target.inventory)
+                    if hasattr(closest_target, "skills"):
+                        boss.skills = copy.deepcopy(closest_target.skills)
+
+            # Simple roaming logic if not mimicking, or chase target if mimicking
+            if boss.mimic_timer > 0 and boss.mimic_target_id is not None:
+                target = None
+                for b in balls:
+                    if getattr(b, "id", None) == boss.mimic_target_id:
+                        target = b
+                        break
+
+                if target and getattr(target, "alive", False):
+                    # Chase target
+                    dx = target.x - boss.x
+                    dy = target.y - boss.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        boss.vx = (dx / dist) * boss.speed
+                        boss.vy = (dy / dist) * boss.speed
+                else:
+                    boss.mimic_timer = 0.0 # Target dead or missing, stop mimicking
+            else:
+                # Roam
+                if random.random() < 0.05 * delta:
+                    angle = random.uniform(0, 2 * math.pi)
+                    boss.vx = math.cos(angle) * boss.speed
+                    boss.vy = math.sin(angle) * boss.speed
+
+
 GAME_MODES = {
+    'roaming_doppelganger': RoamingDoppelgangerMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),
 
 
