@@ -50094,5 +50094,219 @@ class LinkedPortalsMode extends GameMode:
                     linked["cooldown"] = 0.5
                     break
 
+class WeatherCombinationsMode extends GameMode:
+    var altars = []
+    var active_weathers = []
+    var combined_weather = ""
+
+    func _init():
+        super._init()
+        name = "Weather Combinations"
+        description = "Capturing altars of different weather types combines their effects. E.g. Rain + Heatwave = Steam (obscures vision, drains stamina)."
+
+    func start(world, balls):
+        super.start(world, balls)
+        var arena_w = 1000.0
+        var arena_h = 1000.0
+
+        if world != null:
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+                var arena = world.get("arena")
+                if typeof(arena) == TYPE_DICTIONARY:
+                    arena_w = arena.get("width", 1000.0)
+                    arena_h = arena.get("height", 1000.0)
+                elif arena != null:
+                    if "width" in arena: arena_w = arena.width
+                    if "height" in arena: arena_h = arena.height
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY:
+                    arena_w = world.arena.get("width", 1000.0)
+                    arena_h = world.arena.get("height", 1000.0)
+                else:
+                    if "width" in world.arena: arena_w = world.arena.width
+                    if "height" in world.arena: arena_h = world.arena.height
+
+        altars = [
+            {"x": arena_w * 0.25, "y": arena_h * 0.25, "radius": 150.0, "capture_progress": 0.0, "weather": "rain", "owner": null},
+            {"x": arena_w * 0.75, "y": arena_h * 0.75, "radius": 150.0, "capture_progress": 0.0, "weather": "heatwave", "owner": null}
+        ]
+
+        active_weathers = []
+        combined_weather = ""
+
+        for b in balls:
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.get("ball_type") != "spectator":
+                    if not b.has("base_speed"):
+                        b["base_speed"] = b.get("speed", 100.0)
+                    if not b.has("stamina"):
+                        b["stamina"] = 100.0
+                        b["max_stamina"] = 100.0
+            else:
+                var b_type = null
+                if "ball_type" in b: b_type = b.ball_type
+                if b_type != "spectator":
+                    if not b.has_meta("base_speed"):
+                        var spd = 100.0
+                        if "speed" in b: spd = b.speed
+                        b.set_meta("base_speed", spd)
+                    if not b.has_meta("stamina"):
+                        b.set_meta("stamina", 100.0)
+                        b.set_meta("max_stamina", 100.0)
+
+    func tick(world, balls, delta = 0.016):
+        super.tick(world, balls, delta)
+
+        var current_weathers = []
+
+        for altar in altars:
+            var teams_present = {}
+            for b in balls:
+                var alive = false
+                var b_type = null
+                var bx = 0.0
+                var by = 0.0
+                var b_team = "unknown"
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    alive = b.get("alive", false)
+                    b_type = b.get("ball_type", null)
+                    bx = b.get("x", 0.0)
+                    by = b.get("y", 0.0)
+                    b_team = b.get("team", b.get("ball_type", "unknown"))
+                else:
+                    if "alive" in b: alive = b.alive
+                    if "ball_type" in b: b_type = b.ball_type
+                    if "x" in b: bx = b.x
+                    if "y" in b: by = b.y
+                    if "team" in b:
+                        b_team = b.team
+                    elif "ball_type" in b:
+                        b_team = b.ball_type
+
+                if alive and b_type != "spectator":
+                    var dist_sq = (bx - altar["x"])*(bx - altar["x"]) + (by - altar["y"])*(by - altar["y"])
+                    if dist_sq <= altar["radius"]*altar["radius"]:
+                        if teams_present.has(b_team):
+                            teams_present[b_team] += 1
+                        else:
+                            teams_present[b_team] = 1
+
+            if teams_present.size() > 0:
+                var max_team = null
+                var max_val = -1
+                for t in teams_present.keys():
+                    if teams_present[t] > max_val:
+                        max_val = teams_present[t]
+                        max_team = t
+
+                var is_tie = false
+                var count = 0
+                for t in teams_present.keys():
+                    if teams_present[t] == max_val:
+                        count += 1
+                if count > 1:
+                    is_tie = true
+
+                if not is_tie:
+                    if altar["owner"] == max_team:
+                        if altar["capture_progress"] < 100.0:
+                            altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+                    else:
+                        altar["capture_progress"] -= 20.0 * delta
+                        if altar["capture_progress"] <= 0:
+                            altar["owner"] = max_team
+                            altar["capture_progress"] = 0.0
+            else:
+                altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
+                if altar["capture_progress"] == 0.0:
+                    altar["owner"] = null
+
+            if altar["capture_progress"] >= 100.0:
+                if not current_weathers.has(altar["weather"]):
+                    current_weathers.append(altar["weather"])
+
+        var weathers_changed = false
+        if current_weathers.size() != active_weathers.size():
+            weathers_changed = true
+        else:
+            for w in current_weathers:
+                if not active_weathers.has(w):
+                    weathers_changed = true
+                    break
+
+        if weathers_changed:
+            active_weathers = current_weathers
+
+            if active_weathers.has("rain") and active_weathers.has("heatwave"):
+                combined_weather = "steam"
+                if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+                    world.add_event("weather_change", {"weather": "steam", "message": "Steam obscures the arena!"})
+            else:
+                combined_weather = ""
+
+        for b in balls:
+            var alive = false
+            if typeof(b) == TYPE_DICTIONARY:
+                alive = b.get("alive", false)
+            else:
+                if "alive" in b: alive = b.alive
+
+            if not alive:
+                continue
+
+            if typeof(b) == TYPE_DICTIONARY:
+                if not b.has("stamina"):
+                    b["stamina"] = 100.0
+                    b["max_stamina"] = 100.0
+
+                var base_speed = b.get("base_speed", 100.0)
+
+                if combined_weather == "steam":
+                    b["stamina"] = max(0.0, b["stamina"] - 5.0 * delta)
+                    if b["stamina"] <= 0.0:
+                        b["speed"] = base_speed * 0.5
+                    else:
+                        b["speed"] = base_speed * 0.8
+                else:
+                    b["stamina"] = min(b["max_stamina"], b["stamina"] + 10.0 * delta)
+                    if active_weathers.has("heatwave") and not active_weathers.has("rain"):
+                        b["speed"] = base_speed * 1.2
+                    elif active_weathers.has("rain") and not active_weathers.has("heatwave"):
+                        b["speed"] = base_speed * 0.9
+                    else:
+                        b["speed"] = base_speed
+            else:
+                if not b.has_meta("stamina"):
+                    b.set_meta("stamina", 100.0)
+                    b.set_meta("max_stamina", 100.0)
+
+                var base_speed = 100.0
+                if b.has_meta("base_speed"):
+                    base_speed = b.get_meta("base_speed")
+                elif "speed" in b:
+                    base_speed = b.speed
+
+                var stam = b.get_meta("stamina")
+                var max_stam = b.get_meta("max_stamina")
+
+                if combined_weather == "steam":
+                    stam = max(0.0, stam - 5.0 * delta)
+                    b.set_meta("stamina", stam)
+                    if stam <= 0.0:
+                        if "speed" in b: b.speed = base_speed * 0.5
+                    else:
+                        if "speed" in b: b.speed = base_speed * 0.8
+                else:
+                    stam = min(max_stam, stam + 10.0 * delta)
+                    b.set_meta("stamina", stam)
+                    if active_weathers.has("heatwave") and not active_weathers.has("rain"):
+                        if "speed" in b: b.speed = base_speed * 1.2
+                    elif active_weathers.has("rain") and not active_weathers.has("heatwave"):
+                        if "speed" in b: b.speed = base_speed * 0.9
+                    else:
+                        if "speed" in b: b.speed = base_speed
+
 GAME_MODES["ice_walls"] = IceWallsMode.new()
+GAME_MODES["weather_combinations"] = WeatherCombinationsMode.new()
 GAME_MODES["linked_portals"] = LinkedPortalsMode.new()
