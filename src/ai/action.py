@@ -1786,9 +1786,31 @@ class Action:
                             "damage": getattr(self.ball, "damage", 10.0),
                             "stamina": getattr(self.ball, "stamina", 100.0)
                         }
+                    else:
+                        pre_stats = {
+                            "hp": getattr(self.ball, "hp", 100.0),
+                            "speed": getattr(self.ball, "speed", 100.0)
+                        }
 
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, target_item)
+
+                    post_stats = {
+                        "hp": getattr(self.ball, "hp", 100.0),
+                        "speed": getattr(self.ball, "speed", 100.0)
+                    }
+                    if "hp" in pre_stats and post_stats["hp"] > pre_stats["hp"]:
+                        target = getattr(self.ball, "entanglement_target", None)
+                        if target and getattr(self.ball, "entanglement_timer", 0.0) > 0.0:
+                            if hasattr(target, "hp"):
+                                diff = post_stats["hp"] - pre_stats["hp"]
+                                target.hp = min(getattr(target, "hp", 100.0) + diff * 0.5, getattr(target, "max_hp", 100.0))
+                    if "speed" in pre_stats and post_stats["speed"] > pre_stats["speed"]:
+                        target = getattr(self.ball, "entanglement_target", None)
+                        if target and getattr(self.ball, "entanglement_timer", 0.0) > 0.0:
+                            if hasattr(target, "speed"):
+                                diff = post_stats["speed"] - pre_stats["speed"]
+                                target.speed = getattr(target, "speed", 100.0) + diff * 0.5
 
                     if is_cursed_mode:
                         post_hp = getattr(self.ball, "hp", 100.0)
@@ -12510,6 +12532,30 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "entanglement_booster":
+                    closest_other = None
+                    closest_dist = 999999.0
+
+                    others = [b for b in getattr(self.world, "balls", []) if getattr(b, "alive", True) and b.id != self.ball.id]
+                    if others:
+                        for b in others:
+                            dist = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                            if dist < closest_dist:
+                                closest_dist = dist
+                                closest_other = b
+
+                    if closest_other:
+                        self.ball.entanglement_target = closest_other
+                        closest_other.entanglement_target = self.ball
+                        self.ball.entanglement_timer = 10.0
+                        closest_other.entanglement_timer = 10.0
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(self.ball, closest_other, "entanglement_link")
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "link_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -12537,9 +12583,31 @@ class Action:
                             "damage": getattr(self.ball, "damage", 10.0),
                             "stamina": getattr(self.ball, "stamina", 100.0)
                         }
+                    else:
+                        pre_stats = {
+                            "hp": getattr(self.ball, "hp", 100.0),
+                            "speed": getattr(self.ball, "speed", 100.0)
+                        }
 
                     if hasattr(self.world, "_collect_booster"):
                         self.world._collect_booster(self.ball, nearest)
+
+                    post_stats = {
+                        "hp": getattr(self.ball, "hp", 100.0),
+                        "speed": getattr(self.ball, "speed", 100.0)
+                    }
+                    if "hp" in pre_stats and post_stats["hp"] > pre_stats["hp"]:
+                        target = getattr(self.ball, "entanglement_target", None)
+                        if target and getattr(self.ball, "entanglement_timer", 0.0) > 0.0:
+                            if hasattr(target, "hp"):
+                                diff = post_stats["hp"] - pre_stats["hp"]
+                                target.hp = min(getattr(target, "hp", 100.0) + diff * 0.5, getattr(target, "max_hp", 100.0))
+                    if "speed" in pre_stats and post_stats["speed"] > pre_stats["speed"]:
+                        target = getattr(self.ball, "entanglement_target", None)
+                        if target and getattr(self.ball, "entanglement_timer", 0.0) > 0.0:
+                            if hasattr(target, "speed"):
+                                diff = post_stats["speed"] - pre_stats["speed"]
+                                target.speed = getattr(target, "speed", 100.0) + diff * 0.5
 
                     if is_cursed_mode:
                         post_hp = getattr(self.ball, "hp", 100.0)
@@ -16733,7 +16801,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -17484,6 +17552,17 @@ class Action:
 
         if hasattr(self.ball, "infinite_stamina_timer") and self.ball.infinite_stamina_timer > 0:
             self.ball.infinite_stamina_timer -= delta
+
+        if hasattr(self.ball, "entanglement_timer") and self.ball.entanglement_timer > 0:
+            self.ball.entanglement_timer -= delta
+            target = getattr(self.ball, "entanglement_target", None)
+            if target and getattr(target, "alive", True):
+                if self.ball.entanglement_timer <= 0:
+                    self.ball.entanglement_target = None
+                    self.ball.entanglement_timer = 0
+            else:
+                self.ball.entanglement_timer = 0
+                self.ball.entanglement_target = None
 
         if hasattr(self.ball, "link_booster_timer") and self.ball.link_booster_timer > 0:
             self.ball.link_booster_timer -= delta

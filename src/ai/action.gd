@@ -3810,6 +3810,54 @@ func execute(strategy: String, delta: float):
                 if self.world != null and self.world.has_method("_collect_booster"):
                     self.world._collect_booster(self.ball, target_item)
 
+                var current_hp = pre_hp
+                var current_speed = pre_speed
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "hp" in self.ball: current_hp = self.ball.hp
+                    if "speed" in self.ball: current_speed = self.ball.speed
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("hp"): current_hp = self.ball["hp"]
+                    if self.ball.has("speed"): current_speed = self.ball["speed"]
+
+                var ent_timer = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("entanglement_timer"): ent_timer = self.ball["entanglement_timer"]
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("entanglement_timer"):
+                    ent_timer = self.ball.get_meta("entanglement_timer")
+                elif "entanglement_timer" in self.ball:
+                    ent_timer = self.ball.entanglement_timer
+
+                var target = null
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("entanglement_target"): target = self.ball["entanglement_target"]
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("entanglement_target"):
+                    target = self.ball.get_meta("entanglement_target")
+                elif "entanglement_target" in self.ball:
+                    target = self.ball.entanglement_target
+
+                if target != null and ent_timer > 0.0:
+                    if current_hp > pre_hp:
+                        var hp_diff = current_hp - pre_hp
+                        if typeof(target) == TYPE_OBJECT:
+                            if "hp" in target:
+                                var mhp = 100.0
+                                if "max_hp" in target: mhp = target.max_hp
+                                target.hp = min(target.hp + hp_diff * 0.5, mhp)
+                        elif typeof(target) == TYPE_DICTIONARY:
+                            if target.has("hp"):
+                                var mhp = 100.0
+                                if target.has("max_hp"): mhp = target["max_hp"]
+                                target["hp"] = min(target["hp"] + hp_diff * 0.5, mhp)
+
+                    if current_speed > pre_speed:
+                        var speed_diff = current_speed - pre_speed
+                        if typeof(target) == TYPE_OBJECT:
+                            if "speed" in target:
+                                target.speed += speed_diff * 0.5
+                        elif typeof(target) == TYPE_DICTIONARY:
+                            if target.has("speed"):
+                                target["speed"] += speed_diff * 0.5
+
                 if is_cursed:
                     var post_hp = 100.0
                     var post_speed = 100.0
@@ -24326,6 +24374,74 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "entanglement_booster":
+                var others = []
+                if self.world != null and "balls" in self.world:
+                    for b in self.world.balls:
+                        var alive = true
+                        if typeof(b) == TYPE_DICTIONARY:
+                            alive = b.get("alive", true)
+                        elif "alive" in b:
+                            alive = b.alive
+
+                        var b_id = -1
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b_id = b.get("id", -1)
+                        elif "id" in b:
+                            b_id = b.id
+
+                        var my_id = -1
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            my_id = self.ball.get("id", -1)
+                        elif "id" in self.ball:
+                            my_id = self.ball.id
+
+                        if alive and b_id != my_id:
+                            others.append(b)
+
+                if others.size() > 0:
+                    var link_target = null
+                    var min_dist_link_sq = INF
+                    for e in others:
+                        var e_x = e.get("x", 0.0) if typeof(e) == TYPE_DICTIONARY else e.x
+                        var e_y = e.get("y", 0.0) if typeof(e) == TYPE_DICTIONARY else e.y
+                        var my_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+                        var my_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+                        var d_sq = pow(e_x - my_x, 2) + pow(e_y - my_y, 2)
+                        if d_sq < min_dist_link_sq:
+                            min_dist_link_sq = d_sq
+                            link_target = e
+
+                    if link_target != null:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("entanglement_target", link_target)
+                            self.ball.set_meta("entanglement_timer", 10.0)
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["entanglement_target"] = link_target
+                            self.ball["entanglement_timer"] = 10.0
+                        else:
+                            self.ball.entanglement_target = link_target
+                            self.ball.entanglement_timer = 10.0
+
+                        if link_target.has_method("set_meta"):
+                            link_target.set_meta("entanglement_target", self.ball)
+                            link_target.set_meta("entanglement_timer", 10.0)
+                        elif typeof(link_target) == TYPE_DICTIONARY:
+                            link_target["entanglement_target"] = self.ball
+                            link_target["entanglement_timer"] = 10.0
+                        else:
+                            link_target.entanglement_target = self.ball
+                            link_target.entanglement_timer = 10.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:
@@ -24479,6 +24595,54 @@ func _collect_booster(delta: float):
 
                 if self.world != null and self.world.has_method("_collect_booster"):
                     self.world._collect_booster(self.ball, nearest)
+
+                var current_hp = pre_hp
+                var current_speed = pre_speed
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "hp" in self.ball: current_hp = self.ball.hp
+                    if "speed" in self.ball: current_speed = self.ball.speed
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("hp"): current_hp = self.ball["hp"]
+                    if self.ball.has("speed"): current_speed = self.ball["speed"]
+
+                var ent_timer = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("entanglement_timer"): ent_timer = self.ball["entanglement_timer"]
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("entanglement_timer"):
+                    ent_timer = self.ball.get_meta("entanglement_timer")
+                elif "entanglement_timer" in self.ball:
+                    ent_timer = self.ball.entanglement_timer
+
+                var target = null
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("entanglement_target"): target = self.ball["entanglement_target"]
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("entanglement_target"):
+                    target = self.ball.get_meta("entanglement_target")
+                elif "entanglement_target" in self.ball:
+                    target = self.ball.entanglement_target
+
+                if target != null and ent_timer > 0.0:
+                    if current_hp > pre_hp:
+                        var hp_diff = current_hp - pre_hp
+                        if typeof(target) == TYPE_OBJECT:
+                            if "hp" in target:
+                                var mhp = 100.0
+                                if "max_hp" in target: mhp = target.max_hp
+                                target.hp = min(target.hp + hp_diff * 0.5, mhp)
+                        elif typeof(target) == TYPE_DICTIONARY:
+                            if target.has("hp"):
+                                var mhp = 100.0
+                                if target.has("max_hp"): mhp = target["max_hp"]
+                                target["hp"] = min(target["hp"] + hp_diff * 0.5, mhp)
+
+                    if current_speed > pre_speed:
+                        var speed_diff = current_speed - pre_speed
+                        if typeof(target) == TYPE_OBJECT:
+                            if "speed" in target:
+                                target.speed += speed_diff * 0.5
+                        elif typeof(target) == TYPE_DICTIONARY:
+                            if target.has("speed"):
+                                target["speed"] += speed_diff * 0.5
 
                 if is_cursed:
                     var post_hp = 100.0
@@ -32522,7 +32686,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]
+                var pullable = ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -33812,6 +33976,37 @@ func _update_skill_timer(delta: float):
             self.ball.infinite_stamina_timer = inf_stam_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("infinite_stamina_timer", inf_stam_timer)
+
+    var ent_timer_update = 0.0
+    if "entanglement_timer" in self.ball:
+        ent_timer_update = self.ball.entanglement_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("entanglement_timer"):
+        ent_timer_update = self.ball.get_meta("entanglement_timer")
+
+    if ent_timer_update > 0:
+        ent_timer_update -= delta
+        var target = null
+        if "entanglement_target" in self.ball:
+            target = self.ball.entanglement_target
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("entanglement_target"):
+            target = self.ball.get_meta("entanglement_target")
+
+        var alive = true
+        if typeof(target) == TYPE_DICTIONARY:
+            if target.has("alive"): alive = target["alive"]
+        elif target != null and "alive" in target:
+            alive = target.alive
+
+        if not alive or target == null or ent_timer_update <= 0.0:
+            ent_timer_update = 0.0
+            target = null
+
+        if "entanglement_timer" in self.ball:
+            self.ball.entanglement_timer = ent_timer_update
+            self.ball.entanglement_target = target
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("entanglement_timer", ent_timer_update)
+            self.ball.set_meta("entanglement_target", target)
 
     var link_timer = 0.0
     if "link_booster_timer" in self.ball:
