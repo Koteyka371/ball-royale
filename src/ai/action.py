@@ -201,6 +201,20 @@ class Action:
 
         is_projectile_or_laser = getattr(attacker, "ball_type", getattr(attacker, "kind", "")) in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"] or getattr(attacker, "is_projectile", False) or getattr(attacker, "is_ricochet_laser", False) or getattr(attacker, "is_spell", False)
 
+
+        if getattr(target, "has_kinetic_absorber", False):
+            # Absorb kinetic energy instead of taking damage
+            # We assume a fixed amount of energy per damage attempt or use damage value
+            dmg = float(getattr(attacker, "damage", 10.0))
+            if hasattr(attacker, "mass"):
+                # if attacker has mass (push force), add to energy
+                speed = 0.0
+                if hasattr(attacker, "vx") and hasattr(attacker, "vy"):
+                    import math
+                    speed = math.hypot(attacker.vx, attacker.vy)
+                dmg += speed * getattr(attacker, "mass", 1.0) * 0.01
+            target.kinetic_energy_pool = getattr(target, "kinetic_energy_pool", 0.0) + dmg
+            return
         if getattr(target, "is_reflective", False) and is_projectile_or_laser:
             # Prevent damage
             # Attempt to find nearest enemy to reflect towards
@@ -11445,7 +11459,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'throw_noise_maker', 'deploy_lightning_rod']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -16693,6 +16707,57 @@ class Action:
                                 self.ball.speed = getattr(self.ball, "speed", 0.0) * 0.7
 
     def _update_skill_timer(self, delta: float) -> None:
+
+        if getattr(self.ball, "skill", "") == "kinetic_absorber":
+            current_st = getattr(self.ball, "skill_timer", 0.0)
+            prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)
+
+            # Start accumulating kinetic energy
+            if current_st > prev_st:
+                self.ball.has_kinetic_absorber = True
+                self.ball.kinetic_energy_pool = 0.0
+                self.ball.kinetic_absorber_duration = 3.0 # active for 3 seconds
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_activated', 'x': self.ball.x, 'y': self.ball.y}})
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+
+            self.ball._prev_skill_timer = getattr(self.ball, "skill_timer", 0.0)
+
+        if getattr(self.ball, "has_kinetic_absorber", False):
+            # Decrease duration
+            self.ball.kinetic_absorber_duration = getattr(self.ball, "kinetic_absorber_duration", 0.0) - delta
+
+            if self.ball.kinetic_absorber_duration <= 0.0 or getattr(self.ball, "kinetic_energy_pool", 0.0) >= 750.0:
+                self.ball.has_kinetic_absorber = False
+                # Release shockwave
+                stored_energy = getattr(self.ball, "kinetic_energy_pool", 0.0)
+                shockwave_radius = 100.0 + min(200.0, stored_energy * 0.5)
+                shockwave_force = 500.0 + min(1500.0, stored_energy * 2.0)
+
+                if hasattr(self, "_get_enemies"):
+                    import math
+                    for enemy in self._get_enemies():
+                        dist_sq = (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2
+                        if dist_sq <= shockwave_radius**2 and dist_sq > 0:
+                            dist = math.sqrt(dist_sq)
+                            nx = (enemy.x - self.ball.x) / dist
+                            ny = (enemy.y - self.ball.y) / dist
+                            enemy.vx = getattr(enemy, "vx", 0.0) + nx * shockwave_force
+                            enemy.vy = getattr(enemy, "vy", 0.0) + ny * shockwave_force
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import math
+                    for hazard in self.world.arena.hazards:
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq <= shockwave_radius**2 and dist_sq > 0:
+                            dist = math.sqrt(dist_sq)
+                            nx = (hazard.x - self.ball.x) / dist
+                            ny = (hazard.y - self.ball.y) / dist
+                            hazard.vx = getattr(hazard, "vx", 0.0) + nx * shockwave_force
+                            hazard.vy = getattr(hazard, "vy", 0.0) + ny * shockwave_force
+
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_shockwave', 'x': self.ball.x, 'y': self.ball.y, 'radius': shockwave_radius, 'force': shockwave_force}})
         if getattr(self.ball, "skill", "") == "kinetic_echo":
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)
