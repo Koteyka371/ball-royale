@@ -40,22 +40,37 @@ def test_clan_disbands_when_empty(temp_clan_file):
 def test_clan_quests(temp_clan_file):
     cm = ClanManager(temp_clan_file)
     cm.create_clan("QuestClan", "player1")
+    cm.join_clan("QuestClan", "player2")
 
-    assert cm.add_clan_quest("QuestClan", "Defeat 100 enemies", 100) == True
+    rewards = [
+        {"type": "points", "value": 50},
+        {"type": "buff", "value": "Quest_Master_Buff"},
+        {"type": "cosmetic", "value": "Quest_Banner"},
+        {"type": "stash_item", "value": "gold", "amount": 100}
+    ]
+    assert cm.add_clan_quest("QuestClan", "Defeat 100 enemies", 100, rewards=rewards) == True
     quests = cm.get_clan_quests("QuestClan")
     assert len(quests) == 1
     assert quests[0]["description"] == "Defeat 100 enemies"
+    assert len(quests[0]["rewards"]) == 4
 
-    assert cm.progress_clan_quest("QuestClan", 0, 50) == True
+    assert cm.progress_clan_quest("QuestClan", 0, 50, "player1") == True
     quests = cm.get_clan_quests("QuestClan")
     assert quests[0]["current"] == 50
     assert quests[0]["completed"] == False
+    assert quests[0]["contributors"]["player1"] == 50
 
-    assert cm.progress_clan_quest("QuestClan", 0, 60) == True
+    assert cm.progress_clan_quest("QuestClan", 0, 60, "player2") == True
     quests = cm.get_clan_quests("QuestClan")
     assert quests[0]["current"] == 100
     assert quests[0]["completed"] == True
-    assert cm.data["clans"]["QuestClan"]["points"] == 10
+    assert quests[0]["contributors"]["player2"] == 60
+
+    clan = cm.data["clans"]["QuestClan"]
+    assert clan["points"] == 10 + 50  # base 10 + 50 reward
+    assert "Quest_Master_Buff" in clan.get("buffs", [])
+    assert "Quest_Banner" in clan.get("cosmetics", [])
+    assert clan.get("stash", {}).get("gold", 0) == 100
 
 def test_clan_points_and_cosmetics(temp_clan_file):
     cm = ClanManager(temp_clan_file)
