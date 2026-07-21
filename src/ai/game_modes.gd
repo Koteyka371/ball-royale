@@ -41300,10 +41300,235 @@ class TimeRewindAltarMode extends GameMode:
 							if "alive" in b: b.alive = false
 							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("alive", false)
 
+
+class WhirlpoolHazard:
+	var id: String = ""
+	var x: float = 0.0
+	var y: float = 0.0
+	var radius: float = 150.0
+	var duration: float = 10.0
+	var pull_force: float = 50.0
+	var suck_radius: float = 20.0
+	var damage: float = 10.0
+	var type: String = "whirlpool"
+	var active: bool = true
+
+	func _init(px: float, py: float) -> void:
+		id = "whirlpool_" + str(randi() % 9000 + 1000)
+		x = px
+		y = py
+
+	func tick(delta: float) -> void:
+		duration -= delta
+		if duration <= 0:
+			active = false
+
+class WhirlpoolsMode extends GameMode:
+	var whirlpool_timer: float = 0.0
+	var spawn_interval: float = 5.0
+	var whirlpools: Array = []
+
+	func _init() -> void:
+		name = "Whirlpools"
+		description = "In water-themed arenas, Whirlpools can spawn that slowly suck entities towards the center, reducing movement speed. Entities that reach the center are briefly slowed down or submerge before resurfacing, dropping some HP or receiving a wet debuff."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		whirlpool_timer = 0.0
+		whirlpools.clear()
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		whirlpool_timer += delta
+
+		if whirlpool_timer >= spawn_interval:
+			whirlpool_timer = 0.0
+
+			var arena_width: float = 1000.0
+			var arena_height: float = 1000.0
+			var arena = null
+			if typeof(world) == TYPE_DICTIONARY:
+				if "arena" in world:
+					arena = world["arena"]
+			elif typeof(world) == TYPE_OBJECT and world != null and "arena" in world:
+				arena = world.arena
+
+			if arena != null:
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_width = arena.get("width", 1000.0)
+					arena_height = arena.get("height", 1000.0)
+				else:
+					arena_width = arena.width if "width" in arena else 1000.0
+					arena_height = arena.height if "height" in arena else 1000.0
+
+			var w_x: float = randf_range(100.0, max(100.0, arena_width - 100.0))
+			var w_y: float = randf_range(100.0, max(100.0, arena_height - 100.0))
+
+			var w = WhirlpoolHazard.new(w_x, w_y)
+			whirlpools.append(w)
+
+			if arena != null:
+				if typeof(arena) == TYPE_DICTIONARY:
+					if "hazards" in arena:
+						arena["hazards"].append(w)
+				else:
+					if "hazards" in arena:
+						arena.hazards.append(w)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "whirlpool_spawn", "x": w_x, "y": w_y, "radius": w.radius})
+
+		var i = whirlpools.size() - 1
+		while i >= 0:
+			var w = whirlpools[i]
+			w.tick(delta)
+			if not w.active:
+				whirlpools.remove_at(i)
+				var arena = null
+				if typeof(world) == TYPE_DICTIONARY:
+					if "arena" in world: arena = world["arena"]
+				elif typeof(world) == TYPE_OBJECT and world != null and "arena" in world:
+					arena = world.arena
+
+				if arena != null:
+					if typeof(arena) == TYPE_DICTIONARY:
+						if "hazards" in arena and typeof(arena["hazards"]) == TYPE_ARRAY:
+							arena["hazards"].erase(w)
+					else:
+						if "hazards" in arena and typeof(arena.hazards) == TYPE_ARRAY:
+							arena.hazards.erase(w)
+			else:
+				for b in balls:
+					var alive = true
+					if typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+					else:
+						alive = b.alive if "alive" in b else false
+
+					var ball_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						ball_type = b.get("ball_type", "")
+					else:
+						ball_type = b.ball_type if "ball_type" in b else ""
+
+					if not alive or ball_type == "spectator":
+						continue
+
+					var bx: float = 0.0
+					var by: float = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						bx = b.x
+						by = b.y
+
+					var dx = w.x - bx
+					var dy = w.y - by
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist < w.radius:
+						if dist > w.suck_radius:
+							var pull_factor = 1.0 - (dist / w.radius)
+							var delta_vx = (dx / dist) * w.pull_force * pull_factor * delta
+							var delta_vy = (dy / dist) * w.pull_force * pull_factor * delta
+							if typeof(b) == TYPE_DICTIONARY:
+								b["vx"] = b.get("vx", 0.0) + delta_vx
+								b["vy"] = b.get("vy", 0.0) + delta_vy
+							else:
+								b.vx += delta_vx
+								b.vy += delta_vy
+						else:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = b.get("hp", 100.0) - (w.damage * delta)
+								var base_speed = b.get("base_speed", b.get("speed", 100.0))
+								b["speed"] = base_speed * 0.5
+								if dist > 0:
+									b["vx"] = b.get("vx", 0.0) - (dx / dist) * 100.0 * delta
+									b["vy"] = b.get("vy", 0.0) - (dy / dist) * 100.0 * delta
+							else:
+								if b.has_method("take_damage"):
+									b.take_damage(w.damage * delta)
+								else:
+									if "hp" in b:
+										b.hp -= (w.damage * delta)
+
+								var base_speed = 100.0
+								if "base_speed" in b: base_speed = b.base_speed
+								elif "speed" in b: base_speed = b.speed
+								if "speed" in b:
+									b.speed = base_speed * 0.5
+
+								if dist > 0:
+									if "vx" in b: b.vx -= (dx / dist) * 100.0 * delta
+									if "vy" in b: b.vy -= (dy / dist) * 100.0 * delta
+			i -= 1
+
+
 GAME_MODES = {
+	"whirlpools": WhirlpoolsMode.new(),
 	"time_rewind_altar": TimeRewindAltarMode.new(),
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"roaming_doppelganger": RoamingDoppelgangerMode.new(),
+	"thermal_freeze_tag": ThermalFreezeTagMode.new(),
+	"disguised_traps": DisguisedTrapsMode.new(),
+	"aerial_arena": AerialArenaMode.new(),
+	"color_trail": ColorTrailMode.new(),
+	"bermuda_triangle": BermudaTriangleMode.new(),
+	"temporal_rifts": TemporalRiftsMode.new(),
+	"sector_collapse": SectorCollapseMode.new(),
+	"constricting_boundary_trap": ConstrictingBoundaryTrapMode.new(),
+	"collapsing_bubbles": CollapsingBubblesMode.new(),
+	"watchtower": WatchtowerMode.new(),
+	"ticking_bomb": TickingBombMode.new(),
+	"paint_splatter": PaintSplatterMode.new(),
+	"stats_decay": StatsDecayMode.new(),
+	"clan_war": ClanWarMode.new(),
+	"time_stutter_hazard": TimeStutterHazardMode.new(),
+	"grid_lockdown": GridLockdownMode.new(),
+	"phantom_juggernaut": PhantomJuggernautMode.new(),
+	"phantom_replay_hazard": PhantomReplayHazardMode.new(),
+	"invisible_mines": InvisibleMinesMode.new(),
+	"periodic_safe_zone": PeriodicSafeZoneMode.new(),
+	"elastic_band_zone": ElasticBandZoneMode.new(),
+	"grapple_node": GrappleNodeMode.new(),
+	"orbital_mines": OrbitalMinesMode.new(),
+	"perfect_reflector_hazard": PerfectReflectorHazardMode.new(),
+	"chronosphere_event": ChronosphereEventMode.new(),
+	"time_dilation_zone": TimeDilationZoneMode.new(),
+	"inverse_controls_zone": InverseControlsZoneMode.new(),
+	"edge_slingshots": EdgeSlingshotsMode.new(),
+	"aura_inversion_zone": AuraInversionZoneMode.new(),
+	"quantum_shifting_hazards": QuantumShiftingHazardsMode.new(),
+	"platformer": PlatformerMode.new(),
+	"bounty_contract_event": BountyContractEventMode.new(),
+	"decoy_network": DecoyNetworkMode.new(),
+	"vengeful_decoys": VengefulDecoysMode.new(),
+	"sponsor_drop": SponsorDropMode.new(),
+	"healing_zone": HealingZoneMode.new(),
+	"eye_of_the_storm": EyeOfTheStormMode.new(),
+	"fake_balls": FakeBallsMode.new(),
+	"chain_reaction": ChainReactionMode.new(),
+	"faction_war": FactionWarMode.new(),
+	"killstreak_explosion": KillstreakExplosionMode.new(),
+	"mimic_clone_swap": MimicCloneSwapMode.new(),
+	"tornado_swarm_event": TornadoSwarmEventMode.new(),
+	"dynamic_danger_zones": DynamicDangerZonesMode.new(),
+	"repulsion_field": RepulsionFieldMode.new(),
+	"magnetic_shockwave_event": MagneticShockwaveEventModeClass.new(),
+	"orbital_crosshair": OrbitalCrosshairMode.new(),
+	"shared_tug_of_war": SharedTugOfWarMode.new(),
+	"spectator_holograms": SpectatorHologramsMode.new(),
+	"dragging_magnetic_mines": DraggingMagneticMinesMode.new(),
+	"zero_gravity_meteor_shower": ZeroGravityMeteorShowerMode.new(),
+	"cursed_booster": CursedBoosterMode.new(),
+	"wrap_around": WrapAroundMode.new(),
+	"invisible_gravity_wells": InvisibleGravityWellsMode.new(),
+	"ice_walls": IceWallsMode.new(),
+	"linked_portals": LinkedPortalsMode.new(),
+	"weather_combinations": WeatherCombinationsMode.new(),
+}
+
 class ThermalFreezeTagMode extends FreezeTagMode:
 	var zone_timer = 0.0
 	func _init():

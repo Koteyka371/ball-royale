@@ -25341,7 +25341,101 @@ class TimeRewindAltarMode(GameMode):
                         b.hp = 0.0
                         b.alive = False
 
+
+class WhirlpoolsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Whirlpools"
+        self.description = "In water-themed arenas, Whirlpools can spawn that slowly suck entities towards the center, reducing movement speed. Entities that reach the center are briefly slowed down or submerge before resurfacing, dropping some HP or receiving a wet debuff."
+        self.whirlpool_timer = 0.0
+        self.spawn_interval = 5.0
+
+    class WhirlpoolHazard:
+        def __init__(self, x, y):
+            import random
+            self.id = f"whirlpool_{random.randint(1000, 9999)}"
+            self.x = x
+            self.y = y
+            self.radius = 150.0
+            self.duration = 10.0
+            self.pull_force = 50.0
+            self.suck_radius = 20.0
+            self.damage = 10.0
+            self.type = "whirlpool"
+            self.active = True
+
+        def tick(self, delta):
+            self.duration -= delta
+            if self.duration <= 0:
+                self.active = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.whirlpool_timer = 0.0
+        self.whirlpools = []
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+        super().tick(world, balls, delta)
+        self.whirlpool_timer += delta
+
+        if self.whirlpool_timer >= self.spawn_interval:
+            self.whirlpool_timer = 0.0
+
+            w_x = random.uniform(100, getattr(world.arena, 'width', 1000) - 100) if hasattr(world, 'arena') else 500
+            w_y = random.uniform(100, getattr(world.arena, 'height', 1000) - 100) if hasattr(world, 'arena') else 500
+
+            w = self.WhirlpoolHazard(w_x, w_y)
+            self.whirlpools.append(w)
+
+            if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                if type(world.arena.hazards) is list:
+                    world.arena.hazards.append(w)
+
+            if hasattr(world, 'add_event'):
+                world.add_event("visual_effect", {"type": "whirlpool_spawn", "x": w_x, "y": w_y, "radius": w.radius})
+
+        # Update whirlpools and check for balls
+        for w in list(self.whirlpools):
+            w.tick(delta)
+            if not w.active:
+                self.whirlpools.remove(w)
+                if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                    if type(world.arena.hazards) is list and w in world.arena.hazards:
+                        world.arena.hazards.remove(w)
+                continue
+
+            for b in balls:
+                if not getattr(b, 'alive', False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                dx = w.x - b.x
+                dy = w.y - b.y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist < w.radius:
+                    if dist > w.suck_radius:
+                        # pull
+                        pull_factor = 1.0 - (dist / w.radius)
+                        b.vx = getattr(b, 'vx', 0.0) + (dx / dist) * w.pull_force * pull_factor * delta
+                        b.vy = getattr(b, 'vy', 0.0) + (dy / dist) * w.pull_force * pull_factor * delta
+                    else:
+                        # suck to center
+                        if hasattr(b, 'take_damage'):
+                            b.take_damage(w.damage * delta)
+                        else:
+                            b.hp -= w.damage * delta
+
+                        # apply wet debuff or slow down
+                        b.speed = getattr(b, 'base_speed', getattr(b, 'speed', 100.0)) * 0.5
+                        # add some push back
+                        if dist > 0:
+                            b.vx = getattr(b, 'vx', 0.0) - (dx / dist) * 100 * delta
+                            b.vy = getattr(b, 'vy', 0.0) - (dy / dist) * 100 * delta
+
+
 GAME_MODES = {
+    'whirlpools': WhirlpoolsMode(),
     'time_rewind_altar': TimeRewindAltarMode(),
     'teleport_dash_mutator': TeleportDashMutatorMode(),
     'random_teleport_dash': RandomTeleportDashMode(),
