@@ -23823,7 +23823,57 @@ class ElasticTetherMode(GameMode):
                             b.hp = getattr(b, "hp", 100.0) - self.collision_damage
                             target.hp = getattr(target, "hp", 100.0) - self.collision_damage
 
+
+class MassDecoyEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mass Decoy Event"
+        self.description = "An event that randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
+        self.event_timer = 20.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        import copy
+
+        self.event_timer -= delta
+        if self.event_timer <= 0.0:
+            self.event_timer = random.uniform(15.0, 25.0)
+
+            alive_balls = [b for b in balls if getattr(b, 'alive', True) and not getattr(b, 'is_decoy', False)]
+            if not alive_balls:
+                return
+
+            arena_width = getattr(world.arena, 'width', 800) if hasattr(world, 'arena') else 800
+            arena_height = getattr(world.arena, 'height', 600) if hasattr(world, 'arena') else 600
+
+            for b in alive_balls:
+                decoy = copy.copy(b)
+                decoy.id = getattr(world, "next_id", random.randint(10000, 99999))
+                if hasattr(world, "next_id"):
+                    world.next_id += 1
+
+                decoy.is_decoy = True
+                decoy.decoy_timer = 10.0
+                decoy.owner_id = getattr(b, "id", None)
+
+                decoy.speed = 0.0
+                decoy.vx = 0.0
+                decoy.vy = 0.0
+                decoy.damage = 0
+
+                # Random position
+                decoy.x = random.uniform(50, arena_width - 50)
+                decoy.y = random.uniform(50, arena_height - 50)
+
+                if hasattr(world, 'balls'):
+                    world.balls.append(decoy)
+
+            if hasattr(world, "add_event"):
+                world.add_event("mass_decoy_spawn", {"count": len(alive_balls)})
+
 GAME_MODES = {
+    'mass_decoy_event': MassDecoyEventMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),
 
 

@@ -40554,7 +40554,121 @@ class EntangledHazardsMode extends GameMode:
 											elif t.has_method("set_meta"): t.set_meta(eff, t_curr_eff + delta_eff)
 			_init_prev_state(b)
 
+
+class MassDecoyEventMode extends GameMode:
+	var event_timer: float = 20.0
+
+	func _init():
+		pass
+		name = "Mass Decoy Event"
+		description = "An event that randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		event_timer -= delta
+		if event_timer <= 0.0:
+			event_timer = randf_range(15.0, 25.0)
+
+			var alive_balls = []
+			for b in balls:
+				var b_alive = true
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+				var b_is_decoy = false
+				if typeof(b) == TYPE_DICTIONARY and b.has("is_decoy"): b_is_decoy = b.is_decoy
+				elif typeof(b) == TYPE_OBJECT and "is_decoy" in b: b_is_decoy = b.is_decoy
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy"): b_is_decoy = b.get_meta("is_decoy")
+
+				if b_alive and not b_is_decoy:
+					alive_balls.append(b)
+
+			if alive_balls.size() == 0:
+				return
+
+			var arena_width = 800
+			var arena_height = 600
+			if typeof(world) == TYPE_OBJECT:
+				if world.has_method("get_arena"):
+					var arena = world.get_arena()
+					if arena:
+						if "width" in arena: arena_width = arena.width
+						if "height" in arena: arena_height = arena.height
+				elif "arena" in world and world.arena != null:
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
+
+			for b in alive_balls:
+				var decoy = null
+				if typeof(b) == TYPE_DICTIONARY:
+					decoy = b.duplicate()
+				elif typeof(b) == TYPE_OBJECT and b.has_method("duplicate"):
+					decoy = b.duplicate()
+
+				if decoy != null:
+					var new_id = randi() % 90000 + 10000
+					if typeof(world) == TYPE_OBJECT and "next_id" in world:
+						new_id = world.next_id
+						world.next_id += 1
+
+					var b_id = -1
+					if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+					elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+					if typeof(decoy) == TYPE_DICTIONARY:
+						decoy["id"] = new_id
+						decoy["is_decoy"] = true
+						decoy["decoy_timer"] = 10.0
+						decoy["owner_id"] = b_id
+						decoy["speed"] = 0.0
+						decoy["vx"] = 0.0
+						decoy["vy"] = 0.0
+						decoy["damage"] = 0
+						decoy["x"] = randf_range(50.0, float(arena_width) - 50.0)
+						decoy["y"] = randf_range(50.0, float(arena_height) - 50.0)
+					else:
+						if "id" in decoy: decoy.id = new_id
+						elif decoy.has_method("set_meta"): decoy.set_meta("id", new_id)
+
+						if "is_decoy" in decoy: decoy.is_decoy = true
+						elif decoy.has_method("set_meta"): decoy.set_meta("is_decoy", true)
+
+						if "decoy_timer" in decoy: decoy.decoy_timer = 10.0
+						elif decoy.has_method("set_meta"): decoy.set_meta("decoy_timer", 10.0)
+
+						if "owner_id" in decoy: decoy.owner_id = b_id
+						elif decoy.has_method("set_meta"): decoy.set_meta("owner_id", b_id)
+
+						if "speed" in decoy: decoy.speed = 0.0
+						elif decoy.has_method("set_meta"): decoy.set_meta("speed", 0.0)
+
+						if "vx" in decoy: decoy.vx = 0.0
+						elif decoy.has_method("set_meta"): decoy.set_meta("vx", 0.0)
+
+						if "vy" in decoy: decoy.vy = 0.0
+						elif decoy.has_method("set_meta"): decoy.set_meta("vy", 0.0)
+
+						if "damage" in decoy: decoy.damage = 0
+						elif decoy.has_method("set_meta"): decoy.set_meta("damage", 0)
+
+						var new_x = randf_range(50.0, float(arena_width) - 50.0)
+						var new_y = randf_range(50.0, float(arena_height) - 50.0)
+
+						if "x" in decoy: decoy.x = new_x
+						elif decoy.has_method("set_meta"): decoy.set_meta("x", new_x)
+
+						if "y" in decoy: decoy.y = new_y
+						elif decoy.has_method("set_meta"): decoy.set_meta("y", new_y)
+
+					if typeof(world) == TYPE_OBJECT and "balls" in world and typeof(world.balls) == TYPE_ARRAY:
+						world.balls.append(decoy)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("mass_decoy_spawn", {"count": alive_balls.size()})
+
 GAME_MODES = {
+	"mass_decoy_event": MassDecoyEventMode.new(),
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
