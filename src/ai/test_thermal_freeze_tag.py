@@ -80,5 +80,40 @@ class TestThermalFreezeTagMode(unittest.TestCase):
         self.assertFalse(ball.alive)
         self.assertEqual(ball.hp, 0)
 
+
+    def test_unfrozen_ball_in_heat_zone(self):
+        ball = MockBall(1)
+        ball.x = 500
+        ball.y = 500
+        ball.is_frozen = False
+        ball.frozen_timer = 0
+        ball.stun_timer = 0
+        ball.thaw_progress = 0
+
+        hazard = MockHazard("heat_zone", 500, 500, 150)
+        self.world.arena.hazards.append(hazard)
+
+        self.mode.tick(self.world, [ball], 2.0)
+        self.assertFalse(ball.is_frozen)
+        self.assertEqual(getattr(ball, "thaw_progress", 0), 0)
+
+    def test_unfrozen_ball_in_frost_zone(self):
+        ball = MockBall(1)
+        ball.x = 500
+        ball.y = 500
+        ball.is_frozen = False
+
+        hazard = MockHazard("frost_zone", 500, 500, 150)
+        self.world.arena.hazards.append(hazard)
+
+        self.mode.tick(self.world, [ball], 1.0)
+        self.assertTrue(ball.alive)
+        self.assertEqual(ball.hp, 100)
+
+        ball.hp = 90
+        self.mode.tick(self.world, [ball], 0.1)
+        self.assertTrue(ball.alive)
+        self.assertEqual(ball.hp, 90)
+
 if __name__ == '__main__':
     unittest.main()

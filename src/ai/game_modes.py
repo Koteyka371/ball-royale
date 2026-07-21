@@ -27799,6 +27799,7 @@ class WeatherClashMode(GameMode):
                     b.damage = base_damage
 
 class ThermalFreezeTagMode(FreezeTagMode):
+    # A variant where the arena has dynamic heat zones. Instead of relying purely on allies to unfreeze them, frozen players slowly thaw when pushed into a heat zone. However, if they are pushed into a frost zone, they become permanently shattered if they take any damage.
     def __init__(self):
         super().__init__()
         self.name = "Thermal Freeze Tag"
