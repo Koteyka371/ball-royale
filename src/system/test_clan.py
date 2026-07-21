@@ -209,3 +209,29 @@ def test_clan_hub_decorations(temp_clan_file):
     # Check buffs
     buffs = cm.get_hub_buffs("DecoClan")
     assert "Tournament_Champion_Aura" in buffs
+
+def test_end_weekly_tournament(temp_clan_file):
+    cm = ClanManager(temp_clan_file)
+    cm.create_clan("Clan1", "p1")
+    cm.create_clan("Clan2", "p2")
+    cm.create_clan("Clan3", "p3")
+
+    cm.start_weekly_tournament()
+    cm.add_tournament_points("Clan1", 500)
+    cm.add_tournament_points("Clan2", 300)
+    cm.add_tournament_points("Clan3", 200)
+
+    cm.end_weekly_tournament()
+
+    assert "Weekly_Champion_Aura" in cm.data["clans"]["Clan1"]["cosmetics"]
+    assert "Golden_Crown_Cosmetic" in cm.data["clans"]["Clan1"]["cosmetics"]
+    assert "Champion_Trophy" in cm.data["clans"]["Clan1"]["decorations"]
+    assert "Golden_Throne" in cm.data["clans"]["Clan1"]["decorations"]
+
+    assert "Silver_Crown_Cosmetic" in cm.data["clans"]["Clan2"]["cosmetics"]
+    assert "Speed_Statue" in cm.data["clans"]["Clan2"]["decorations"]
+    assert "Silver_Chandelier" in cm.data["clans"]["Clan2"]["decorations"]
+
+    assert "Bronze_Crown_Cosmetic" in cm.data["clans"]["Clan3"]["cosmetics"]
+    assert "Health_Fountain" in cm.data["clans"]["Clan3"]["decorations"]
+    assert "Bronze_Banner" in cm.data["clans"]["Clan3"]["decorations"]

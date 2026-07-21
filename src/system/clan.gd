@@ -370,6 +370,15 @@ func get_hub_buffs(clan_name: String) -> Array:
                     elif dec_name == "Health_Fountain":
                         if not buffs.has("Hub_Health_Regen"):
                             buffs.append("Hub_Health_Regen")
+                    elif dec_name == "Golden_Throne":
+                        if not buffs.has("Hub_Golden_Aura"):
+                            buffs.append("Hub_Golden_Aura")
+                    elif dec_name == "Silver_Chandelier":
+                        if not buffs.has("Hub_Silver_Aura"):
+                            buffs.append("Hub_Silver_Aura")
+                    elif dec_name == "Bronze_Banner":
+                        if not buffs.has("Hub_Bronze_Aura"):
+                            buffs.append("Hub_Bronze_Aura")
     return buffs
 
 func start_weekly_tournament() -> bool:
@@ -414,12 +423,21 @@ func end_weekly_tournament() -> bool:
         if i == 0:
             add_clan_points(clan_name, 5000)
             unlock_cosmetic(clan_name, "Weekly_Champion_Aura")
+            unlock_cosmetic(clan_name, "Golden_Crown_Cosmetic")
+            unlock_decoration(clan_name, "Champion_Trophy")
+            unlock_decoration(clan_name, "Golden_Throne")
             unlock_buff(clan_name, "Currency_Boost_Tier3")
         elif i == 1:
             add_clan_points(clan_name, 3000)
+            unlock_cosmetic(clan_name, "Silver_Crown_Cosmetic")
+            unlock_decoration(clan_name, "Speed_Statue")
+            unlock_decoration(clan_name, "Silver_Chandelier")
             unlock_buff(clan_name, "Currency_Boost_Tier2")
         elif i == 2:
             add_clan_points(clan_name, 2000)
+            unlock_cosmetic(clan_name, "Bronze_Crown_Cosmetic")
+            unlock_decoration(clan_name, "Health_Fountain")
+            unlock_decoration(clan_name, "Bronze_Banner")
             unlock_buff(clan_name, "Currency_Boost_Tier1")
 
     data["tournament_active"] = false
