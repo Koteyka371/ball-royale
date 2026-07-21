@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1236] Quantum Mirror Boundaries — *2026-07-21 03:15:17 UTC*
+
+An arena mode where hitting a map boundary doesn't just bounce you, but teleports you to the opposite side of the map with inverted velocity.
+
+---
+
 ## [idea-1221] Altar Sabotage Mechanic — *2026-07-21 02:40:48 UTC*
 
 Players can drop negative modifiers onto altars instead of just capturing them. When an altar is sabotaged, it deals tick damage to the other team attempting to capture it.

@@ -21184,7 +21184,7 @@
     },
     {
       "id": "idea-1236",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Mirror Boundaries",
@@ -31789,6 +31789,40 @@
         "src/arena/ice_rink_arena.py",
         "src/arena/ice_rink_arena.gd",
         "tests/test_ice_rink_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1859",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Altar Sabotage Item",
+      "description": "An item that players can drop onto altars to sabotage them, dealing tick damage to enemy teams.",
+      "allowed_paths": [
+        "src/ai/altar_sabotage_item.py",
+        "src/ai/altar_sabotage_item.gd",
+        "tests/test_altar_sabotage_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1860",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Altar",
+      "description": "An altar that occasionally applies negative modifiers to players trying to capture it.",
+      "allowed_paths": [
+        "src/ai/cursed_altar.py",
+        "src/ai/cursed_altar.gd",
+        "tests/test_cursed_altar.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
