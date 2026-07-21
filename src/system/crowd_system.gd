@@ -2,6 +2,7 @@ extends RefCounted
 
 var world
 var excitement_level = 0.0
+var corruptibility_level = 0.5
 var max_excitement = 100.0
 var team_alive_counts = {}
 var last_kill_tick = 0
@@ -348,13 +349,13 @@ func player_bribe_vote(player_id: String, action: String, option: String = "") -
         return false
 
     var currency_type = "skill_points"
-    var currency_cost = 50
+    var currency_cost = int(max(10, 50 * (2.0 - corruptibility_level * 1.5)))
 
     var current_sp = pm_data.get("skill_points", 0)
     var current_pt = pm_data.get("prestige_tokens", 0)
 
-    if current_sp >= 50:
-        pm_data["skill_points"] = current_sp - 50
+    if current_sp >= currency_cost:
+        pm_data["skill_points"] = current_sp - currency_cost
     elif current_pt >= 1:
         pm_data["prestige_tokens"] = current_pt - 1
         currency_cost = 1
@@ -389,6 +390,7 @@ func _process_external_commands(balls: Array):
 func tick(balls: Array, kill_log: Array, current_tick: int):
     _process_external_commands(balls)
     _check_bets_and_winner(balls, current_tick)
+    _update_corruptibility(current_tick)
     _update_excitement(current_tick)
     # Decrement bounty timers
     for b in balls:
@@ -553,6 +555,9 @@ func _check_camping(balls: Array, current_tick: int):
             else:
                 ball_positions[id_str] = [b_x, b_y]
                 camping_time[id_str] = 0
+
+func _update_corruptibility(current_tick: int):
+    corruptibility_level = (sin(current_tick * 0.005) + 1.0) / 2.0
 
 func _update_excitement(current_tick: int):
     if excitement_level > 0:

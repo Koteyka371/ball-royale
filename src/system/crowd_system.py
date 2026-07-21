@@ -5,6 +5,7 @@ class CrowdSystem:
     def __init__(self, world):
         self.world = world
         self.excitement_level = 0.0
+        self.corruptibility_level = 0.5
         self.max_excitement = 100.0
         self.team_alive_counts = {}
         self.active_vote = None
@@ -230,10 +231,10 @@ class CrowdSystem:
             return False
 
         currency_type = "skill_points"
-        currency_cost = 50
+        currency_cost = max(10, int(50 * (2.0 - self.corruptibility_level * 1.5)))
 
-        if pm.data.get("skill_points", 0) >= 50:
-            pm.data["skill_points"] -= 50
+        if pm.data.get("skill_points", 0) >= currency_cost:
+            pm.data["skill_points"] -= currency_cost
         elif pm.data.get("prestige_tokens", 0) >= 1:
             pm.data["prestige_tokens"] -= 1
             currency_cost = 1
@@ -270,6 +271,7 @@ class CrowdSystem:
     def tick(self, balls: List[Any], kill_log: List[Dict[str, Any]], tick: int):
         self._process_external_commands(balls)
         self._check_bets_and_winner(balls, tick)
+        self._update_corruptibility(tick)
         self._update_excitement(tick)
         # Decrement bounty timers
         for b in balls:
@@ -379,6 +381,11 @@ class CrowdSystem:
                         except Exception:
                             pass
 
+
+
+    def _update_corruptibility(self, tick: int):
+        import math
+        self.corruptibility_level = (math.sin(tick * 0.005) + 1.0) / 2.0
 
     def _update_excitement(self, tick: int):
         # Decay excitement slowly

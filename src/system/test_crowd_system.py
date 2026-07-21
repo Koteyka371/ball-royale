@@ -235,7 +235,7 @@ def test_player_bribe_vote_cancel():
     result = system.player_bribe_vote("player1", "cancel")
     assert result == True
     assert system.active_vote is None
-    assert world.profile_manager.data["skill_points"] == 50
+    assert world.profile_manager.data["skill_points"] == 38
     assert world.profile_manager.data["prestige_tokens"] == 5
     events = [e[0] for e in world.events]
     assert "vote_cancelled" in events
@@ -476,3 +476,31 @@ def test_spectator_control_hazard():
     assert hazard.x > 100
     assert hazard.y > 100
     assert getattr(hazard, "control_timer", 0) == 9.0
+
+def test_player_bribe_vote_corruptibility():
+    world = MockWorld()
+    system = CrowdSystem(world)
+
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 0, "spike": 0}
+    system.vote_timer = 100
+
+    # 0 corruptibility -> cost should be 100 but capped or based on max. 50 * (2.0 - 0) = 100.
+    # Player only has 100 SP, let's see if 100 is deducted.
+    world.profile_manager.data["skill_points"] = 150
+    system.corruptibility_level = 0.0
+
+    result = system.player_bribe_vote("player_c1", "cancel")
+    assert result == True
+    assert world.profile_manager.data["skill_points"] == 50 # 150 - 100 = 50
+
+    # High corruptibility -> cost should be low
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 0, "spike": 0}
+
+    world.profile_manager.data["skill_points"] = 150
+    system.corruptibility_level = 1.0 # 50 * (2.0 - 1.5) = 25
+
+    result = system.player_bribe_vote("player_c2", "cancel")
+    assert result == True
+    assert world.profile_manager.data["skill_points"] == 125 # 150 - 25 = 125
