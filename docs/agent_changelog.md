@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1221] Altar Sabotage Mechanic — *2026-07-21 02:40:48 UTC*
+
+Players can drop negative modifiers onto altars instead of just capturing them. When an altar is sabotaged, it deals tick damage to the other team attempting to capture it.
+
+---
+
 ## [idea-1234] Slime Monster Boss — *2026-07-21 02:40:44 UTC*
 
 A boss that shoots out balls of slime. It leaves a massive trail of slime behind it, slowing down everyone who gets too close to its tail. When destroyed, splits into two smaller, faster slimes.
