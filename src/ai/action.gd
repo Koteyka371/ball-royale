@@ -11265,14 +11265,38 @@ func execute(strategy: String, delta: float):
                         var dist_sq = (hx - bx) * (hx - bx) + (hy - by) * (hy - by)
                         if dist_sq < (hr + br) * (hr + br):
                             var owner_id = hazard.get("owner_id") if typeof(hazard) == TYPE_DICTIONARY else (hazard.owner_id if "owner_id" in hazard else null)
+
+                            var owner_extension = false
+                            if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                                for b in self.world.balls:
+                                    var bid = null
+                                    if typeof(b) == TYPE_DICTIONARY: bid = b.get("id")
+                                    elif typeof(b) == TYPE_OBJECT:
+                                        if "id" in b: bid = b.id
+                                        elif b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
+
+                                    if bid != null and bid == owner_id:
+                                        var has_ext = false
+                                        if typeof(b) == TYPE_DICTIONARY: has_ext = b.get("bounty_extension_active", false)
+                                        elif typeof(b) == TYPE_OBJECT:
+                                            if "bounty_extension_active" in b: has_ext = b.bounty_extension_active
+                                            elif b.has_method("get_meta") and b.has_meta("bounty_extension_active"): has_ext = b.get_meta("bounty_extension_active")
+                                        if has_ext:
+                                            owner_extension = true
+                                        break
+                            var timer_val = 20.0 if owner_extension else 10.0
+
                             if typeof(self.ball) == TYPE_DICTIONARY:
                                 self.ball["is_bounty_target"] = true
+                                self.ball["bounty_target_timer"] = timer_val
                                 self.ball["bounty_target_owner"] = owner_id
                             elif typeof(self.ball) == TYPE_OBJECT:
                                 if "is_bounty_target" in self.ball:
                                     self.ball.is_bounty_target = true
+                                    self.ball.bounty_target_timer = timer_val
                                 elif self.ball.has_method("set_meta"):
                                     self.ball.set_meta("is_bounty_target", true)
+                                    self.ball.set_meta("bounty_target_timer", timer_val)
 
                                 if "bounty_target_owner" in self.ball:
                                     self.ball.bounty_target_owner = owner_id
@@ -23243,6 +23267,39 @@ func _collect_booster(delta: float):
                 if "boosters" in self.world:
                     if nearest in self.world.boosters:
                         self.world.boosters.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "bounty_extension_item":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("bounty_extension_active", true)
+                elif "bounty_extension_active" in self.ball:
+                    self.ball.bounty_extension_active = true
+                else:
+                    self.ball.bounty_extension_active = true
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "bounty_extension_item":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("bounty_extension_active", true)
+                elif "bounty_extension_active" in self.ball:
+                    self.ball.bounty_extension_active = true
+                else:
+                    self.ball.bounty_extension_active = true
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "bounty_extension_item":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("bounty_extension_active", true)
+                elif "bounty_extension_active" in self.ball:
+                    self.ball.bounty_extension_active = true
+                else:
+                    self.ball.bounty_extension_active = true
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "stealth_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("stealth_booster_timer", 10.0)
