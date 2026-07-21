@@ -359,7 +359,87 @@ class GameMode:
                         h.control_target_x = h.x
                         h.control_target_y = h.y
 
+
+
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            new_fragments = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "grave_trap":
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(h, "owner_team", ""):
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0.0) - getattr(h, "x", 0.0), getattr(b, "y", 0.0) - getattr(h, "y", 0.0))
+                            if dist <= getattr(h, "radius", 30.0) + getattr(b, "radius", 15.0):
+                                # Explode into bone fragments
+                                hazards_to_remove.append(h)
+
+                                # Spawn bone fragment explosions
+                                class SimpleFragment:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+
+                                for i in range(6):
+                                    angle = i * (math.pi / 3.0)
+                                    fragment_id = len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999) + i
+                                    try:
+                                        from arena.procedural_arena import Hazard
+                                        frag = Hazard(id=fragment_id, x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind="bone_fragment", damage=30.0)
+                                    except ImportError:
+                                        frag = SimpleFragment(id=fragment_id, x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind="bone_fragment", damage=30.0)
+
+                                    setattr(frag, "vx", math.cos(angle) * 300.0)
+                                    setattr(frag, "vy", math.sin(angle) * 300.0)
+                                    setattr(frag, "duration", 2.0)
+                                    setattr(frag, "owner_team", getattr(h, "owner_team", ""))
+                                    new_fragments.append(frag)
+
+                                # Explode logic
+                                if hasattr(world, "add_event"):
+                                    world.add_event("grave_trap_explosion", {"x": getattr(h, "x", 0.0), "y": getattr(h, "y", 0.0)})
+                                break
+
+                elif getattr(h, "kind", "") == "bone_fragment":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            hazards_to_remove.append(h)
+                            continue
+
+                    # Move bone fragment
+                    setattr(h, "x", getattr(h, "x", 0.0) + getattr(h, "vx", 0.0) * delta)
+                    setattr(h, "y", getattr(h, "y", 0.0) + getattr(h, "vy", 0.0) * delta)
+
+                    # Collision with enemies
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(h, "owner_team", ""):
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0.0) - getattr(h, "x", 0.0), getattr(b, "y", 0.0) - getattr(h, "y", 0.0))
+                            if dist <= getattr(h, "radius", 15.0) + getattr(b, "radius", 15.0):
+                                hazards_to_remove.append(h)
+                                # Damage and slow
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(getattr(h, "damage", 30.0))
+                                else:
+                                    b.hp = getattr(b, "hp", 100.0) - getattr(h, "damage", 30.0)
+                                    if b.hp <= 0:
+                                        b.alive = False
+
+                                # Apply slow
+                                setattr(b, "slow_timer", max(getattr(b, "slow_timer", 0.0), 3.0))
+                                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5
+                                break
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+            for f in new_fragments:
+                world.arena.hazards.append(f)
+
         # Black Hole Mine detonating logic
+
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             to_remove = []
             for h in world.arena.hazards:
@@ -1019,9 +1099,34 @@ class GameMode:
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                 world.arena.hazards.append(soul_fragment)
 
+
+
         # Necromancer death logic
         if getattr(ball, "ball_type", "").lower() == "necromancer":
+            # Spawn Grave Trap
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                    trap_id = len(getattr(world.arena, "hazards", [])) + getattr(self, "random", __import__("random")).randint(10000, 99999)
+                    grave_trap = Hazard(id=trap_id, x=getattr(ball, "x", 0.0), y=getattr(ball, "y", 0.0), radius=30.0, kind="grave_trap", damage=0.0)
+                    setattr(grave_trap, "duration", -1.0) # Lasts indefinitely until stepped on
+                    setattr(grave_trap, "active", True)
+                    setattr(grave_trap, "owner_team", getattr(ball, "team", "unknown"))
+                    world.arena.hazards.append(grave_trap)
+                except ImportError:
+                    class FallbackHazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                            self.active = True
+                    trap_id = len(getattr(world.arena, "hazards", [])) + getattr(self, "random", __import__("random")).randint(10000, 99999)
+                    grave_trap = FallbackHazard(id=trap_id, x=getattr(ball, "x", 0.0), y=getattr(ball, "y", 0.0), radius=30.0, kind="grave_trap", damage=0.0)
+                    setattr(grave_trap, "duration", -1.0)
+                    setattr(grave_trap, "owner_team", getattr(ball, "team", "unknown"))
+                    world.arena.hazards.append(grave_trap)
+
             if hasattr(world, "balls"):
+
+
                 for minion in world.balls:
                     if getattr(minion, "ball_type", "") == "minion" and getattr(minion, "minion_owner", None) == getattr(ball, "id", None):
                         minion.is_enraged = True
