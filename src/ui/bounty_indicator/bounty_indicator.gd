@@ -14,7 +14,16 @@ func update(events: Array, local_player_id = null) -> void:
     active_indicators.clear()
 
     for event in events:
-        if typeof(event) == TYPE_DICTIONARY and event.has("type") and (event["type"] == "bounty_compass" or event["type"] == "nemesis_compass"):
+        if typeof(event) == TYPE_DICTIONARY and event.has("type") and event["type"] == "minimap_ping":
+            var data = event.get("data", {})
+            active_indicators.append({
+                "target_x": float(data.get("x", 0.0)),
+                "target_y": float(data.get("y", 0.0)),
+                "radius": float(data.get("radius", 0.0)),
+                "is_minimap_ping": true,
+                "color": "yellow" if data.get("type") == "safe_zone" else "white"
+            })
+        elif typeof(event) == TYPE_DICTIONARY and event.has("type") and (event["type"] == "bounty_compass" or event["type"] == "nemesis_compass"):
             var data = event.get("data", {})
             var owner_id = data.get("owner_id")
 
@@ -69,6 +78,14 @@ func get_render_data(camera_x: float, camera_y: float, zoom: float) -> Array:
                         "angle": angle,
                         "color": "purple"
                     })
+                elif indicator.get("is_minimap_ping", false):
+                    render_data.append({
+                        "type": "minimap_ping",
+                        "x": indicator["target_x"],
+                        "y": indicator["target_y"],
+                        "radius": indicator.get("radius", 50.0),
+                        "color": indicator.get("color", "yellow")
+                    })
                 else:
                     render_data.append({
                         "type": "bounty_pointer",
@@ -77,5 +94,13 @@ func get_render_data(camera_x: float, camera_y: float, zoom: float) -> Array:
                         "angle": angle,
                         "color": "orange"
                     })
+        elif indicator.get("is_minimap_ping", false):
+            render_data.append({
+                "type": "minimap_ping",
+                "x": indicator["target_x"],
+                "y": indicator["target_y"],
+                "radius": indicator.get("radius", 50.0),
+                "color": indicator.get("color", "yellow")
+            })
 
     return render_data

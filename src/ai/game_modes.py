@@ -8855,6 +8855,8 @@ class ShrinkingDangerZoneMode(GameMode):
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "damage_flash", "target_id": getattr(b, "id", None)})
                     # Randomly apply debuff
                     if random.random() < 0.2 * delta: # ~20% chance per second
                         debuff = random.choice(["slow", "poison", "confusion", "blindness", "stun", "freeze"])
@@ -9382,6 +9384,8 @@ class SafeZoneMode(GameMode):
         # Shrink the safe zone
         if not paused_this_tick and self.zone_radius > self.min_zone_radius:
             self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
+            if hasattr(world, "add_event"):
+                world.add_event("minimap_ping", {"type": "safe_zone", "x": float(self.zone_x), "y": float(self.zone_y), "radius": float(self.zone_radius)})
             if self.zone_radius <= self.min_zone_radius:
                 self.zone_radius = self.min_zone_radius
                 if not self.collapse_triggered:
@@ -9425,6 +9429,8 @@ class SafeZoneMode(GameMode):
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "damage_flash", "target_id": getattr(b, "id", None)})
                     # Randomly apply debuff
                     if random.random() < 0.2 * delta: # ~20% chance per second
                         debuff = random.choice(["slow", "poison", "confusion", "blindness", "stun", "freeze"])

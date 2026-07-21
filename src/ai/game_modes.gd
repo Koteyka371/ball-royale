@@ -15001,6 +15001,8 @@ class SafeZoneMode extends GameMode:
 		# Shrink the safe zone
 		if not paused_this_tick and zone_radius > min_zone_radius:
 			zone_radius -= shrink_rate * delta
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("minimap_ping", {"type": "safe_zone", "x": float(zone_x), "y": float(zone_y), "radius": float(zone_radius)})
 			if zone_radius <= min_zone_radius:
 				zone_radius = min_zone_radius
 				if not collapse_triggered:
@@ -15047,6 +15049,8 @@ class SafeZoneMode extends GameMode:
 				# If the distance to center is greater than the safe zone radius, inflict damage
 				if distance_to_center > zone_radius:
 					b.hp -= damage_this_tick
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "damage_flash", "target_id": b.id if "id" in b else null})
 					# Randomly apply debuff
 					if randf() < 0.2 * delta: # ~20% chance per second
 						var debuff_options = ["slow", "poison", "confusion", "blindness", "stun", "freeze"]

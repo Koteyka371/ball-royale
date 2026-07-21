@@ -10,7 +10,16 @@ class BountyIndicatorUI:
         self.active_indicators.clear()
 
         for event in events:
-            if event.get("type") in ("bounty_compass", "nemesis_compass"):
+            if event.get("type") == "minimap_ping":
+                data = event.get("data", {})
+                self.active_indicators.append({
+                    "target_x": float(data.get("x", 0.0)),
+                    "target_y": float(data.get("y", 0.0)),
+                    "radius": float(data.get("radius", 0.0)),
+                    "is_minimap_ping": True,
+                    "color": "yellow" if data.get("type") == "safe_zone" else "white"
+                })
+            elif event.get("type") in ("bounty_compass", "nemesis_compass"):
                 data = event.get("data", {})
                 owner_id = data.get("owner_id")
 
@@ -103,6 +112,14 @@ class BountyIndicatorUI:
                             "angle": angle,
                             "color": "purple"
                         })
+                    elif indicator.get("is_minimap_ping"):
+                        render_data.append({
+                            "type": "minimap_ping",
+                            "x": indicator["target_x"],
+                            "y": indicator["target_y"],
+                            "radius": indicator.get("radius", 50.0),
+                            "color": indicator.get("color", "yellow")
+                        })
                     else:
                         render_data.append({
                             "type": "bounty_pointer",
@@ -111,5 +128,13 @@ class BountyIndicatorUI:
                             "angle": angle,
                             "color": "orange"
                         })
+            elif indicator.get("is_minimap_ping"):
+                render_data.append({
+                    "type": "minimap_ping",
+                    "x": indicator["target_x"],
+                    "y": indicator["target_y"],
+                    "radius": indicator.get("radius", 50.0),
+                    "color": indicator.get("color", "yellow")
+                })
 
         return render_data
