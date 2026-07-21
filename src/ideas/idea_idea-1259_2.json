@@ -1,0 +1,4 @@
+{
+  "title": "Mirror Ball Type",
+  "description": "A new ball type that can shoot a beam at an enemy to temporarily swap maximum HP and current buffs with the target for 10 seconds."
+}
