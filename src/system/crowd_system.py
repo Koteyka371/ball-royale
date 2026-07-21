@@ -10,6 +10,9 @@ class CrowdSystem:
         self.team_alive_counts = {}
         self.active_vote = None
         self.votes = {}
+        self.vote_bids = {}
+        self.vote_auction_timer = 0
+        self.vote_auction_active = False
         self.vote_timer = 0
         self.vote_cooldown = 0
         self.active_global_modifier = None
@@ -243,6 +246,9 @@ class CrowdSystem:
         if not self.active_vote or not self.votes:
             return False
 
+        if action != "cancel" and (action != "skew" or option not in self.votes):
+            return False
+
         pm = None
         if hasattr(self.world, "get_profile_manager"):
             pm = self.world.get_profile_manager()
@@ -254,34 +260,41 @@ class CrowdSystem:
 
         currency_type = "skill_points"
         currency_cost = max(10, int(50 * (2.0 - self.corruptibility_level * 1.5)))
+        bid_power = currency_cost
 
         if pm.data.get("skill_points", 0) >= currency_cost:
             pm.data["skill_points"] -= currency_cost
         elif pm.data.get("prestige_tokens", 0) >= 1:
             pm.data["prestige_tokens"] -= 1
-            currency_cost = 1
+            bid_power = 100
             currency_type = "prestige_tokens"
         else:
             return False
 
-        if action == "cancel":
-            if hasattr(self.world, 'add_event'):
-                self.world.add_event("vote_cancelled", {"message": f"Player {player_id} bribed the crowd to cancel the vote!"})
-            self.active_vote = None
-            self.votes = {}
-            self.vote_cooldown = 1000
-            return True
-        elif action == "skew" and option in self.votes:
-            self.votes[option] += 5
-            if hasattr(self.world, 'add_event'):
-                self.world.add_event("crowd_cheer", {"message": f"Player {player_id} bribed the crowd to favor {option}!"})
-            return True
+        if not hasattr(self, 'vote_bids'):
+            self.vote_bids = {}
+            self.vote_auction_timer = 0
+            self.vote_auction_active = False
 
-        if currency_type == "skill_points":
-            pm.data["skill_points"] += 50
+        if player_id in self.vote_bids:
+            self.vote_bids[player_id]["amount"] += bid_power
+            self.vote_bids[player_id]["action"] = action
+            if option:
+                self.vote_bids[player_id]["option"] = option
         else:
-            pm.data["prestige_tokens"] += 1
-        return False
+            self.vote_bids[player_id] = {"amount": bid_power, "action": action, "option": option}
+
+        if len(self.vote_bids) == 1:
+            self.vote_auction_timer = 300
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("bribe_attempt", {"message": f"Player {player_id} is attempting to bribe the vote! 5 seconds to counter-bid!"})
+        elif len(self.vote_bids) >= 2 and not self.vote_auction_active:
+            self.vote_auction_active = True
+            self.vote_auction_timer = 300
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("auction_started", {"message": "Multiple players are bribing! A short auction has started!"})
+
+        return True
 
     def _process_external_commands(self, balls: 'List[Any]'):
         if not hasattr(self, 'external_commands'):
@@ -612,16 +625,51 @@ class CrowdSystem:
                 self._start_vote(balls)
             return
 
-        # Handle active vote
-        self.vote_timer -= 1
+        if hasattr(self, 'vote_bids') and self.vote_bids:
+            self.vote_auction_timer -= 1
+            if self.vote_auction_timer <= 0:
+                self._resolve_vote_auction(balls)
+        else:
+            # Handle active vote
+            self.vote_timer -= 1
 
-        # Simulate spectators casting votes
-        if not self.has_real_spectators:
-            if random.random() < 0.05:  # Random spectator votes
-                self._simulate_spectator_vote()
+            # Simulate spectators casting votes
+            if not self.has_real_spectators:
+                if random.random() < 0.05:  # Random spectator votes
+                    self._simulate_spectator_vote()
 
-        if self.vote_timer <= 0:
-            self._resolve_vote(balls)
+            if self.vote_timer <= 0:
+                self._resolve_vote(balls)
+
+    def _resolve_vote_auction(self, balls: List[Any]):
+        if not self.vote_bids:
+            return
+
+        highest_bidder = max(self.vote_bids.items(), key=lambda x: x[1]["amount"])
+        winner_id = highest_bidder[0]
+        bid_info = highest_bidder[1]
+
+        if hasattr(self.world, 'add_event'):
+            self.world.add_event("auction_ended", {"message": f"Player {winner_id} won the bribe auction and secured the decision!"})
+
+        action = bid_info["action"]
+        option = bid_info["option"]
+
+        if action == "cancel":
+            if hasattr(self.world, 'add_event'):
+                self.world.add_event("vote_cancelled", {"message": f"Player {winner_id} bribed the crowd to cancel the vote!"})
+            self.active_vote = None
+            self.votes = {}
+            self.vote_cooldown = 1000
+        elif action == "skew":
+            if option in self.votes:
+                self.votes[option] += 9999
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"Player {winner_id} bribed the crowd to favor {option}!"})
+                self.vote_timer = 0
+
+        self.vote_bids = {}
+        self.vote_auction_active = False
 
     def _process_spectator_signs(self, balls: List[Any], tick: int):
         # Trigger dynamically: 1 in 100 chance per tick if excitement is moderate
@@ -763,6 +811,13 @@ class CrowdSystem:
         self.active_vote = None
         self.votes = {}
         self.vote_cooldown = 1000  # Long cooldown before next vote
+
+        if hasattr(self, 'vote_bids'):
+            self.vote_bids = {}
+        if hasattr(self, 'vote_auction_timer'):
+            self.vote_auction_timer = 0
+        if hasattr(self, 'vote_auction_active'):
+            self.vote_auction_active = False
 
 
     def _process_audience_favor(self, balls: List[Any], tick: int):
