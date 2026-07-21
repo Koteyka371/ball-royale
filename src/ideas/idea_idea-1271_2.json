@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Absorption Field",
+  "description": "A deployable zone that slows all projectiles and enemy movement inside it. It converts the lost momentum into an expanding barrier that temporarily increases the max HP of allies inside."
+}
