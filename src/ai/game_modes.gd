@@ -47811,3 +47811,91 @@ class CursedBoosterMode extends GameMode:
 		super._init()
 		self.name = "Cursed Boosters"
 		self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
+
+
+
+class InvisibleGravityWellsMode extends GameMode:
+	var gravity_wells = []
+	var spawn_timer = 0.0
+	var spawn_interval = 10.0
+	var well_duration = 15.0
+	var pull_radius = 200.0
+	var pull_strength = 300.0
+
+	func _init():
+		super._init()
+		name = "Invisible Gravity Wells"
+		description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		gravity_wells = []
+		spawn_timer = 5.0
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+				elif typeof(world.arena) == TYPE_OBJECT:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+				else:
+					if "width" in world.arena: arena_width = float(world.arena.width)
+					if "height" in world.arena: arena_height = float(world.arena.height)
+
+			var cx = randf_range(200.0, arena_width - 200.0)
+			var cy = randf_range(200.0, arena_height - 200.0)
+			gravity_wells.append({
+				"x": cx,
+				"y": cy,
+				"timer": well_duration
+			})
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("gravity_well_spawn", {"message": "An invisible gravity well has formed!"})
+
+		var active_wells = []
+		for well in gravity_wells:
+			well["timer"] -= delta
+			if well["timer"] > 0:
+				active_wells.append(well)
+				for b in balls:
+					if not b.get("alive", false):
+						continue
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else "")
+					if b_type == "spectator":
+						continue
+
+					var b_x = float(b["x"]) if typeof(b) == TYPE_DICTIONARY else float(b.x)
+					var b_y = float(b["y"]) if typeof(b) == TYPE_DICTIONARY else float(b.y)
+
+					var dx = well["x"] - b_x
+					var dy = well["y"] - b_y
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist <= pull_radius and dist > 0:
+						var pull = pull_strength * (1.0 - (dist / pull_radius))
+
+						if typeof(b) == TYPE_DICTIONARY:
+							if "vx" in b and "vy" in b:
+								b["vx"] += (dx / dist) * pull * delta
+								b["vy"] += (dy / dist) * pull * delta
+						else:
+							if "vx" in b and "vy" in b:
+								b.vx += (dx / dist) * pull * delta
+								b.vy += (dy / dist) * pull * delta
+							elif b.has_method("set_meta") and b.has_method("get_meta"):
+								b.set_meta("vx", b.get_meta("vx", 0.0) + (dx / dist) * pull * delta)
+								b.set_meta("vy", b.get_meta("vy", 0.0) + (dy / dist) * pull * delta)
+
+		gravity_wells = active_wells

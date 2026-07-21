@@ -23484,7 +23484,63 @@ class ToxicFloodRoyaleMode(GameMode):
                     b.killer = "Toxic Flood"
 
 
+
+class InvisibleGravityWellsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Gravity Wells"
+        self.description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+        self.gravity_wells = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 10.0
+        self.well_duration = 15.0
+        self.pull_radius = 200.0
+        self.pull_strength = 300.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.gravity_wells = []
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+            arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+            arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+            cx = random.uniform(200, arena_width - 200)
+            cy = random.uniform(200, arena_height - 200)
+            self.gravity_wells.append({
+                "x": cx,
+                "y": cy,
+                "timer": self.well_duration
+            })
+            if hasattr(world, "add_event"):
+                world.add_event("gravity_well_spawn", {"message": "An invisible gravity well has formed!"})
+
+        active_wells = []
+        for well in self.gravity_wells:
+            well["timer"] -= delta
+            if well["timer"] > 0:
+                active_wells.append(well)
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+                    dx = well["x"] - b.x
+                    dy = well["y"] - b.y
+                    dist = math.hypot(dx, dy)
+                    if dist <= self.pull_radius and dist > 0:
+                        pull = self.pull_strength * (1.0 - (dist / self.pull_radius))
+                        b.vx += (dx / dist) * pull * delta
+                        b.vy += (dy / dist) * pull * delta
+        self.gravity_wells = active_wells
+
 GAME_MODES = {
+    'invisible_gravity_wells': InvisibleGravityWellsMode(),
 
     "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),
