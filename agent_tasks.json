@@ -21031,7 +21031,7 @@
     },
     {
       "id": "idea-1227",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Ball Type: Botanist",
@@ -31976,6 +31976,40 @@
         "src/ai/high_gravity_well.py",
         "src/ai/high_gravity_well.gd",
         "tests/test_high_gravity_well.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1870",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Collapsing Geometry Arena",
+      "description": "An arena map where taking damage near walls randomly alters the shape of the boundary, creating dynamic jagged paths and trapping mechanics as the walls deform instead of just breaking.",
+      "allowed_paths": [
+        "src/arena/collapsing_geometry_arena.py",
+        "src/arena/collapsing_geometry_arena.gd",
+        "tests/test_collapsing_geometry_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1871",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Reinforcement Mode",
+      "description": "A game mode where players can actively rebuild and strengthen arena boundaries by collecting resources, delaying the hazard zone expansion and creating strategic defensive bunkers.",
+      "allowed_paths": [
+        "src/ai/wall_reinforcement.py",
+        "src/ai/wall_reinforcement.gd",
+        "tests/test_wall_reinforcement.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
