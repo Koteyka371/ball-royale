@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1281] Gravitational Slingshot Booster — *2026-07-21 21:06:59 UTC*
+
+A consumable booster that allows the player to briefly alter their own gravitational field. When activated near a heavy hazard like a black hole or dense planetoid, the player's momentum is multiplied immensely, allowing them to rapidly flank enemies or escape dangerous shrinking safe zones at incredible speeds.
+
+---
+
 ## [idea-1275] Reverse Time Altar — *2026-07-21 20:56:17 UTC*
 
 An altar that, when captured by a team, rewinds the positions and health of all enemy balls by 5 seconds, allowing the capturing team to regain a lost advantage or punish an aggressive push.
