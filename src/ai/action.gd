@@ -18240,7 +18240,7 @@ func execute(strategy: String, delta: float):
             elif is_bouncy_terrain:
                 new_speed = min(speed * 2.5, 3500.0)
             else:
-                new_speed = min(speed * 1.5, 2000.0)
+                new_speed = min(speed * 2.0, 5000.0)
 
             var is_frictionless = false
             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_frictionless"):
