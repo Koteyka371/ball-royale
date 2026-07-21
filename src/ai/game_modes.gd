@@ -40554,7 +40554,68 @@ class EntangledHazardsMode extends GameMode:
 											elif t.has_method("set_meta"): t.set_meta(eff, t_curr_eff + delta_eff)
 			_init_prev_state(b)
 
+class InvisibleGravityWellsMode extends GameMode:
+	var spawn_timer = 0.0
+	var spawn_interval = 4.0
+	var wells = []
+
+	func _init():
+		name = "Invisible Gravity Wells"
+		description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+
+	func setup(world_node, balls_list):
+		super.setup(world_node, balls_list)
+		wells = []
+		spawn_timer = 0.0
+
+	func apply_dynamic_traits(world, balls, delta: float):
+		super.apply_dynamic_traits(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+			if wells.size() < 5:
+				var arena_width = 2000.0
+				var arena_height = 2000.0
+				if world and world.get("arena"):
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
+				var x = randf_range(200.0, max(201.0, arena_width - 200.0))
+				var y = randf_range(200.0, max(201.0, arena_height - 200.0))
+				var radius = randf_range(200.0, 400.0)
+				var pull = randf_range(200.0, 500.0)
+				wells.append({
+					"x": x,
+					"y": y,
+					"radius": radius,
+					"pull": pull,
+					"duration": 15.0
+				})
+
+		var active_wells = []
+		for w in wells:
+			w["duration"] -= delta
+			if w["duration"] > 0:
+				active_wells.append(w)
+				for b in balls:
+					if b.get("alive", false) and b.get("ball_type") != "spectator" and b.get("ball_type") != "shadow_monster":
+						var dx = w["x"] - b.x
+						var dy = w["y"] - b.y
+						var dist_sq = dx*dx + dy*dy
+						if dist_sq < w["radius"]*w["radius"]:
+							var dist = sqrt(dist_sq)
+							if dist > 1.0:
+								var strength = (1.0 - (dist / w["radius"])) * w["pull"] * delta
+								var nx = dx / dist
+								var ny = dy / dist
+								b.vx += nx * strength
+								b.vy += ny * strength
+
+		wells = active_wells
+
+
 GAME_MODES = {
+	"invisible_gravity_wells": InvisibleGravityWellsMode.new(),
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),

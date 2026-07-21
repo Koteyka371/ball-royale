@@ -23823,7 +23823,68 @@ class ElasticTetherMode(GameMode):
                             b.hp = getattr(b, "hp", 100.0) - self.collision_damage
                             target.hp = getattr(target, "hp", 100.0) - self.collision_damage
 
+class InvisibleGravityWellsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Invisible Gravity Wells"
+        self.description = "Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 4.0
+        self.wells = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.wells = []
+        self.spawn_timer = 0.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        import random
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+            if len(self.wells) < 5:
+                w_width = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
+                w_height = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
+                x = random.uniform(200.0, max(201.0, w_width - 200.0))
+                y = random.uniform(200.0, max(201.0, w_height - 200.0))
+                radius = random.uniform(200.0, 400.0)
+                pull = random.uniform(200.0, 500.0)
+                self.wells.append({
+                    "x": x,
+                    "y": y,
+                    "radius": radius,
+                    "pull": pull,
+                    "duration": 15.0
+                })
+
+        active_wells = []
+        for w in self.wells:
+            w["duration"] -= delta
+            if w["duration"] > 0:
+                active_wells.append(w)
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ['spectator', 'shadow_monster']:
+                        dx = w["x"] - b.x
+                        dy = w["y"] - b.y
+                        dist_sq = dx*dx + dy*dy
+                        if dist_sq < w["radius"]**2:
+                            import math
+                            dist = math.sqrt(dist_sq)
+                            if dist > 1.0:
+                                strength = (1.0 - (dist / w["radius"])) * w["pull"] * delta
+                                nx = dx / dist
+                                ny = dy / dist
+                                b.vx += nx * strength
+                                b.vy += ny * strength
+
+
+        self.wells = active_wells
+
+
 GAME_MODES = {
+    "invisible_gravity_wells": InvisibleGravityWellsMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),
 
 
