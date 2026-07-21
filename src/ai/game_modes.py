@@ -30267,3 +30267,50 @@ class InvisibleGravityWellsMode(GameMode):
                 world.arena.hazards.remove(h)
 
 GAME_MODES['invisible_gravity_wells'] = InvisibleGravityWellsMode()
+
+
+class IceWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ice Walls"
+        self.description = "The arena is surrounded by fragile ice walls. Hitting them at high speed shatters them, creating an abyss, but they regenerate over time."
+        self.regeneration_timer = 0.0
+
+    def start(self, world, balls):
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "boundary_states"):
+            world.arena.boundary_states = {}
+        if not hasattr(world.arena, "boundary_health"):
+            world.arena.boundary_health = {}
+        for wall in ["top", "bottom", "left", "right"]:
+            world.arena.boundary_states[wall] = "ice"
+            world.arena.boundary_health[wall] = 2000.0
+
+    def tick(self, world, balls, delta):
+        if not hasattr(world, "arena"):
+            return
+
+        self.regeneration_timer += delta
+        if self.regeneration_timer >= 5.0:  # Regenerate every 5 seconds
+            self.regeneration_timer = 0.0
+
+            if hasattr(world.arena, "boundary_health") and hasattr(world.arena, "boundary_states"):
+                for wall in ["top", "bottom", "left", "right"]:
+                    current_health = world.arena.boundary_health.get(wall, 2000.0)
+                    current_state = world.arena.boundary_states.get(wall, "ice")
+
+                    if current_state == "ice":
+                        # Regenerate health slowly
+                        if current_health < 2000.0:
+                            world.arena.boundary_health[wall] = min(2000.0, current_health + 250.0)
+                    else:
+                        # Regenerate back to ice
+                        world.arena.boundary_states[wall] = "ice"
+                        world.arena.boundary_health[wall] = 1000.0 # Starts weaker when regenerating
+
+                        # Shrink the hazard zone if it was expanded
+                        if hasattr(world.arena, "boundary_offsets"):
+                            world.arena.boundary_offsets[wall] = max(0.0, world.arena.boundary_offsets.get(wall, 0.0) - 50.0)
+
+GAME_MODES['ice_walls'] = IceWallsMode()

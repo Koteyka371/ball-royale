@@ -9217,12 +9217,20 @@ class Action:
 
                 if speed > 800.0 and hasattr(self.world.arena, "boundary_health"):
                     health = self.world.arena.boundary_health.get(hit_wall, 2000.0)
-                    health -= speed * 0.2
+
+                    if wall_state == "ice":
+                        health -= speed * 0.5
+                    else:
+                        health -= speed * 0.2
+
                     self.world.arena.boundary_health[hit_wall] = health
 
                     if health <= 0.0:
                         import random
-                        new_state = random.choice(["abyss", "spikes"])
+                        if wall_state == "ice":
+                            new_state = "abyss"
+                        else:
+                            new_state = random.choice(["abyss", "spikes"])
                         self.world.arena.boundary_states[hit_wall] = new_state
                         wall_state = new_state
                         # Expand hazard zone inwards
@@ -9230,7 +9238,7 @@ class Action:
                             self.world.arena.boundary_offsets[hit_wall] += 50.0
                             # Reset health for next break
                             self.world.arena.boundary_health[hit_wall] = 2000.0
-                    elif health < 1000.0:
+                    elif health < 1000.0 and wall_state != "ice":
                         wall_state = "damaged_bouncy"
 
             if wall_state == "sticky":
@@ -9267,7 +9275,9 @@ class Action:
                 angle = _math.atan2(nvy, nvx) + random.uniform(-0.2, 0.2)
                 gm = getattr(self.world, "game_mode", None)
                 # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
-                if wall_state == "bouncy":
+                if wall_state == "ice":
+                    new_speed = min(speed * 1.2, 4000.0) # Slippery, slightly bouncy
+                elif wall_state == "bouncy":
                     new_speed = min(speed * 3.5, 4500.0)
                 elif wall_state == "damaged_bouncy":
                     new_speed = min(speed * 2.0, 3000.0)
@@ -9337,7 +9347,7 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss":
+                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice":
                     pass # Bouncy walls don't deal damage (abyss is already handled)
                 elif wall_state == "spikes":
                     damage = 250.0
