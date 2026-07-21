@@ -2051,6 +2051,49 @@ class Action:
                         # Drain stamina rapidly
                         if hasattr(self.ball, "stamina") and getattr(self.ball, "infinite_stamina_timer", 0.0) <= 0.0:
                             self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 100.0) - 60.0 * delta)
+                elif getattr(hazard, "kind", "") == "phantom_grabber":
+                    current_tick = getattr(self.world, "tick", 0)
+                    if getattr(hazard, "last_updated_tick", -1) != current_tick:
+                        hazard.last_updated_tick = current_tick
+
+                        # States: 0 = hidden, 1 = warning (debris), 2 = grabbing
+                        state = getattr(hazard, "state", 0)
+                        timer = getattr(hazard, "timer", 5.0) - delta
+
+                        if timer <= 0.0:
+                            if state == 0:
+                                # hidden -> warning
+                                hazard.state = 1
+                                hazard.timer = 1.5 # 1.5 seconds of warning
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("visual_effect", {"type": "floating_debris", "x": hazard.x, "y": hazard.y})
+                            elif state == 1:
+                                # warning -> grabbing
+                                hazard.state = 2
+                                hazard.timer = 2.0 # 2 seconds of grabbing
+                                hazard.invisible = False
+                            elif state == 2:
+                                # grabbing -> hidden
+                                hazard.state = 0
+                                hazard.timer = 5.0
+                                hazard.invisible = True
+                        else:
+                            hazard.timer = timer
+
+                    # Apply damage only if in state 2 (grabbing)
+                    if getattr(hazard, "state", 0) == 2:
+                        hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                        hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                        if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                            self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier = 0.0
+
+                            dmg = getattr(hazard, "damage", 10.0) * delta
+                            if hasattr(self.world, "_deal_damage"):
+                                self.world._deal_damage(hazard, self.ball, dmg)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= dmg
 
         # Void panel instant death
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
