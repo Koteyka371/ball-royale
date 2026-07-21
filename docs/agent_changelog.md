@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1296] Season-based Weather Mutators — *2026-07-21 22:36:45 UTC*
+
+Introduce global modifiers to matches based on ongoing seasons. For example, during 'Winter Season', snow and blizzard weather states appear much more frequently, providing a buff to certain cosmetic skins (like snow tires) globally.
+
+---
+
 ## [idea-1254] Decoy Mirror Match Event — *2026-07-21 22:24:45 UTC*
 
 An event that randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights.

@@ -22206,7 +22206,7 @@
     },
     {
       "id": "idea-1296",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Season-based Weather Mutators",
@@ -32622,6 +32622,23 @@
         "src/arena/shatter_trap.py",
         "src/arena/shatter_trap.gd",
         "tests/test_shatter_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1908",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Bomb",
+      "description": "A new item that drops a decoy which explodes when hit, dealing damage and slowing enemies in a radius.",
+      "allowed_paths": [
+        "src/ai/decoy_bomb.py",
+        "src/ai/decoy_bomb.gd",
+        "tests/test_decoy_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
