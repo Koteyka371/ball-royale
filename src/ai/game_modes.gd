@@ -561,6 +561,9 @@ class GameMode:
 									elif h.has_method("set_meta"): h.set_meta("x", h_x)
 									if "y" in h: h.y = h_y
 									elif h.has_method("set_meta"): h.set_meta("y", h_y)
+
+								if world != null and world.has_method("add_event"):
+									world.add_event("visual_effect", {"type": "hazard_controlled", "x": h_x, "y": h_y})
 							else:
 								if typeof(h) == TYPE_DICTIONARY:
 									h["control_target_x"] = h_x

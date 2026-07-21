@@ -328,6 +328,8 @@ class GameMode:
 
                         h.x += (dx / dist) * speed
                         h.y += (dy / dist) * speed
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "hazard_controlled", "x": h.x, "y": h.y})
                     else:
                         # Clear target if reached
                         h.control_target_x = h.x
