@@ -50556,6 +50556,50 @@ class LinkedPortalsMode extends GameMode:
                     linked["cooldown"] = 0.5
                     break
 
+            var projectiles = []
+            if typeof(world) == TYPE_DICTIONARY and "projectiles" in world:
+                projectiles = world.get("projectiles", [])
+            elif typeof(world) != TYPE_DICTIONARY and "projectiles" in world and world.projectiles != null:
+                projectiles = world.projectiles
+
+            for p in projectiles:
+                var is_alive = true
+                if typeof(p) == TYPE_DICTIONARY:
+                    is_alive = p.get("alive", p.get("active", true))
+                else:
+                    if "alive" in p: is_alive = p.alive
+                    elif "active" in p: is_alive = p.active
+
+                if not is_alive: continue
+
+                var px_proj = 0.0
+                var py_proj = 0.0
+                var pr_proj = 5.0
+
+                if typeof(p) == TYPE_DICTIONARY:
+                    px_proj = p.get("x", 0.0)
+                    py_proj = p.get("y", 0.0)
+                    pr_proj = p.get("radius", 5.0)
+                else:
+                    if "x" in p: px_proj = p.x
+                    if "y" in p: py_proj = p.y
+                    if "radius" in p: pr_proj = p.radius
+
+                var dx = px_proj - px
+                var dy = py_proj - py
+                var dist = sqrt(dx * dx + dy * dy)
+                if dist < pr + pr_proj:
+                    var linked = portal["link"]
+                    if typeof(p) == TYPE_DICTIONARY:
+                        p["x"] = linked["x"]
+                        p["y"] = linked["y"]
+                    else:
+                        if "x" in p: p.x = linked["x"]
+                        if "y" in p: p.y = linked["y"]
+                    portal["cooldown"] = 0.5
+                    linked["cooldown"] = 0.5
+                    break
+
 class WeatherCombinationsMode extends GameMode:
     var altars = []
     var active_weathers = []
