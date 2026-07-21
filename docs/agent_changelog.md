@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1288] Aura Harmony Bonus — *2026-07-21 21:44:30 UTC*
+
+When balls with the same cosmetic aura color stay near each other without colliding, their aura intensity scales up and provides a passive healing buff to both players. If they collide, it triggers the elemental explosion instead.
+
+---
+
 ## [idea-1255] Quantum Swap Token — *2026-07-21 21:44:26 UTC*
 
 A rare collectable item that allows a player to instantly swap positions with a targeted enemy or ally, confusing opponents and enabling strategic repositioning.
