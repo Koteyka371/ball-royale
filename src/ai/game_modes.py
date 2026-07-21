@@ -23975,7 +23975,66 @@ class RoamingDoppelgangerMode(GameMode):
                     boss.vy = math.sin(angle) * boss.speed
 
 
+class RandomTeleportDashMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Random Teleport Dash"
+        self.description = "A rare game mode modifier where instead of standard dashes, ball abilities have a chance to trigger a randomized, short-range teleport around the arena. This creates high-stakes, unpredictable positioning during engagements, making both escapes and chases thrilling."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            is_dashing = getattr(b, "is_dashing", False)
+            skill_timer = getattr(b, "skill_timer", 0.0)
+            dash_cooldown = getattr(b, "dash_cooldown", 0.0)
+
+            prev_skill_timer = getattr(b, "_prev_teleport_skill_timer", 0.0)
+            prev_dash_cooldown = getattr(b, "_prev_teleport_dash_cooldown", 0.0)
+
+            just_used_skill = False
+            if skill_timer > prev_skill_timer + 1.0:
+                just_used_skill = True
+            if dash_cooldown > prev_dash_cooldown + 1.0:
+                just_used_skill = True
+
+            b._prev_teleport_skill_timer = skill_timer
+            b._prev_teleport_dash_cooldown = dash_cooldown
+
+            if is_dashing or just_used_skill:
+                if getattr(b, "random_teleport_cooldown", 0.0) <= 0.0:
+                    if random.random() < 0.3:
+                        teleport_radius = random.uniform(150.0, 300.0)
+                        angle = random.uniform(0, 2 * math.pi)
+
+                        new_x = b.x + math.cos(angle) * teleport_radius
+                        new_y = b.y + math.sin(angle) * teleport_radius
+
+                        b.x = max(getattr(b, "radius", 15.0), min(arena_width - getattr(b, "radius", 15.0), new_x))
+                        b.y = max(getattr(b, "radius", 15.0), min(arena_height - getattr(b, "radius", 15.0), new_y))
+
+                        b.vx = 0.0
+                        b.vy = 0.0
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "teleport", "x": b.x, "y": b.y})
+
+                    b.random_teleport_cooldown = 2.0
+
+            if hasattr(b, "random_teleport_cooldown") and b.random_teleport_cooldown > 0:
+                b.random_teleport_cooldown -= delta
+
+
 GAME_MODES = {
+    'random_teleport_dash': RandomTeleportDashMode(),
     'roaming_doppelganger': RoamingDoppelgangerMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),
 
