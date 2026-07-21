@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mine",
+  "description": "A new trap item that, when triggered, links the triggerer's position with the trap setter's position. For the next 10 seconds, any damage taken by one is split equally between both, but they also share any healing or speed buffs picked up."
+}
