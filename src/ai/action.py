@@ -5072,6 +5072,13 @@ class Action:
 
             if hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
+
+                    if getattr(hazard, "kind", "") == "rising_lava_zone":
+                        if hasattr(self.ball, 'alive') and self.ball.alive:
+                            self.ball.hp = 0.0
+                            self.ball.alive = False
+                            self._deal_damage(99999)
+                        continue
                     if getattr(hazard, "kind", "") == "void_panel":
                         if getattr(self.ball, "bumper_booster_timer", 0.0) > 0.0:
                             continue

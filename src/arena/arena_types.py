@@ -5,6 +5,7 @@ import random
 
 
 from arena.falling_panels_arena import FallingPanelsArena
+from arena.rising_lava_arena import RisingLavaArena
 from arena.procedural_arena import ProceduralArena, Room, Hazard, Corridor
 from arena.procedural_arena import TimeDistortionArena
 
@@ -1601,6 +1602,7 @@ class PlatformerArena(ProceduralArena):
 ARENAS = {
     'platformer': PlatformerArena,
     'falling_panels': FallingPanelsArena,
+    'rising_lava': RisingLavaArena,
     'ice': IceArena,
     'spring': SpringArena,
     'shrinking_hazards': ShrinkingHazardsArena,

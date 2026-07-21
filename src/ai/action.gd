@@ -4363,7 +4363,14 @@ func execute(strategy: String, delta: float):
 							else:
 								self.ball.speed_multiplier = cur_speed_mult * 0.5
 
-				if kind == "void_panel":
+
+		if kind == "rising_lava_zone":
+			if "alive" in ball and ball.alive:
+				ball.hp = 0.0
+				ball.alive = false
+				_deal_damage(ball, 99999, world)
+			continue
+		if kind == "void_panel":
 					var bumper_timer = 0.0
 					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bumper_booster_timer"): bumper_timer = self.ball["bumper_booster_timer"]
 					elif typeof(self.ball) == TYPE_OBJECT and "bumper_booster_timer" in self.ball: bumper_timer = self.ball.bumper_booster_timer

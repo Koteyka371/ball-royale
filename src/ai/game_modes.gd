@@ -34033,6 +34033,18 @@ class MultipleSafeZonesMode extends GameMode:
 		zones = new_zones
 
 
+class RisingLavaMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Rising Lava"
+		description = "The arena is composed of various elevated platforms. Over time, lava rises from the bottom of the screen, permanently destroying the lowest platforms and forcing players to constantly fight for high ground."
+
+	func setup(world) -> void:
+		var RisingLavaArenaScript = load("res://src/arena/rising_lava_arena.gd")
+		if RisingLavaArenaScript:
+			world.arena = RisingLavaArenaScript.new(2000.0, 5)
+
+
 class FallingPanelsMode extends GameMode:
 	func _init():
 		pass
@@ -39675,6 +39687,7 @@ GAME_MODES = {
 
 	"sticky_arena": StickyArenaMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
+	"rising_lava": RisingLavaMode.new(),
 	"decreasing_safe_zones": DecreasingSafeZonesMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),

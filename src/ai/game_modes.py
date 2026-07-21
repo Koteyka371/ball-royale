@@ -20134,6 +20134,17 @@ class MultipleSafeZonesMode(GameMode):
 
 
 
+class RisingLavaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rising Lava"
+        self.description = "The arena is composed of various elevated platforms. Over time, lava rises from the bottom of the screen, permanently destroying the lowest platforms and forcing players to constantly fight for high ground."
+
+    def setup(self, world) -> None:
+        from arena.rising_lava_arena import RisingLavaArena
+        world.arena = RisingLavaArena(arena_size=2000.0, num_rooms=5)
+
+
 class FallingPanelsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -23517,6 +23528,7 @@ GAME_MODES = {
 
     'sticky_arena': StickyArenaMode(),
     "falling_panels": FallingPanelsMode(),
+    "rising_lava": RisingLavaMode(),
     "decreasing_safe_zones": DecreasingSafeZonesMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entangled_arena": EntangledArenaMode(),
