@@ -3103,9 +3103,18 @@ class Action:
                 my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                 import random
                 target = random.choice(valid_targets)
-                # Swap coordinates
-                temp_x, temp_y = target.x, target.y
-                target.x, target.y = self.ball.x, self.ball.y
+
+                # Use getattr to safely read x,y
+                t_x = getattr(target, 'x', getattr(target, 'position', type('obj', (object,), {'x': 0, 'y': 0})).x)
+                t_y = getattr(target, 'y', getattr(target, 'position', type('obj', (object,), {'x': 0, 'y': 0})).y)
+
+                temp_x, temp_y = t_x, t_y
+
+                if hasattr(target, 'x'):
+                    target.x, target.y = self.ball.x, self.ball.y
+                else:
+                    target.position.x, target.position.y = self.ball.x, self.ball.y
+
                 self.ball.x, self.ball.y = temp_x, temp_y
                 self.ball.inventory.remove("position_swap")
 
@@ -3116,7 +3125,11 @@ class Action:
                         target.take_damage(5.0)
                     elif hasattr(target, "hp"):
                         target.hp -= 5.0
-                    target.slow_timer = getattr(target, "slow_timer", 0.0) + 2.0
+
+                    if hasattr(target, 'slow_timer'):
+                        target.slow_timer += 2.0
+                    else:
+                        target.slow_timer = 2.0
 
 
         # Check inventory for hookshot
