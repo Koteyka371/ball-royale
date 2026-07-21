@@ -2901,16 +2901,12 @@ class Action:
                 self.ball.inventory.remove("exit_portal")
 
         # Check inventory for position_swap
-        if strategy in ("flee", "defend") and hasattr(self.ball, "inventory") and "position_swap" in self.ball.inventory:
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "position_swap" in self.ball.inventory:
             balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
             valid_targets = [b for b in balls if getattr(b, "alive", True) and b != self.ball and not getattr(b, "is_decoy", False)]
 
-            my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
-            enemy_targets = [b for b in valid_targets if getattr(b, "team", getattr(b, "ball_type", "")) != my_team]
-            if enemy_targets:
-                valid_targets = enemy_targets
-
             if valid_targets:
+                my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                 import random
                 target = random.choice(valid_targets)
                 # Swap coordinates
@@ -2919,13 +2915,14 @@ class Action:
                 self.ball.x, self.ball.y = temp_x, temp_y
                 self.ball.inventory.remove("position_swap")
 
-                # Apply minor damage and slow effect to the swapped enemy
-                if hasattr(target, "take_damage"):
-                    target.take_damage(5.0)
-                elif hasattr(target, "hp"):
-                    target.hp -= 5.0
-
-                target.slow_timer = getattr(target, "slow_timer", 0.0) + 2.0
+                # Apply minor damage and slow effect if it is an enemy
+                target_team = getattr(target, "team", getattr(target, "ball_type", ""))
+                if target_team != my_team:
+                    if hasattr(target, "take_damage"):
+                        target.take_damage(5.0)
+                    elif hasattr(target, "hp"):
+                        target.hp -= 5.0
+                    target.slow_timer = getattr(target, "slow_timer", 0.0) + 2.0
 
 
         # Check inventory for hookshot
