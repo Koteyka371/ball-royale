@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1161] Quantum Entanglement Ball Type — *2026-07-21 04:10:15 UTC*
+
+A ball type that pairs its health and speed to an enemy at the start of the round. Any damage it takes is partially distributed to the enemy, forcing opponents to rethink target prioritization.
+
+---
+
 ## [idea-1253] Low Gravity Zone Hazard — *2026-07-21 04:10:10 UTC*
 
 A hazard that applies a low-gravity effect to balls within it, reducing their friction, altering movement speed unexpectedly, and increasing the distance they bounce off walls.
