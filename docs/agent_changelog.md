@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1265] Portal Mode — *2026-07-21 23:21:45 UTC*
+
+A game mode where pairs of connected portals spawn periodically. Shooting a portal transfers attacks to the other portal, and balls can teleport through them to escape or ambush enemies.
+
+---
+
 ## [idea-1302] Aura Resonance Shields — *2026-07-21 23:11:49 UTC*
 
 Balls with matching aura colors generate a temporary shield when they collide or stay in close proximity, encouraging players to cluster same-aura units for defense.
