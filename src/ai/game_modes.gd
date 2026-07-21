@@ -40303,7 +40303,183 @@ class SlimeBossMode extends GameMode:
 						boss["slime_shoot_timer"] = shoot_timer
 
 
+
+class EntangledHazardsMode extends GameMode:
+	var prev_state = {}
+	var status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+	var hazard_pairs = []
+
+	func _init():
+		name = "Entangled Hazards"
+		description = "Hazards spawn in pairs. Damage or status effects taken by a ball near one hazard are partially duplicated to balls near its paired hazard."
+
+	func _init_prev_state(b):
+		var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else null)
+		if b_id == null: return
+		var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.get_meta("hp") if typeof(b) == TYPE_OBJECT and b.has_meta("hp") else (b.hp if typeof(b) == TYPE_OBJECT and "hp" in b else 100.0)
+		var state = {"hp": hp}
+		for eff in status_effects:
+			var val = b.get(eff) if typeof(b) == TYPE_DICTIONARY else b.get_meta(eff) if typeof(b) == TYPE_OBJECT and b.has_meta(eff) else (b.get(eff) if typeof(b) == TYPE_OBJECT and eff in b else 0.0)
+			state[eff] = val
+		prev_state[b_id] = state
+
+	func setup(world, balls):
+		if super.has_method("setup"):
+			super.setup(world, balls)
+		prev_state.clear()
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_meta("ball_type") else (b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else null)
+			if b_type != "spectator":
+				_init_prev_state(b)
+
+		var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else world.get_meta("arena") if typeof(world) == TYPE_OBJECT and world.has_meta("arena") else (world.arena if typeof(world) == TYPE_OBJECT and "arena" in world else null)
+		if arena == null: return
+
+		var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.get_meta("hazards") if typeof(arena) == TYPE_OBJECT and arena.has_meta("hazards") else (arena.hazards if typeof(arena) == TYPE_OBJECT and "hazards" in arena else [])
+		var arena_w = arena.get("width") if typeof(arena) == TYPE_DICTIONARY else arena.get_meta("width") if typeof(arena) == TYPE_OBJECT and arena.has_meta("width") else (arena.width if typeof(arena) == TYPE_OBJECT and "width" in arena else 800.0)
+		var arena_h = arena.get("height") if typeof(arena) == TYPE_DICTIONARY else arena.get_meta("height") if typeof(arena) == TYPE_OBJECT and arena.has_meta("height") else (arena.height if typeof(arena) == TYPE_OBJECT and "height" in arena else 600.0)
+
+		hazard_pairs.clear()
+		for i in range(3):
+			var h1_id = 98000 + hazards.size() * 2
+			var h2_id = h1_id + 1
+
+			var x1 = 100.0 + randf() * (arena_w - 200.0)
+			var y1 = 100.0 + randf() * (arena_h - 200.0)
+			var h1 = {"id": h1_id, "x": x1, "y": y1, "radius": 100.0, "kind": "entangled_hazard", "damage": 0.0, "active": true, "partner_id": h2_id}
+
+			var x2 = 100.0 + randf() * (arena_w - 200.0)
+			var y2 = 100.0 + randf() * (arena_h - 200.0)
+			var h2 = {"id": h2_id, "x": x2, "y": y2, "radius": 100.0, "kind": "entangled_hazard", "damage": 0.0, "active": true, "partner_id": h1_id}
+
+			hazards.append(h1)
+			hazards.append(h2)
+			hazard_pairs.append([h1_id, h2_id])
+
+		if typeof(arena) == TYPE_DICTIONARY:
+			arena["hazards"] = hazards
+		elif typeof(arena) == TYPE_OBJECT:
+			if "hazards" in arena:
+				arena.hazards = hazards
+			elif arena.has_method("set_meta"):
+				arena.set_meta("hazards", hazards)
+
+	func tick(world, balls, delta=0.016):
+		if super.has_method("tick"):
+			super.tick(world, balls, delta)
+		var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else world.get_meta("arena") if typeof(world) == TYPE_OBJECT and world.has_meta("arena") else (world.arena if typeof(world) == TYPE_OBJECT and "arena" in world else null)
+		if arena == null: return
+
+		var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.get_meta("hazards") if typeof(arena) == TYPE_OBJECT and arena.has_meta("hazards") else (arena.hazards if typeof(arena) == TYPE_OBJECT and "hazards" in arena else [])
+		var hazards_by_id = {}
+		for h in hazards:
+			var kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY else h.get_meta("kind") if typeof(h) == TYPE_OBJECT and h.has_meta("kind") else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+			if kind == "entangled_hazard":
+				var h_id = h.get("id") if typeof(h) == TYPE_DICTIONARY else h.get_meta("id") if typeof(h) == TYPE_OBJECT and h.has_meta("id") else (h.id if typeof(h) == TYPE_OBJECT and "id" in h else null)
+				if h_id != null:
+					hazards_by_id[h_id] = h
+
+		var balls_near_hazard = {}
+		for h_id in hazards_by_id.keys():
+			balls_near_hazard[h_id] = []
+
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_meta("alive") else (b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else false)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_meta("ball_type") else (b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else null)
+			if not alive or b_type == "spectator": continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else (b.x if typeof(b) == TYPE_OBJECT and "x" in b else 0.0)
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else (b.y if typeof(b) == TYPE_OBJECT and "y" in b else 0.0)
+
+			for h_id in hazards_by_id.keys():
+				var h = hazards_by_id[h_id]
+				var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY else h.get_meta("x") if typeof(h) == TYPE_OBJECT and h.has_meta("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+				var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY else h.get_meta("y") if typeof(h) == TYPE_OBJECT and h.has_meta("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+				var hr = h.get("radius") if typeof(h) == TYPE_DICTIONARY else h.get_meta("radius") if typeof(h) == TYPE_OBJECT and h.has_meta("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 100.0)
+
+				var dx = bx - hx
+				var dy = by - hy
+				if sqrt(dx*dx + dy*dy) <= hr:
+					balls_near_hazard[h_id].append(b)
+
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_meta("alive") else (b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else false)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_meta("ball_type") else (b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else null)
+			var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else null)
+
+			if not alive or b_type == "spectator" or b_id == null: continue
+
+			if not prev_state.has(b_id):
+				_init_prev_state(b)
+
+			var state = prev_state[b_id]
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else (b.x if typeof(b) == TYPE_OBJECT and "x" in b else 0.0)
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else (b.y if typeof(b) == TYPE_OBJECT and "y" in b else 0.0)
+
+			var nearby_h_id = null
+			for h_id in hazards_by_id.keys():
+				var h = hazards_by_id[h_id]
+				var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY else h.get_meta("x") if typeof(h) == TYPE_OBJECT and h.has_meta("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+				var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY else h.get_meta("y") if typeof(h) == TYPE_OBJECT and h.has_meta("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+				var hr = h.get("radius") if typeof(h) == TYPE_DICTIONARY else h.get_meta("radius") if typeof(h) == TYPE_OBJECT and h.has_meta("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 100.0)
+				if sqrt((bx-hx)*(bx-hx) + (by-hy)*(by-hy)) <= hr:
+					nearby_h_id = h_id
+					break
+
+			if nearby_h_id != null:
+				var h = hazards_by_id[nearby_h_id]
+				var partner_h_id = h.get("partner_id") if typeof(h) == TYPE_DICTIONARY else h.get_meta("partner_id") if typeof(h) == TYPE_OBJECT and h.has_meta("partner_id") else (h.partner_id if typeof(h) == TYPE_OBJECT and "partner_id" in h else null)
+				if partner_h_id != null and balls_near_hazard.has(partner_h_id):
+					var targets = balls_near_hazard[partner_h_id]
+
+					var curr_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.get_meta("hp") if typeof(b) == TYPE_OBJECT and b.has_meta("hp") else (b.hp if typeof(b) == TYPE_OBJECT and "hp" in b else 100.0)
+					if curr_hp < state.hp:
+						var damage_taken = state.hp - curr_hp
+						var shared_damage = damage_taken * 0.5
+						for t in targets:
+							var t_id = t.get("id") if typeof(t) == TYPE_DICTIONARY else t.get_meta("id") if typeof(t) == TYPE_OBJECT and t.has_meta("id") else (t.id if typeof(t) == TYPE_OBJECT and "id" in t else null)
+							if t_id != b_id:
+								var t_alive = t.get("alive") if typeof(t) == TYPE_DICTIONARY else t.get_meta("alive") if typeof(t) == TYPE_OBJECT and t.has_meta("alive") else (t.alive if typeof(t) == TYPE_OBJECT and "alive" in t else false)
+								if t_alive:
+									if typeof(t) == TYPE_OBJECT and t.has_method("take_damage"):
+										t.take_damage(shared_damage)
+									else:
+										var t_hp = t.get("hp") if typeof(t) == TYPE_DICTIONARY else t.get_meta("hp") if typeof(t) == TYPE_OBJECT and t.has_meta("hp") else (t.hp if typeof(t) == TYPE_OBJECT and "hp" in t else 100.0)
+										t_hp -= shared_damage
+										if t_hp <= 0:
+											t_hp = 0
+											if typeof(t) == TYPE_DICTIONARY:
+												t["alive"] = false
+											elif typeof(t) == TYPE_OBJECT:
+												if "alive" in t: t.alive = false
+												elif t.has_method("set_meta"): t.set_meta("alive", false)
+										if typeof(t) == TYPE_DICTIONARY:
+											t["hp"] = t_hp
+										elif typeof(t) == TYPE_OBJECT:
+											if "hp" in t: t.hp = t_hp
+											elif t.has_method("set_meta"): t.set_meta("hp", t_hp)
+
+					for eff in status_effects:
+						var curr_eff = b.get(eff) if typeof(b) == TYPE_DICTIONARY else b.get_meta(eff) if typeof(b) == TYPE_OBJECT and b.has_meta(eff) else (b.get(eff) if typeof(b) == TYPE_OBJECT and eff in b else 0.0)
+						var state_eff = state[eff]
+						if curr_eff > state_eff:
+							var delta_eff = (curr_eff - state_eff) * 0.5
+							for t in targets:
+								var t_id = t.get("id") if typeof(t) == TYPE_DICTIONARY else t.get_meta("id") if typeof(t) == TYPE_OBJECT and t.has_meta("id") else (t.id if typeof(t) == TYPE_OBJECT and "id" in t else null)
+								if t_id != b_id:
+									var t_alive = t.get("alive") if typeof(t) == TYPE_DICTIONARY else t.get_meta("alive") if typeof(t) == TYPE_OBJECT and t.has_meta("alive") else (t.alive if typeof(t) == TYPE_OBJECT and "alive" in t else false)
+									if t_alive:
+										var t_curr_eff = t.get(eff) if typeof(t) == TYPE_DICTIONARY else t.get_meta(eff) if typeof(t) == TYPE_OBJECT and t.has_meta(eff) else (t.get(eff) if typeof(t) == TYPE_OBJECT and eff in t else 0.0)
+										if typeof(t) == TYPE_DICTIONARY:
+											t[eff] = t_curr_eff + delta_eff
+										elif typeof(t) == TYPE_OBJECT:
+											if eff in t: t.set(eff, t_curr_eff + delta_eff)
+											elif t.has_method("set_meta"): t.set_meta(eff, t_curr_eff + delta_eff)
+			_init_prev_state(b)
+
 GAME_MODES = {
+	"entangled_hazards_mode": EntangledHazardsMode.new(),
+
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 	"wrap_around": WrapAroundMode.new(),
 
