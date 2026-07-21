@@ -115,6 +115,44 @@ func process_external_command(user: String, command: String, balls: Array):
             world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " spawned a " + hazard_kind + "!"})
             excitement_level += 5.0
 
+    elif cmd == "!control" and parts.size() >= 4:
+        var hazard_kind = parts[1]
+        var target_x = parts[2].to_float()
+        var target_y = parts[3].to_float()
+
+        if world != null and world.has_method("get") and world.get("arena") != null:
+            var arena = world.get("arena")
+            if typeof(arena) == TYPE_OBJECT and arena.has_method("get") and arena.get("hazards") != null:
+                var hazards = arena.get("hazards")
+                var matching_hazards = []
+                for h in hazards:
+                    var k = null
+                    if typeof(h) == TYPE_OBJECT and h.has_method("get"):
+                        k = h.get("kind")
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+                        k = h["kind"]
+
+                    if k == hazard_kind:
+                        matching_hazards.append(h)
+
+                if matching_hazards.size() > 0:
+                    var hazard = matching_hazards[randi() % matching_hazards.size()]
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"):
+                        hazard.set("controlled_by", user)
+                        hazard.set("control_timer", 10.0)
+                        hazard.set("control_target_x", target_x)
+                        hazard.set("control_target_y", target_y)
+                    elif typeof(hazard) == TYPE_DICTIONARY:
+                        hazard["controlled_by"] = user
+                        hazard["control_timer"] = 10.0
+                        hazard["control_target_x"] = target_x
+                        hazard["control_target_y"] = target_y
+
+                    _add_viewer_loyalty(user, 15)
+                    if world.has_method("add_event"):
+                        world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " took control of a " + hazard_kind + "!"})
+                        excitement_level += 10.0
+
     elif cmd == "!weather" and parts.size() >= 2:
         if excitement_level >= 50.0:
             var weather_type = parts[1].to_lower()

@@ -84,6 +84,28 @@ class CrowdSystem:
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {hazard_kind}!"})
                 self.excitement_level += 5.0
 
+        elif cmd == "!control" and len(parts) >= 4:
+            hazard_kind = parts[1]
+            try:
+                target_x = float(parts[2])
+                target_y = float(parts[3])
+
+                # Find hazard
+                if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+                    matching_hazards = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == hazard_kind]
+                    if matching_hazards:
+                        hazard = random.choice(matching_hazards)
+                        hazard.controlled_by = user
+                        hazard.control_timer = 10.0 # 10 seconds of control
+                        hazard.control_target_x = target_x
+                        hazard.control_target_y = target_y
+
+                        self._add_viewer_loyalty(user, 15)
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} took control of a {hazard_kind}!"})
+                            self.excitement_level += 10.0
+            except ValueError:
+                pass
         elif cmd == "!weather" and len(parts) >= 2:
             if self.excitement_level >= 50.0:
                 weather_type = parts[1].lower()

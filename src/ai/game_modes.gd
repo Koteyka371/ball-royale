@@ -494,6 +494,83 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+
+		# Hazard control logic (Twitch spectator interaction)
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+				var hazards = arena.hazards
+				if typeof(hazards) == TYPE_ARRAY:
+					for h in hazards:
+						var c_timer = 0.0
+						if typeof(h) == TYPE_DICTIONARY and h.has("control_timer"):
+							c_timer = float(h["control_timer"])
+						elif typeof(h) == TYPE_OBJECT and "control_timer" in h:
+							c_timer = float(h.control_timer)
+						elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("control_timer"):
+							c_timer = float(h.get_meta("control_timer"))
+
+						if c_timer > 0:
+							c_timer -= delta
+							if typeof(h) == TYPE_DICTIONARY:
+								h["control_timer"] = c_timer
+							elif typeof(h) == TYPE_OBJECT and "control_timer" in h:
+								h.control_timer = c_timer
+							elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+								h.set_meta("control_timer", c_timer)
+
+							var h_x = 0.0
+							var h_y = 0.0
+							var t_x = 0.0
+							var t_y = 0.0
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h_x = float(h.get("x", 0.0))
+								h_y = float(h.get("y", 0.0))
+								t_x = float(h.get("control_target_x", h_x))
+								t_y = float(h.get("control_target_y", h_y))
+							elif typeof(h) == TYPE_OBJECT:
+								if "x" in h: h_x = float(h.x)
+								elif h.has_method("get_meta"): h_x = float(h.get_meta("x", 0.0))
+								if "y" in h: h_y = float(h.y)
+								elif h.has_method("get_meta"): h_y = float(h.get_meta("y", 0.0))
+
+								if "control_target_x" in h: t_x = float(h.control_target_x)
+								elif h.has_method("get_meta") and h.has_meta("control_target_x"): t_x = float(h.get_meta("control_target_x"))
+								else: t_x = h_x
+
+								if "control_target_y" in h: t_y = float(h.control_target_y)
+								elif h.has_method("get_meta") and h.has_meta("control_target_y"): t_y = float(h.get_meta("control_target_y"))
+								else: t_y = h_y
+
+							var dx = t_x - h_x
+							var dy = t_y - h_y
+							var dist = sqrt(dx*dx + dy*dy)
+
+							if dist > 5.0:
+								var speed = 150.0 * delta
+								if speed > dist: speed = dist
+								h_x += (dx / dist) * speed
+								h_y += (dy / dist) * speed
+
+								if typeof(h) == TYPE_DICTIONARY:
+									h["x"] = h_x
+									h["y"] = h_y
+								elif typeof(h) == TYPE_OBJECT:
+									if "x" in h: h.x = h_x
+									elif h.has_method("set_meta"): h.set_meta("x", h_x)
+									if "y" in h: h.y = h_y
+									elif h.has_method("set_meta"): h.set_meta("y", h_y)
+							else:
+								if typeof(h) == TYPE_DICTIONARY:
+									h["control_target_x"] = h_x
+									h["control_target_y"] = h_y
+								elif typeof(h) == TYPE_OBJECT:
+									if "control_target_x" in h: h.control_target_x = h_x
+									elif h.has_method("set_meta"): h.set_meta("control_target_x", h_x)
+									if "control_target_y" in h: h.control_target_y = h_y
+									elif h.has_method("set_meta"): h.set_meta("control_target_y", h_y)
+
 		# Black Hole Mine detonating logic
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
 			var arena = world.arena
