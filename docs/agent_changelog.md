@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1268] Bounty Hunter Contract Extension — *2026-07-21 20:29:19 UTC*
+
+An item that extends the time a target is marked as a bounty, or instantly resets their bounty indicator if they go into stealth.
+
+---
+
 ## [idea-1272] Guild Headquarters Decor — *2026-07-21 20:29:14 UTC*
 
 Unlockable cosmetics and interactive decor items that clannies can place in their clan's custom pre-game lobby/headquarters, obtained by ranking high in Clan Tournaments.
