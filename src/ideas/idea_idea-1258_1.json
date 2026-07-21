@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Relay Beacons",
+  "description": "Players can deploy a Quantum Relay Beacon that temporarily links their health pool and stamina regen with the nearest teammate. Any damage taken by one is split equally among both, but they also share any healing or buffs they receive. The beacon lasts for 15 seconds or until one of the linked players steps out of a 500-unit range."
+}
