@@ -32138,7 +32138,7 @@ func _update_skill_timer(delta: float):
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
 
-                if h_kind == "sticky_bomb":
+                if h_kind == "sticky_bomb" or h_kind == "sticky_bomb_trap":
                     var attached_id = hazard.attached_id if "attached_id" in hazard else (hazard.get_meta("attached_id") if hazard.has_method("get_meta") and hazard.has_meta("attached_id") else null)
                     if typeof(hazard) == TYPE_DICTIONARY:
                         attached_id = hazard.get("attached_id", null)
