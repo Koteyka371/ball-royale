@@ -196,6 +196,19 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(target, "ball_type", "") == "chroma_boss":
+            boss_aura = getattr(target, "cosmetic_aura_color", None)
+            attacker_aura = getattr(attacker, "cosmetic_aura_color", None)
+            if boss_aura and attacker_aura:
+                def is_same_color(c1, c2):
+                    return all(abs(c1[i] - c2[i]) < 0.01 for i in range(min(3, len(c1), len(c2))))
+                if is_same_color(boss_aura, attacker_aura):
+                    heal_amt = float(getattr(attacker, "damage", 10.0))
+                    attacker.hp = min(getattr(attacker, "hp", 100.0) + heal_amt, getattr(attacker, "max_hp", 100.0))
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("chroma_boss_heal", {"x": getattr(attacker, "x", 0), "y": getattr(attacker, "y", 0)})
+                    return
+
         if getattr(attacker, "in_mirror_dimension", False) != getattr(target, "in_mirror_dimension", False):
             return
 

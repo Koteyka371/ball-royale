@@ -41365,7 +41365,124 @@ class RisingLavaMode extends GameMode:
 					elif typeof(b) == TYPE_OBJECT and "hp" in b:
 						b.hp = hp
 
+class ChromaBossMode extends GameMode:
+	var boss_id = null
+	var boss_aura_timer = 0.0
+	var boss_aura_index = 0
+	var aura_colors = [Color(0.0, 1.0, 0.0, 0.5), Color(0.0, 0.0, 1.0, 0.6), Color(1.0, 0.0, 1.0, 0.7), Color(1.0, 0.0, 0.0, 0.8), Color(1.0, 1.0, 0.0, 1.0)]
+
+	func _init() -> void:
+		name = "Chroma Boss"
+		description = "A new boss ball type that rapidly cycles through aura colors. Hitting the boss while its aura matches your own heals you instead of damaging the boss, making timing crucial for takedowns."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var aw = 1000.0
+		var ah = 1000.0
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var arena = world["arena"]
+				if typeof(arena) == TYPE_DICTIONARY:
+					aw = float(arena.get("width", 1000.0))
+					ah = float(arena.get("height", 1000.0))
+				else:
+					aw = float(arena.get("width")) if "width" in arena else 1000.0
+					ah = float(arena.get("height")) if "height" in arena else 1000.0
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world:
+				var arena = world.arena
+				if typeof(arena) == TYPE_DICTIONARY:
+					aw = float(arena.get("width", 1000.0))
+					ah = float(arena.get("height", 1000.0))
+				else:
+					aw = float(arena.get("width")) if "width" in arena else 1000.0
+					ah = float(arena.get("height")) if "height" in arena else 1000.0
+
+		var rng = RandomNumberGenerator.new()
+		rng.randomize()
+		var boss_x = rng.randf_range(200.0, aw - 200.0)
+		var boss_y = rng.randf_range(200.0, ah - 200.0)
+
+		var boss_class = null
+		if balls.size() > 0:
+			var base_ball = balls[0]
+			if typeof(base_ball) == TYPE_OBJECT:
+				boss_class = base_ball.get_script()
+
+		var boss = null
+		if boss_class != null:
+			boss = boss_class.new()
+		else:
+			boss = {}
+
+		var b_id = rng.randi_range(10000, 99999)
+		if typeof(boss) == TYPE_DICTIONARY:
+			boss["id"] = b_id
+			boss["x"] = boss_x
+			boss["y"] = boss_y
+			boss["ball_type"] = "chroma_boss"
+			boss["team"] = "boss"
+			boss["max_hp"] = 5000.0
+			boss["hp"] = 5000.0
+			boss["damage"] = 30.0
+			boss["radius"] = 40.0
+			boss["speed"] = 80.0
+			boss["alive"] = true
+			boss["cosmetic_aura_color"] = aura_colors[0]
+		else:
+			boss.set("id", b_id)
+			boss.set("x", boss_x)
+			boss.set("y", boss_y)
+			if "ball_type" in boss: boss.ball_type = "chroma_boss"
+			if "team" in boss: boss.team = "boss"
+			if "max_hp" in boss: boss.max_hp = 5000.0
+			if "hp" in boss: boss.hp = 5000.0
+			if "damage" in boss: boss.damage = 30.0
+			if "radius" in boss: boss.radius = 40.0
+			if "speed" in boss: boss.speed = 80.0
+			if "alive" in boss: boss.alive = true
+			if "cosmetic_aura_color" in boss: boss.cosmetic_aura_color = aura_colors[0]
+			elif boss.has_method("set_meta"): boss.set_meta("cosmetic_aura_color", aura_colors[0])
+
+		self.boss_id = b_id
+		balls.append(boss)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var boss = null
+		for b in balls:
+			var bid = null
+			if typeof(b) == TYPE_DICTIONARY: bid = b.get("id")
+			else: bid = b.get("id") if "id" in b else null
+
+			if bid == self.boss_id:
+				boss = b
+				break
+
+		if boss != null:
+			var is_alive = false
+			if typeof(boss) == TYPE_DICTIONARY: is_alive = boss.get("alive", false)
+			else: is_alive = boss.get("alive") if "alive" in boss else false
+
+			if is_alive:
+				self.boss_aura_timer += delta
+				if self.boss_aura_timer >= 1.0:
+					self.boss_aura_timer = 0.0
+					self.boss_aura_index = (self.boss_aura_index + 1) % self.aura_colors.size()
+					var next_color = self.aura_colors[self.boss_aura_index]
+
+					if typeof(boss) == TYPE_DICTIONARY:
+						boss["cosmetic_aura_color"] = next_color
+					else:
+						if "cosmetic_aura_color" in boss: boss.cosmetic_aura_color = next_color
+						elif boss.has_method("set_meta"): boss.set_meta("cosmetic_aura_color", next_color)
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("chroma_boss_aura_change", {"color": next_color})
+
 GAME_MODES = {
+	"chroma_boss": ChromaBossMode.new(),
 	"rising_lava": RisingLavaMode.new(),
 	"time_rewind_altar": TimeRewindAltarMode.new(),
 	"random_teleport_dash": RandomTeleportDashMode.new(),

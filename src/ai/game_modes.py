@@ -25381,7 +25381,73 @@ class RisingLavaMode(GameMode):
                         b.alive = False
                         b.killer = "lava"
 
+class ChromaBossMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chroma Boss"
+        self.description = "A new boss ball type that rapidly cycles through aura colors. Hitting the boss while its aura matches your own heals you instead of damaging the boss, making timing crucial for takedowns."
+        self.boss_id = None
+        self.boss_aura_timer = 0.0
+        self.boss_aura_index = 0
+        self.aura_colors = [(0.0, 1.0, 0.0, 0.5), (0.0, 0.0, 1.0, 0.6), (1.0, 0.0, 1.0, 0.7), (1.0, 0.0, 0.0, 0.8), (1.0, 1.0, 0.0, 1.0)]
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        boss_x = random.uniform(200, getattr(world.arena, "width", 1000) - 200) if hasattr(world, "arena") else 500
+        boss_y = random.uniform(200, getattr(world.arena, "height", 1000) - 200) if hasattr(world, "arena") else 500
+
+        boss_class = type('MockBoss', (object,), {})
+        if balls:
+            base_ball = balls[0]
+            boss_class = type(base_ball)
+
+        boss = boss_class()
+
+        if balls:
+            for attr in dir(balls[0]):
+                if not attr.startswith('__') and not callable(getattr(balls[0], attr)):
+                    try:
+                        setattr(boss, attr, getattr(balls[0], attr))
+                    except AttributeError:
+                        pass
+
+        boss.id = getattr(world, "next_id", random.randint(10000, 99999))
+        self.boss_id = boss.id
+        boss.x = boss_x
+        boss.y = boss_y
+        boss.ball_type = "chroma_boss"
+        boss.team = "boss"
+        boss.max_hp = 5000.0
+        boss.hp = 5000.0
+        boss.damage = 30.0
+        boss.radius = 40.0
+        boss.speed = 80.0
+        boss.alive = True
+        boss.cosmetic_aura_color = self.aura_colors[0]
+
+        balls.append(boss)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        boss = None
+        for b in balls:
+            if getattr(b, "id", None) == self.boss_id:
+                boss = b
+                break
+
+        if boss and getattr(boss, "alive", False):
+            self.boss_aura_timer += delta
+            if self.boss_aura_timer >= 1.0:
+                self.boss_aura_timer = 0.0
+                self.boss_aura_index = (self.boss_aura_index + 1) % len(self.aura_colors)
+                boss.cosmetic_aura_color = self.aura_colors[self.boss_aura_index]
+                if hasattr(world, "add_event"):
+                    world.add_event("chroma_boss_aura_change", {"color": boss.cosmetic_aura_color})
+
 GAME_MODES = {
+    "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
     'time_rewind_altar': TimeRewindAltarMode(),
     'teleport_dash_mutator': TeleportDashMutatorMode(),
