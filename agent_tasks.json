@@ -20128,7 +20128,7 @@
     },
     {
       "id": "idea-1174",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Grenade",
@@ -32163,6 +32163,23 @@
         "src/ai/inverted_control_schemes_mutator.py",
         "src/ai/inverted_control_schemes_mutator.gd",
         "tests/test_inverted_control_schemes_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1881",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Static Field",
+      "description": "An area that disables all entity abilities and drains stamina over time.",
+      "allowed_paths": [
+        "src/ai/static_field.py",
+        "src/ai/static_field.gd",
+        "tests/test_static_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

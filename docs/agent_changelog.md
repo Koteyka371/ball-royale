@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1174] EMP Grenade — *2026-07-21 20:06:40 UTC*
+
+Disables enemy abilities for 3 seconds in an area.
+
+---
+
 ## [idea-1276] Phantom Hazard - Poltergeist — *2026-07-21 19:54:30 UTC*
 
 A new hazard type that is invisible most of the time but occasionally materializes to grab a nearby entity, applying a root and minor damage over time. It forces players to pay attention to small environmental cues like floating debris before it strikes.
