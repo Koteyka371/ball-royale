@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1283] Vote Streaks Multiplier — *2026-07-21 21:34:05 UTC*
+
+Viewers get increased voting power when they vote on multiple consecutive options, encouraging consistent chat engagement.
+
+---
+
 ## [idea-1229] Kinetic Reversal Booster — *2026-07-21 21:30:14 UTC*
 
 A new active skill/booster that temporarily stores all incoming kinetic energy (push and pull forces) into a charge meter. When full or upon expiration, it releases the accumulated force in a massive radial shockwave, pushing away all nearby hazards and enemies.
