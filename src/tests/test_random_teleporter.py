@@ -20,6 +20,8 @@ class DummyBall:
         self.y = y
         self.alive = True
         self.radius = 10.0
+        self.vx = 50.0
+        self.vy = 50.0
 
 def test_random_teleporter():
     mode = RandomTeleporterMode()
@@ -41,6 +43,10 @@ def test_random_teleporter():
 
     # Ball should have teleported
     assert balls[0].x != portal["x"] or balls[0].y != portal["y"]
+
+    # Velocity should be reset to 0
+    assert balls[0].vx == 0.0
+    assert balls[0].vy == 0.0
 
     event_types = [e[0] for e in world.events]
     assert "portal_spawn" in event_types
