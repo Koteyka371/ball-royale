@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1290] Quantum Tunnels Mechanics — *2026-07-21 23:42:01 UTC*
+
+Adding random quantum tunnels that instantly teleport a ball to the opposite side of the map with inverted velocity.
+
+---
+
 ## [idea-1172] Orbital Relay Booster — *2026-07-21 23:35:38 UTC*
 
 A rare booster that, when collected, temporarily links the collector to the game's hazard spawner. For the next 10 seconds, the player is immune to orbital strikes and debris, and any orbital strikes that occur will automatically target the enemies closest to the player, turning a hazard into an offensive tool.
