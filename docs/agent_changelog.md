@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1247] Reverse Freeze Tag — *2026-07-21 04:21:31 UTC*
+
+A mutator or variant of Freeze Tag where everyone starts frozen, and there is one 'Healer' per team. The healers must dodge hazards and quickly unfreeze their entire team before the other healer does.
+
+---
+
 ## [idea-1227] New Ball Type: Botanist — *2026-07-21 04:19:11 UTC*
 
 A ball type that plants seeds around the arena which grow into tall grass or temporary healing fruits over time. The Botanist gains camouflage while in tall grass and its basic attacks apply a slowing vines effect.
