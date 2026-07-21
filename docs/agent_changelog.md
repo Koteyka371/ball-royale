@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1280] Weather Fusion Mode — *2026-07-21 21:07:04 UTC*
+
+A game mode where capturing altars of different weather types combines their effects. For example, triggering Rain and Heatwave simultaneously creates a 'Steam' weather condition that obscures vision globally while continuously draining stamina.
+
+---
+
 ## [idea-1281] Gravitational Slingshot Booster — *2026-07-21 21:06:59 UTC*
 
 A consumable booster that allows the player to briefly alter their own gravitational field. When activated near a heavy hazard like a black hole or dense planetoid, the player's momentum is multiplied immensely, allowing them to rapidly flank enemies or escape dangerous shrinking safe zones at incredible speeds.
