@@ -25543,6 +25543,59 @@ class ChromaBossMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("chroma_boss_aura_change", {"color": boss.cosmetic_aura_color})
 
+
+class BiomeSafeZonesMode(MultipleSafeZonesMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Biome Safe Zones"
+        self.description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages."
+        self.biome_types = ["fire", "ice", "nature", "wind"]
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        for zone in self.zones:
+            zone["biome"] = random.choice(self.biome_types)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            active_biomes = []
+            for zone in self.zones:
+                dx = b.x - zone["x"]
+                dy = b.y - zone["y"]
+                dist_sq = dx*dx + dy*dy
+                if dist_sq <= zone["radius"] ** 2:
+                    active_biomes.append(zone.get("biome", "nature"))
+
+            if "fire" in active_biomes:
+                # Fire grants damage boost
+                b.damage_multiplier = getattr(b, "damage_multiplier", 1.0) + (0.5 * delta)
+            if "ice" in active_biomes:
+                # Ice grants shield / defense
+                if hasattr(b, "shield"):
+                    b.shield += 5.0 * delta
+            if "nature" in active_biomes:
+                # Nature grants healing
+                if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                    b.hp = min(b.max_hp, b.hp + 10.0 * delta)
+            if "wind" in active_biomes:
+                # Wind grants speed
+                b.speed_multiplier = getattr(b, "speed_multiplier", 1.0) + (0.2 * delta)
+
+    def _split_zones(self, world):
+        super()._split_zones(world)
+        import random
+        # Ensure all zones have a biome
+        for zone in self.zones:
+            if "biome" not in zone:
+                zone["biome"] = random.choice(self.biome_types)
+
 GAME_MODES = {
     "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
@@ -25589,6 +25642,7 @@ GAME_MODES = {
     "falling_panels": FallingPanelsMode(),
     "decreasing_safe_zones": DecreasingSafeZonesMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
+    "biome_safe_zones": BiomeSafeZonesMode(),
     "entangled_arena": EntangledArenaMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),

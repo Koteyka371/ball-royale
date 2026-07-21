@@ -41481,6 +41481,81 @@ class ChromaBossMode extends GameMode:
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("chroma_boss_aura_change", {"color": next_color})
 
+
+class BiomeSafeZonesMode extends MultipleSafeZonesMode:
+	var biome_types = ["fire", "ice", "nature", "wind"]
+
+	func _init():
+		super._init()
+		name = "Biome Safe Zones"
+		description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		for zone in zones:
+			zone["biome"] = biome_types[randi() % biome_types.size()]
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive
+
+			if not is_alive:
+				continue
+
+			var b_x = 0.0
+			var b_y = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+			else:
+				b_x = b.x
+				b_y = b.y
+
+			var active_biomes = []
+			for zone in zones:
+				var dx = b_x - zone["x"]
+				var dy = b_y - zone["y"]
+				var dist_sq = dx * dx + dy * dy
+				if dist_sq <= zone["radius"] * zone["radius"]:
+					active_biomes.append(zone.get("biome", "nature"))
+
+			for biome in active_biomes:
+				if biome == "fire":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["damage_multiplier"] = b.get("damage_multiplier", 1.0) + (0.5 * delta)
+					elif "damage_multiplier" in b:
+						b.damage_multiplier += 0.5 * delta
+				elif biome == "ice":
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("shield"):
+							b["shield"] += 5.0 * delta
+					elif "shield" in b:
+						b.shield += 5.0 * delta
+				elif biome == "nature":
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("hp") and b.has("max_hp"):
+							b["hp"] = min(b["max_hp"], b["hp"] + 10.0 * delta)
+					else:
+						if "hp" in b and "max_hp" in b:
+							b.hp = min(b.max_hp, b.hp + 10.0 * delta)
+				elif biome == "wind":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["speed_multiplier"] = b.get("speed_multiplier", 1.0) + (0.2 * delta)
+					elif "speed_multiplier" in b:
+						b.speed_multiplier += 0.2 * delta
+
+	func _split_zones(world):
+		super._split_zones(world)
+		for zone in zones:
+			if not zone.has("biome"):
+				zone["biome"] = biome_types[randi() % biome_types.size()]
+
 GAME_MODES = {
 	"chroma_boss": ChromaBossMode.new(),
 	"rising_lava": RisingLavaMode.new(),
@@ -41661,6 +41736,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"falling_panels": FallingPanelsMode.new(),
 	"decreasing_safe_zones": DecreasingSafeZonesMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
+	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
 	"entangled_arena": EntangledArenaMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
