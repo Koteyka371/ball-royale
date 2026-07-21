@@ -321,6 +321,95 @@ func _attempt_damage(attacker, target) -> void:
 	if a_dim != t_dim:
 		return
 
+	# Reflect projectiles and lasers
+	var is_reflective = target.is_reflective if "is_reflective" in target else false
+	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_reflective"):
+		is_reflective = target.get_meta("is_reflective")
+
+	if is_reflective:
+		var attacker_type = ""
+		if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta"):
+			attacker_type = attacker.get_meta("ball_type") if attacker.has_meta("ball_type") else ""
+			if attacker_type == "":
+				attacker_type = attacker.get_meta("kind") if attacker.has_meta("kind") else ""
+		elif typeof(attacker) == TYPE_DICTIONARY:
+			attacker_type = attacker.get("ball_type", attacker.get("kind", ""))
+		else:
+			attacker_type = attacker.ball_type if "ball_type" in attacker else (attacker.kind if "kind" in attacker else "")
+
+		var is_proj = attacker_type in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"]
+		if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta"):
+			is_proj = is_proj or attacker.get_meta("is_projectile", false) or attacker.get_meta("is_spell", false) or attacker.get_meta("is_ricochet_laser", false)
+		elif typeof(attacker) == TYPE_DICTIONARY:
+			is_proj = is_proj or attacker.get("is_projectile", false) or attacker.get("is_spell", false) or attacker.get("is_ricochet_laser", false)
+		else:
+			is_proj = is_proj or (attacker.is_projectile if "is_projectile" in attacker else false) or (attacker.is_spell if "is_spell" in attacker else false) or (attacker.is_ricochet_laser if "is_ricochet_laser" in attacker else false)
+
+		if is_proj:
+			# Find nearest enemy to reflect to
+			if world and world.has_method("get_nearby_entities"):
+				var nearby = world.get_nearby_entities(target, 600.0)
+				var enemies = []
+				if typeof(nearby) == TYPE_DICTIONARY and nearby.has("enemies"):
+					enemies = nearby["enemies"]
+
+				var nearest_enemy = null
+				var min_dist = 999999.0
+				var tx = target.get_meta("x") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") else (target.x if "x" in target else 0.0)
+				var ty = target.get_meta("y") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") else (target.y if "y" in target else 0.0)
+				var target_id = target.get_meta("id") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") else (target.id if "id" in target else -1)
+
+				for e in enemies:
+					var alive = e.get_meta("alive") if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") else (e.alive if "alive" in e else false)
+					var eid = e.get_meta("id") if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") else (e.id if "id" in e else -1)
+					if alive and eid != target_id:
+						var ex = e.get_meta("x") if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") else (e.x if "x" in e else 0.0)
+						var ey = e.get_meta("y") if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") else (e.y if "y" in e else 0.0)
+						var dx = ex - tx
+						var dy = ey - ty
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist < min_dist:
+							min_dist = dist
+							nearest_enemy = e
+
+				if nearest_enemy != null:
+					var ex = nearest_enemy.get_meta("x") if typeof(nearest_enemy) == TYPE_OBJECT and nearest_enemy.has_method("get_meta") else (nearest_enemy.x if "x" in nearest_enemy else 0.0)
+					var ey = nearest_enemy.get_meta("y") if typeof(nearest_enemy) == TYPE_OBJECT and nearest_enemy.has_method("get_meta") else (nearest_enemy.y if "y" in nearest_enemy else 0.0)
+					var dx = ex - tx
+					var dy = ey - ty
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist > 0.001:
+						var avx = attacker.get_meta("vx") if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") else (attacker.vx if "vx" in attacker else 0.0)
+						var avy = attacker.get_meta("vy") if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") else (attacker.vy if "vy" in attacker else 0.0)
+						var speed = sqrt(avx * avx + avy * avy)
+						if speed == 0.0:
+							speed = 300.0
+						var nvx = (dx / dist) * speed
+						var nvy = (dy / dist) * speed
+						if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+							attacker.set_meta("vx", nvx)
+							attacker.set_meta("vy", nvy)
+						elif typeof(attacker) == TYPE_DICTIONARY:
+							attacker["vx"] = nvx
+							attacker["vy"] = nvy
+						else:
+							if "vx" in attacker: attacker.vx = nvx
+							if "vy" in attacker: attacker.vy = nvy
+
+						# Change ownership
+						var t_team = target.get_meta("team") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("team") else (target.get_meta("ball_type") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("ball_type") else (target.team if "team" in target else (target.ball_type if "ball_type" in target else "")))
+						if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+							attacker.set_meta("team", t_team)
+							attacker.set_meta("owner_id", target_id)
+						elif typeof(attacker) == TYPE_DICTIONARY:
+							attacker["team"] = t_team
+							attacker["owner_id"] = target_id
+						else:
+							if "team" in attacker: attacker.team = t_team
+							if "owner_id" in attacker: attacker.owner_id = target_id
+			return
+
+
 
 	var is_shuffler_clone = false
 	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_shuffler_clone") and target.get_meta("is_shuffler_clone"): is_shuffler_clone = true

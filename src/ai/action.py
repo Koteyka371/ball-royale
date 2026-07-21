@@ -199,6 +199,38 @@ class Action:
         if getattr(attacker, "in_mirror_dimension", False) != getattr(target, "in_mirror_dimension", False):
             return
 
+        is_projectile_or_laser = getattr(attacker, "ball_type", getattr(attacker, "kind", "")) in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"] or getattr(attacker, "is_projectile", False) or getattr(attacker, "is_ricochet_laser", False) or getattr(attacker, "is_spell", False)
+
+        if getattr(target, "is_reflective", False) and is_projectile_or_laser:
+            # Prevent damage
+            # Attempt to find nearest enemy to reflect towards
+            if hasattr(self.world, "get_nearby_entities"):
+                nearby = self.world.get_nearby_entities(target, 600.0)
+                if isinstance(nearby, dict):
+                    enemies = nearby.get("enemies", [])
+                    alive_enemies = [e for e in enemies if getattr(e, "alive", False) and getattr(e, "id", None) != target.id]
+                    if alive_enemies:
+                        import math
+                        nearest_enemy = min(alive_enemies, key=lambda e: math.hypot(e.x - target.x, e.y - target.y))
+                        # Make projectile turn towards nearest enemy
+                        if hasattr(attacker, "vx") and hasattr(attacker, "vy"):
+                            dx = nearest_enemy.x - target.x
+                            dy = nearest_enemy.y - target.y
+                            dist = math.hypot(dx, dy)
+                            if dist > 0.001:
+                                speed = math.hypot(attacker.vx, attacker.vy)
+                                if speed == 0:
+                                    speed = 300.0
+                                attacker.vx = (dx / dist) * speed
+                                attacker.vy = (dy / dist) * speed
+
+                        # Change ownership so it damages enemies instead of target
+                        attacker.team = getattr(target, "team", getattr(target, "ball_type", ""))
+                        attacker.owner_id = target.id
+
+            return
+
+
         if getattr(attacker, "phase_booster_timer", 0.0) > 0.0:
             return
 

@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic Grapple Hook Skill",
+  "description": "A new skill that allows a ball to fire a tether towards a solid object or enemy. If it hits an enemy, both are rapidly pulled towards each other, stunning them on collision. If it hits a wall, the ball is pulled to safety. Good for initiating or escaping."
+}
