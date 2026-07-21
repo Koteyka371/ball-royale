@@ -18808,6 +18808,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "ice":
                 if not is_immune:
                     b.is_frictionless = True
+                    b.steering_mult = 0.1
                     if not hasattr(b, "is_slipping") or not b.is_slipping:
                         b.is_slipping = True
 
