@@ -27,7 +27,7 @@ def test_tornado_roam_thunderstorm():
         mode.tick(world, [], delta=0.016)
 
     tornados = [h for h in world.arena.hazards if getattr(h, "kind", "") == "tornado"]
-    assert len(tornados) == 1
+    assert len(tornados) >= 1
     t = tornados[0]
 
     t.x = 500

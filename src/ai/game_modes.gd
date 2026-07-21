@@ -41488,6 +41488,7 @@ GAME_MODES = {
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"roaming_doppelganger": RoamingDoppelgangerMode.new(),
 class ThermalFreezeTagMode extends FreezeTagMode:
+	# A variant where the arena has dynamic heat zones. Instead of relying purely on allies to unfreeze them, frozen players slowly thaw when pushed into a heat zone. However, if they are pushed into a frost zone, they become permanently shattered if they take any damage.
 	var zone_timer = 0.0
 	func _init():
 		name = "Thermal Freeze Tag"
