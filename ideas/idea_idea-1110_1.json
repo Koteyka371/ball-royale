@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mine",
+  "description": "A new mine hazard type that comes in pairs. When a ball triggers one mine, they are instantly teleported to the location of its entangled pair, which then explodes, dealing massive damage to the area. This forces players to map out trap locations to avoid lethal displacement."
+}
