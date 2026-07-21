@@ -11327,6 +11327,11 @@ func execute(strategy: String, delta: float):
                                         if entity_to_swap.has_method("set_meta"):
                                             entity_to_swap.set_meta("last_teleport_tick", current_tick)
                 elif hazard.kind == "portal" or hazard.kind == "teleporter" or hazard.kind == "one_way_teleporter" or hazard.kind == "wormhole" or hazard.kind == "quantum_teleporter" or hazard.kind == "chaos_portal" or hazard.kind == "chaos_teleporter":
+                    var anchor_trap_timer = 0.0
+                    if "anchor_trap_timer" in self.ball: anchor_trap_timer = self.ball.anchor_trap_timer
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("anchor_trap_timer"): anchor_trap_timer = self.ball.get_meta("anchor_trap_timer")
+                    if anchor_trap_timer > 0: continue
+
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -14288,6 +14293,19 @@ func execute(strategy: String, delta: float):
 
                                 if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
+                            elif trap_variant == "anchor":
+                                var current_anchor = 0.0
+                                if "anchor_trap_timer" in self.ball: current_anchor = self.ball.anchor_trap_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("anchor_trap_timer"): current_anchor = self.ball.get_meta("anchor_trap_timer")
+                                if "anchor_trap_timer" in self.ball: self.ball.anchor_trap_timer = max(current_anchor, 5.0)
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("anchor_trap_timer", max(current_anchor, 5.0))
+
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
                             elif trap_variant == "jump_pad":
@@ -31133,6 +31151,15 @@ func _apply_friendly_aura(delta: float):
                                 self.ball.speed *= 0.7
                             elif "speed" in self.ball:
                                 self.ball.speed *= 0.7
+
+    var anchor_trap_timer = 0.0
+    if "anchor_trap_timer" in self.ball: anchor_trap_timer = self.ball.anchor_trap_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("anchor_trap_timer"): anchor_trap_timer = self.ball.get_meta("anchor_trap_timer")
+    if anchor_trap_timer > 0:
+        anchor_trap_timer -= delta
+        if anchor_trap_timer < 0: anchor_trap_timer = 0.0
+        if "anchor_trap_timer" in self.ball: self.ball.anchor_trap_timer = anchor_trap_timer
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("anchor_trap_timer", anchor_trap_timer)
 
 func _update_skill_timer(delta: float):
     var cur_skill = ""

@@ -5755,6 +5755,9 @@ class Action:
                                         entity_to_swap.last_teleport_tick = current_tick
 
                     elif hazard.kind in ("portal", "teleporter", "one_way_teleporter", "wormhole", "quantum_teleporter", "chaos_portal", "chaos_teleporter"):
+                        if getattr(self.ball, "anchor_trap_timer", 0.0) > 0:
+                            continue
+
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -7141,6 +7144,10 @@ class Action:
                                         tar_puddle.duration = 10.0
                                         self.world.arena.hazards.append(tar_puddle)
 
+                                    hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "anchor":
+                                    # Anchor Trap: Disables movement abilities (dash/teleport) for 5 seconds
+                                    self.ball.anchor_trap_timer = max(getattr(self.ball, "anchor_trap_timer", 0.0), 5.0)
                                     hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "jump_pad":
                                     hazard.duration = 0.0 # Destroy trap
@@ -12477,6 +12484,9 @@ class Action:
         if hasattr(self.ball, "active_skill"):
             skill_name = self.ball.active_skill
 
+        if getattr(self.ball, "anchor_trap_timer", 0.0) > 0.0 and skill_name in ["dash", "stamina_dash", "glitch_teleport", "glitch_teleport_v2", "teleport"]:
+            return
+
         can_recast = False
         if skill_name == "glitch_teleport":
             self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
@@ -16393,6 +16403,11 @@ class Action:
             self.ball.invert_timer -= delta
             if self.ball.invert_timer < 0:
                 self.ball.invert_timer = 0.0
+        if hasattr(self.ball, "anchor_trap_timer") and self.ball.anchor_trap_timer > 0:
+            self.ball.anchor_trap_timer -= delta
+            if self.ball.anchor_trap_timer < 0:
+                self.ball.anchor_trap_timer = 0.0
+
         if hasattr(self.ball, "anchor_booster_timer") and self.ball.anchor_booster_timer > 0:
             self.ball.anchor_booster_timer -= delta
             if self.ball.anchor_booster_timer < 0:
