@@ -14897,8 +14897,62 @@ class Action:
 
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", getattr(self.ball, "skill_cooldown", 5.0))
 
+
             elif skill_name == "dash":
-                self._spawn_skill_particles("dash")
+                # Check for mutator
+                is_teleport_dash = False
+                if getattr(self.world, "game_mode", None):
+                    gm = self.world.game_mode
+                    if getattr(gm, "mutators_active", False) and "teleport_dash" in getattr(gm, "mutators", []):
+                        is_teleport_dash = True
+
+                if hasattr(self.ball, "mutators") and "teleport_dash" in getattr(self.ball, "mutators", []):
+                    is_teleport_dash = True
+
+                if is_teleport_dash:
+                    self._spawn_skill_particles("teleport")
+                    dash_dist = 200.0 * getattr(self.ball, "dash_range_mult", 1.0)
+
+                    target = None
+                    enemies = self._get_enemies()
+                    alive_enemies = [e for e in enemies if getattr(e, "hp", 1.0) > 0]
+                    if alive_enemies:
+                        target = min(alive_enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+                    dir_x, dir_y = 0.0, 0.0
+                    if target:
+                        dx = target.x - self.ball.x
+                        dy = target.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            dir_x = dx / dist
+                            dir_y = dy / dist
+                        else:
+                            import random
+                            angle = random.uniform(0, 2 * math.pi)
+                            dir_x = math.cos(angle)
+                            dir_y = math.sin(angle)
+                    else:
+                        import random
+                        angle = random.uniform(0, 2 * math.pi)
+                        dir_x = math.cos(angle)
+                        dir_y = math.sin(angle)
+
+                    teleport_x = self.ball.x + dir_x * dash_dist
+                    teleport_y = self.ball.y + dir_y * dash_dist
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                        res = self.world.arena.clamp_position(teleport_x, teleport_y, getattr(self.ball, "radius", 10.0))
+                        if isinstance(res, (list, tuple)):
+                            teleport_x, teleport_y = res[0], res[1]
+
+                    self.ball.x = teleport_x
+                    self.ball.y = teleport_y
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0) * 1.5 # Longer cooldown
+                    return
+                else:
+                    self._spawn_skill_particles("dash")
+
 
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
                 dash_dist = 100.0 * dash_range_mult

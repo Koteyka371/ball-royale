@@ -28452,8 +28452,100 @@ func _use_skill():
                 else:
                     self.ball.skill_timer = cooldown
 
+
         elif skill_name == "dash":
-            _spawn_skill_particles("dash")
+            var is_teleport_dash = false
+            if "game_mode" in self.world and typeof(self.world.game_mode) == TYPE_OBJECT:
+                var gm = self.world.game_mode
+                if "mutators_active" in gm and gm.mutators_active and "mutators" in gm and gm.mutators.has("teleport_dash"):
+                    is_teleport_dash = true
+            elif "game_mode" in self.world and typeof(self.world.game_mode) == TYPE_DICTIONARY:
+                var gm = self.world.game_mode
+                if gm.has("mutators_active") and gm["mutators_active"] and gm.has("mutators") and gm["mutators"].has("teleport_dash"):
+                    is_teleport_dash = true
+
+            if self.ball.has_method("get_meta") and self.ball.has_meta("mutators") and typeof(self.ball.get_meta("mutators")) == TYPE_ARRAY and self.ball.get_meta("mutators").has("teleport_dash"):
+                is_teleport_dash = true
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mutators") and typeof(self.ball["mutators"]) == TYPE_ARRAY and self.ball["mutators"].has("teleport_dash"):
+                is_teleport_dash = true
+
+            if is_teleport_dash:
+                _spawn_skill_particles("teleport")
+                var dash_range_mult = 1.0
+                if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
+                    dash_range_mult = self.ball.get_meta("dash_range_mult")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("dash_range_mult"):
+                    dash_range_mult = self.ball["dash_range_mult"]
+
+                var dash_dist = 200.0 * dash_range_mult
+                var enemies = _get_enemies()
+                var target = null
+                var min_dist_sq = 99999999.0
+
+                for e in enemies:
+                    var e_hp = 1.0
+                    if e.has_method("get_meta") and e.has_meta("hp"): e_hp = e.get_meta("hp")
+                    elif typeof(e) == TYPE_DICTIONARY and e.has("hp"): e_hp = e["hp"]
+                    elif "hp" in e: e_hp = e.hp
+
+                    if e_hp > 0:
+                        var dist_sq = (e.x - self.ball.x)*(e.x - self.ball.x) + (e.y - self.ball.y)*(e.y - self.ball.y)
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            target = e
+
+                var dir_x = 0.0
+                var dir_y = 0.0
+                if target != null:
+                    var dx = target.x - self.ball.x
+                    var dy = target.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        dir_x = dx / dist
+                        dir_y = dy / dist
+                    else:
+                        var angle = randf() * 2.0 * PI
+                        dir_x = cos(angle)
+                        dir_y = sin(angle)
+                else:
+                    var angle = randf() * 2.0 * PI
+                    dir_x = cos(angle)
+                    dir_y = sin(angle)
+
+                var teleport_x = self.ball.x + dir_x * dash_dist
+                var teleport_y = self.ball.y + dir_y * dash_dist
+
+                var rad = 10.0
+                if self.ball.has_method("has_meta") and self.ball.has_meta("radius"): rad = self.ball.get_meta("radius")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): rad = self.ball["radius"]
+                elif "radius" in self.ball: rad = self.ball.radius
+
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and self.world.arena.has_method("clamp_position"):
+                    var res = self.world.arena.clamp_position(teleport_x, teleport_y, rad)
+                    if typeof(res) == TYPE_ARRAY and res.size() >= 2:
+                        teleport_x = res[0]
+                        teleport_y = res[1]
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["x"] = teleport_x
+                    self.ball["y"] = teleport_y
+                else:
+                    self.ball.x = teleport_x
+                    self.ball.y = teleport_y
+
+                var cd = 5.0
+                if self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cd = self.ball["SKILL_COOLDOWN"]
+                elif "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+
+                if self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd * 1.5)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cd * 1.5
+                elif "skill_timer" in self.ball: self.ball.skill_timer = cd * 1.5
+
+                return
+            else:
+                _spawn_skill_particles("dash")
+
             var dash_range_mult = 1.0
             if self.ball.has_method("has_meta") and self.ball.has_meta("dash_range_mult"):
                 dash_range_mult = self.ball.get_meta("dash_range_mult")
