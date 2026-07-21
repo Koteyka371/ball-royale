@@ -312,6 +312,12 @@ class ClanManager:
                     buffs.append("Hub_Speed_Boost")
                 elif dec_name == "Health_Fountain":
                     buffs.append("Hub_Health_Regen")
+                elif dec_name == "Golden_Throne":
+                    buffs.append("Hub_Golden_Aura")
+                elif dec_name == "Silver_Chandelier":
+                    buffs.append("Hub_Silver_Aura")
+                elif dec_name == "Bronze_Banner":
+                    buffs.append("Hub_Bronze_Aura")
         return list(set(buffs))
 
     def start_weekly_tournament(self):
@@ -346,12 +352,21 @@ class ClanManager:
             if i == 0:
                 self.add_clan_points(clan_name, 5000)
                 self.unlock_cosmetic(clan_name, "Weekly_Champion_Aura")
+                self.unlock_cosmetic(clan_name, "Golden_Crown_Cosmetic")
+                self.unlock_decoration(clan_name, "Champion_Trophy")
+                self.unlock_decoration(clan_name, "Golden_Throne")
                 self.unlock_buff(clan_name, "Currency_Boost_Tier3")
             elif i == 1:
                 self.add_clan_points(clan_name, 3000)
+                self.unlock_cosmetic(clan_name, "Silver_Crown_Cosmetic")
+                self.unlock_decoration(clan_name, "Speed_Statue")
+                self.unlock_decoration(clan_name, "Silver_Chandelier")
                 self.unlock_buff(clan_name, "Currency_Boost_Tier2")
             elif i == 2:
                 self.add_clan_points(clan_name, 2000)
+                self.unlock_cosmetic(clan_name, "Bronze_Crown_Cosmetic")
+                self.unlock_decoration(clan_name, "Health_Fountain")
+                self.unlock_decoration(clan_name, "Bronze_Banner")
                 self.unlock_buff(clan_name, "Currency_Boost_Tier1")
 
         self.data["tournament_active"] = False
