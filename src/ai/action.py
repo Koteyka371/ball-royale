@@ -1899,6 +1899,9 @@ class Action:
             return
 
         self.ball.is_in_mud = False
+        self.ball.is_in_lava = False
+        self.ball.is_in_flood_zone = False
+        self.ball.is_in_poison_cloud = False
         if getattr(self.ball, "intangible_timer", 0.0) > 0.0:
             self.ball.intangible_timer -= delta
             if self.ball.intangible_timer <= 0.0:
@@ -6260,6 +6263,12 @@ class Action:
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.25
+                    elif hazard.kind == "lava":
+                        self.ball.is_in_lava = True
+                    elif hazard.kind == "flood_zone":
+                        self.ball.is_in_flood_zone = True
+                    elif hazard.kind == "poison_cloud":
+                        self.ball.is_in_poison_cloud = True
                     elif hazard.kind == "mud_puddle":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -11151,6 +11160,16 @@ class Action:
             hazard_count_before = len(getattr(self.world.arena, "hazards", [])) if hasattr(self.world, "arena") else 0
 
             if dist <= ball_radius + 10:
+                env_mut = nearest.get("mutated_env") if isinstance(nearest, dict) else getattr(nearest, "mutated_env", None)
+                if env_mut in ["mud_puddle", "quicksand"]:
+                    self.ball.mud_mutant_timer = 15.0
+                elif env_mut == "lava":
+                    self.ball.lava_mutant_timer = 15.0
+                elif env_mut == "flood_zone":
+                    self.ball.flood_mutant_timer = 15.0
+                elif env_mut == "poison_cloud":
+                    self.ball.poison_mutant_timer = 15.0
+
                 if getattr(nearest, "kind", None) == "anvil_piece":
                     if hasattr(self.world, "mode") and getattr(self.world.mode, "name", "") == "Blacksmith Boss":
                         self.world.mode.anvil_pieces_collected += 1

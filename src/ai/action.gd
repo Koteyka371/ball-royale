@@ -4110,6 +4110,14 @@ func execute(strategy: String, delta: float):
         self.ball.set_meta("is_in_mud", false)
     elif "is_in_mud" in self.ball:
         self.ball.is_in_mud = false
+    if self.ball.has_method("set_meta"):
+        self.ball.set_meta("is_in_lava", false)
+        self.ball.set_meta("is_in_flood_zone", false)
+        self.ball.set_meta("is_in_poison_cloud", false)
+    if "is_in_lava" in self.ball: self.ball.is_in_lava = false
+    if "is_in_flood_zone" in self.ball: self.ball.is_in_flood_zone = false
+    if "is_in_poison_cloud" in self.ball: self.ball.is_in_poison_cloud = false
+
     var timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "intangible_timer" in self.ball: timer = self.ball.intangible_timer
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
@@ -12265,6 +12273,15 @@ func execute(strategy: String, delta: float):
                         if "base_speed" in self.ball:
                             base_s = self.ball.base_speed
                         self.ball.speed = base_s * 0.25
+                elif hazard.kind == "lava":
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
+                    elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
+                elif hazard.kind == "flood_zone":
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_flood_zone", true)
+                    elif "is_in_flood_zone" in self.ball: self.ball.is_in_flood_zone = true
+                elif hazard.kind == "poison_cloud":
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_poison_cloud", true)
+                    elif "is_in_poison_cloud" in self.ball: self.ball.is_in_poison_cloud = true
                 elif hazard.kind == "mud_puddle":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
