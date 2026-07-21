@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1237] Dynamically Rising Lava Floor — *2026-07-21 21:34:10 UTC*
+
+The arena is composed of various elevated platforms. Over time, lava rises from the bottom of the screen, permanently destroying the lowest platforms and forcing players to constantly fight for high ground.
+
+---
+
 ## [idea-1283] Vote Streaks Multiplier — *2026-07-21 21:34:05 UTC*
 
 Viewers get increased voting power when they vote on multiple consecutive options, encouraging consistent chat engagement.
