@@ -47148,6 +47148,7 @@ class FactionWarMode extends GameMode:
 						pm.save_profile()
 const WeatherStationsMode = preload("res://src/ai/stations.gd")
 GAME_MODES['weather_stations'] = WeatherStationsMode.new()
+GAME_MODES['quantum_entanglement_hazards'] = QuantumEntanglementHazardsMode.new()
 
 GAME_MODES['chain_reaction'] = ChainReactionMode.new()
 
@@ -48882,3 +48883,326 @@ class WrapAroundMode extends GameMode:
 						vy = b.get_meta('vy')
 						b.set_meta('vy', -vy)
 					teleported = true
+
+class QuantumEntanglementHazardsMode extends GameMode:
+	var pairs = []
+
+	func _init() -> void:
+		name = "Quantum Entanglement Hazards"
+		description = "A hazard that spawns in pairs across the arena. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world == null or not "arena" in world or world.arena == null:
+			return
+
+		var pair_id = randi() % 9000 + 1000
+
+		var h1 = {
+			"x": 250.0,
+			"y": 500.0,
+			"radius": 100.0,
+			"kind": "quantum_entanglement",
+			"active": true,
+			"duration": 9999.0,
+			"pair_id": pair_id
+		}
+
+		var h2 = {
+			"x": 750.0,
+			"y": 500.0,
+			"radius": 100.0,
+			"kind": "quantum_entanglement",
+			"active": true,
+			"duration": 9999.0,
+			"pair_id": pair_id
+		}
+
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		world.arena.hazards.append(h1)
+		world.arena.hazards.append(h2)
+		pairs.append([h1, h2])
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if world == null or not "arena" in world or world.arena == null:
+			return
+
+		for pair in pairs:
+			var h1 = pair[0]
+			var h2 = pair[1]
+
+			var h1_x = 0.0
+			var h1_y = 0.0
+			var h1_r = 100.0
+			if typeof(h1) == TYPE_DICTIONARY:
+				h1_x = h1.get("x", 0.0)
+				h1_y = h1.get("y", 0.0)
+				h1_r = h1.get("radius", 100.0)
+			elif typeof(h1) == TYPE_OBJECT:
+				if "x" in h1: h1_x = h1.x
+				if "y" in h1: h1_y = h1.y
+				if "radius" in h1: h1_r = h1.radius
+
+			var h2_x = 0.0
+			var h2_y = 0.0
+			var h2_r = 100.0
+			if typeof(h2) == TYPE_DICTIONARY:
+				h2_x = h2.get("x", 0.0)
+				h2_y = h2.get("y", 0.0)
+				h2_r = h2.get("radius", 100.0)
+			elif typeof(h2) == TYPE_OBJECT:
+				if "x" in h2: h2_x = h2.x
+				if "y" in h2: h2_y = h2.y
+				if "radius" in h2: h2_r = h2.radius
+
+			var balls_near_h1 = []
+			var balls_near_h2 = []
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				elif typeof(b) == TYPE_OBJECT and "alive" in b:
+					is_alive = b.alive
+
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					b_type = b.get("ball_type", "")
+				elif typeof(b) == TYPE_OBJECT and "ball_type" in b:
+					b_type = b.ball_type
+
+				if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+					var b_x = 0.0
+					var b_y = 0.0
+					var b_r = 15.0
+					if typeof(b) == TYPE_DICTIONARY:
+						b_x = b.get("x", 0.0)
+						b_y = b.get("y", 0.0)
+						b_r = b.get("radius", 15.0)
+					elif typeof(b) == TYPE_OBJECT:
+						if "x" in b: b_x = b.x
+						if "y" in b: b_y = b.y
+						if "radius" in b: b_r = b.radius
+
+					var d1_sq = (b_x - h1_x)*(b_x - h1_x) + (b_y - h1_y)*(b_y - h1_y)
+					if d1_sq < (h1_r + b_r)*(h1_r + b_r):
+						balls_near_h1.append(b)
+
+					var d2_sq = (b_x - h2_x)*(b_x - h2_x) + (b_y - h2_y)*(b_y - h2_y)
+					if d2_sq < (h2_r + b_r)*(h2_r + b_r):
+						balls_near_h2.append(b)
+
+			for b1 in balls_near_h1:
+				var current_hp = 100.0
+				var prev_hp = 100.0
+				var current_freeze = 0.0
+				var prev_freeze = 0.0
+				var current_stun = 0.0
+				var prev_stun = 0.0
+
+				if typeof(b1) == TYPE_DICTIONARY:
+					current_hp = b1.get("hp", 100.0)
+					prev_hp = b1.get("prev_hp_for_quantum", current_hp)
+					current_freeze = b1.get("freeze_timer", 0.0)
+					prev_freeze = b1.get("prev_freeze_for_quantum", current_freeze)
+					current_stun = b1.get("stun_timer", 0.0)
+					prev_stun = b1.get("prev_stun_for_quantum", current_stun)
+				elif typeof(b1) == TYPE_OBJECT:
+					if "hp" in b1: current_hp = b1.hp
+					if b1.has_method("has_meta") and b1.has_meta("prev_hp_for_quantum"): prev_hp = b1.get_meta("prev_hp_for_quantum")
+					else: prev_hp = current_hp
+
+					if "freeze_timer" in b1: current_freeze = b1.freeze_timer
+					elif b1.has_method("has_meta") and b1.has_meta("freeze_timer"): current_freeze = b1.get_meta("freeze_timer")
+					if b1.has_method("has_meta") and b1.has_meta("prev_freeze_for_quantum"): prev_freeze = b1.get_meta("prev_freeze_for_quantum")
+					else: prev_freeze = current_freeze
+
+					if "stun_timer" in b1: current_stun = b1.stun_timer
+					elif b1.has_method("has_meta") and b1.has_meta("stun_timer"): current_stun = b1.get_meta("stun_timer")
+					if b1.has_method("has_meta") and b1.has_meta("prev_stun_for_quantum"): prev_stun = b1.get_meta("prev_stun_for_quantum")
+					else: prev_stun = current_stun
+
+				if current_hp < prev_hp:
+					var dmg_taken = prev_hp - current_hp
+					for b2 in balls_near_h2:
+						if typeof(b2) == TYPE_DICTIONARY:
+							b2["hp"] = max(0.0, b2.get("hp", 100.0) - dmg_taken * 0.5)
+						elif typeof(b2) == TYPE_OBJECT:
+							if b2.has_method("take_damage"):
+								b2.take_damage(dmg_taken * 0.5)
+							elif "hp" in b2:
+								b2.hp = max(0.0, b2.hp - dmg_taken * 0.5)
+
+				if current_freeze > prev_freeze + delta:
+					var freeze_taken = current_freeze - prev_freeze
+					for b2 in balls_near_h2:
+						if typeof(b2) == TYPE_DICTIONARY:
+							b2["freeze_timer"] = max(b2.get("freeze_timer", 0.0), freeze_taken * 0.5)
+						elif typeof(b2) == TYPE_OBJECT:
+							if "freeze_timer" in b2: b2.freeze_timer = max(b2.freeze_timer, freeze_taken * 0.5)
+							elif b2.has_method("set_meta"): b2.set_meta("freeze_timer", max(b2.get_meta("freeze_timer") if b2.has_meta("freeze_timer") else 0.0, freeze_taken * 0.5))
+
+				if current_stun > prev_stun + delta:
+					var stun_taken = current_stun - prev_stun
+					for b2 in balls_near_h2:
+						if typeof(b2) == TYPE_DICTIONARY:
+							b2["stun_timer"] = max(b2.get("stun_timer", 0.0), stun_taken * 0.5)
+						elif typeof(b2) == TYPE_OBJECT:
+							if "stun_timer" in b2: b2.stun_timer = max(b2.stun_timer, stun_taken * 0.5)
+							elif b2.has_method("set_meta"): b2.set_meta("stun_timer", max(b2.get_meta("stun_timer") if b2.has_meta("stun_timer") else 0.0, stun_taken * 0.5))
+
+				if typeof(b1) == TYPE_DICTIONARY:
+					b1["prev_hp_for_quantum"] = current_hp
+					b1["prev_freeze_for_quantum"] = current_freeze
+					b1["prev_stun_for_quantum"] = current_stun
+				elif typeof(b1) == TYPE_OBJECT and b1.has_method("set_meta"):
+					b1.set_meta("prev_hp_for_quantum", current_hp)
+					b1.set_meta("prev_freeze_for_quantum", current_freeze)
+					b1.set_meta("prev_stun_for_quantum", current_stun)
+
+			for b2 in balls_near_h2:
+				var current_hp = 100.0
+				var prev_hp = 100.0
+				var current_freeze = 0.0
+				var prev_freeze = 0.0
+				var current_stun = 0.0
+				var prev_stun = 0.0
+
+				if typeof(b2) == TYPE_DICTIONARY:
+					current_hp = b2.get("hp", 100.0)
+					prev_hp = b2.get("prev_hp_for_quantum", current_hp)
+					current_freeze = b2.get("freeze_timer", 0.0)
+					prev_freeze = b2.get("prev_freeze_for_quantum", current_freeze)
+					current_stun = b2.get("stun_timer", 0.0)
+					prev_stun = b2.get("prev_stun_for_quantum", current_stun)
+				elif typeof(b2) == TYPE_OBJECT:
+					if "hp" in b2: current_hp = b2.hp
+					if b2.has_method("has_meta") and b2.has_meta("prev_hp_for_quantum"): prev_hp = b2.get_meta("prev_hp_for_quantum")
+					else: prev_hp = current_hp
+
+					if "freeze_timer" in b2: current_freeze = b2.freeze_timer
+					elif b2.has_method("has_meta") and b2.has_meta("freeze_timer"): current_freeze = b2.get_meta("freeze_timer")
+					if b2.has_method("has_meta") and b2.has_meta("prev_freeze_for_quantum"): prev_freeze = b2.get_meta("prev_freeze_for_quantum")
+					else: prev_freeze = current_freeze
+
+					if "stun_timer" in b2: current_stun = b2.stun_timer
+					elif b2.has_method("has_meta") and b2.has_meta("stun_timer"): current_stun = b2.get_meta("stun_timer")
+					if b2.has_method("has_meta") and b2.has_meta("prev_stun_for_quantum"): prev_stun = b2.get_meta("prev_stun_for_quantum")
+					else: prev_stun = current_stun
+
+				if current_hp < prev_hp:
+					var dmg_taken = prev_hp - current_hp
+					for b1 in balls_near_h1:
+						if typeof(b1) == TYPE_DICTIONARY:
+							b1["hp"] = max(0.0, b1.get("hp", 100.0) - dmg_taken * 0.5)
+						elif typeof(b1) == TYPE_OBJECT:
+							if b1.has_method("take_damage"):
+								b1.take_damage(dmg_taken * 0.5)
+							elif "hp" in b1:
+								b1.hp = max(0.0, b1.hp - dmg_taken * 0.5)
+
+				if current_freeze > prev_freeze + delta:
+					var freeze_taken = current_freeze - prev_freeze
+					for b1 in balls_near_h1:
+						if typeof(b1) == TYPE_DICTIONARY:
+							b1["freeze_timer"] = max(b1.get("freeze_timer", 0.0), freeze_taken * 0.5)
+						elif typeof(b1) == TYPE_OBJECT:
+							if "freeze_timer" in b1: b1.freeze_timer = max(b1.freeze_timer, freeze_taken * 0.5)
+							elif b1.has_method("set_meta"): b1.set_meta("freeze_timer", max(b1.get_meta("freeze_timer") if b1.has_meta("freeze_timer") else 0.0, freeze_taken * 0.5))
+
+				if current_stun > prev_stun + delta:
+					var stun_taken = current_stun - prev_stun
+					for b1 in balls_near_h1:
+						if typeof(b1) == TYPE_DICTIONARY:
+							b1["stun_timer"] = max(b1.get("stun_timer", 0.0), stun_taken * 0.5)
+						elif typeof(b1) == TYPE_OBJECT:
+							if "stun_timer" in b1: b1.stun_timer = max(b1.stun_timer, stun_taken * 0.5)
+							elif b1.has_method("set_meta"): b1.set_meta("stun_timer", max(b1.get_meta("stun_timer") if b1.has_meta("stun_timer") else 0.0, stun_taken * 0.5))
+
+				if typeof(b2) == TYPE_DICTIONARY:
+					b2["prev_hp_for_quantum"] = current_hp
+					b2["prev_freeze_for_quantum"] = current_freeze
+					b2["prev_stun_for_quantum"] = current_stun
+				elif typeof(b2) == TYPE_OBJECT and b2.has_method("set_meta"):
+					b2.set_meta("prev_hp_for_quantum", current_hp)
+					b2.set_meta("prev_freeze_for_quantum", current_freeze)
+					b2.set_meta("prev_stun_for_quantum", current_stun)
+
+		for b in balls:
+			var in_h1 = false
+			var in_h2 = false
+
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_r = 15.0
+			if typeof(b) == TYPE_DICTIONARY:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+				b_r = b.get("radius", 15.0)
+			elif typeof(b) == TYPE_OBJECT:
+				if "x" in b: b_x = b.x
+				if "y" in b: b_y = b.y
+				if "radius" in b: b_r = b.radius
+
+			for pair in pairs:
+				var h1 = pair[0]
+				var h2 = pair[1]
+
+				var h1_x = 0.0
+				var h1_y = 0.0
+				var h1_r = 100.0
+				if typeof(h1) == TYPE_DICTIONARY:
+					h1_x = h1.get("x", 0.0)
+					h1_y = h1.get("y", 0.0)
+					h1_r = h1.get("radius", 100.0)
+				elif typeof(h1) == TYPE_OBJECT:
+					if "x" in h1: h1_x = h1.x
+					if "y" in h1: h1_y = h1.y
+					if "radius" in h1: h1_r = h1.radius
+
+				var h2_x = 0.0
+				var h2_y = 0.0
+				var h2_r = 100.0
+				if typeof(h2) == TYPE_DICTIONARY:
+					h2_x = h2.get("x", 0.0)
+					h2_y = h2.get("y", 0.0)
+					h2_r = h2.get("radius", 100.0)
+				elif typeof(h2) == TYPE_OBJECT:
+					if "x" in h2: h2_x = h2.x
+					if "y" in h2: h2_y = h2.y
+					if "radius" in h2: h2_r = h2.radius
+
+				var d1_sq = (b_x - h1_x)*(b_x - h1_x) + (b_y - h1_y)*(b_y - h1_y)
+				if d1_sq < (h1_r + b_r)*(h1_r + b_r):
+					in_h1 = true
+
+				var d2_sq = (b_x - h2_x)*(b_x - h2_x) + (b_y - h2_y)*(b_y - h2_y)
+				if d2_sq < (h2_r + b_r)*(h2_r + b_r):
+					in_h2 = true
+
+			if not in_h1 and not in_h2:
+				var current_hp = 100.0
+				var current_freeze = 0.0
+				var current_stun = 0.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					current_hp = b.get("hp", 100.0)
+					current_freeze = b.get("freeze_timer", 0.0)
+					current_stun = b.get("stun_timer", 0.0)
+					b["prev_hp_for_quantum"] = current_hp
+					b["prev_freeze_for_quantum"] = current_freeze
+					b["prev_stun_for_quantum"] = current_stun
+				elif typeof(b) == TYPE_OBJECT:
+					if "hp" in b: current_hp = b.hp
+					if "freeze_timer" in b: current_freeze = b.freeze_timer
+					elif b.has_method("has_meta") and b.has_meta("freeze_timer"): current_freeze = b.get_meta("freeze_timer")
+					if "stun_timer" in b: current_stun = b.stun_timer
+					elif b.has_method("has_meta") and b.has_meta("stun_timer"): current_stun = b.get_meta("stun_timer")
+
+					if b.has_method("set_meta"):
+						b.set_meta("prev_hp_for_quantum", current_hp)
+						b.set_meta("prev_freeze_for_quantum", current_freeze)
+						b.set_meta("prev_stun_for_quantum", current_stun)

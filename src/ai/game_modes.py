@@ -29847,3 +29847,150 @@ GAME_MODES['decoy_network'] = DecoyNetworkMode()
 GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
 
 GAME_MODES['toxic_flood_royale'] = ToxicFloodRoyaleMode()
+
+class QuantumEntanglementHazardsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Entanglement Hazards"
+        self.description = "A hazard that spawns in pairs across the arena. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard."
+        self.pairs = []
+
+    class QuantumEntanglementHazard:
+        def __init__(self, x, y, pair_id, radius=100.0):
+            self.x = x
+            self.y = y
+            self.radius = radius
+            self.kind = "quantum_entanglement"
+            self.active = True
+            self.duration = 9999.0
+            self.pair_id = pair_id
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if getattr(world, "arena", None) is None:
+            return
+
+        import random
+        pair_id = random.randint(1000, 9999)
+        h1 = self.QuantumEntanglementHazard(250.0, 500.0, pair_id)
+        h2 = self.QuantumEntanglementHazard(750.0, 500.0, pair_id)
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        world.arena.hazards.append(h1)
+        world.arena.hazards.append(h2)
+        self.pairs.append((h1, h2))
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if getattr(world, "arena", None) is None:
+            return
+
+        import math
+        for h1, h2 in self.pairs:
+            balls_near_h1 = []
+            balls_near_h2 = []
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") not in ["spectator", "shadow_monster"]:
+                    d1 = math.sqrt((b.x - h1.x)**2 + (b.y - h1.y)**2)
+                    if d1 < (h1.radius + getattr(b, "radius", 15.0)):
+                        balls_near_h1.append(b)
+
+                    d2 = math.sqrt((b.x - h2.x)**2 + (b.y - h2.y)**2)
+                    if d2 < (h2.radius + getattr(b, "radius", 15.0)):
+                        balls_near_h2.append(b)
+
+            dmg_to_h2 = 0.0
+            freeze_to_h2 = 0.0
+            stun_to_h2 = 0.0
+
+            for b1 in balls_near_h1:
+                prev_hp = getattr(b1, "prev_hp_for_quantum", getattr(b1, "hp", 100.0))
+                current_hp = getattr(b1, "hp", 100.0)
+                if current_hp < prev_hp:
+                    dmg_to_h2 += (prev_hp - current_hp) * 0.5
+
+                prev_freeze = getattr(b1, "prev_freeze_for_quantum", getattr(b1, "freeze_timer", 0.0))
+                current_freeze = getattr(b1, "freeze_timer", 0.0)
+                if current_freeze > prev_freeze + delta:
+                    freeze_to_h2 = max(freeze_to_h2, (current_freeze - prev_freeze) * 0.5)
+
+                prev_stun = getattr(b1, "prev_stun_for_quantum", getattr(b1, "stun_timer", 0.0))
+                current_stun = getattr(b1, "stun_timer", 0.0)
+                if current_stun > prev_stun + delta:
+                    stun_to_h2 = max(stun_to_h2, (current_stun - prev_stun) * 0.5)
+
+            dmg_to_h1 = 0.0
+            freeze_to_h1 = 0.0
+            stun_to_h1 = 0.0
+
+            for b2 in balls_near_h2:
+                prev_hp = getattr(b2, "prev_hp_for_quantum", getattr(b2, "hp", 100.0))
+                current_hp = getattr(b2, "hp", 100.0)
+                if current_hp < prev_hp:
+                    dmg_to_h1 += (prev_hp - current_hp) * 0.5
+
+                prev_freeze = getattr(b2, "prev_freeze_for_quantum", getattr(b2, "freeze_timer", 0.0))
+                current_freeze = getattr(b2, "freeze_timer", 0.0)
+                if current_freeze > prev_freeze + delta:
+                    freeze_to_h1 = max(freeze_to_h1, (current_freeze - prev_freeze) * 0.5)
+
+                prev_stun = getattr(b2, "prev_stun_for_quantum", getattr(b2, "stun_timer", 0.0))
+                current_stun = getattr(b2, "stun_timer", 0.0)
+                if current_stun > prev_stun + delta:
+                    stun_to_h1 = max(stun_to_h1, (current_stun - prev_stun) * 0.5)
+
+            if dmg_to_h2 > 0:
+                for b2 in balls_near_h2:
+                    if hasattr(b2, "take_damage"):
+                        b2.take_damage(dmg_to_h2)
+                    else:
+                        b2.hp = max(0.0, getattr(b2, "hp", 100.0) - dmg_to_h2)
+            if freeze_to_h2 > 0:
+                for b2 in balls_near_h2:
+                    b2.freeze_timer = max(getattr(b2, "freeze_timer", 0.0), freeze_to_h2)
+            if stun_to_h2 > 0:
+                for b2 in balls_near_h2:
+                    b2.stun_timer = max(getattr(b2, "stun_timer", 0.0), stun_to_h2)
+
+            if dmg_to_h1 > 0:
+                for b1 in balls_near_h1:
+                    if hasattr(b1, "take_damage"):
+                        b1.take_damage(dmg_to_h1)
+                    else:
+                        b1.hp = max(0.0, getattr(b1, "hp", 100.0) - dmg_to_h1)
+            if freeze_to_h1 > 0:
+                for b1 in balls_near_h1:
+                    b1.freeze_timer = max(getattr(b1, "freeze_timer", 0.0), freeze_to_h1)
+            if stun_to_h1 > 0:
+                for b1 in balls_near_h1:
+                    b1.stun_timer = max(getattr(b1, "stun_timer", 0.0), stun_to_h1)
+
+            for b1 in balls_near_h1:
+                b1.prev_hp_for_quantum = getattr(b1, "hp", 100.0)
+                b1.prev_freeze_for_quantum = getattr(b1, "freeze_timer", 0.0)
+                b1.prev_stun_for_quantum = getattr(b1, "stun_timer", 0.0)
+            for b2 in balls_near_h2:
+                b2.prev_hp_for_quantum = getattr(b2, "hp", 100.0)
+                b2.prev_freeze_for_quantum = getattr(b2, "freeze_timer", 0.0)
+                b2.prev_stun_for_quantum = getattr(b2, "stun_timer", 0.0)
+
+        for b in balls:
+            in_h1 = False
+            in_h2 = False
+            for h1, h2 in self.pairs:
+                d1 = math.sqrt((b.x - h1.x)**2 + (b.y - h1.y)**2)
+                if d1 < (h1.radius + getattr(b, "radius", 15.0)):
+                    in_h1 = True
+                d2 = math.sqrt((b.x - h2.x)**2 + (b.y - h2.y)**2)
+                if d2 < (h2.radius + getattr(b, "radius", 15.0)):
+                    in_h2 = True
+
+            if not in_h1 and not in_h2:
+                b.prev_hp_for_quantum = getattr(b, "hp", 100.0)
+                b.prev_freeze_for_quantum = getattr(b, "freeze_timer", 0.0)
+                b.prev_stun_for_quantum = getattr(b, "stun_timer", 0.0)
+
+GAME_MODES['quantum_entanglement_hazards'] = QuantumEntanglementHazardsMode()
