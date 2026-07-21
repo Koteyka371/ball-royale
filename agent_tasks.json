@@ -21354,7 +21354,7 @@
     },
     {
       "id": "idea-1246",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ghost Sabotage Mode",
@@ -32367,6 +32367,74 @@
         "src/ai/stamina_based_jump_pads.py",
         "src/ai/stamina_based_jump_pads.gd",
         "tests/test_stamina_based_jump_pads.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1893",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage Vote Option",
+      "description": "A rare vote option that allows viewers to vote to spawn a black hole or extreme weather effect to shake up the battlefield.",
+      "allowed_paths": [
+        "src/ai/sabotage_vote_option.py",
+        "src/ai/sabotage_vote_option.gd",
+        "tests/test_sabotage_vote_option.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1894",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crumbling Platforms",
+      "description": "Platforms start to shake when stood upon and break after a few seconds.",
+      "allowed_paths": [
+        "src/ai/crumbling_platforms.py",
+        "src/ai/crumbling_platforms.gd",
+        "tests/test_crumbling_platforms.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1895",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vote Streaks Cosmetics",
+      "description": "Give viewers special shiny chat badges or effects if they maintain a high voting streak across multiple games.",
+      "allowed_paths": [
+        "src/ai/vote_streaks_cosmetics.py",
+        "src/ai/vote_streaks_cosmetics.gd",
+        "tests/test_vote_streaks_cosmetics.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1896",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Low Gravity Zone",
+      "description": "An area where jumps go much higher and falling is slow.",
+      "allowed_paths": [
+        "src/ai/low_gravity_zone.py",
+        "src/ai/low_gravity_zone.gd",
+        "tests/test_low_gravity_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

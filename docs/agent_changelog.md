@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1246] Ghost Sabotage Mode — *2026-07-21 21:39:02 UTC*
+
+Dead players become ghosts. They cannot deal damage directly but can slightly push hazards and boosters around to help or hinder surviving players.
+
+---
+
 ## [idea-1237] Dynamically Rising Lava Floor — *2026-07-21 21:34:10 UTC*
 
 The arena is composed of various elevated platforms. Over time, lava rises from the bottom of the screen, permanently destroying the lowest platforms and forcing players to constantly fight for high ground.
