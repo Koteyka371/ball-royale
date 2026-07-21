@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1294] Orbital Laser Strike Event — *2026-07-21 22:36:52 UTC*
+
+Periodically, a massive orbital laser targets the player with the highest score. It takes 3 seconds to lock on, providing a visible warning beam. When it fires, it leaves a scorched earth trail that heavily slows and slightly damages any balls moving through it.
+
+---
+
 ## [idea-1296] Season-based Weather Mutators — *2026-07-21 22:36:45 UTC*
 
 Introduce global modifiers to matches based on ongoing seasons. For example, during 'Winter Season', snow and blizzard weather states appear much more frequently, providing a buff to certain cosmetic skins (like snow tires) globally.
