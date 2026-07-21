@@ -960,6 +960,14 @@ class Action:
                 self._award_xp(attacker, base_xp, self.world)
 
         if new_hp <= 0 and old_hp > 0:
+            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False)):
+                reward_amt = getattr(target, 'bounty_contract_xp_reward', 500)
+                currency_cut = int(reward_amt * 0.1) # 10% of xp as currency
+                pm = getattr(self.world, 'profile_manager', None)
+                if pm and hasattr(pm, 'data'):
+                    pm.data['prestige_tokens'] = pm.data.get('prestige_tokens', 0) + currency_cut
+                    pm.save()
+
             if getattr(target, "is_bounty_target", False):
                 owner_id = getattr(target, "bounty_target_owner", None)
                 if owner_id is not None:
@@ -1005,6 +1013,7 @@ class Action:
             if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False)):
                 attacker.hp = getattr(attacker, "max_hp", 100.0)
                 attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 3.0
+                attacker.attack_speed_buff_timer = getattr(attacker, "attack_speed_buff_timer", 0.0) + 3.0
 
             if hasattr(attacker, "sponsor"):
                 if attacker.sponsor == "aggressor":

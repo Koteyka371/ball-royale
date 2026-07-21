@@ -1773,6 +1773,27 @@ func _attempt_damage(attacker, target) -> void:
 					base_xp *= 2.0
 			self._award_xp(attacker, base_xp, self.world)
 	if new_hp <= 0 and old_hp > 0:
+		var pm_local = null
+		if typeof(self.world) == TYPE_OBJECT and "profile_manager" in self.world:
+			pm_local = self.world.profile_manager
+		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat):
+			var reward_amt = 500
+			if typeof(target) == TYPE_DICTIONARY:
+				reward_amt = target.get("bounty_contract_xp_reward", 500)
+			elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("bounty_contract_xp_reward"):
+				reward_amt = target.get_meta("bounty_contract_xp_reward")
+			elif typeof(target) == TYPE_OBJECT and "bounty_contract_xp_reward" in target:
+				reward_amt = target.bounty_contract_xp_reward
+
+			var currency_cut = int(float(reward_amt) * 0.1)
+			if pm_local != null and typeof(pm_local) == TYPE_OBJECT and "data" in pm_local:
+				var current_tokens = pm_local.data.get("prestige_tokens", 0)
+				pm_local.data["prestige_tokens"] = current_tokens + currency_cut
+				if pm_local.has_method("save_profile"):
+					pm_local.save_profile()
+				elif pm_local.has_method("save"):
+					pm_local.save()
+
 		var target_is_bounty_target = false
 		if typeof(target) == TYPE_DICTIONARY:
 			target_is_bounty_target = target.get("is_bounty_target", false)
@@ -1902,6 +1923,12 @@ func _attempt_damage(attacker, target) -> void:
 			elif attacker.has_method("set_meta"):
 				var sb_timer = float(attacker.get_meta("speed_boost_timer")) if attacker.has_meta("speed_boost_timer") else 0.0
 				attacker.set_meta("speed_boost_timer", sb_timer + 3.0)
+
+			if "attack_speed_buff_timer" in attacker:
+				attacker.attack_speed_buff_timer += 3.0
+			elif attacker.has_method("set_meta"):
+				var as_timer = float(attacker.get_meta("attack_speed_buff_timer")) if attacker.has_meta("attack_speed_buff_timer") else 0.0
+				attacker.set_meta("attack_speed_buff_timer", as_timer + 3.0)
 
 		var sponsor = ""
 		if "sponsor" in attacker:
