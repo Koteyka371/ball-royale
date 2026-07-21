@@ -35863,6 +35863,96 @@ class ExtremeBouncinessMode extends GameMode:
 		name = "Extreme Bounciness"
 		description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging."
 
+	func tick(world, balls: Array, delta: float) -> void:
+		if not world.has_method("get_arena") and not ("arena" in world):
+			return
+
+		var arena = world.arena if "arena" in world else null
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if arena != null:
+			arena_width = arena.width if "width" in arena else 1000.0
+			arena_height = arena.height if "height" in arena else 1000.0
+
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+			if not alive:
+				continue
+
+			var x = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+			var y = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+			var vx = 0.0
+			var vy = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				vx = b.get("vx", 0.0)
+				vy = b.get("vy", 0.0)
+			elif b.has_meta("vx"):
+				vx = b.get_meta("vx")
+				vy = b.get_meta("vy")
+			elif "vx" in b:
+				vx = b.vx
+				vy = b.vy
+
+			var radius = b.get("radius") if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+
+			var bounced = false
+
+			if x - radius <= 0:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = radius
+				elif "x" in b:
+					b.x = radius
+				if vx < 0:
+					vx = -vx * 2.0
+					bounced = true
+			elif x + radius >= arena_width:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = arena_width - radius
+				elif "x" in b:
+					b.x = arena_width - radius
+				if vx > 0:
+					vx = -vx * 2.0
+					bounced = true
+
+			if y - radius <= 0:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["y"] = radius
+				elif "y" in b:
+					b.y = radius
+				if vy < 0:
+					vy = -vy * 2.0
+					bounced = true
+			elif y + radius >= arena_height:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["y"] = arena_height - radius
+				elif "y" in b:
+					b.y = arena_height - radius
+				if vy > 0:
+					vy = -vy * 2.0
+					bounced = true
+
+			if bounced:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = vx
+					b["vy"] = vy
+					if b.has("speed"):
+						b["speed"] *= 2.0
+					if b.has("base_speed"):
+						b["base_speed"] *= 2.0
+				else:
+					if b.has_meta("vx"):
+						b.set_meta("vx", vx)
+						b.set_meta("vy", vy)
+					elif "vx" in b:
+						b.vx = vx
+						b.vy = vy
+
+					if "speed" in b:
+						b.speed *= 2.0
+					if "base_speed" in b:
+						b.base_speed *= 2.0
+
 class JumpPadBoundariesMode extends GameMode:
 	func _init() -> void:
 		name = "Jump Pad Boundaries"

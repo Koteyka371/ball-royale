@@ -20794,6 +20794,52 @@ class ExtremeBouncinessMode(GameMode):
         self.name = "Extreme Bounciness"
         self.description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging."
 
+    def tick(self, world, balls, delta=0.016):
+        if not hasattr(world, "arena"):
+            return
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            x = getattr(b, "x", 0.0)
+            y = getattr(b, "y", 0.0)
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            radius = getattr(b, "radius", 15.0)
+
+            bounced = False
+
+            if x - radius <= 0:
+                b.x = radius
+                if vx < 0:
+                    b.vx = -vx * 2.0
+                    bounced = True
+            elif x + radius >= arena_width:
+                b.x = arena_width - radius
+                if vx > 0:
+                    b.vx = -vx * 2.0
+                    bounced = True
+
+            if y - radius <= 0:
+                b.y = radius
+                if vy < 0:
+                    b.vy = -vy * 2.0
+                    bounced = True
+            elif y + radius >= arena_height:
+                b.y = arena_height - radius
+                if vy > 0:
+                    b.vy = -vy * 2.0
+                    bounced = True
+
+            if bounced:
+                if hasattr(b, "speed"):
+                    b.speed *= 2.0
+                if hasattr(b, "base_speed"):
+                    b.base_speed *= 2.0
+
 class JumpPadBoundariesMode(GameMode):
     def __init__(self):
         super().__init__()
