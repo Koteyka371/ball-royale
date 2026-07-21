@@ -9742,7 +9742,7 @@ class WeatherChaosMode extends GameMode:
 		if world != null and "arena" in world and world.arena != null:
 			if "width" in world.arena: arena_w = world.arena.width
 			if "height" in world.arena: arena_h = world.arena.height
-		var altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": null}]
+		var altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": null, "sabotaged_by": null}]
 		if has_method("set_meta"):
 			set_meta("altars", altars)
 		for b in balls:
@@ -9796,6 +9796,37 @@ class WeatherChaosMode extends GameMode:
 						if not teams_present.has(team):
 							teams_present[team] = 0
 						teams_present[team] += 1
+
+						var inv = []
+						if typeof(b) == TYPE_DICTIONARY and b.has("inventory"):
+							inv = b.inventory
+						elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("inventory"):
+							inv = b.get_meta("inventory")
+
+						if typeof(inv) == TYPE_ARRAY and inv.has("negative_modifier"):
+							inv.erase("negative_modifier")
+							altar["sabotaged_by"] = team
+							if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": team})
+
+						var saboteur = altar.get("sabotaged_by", null)
+						if saboteur != null and saboteur != team:
+							var cur_hp = 100.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								cur_hp = b.hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("hp"):
+								cur_hp = b.get_meta("hp")
+							elif "hp" in b:
+								cur_hp = b.hp
+
+							cur_hp = max(0.0, cur_hp - 15.0 * delta)
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = cur_hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+								b.set_meta("hp", cur_hp)
+							elif "hp" in b:
+								b.hp = cur_hp
 
 			if teams_present.size() > 0:
 				var max_team = ""
