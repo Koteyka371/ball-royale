@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1277] Slingshot Hook Mechanic — *2026-07-21 20:34:22 UTC*
+
+Add a new skill where the ball shoots a grappling hook to an ally or a piece of the environment, rapidly pulling itself towards it to avoid danger or reposition.
+
+---
+
 ## [idea-1274] Random Boss Invasions — *2026-07-21 20:29:29 UTC*
 
 Periodically spawn a massive boss entity (e.g. 'The Behemoth') during Battle Royale matches that drops legendary items when defeated. If players fail to defeat it within a certain time, it explodes, wiping out a huge portion of the arena.

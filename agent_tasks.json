@@ -21883,7 +21883,7 @@
     },
     {
       "id": "idea-1277",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slingshot Hook Mechanic",
@@ -32214,6 +32214,108 @@
         "src/ai/global_silence.py",
         "src/ai/global_silence.gd",
         "tests/test_global_silence.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1884",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Mutator",
+      "description": "A mutator where any ball dropping below 30% HP instantly swaps positions with the highest HP enemy in the arena.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_mutator.py",
+        "src/ai/quantum_swap_mutator.gd",
+        "tests/test_quantum_swap_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1885",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Banners in Matches",
+      "description": "When playing, users can deploy their Clan Banner which acts as a destructible healing aura beacon for a short duration.",
+      "allowed_paths": [
+        "src/ai/clan_banners_in_matches.py",
+        "src/ai/clan_banners_in_matches.gd",
+        "tests/test_clan_banners_in_matches.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1886",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supply Drops that can be Shot Down",
+      "description": "Supply drops currently drop slowly from the sky on a timer. Allow players to shoot them down mid-air with projectiles to force them to land early or break them open mid-air, showering items below.",
+      "allowed_paths": [
+        "src/ai/supply_drops_that_can_be_shot_down.py",
+        "src/ai/supply_drops_that_can_be_shot_down.gd",
+        "tests/test_supply_drops_that_can_be_shot_down.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1887",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Maps from Multiple Points",
+      "description": "Instead of a single shrinking circle like traditional battle royale, have multiple safe zones that slowly converge and combine into one, forcing different groups to travel and meet at the center.",
+      "allowed_paths": [
+        "src/ai/shrinking_maps_from_multiple_points.py",
+        "src/ai/shrinking_maps_from_multiple_points.gd",
+        "tests/test_shrinking_maps_from_multiple_points.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1888",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Pets",
+      "description": "Unlockable pets for clan members to keep in their Clan Hub. They give slight passive boosts when interacted with before a match.",
+      "allowed_paths": [
+        "src/ai/clan_pets.py",
+        "src/ai/clan_pets.gd",
+        "tests/test_clan_pets.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1889",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Horizon Event",
+      "description": "An event that periodically reduces the camera/vision range of all players by 50% for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/shrinking_horizon.py",
+        "src/ai/shrinking_horizon.gd",
+        "tests/test_shrinking_horizon.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
