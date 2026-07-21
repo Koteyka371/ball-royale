@@ -880,57 +880,65 @@ class GameMode:
                         if isinstance(b1_x, (int, float)) and isinstance(b2_x, (int, float)):
                             dist_sq = (b1_x - b2_x) ** 2 + (b1_y - b2_y) ** 2
                             rad_sum = b1_r + b2_r
-                            if isinstance(rad_sum, (int, float)) and dist_sq < rad_sum ** 2:
-                                # Trigger Aura Explosion
-                                c1 = b1.cosmetic_aura_color
-                                c2 = b2.cosmetic_aura_color
-                                r = (c1[0] + c2[0]) / 2.0
-                                g = (c1[1] + c2[1]) / 2.0
-                                b_c = (c1[2] + c2[2]) / 2.0
+                            if isinstance(rad_sum, (int, float)):
+                                c1 = getattr(b1, 'cosmetic_aura_color', None)
+                                c2 = getattr(b2, 'cosmetic_aura_color', None)
+                                if c1 and c2 and c1 == c2 and dist_sq >= rad_sum ** 2 and dist_sq < (rad_sum + 150.0) ** 2:
+                                    b1.cosmetic_aura_scale = min(3.0, getattr(b1, 'cosmetic_aura_scale', 1.0) + delta * 0.5)
+                                    b2.cosmetic_aura_scale = min(3.0, getattr(b2, 'cosmetic_aura_scale', 1.0) + delta * 0.5)
+                                    if hasattr(b1, 'hp'):
+                                        b1.hp = min(getattr(b1, 'max_hp', 100.0), b1.hp + 10.0 * delta)
+                                    if hasattr(b2, 'hp'):
+                                        b2.hp = min(getattr(b2, 'max_hp', 100.0), b2.hp + 10.0 * delta)
+                                elif dist_sq < rad_sum ** 2:
+                                    # Trigger Aura Explosion
+                                    r = (c1[0] + c2[0]) / 2.0
+                                    g = (c1[1] + c2[1]) / 2.0
+                                    b_c = (c1[2] + c2[2]) / 2.0
 
-                                element = "fire"
-                                if g > r and g > b_c:
-                                    element = "poison"
-                                elif b_c > r and b_c > g:
-                                    element = "ice"
+                                    element = "fire"
+                                    if g > r and g > b_c:
+                                        element = "poison"
+                                    elif b_c > r and b_c > g:
+                                        element = "ice"
 
-                                ex = (b1_x + b2_x) / 2.0
-                                ey = (b1_y + b2_y) / 2.0
-                                explosion_radius_sq = 150.0 ** 2
+                                    ex = (b1_x + b2_x) / 2.0
+                                    ey = (b1_y + b2_y) / 2.0
+                                    explosion_radius_sq = 150.0 ** 2
 
-                                for target in balls:
-                                    if getattr(target, "alive", False) and getattr(target, "ball_type", None) != "spectator":
-                                        tx = getattr(target, "x", 0.0)
-                                        ty = getattr(target, "y", 0.0)
-                                        if isinstance(tx, (int, float)) and isinstance(ty, (int, float)):
-                                            t_dist_sq = (tx - ex) ** 2 + (ty - ey) ** 2
-                                            if t_dist_sq <= explosion_radius_sq:
-                                                if hasattr(target, "take_damage"):
-                                                    target.take_damage(30.0)
-                                                else:
-                                                    thp = getattr(target, "hp", 100.0)
-                                                    if isinstance(thp, (int, float)):
-                                                        target.hp = thp - 30.0
+                                    for target in balls:
+                                        if getattr(target, "alive", False) and getattr(target, "ball_type", None) != "spectator":
+                                            tx = getattr(target, "x", 0.0)
+                                            ty = getattr(target, "y", 0.0)
+                                            if isinstance(tx, (int, float)) and isinstance(ty, (int, float)):
+                                                t_dist_sq = (tx - ex) ** 2 + (ty - ey) ** 2
+                                                if t_dist_sq <= explosion_radius_sq:
+                                                    if hasattr(target, "take_damage"):
+                                                        target.take_damage(30.0)
+                                                    else:
+                                                        thp = getattr(target, "hp", 100.0)
+                                                        if isinstance(thp, (int, float)):
+                                                            target.hp = thp - 30.0
 
-                                                if element == "fire":
-                                                    btimer = getattr(target, "burn_timer", 0.0)
-                                                    target.burn_timer = max(btimer if isinstance(btimer, (int, float)) else 0.0, 5.0)
-                                                elif element == "poison":
-                                                    ptimer = getattr(target, "poison_timer", 0.0)
-                                                    target.poison_timer = max(ptimer if isinstance(ptimer, (int, float)) else 0.0, 5.0)
-                                                elif element == "ice":
-                                                    ftimer = getattr(target, "frozen_timer", 0.0)
-                                                    target.frozen_timer = max(ftimer if isinstance(ftimer, (int, float)) else 0.0, 5.0)
+                                                    if element == "fire":
+                                                        btimer = getattr(target, "burn_timer", 0.0)
+                                                        target.burn_timer = max(btimer if isinstance(btimer, (int, float)) else 0.0, 5.0)
+                                                    elif element == "poison":
+                                                        ptimer = getattr(target, "poison_timer", 0.0)
+                                                        target.poison_timer = max(ptimer if isinstance(ptimer, (int, float)) else 0.0, 5.0)
+                                                    elif element == "ice":
+                                                        ftimer = getattr(target, "frozen_timer", 0.0)
+                                                        target.frozen_timer = max(ftimer if isinstance(ftimer, (int, float)) else 0.0, 5.0)
 
-                                b1.aura_explosion_cooldown = 10.0
-                                b2.aura_explosion_cooldown = 10.0
+                                    b1.aura_explosion_cooldown = 10.0
+                                    b2.aura_explosion_cooldown = 10.0
 
-                                if hasattr(world, "add_event"):
-                                    world.add_event("aura_elemental_explosion", {
-                                        "x": ex, "y": ey, "element": element,
-                                        "b1_id": getattr(b1, "id", None),
-                                        "b2_id": getattr(b2, "id", None)
-                                    })
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("aura_elemental_explosion", {
+                                            "x": ex, "y": ey, "element": element,
+                                            "b1_id": getattr(b1, "id", None),
+                                            "b2_id": getattr(b2, "id", None)
+                                        })
 
     def on_ball_died(self, world, ball, killer=None):
         if killer and getattr(ball, "id", None) and getattr(killer, "id", None):
