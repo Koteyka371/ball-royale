@@ -574,6 +574,150 @@ class GameMode:
 									if "control_target_y" in h: h.control_target_y = h_y
 									elif h.has_method("set_meta"): h.set_meta("control_target_y", h_y)
 
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+				var hazards = arena.hazards
+				if typeof(hazards) == TYPE_ARRAY:
+					var to_remove_grave = []
+					var new_fragments = []
+					for h in hazards:
+						var h_kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+							h_kind = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and "kind" in h:
+							h_kind = h.kind
+
+						if h_kind == "grave_trap":
+							var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+							var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+							var h_radius = h.get("radius", 30.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+							var h_team = h.get("owner_team", "") if typeof(h) == TYPE_DICTIONARY else (h.owner_team if "owner_team" in h else "")
+
+							for b in balls:
+								var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+								var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else "")
+
+								if b_alive and b_team != h_team:
+									var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+									var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+									var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+
+									var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+									if dist <= h_radius + b_radius:
+										to_remove_grave.append(h)
+
+										# Spawn bone fragments
+										var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+										for i in range(6):
+											var angle = i * (PI / 3.0)
+											var frag_id = hazards.size() + (randi() % 90000 + 10000) + i
+											if ProceduralArenaScript != null:
+												var frag = ProceduralArenaScript.Hazard.new(frag_id, h_x, h_y, 15.0, "bone_fragment", 30.0)
+												if frag.has_method("set_meta"):
+													frag.set_meta("duration", 2.0)
+													frag.set_meta("owner_team", h_team)
+													frag.set_meta("vx", cos(angle) * 300.0)
+													frag.set_meta("vy", sin(angle) * 300.0)
+												else:
+													frag.duration = 2.0
+													frag.owner_team = h_team
+													frag.vx = cos(angle) * 300.0
+													frag.vy = sin(angle) * 300.0
+												new_fragments.append(frag)
+											else:
+												var frag = {
+													"id": frag_id, "x": h_x, "y": h_y, "radius": 15.0, "kind": "bone_fragment", "damage": 30.0,
+													"duration": 2.0, "owner_team": h_team, "vx": cos(angle) * 300.0, "vy": sin(angle) * 300.0
+												}
+												new_fragments.append(frag)
+
+										if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+											world.add_event("grave_trap_explosion", {"x": h_x, "y": h_y})
+										break
+
+						elif h_kind == "bone_fragment":
+							var dur = 0.0
+							if typeof(h) == TYPE_DICTIONARY:
+								dur = h.get("duration", 0.0)
+								dur -= delta
+								h["duration"] = dur
+							else:
+								dur = h.duration if "duration" in h else (h.get_meta("duration") if h.has_method("get_meta") and h.has_meta("duration") else 0.0)
+								dur -= delta
+								if "duration" in h: h.duration = dur
+								elif h.has_method("set_meta"): h.set_meta("duration", dur)
+
+							if dur <= 0.0:
+								to_remove_grave.append(h)
+								continue
+
+							var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+							var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+							var h_vx = h.get("vx", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vx if "vx" in h else (h.get_meta("vx") if h.has_method("get_meta") and h.has_meta("vx") else 0.0))
+							var h_vy = h.get("vy", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.vy if "vy" in h else (h.get_meta("vy") if h.has_method("get_meta") and h.has_meta("vy") else 0.0))
+
+							h_x += h_vx * delta
+							h_y += h_vy * delta
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["x"] = h_x
+								h["y"] = h_y
+							else:
+								h.x = h_x
+								h.y = h_y
+
+							var h_radius = h.get("radius", 15.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+							var h_team = h.get("owner_team", "") if typeof(h) == TYPE_DICTIONARY else (h.owner_team if "owner_team" in h else (h.get_meta("owner_team") if h.has_method("get_meta") and h.has_meta("owner_team") else ""))
+							var h_damage = h.get("damage", 30.0) if typeof(h) == TYPE_DICTIONARY else h.damage
+
+							for b in balls:
+								var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+								var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else "")
+
+								if b_alive and b_team != h_team:
+									var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+									var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+									var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 15.0)
+
+									var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+									if dist <= h_radius + b_radius:
+										to_remove_grave.append(h)
+
+										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+											b.take_damage(h_damage)
+										else:
+											var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.hp
+											bhp -= h_damage
+											if typeof(b) == TYPE_DICTIONARY:
+												b["hp"] = bhp
+												if bhp <= 0: b["alive"] = false
+											else:
+												b.hp = bhp
+												if bhp <= 0: b.alive = false
+
+										var st = 3.0
+										var cur_st = b.get("slow_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.slow_timer if "slow_timer" in b else (b.get_meta("slow_timer") if b.has_method("get_meta") and b.has_meta("slow_timer") else 0.0))
+										st = max(cur_st, 3.0)
+										var base_sp = b.get("base_speed", b.get("speed", 100.0)) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else (b.get_meta("base_speed") if b.has_method("get_meta") and b.has_meta("base_speed") else b.speed))
+
+										if typeof(b) == TYPE_DICTIONARY:
+											b["slow_timer"] = st
+											b["speed"] = base_sp * 0.5
+										else:
+											if "slow_timer" in b: b.slow_timer = st
+											elif b.has_method("set_meta"): b.set_meta("slow_timer", st)
+											b.speed = base_sp * 0.5
+
+										break
+
+					for h in to_remove_grave:
+						if hazards.has(h):
+							hazards.erase(h)
+					for f in new_fragments:
+						hazards.append(f)
+
 		# Black Hole Mine detonating logic
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
 			var arena = world.arena
@@ -1918,6 +2062,39 @@ class GameMode:
 		elif ball.has_method("get_meta") and ball.has_meta("ball_type"): b_type = ball.get_meta("ball_type")
 
 		if typeof(b_type) == TYPE_STRING and b_type.to_lower() == "necromancer":
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_team = "unknown"
+			if typeof(ball) == TYPE_DICTIONARY:
+				if ball.has("x"): b_x = ball.x
+				if ball.has("y"): b_y = ball.y
+				if ball.has("team"): b_team = ball.team
+			elif typeof(ball) == TYPE_OBJECT:
+				if "x" in ball: b_x = ball.x
+				if "y" in ball: b_y = ball.y
+				if "team" in ball: b_team = ball.team
+
+			if "arena" in world and world.arena != null and "hazards" in world.arena:
+				var h_id = world.arena.hazards.size() + (randi() % 90000 + 10000)
+				var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArenaScript != null:
+					var grave_trap = ProceduralArenaScript.Hazard.new(h_id, b_x, b_y, 30.0, "grave_trap", 0.0)
+					if grave_trap.has_method("set_meta"):
+						grave_trap.set_meta("duration", -1.0)
+						grave_trap.set_meta("active", true)
+						grave_trap.set_meta("owner_team", b_team)
+					else:
+						grave_trap.duration = -1.0
+						grave_trap.active = true
+						grave_trap.owner_team = b_team
+					world.arena.hazards.append(grave_trap)
+				else:
+					var grave_trap = {
+						"id": h_id, "x": b_x, "y": b_y, "radius": 30.0, "kind": "grave_trap", "damage": 0.0,
+						"duration": -1.0, "active": true, "owner_team": b_team
+					}
+					world.arena.hazards.append(grave_trap)
+
 			if "balls" in world:
 				var minion_owner_id = null
 				if "id" in ball: minion_owner_id = ball.id
