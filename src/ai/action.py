@@ -7708,6 +7708,18 @@ class Action:
                                 self._spawn_skill_particles("emp")
                             continue
                         elif hazard.kind == "emp_grenade":
+                            if getattr(self.ball, "status_reflect_active", False):
+                                hazard.duration = 0.0
+                                hazard.active = False
+                                if hasattr(hazard, "owner_id"):
+                                    if hasattr(self.world, "balls"):
+                                        for enemy in self.world.balls:
+                                            if enemy.id == hazard.owner_id:
+                                                enemy.is_stunned = True
+                                                enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 3.0)
+                                                break
+                                continue
+
                             b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                             is_metal = b_type in ["drone", "juggernaut", "tank", "neural"] or "metal" in b_type or "armor" in b_type or "metal" in getattr(self.ball, "traits", []) or "armor" in getattr(self.ball, "traits", [])
                             if is_metal:
@@ -7927,6 +7939,17 @@ class Action:
                                             self.ball.x += (dx/dist) * 100.0 * delta
                                             self.ball.y += (dy/dist) * 100.0 * delta
                         elif hazard.kind == "poison_cloud":
+                            if getattr(self.ball, "status_reflect_active", False):
+                                hazard.duration = 0.0
+                                hazard.active = False
+                                if hasattr(hazard, "owner_id"):
+                                    if hasattr(self.world, "balls"):
+                                        for enemy in self.world.balls:
+                                            if enemy.id == hazard.owner_id:
+                                                enemy.poison_timer = getattr(enemy, "poison_timer", 0.0) + 5.0
+                                                break
+                                continue
+
                             if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'alchemist':
                                 pass # Alchemists are immune to poison cloud damage
                             else:

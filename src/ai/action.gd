@@ -15049,6 +15049,18 @@ func execute(strategy: String, delta: float):
                             self._spawn_skill_particles("emp")
                         continue
                     elif hazard.kind == "emp_grenade":
+                        if "status_reflect_active" in self.ball and self.ball.status_reflect_active:
+                            hazard.duration = 0.0
+                            hazard.active = false
+                            if "owner_id" in hazard:
+                                if self.world != null and "balls" in self.world:
+                                    for enemy in self.world.balls:
+                                        if "id" in enemy and enemy.id == hazard.owner_id:
+                                            enemy.is_stunned = true
+                                            enemy.stun_timer = max(enemy.get("stun_timer", 0.0), 3.0) if "stun_timer" in enemy else 3.0
+                                            break
+                            continue
+
                         var b_type = ""
                         if "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower()
                         elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type = str(self.ball.get_meta("ball_type")).to_lower()
