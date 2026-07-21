@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1231] Quantum Teleport Mutator — *2026-07-21 20:29:24 UTC*
+
+A new mutator for balls where their dash skill is replaced by a short-range instantaneous teleport, which can pass through thin walls but has a longer cooldown.
+
+---
+
 ## [idea-1268] Bounty Hunter Contract Extension — *2026-07-21 20:29:19 UTC*
 
 An item that extends the time a target is marked as a bounty, or instantly resets their bounty indicator if they go into stealth.
