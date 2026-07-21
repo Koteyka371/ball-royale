@@ -1,0 +1,4 @@
+{
+  "title": "Glitch Storm Mode",
+  "description": "A random game mode where the arena periodically experiences 'glitch storms'. During a glitch storm, collisions behave unpredictably (sometimes passing through walls or reflecting at random angles), random players briefly turn invisible, and active hazards swap positions on the map. Adapting to the chaos is key to surviving the round."
+}

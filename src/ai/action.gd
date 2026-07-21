@@ -4563,11 +4563,93 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_overdrive_timer"):
         so_timer = self.ball.get_meta("speed_overdrive_timer")
 
+    var so_duration = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_overdrive_duration"):
+        so_duration = self.ball.get_meta("speed_overdrive_duration")
+    elif "speed_overdrive_duration" in self.ball:
+        so_duration = self.ball.speed_overdrive_duration
+
+    var mini_vortex_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mini_vortex_timer"):
+        mini_vortex_timer = self.ball.get_meta("mini_vortex_timer")
+    elif "mini_vortex_timer" in self.ball:
+        mini_vortex_timer = self.ball.mini_vortex_timer
+
     if so_timer > 0.0:
+        so_duration += delta
+        if so_duration >= 10.0:
+            mini_vortex_timer = 3.0
+            so_duration = 0.0
+
         so_timer -= delta
         if so_timer <= 0.0:
             so_timer = 0.0
+    else:
+        so_duration = 0.0
 
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+        self.ball.set_meta("speed_overdrive_duration", so_duration)
+        self.ball.set_meta("mini_vortex_timer", mini_vortex_timer)
+    if "speed_overdrive_duration" in self.ball:
+        self.ball.speed_overdrive_duration = so_duration
+    if "mini_vortex_timer" in self.ball:
+        self.ball.mini_vortex_timer = mini_vortex_timer
+
+    if mini_vortex_timer > 0.0:
+        mini_vortex_timer -= delta
+        var is_active = true
+        if mini_vortex_timer <= 0.0:
+            mini_vortex_timer = 0.0
+            is_active = false
+
+        if is_active or mini_vortex_timer == 0.0:
+            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                var hazards_to_destroy = []
+                for h in self.world.arena.hazards:
+                    var h_kind = ""
+                    if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+                    elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+
+                    if h_kind != "healing_spring" and h_kind != "defensive_shield" and h_kind != "personal_safe_zone":
+                        var hx = 0.0
+                        var hy = 0.0
+                        if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h.x
+                        elif typeof(h) == TYPE_OBJECT and "x" in h: hx = h.x
+                        if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h.y
+                        elif typeof(h) == TYPE_OBJECT and "y" in h: hy = h.y
+
+                        var dx = hx - my_x
+                        var dy = hy - my_y
+                        var dist_sq = dx*dx + dy*dy
+
+                        if dist_sq <= 40000.0:
+                            if dist_sq < 2500.0:
+                                hazards_to_destroy.append(h)
+                            else:
+                                var dist = sqrt(dist_sq)
+                                if dist > 0.0:
+                                    var pull_speed = 300.0
+                                    var new_x = hx - (dx/dist) * pull_speed * delta
+                                    var new_y = hy - (dy/dist) * pull_speed * delta
+                                    if typeof(h) == TYPE_DICTIONARY:
+                                        h.x = new_x
+                                        h.y = new_y
+                                    elif typeof(h) == TYPE_OBJECT:
+                                        if "x" in h: h.x = new_x
+                                        if "y" in h: h.y = new_y
+
+                for h in hazards_to_destroy:
+                    var idx = self.world.arena.hazards.find(h)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("mini_vortex_timer", mini_vortex_timer)
+        if "mini_vortex_timer" in self.ball:
+            self.ball.mini_vortex_timer = mini_vortex_timer
+
+
+    if so_timer > 0.0:
         if "stun_timer" in self.ball: self.ball.stun_timer = 0.0
         if "is_stunned" in self.ball: self.ball.is_stunned = false
         if "speed_debuff_timer" in self.ball: self.ball.speed_debuff_timer = 0.0

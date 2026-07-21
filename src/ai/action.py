@@ -2041,10 +2041,52 @@ class Action:
                                         b.siren_fear_source_y = self.ball.y
 
         if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
+            self.ball.speed_overdrive_duration = getattr(self.ball, "speed_overdrive_duration", 0.0) + delta
+
+            if getattr(self.ball, "speed_overdrive_duration", 0.0) >= 10.0:
+                self.ball.mini_vortex_timer = 3.0
+                self.ball.speed_overdrive_duration = 0.0
+        else:
+            self.ball.speed_overdrive_duration = 0.0
+
+        if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
             self.ball.speed_overdrive_timer -= delta
             if self.ball.speed_overdrive_timer <= 0:
                 self.ball.speed_overdrive_timer = 0.0
 
+        if getattr(self.ball, "mini_vortex_timer", 0.0) > 0.0:
+            self.ball.mini_vortex_timer -= delta
+            is_active = True
+            if self.ball.mini_vortex_timer <= 0.0:
+                self.ball.mini_vortex_timer = 0.0
+                is_active = False
+
+            if is_active or getattr(self.ball, "mini_vortex_timer", 0.0) == 0.0:
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    hazards_to_destroy = []
+                    for h in self.world.arena.hazards:
+                        if getattr(h, "kind", "") not in ["healing_spring", "defensive_shield", "personal_safe_zone"]:
+                            hx = getattr(h, "x", 0.0)
+                            hy = getattr(h, "y", 0.0)
+                            dx = hx - self.ball.x
+                            dy = hy - self.ball.y
+                            dist_sq = dx*dx + dy*dy
+                            if dist_sq <= 40000.0: # 200 units radius
+                                if dist_sq < 2500.0: # 50 units
+                                    hazards_to_destroy.append(h)
+                                else:
+                                    import math
+                                    dist = math.sqrt(dist_sq)
+                                    if dist > 0.0:
+                                        pull_speed = 300.0
+                                        h.x -= (dx/dist) * pull_speed * delta
+                                        h.y -= (dy/dist) * pull_speed * delta
+
+                    for h in hazards_to_destroy:
+                        if h in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(h)
+
+        if getattr(self.ball, "speed_overdrive_timer", 0.0) > 0:
             # Immunity logic: clear any slows or stuns if active
             self.ball.stun_timer = 0.0
             self.ball.is_stunned = False
