@@ -15257,7 +15257,7 @@ class Action:
                 if enemies:
                     for enemy in enemies:
                         if math.hypot(enemy.x - self.ball.x, enemy.y - self.ball.y) < 150.0:
-                            enemy.silence_timer = 5.0
+                            enemy.silence_timer = 3.0
             elif skill_name in ["place_fake_booster", "place_dummy_item", "place_fake_flare", "place_fake_healing_orb"]:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class FakeBooster:

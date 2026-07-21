@@ -29070,9 +29070,9 @@ func _use_skill():
                 var dist = sqrt(dx*dx + dy*dy)
                 if dist < 150.0:
                     if "silence_timer" in enemy:
-                        enemy.silence_timer = 5.0
+                        enemy.silence_timer = 3.0
                     elif enemy.has_method("set_meta"):
-                        enemy.set_meta("silence_timer", 5.0)
+                        enemy.set_meta("silence_timer", 3.0)
         elif skill_name == "place_fake_booster" or skill_name == "place_dummy_item" or skill_name == "place_fake_flare" or skill_name == "place_fake_healing_orb":
             if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                 var fb = {}

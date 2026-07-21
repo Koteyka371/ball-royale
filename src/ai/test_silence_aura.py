@@ -51,13 +51,13 @@ def test_silence_aura_applies_timer():
 
     action._use_skill()
 
-    assert enemy_close.silence_timer == 5.0
+    assert enemy_close.silence_timer == 3.0
     assert enemy_far.silence_timer == 0.0
     assert ally.silence_timer == 0.0
 
 def test_silence_blocks_skills():
     ball = MockBall(1, 0, 0, "team1")
-    ball.silence_timer = 5.0
+    ball.silence_timer = 3.0
     ball.skill = "dash"
 
     world = MockWorld([ball])
@@ -70,18 +70,18 @@ def test_silence_blocks_skills():
 
 def test_silence_timer_decrements():
     ball = MockBall(1, 0, 0, "team1")
-    ball.silence_timer = 5.0
+    ball.silence_timer = 3.0
 
     world = MockWorld([ball])
 
     action = Action(ball, world)
     action.execute("idle", 1.0)
 
-    assert ball.silence_timer == 4.0
+    assert ball.silence_timer == 2.0
 
 def test_silence_blocks_dash():
     ball = MockBall(1, 0, 0, "team1")
-    ball.silence_timer = 5.0
+    ball.silence_timer = 3.0
     ball.stamina = 100
 
     world = MockWorld([ball])
