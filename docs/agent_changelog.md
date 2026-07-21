@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1253] Low Gravity Zone Hazard — *2026-07-21 04:10:10 UTC*
+
+A hazard that applies a low-gravity effect to balls within it, reducing their friction, altering movement speed unexpectedly, and increasing the distance they bounce off walls.
+
+---
+
 ## [idea-1250] Mirage Terrain Hazard — *2026-07-21 04:00:51 UTC*
 
 A hazard zone that visually mimics a safe area or a beneficial spring but reveals its true damaging nature only when a player steps into it.
