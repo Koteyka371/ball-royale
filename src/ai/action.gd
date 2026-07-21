@@ -15145,6 +15145,13 @@ func execute(strategy: String, delta: float):
                                 else:
                                     if self.ball.has_method("set_meta"):
                                         self.ball.set_meta("stutter_timer", 1.0)
+                                        self.ball.set_meta("pending_supercharge", true)
+                                    elif "stutter_timer" in self.ball:
+                                        self.ball.stutter_timer = 1.0
+                                        self.ball.pending_supercharge = true
+                                    else:
+                                        self.ball["stutter_timer"] = 1.0
+                                        self.ball["pending_supercharge"] = true
                         continue
                     elif hazard.kind == "bone_wall":
                         var dx = self.ball.x - hazard.x
