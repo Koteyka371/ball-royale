@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1110] Mirror Ball Type — *2026-07-21 15:31:08 UTC*
+
+A new ball type that can temporarily turn completely reflective. While active, any direct projectile hits or continuous laser damage is reflected back towards the nearest enemy.
+
+---
+
 ## [idea-1260] Kinetic Discharge — *2026-07-21 09:39:40 UTC*
 
 Entities with Speed Overdrive deal bonus damage based on their current speed when colliding with enemies, converting speed into kinetic burst damage.
