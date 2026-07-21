@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Feedback Loop Mutator",
+  "description": "A custom match mutator where dealing collision damage based on speed generates temporary energy shields for the attacker, encouraging high-speed aggressive plays and rewarding momentum."
+}

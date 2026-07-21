@@ -30918,6 +30918,38 @@ func _resolve_collisions() -> bool:
                     self.ball.set("_last_hit_by_id", other_id)
                     self.ball.set("_last_hit_by_timer", 2.0)
 
+                var so_timer = 0.0
+                if "speed_overdrive_timer" in self.ball:
+                    so_timer = self.ball.speed_overdrive_timer
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_overdrive_timer"):
+                    so_timer = self.ball.get_meta("speed_overdrive_timer")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_overdrive_timer"):
+                    so_timer = self.ball["speed_overdrive_timer"]
+
+                if so_timer > 0.0:
+                    var ball_vx = 0.0
+                    if "vx" in self.ball: ball_vx = self.ball.vx
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): ball_vx = self.ball["vx"]
+                    var ball_vy = 0.0
+                    if "vy" in self.ball: ball_vy = self.ball.vy
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): ball_vy = self.ball["vy"]
+
+                    var speed = sqrt(ball_vx * ball_vx + ball_vy * ball_vy)
+                    var burst_damage = speed * 0.1
+
+                    if typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+                        other.take_damage(burst_damage)
+                    elif typeof(other) == TYPE_OBJECT and "hp" in other:
+                        other.hp -= burst_damage
+                        if other.hp <= 0:
+                            other.hp = 0
+                            other.alive = false
+                    elif typeof(other) == TYPE_DICTIONARY and other.has("hp"):
+                        other["hp"] -= burst_damage
+                        if other["hp"] <= 0:
+                            other["hp"] = 0
+                            other["alive"] = false
+
             bounced = true
 
     return bounced
