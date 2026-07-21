@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1243] Acid Rain Event — *2026-07-21 02:13:00 UTC*
+
+Periodically during battle royale matches, acid rain falls globally, applying a small DOT (damage over time) to all balls. Shields mitigate the effect, encouraging players to seek out shield boosters or specific shelter zones.
+
+---
+
 ## [idea-1242] Quantum Tunnels — *2026-07-21 02:12:55 UTC*
 
 Portals that appear randomly and teleport balls instantly across the map. Teleporting resets velocity and can lead to strategic advantages or sudden death traps if leading into hazards.
