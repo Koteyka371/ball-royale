@@ -12109,6 +12109,37 @@ func execute(strategy: String, delta: float):
                             if "vx" in self.ball and "vy" in self.ball:
                                 self.ball.vx = self.ball.vx * max(0.0, 1.0 - 5.0 * delta)
                                 self.ball.vy = self.ball.vy * max(0.0, 1.0 - 5.0 * delta)
+                elif hazard.kind == "low_gravity":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    var h_rad = hazard.radius
+                    if dist_sq < h_rad * h_rad:
+                        if "is_frictionless" in self.ball: self.ball.is_frictionless = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("is_frictionless", true)
+                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_frictionless"] = true
+
+                        var speed_mult = randf_range(0.5, 1.5)
+                        var base_s = 100.0
+                        if "base_speed" in self.ball: base_s = self.ball.base_speed
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): base_s = self.ball.get_meta("base_speed")
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): base_s = self.ball["base_speed"]
+
+                        if "speed" in self.ball:
+                            self.ball.speed = base_s * speed_mult
+                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["speed"] = base_s * speed_mult
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            var cur_b = 1.0
+                            if self.ball.has("bounciness_multiplier"): cur_b = self.ball["bounciness_multiplier"]
+                            self.ball["bounciness_multiplier"] = max(cur_b, 2.0)
+                        elif self.ball.has_method("set_meta"):
+                            var cur_b = 1.0
+                            if self.ball.has_meta("bounciness_multiplier"): cur_b = self.ball.get_meta("bounciness_multiplier")
+                            self.ball.set_meta("bounciness_multiplier", max(cur_b, 2.0))
+                        elif "bounciness_multiplier" in self.ball:
+                            self.ball.bounciness_multiplier = max(self.ball.bounciness_multiplier, 2.0)
                 elif hazard.kind == "quicksand":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
