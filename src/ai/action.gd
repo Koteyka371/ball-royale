@@ -18536,6 +18536,54 @@ func execute(strategy: String, delta: float):
     var bounced_col = _resolve_collisions()
     var bounced_wall = _clamp_position()
 
+    var is_proj = false
+    var b_type_curr = ""
+    if "ball_type" in self.ball: b_type_curr = self.ball.ball_type
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type_curr = self.ball.get_meta("ball_type")
+    if b_type_curr == "projectile" or b_type_curr == "spell": is_proj = true
+    elif "is_projectile" in self.ball and self.ball.is_projectile: is_proj = true
+
+    var o_id = null
+    if "owner_id" in self.ball: o_id = self.ball.owner_id
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("owner_id"): o_id = self.ball.get_meta("owner_id")
+
+    var checked = false
+    if "_pinball_checked" in self.ball and self.ball._pinball_checked: checked = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("_pinball_checked"): checked = self.ball.get_meta("_pinball_checked")
+
+    if is_proj and o_id != null and not checked:
+        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["_pinball_checked"] = true
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("_pinball_checked", true)
+        else: self.ball.set("_pinball_checked", true)
+
+        if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+            var o_ball = null
+            for b in self.world.balls:
+                var b_id = null
+                if "id" in b: b_id = b.id
+                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                if b_id == o_id:
+                    var o_alive = true
+                    if "alive" in b: o_alive = b.alive
+                    if o_alive:
+                        o_ball = b
+                        break
+            if o_ball != null:
+                var pinball_timer = 0.0
+                if "pinball_projectile_timer" in o_ball: pinball_timer = o_ball.pinball_projectile_timer
+                elif typeof(o_ball) == TYPE_OBJECT and o_ball.has_method("get_meta") and o_ball.has_meta("pinball_projectile_timer"): pinball_timer = o_ball.get_meta("pinball_projectile_timer")
+                if pinball_timer > 0.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["is_ricochet_laser"] = true
+                        self.ball["bounces_left"] = 5
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("is_ricochet_laser", true)
+                        self.ball.set_meta("bounces_left", 5)
+                    else:
+                        self.ball.set("is_ricochet_laser", true)
+                        self.ball.set("bounces_left", 5)
+
+
     if bounced_wall:
         if typeof(self.ball) == TYPE_DICTIONARY:
             if not (self.ball.has("wall_stick_timer") and self.ball["wall_stick_timer"] > 0.0):
@@ -22557,6 +22605,16 @@ func _collect_booster(delta: float):
                     if w_hazards35 != null:
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
+            elif "kind" in nearest and nearest.kind == "pinball_projectile_booster":
+                ball.pinball_projectile_timer = 5.0
+                if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        world.arena.hazards.remove_at(idx)
+                if typeof(world) == TYPE_OBJECT and "boosters" in world:
+                    var idx = world.boosters.find(nearest)
+                    if idx != -1:
+                        world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
                 var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
                 var new_skill = skills[randi() % skills.size()]
@@ -27914,6 +27972,13 @@ func _use_skill():
                             "owner_id": b_id,
                             "active": true
                         }
+
+                        var b_pinball = 0.0
+                        if "pinball_projectile_timer" in self.ball: b_pinball = self.ball.pinball_projectile_timer
+                        if b_pinball > 0.0:
+                            fb["is_ricochet_laser"] = true
+                            fb["bounces_left"] = 5
+
                         arena.hazards.append(fb)
 
                         var cd = 4.5
@@ -33475,6 +33540,19 @@ func _update_skill_timer(delta: float):
                 pull_speed = pull_speed * 3.0 * delta
                 self.ball.x += nx * pull_speed
                 self.ball.y += ny * pull_speed
+
+    var pinball_timer = 0.0
+    if "pinball_projectile_timer" in self.ball:
+        pinball_timer = float(self.ball.pinball_projectile_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("pinball_projectile_timer"):
+        pinball_timer = self.ball.get_meta("pinball_projectile_timer")
+    if pinball_timer > 0:
+        pinball_timer -= delta
+        if pinball_timer < 0: pinball_timer = 0.0
+        if "pinball_projectile_timer" in self.ball:
+            self.ball.pinball_projectile_timer = pinball_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("pinball_projectile_timer", pinball_timer)
 
     var pull_timer = 0.0
     if "pull_booster_timer" in self.ball:
