@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-883] Quantum Entanglement Buff — *2026-07-21 09:30:57 UTC*
+
+A new booster that links two balls together dynamically. When one ball picks up a health pack or speed boost, the entangled ball also receives a partial percentage of that buff regardless of distance.
+
+---
+
 ## [idea-1256] Aegis Reflection Shield — *2026-07-21 09:26:37 UTC*
 
 A temporary booster that not only absorbs all incoming projectile and skill damage but also reflects 50% of it back to the original attacker.
