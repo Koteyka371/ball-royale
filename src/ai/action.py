@@ -1335,6 +1335,18 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        b_type_initial = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
+        if b_type_initial == "linker" and getattr(self.ball, "link_target", None) is None:
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    b_type = getattr(b, "ball_type", getattr(b.__class__, "BALL_TYPE", "")).lower()
+                    if getattr(b, "alive", True) and b_type != "spectator" and b.id != getattr(self.ball, "id", None) and getattr(b, "team", b_type) != getattr(self.ball, "team", b_type_initial):
+                        self.ball.link_target = b
+                        self.ball.max_hp = getattr(b, "max_hp", 100)
+                        self.ball.hp = getattr(b, "hp", 100)
+                        self.ball.speed = getattr(b, "speed", 5.0)
+                        break
+
         if getattr(self.ball, "is_mounted", False):
             # The ball's HP *is* the mount's HP. If they take damage, ball.hp goes down.
             # Check if mount is destroyed

@@ -2382,6 +2382,58 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var ball_type = ""
+    if "ball_type" in self.ball: ball_type = self.ball.ball_type
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("ball_type"): ball_type = self.ball.get_meta("ball_type")
+
+    var link_target = null
+    if "link_target" in self.ball: link_target = self.ball.link_target
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("link_target"): link_target = self.ball.get_meta("link_target")
+
+    if ball_type == "linker" and link_target == null:
+        if self.world != null and "balls" in self.world:
+            var my_team = ""
+            if "team" in self.ball: my_team = self.ball.team
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+            if my_team == "": my_team = ball_type
+
+            for b in self.world.balls:
+                var b_alive = true
+                if "alive" in b: b_alive = b.alive
+                elif b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                var b_type = ""
+                if "ball_type" in b: b_type = b.ball_type
+                elif b.has_method("has_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+                var b_team = ""
+                if "team" in b: b_team = b.team
+                elif b.has_method("has_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+                if b_team == "": b_team = b_type
+
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+                var b_id = null
+                if "id" in b: b_id = b.id
+
+                if b_alive and b_type != "spectator" and b_id != my_id and b_team != my_team:
+                    if "link_target" in self.ball:
+                        self.ball.link_target = b
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("link_target", b)
+
+                    var max_hp = 100.0
+                    if "max_hp" in b: max_hp = b.max_hp
+                    var hp = 100.0
+                    if "hp" in b: hp = b.hp
+                    var speed = 5.0
+                    if "speed" in b: speed = b.speed
+
+                    if "max_hp" in self.ball: self.ball.max_hp = max_hp
+                    if "hp" in self.ball: self.ball.hp = hp
+                    if "speed" in self.ball: self.ball.speed = speed
+                    break
+
     var is_mnt = false
     if "is_mounted" in self.ball:
         is_mnt = self.ball.is_mounted
