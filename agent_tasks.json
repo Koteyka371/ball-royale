@@ -21286,7 +21286,7 @@
     },
     {
       "id": "idea-1242",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunnels",
@@ -31721,6 +31721,40 @@
         "src/ai/quantum_mirage_dash.py",
         "src/ai/quantum_mirage_dash.gd",
         "tests/test_quantum_mirage_dash.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1855",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower Variant",
+      "description": "A mode where random meteors leave glowing fragments that boost damage.",
+      "allowed_paths": [
+        "src/ai/meteor_shower_variant.py",
+        "src/ai/meteor_shower_variant.gd",
+        "tests/test_meteor_shower_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1856",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Overdrive Mode",
+      "description": "A game mode where multiple black holes periodically merge into a massive super-vortex.",
+      "allowed_paths": [
+        "src/ai/black_hole_overdrive.py",
+        "src/ai/black_hole_overdrive.gd",
+        "tests/test_black_hole_overdrive.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

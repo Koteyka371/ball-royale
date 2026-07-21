@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1242] Quantum Tunnels — *2026-07-21 02:12:55 UTC*
+
+Portals that appear randomly and teleport balls instantly across the map. Teleporting resets velocity and can lead to strategic advantages or sudden death traps if leading into hazards.
+
+---
+
 ## [idea-1167] Weather Manipulation Booster — *2026-07-21 01:33:50 UTC*
 
 A new booster that allows the user to change the current arena weather for 10 seconds. This could be used defensively (e.g. summoning rain to put out fire/reduce fire damage, or fog to reduce enemy perception) or offensively (e.g. thunderstorm to speed up tornadoes and increase their pull radius).
