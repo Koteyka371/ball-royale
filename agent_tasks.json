@@ -21900,7 +21900,7 @@
     },
     {
       "id": "idea-1278",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Ice Weather Hazard",
@@ -32435,6 +32435,40 @@
         "src/ai/low_gravity_zone.py",
         "src/ai/low_gravity_zone.gd",
         "tests/test_low_gravity_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1897",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Revival Altars",
+      "description": "Living players can bring a specific item to designated altars on the map to revive ghost teammates, but doing so takes time and makes them vulnerable.",
+      "allowed_paths": [
+        "src/ai/ghost_revival_altars.py",
+        "src/ai/ghost_revival_altars.gd",
+        "tests/test_ghost_revival_altars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1898",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Possession Mechanic for Ghosts",
+      "description": "Ghosts can temporarily possess hazards or traps to manually trigger them when enemies are near, adding a strategic layer to post-death gameplay.",
+      "allowed_paths": [
+        "src/ai/possession_mechanic_for_ghosts.py",
+        "src/ai/possession_mechanic_for_ghosts.gd",
+        "tests/test_possession_mechanic_for_ghosts.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

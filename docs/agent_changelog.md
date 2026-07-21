@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1278] Black Ice Weather Hazard — *2026-07-21 21:40:47 UTC*
+
+A weather type or hazard zone that significantly drops steering capabilities (e.g. steering_mult = 0.1) and applies constant slide physics where the ball can't brake effectively, making arena navigation chaotic.
+
+---
+
 ## [idea-1246] Ghost Sabotage Mode — *2026-07-21 21:39:02 UTC*
 
 Dead players become ghosts. They cannot deal damage directly but can slightly push hazards and boosters around to help or hinder surviving players.
