@@ -548,7 +548,7 @@ class GameMode:
 							var dist = sqrt(dx*dx + dy*dy)
 
 							if dist > 5.0:
-								var speed = 150.0 * delta
+								var speed = 450.0 * delta
 								if speed > dist: speed = dist
 								h_x += (dx / dist) * speed
 								h_y += (dy / dist) * speed

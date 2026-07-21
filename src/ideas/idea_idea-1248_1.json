@@ -1,4 +1,4 @@
 {
-    "title": "Hazard Fusion",
-    "description": "When two hazards of different types overlap, they combine into a new hybrid hazard. For example, a fire hazard and a poison cloud could fuse into an explosive venom zone, creating dynamic, unpredictable arena environments."
+    "title": "Chain Reaction Status Effects",
+    "description": "Introduce elemental statuses (e.g. wet, shocked, oiled, burning) that can combo with each other for amplified effects. For example, applying a 'shocked' effect to a 'wet' ball chains the shock to nearby entities, or 'burning' an 'oiled' ball triggers a massive explosion."
 }

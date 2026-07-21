@@ -449,6 +449,42 @@ class MockSimpleHazard:
         self.kind = kind
         self.damage = damage
 
+def test_spectator_continuous_control():
+    world = MockWorld()
+    world.arena = MockArena()
+    hazard1 = MockSimpleHazard(1, 100, 100, 10.0, "meteor", 50.0)
+    hazard2 = MockSimpleHazard(2, 200, 200, 10.0, "meteor", 50.0)
+    world.arena.hazards = [hazard1, hazard2]
+
+    crowd = CrowdSystem(world)
+    crowd.excitement_level = 0.0
+
+    # First control command
+    crowd.process_external_command("viewer1", "!control meteor 500 500", [])
+
+    # Verify one hazard is controlled and loyalty points are given
+    controlled_hazards = [h for h in world.arena.hazards if getattr(h, "controlled_by", None) == "viewer1"]
+    assert len(controlled_hazards) == 1
+    assert crowd.viewer_loyalty.get("viewer1", 0) == 15
+    assert crowd.excitement_level == 10.0
+
+    hazard = controlled_hazards[0]
+    hazard.control_timer = 5.0  # Simulate some time passing
+
+    # Second control command for the same viewer and same hazard type
+    crowd.process_external_command("viewer1", "!control meteor 800 800", [])
+
+    # Verify the SAME hazard is updated, timer is refreshed, and NO extra loyalty/excitement points are given
+    assert getattr(hazard, "control_target_x", 0) == 800
+    assert getattr(hazard, "control_target_y", 0) == 800
+    assert getattr(hazard, "control_timer", 0) == 10.0
+
+    controlled_hazards_after = [h for h in world.arena.hazards if getattr(h, "controlled_by", None) == "viewer1"]
+    assert len(controlled_hazards_after) == 1  # Still only 1
+    assert crowd.viewer_loyalty.get("viewer1", 0) == 15  # Did not increase
+    assert crowd.excitement_level == 10.0  # Did not increase
+
+
 def test_spectator_control_hazard():
     world = MockWorld()
     world.arena = MockArena()
@@ -472,7 +508,7 @@ def test_spectator_control_hazard():
     mode = GameMode()
     mode.tick(world, [], delta=1.0)
 
-    # Hazard should move towards 500, 500 (dx=400, dy=400, dist=565.6, speed=150*1)
+    # Hazard should move towards 500, 500 (dx=400, dy=400, dist=565.6, speed=450*1)
     assert hazard.x > 100
     assert hazard.y > 100
     assert getattr(hazard, "control_timer", 0) == 9.0
