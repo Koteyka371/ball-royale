@@ -21218,7 +21218,7 @@
     },
     {
       "id": "idea-1238",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Rubber Band Arena",
@@ -31908,6 +31908,40 @@
         "src/ai/twitch_loyalty_shop_cosmetic_auras.py",
         "src/ai/twitch_loyalty_shop_cosmetic_auras.gd",
         "tests/test_twitch_loyalty_shop_cosmetic_auras.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1866",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Stealth Camouflage",
+      "description": "When out of combat for a certain amount of time, Bounty Hunters become semi-invisible to enemies without thermal vision, allowing them to ambush high-priority targets.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_stealth_camouflage.py",
+        "src/ai/bounty_hunter_stealth_camouflage.gd",
+        "tests/test_bounty_hunter_stealth_camouflage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1867",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Tracking Darts",
+      "description": "Bounty Hunters can shoot tracking darts that stick to enemies. Tracked enemies share their vision with the Bounty Hunter and take increased damage from all sources for a short duration.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_tracking_darts.py",
+        "src/ai/bounty_hunter_tracking_darts.gd",
+        "tests/test_bounty_hunter_tracking_darts.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
