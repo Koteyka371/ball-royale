@@ -274,7 +274,6 @@ class GameMode:
         week_mod = weekly_mutators[week_index]
         world.weekly_mutator = week_mod["type"]
 
-
         for b in balls:
 
             if getattr(b, "ball_type", None) != "spectator":
@@ -303,7 +302,6 @@ class GameMode:
                     b.lifesteal = getattr(b, "lifesteal", 0.0) + 0.5
                 elif week_mod["type"] == "low_gravity":
                     b.mass = getattr(b, "mass", 1.0) * 0.5
-
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
@@ -435,9 +433,6 @@ class GameMode:
                 else:
                     b.overcharge_timer = otimer
 
-
-
-
         # Mid-game Neutral Shop Zone logic
         shop_x, shop_y, shop_radius = 500.0, 500.0, 50.0
         for b in balls:
@@ -519,8 +514,6 @@ class GameMode:
                 else:
                     b.time_since_death += delta
         pass
-
-
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             # Process Emote Hazards
@@ -706,7 +699,6 @@ class GameMode:
 
                         if m in world.arena.hazards: world.arena.hazards.remove(m)
 
-
         # --- BOUNTY PLACER BUFF TICK ---
         pm = getattr(world, "profile_manager", None)
         if pm and hasattr(pm, "data") and "temporary_buffs" in pm.data:
@@ -728,10 +720,6 @@ class GameMode:
                         if getattr(b, "id", None) == "local_player":
                             b.base_damage = getattr(b, "_original_base_damage", getattr(b, "base_damage", 10.0))
                             b.damage = b.base_damage
-
-
-
-
 
         # Seasonal Hazards
         if not hasattr(world, "seasonal_hazard_timer") or not isinstance(getattr(world, "seasonal_hazard_timer"), (int, float)):
@@ -960,7 +948,6 @@ class GameMode:
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         """Called every tick to check if there is a winner. Returns winner name or None."""
         return None
-
 
 class DraftRoyaleMode(GameMode):
     def __init__(self):
@@ -1192,7 +1179,6 @@ class ShadowMonster:
 class BattleRoyaleMode(GameMode):
     def calculate_bounty_reward(self, target_bounty: int) -> int:
         return int(15 * (1.2 ** target_bounty))
-
 
     def __init__(self):
         super().__init__()
@@ -1426,7 +1412,6 @@ class BattleRoyaleMode(GameMode):
                 if getattr(b, "team", "") == team_name and getattr(b, "alive", True):
                     b.speed_boost_timer = getattr(b, "speed_boost_timer", 0.0) + 10.0
 
-
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
         if not hasattr(world, "dead_balls"):
@@ -1435,8 +1420,6 @@ class BattleRoyaleMode(GameMode):
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
-
-
 
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
@@ -1484,8 +1467,6 @@ class BattleRoyaleMode(GameMode):
                         w_val = getattr(b, "weather_immunity_timer", 0.0)
                         is_immune = (isinstance(w_val, (int, float)) and w_val > 0)
 
-
-
                         # Apply DoT if unprotected
                         if not is_shielded and not has_hazmat and not has_umbrella and not is_immune:
                             damage = 10.0 * delta
@@ -1506,7 +1487,6 @@ class BattleRoyaleMode(GameMode):
                                     b.alive = False
                                     if not hasattr(b, "killer") or not b.killer:
                                         b.killer = "acid_rain"
-
 
         import math
 
@@ -1696,13 +1676,11 @@ class BattleRoyaleMode(GameMode):
                             if not hasattr(b, "killer") or not b.killer:
                                 b.killer = "safe_zone"
 
-
                     # Apply burn status effect (if not already burned/lava)
                     if not hasattr(b, "burn_timer") or b.burn_timer <= 0:
                         b.burn_timer = 2.0
                     else:
                         b.burn_timer = max(b.burn_timer, 2.0)
-
 
         # Moving walls / hazards logic
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -1790,7 +1768,6 @@ class BattleRoyaleMode(GameMode):
                 if h in world.arena.hazards:
                     world.arena.hazards.remove(h)
 
-
         # Mutate hazards inside the shrinking safe zone
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
@@ -1856,8 +1833,6 @@ class BattleRoyaleMode(GameMode):
                             world.balls.append(new_decoy)
                             if hasattr(world, "entities") and world.balls is not world.entities:
                                 world.entities.append(new_decoy)
-
-
 
         # Final Zone Boss logic
         if self.zone_radius <= 250.0 and not getattr(self, "final_boss_spawned", False):
@@ -2199,7 +2174,6 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
             world.arena.is_eclipse = (self.weather == "lunar_eclipse")
 
-
             if self.weather == "heatwave":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
                     try:
@@ -2304,7 +2278,6 @@ class BattleRoyaleMode(GameMode):
                         h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
-
 
             if self.weather == "sandstorm":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
@@ -2637,8 +2610,6 @@ class BattleRoyaleMode(GameMode):
                             decoy.active_skill = None
                         world.balls.append(decoy)
 
-
-
         # Weekend Juggernaut Boss logic
         if not getattr(self, "_weekend_boss_checked", False):
             self._weekend_boss_checked = True
@@ -2694,7 +2665,6 @@ class BattleRoyaleMode(GameMode):
                         killer_id = getattr(b, "killer_id", None)
                         if hasattr(world, "add_event"):
                             world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
-
 
         # Weekend Juggernaut Boss logic
         if not getattr(self, "_weekend_boss_checked", False):
@@ -2893,7 +2863,6 @@ class BattleRoyaleMode(GameMode):
                     if hasattr(b, "original_mass"):
                         b.mass = getattr(b, "original_mass", 1.0)
                         delattr(b, "original_mass")
-
 
         # Periodically spawn shadows that turn into meteors and lava
         self.meteor_shadow_timer = getattr(self, "meteor_shadow_timer", 0.0) + delta
@@ -3453,7 +3422,6 @@ class ZombieInfectionMode(GameMode):
             if not getattr(b, "alive", False):
                 continue
 
-
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -3490,8 +3458,6 @@ class ZombieInfectionMode(GameMode):
         # Needs simulation tick access or a different way to check time for Survivor win
         # but basic logic allows checking teams
         return None
-
-
 
 class GuildBossFightMode(GameMode):
     def __init__(self, guild_name=None, guild_manager=None, week_id="week_1", tier=1):
@@ -3826,9 +3792,6 @@ class BossFightMode(GameMode):
 
         return None
 
-
-
-
 class ReverseDualPayloadMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -3993,7 +3956,6 @@ class ReverseDualPayloadMode(GameMode):
             return "Red"
 
         return None
-
 
 class DualPayloadMode(GameMode):
     def __init__(self):
@@ -4448,7 +4410,6 @@ class DualPayloadMode(GameMode):
             return "Draw"
 
         return None
-
 
 class EscortMode(GameMode):
     def __init__(self):
@@ -5232,7 +5193,6 @@ class SurvivalMode(GameMode):
 
         return None
 
-
 class CaptureTheFlagMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -5361,7 +5321,6 @@ class CaptureTheFlagMode(GameMode):
                 return "Blue"
         return None
 
-
 class EvolutionarySimulationMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -5464,7 +5423,6 @@ class EvolutionarySimulationMode(GameMode):
 
         return None
 
-
 class VampireRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -5481,7 +5439,6 @@ class VampireRoyaleMode(GameMode):
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
-
 
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
@@ -5521,7 +5478,6 @@ class VampireRoyaleMode(GameMode):
             return alive[0].ball_type
 
         return None
-
 
 class PulsingGravityWellMode(GameMode):
     def __init__(self):
@@ -5811,7 +5767,6 @@ class MassiveGravityWellMode(GameMode):
 
         return None
 
-
 class KingOfTheHillMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -5915,7 +5870,6 @@ class KingOfTheHillMode(GameMode):
             if not getattr(b, "alive", False):
                 continue
 
-
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -5974,7 +5928,6 @@ class KingOfTheHillMode(GameMode):
         # We don't have access to game timer here directly.
         # So we just return when score >= 100. If time runs out, game loop usually handles it and can just pick the one with max score.
         return None
-
 
 class SweepingBlackHoleMode(GameMode):
     def __init__(self):
@@ -6155,7 +6108,6 @@ class SweepingBlackHoleMode(GameMode):
 
         return None
 
-
 class BlackHoleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -6171,7 +6123,6 @@ class BlackHoleMode(GameMode):
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
-
 
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
@@ -6240,8 +6191,6 @@ class BlackHoleMode(GameMode):
             return alive[0].ball_type
 
         return None
-
-
 
 class WeatherChaosMode(GameMode):
     def __init__(self):
@@ -6356,7 +6305,6 @@ class WeatherChaosMode(GameMode):
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
-
 
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
@@ -6627,7 +6575,6 @@ class WeatherChaosMode(GameMode):
                         h = Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10)
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
-
 
             if self.weather == "heatwave":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
@@ -7063,7 +7010,6 @@ class WeatherChaosMode(GameMode):
                             decoy.active_skill = None
                         world.balls.append(decoy)
 
-
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
@@ -7274,7 +7220,6 @@ class DominationMode(GameMode):
 
         return None
 
-
 class MovingZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -7345,8 +7290,6 @@ class MovingZoneMode(GameMode):
                     return getattr(b, "team", b.ball_type)
         return None
 
-
-
 class ReverseEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -7383,9 +7326,6 @@ class ReverseEventMode(GameMode):
                 if getattr(b, "alive", False):
                     b.x -= getattr(b, "vx", 0) * delta * 2 # Reverse the velocity applied in action.py
                     b.y -= getattr(b, "vy", 0) * delta * 2
-
-
-
 
 class MemoryTrapsMode(GameMode):
     def __init__(self):
@@ -7493,7 +7433,6 @@ class MemoryTrapsMode(GameMode):
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
-
 
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
@@ -7648,7 +7587,6 @@ class CustomMatchMode(GameMode):
             if not getattr(b, "alive", False):
                 continue
 
-
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -7661,11 +7599,6 @@ class CustomMatchMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
-
-
-
-
-
 
         if getattr(self, "mutators_active", False):
             if "boss" in self.mutators:
@@ -7795,9 +7728,6 @@ class CustomMatchMode(GameMode):
                         b.speed = b.base_speed
                         b.base_damage = random.uniform(5.0, 25.0)
                         b.damage = b.base_damage
-
-
-
 
 class EcholocationMode(GameMode):
     def __init__(self):
@@ -7960,7 +7890,6 @@ class EcholocationMode(GameMode):
 
         return None
 
-
 class PitchBlackMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8066,7 +7995,6 @@ class PitchBlackMode(GameMode):
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
-
 
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
@@ -8207,7 +8135,6 @@ class VisionReducedMode(GameMode):
         for b in balls:
             if not getattr(b, "alive", False):
                 continue
-
 
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
@@ -8530,7 +8457,6 @@ class DynamicHazardsMode(GameMode):
                 surviving_hazards.append(hazard)
         world.arena.hazards = surviving_hazards
 
-
 class PortalNodeMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -8596,9 +8522,6 @@ class PortalNodeMode(GameMode):
                     self.team_scores[t] -= self.drain_rate * delta
                     if self.team_scores[t] < 0:
                         self.team_scores[t] = 0.0
-
-
-
 
 class MovingSafeZoneMode(GameMode):
     def __init__(self):
@@ -8742,9 +8665,6 @@ class MovingSafeZoneMode(GameMode):
 
         return None
 
-
-
-
 class PoisonGasZoneMode(MovingSafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -8775,7 +8695,6 @@ class PoisonGasZoneMode(MovingSafeZoneMode):
             self.tick_timer = 0.0
             if hasattr(world, "add_event"):
                 world.add_event("poison_gas_ambient", {"zone_x": self.zone_x, "zone_y": self.zone_y, "radius": self.zone_radius})
-
 
 class ShrinkingDangerZoneMode(GameMode):
     def __init__(self):
@@ -8941,8 +8860,6 @@ class ShrinkingDangerZoneMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
 
         return None
-
-
 
 class ModifierSafeZoneMode(GameMode):
     def __init__(self):
@@ -9338,7 +9255,6 @@ class ModifierZonesSafeZoneMode(GameMode):
 
         return None
 
-
 class SafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -9500,7 +9416,6 @@ class SafeZoneMode(GameMode):
                         b.alive = False
                         b.hp = 0
 
-
     def on_ball_died(self, world, ball, killer=None):
         if hasattr(super(), 'on_ball_died'):
             super().on_ball_died(world, ball, killer)
@@ -9533,9 +9448,6 @@ class SafeZoneMode(GameMode):
             pm.add_skill_points(points)
         except Exception:
             pass
-
-
-
 
 class InverseMirrorArenaMode(GameMode):
     def __init__(self):
@@ -9719,7 +9631,6 @@ class MirrorMatchMode(GameMode):
         if hasattr(world, "balls"):
             world.balls.extend(new_clones)
 
-
 class VolatileClonesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -9853,8 +9764,6 @@ class VolatileClonesMode(GameMode):
 
                         if hasattr(world, "balls"):
                             world.balls.append(clone)
-
-
 
 class CloneTrailMode(GameMode):
     def __init__(self):
@@ -10080,7 +9989,6 @@ class CloneChaosMode(GameMode):
                         if hasattr(world, "balls"):
                             world.balls.append(clone)
 
-
 class SumoKnockoutMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -10148,7 +10056,6 @@ class SumoKnockoutMode(GameMode):
             self.tick_timer = 0.0
             if hasattr(world, "add_event"):
                 world.add_event("zone_shrink_update", {"zone_x": self.zone_x, "zone_y": self.zone_y, "radius": self.zone_radius})
-
 
 class PacifistKnockoutMode(GameMode):
     def __init__(self):
@@ -10372,7 +10279,6 @@ class BumperBallsMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
         return None
 
-
 class TournamentMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -10473,8 +10379,6 @@ class ToxicEnvironmentMode(GameMode):
         if len(alive) == 1:
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
         return None
-
-
 
 class ModifierZonesMode(GameMode):
     def __init__(self):
@@ -10674,8 +10578,6 @@ class ModifierZonesMode(GameMode):
 
         return None
 
-
-
 class WindstormMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -10787,7 +10689,6 @@ class WindstormMode(GameMode):
             if not getattr(b, "alive", False):
                 continue
 
-
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -10800,7 +10701,6 @@ class WindstormMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death += delta
-
 
         # Wind Current logic
         if not hasattr(self, 'wind_current_timer'):
@@ -10847,7 +10747,6 @@ class WindstormMode(GameMode):
                 setattr(tornado, 'vy', self.random.uniform(-100.0, 100.0))
                 world.arena.hazards.append(tornado)
             self.tornado_timer = self.random.uniform(8.0, 15.0)
-
 
         # Tornado movement and interaction
         if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
@@ -10949,8 +10848,6 @@ class WindstormMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
 
         return None
-
-
 
 class BlackoutMode(GameMode):
     def __init__(self):
@@ -11295,8 +11192,6 @@ class BountyHuntMode(GameMode):
             return list(teams_alive)[0]
         return None
 
-
-
 class BodyguardBountyMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -11391,7 +11286,6 @@ class BodyguardBountyMode(GameMode):
                     world.add_event("bodyguard_bounty_claimed", {
                         "message": f"Bodyguard Bounty claimed by {getattr(killer, 'id', 'someone')}!"
                     })
-
 
 class DynamicBountyMode(GameMode):
     def __init__(self):
@@ -11519,7 +11413,6 @@ class EarthquakeMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("earthquake", {"type": "earthquake", "intensity": self.shake_timer / 2.0})
 
-
 class ShiftingMazeMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -11626,7 +11519,6 @@ class ShiftingMazeMode(GameMode):
         if len(alive) == 0:
             return "Draw"
         return None
-
 
 class GravityWellMode(GameMode):
     def __init__(self):
@@ -11793,7 +11685,6 @@ class GravityWellMode(GameMode):
                 oldest_gw = gw_hazards[0]
                 world.arena.hazards.remove(oldest_gw)
 
-
 class SupernovaMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -11912,8 +11803,6 @@ class SupernovaMode(GameMode):
             return alive[0].ball_type
 
         return None
-
-
 
 class ScorchingSunMode(GameMode):
     """
@@ -12229,7 +12118,6 @@ class DayNightMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
-
             # Solar flare timer decay (runs always) and random buff (only during day)
             for b in balls:
                 if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
@@ -12365,7 +12253,6 @@ class GuildVsGuildMode(GameMode):
             except ImportError:
                 pass
 
-
         # Check win condition (one guild owns all CPs)
         owners = [cp["owner"] for cp in self.control_points if cp["owner"] is not None]
         if len(owners) == len(self.control_points) and len(set(owners)) == 1:
@@ -12438,7 +12325,6 @@ class GuildVsGuildMode(GameMode):
             gm.record_gvg_match(winner_guild, loser, winner_guild)
         except ImportError:
             pass
-
 
 class MagneticCollisionsMode(GameMode):
     def __init__(self):
@@ -12624,7 +12510,6 @@ class MagneticCollisionsMode(GameMode):
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
 
-
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
 
@@ -12755,13 +12640,11 @@ class MagneticCollisionsMode(GameMode):
                     b1_x = getattr(b1, "x", 0.0)
                     b1_y = getattr(b1, "y", 0.0)
 
-
 class StaminaRegenMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Stamina Regen modifier"
         self.description = "A game mode modifier where stamina regenerates twice as fast, allowing more frequent use of stamina-based skills."
-
 
 class BouncyTerrainMode(GameMode):
     def __init__(self):
@@ -13065,7 +12948,6 @@ class PinballMode(GameMode):
                             b._hazard_slam_cd = 1.0
                             break
 
-
 class InvisibleWallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -13176,7 +13058,6 @@ class MirrorWallsMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-
 
 class GeometricZoneMode(GameMode):
     def __init__(self):
@@ -13379,7 +13260,6 @@ class GeometricZoneMode(GameMode):
                         b.alive = False
                         b.hp = 0
                         b.killer = "Geometric Zone"
-
 
 class BodySwapMode(GameMode):
     def __init__(self):
@@ -13590,8 +13470,6 @@ class TugOfWarMode(GameMode):
 
         return None
 
-
-
 class UnstablePortalsEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -13769,10 +13647,6 @@ class UnstablePortalsEventMode(GameMode):
                             break
 
         self.portals = [p for p in self.portals if p["active"]]
-
-
-
-
 
 class ChainLightningStormMode(GameMode):
     def __init__(self):
@@ -14076,7 +13950,6 @@ class MeteorCrashEventMode(GameMode):
                 for c in self.craters:
                     world.arena.hazards.append(Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
-
 class MinefieldEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -14141,9 +14014,6 @@ class MinefieldEventMode(GameMode):
                             b.hp -= m["damage"]
                         if hasattr(world, "add_event"):
                             world.add_event("mine_explosion", {"x": m["x"], "y": m["y"]})
-
-
-
 
 class MagneticMineZoneMode(GameMode):
     def __init__(self):
@@ -14312,8 +14182,6 @@ class StaminaSpeedMode(GameMode):
 
             b.prev_hp = current_hp
             b.base_speed = getattr(b, 'max_stamina', 200.0)
-
-
 
 class FactoryMode(GameMode):
     def __init__(self):
@@ -14615,9 +14483,6 @@ class HazardBilliardsMode(GameMode):
                             setattr(h, "vx", hvx * -0.5)
                             setattr(h, "vy", hvy * -0.5)
 
-
-
-
 class _MinefieldHazard:
     def __init__(self, id, x, y, radius, kind, damage, duration=-1.0):
         self.id = id
@@ -14653,7 +14518,6 @@ class CrowdedSafeZoneMode(SafeZoneMode):
         # Adjust shrink rate based on players outside
         # Shrinks much faster with more players outside
         self.shrink_rate = self.base_shrink_rate * (1.0 + float(players_outside) * 0.5)
-
 
 class MutantSafeZoneMode(SafeZoneMode):
     def __init__(self):
@@ -14833,8 +14697,6 @@ class InverseSafeZoneMode(GameMode):
 
         return None
 
-
-
 class MicroSafeZonesMode(SafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -14898,7 +14760,6 @@ class MicroSafeZonesMode(SafeZoneMode):
                             if b.hp <= 0:
                                 b.alive = False
                                 b.hp = 0
-
 
 class DynamicSafeZoneMode(GameMode):
     def __init__(self):
@@ -15067,7 +14928,6 @@ class DynamicSafeZoneMode(GameMode):
             return list(teams_alive)[0]
         return None
 
-
 class ExplodingDecoysMode(GameMode):
     """
     A mutator where decoys explode upon expiration or death, dealing area-of-effect damage to nearby enemies.
@@ -15084,7 +14944,6 @@ class ExplodingDecoysMode(GameMode):
         self.world = world
         if not hasattr(world, "game_mode") or world.game_mode != self:
             world.game_mode = self
-
 
 class PrestigeWeatherMutatorMode(GameMode):
     def __init__(self):
@@ -15126,7 +14985,6 @@ class PrestigeWeatherMutatorMode(GameMode):
                             b.take_damage(10.0 * delta)
                         else:
                             b.hp = getattr(b, "hp", 100) - 10.0 * delta
-
 
 class DailyMutatorMode(GameMode):
     def __init__(self):
@@ -15272,8 +15130,6 @@ class DailyMutatorMode(GameMode):
                 for b in balls_alive:
                     b.skill_points = getattr(b, "skill_points", 0) + 10
 
-
-
 class BlackMarketMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -15393,7 +15249,6 @@ class BlackMarketMode(GameMode):
                 "y": random.uniform(100, arena_height - 100),
                 "radius": 30.0
             })
-
 
         for b in balls:
 
@@ -15527,7 +15382,6 @@ class BlackMarketMode(GameMode):
                             if hasattr(world, "add_event"):
                                 world.add_event("gambling_explode", {"ball": b, "amount": deposit})
                         break
-
 
 class FloorIsLavaMode(GameMode):
     def __init__(self):
@@ -15829,7 +15683,6 @@ class BlizzardMode(GameMode):
 
             b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * speed_mult
 
-
 class MeteorShowerMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -16035,8 +15888,6 @@ class MeteorShowerMode(GameMode):
                 setattr(h, "duration", c["duration"])
                 world.arena.hazards.append(h)
 
-
-
 class CursedBuffZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -16193,7 +16044,6 @@ class CursedBuffZoneMode(GameMode):
             else:
                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
                 b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
-
 
 class RhythmPanelsMode(GameMode):
     def __init__(self):
@@ -16390,8 +16240,6 @@ class TimeRewindMode(GameMode):
             self.history = {}
             self.rewind_timer = 0.0
 
-
-
 class CursedAuraEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -16503,8 +16351,6 @@ class PolarityShiftMode(GameMode):
                     h.x -= dir_x * force_mag * self.polarity_state
                     h.y -= dir_y * force_mag * self.polarity_state
 
-
-
 class LunarEclipseEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -16608,7 +16454,6 @@ class LunarEclipseEventMode(GameMode):
                         world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "eclipse_boss"]
                 if hasattr(world, "add_event"):
                     world.add_event("lunar_eclipse_end", {"type": "weather_warning", "message": "The lunar eclipse has ended."})
-
 
 class ScramblerDroneMode(GameMode):
     def __init__(self):
@@ -16934,15 +16779,6 @@ class ArtifactUpgraderMode(GameMode):
                                     b.speed = getattr(b, "speed", 100) * 1.2
                                     b._speed_upgraded = True
 
-
-
-
-
-
-
-
-
-
 class SweepingPaddlesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17123,7 +16959,6 @@ class SweepingPaddlesMode(GameMode):
                         setattr(h, "duration", c["duration"])
                         world.arena.hazards.append(h)
 
-
             arena_width = getattr(world.arena, "width", 1000)
             arena_height = getattr(world.arena, "height", 1000)
 
@@ -17163,9 +16998,6 @@ class SweepingPaddlesMode(GameMode):
                 if getattr(h, "kind", "") == "sweeping_paddle":
                     # Sweep left and right
                     h.x = center_x + math.sin(self.sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
-
-
-
 
 class SweepingLasersMode(GameMode):
     def __init__(self):
@@ -17233,7 +17065,6 @@ class SweepingLasersMode(GameMode):
                                     b.take_damage(dmg)
                                 else:
                                     b.hp = getattr(b, "hp", 100) - dmg
-
 
 class MazeSafeZoneMode(GameMode):
     def __init__(self):
@@ -17457,8 +17288,6 @@ class MazeSafeZoneMode(GameMode):
         if len(alive) == 0:
             return "Draw"
 
-
-
 class ReverseGravityEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -17502,7 +17331,6 @@ class ReverseGravityEventMode(GameMode):
                         b.vy += force_mag * direction_mult
                     else:
                         b.y += force_mag * direction_mult
-
 
 class InvisibleDecoysMode(GameMode):
     def __init__(self):
@@ -17626,7 +17454,6 @@ class InvisibleDecoysMode(GameMode):
             if not hasattr(world, "balls"):
                 world.balls = []
             world.balls.append(decoy)
-
 
 class ExtremeWeatherMode(GameMode):
     def __init__(self):
@@ -18114,7 +17941,6 @@ class ExtremeWeatherMode(GameMode):
                     setattr(h, "duration", c["duration"])
                     world.arena.hazards.append(h)
 
-
 class JuggernautMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18414,9 +18240,6 @@ class ReverseTugOfWarMode(GameMode):
 
         return None
 
-
-
-
 class HexGridRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18527,7 +18350,6 @@ class HexGridRoyaleMode(GameMode):
             if not in_tile or not closest_tile or closest_tile["state"] == "fallen":
                 if hasattr(b, "take_damage"):
                     b.take_damage(self.damage_per_second * delta)
-
 
 class TickingPayloadMode(GameMode):
     def __init__(self):
@@ -18779,10 +18601,6 @@ class TickingPayloadMode(GameMode):
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         return self.winner
 
-
-
-
-
 class HauntedEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18853,7 +18671,6 @@ class HauntedEventMode(GameMode):
                 clone.vy = random.uniform(-100, 100)
                 world.arena.hazards.append(clone)
 
-
 class BlackoutEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -18909,7 +18726,6 @@ class BlackoutEventMode(GameMode):
                     b.perception_radius = 50.0
                 else:
                     b.perception_radius = getattr(b, "base_perception_radius", 250.0)
-
 
 class BlacksmithBossMode(GameMode):
     def __init__(self):
@@ -19027,7 +18843,6 @@ class BlacksmithBossMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("boss_defeated", {"message": "The Blacksmith Boss was defeated! Legendary loot dropped!"})
 
-
 class WeaponCollectionMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -19130,8 +18945,6 @@ class WeaponCollectionMode(GameMode):
         arena_width = getattr(world.arena, "width", 1000)
         arena_height = getattr(world.arena, "height", 1000)
 
-
-
         try:
             from arena.procedural_arena import Hazard
         except ImportError:
@@ -19180,7 +18993,6 @@ class WeaponCollectionMode(GameMode):
                         b.skill_timer = 0.0
                         if hasattr(world, "add_event"):
                             world.add_event("weapon_collected", {"ball_id": getattr(b, "id", None), "ability": b.active_skill})
-
 
 class CenterVortexMode(GameMode):
     def __init__(self):
@@ -19266,7 +19078,6 @@ class CenterVortexMode(GameMode):
                     b.hp = getattr(b, "hp", 100.0) - damage_amount
 
         # Apply to other entities if needed, but balls are the main entities
-
 
 class CenterGravityWellMode(GameMode):
     def __init__(self):
@@ -19384,8 +19195,6 @@ class CenterGravityWellMode(GameMode):
                         h.x += (dx / dist) * pull_strength * delta * delta
                         h.y += (dy / dist) * pull_strength * delta * delta
 
-
-
 class EndGameMagnetMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -19472,7 +19281,6 @@ class EndGameMagnetMode(GameMode):
                     else:
                         h.x += (dx / dist) * current_pull * delta
                         h.y += (dy / dist) * current_pull * delta
-
 
 class CenterBlackHoleMode(GameMode):
     def __init__(self):
@@ -19616,8 +19424,6 @@ class CenterBlackHoleMode(GameMode):
                     b.vx += (dx / dist) * self.pull_strength * delta
                     b.vy += (dy / dist) * self.pull_strength * delta
 
-
-
 class SpikedWallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -19709,8 +19515,6 @@ class ShrinkingBoundaryMode(GameMode):
                         b.hp = 0
                         b.alive = False
                         b.killer = "Shrinking Boundary"
-
-
 
 class EntangledArenaMode(GameMode):
     def __init__(self):
@@ -19851,9 +19655,6 @@ class EntangledArenaMode(GameMode):
 
             self._init_prev_state(b)
 
-
-
-
 class EntanglementMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -19992,9 +19793,6 @@ class EntanglementMutatorMode(GameMode):
                         setattr(target_state, eff, getattr(target_state, eff, 0.0) + delta_eff)
 
             self._init_prev_state(b)
-
-
-
 
 class DecreasingSafeZonesMode(GameMode):
     def __init__(self):
@@ -20206,8 +20004,6 @@ class MultipleSafeZonesMode(GameMode):
 
         self.zones = new_zones
 
-
-
 class FallingPanelsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20231,7 +20027,6 @@ class FallingPanelsMode(GameMode):
         alive_balls = [b for b in getattr(world, 'balls', []) if getattr(b, 'alive', True)]
         alive_teams = {getattr(b, 'team', 'Team ' + str(getattr(b, 'id', 0))) for b in alive_balls}
         return len(alive_teams) <= 1
-
 
 class PhysicsAnomalyEventMode(GameMode):
     def __init__(self):
@@ -20441,7 +20236,6 @@ class LavaRoyaleMode(GameMode):
         except Exception:
             pass
 
-
 class WeatherStationMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20553,7 +20347,6 @@ class WeatherStationMode(GameMode):
                 self.active_weather = None
                 self.controlling_team = None
 
-
 class DynamicWeatherTransitionsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20633,7 +20426,6 @@ class DynamicWeatherTransitionsMode(GameMode):
                 # Keep it at the final weather
                 self.weather_timer = 9999.0
 
-
 class StickyArenaMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20699,8 +20491,6 @@ class StickyArenaMode(GameMode):
             if bx <= margin or bx >= arena_w - margin or by <= margin or by >= arena_h - margin:
                 b.vx = getattr(b, "vx", 0.0) * 0.8
                 b.vy = getattr(b, "vy", 0.0) * 0.8
-
-
 
 class ElementalAurasMode(GameMode):
     def __init__(self):
@@ -20878,7 +20668,6 @@ class ElementalAurasMode(GameMode):
                             other.vx = getattr(other, "vx", 0.0) + (dx / d) * pull * 100
                             other.vy = getattr(other, "vy", 0.0) + (dy / d) * pull * 100
 
-
 class HeavyRainMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -20985,7 +20774,6 @@ class JumpPadBoundariesMode(GameMode):
         self.name = "Jump Pad Boundaries"
         self.description = "A chaotic new game mode where the arena boundaries act as powerful jump pads instead of hard walls. Balls colliding with the outer walls are launched back towards the center with massively increased speed, turning edge fights into high-risk pinball scenarios."
 
-
 class CosmicStormMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -21055,7 +20843,6 @@ class CosmicStormMode(GameMode):
                     continue
                 if id(b) not in safe_balls:
                     b.hp = getattr(b, "hp", 100.0) - 20.0 * delta
-
 
 class BountyTagMode(GameMode):
     def __init__(self):
@@ -21159,7 +20946,6 @@ class BountyTagMode(GameMode):
             return list(teams_alive)[0]
 
         return None
-
 
 class SolarEclipseEventMode(GameMode):
     def __init__(self):
@@ -21295,7 +21081,6 @@ class SolarEclipseEventMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("solar_eclipse_end", {"type": "weather_warning", "message": "The solar eclipse has ended."})
 
-
 class StationaryTurretsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -21381,7 +21166,6 @@ class StationaryTurretsMode(GameMode):
                             nearest_enemy.hp = getattr(nearest_enemy, "hp", 100) - t.damage
                         if hasattr(world, "events"):
                             world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": getattr(nearest_enemy, "x", 0.0), "target_y": getattr(nearest_enemy, "y", 0.0)})
-
 
 class SacrificeAltarMode(GameMode):
     def __init__(self):
@@ -21475,7 +21259,6 @@ class SacrificeAltarMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("sacrifice_altar_used", {"ball": b, "altar": altar})
 
-
 class MassiveBlackHoleEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -21552,8 +21335,6 @@ class MassiveBlackHoleEventMode(GameMode):
                                 if not hasattr(world, "dead_balls"): world.dead_balls = []
                                 if hasattr(b, "id") and b.id not in world.dead_balls:
                                     world.dead_balls.append(b.id)
-
-
 
 class RotatingLasersMode(GameMode):
     def __init__(self):
@@ -21725,9 +21506,6 @@ class ElementalWandererMode(GameMode):
             elif buff == "lightning":
                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
 
-
-
-
 class ChickenCurseMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -21829,10 +21607,6 @@ class ChickenCurseMode(GameMode):
                     b.can_attack = True
                     b.chicken_timer = 0.0
 
-
-
-
-
 class SniperOnlyMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -21929,7 +21703,6 @@ class MagneticBumpersMode(GameMode):
 
                     b.x = b_x + dx * pull_strength
                     b.y = b_y + dy * pull_strength
-
 
 class TimeLoopFieldMode(GameMode):
     def __init__(self):
@@ -22038,7 +21811,6 @@ class QuantumInstabilityEventMode(GameMode):
                         h.target_x = random.uniform(100, arena_w - 100)
                         h.target_y = random.uniform(100, arena_h - 100)
 
-
 class FloodingArenaMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -22129,8 +21901,6 @@ class EchoMode(GameMode):
             # Record phase
             if self.timer >= self.cycle_duration and not hasattr(self, "cleaned_up"):
                 self.cleaned_up = True
-
-
 
             # Record every tick for each ball
             for b in balls:
@@ -22228,8 +21998,6 @@ class EchoMode(GameMode):
             return alive_teams.pop() if alive_teams else "Draw"
         return None
 
-
-
 class ParallelDimensionsMode(GameMode):
     """
     Periodically the arena splits into two parallel dimensions. Players in the mirror dimension
@@ -22294,7 +22062,6 @@ class ParallelDimensionsMode(GameMode):
             if hasattr(world, "arena") and hasattr(world.arena, "boosters"):
                 world.arena.boosters = [booster for booster in world.arena.boosters if getattr(booster, "kind", "") != "mirror_buff"]
 
-
 class InfiltrationMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -22353,8 +22120,6 @@ class InfiltrationMode(GameMode):
                 b.stealth_booster_timer = 0.0
             else:
                 b.stealth_booster_timer = 9999.0
-
-
 
 class MeteorBombardmentMode(GameMode):
     def __init__(self):
@@ -22451,8 +22216,6 @@ class MeteorBombardmentMode(GameMode):
             for c in self.craters:
                 world.arena.hazards.append(Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
-
-
 class PlatformerMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -22469,7 +22232,6 @@ class PlatformerMode(GameMode):
                     b.hp = 0.0
                     b.alive = False
                     b.killer = "fall_damage"
-
 
 class GravityReversalMutatorMode(GameMode):
     def __init__(self):
@@ -22516,7 +22278,6 @@ class GravityReversalMutatorMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
         return None
 
-
 class FrictionlessArenaModifierMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -22558,8 +22319,6 @@ class FrictionlessArenaModifierMode(GameMode):
                     if getattr(b, "alive", False):
                         b.is_frictionless = True
                         b.frictionless_modifier_applied = True
-
-
 
 class SweepingRotatingLasersMode(GameMode):
     def __init__(self):
@@ -22611,7 +22370,6 @@ class SweepingRotatingLasersMode(GameMode):
             elif getattr(h, "id", "") == "sweep_rot_2":
                 h.x = (aw / 2.0) - math.sin(self.sweep_timer * 0.5) * (aw / 2.0 - 100.0)
 
-
 class HealingZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -22650,7 +22408,6 @@ class HealingZoneMode(GameMode):
                     b.in_healing_zone = True
                 else:
                     b.in_healing_zone = False
-
 
 class ReverseTagMode(GameMode):
     def __init__(self):
@@ -22749,7 +22506,6 @@ class ReverseTagMode(GameMode):
 
         return None
 
-
 class DiscoFloorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -22828,7 +22584,6 @@ class DiscoFloorMode(GameMode):
                     b.hp = 0
                     b.alive = False
                     b.killer = "disco_floor"
-
 
 class PositionSwapMode(GameMode):
     def __init__(self):
@@ -22911,8 +22666,6 @@ class PositionSwapMode(GameMode):
         world.position_swap_timer = timer
         world.position_swap_pending = pending
 
-
-
 class SharedTugOfWarMode(TugOfWarMode):
     def __init__(self):
         super().__init__()
@@ -22959,8 +22712,6 @@ class SpectatorHologramsMode(GameMode):
         self.hologram_spawn_timer = 5.0
         self.hologram_spawn_interval = 10.0
         self.max_holograms = 5
-
-
 
     def apply_dynamic_traits(self, world, balls, delta):
         super().apply_dynamic_traits(world, balls, delta)
@@ -23047,8 +22798,6 @@ class SpectatorHologramsMode(GameMode):
                                 world.add_event("spectator_cheer", {"x": h.x, "y": h.y, "target_id": b.id})
                             h.active = False
 
-
-
 class DraggingMagneticMinesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -23119,7 +22868,6 @@ class DraggingMagneticMinesMode(GameMode):
                             b.x -= (dx / dist) * m["pull_strength"] * delta
                             b.y -= (dy / dist) * m["pull_strength"] * delta
 
-
 class BounceLaserMode(GameMode):
     def tick(self, world, balls, delta):
         super().tick(world, balls, delta)
@@ -23141,7 +22889,6 @@ class BounceLaserMode(GameMode):
 
             laser.speed = 300.0
             world.arena.hazards.append(laser)
-
 
 class ChargedMode(GameMode):
     def __init__(self):
@@ -23212,7 +22959,6 @@ class ChargedMode(GameMode):
                     # Update current positions for remaining interactions
                     b1_x = getattr(b1, "x", 0.0)
                     b1_y = getattr(b1, "y", 0.0)
-
 
 class ZeroGravityMeteorShowerMode(GameMode):
     def __init__(self):
@@ -23296,8 +23042,6 @@ class ZeroGravityMeteorShowerMode(GameMode):
                                 h.y = arena_height - getattr(h, "radius", 30.0)
                                 h.vy = -abs(h.vy)
 
-
-
 class DynamicWindCurrentsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -23350,7 +23094,6 @@ class CursedBoosterMode(GameMode):
         super().__init__()
         self.name = "Cursed Boosters"
         self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
-
 
 class VoidTilesMode(GameMode):
     def __init__(self):
@@ -23406,8 +23149,6 @@ class VoidTilesMode(GameMode):
                     past_state = random.choice(self.history[b_id])
                     b.x = past_state[1]
                     b.y = past_state[2]
-
-
 
 class ExplosiveMeteorsMode(GameMode):
     def __init__(self):
@@ -23470,7 +23211,6 @@ class ExplosiveMeteorsMode(GameMode):
             from arena.procedural_arena import Hazard
             for m in self.meteors:
                 world.arena.hazards.append(Hazard(m["id"], m["x"], m["y"], m["radius"], "meteor_indicator", 0))
-
 
 class ToxicFloodRoyaleMode(GameMode):
     def __init__(self):
@@ -23556,8 +23296,6 @@ class ToxicFloodRoyaleMode(GameMode):
                     b.alive = False
                     b.hp = 0
                     b.killer = "Toxic Flood"
-
-
 
 class SlimeBossMode(GameMode):
     def __init__(self):
@@ -23664,7 +23402,6 @@ class SlimeBossMode(GameMode):
                         patch = Hazard(id=len(world.arena.hazards) + 9000, x=h.x, y=h.y, radius=30.0, kind="slime", damage=0.0)
                         patch.duration = 10.0
                         patches_to_add.append(patch)
-
 
         # Apply slow from slime patches
         for h in world.arena.hazards:
@@ -23797,9 +23534,62 @@ class SlimeBossMode(GameMode):
                                     proj.duration = 2.0
                                     world.arena.hazards.append(proj)
 
+class WrapAroundMode(GameMode):
+    """
+    An arena mode where hitting a map boundary doesn't just bounce you, but teleports you to the opposite side of the map with inverted velocity.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Wrap Around Arena"
+        self.description = "Hitting a map boundary teleports you to the opposite side with inverted velocity instead of bouncing."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or world.arena is None:
+            return
+
+        arena_width = getattr(world.arena, "width", 800.0)
+        arena_height = getattr(world.arena, "height", 600.0)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            radius = getattr(b, "radius", 15.0)
+
+            x = getattr(b, "x", 0.0)
+            y = getattr(b, "y", 0.0)
+
+            teleported = False
+
+            # Check horizontal boundaries
+            if x - radius <= 0:
+                b.x = arena_width - radius - 1.0
+                b.vx = -getattr(b, "vx", 0.0)
+                teleported = True
+            elif x + radius >= arena_width:
+                b.x = radius + 1.0
+                b.vx = -getattr(b, "vx", 0.0)
+                teleported = True
+
+            # Check vertical boundaries
+            if y - radius <= 0:
+                b.y = arena_height - radius - 1.0
+                b.vy = -getattr(b, "vy", 0.0)
+                teleported = True
+            elif y + radius >= arena_height:
+                b.y = radius + 1.0
+                b.vy = -getattr(b, "vy", 0.0)
+                teleported = True
+
+            if teleported and hasattr(world, "add_event"):
+                world.add_event("boundary_wrap", {"message": "Wrapped around the arena!", "ball_id": getattr(b, "id", None)})
+
 
 GAME_MODES = {
 
+    "wrap_around": WrapAroundMode(),
     "slime_boss": SlimeBossMode(),
     "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),
@@ -23853,7 +23643,6 @@ GAME_MODES = {
     "black_market": BlackMarketMode(),
     "floor_is_lava": FloorIsLavaMode(),
     "lava_royale": LavaRoyaleMode(),
-
 
     "geometric_zone": GeometricZoneMode(),
     "daily_mutator": DailyMutatorMode(),
@@ -23975,7 +23764,6 @@ try:
 except ImportError:
     pass
 
-
 class RollingBouldersMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -24074,8 +23862,6 @@ class RollingBouldersMode(GameMode):
 
         arena_width = getattr(world.arena, "width", 1000)
         arena_height = getattr(world.arena, "height", 1000)
-
-
 
         try:
             from arena.procedural_arena import Hazard
@@ -24238,8 +24024,6 @@ class RollingBouldersMode(GameMode):
                 world.arena.hazards.remove(h)
 
         world.arena.hazards.extend(new_hazards)
-
-
 
 class SoulLinkMode(GameMode):
     def __init__(self):
@@ -24414,7 +24198,6 @@ class SoulLinkMode(GameMode):
                 for eff in self.status_effects:
                     setattr(state, eff, getattr(b, eff, 0.0))
 
-
 class ClanTournamentMode(GameMode):
     """Two clans face off against each other in a multi-round tournament. Winning yields special clan cosmetics and bonus clan points."""
     def __init__(self):
@@ -24549,7 +24332,6 @@ GAME_MODES["soul_link"] = SoulLinkMode()
 GAME_MODES["clan_tournament"] = ClanTournamentMode()
 GAME_MODES["reversed_input"] = ReversedInputMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
-
 
 class TagTeamMode(GameMode):
     def __init__(self):
@@ -24791,9 +24573,7 @@ class TagTeamMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("tag_swap", {"type": "tag_swap", "message": "Tag Swap! Players switch!"})
 
-
 GAME_MODES["tag_team"] = TagTeamMode()
-
 
 class CrossfireMode(GameMode):
     def __init__(self):
@@ -24916,7 +24696,6 @@ class CrossfireMode(GameMode):
                     b.x = center_line + radius
                     b.vx = abs(vx) * 0.5
 
-
 GAME_MODES["crossfire"] = CrossfireMode()
 
 try:
@@ -24924,8 +24703,6 @@ try:
     GAME_MODES["reverse_friction"] = ReverseFrictionMode()
 except ImportError:
     pass
-
-
 
 class TeleporterHubMode(GameMode):
     def __init__(self):
@@ -25251,8 +25028,6 @@ class TetheredRoyaleMode(GameMode):
                 b.speed = getattr(b, "base_speed", 100.0)
                 b.damage = getattr(b, "base_damage", 20.0)
 
-
-
 GAME_MODES["tethered_royale"] = TetheredRoyaleMode()
 GAME_MODES["rubber_band"] = RubberBandMode()
 class RiftRouletteMode(GameMode):
@@ -25314,8 +25089,6 @@ class RiftRouletteMode(GameMode):
                         h.duration = 5.0
                         world.arena.hazards.append(h)
 
-
-
 GAME_MODES["rift_roulette"] = RiftRouletteMode()
 
 class ItemMorphMode(GameMode):
@@ -25348,7 +25121,6 @@ class ItemMorphMode(GameMode):
                     world.add_event("items_morphed", {"message": "All items have morphed!"})
 
 GAME_MODES["item_morph"] = ItemMorphMode()
-
 
 class IllusionWallMode(GameMode):
     def __init__(self):
@@ -25475,7 +25247,6 @@ class IllusionWallMode(GameMode):
 
 GAME_MODES["illusion_wall"] = IllusionWallMode()
 
-
 class OverloadShieldMode(GameMode):
     """
     A game mode where reflect shields have 300% capacity but passively drain the owner's stamina while active.
@@ -25533,7 +25304,6 @@ class OverloadShieldMode(GameMode):
                     if hasattr(b, "reflect_explosion_damage"):
                         b.reflect_explosion_damage /= 2.0
 
-
 GAME_MODES["overload_shield"] = OverloadShieldMode()
 
 class SolarFlareMode(GameMode):
@@ -25575,7 +25345,6 @@ GAME_MODES["solar_flare"] = SolarFlareMode()
 
 GAME_MODES["blackout_event"] = BlackoutEventMode()
 GAME_MODES["haunted_event"] = HauntedEventMode()
-
 
 class UndergroundTunnelMode(GameMode):
     def __init__(self):
@@ -25687,7 +25456,6 @@ class UndergroundTunnelMode(GameMode):
                     break
 
 GAME_MODES["underground_tunnels"] = UndergroundTunnelMode()
-
 
 class FreezeTagMode(GameMode):
     def __init__(self):
@@ -25877,8 +25645,6 @@ class FreezeTagMode(GameMode):
 
         return None
 
-
-
 class VortexOrbitMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -26036,11 +25802,9 @@ class WeatherClashMode(GameMode):
                     b.speed = base_speed
                     b.damage = base_damage
 
-
 GAME_MODES['freeze_tag'] = FreezeTagMode()
 GAME_MODES['vortex_orbit'] = VortexOrbitMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
-
 
 class DisguisedTrapsMode(GameMode):
     def __init__(self):
@@ -26074,8 +25838,6 @@ class DisguisedTrapsMode(GameMode):
 
 GAME_MODES["disguised_traps"] = DisguisedTrapsMode()
 GAME_MODES["dynamic_weather_transitions"] = DynamicWeatherTransitionsMode()
-
-
 
 class AerialArenaMode(GameMode):
     def __init__(self):
@@ -26178,9 +25940,7 @@ class AerialArenaMode(GameMode):
             if hz in world.arena.hazards:
                 world.arena.hazards.remove(hz)
 
-
 GAME_MODES['aerial_arena'] = AerialArenaMode()
-
 
 class ColorTrailMode(GameMode):
     def __init__(self):
@@ -26345,7 +26105,6 @@ class BermudaTriangleMode(GameMode):
                 b.vx = 0.0
                 b.vy = 0.0
 
-
 class TemporalRiftsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -26416,7 +26175,6 @@ class TemporalRiftsMode(GameMode):
                 b.speed = base_speed * 0.3
             else:
                 b.speed = base_speed
-
 
 class SectorCollapseMode(GameMode):
     def __init__(self):
@@ -26639,7 +26397,6 @@ class ConstrictingBoundaryTrapMode(GameMode):
                         b.y = max_y
                         if hasattr(b, "vy") and b.vy > 0: b.vy *= -1
 
-
 GAME_MODES['constricting_boundary_trap'] = ConstrictingBoundaryTrapMode()
 GAME_MODES['sacrifice_altar'] = SacrificeAltarMode()
 GAME_MODES['temporal_rifts'] = TemporalRiftsMode()
@@ -26738,7 +26495,6 @@ class CollapsingBubblesMode(GameMode):
         })
 GAME_MODES['collapsing_bubbles'] = CollapsingBubblesMode()
 
-
 class WatchtowerMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -26810,7 +26566,6 @@ class WatchtowerMode(GameMode):
                         b.projectile_speed = b._watchtower_orig_proj_speed
 
 GAME_MODES['watchtower'] = WatchtowerMode()
-
 
 class TickingBombMode(GameMode):
     def __init__(self):
@@ -26904,7 +26659,6 @@ class TickingBombMode(GameMode):
 
             for exp in new_explosions:
                 world.arena.hazards.append(exp)
-
 
 class PaintSplatterMode(GameMode):
     def __init__(self):
@@ -27044,7 +26798,6 @@ GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
 GAME_MODES['paint_splatter'] = PaintSplatterMode()
 GAME_MODES['ticking_bomb'] = TickingBombMode()
 
-
 class StatsDecayMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -27119,7 +26872,6 @@ class StatsDecayMode(GameMode):
                         b._decay_checked = True
 
 GAME_MODES['stats_decay'] = StatsDecayMode()
-
 
 class ClanWarMode(GameMode):
     def __init__(self):
@@ -27198,8 +26950,6 @@ class ClanWarMode(GameMode):
                 from system.clan import ClanManager
                 cm = ClanManager()
                 cm.capture_territory(winner_clan, "Arena_1")
-
-
 
 class TimeStutterHazardMode(GameMode):
     def __init__(self):
@@ -27372,7 +27122,6 @@ class GridLockdownMode(GameMode):
                     b.alive = False
                     if hasattr(world, "add_event"):
                         world.add_event("ball_died", {"id": getattr(b, "id", None), "killer_id": -1, "reason": "grid_lockdown_damage"})
-
 
 class PhantomJuggernautMode(GameMode):
     class PhantomTrailHazard:
@@ -27795,7 +27544,6 @@ class PeriodicSafeZoneMode(GameMode):
                 elif hasattr(b, "hp"):
                     b.hp -= damage_this_tick
 
-
 class ElasticBandZoneMode(GameMode):
     """
     A hazard zone that functions as a powerful, omni-directional elastic band.
@@ -27912,7 +27660,6 @@ class ElasticBandZoneMode(GameMode):
 
                     setattr(b, "elastic_cooldown", 0.5)
                     del self.grabbed_state[b.id]
-
 
 GAME_MODES["periodic_safe_zone"] = PeriodicSafeZoneMode()
 GAME_MODES["elastic_band_zone"] = ElasticBandZoneMode()
@@ -28202,7 +27949,6 @@ class ChronosphereEventMode(GameMode):
                     b.dash_cooldown = getattr(b, "dash_cooldown", 0.0) + delta * 0.5
                 if hasattr(b, "attack_cooldown"):
                     b.attack_cooldown = getattr(b, "attack_cooldown", 0.0) + delta * 0.5
-
 
 class TimeDilationZoneMode(GameMode):
     """
@@ -28496,11 +28242,6 @@ class EdgeSlingshotsMode(GameMode):
 
                     del self.grabbed_state[b.id]
 
-
-
-
-
-
 class AuraInversionZoneMode(GameMode):
     """
     An environmental hazard zone. While inside, all active beneficial auras
@@ -28667,12 +28408,10 @@ class QuantumShiftingHazardsMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("quantum_shift", {"message": f"Hazard shifted to quantum teleporter at ({h.x:.1f}, {h.y:.1f})!"})
 
-
 GAME_MODES['quantum_shifting_hazards'] = QuantumShiftingHazardsMode()
 GAME_MODES['flooding_arena'] = FloodingArenaMode()
 import ai.slingshot
 GAME_MODES['slingshot'] = ai.slingshot.SlingshotMode()
-
 
 class BountyContractEventMode(GameMode):
     def __init__(self):
@@ -28734,8 +28473,6 @@ class BountyContractEventMode(GameMode):
                     killer.xp += reward
 
 GAME_MODES['bounty_contract_event'] = BountyContractEventMode()
-
-
 
 class DecoyNetworkMode(GameMode):
     def __init__(self):
@@ -29071,7 +28808,6 @@ class EyeOfTheStormMode(SafeZoneMode):
 
 GAME_MODES["eye_of_the_storm"] = EyeOfTheStormMode()
 
-
 class FakeBall:
     def __init__(self, id_val, start_x, start_y):
         self.id = id_val
@@ -29170,7 +28906,6 @@ class FakeBallsMode(GameMode):
 
 GAME_MODES["fake_balls"] = FakeBallsMode()
 
-
 class FactionWarMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -29229,7 +28964,6 @@ class FactionWarMode(GameMode):
                 if ball_to_unlock not in pm.data["unlocked_balls"]:
                     pm.data["unlocked_balls"].append(ball_to_unlock)
                     pm.save()
-
 
 class ChainReactionMode(GameMode):
     def __init__(self):
@@ -29353,7 +29087,6 @@ class KillstreakExplosionMode(GameMode):
                 remaining_explosions.append(explosion)
 
         self.pending_explosions = remaining_explosions + self.pending_explosions
-
 
 class MimicCloneSwapMode(GameMode):
     def __init__(self):
@@ -29942,7 +29675,6 @@ class OrbitalCrosshairMode(GameMode):
                                     if b.hp <= 0:
                                         b.hp = 0
                                         b.alive = False
-
 
 GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode()
 
