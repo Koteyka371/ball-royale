@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Bomb Mode",
+  "description": "A new mutator where all balls periodically leave behind a stationary decoy that looks exactly like them. Instead of expiring naturally, these decoys explode if touched by an enemy, acting like proximity mines in disguise."
+}

@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Network Overdrive",
+  "description": "An extension to the decoy system where decoys created by players can link up to form a defensive network. When connected, decoys share damage taken and explode in a chain reaction when destroyed, dealing significant AoE damage to nearby enemies."
+}

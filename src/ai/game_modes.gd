@@ -49258,3 +49258,84 @@ class WrapAroundMode extends GameMode:
 						vy = b.get_meta('vy')
 						b.set_meta('vy', -vy)
 					teleported = true
+
+
+
+class MassDecoyEventMode extends GameMode:
+	var event_timer = 0.0
+
+	func _init():
+		super()
+		name = "Mass Decoy Event"
+		description = "An event that randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
+		active = false
+		id = "mass_decoy_event"
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		if not active:
+			if randf() < 0.05 * delta:
+				active = true
+				event_timer = 10.0
+
+				var alive_balls = []
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive") if "alive" in b else false
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else ""
+					var is_decoy = b.get("is_decoy", false) if typeof(b) == TYPE_DICTIONARY else b.get("is_decoy") if "is_decoy" in b else false
+					if is_alive and b_type != "spectator" and not is_decoy:
+						alive_balls.append(b)
+
+				if alive_balls.size() == 0:
+					active = false
+					return
+
+				var arena_width = world.arena.width if world and "arena" in world and "width" in world.arena else 800
+				var arena_height = world.arena.height if world and "arena" in world and "height" in world.arena else 600
+
+				var spawned_decoys = 0
+				for b in alive_balls:
+					var decoy_dict = {
+						"id": world.next_id if world and "next_id" in world else randi() % 900000 + 100000,
+						"x": randf_range(50, arena_width - 50),
+						"y": randf_range(50, arena_height - 50),
+						"radius": b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius") if "radius" in b else 15.0,
+						"hp": b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp") if "hp" in b else 100.0,
+						"max_hp": b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp") if "max_hp" in b else 100.0,
+						"alive": true,
+						"is_decoy": true,
+						"decoy_type": "stationary",
+						"team": b.get("team", "neutral") if typeof(b) == TYPE_DICTIONARY else b.get("team") if "team" in b else "neutral",
+						"ball_type": b.get("ball_type", "decoy") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else "decoy",
+						"owner_id": b.get("id", null) if typeof(b) == TYPE_DICTIONARY else b.get("id") if "id" in b else null,
+						"vx": 0.0,
+						"vy": 0.0,
+						"speed": 0.0,
+						"damage": 0.0,
+						"base_damage": 0.0,
+						"skill_timer": 9999.0,
+						"attack_timer": 9999.0,
+						"mass_decoy": true
+					}
+					if world and "next_id" in world:
+						world.next_id += 1
+					balls.append(decoy_dict)
+					spawned_decoys += 1
+
+				if spawned_decoys > 0 and world and world.has_method("add_event"):
+					world.add_event("mass_decoy_spawn", {"message": "Mass Decoy Event! Stationary decoys spawned to cause confusion!"})
+		else:
+			event_timer -= delta
+			if event_timer <= 0:
+				active = false
+				for b in balls:
+					var is_decoy = b.get("is_decoy", false) if typeof(b) == TYPE_DICTIONARY else b.get("is_decoy") if "is_decoy" in b else false
+					var is_mass = b.get("mass_decoy", false) if typeof(b) == TYPE_DICTIONARY else b.get("mass_decoy") if "mass_decoy" in b else false
+					if is_decoy and is_mass:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = 0.0
+							b["alive"] = false
+						else:
+							if "hp" in b: b.hp = 0.0
+							if "alive" in b: b.alive = false

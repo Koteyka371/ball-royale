@@ -28239,6 +28239,79 @@ class PerfectReflectorHazardMode(GameMode):
 
 GAME_MODES["perfect_reflector"] = PerfectReflectorHazardMode()
 
+
+class MassDecoyEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mass Decoy Event"
+        self.description = "An event that randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights."
+        self.active_event = False
+        self.event_timer = 0.0
+
+    class MassDecoy:
+        def __init__(self, target_ball, spawn_x, spawn_y):
+            self.owner_id = getattr(target_ball, "id", None)
+            self.x = spawn_x
+            self.y = spawn_y
+            self.radius = getattr(target_ball, "radius", 15.0)
+            self.hp = getattr(target_ball, "hp", 100.0)
+            self.max_hp = getattr(target_ball, "max_hp", 100.0)
+            self.alive = True
+            self.kind = "mass_decoy"
+            self.is_decoy = True
+            self.decoy_type = "stationary"
+            self.team = getattr(target_ball, "team", "neutral")
+            self.ball_type = getattr(target_ball, "ball_type", "decoy")
+            self.damage = 0.0
+            self.base_damage = 0.0
+            self.speed = 0.0
+            self.vx = 0.0
+            self.vy = 0.0
+            self.skill_timer = 9999.0
+            self.attack_timer = 9999.0
+            self.mass_decoy = True
+            self.traits = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        if not self.active_event:
+            if random.random() < 0.05 * delta:
+                self.active_event = True
+                self.event_timer = 10.0
+
+                alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator" and not getattr(b, "is_decoy", False)]
+                if not alive_balls:
+                    self.active_event = False
+                    return
+
+                arena_width = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+                arena_height = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+
+                spawned_decoys = 0
+                for b in alive_balls:
+                    spawn_x = random.uniform(50, arena_width - 50)
+                    spawn_y = random.uniform(50, arena_height - 50)
+                    decoy = self.MassDecoy(b, spawn_x, spawn_y)
+                    decoy.id = getattr(world, "next_id", random.randint(100000, 999999))
+                    if hasattr(world, "next_id"):
+                        world.next_id += 1
+
+                    world.balls.append(decoy)
+                    spawned_decoys += 1
+
+                if spawned_decoys > 0 and hasattr(world, "add_event"):
+                    world.add_event("mass_decoy_spawn", {"message": "Mass Decoy Event! Stationary decoys spawned to cause confusion!"})
+        else:
+            self.event_timer -= delta
+            if self.event_timer <= 0:
+                self.active_event = False
+                for b in list(balls):
+                    if getattr(b, "is_decoy", False) and getattr(b, "mass_decoy", False):
+                        b.hp = 0.0
+                        b.alive = False
+
 class ChronosphereEventMode(GameMode):
     """
     An arena-wide event where a massive chronosphere spawns. Entering it drastically
@@ -30058,6 +30131,7 @@ GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
 GAME_MODES['decoy_network'] = DecoyNetworkMode()
 
 GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
+GAME_MODES["mass_decoy_event"] = MassDecoyEventMode()
 
 GAME_MODES['toxic_flood_royale'] = ToxicFloodRoyaleMode()
 
