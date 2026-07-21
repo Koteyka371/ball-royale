@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1254] Decoy Mirror Match Event — *2026-07-21 22:24:45 UTC*
+
+An event that randomly spawns stationary decoys of every alive ball on the map that mimics their current appearance to cause confusion during team fights.
+
+---
+
 ## [idea-1264] Bouncy Bullet Booster — *2026-07-21 22:14:44 UTC*
 
 A booster that modifies standard ranged attacks so they bounce off walls multiple times, retaining their damage properties, effectively turning the arena into a pinball machine of projectiles.

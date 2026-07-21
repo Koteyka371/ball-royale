@@ -21490,7 +21490,7 @@
     },
     {
       "id": "idea-1254",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Mirror Match Event",
@@ -32605,6 +32605,23 @@
         "src/ai/echoing_steps_booster.py",
         "src/ai/echoing_steps_booster.gd",
         "tests/test_echoing_steps_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1907",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shatter Trap",
+      "description": "A deployable trap that, when triggered, shatters into multiple smaller high-velocity shrapnel projectiles that bounce off walls.",
+      "allowed_paths": [
+        "src/arena/shatter_trap.py",
+        "src/arena/shatter_trap.gd",
+        "tests/test_shatter_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
