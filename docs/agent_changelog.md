@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1144] Bounty Hunter Mercenary Role — *2026-07-21 03:34:23 UTC*
+
+Add a new 'Bounty Hunter' ball type specifically balanced around hunting marked targets. When hitting an enemy with a bounty, the Bounty Hunter gains temporary speed and attack speed buffs. Additionally, if a Bounty Hunter secures a bounty kill, a percentage of the reward is distributed to their personal profile currency rather than strictly guild resources.
+
+---
+
 ## [idea-1249] Audience Favor System — *2026-07-21 03:34:19 UTC*
 
 Balls accumulate an 'Audience Favor' score. High favor grants reduced cooldowns or passive healing, while very low favor results in being targeted more frequently by crowd-thrown hazards. Favor goes up from multi-kills or comebacks.
