@@ -1,0 +1,4 @@
+{
+  "title": "Ocean Current Mutator",
+  "description": "In water-themed arenas, global ocean currents occasionally shift, applying a continuous force vector to all entities and projectiles across the entire map. This forces players to adapt their movement and aim to account for the drift."
+}

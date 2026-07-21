@@ -410,6 +410,105 @@ class GameMode:
             if not getattr(b, "alive", False):
                 continue
 
+
+        # Whirlpool logic for water-themed arenas
+        arena_type_for_whirlpool = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
+        if "water" in arena_type_for_whirlpool or "ocean" in arena_type_for_whirlpool or "pool" in arena_type_for_whirlpool or "river" in arena_type_for_whirlpool:
+            if not hasattr(world, "whirlpool_spawn_timer"):
+                world.whirlpool_spawn_timer = getattr(self, "random", __import__("random")).uniform(10.0, 30.0)
+
+            world.whirlpool_spawn_timer -= delta
+            if world.whirlpool_spawn_timer <= 0.0:
+                world.whirlpool_spawn_timer = getattr(self, "random", __import__("random")).uniform(20.0, 45.0)
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        HazardClass = Hazard
+                    except ImportError:
+                        class FallbackHazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        HazardClass = FallbackHazard
+
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    wx = getattr(self, "random", __import__("random")).uniform(150.0, arena_w - 150.0)
+                    wy = getattr(self, "random", __import__("random")).uniform(150.0, arena_h - 150.0)
+
+                    whirlpool_id = getattr(world, "next_id", getattr(self, "random", __import__("random")).randint(100000, 999999))
+                    if hasattr(world, "next_id"): world.next_id += 1
+
+                    whirlpool = HazardClass(whirlpool_id, wx, wy, 150.0, "whirlpool", 0.0)
+                    setattr(whirlpool, "duration", 15.0)
+                    setattr(whirlpool, "pull_strength", 120.0)
+                    world.arena.hazards.append(whirlpool)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("hazard_spawn", {"message": "A whirlpool has formed!", "type": "whirlpool", "x": wx, "y": wy})
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            active_hazards = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "whirlpool":
+                    h.duration -= delta
+                    if h.duration > 0:
+                        active_hazards.append(h)
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                                dx = h.x - b.x
+                                dy = h.y - b.y
+                                import math
+                                dist = math.hypot(dx, dy)
+                                if dist < h.radius:
+                                    # Pull towards center
+                                    if dist > 5.0:
+                                        pull_force = getattr(h, "pull_strength", 120.0) * (1.0 - dist / h.radius)
+                                        b.x += (dx / dist) * pull_force * delta
+                                        b.y += (dy / dist) * pull_force * delta
+
+                                        # Reduce movement speed
+                                        b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.7
+
+                                        # Submerge if very close to center
+                                        if dist < 25.0:
+                                            if not getattr(b, "is_submerged", False):
+                                                b.is_submerged = True
+                                                b.submerge_timer = 2.0
+                                                if hasattr(world, "add_event"):
+                                                    world.add_event("ball_submerged", {"id": getattr(b, "id", None)})
+
+                    # Submerged logic handled outside hazard loop so it persists even if hazard expires
+                else:
+                    active_hazards.append(h)
+
+            world.arena.hazards = active_hazards
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "is_submerged", False):
+                b.submerge_timer -= delta
+                # Significantly slow down while submerged
+                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.2
+                if b.submerge_timer <= 0:
+                    b.is_submerged = False
+                    # Drop some HP
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(20.0, source="whirlpool")
+                    else:
+                        b.hp -= 20.0
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                    # Receive wet debuff
+                    b.wet_debuff_timer = 5.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("ball_surfaced", {"id": getattr(b, "id", None)})
+
+            if getattr(b, "wet_debuff_timer", 0.0) > 0:
+                b.wet_debuff_timer -= delta
+                # Wet debuff could make them take more electrical damage or just slow them down a bit more
+                b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.2 # takes 20% more damage
+
+
         # Lightning Strike Event
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):

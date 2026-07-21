@@ -495,6 +495,148 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 
+
+		# Whirlpool logic for water-themed arenas
+		var arena_type_for_whirlpool = "unknown"
+		if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "name" in world.arena:
+				arena_type_for_whirlpool = world.arena.name.to_lower()
+		elif world != null and typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			if world.arena.has("name"):
+				arena_type_for_whirlpool = world.arena.name.to_lower()
+
+		if "water" in arena_type_for_whirlpool or "ocean" in arena_type_for_whirlpool or "pool" in arena_type_for_whirlpool or "river" in arena_type_for_whirlpool:
+			if not "whirlpool_spawn_timer" in world:
+				world.set("whirlpool_spawn_timer", randf_range(10.0, 30.0))
+
+			var cur_wst = world.get("whirlpool_spawn_timer") - delta
+			world.set("whirlpool_spawn_timer", cur_wst)
+
+			if cur_wst <= 0.0:
+				world.set("whirlpool_spawn_timer", randf_range(20.0, 45.0))
+				if "arena" in world and world.arena != null and "hazards" in world.arena:
+					var arena_w = 1000.0
+					var arena_h = 1000.0
+					if "width" in world.arena:
+						arena_w = world.arena.width
+					if "height" in world.arena:
+						arena_h = world.arena.height
+
+					var wx = randf_range(150.0, arena_w - 150.0)
+					var wy = randf_range(150.0, arena_h - 150.0)
+
+					var whirlpool_id = randi() % 900000 + 100000
+					if "next_id" in world:
+						whirlpool_id = world.next_id
+						world.next_id += 1
+
+					var HazardType = null
+					if load("res://src/arena/procedural_arena.gd"):
+						HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+					elif load("res://src/ai/game_modes.gd"):
+						HazardType = load("res://src/ai/game_modes.gd").Hazard
+					if HazardType != null:
+						var whirlpool = HazardType.new(whirlpool_id, wx, wy, 150.0, "whirlpool", 0.0)
+						whirlpool.duration = 15.0
+						whirlpool.set("pull_strength", 120.0)
+						world.arena.hazards.append(whirlpool)
+
+						if world.has_method("add_event"):
+							world.add_event("hazard_spawn", {"message": "A whirlpool has formed!", "type": "whirlpool", "x": wx, "y": wy})
+
+		if "arena" in world and world.arena != null and "hazards" in world.arena:
+			var active_hazards = []
+			var to_remove = []
+			for h in world.arena.hazards:
+				var is_whirlpool = false
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.get("kind", "") == "whirlpool":
+						is_whirlpool = true
+				else:
+					if h.get("kind") == "whirlpool":
+						is_whirlpool = true
+
+				if is_whirlpool:
+					var h_duration = 0.0
+					if typeof(h) == TYPE_DICTIONARY:
+						h_duration = h.get("duration", 0.0) - delta
+						h["duration"] = h_duration
+					else:
+						h_duration = h.get("duration") - delta
+						h.set("duration", h_duration)
+
+					if h_duration > 0:
+						active_hazards.append(h)
+						var h_x = h.get("x") if typeof(h) != TYPE_DICTIONARY else h.get("x", 0.0)
+						var h_y = h.get("y") if typeof(h) != TYPE_DICTIONARY else h.get("y", 0.0)
+						var h_radius = h.get("radius") if typeof(h) != TYPE_DICTIONARY else h.get("radius", 150.0)
+						var h_pull_strength = h.get("pull_strength") if typeof(h) != TYPE_DICTIONARY else h.get("pull_strength", 120.0)
+
+						for b in balls:
+							if b.get("alive") and b.get("ball_type") != "spectator":
+								var b_x = b.get("x")
+								var b_y = b.get("y")
+								var dx = h_x - b_x
+								var dy = h_y - b_y
+								var dist = sqrt(dx*dx + dy*dy)
+
+								if dist < h_radius:
+									if dist > 5.0:
+										var pull_force = h_pull_strength * (1.0 - dist / h_radius)
+										b.set("x", b_x + (dx / dist) * pull_force * delta)
+										b.set("y", b_y + (dy / dist) * pull_force * delta)
+
+										var b_speed = b.get("speed")
+										var b_base_speed = b.get("base_speed")
+										if b_base_speed != null:
+											b.set("speed", b_base_speed * 0.7)
+										elif b_speed != null:
+											b.set("speed", b_speed * 0.7)
+
+										if dist < 25.0:
+											if not b.get("is_submerged"):
+												b.set("is_submerged", true)
+												b.set("submerge_timer", 2.0)
+												if world.has_method("add_event"):
+													world.add_event("ball_submerged", {"id": b.get("id")})
+				else:
+					active_hazards.append(h)
+			world.arena.hazards = active_hazards
+
+		for b in balls:
+			if b.get("alive") and b.get("is_submerged"):
+				var stimer = b.get("submerge_timer") - delta
+				b.set("submerge_timer", stimer)
+
+				var b_speed = b.get("speed")
+				var b_base_speed = b.get("base_speed")
+				if b_base_speed != null:
+					b.set("speed", b_base_speed * 0.2)
+				elif b_speed != null:
+					b.set("speed", b_speed * 0.2)
+
+				if stimer <= 0:
+					b.set("is_submerged", false)
+					if b.has_method("take_damage"):
+						b.take_damage(20.0)
+					else:
+						var cur_hp = b.get("hp")
+						b.set("hp", cur_hp - 20.0)
+						if b.get("hp") <= 0:
+							b.set("hp", 0)
+							b.set("alive", false)
+
+					b.set("wet_debuff_timer", 5.0)
+					if world.has_method("add_event"):
+						world.add_event("ball_surfaced", {"id": b.get("id")})
+
+			var wet_timer = b.get("wet_debuff_timer")
+			if wet_timer != null and wet_timer > 0.0:
+				b.set("wet_debuff_timer", wet_timer - delta)
+				var cur_def = b.get("defense_multiplier")
+				if cur_def != null:
+					b.set("defense_multiplier", cur_def * 1.2)
+
 		# Hazard control logic (Twitch spectator interaction)
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
 			var arena = world.arena
@@ -40266,7 +40408,9 @@ class SlimeBossMode extends GameMode:
 					var by = boss.y if typeof(boss) == TYPE_OBJECT else boss["y"]
 
 					var HazardType = null
-					if load("res://src/ai/game_modes.gd"):
+					if load("res://src/arena/procedural_arena.gd"):
+						HazardType = load("res://src/arena/procedural_arena.gd").Hazard
+					elif load("res://src/ai/game_modes.gd"):
 						HazardType = load("res://src/ai/game_modes.gd").Hazard
 					if HazardType != null:
 						var trail = HazardType.new(arena.hazards.size() + 9000, bx, by, 25.0, "slime", 0.0)
