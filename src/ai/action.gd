@@ -2517,9 +2517,29 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var is_alive = true
+    if "alive" in self.ball: is_alive = self.ball.alive
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("alive"): is_alive = self.ball.get_meta("alive")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("alive"): is_alive = self.ball["alive"]
+
     var ball_type = ""
     if "ball_type" in self.ball: ball_type = self.ball.ball_type
-    elif self.ball.has_method("has_meta") and self.ball.has_meta("ball_type"): ball_type = self.ball.get_meta("ball_type")
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ball_type"): ball_type = self.ball.get_meta("ball_type")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): ball_type = self.ball["ball_type"]
+
+    if not is_alive and ball_type == "ghost":
+        _handle_ghost_behavior(delta)
+        return
+
+    if not is_alive and ball_type != "spectator" and ball_type != "ghost":
+        if "ball_type" in self.ball: self.ball.ball_type = "ghost"
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("ball_type", "ghost")
+
+        if "speed" in self.ball: self.ball.speed = 100.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", 100.0)
+
+        return
+
 
     var link_target = null
     if "link_target" in self.ball: link_target = self.ball.link_target
@@ -36315,3 +36335,59 @@ func _ricochet_attack(delta: float):
 		if dist < tr + br + 15:
 			if self.world != null and self.world.has_method("_deal_damage"):
 				self.world._deal_damage(self.ball, target)
+
+func _handle_ghost_behavior(delta: float):
+    if self.world == null or not ("arena" in self.world) or self.world.arena == null or not ("hazards" in self.world.arena):
+        return
+
+    var push_force = 20.0 * delta
+    var nearest = null
+    var min_dist_sq = 999999.0
+
+    var ball_x = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else 0.0)
+    var ball_y = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else 0.0)
+    var speed = self.ball.speed if "speed" in self.ball else (self.ball.get_meta("speed") if self.ball.has_method("has_meta") and self.ball.has_meta("speed") else 50.0)
+
+    for h in self.world.arena.hazards:
+        var hx = h.x if "x" in h else (h.get("x", 0) if typeof(h) == TYPE_DICTIONARY else (h.get_meta("x") if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("x") else 0.0))
+        var hy = h.y if "y" in h else (h.get("y", 0) if typeof(h) == TYPE_DICTIONARY else (h.get_meta("y") if typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("y") else 0.0))
+        var dx = hx - ball_x
+        var dy = hy - ball_y
+        var dist_sq = dx*dx + dy*dy
+        if dist_sq < min_dist_sq:
+            min_dist_sq = dist_sq
+            nearest = h
+
+    if "boosters" in self.world:
+        for b in self.world.boosters:
+            var bx = b.x if "x" in b else (b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x") else 0.0))
+            var by = b.y if "y" in b else (b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y") else 0.0))
+            var dx = bx - ball_x
+            var dy = by - ball_y
+            var dist_sq = dx*dx + dy*dy
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                nearest = b
+
+    if nearest != null and min_dist_sq > 0.0001:
+        var dist = sqrt(min_dist_sq)
+        var nx = (nearest.x if "x" in nearest else (nearest.get("x", 0) if typeof(nearest) == TYPE_DICTIONARY else (nearest.get_meta("x") if typeof(nearest) == TYPE_OBJECT and nearest.has_method("has_meta") and nearest.has_meta("x") else 0.0))) - ball_x
+        var ny = (nearest.y if "y" in nearest else (nearest.get("y", 0) if typeof(nearest) == TYPE_DICTIONARY else (nearest.get_meta("y") if typeof(nearest) == TYPE_OBJECT and nearest.has_method("has_meta") and nearest.has_meta("y") else 0.0))) - ball_y
+        nx /= dist
+        ny /= dist
+
+        if "x" in self.ball: self.ball.x += nx * speed * delta
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("x", ball_x + nx * speed * delta)
+
+        if "y" in self.ball: self.ball.y += ny * speed * delta
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("y", ball_y + ny * speed * delta)
+
+        if dist < 50.0:
+            if typeof(nearest) == TYPE_DICTIONARY:
+                if nearest.has("x"): nearest["x"] += nx * push_force
+                if nearest.has("y"): nearest["y"] += ny * push_force
+            elif typeof(nearest) == TYPE_OBJECT:
+                if "x" in nearest: nearest.x += nx * push_force
+                elif nearest.has_method("set_meta") and nearest.has_meta("x"): nearest.set_meta("x", nearest.get_meta("x") + nx * push_force)
+                if "y" in nearest: nearest.y += ny * push_force
+                elif nearest.has_method("set_meta") and nearest.has_meta("y"): nearest.set_meta("y", nearest.get_meta("y") + ny * push_force)
