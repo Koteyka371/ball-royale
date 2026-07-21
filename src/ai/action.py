@@ -1370,6 +1370,18 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if not getattr(self.ball, "alive", True) and getattr(self.ball, "ball_type", "") == "ghost":
+            self._handle_ghost_behavior(delta)
+            return
+
+        if not getattr(self.ball, "alive", True) and getattr(self.ball, "ball_type", "") != "spectator":
+            self.ball.ball_type = "ghost"
+            self.ball.alive = False
+            if hasattr(self.ball, "speed"): self.ball.speed = 100.0
+            if hasattr(self.ball, "hp"): self.ball.hp = 0.0
+            return
+
+
         b_type_initial = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
         if b_type_initial == "linker" and getattr(self.ball, "link_target", None) is None:
             if hasattr(self.world, "balls"):
@@ -18753,3 +18765,55 @@ class Action:
             if dist < getattr(self.ball, "radius", 10.0) + getattr(target, "radius", 10.0) + 15:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
+
+    def _handle_ghost_behavior(self, delta: float) -> None:
+        if not hasattr(self.world, "arena") or not hasattr(self.world.arena, "hazards"):
+            return
+
+        import math
+
+        # Pushing force
+        push_force = 20.0 * delta
+
+        # Find nearest hazard or booster
+        nearest = None
+        min_dist_sq = 999999.0
+
+        for h in self.world.arena.hazards:
+            dx = h.x - self.ball.x
+            dy = h.y - self.ball.y
+            dist_sq = dx*dx + dy*dy
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                nearest = h
+
+        if hasattr(self.world, "boosters"):
+            for b in self.world.boosters:
+                bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                dx = bx - self.ball.x
+                dy = by - self.ball.y
+                dist_sq = dx*dx + dy*dy
+                if dist_sq < min_dist_sq:
+                    min_dist_sq = dist_sq
+                    nearest = b
+
+        if nearest and min_dist_sq > 0.0001:
+            dist = math.sqrt(min_dist_sq)
+            nx = (nearest.x if not isinstance(nearest, dict) else nearest.get("x", 0)) - self.ball.x
+            ny = (nearest.y if not isinstance(nearest, dict) else nearest.get("y", 0)) - self.ball.y
+            nx /= dist
+            ny /= dist
+
+            # Move towards the nearest item
+            self.ball.x += nx * getattr(self.ball, "speed", 50.0) * delta
+            self.ball.y += ny * getattr(self.ball, "speed", 50.0) * delta
+
+            # If close enough, push it slightly
+            if dist < 50.0:
+                if isinstance(nearest, dict):
+                    if "x" in nearest: nearest["x"] += nx * push_force
+                    if "y" in nearest: nearest["y"] += ny * push_force
+                else:
+                    nearest.x += nx * push_force
+                    nearest.y += ny * push_force

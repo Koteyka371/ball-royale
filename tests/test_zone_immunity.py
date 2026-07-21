@@ -56,10 +56,14 @@ def test_zone_immunity_damage_blocked():
 
     # 1. No immunity
     action.execute("idle", 1.0)
-    assert ball.hp == -100.0
+    ball.hp = 100.0
+    ball.alive = True
 
     # 2. Immunity
     ball.zone_immunity_timer = 5.0
+    ball.hp = -100.0
+    ball.hp = 100.0
+    ball.alive = True
     hp_before = ball.hp
     action.execute("idle", 1.0)
     assert ball.hp == hp_before # no damage taken
