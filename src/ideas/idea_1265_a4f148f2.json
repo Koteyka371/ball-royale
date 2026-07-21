@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Mode",
+    "description": "Pairs of balls are randomly entangled. If one entangled ball takes damage, a portion of that damage is transferred to the other ball regardless of distance. Conversely, healing effects are also shared. Forces unexpected cooperation and target prioritization."
+}

@@ -49392,3 +49392,173 @@ class InvisibleGravityWellsMode extends GameMode:
 			arena_hazards.erase(h)
 
 GAME_MODES["invisible_gravity_wells"] = InvisibleGravityWellsMode.new()
+
+class ConnectedPortalsMode extends GameMode:
+	var portals: Array = []
+	var spawn_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Connected Portals"
+		description = "Pairs of connected portals spawn periodically. Shooting a portal transfers attacks to the other portal, and balls can teleport through them to escape or ambush enemies."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		spawn_timer -= delta
+		if spawn_timer <= 0.0:
+			spawn_timer = 15.0
+
+			portals.clear()
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				var new_hazards = []
+				for h in world.arena.hazards:
+					if typeof(h) == TYPE_DICTIONARY:
+						if not h.get("is_connected_portal", false):
+							new_hazards.append(h)
+					else:
+						if not ("is_connected_portal" in h and h.is_connected_portal):
+							new_hazards.append(h)
+				world.arena.hazards = new_hazards
+
+			var arena_w = 800.0
+			var arena_h = 600.0
+			if world != null and "arena" in world and world.arena != null:
+				arena_w = world.arena.get("width", 800.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.width
+				arena_h = world.arena.get("height", 600.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.height
+
+			for i in range(2):
+				var id1 = "cp_" + str(randi() % 9000 + 1000)
+				var id2 = "cp_" + str(randi() % 9000 + 1000)
+
+				var p1 = {
+					"id": id1,
+					"x": randf_range(100.0, arena_w - 100.0),
+					"y": randf_range(100.0, arena_h - 100.0),
+					"radius": 40.0,
+					"is_connected_portal": true,
+					"target_id": id2,
+					"kind": "connected_portal"
+				}
+
+				var p2 = {
+					"id": id2,
+					"x": randf_range(100.0, arena_w - 100.0),
+					"y": randf_range(100.0, arena_h - 100.0),
+					"radius": 40.0,
+					"is_connected_portal": true,
+					"target_id": id1,
+					"kind": "connected_portal"
+				}
+
+				portals.append(p1)
+				portals.append(p2)
+
+				if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+					world.arena.hazards.append(p1)
+					world.arena.hazards.append(p2)
+
+		if world != null and "projectiles" in world and typeof(world.projectiles) == TYPE_ARRAY:
+			for proj in world.projectiles:
+				var cd = 0.0
+				if typeof(proj) == TYPE_DICTIONARY:
+					cd = proj.get("teleport_cooldown", 0.0)
+				else:
+					cd = proj.get("teleport_cooldown") if "teleport_cooldown" in proj else (proj.get_meta("teleport_cooldown") if proj.has_meta("teleport_cooldown") else 0.0)
+
+				if cd > 0.0:
+					if typeof(proj) == TYPE_DICTIONARY:
+						proj["teleport_cooldown"] = cd - delta
+					else:
+						if "teleport_cooldown" in proj:
+							proj.teleport_cooldown = cd - delta
+						else:
+							proj.set_meta("teleport_cooldown", cd - delta)
+					continue
+
+				var p_x = proj.get("x", 0.0) if typeof(proj) == TYPE_DICTIONARY else proj.x
+				var p_y = proj.get("y", 0.0) if typeof(proj) == TYPE_DICTIONARY else proj.y
+
+				for p in portals:
+					var dx = p_x - p.x
+					var dy = p_y - p.y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist < p.radius:
+						var target = null
+						for pt in portals:
+							if pt.id == p.target_id:
+								target = pt
+								break
+						if target != null:
+							if typeof(proj) == TYPE_DICTIONARY:
+								proj["x"] = target.x
+								proj["y"] = target.y
+								proj["teleport_cooldown"] = 1.0
+							else:
+								proj.x = target.x
+								proj.y = target.y
+								if not "teleport_cooldown" in proj:
+									proj.set_meta("teleport_cooldown", 1.0)
+								else:
+									proj.teleport_cooldown = 1.0
+
+							if world.has_method("add_event"):
+								world.add_event("portal_transfer", {"x": target.x, "y": target.y, "type": "projectile"})
+						break
+
+		for ball in balls:
+			var is_alive = false
+			if typeof(ball) == TYPE_DICTIONARY:
+				is_alive = ball.get("alive", false)
+			else:
+				is_alive = ball.get("alive") if "alive" in ball else false
+
+			if not is_alive:
+				continue
+
+			var cd = 0.0
+			if typeof(ball) == TYPE_DICTIONARY:
+				cd = ball.get("portal_cooldown", 0.0)
+			else:
+				cd = ball.get("portal_cooldown") if "portal_cooldown" in ball else (ball.get_meta("portal_cooldown") if ball.has_meta("portal_cooldown") else 0.0)
+
+			if cd > 0.0:
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["portal_cooldown"] = cd - delta
+				else:
+					if "portal_cooldown" in ball:
+						ball.portal_cooldown = cd - delta
+					else:
+						ball.set_meta("portal_cooldown", cd - delta)
+				continue
+
+			var b_x = ball.get("x", 0.0) if typeof(ball) == TYPE_DICTIONARY else ball.x
+			var b_y = ball.get("y", 0.0) if typeof(ball) == TYPE_DICTIONARY else ball.y
+			var b_r = ball.get("radius", 0.0) if typeof(ball) == TYPE_DICTIONARY else ball.radius
+
+			for p in portals:
+				var dx = b_x - p.x
+				var dy = b_y - p.y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < p.radius + b_r:
+					var target = null
+					for pt in portals:
+						if pt.id == p.target_id:
+							target = pt
+							break
+					if target != null:
+						if typeof(ball) == TYPE_DICTIONARY:
+							ball["x"] = target.x
+							ball["y"] = target.y
+							ball["portal_cooldown"] = 2.0
+						else:
+							ball.x = target.x
+							ball.y = target.y
+							if "portal_cooldown" in ball:
+								ball.portal_cooldown = 2.0
+							else:
+								ball.set_meta("portal_cooldown", 2.0)
+
+						if world.has_method("add_event"):
+							var b_id = ball.get("id", "") if typeof(ball) == TYPE_DICTIONARY else ball.id
+							world.add_event("portal_transfer", {"x": target.x, "y": target.y, "type": "ball", "ball_id": b_id})
+					break
+
+GAME_MODES["connected_portals"] = ConnectedPortalsMode.new()

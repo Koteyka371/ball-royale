@@ -23975,7 +23975,120 @@ class RoamingDoppelgangerMode(GameMode):
                     boss.vy = math.sin(angle) * boss.speed
 
 
+
+class ConnectedPortalsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Connected Portals"
+        self.description = "Pairs of connected portals spawn periodically. Shooting a portal transfers attacks to the other portal, and balls can teleport through them to escape or ambush enemies."
+        self.portals = []
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+        import random
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0.0:
+            self.spawn_timer = 15.0
+
+            # Remove old portals
+            self.portals = []
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards = [h for h in world.arena.hazards if not getattr(h, "is_connected_portal", False)]
+
+            arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+            arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
+
+            # Spawn two pairs of connected portals
+            for _ in range(2):
+                p1 = {
+                    "id": f"cp_{random.randint(1000, 9999)}",
+                    "x": random.uniform(100, arena_w - 100),
+                    "y": random.uniform(100, arena_h - 100),
+                    "radius": 40.0,
+                    "is_connected_portal": True,
+                    "target_id": None
+                }
+
+                p2 = {
+                    "id": f"cp_{random.randint(1000, 9999)}",
+                    "x": random.uniform(100, arena_w - 100),
+                    "y": random.uniform(100, arena_h - 100),
+                    "radius": 40.0,
+                    "is_connected_portal": True,
+                    "target_id": p1["id"]
+                }
+                p1["target_id"] = p2["id"]
+
+                self.portals.append(p1)
+                self.portals.append(p2)
+
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    class PortalHazard:
+                        def __init__(self, data):
+                            self.id = data["id"]
+                            self.x = data["x"]
+                            self.y = data["y"]
+                            self.radius = data["radius"]
+                            self.is_connected_portal = True
+                            self.target_id = data["target_id"]
+                            self.kind = "connected_portal"
+
+                    world.arena.hazards.append(PortalHazard(p1))
+                    world.arena.hazards.append(PortalHazard(p2))
+
+        # Check for projectiles entering portals
+        if hasattr(world, "projectiles"):
+            for proj in world.projectiles:
+                if not getattr(proj, "teleport_cooldown", 0.0) <= 0:
+                    proj.teleport_cooldown -= delta
+                    continue
+
+                for p in self.portals:
+                    dx = proj.x - p["x"]
+                    dy = proj.y - p["y"]
+                    dist = math.hypot(dx, dy)
+
+                    if dist < p["radius"]:
+                        # Find target portal
+                        target = next((pt for pt in self.portals if pt["id"] == p["target_id"]), None)
+                        if target:
+                            proj.x = target["x"]
+                            proj.y = target["y"]
+                            proj.teleport_cooldown = 1.0 # Prevent instant back-and-forth
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("portal_transfer", {"x": target["x"], "y": target["y"], "type": "projectile"})
+                            break
+
+        # Check for balls entering portals
+        for ball in balls:
+            if not getattr(ball, "alive", False):
+                continue
+
+            if getattr(ball, "portal_cooldown", 0.0) > 0:
+                ball.portal_cooldown -= delta
+                continue
+
+            for p in self.portals:
+                dx = ball.x - p["x"]
+                dy = ball.y - p["y"]
+                dist = math.hypot(dx, dy)
+
+                if dist < p["radius"] + ball.radius:
+                    target = next((pt for pt in self.portals if pt["id"] == p["target_id"]), None)
+                    if target:
+                        ball.x = target["x"]
+                        ball.y = target["y"]
+                        ball.portal_cooldown = 2.0
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("portal_transfer", {"x": target["x"], "y": target["y"], "type": "ball", "ball_id": ball.id})
+                        break
+
 GAME_MODES = {
+    "connected_portals": ConnectedPortalsMode(),
     'roaming_doppelganger': RoamingDoppelgangerMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),
 
