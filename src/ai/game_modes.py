@@ -1204,6 +1204,30 @@ class ShadowMonster:
         self.ball_type = "shadow_monster"
         self.team = "ShadowMonsters"
 
+
+class BehemothBoss:
+    def __init__(self, id_val, x, y):
+        self.id = id_val
+        self.x = x
+        self.y = y
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 80.0
+        self.hp = 8000.0
+        self.max_hp = 8000.0
+        self.alive = True
+        self.ball_type = "behemoth"
+        self.team = "Behemoth"
+        self.speed = 40.0
+        self.base_speed = 40.0
+        self.damage = 100.0
+        self.base_damage = 100.0
+        self.perception_radius = 800.0
+        self.base_perception_radius = 800.0
+        self.is_behemoth = True
+        self.time_alive = 0.0
+        self.reward_given = False
+
 class BattleRoyaleMode(GameMode):
     def calculate_bounty_reward(self, target_bounty: int) -> int:
         return int(15 * (1.2 ** target_bounty))
@@ -1244,6 +1268,9 @@ class BattleRoyaleMode(GameMode):
         self.final_boss_spawned = False
         self.obstacle_timer = 0.0
         self.random_event_timer = 0.0
+        self.behemoth_spawn_timer = 0.0
+        self.behemoth_spawned = False
+        self.behemoth_active = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
@@ -1862,7 +1889,111 @@ class BattleRoyaleMode(GameMode):
                             if hasattr(world, "entities") and world.balls is not world.entities:
                                 world.entities.append(new_decoy)
 
-        # Final Zone Boss logic
+
+        # Behemoth Logic
+        if not self.behemoth_spawned:
+            self.behemoth_spawn_timer += delta
+            if self.behemoth_spawn_timer >= 60.0:  # Spawn after 60 seconds
+                self.behemoth_spawned = True
+                self.behemoth_active = True
+
+                behemoth = BehemothBoss(
+                    id_val=99999 + self.random.randint(1, 1000),
+                    x=self.zone_x,
+                    y=self.zone_y
+                )
+                if hasattr(world, 'balls'):
+                    world.balls.append(behemoth)
+
+                if hasattr(world, 'add_event'):
+                    world.add_event('behemoth_spawn', {
+                        'message': 'The Behemoth has awakened! Defeat it before it explodes!'
+                    })
+        else:
+            # Check for behemoth
+            behemoth = next((b for b in balls if getattr(b, 'is_behemoth', False) and getattr(b, 'alive', False)), None)
+
+
+            if behemoth:
+                try:
+                    behemoth.time_alive += delta
+                    if behemoth.time_alive >= 30.0:
+                        # Explode!
+                        behemoth.hp = 0
+                        behemoth.alive = False
+                        behemoth.killer = "explosion"
+
+                        if hasattr(world, 'add_event'):
+                            world.add_event('behemoth_explode', {
+                                'message': 'The Behemoth exploded! The arena has been devastated!'
+                            })
+
+                        # Wipe out huge portion of arena (damage all players nearby)
+                        explosion_radius = 1500.0
+                        for b in balls:
+                            if getattr(b, 'alive', False) and not getattr(b, 'is_behemoth', False):
+                                bx = getattr(b, 'x', 0.0)
+                                by = getattr(b, 'y', 0.0)
+                                import math
+                                try:
+                                    dist = math.hypot(bx - getattr(behemoth, 'x', 0.0), by - getattr(behemoth, 'y', 0.0))
+                                    if dist <= explosion_radius:
+                                        if hasattr(b, 'take_damage'):
+                                            b.take_damage(500.0)
+                                        else:
+                                            b.hp -= 500.0
+                                            if b.hp <= 0:
+                                                b.hp = 0
+                                                b.alive = False
+                                                b.killer = "behemoth_explosion"
+                                except TypeError:
+                                    pass
+                except TypeError:
+                    pass
+            elif self.behemoth_active:
+                # It was defeated
+                self.behemoth_active = False
+
+                # Check if it was killed, not exploded
+                # We know it was defeated if it's dead but time_alive < 30.0
+                dead_behemoth = next((b for b in balls if getattr(b, 'is_behemoth', False) and not getattr(b, 'alive', False)), None)
+                if dead_behemoth and getattr(dead_behemoth, 'time_alive', 30.0) < 30.0 and not getattr(dead_behemoth, 'reward_given', False):
+                    dead_behemoth.reward_given = True
+                    if hasattr(world, 'add_event'):
+                        world.add_event('behemoth_defeated', {
+                            'message': 'The Behemoth was defeated! Legendary items dropped!'
+                        })
+
+                    # Drop legendary items
+                    if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            for i in range(3):
+                                drop_x = dead_behemoth.x + self.random.uniform(-100, 100)
+                                drop_y = dead_behemoth.y + self.random.uniform(-100, 100)
+                                h_id = len(world.arena.hazards) + self.random.randint(10000, 99999)
+                                item = Hazard(h_id, drop_x, drop_y, 25.0, "legendary_item", 0.0)
+                                item.duration = 20.0
+                                world.arena.hazards.append(item)
+                        except ImportError:
+                            class FallbackHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+                                    self.duration = 20.0
+                            for i in range(3):
+                                drop_x = dead_behemoth.x + self.random.uniform(-100, 100)
+                                drop_y = dead_behemoth.y + self.random.uniform(-100, 100)
+                                h_id = len(world.arena.hazards) + self.random.randint(10000, 99999)
+                                item = FallbackHazard(h_id, drop_x, drop_y, 25.0, "legendary_item", 0.0)
+                                item.duration = 20.0
+                                world.arena.hazards.append(item)
+
+        # Existing Final Zone Boss logic
         if self.zone_radius <= 250.0 and not getattr(self, "final_boss_spawned", False):
             self.final_boss_spawned = True
 
