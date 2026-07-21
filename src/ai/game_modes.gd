@@ -41090,6 +41090,131 @@ class RandomTeleportDashMode extends GameMode:
 GAME_MODES = {
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"roaming_doppelganger": RoamingDoppelgangerMode.new(),
+class ThermalFreezeTagMode extends FreezeTagMode:
+	var zone_timer = 0.0
+	func _init():
+		name = "Thermal Freeze Tag"
+		description = "The arena has dynamic heat zones. Frozen players slowly thaw in heat zones. If pushed into a frost zone, they permanently shatter upon taking damage."
+	func tick(world, balls, delta=0.016):
+		super(world, balls, delta)
+		if not world.has_method("has_meta") or not world.has_meta("arena"):
+			return
+		var arena = world.get_meta("arena")
+		if not "hazards" in arena:
+			return
+		zone_timer += delta
+		if zone_timer >= 5.0:
+			zone_timer = 0.0
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if "width" in arena: arena_w = arena.width
+			if "height" in arena: arena_h = arena.height
+			var kind = "heat_zone"
+			if randf() > 0.5:
+				kind = "frost_zone"
+			var h = {}
+			h.id = arena.hazards.size() + randi() % 90000 + 10000
+			h.x = randf_range(100.0, arena_w - 100.0)
+			h.y = randf_range(100.0, arena_h - 100.0)
+			h.radius = 150.0
+			h.kind = kind
+			h.damage = 0.0
+			h.duration = 15.0
+			arena.hazards.append(h)
+		var to_remove = []
+		for h in arena.hazards:
+			var h_kind = ""
+			if typeof(h) == TYPE_DICTIONARY and "kind" in h: h_kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+			if h_kind == "heat_zone" or h_kind == "frost_zone":
+				if typeof(h) == TYPE_DICTIONARY and "duration" in h:
+					h.duration -= delta
+					if h.duration <= 0:
+						to_remove.append(h)
+						continue
+				elif typeof(h) == TYPE_OBJECT and "duration" in h:
+					h.duration -= delta
+					if h.duration <= 0:
+						to_remove.append(h)
+						continue
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_r = 150.0
+				if typeof(h) == TYPE_DICTIONARY:
+					h_x = h.x if "x" in h else 0.0
+					h_y = h.y if "y" in h else 0.0
+					h_r = h.radius if "radius" in h else 150.0
+				elif typeof(h) == TYPE_OBJECT:
+					h_x = h.x if "x" in h else 0.0
+					h_y = h.y if "y" in h else 0.0
+					h_r = h.radius if "radius" in h else 150.0
+				for b in balls:
+					var alive = false
+					if "alive" in b: alive = b.alive
+					elif b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+					var ball_type = ""
+					if "ball_type" in b: ball_type = b.ball_type
+					elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+					if not alive or ball_type == "spectator":
+						continue
+					var b_x = 0.0
+					var b_y = 0.0
+					if "x" in b: b_x = b.x
+					elif b.has_method("has_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+					if "y" in b: b_y = b.y
+					elif b.has_method("has_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+					var b_r = 10.0
+					if "radius" in b: b_r = b.radius
+					elif b.has_method("has_meta") and b.has_meta("radius"): b_r = b.get_meta("radius")
+					var dist = sqrt((b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y))
+					if dist < h_r + b_r:
+						var is_frozen = false
+						if "is_frozen" in b: is_frozen = b.is_frozen
+						elif b.has_method("has_meta") and b.has_meta("is_frozen"): is_frozen = b.get_meta("is_frozen")
+						if h_kind == "heat_zone" and is_frozen:
+							var tp = 0.0
+							if "thaw_progress" in b: tp = b.thaw_progress
+							elif b.has_method("has_meta") and b.has_meta("thaw_progress"): tp = b.get_meta("thaw_progress")
+							tp += delta
+							if "thaw_progress" in b: b.thaw_progress = tp
+							elif b.has_method("set_meta"): b.set_meta("thaw_progress", tp)
+							if tp >= 3.0:
+								if "is_frozen" in b: b.is_frozen = false
+								elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
+								if "stun_timer" in b: b.stun_timer = 0.0
+								elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
+								if "frozen_timer" in b: b.frozen_timer = 0.0
+								elif b.has_method("set_meta"): b.set_meta("frozen_timer", 0.0)
+								if "thaw_progress" in b: b.thaw_progress = 0.0
+								elif b.has_method("set_meta"): b.set_meta("thaw_progress", 0.0)
+						if h_kind == "frost_zone" and is_frozen:
+							var current_hp = 100.0
+							if "hp" in b: current_hp = b.hp
+							elif b.has_method("has_meta") and b.has_meta("hp"): current_hp = b.get_meta("hp")
+							var last_hp = current_hp
+							if "_frost_last_hp" in b: last_hp = b._frost_last_hp
+							elif b.has_method("has_meta") and b.has_meta("_frost_last_hp"): last_hp = b.get_meta("_frost_last_hp")
+							if current_hp < last_hp:
+								if "hp" in b: b.hp = 0
+								elif b.has_method("set_meta"): b.set_meta("hp", 0)
+								if "alive" in b: b.alive = false
+								elif b.has_method("set_meta"): b.set_meta("alive", false)
+								if "is_frozen" in b: b.is_frozen = false
+								elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
+		for h in to_remove:
+			if h in arena.hazards:
+				arena.hazards.erase(h)
+		for b in balls:
+			var alive = false
+			if "alive" in b: alive = b.alive
+			elif b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+			if alive:
+				var hp = 100.0
+				if "hp" in b: hp = b.hp
+				elif b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+				if "_frost_last_hp" in b: b._frost_last_hp = hp
+				elif b.has_method("set_meta"): b.set_meta("_frost_last_hp", hp)
+
 	"healer_freeze_tag": HealerFreezeTagMode.new(),
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 
@@ -41141,6 +41266,7 @@ GAME_MODES = {
 	"entangled_arena": EntangledArenaMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
+	"thermal_freeze_tag": ThermalFreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
 	"blackout_event": BlackoutEventMode.new(),
 	"haunted_event": HauntedEventMode.new(),

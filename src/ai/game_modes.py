@@ -26253,7 +26253,81 @@ class WeatherClashMode(GameMode):
                     b.speed = base_speed
                     b.damage = base_damage
 
+class ThermalFreezeTagMode(FreezeTagMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Thermal Freeze Tag"
+        self.description = "The arena has dynamic heat zones. Frozen players slowly thaw in heat zones. If pushed into a frost zone, they permanently shatter upon taking damage."
+        self.zone_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+        self.zone_timer += delta
+        if self.zone_timer >= 5.0:
+            self.zone_timer = 0.0
+            arena_w = getattr(world.arena, "width", 1000.0)
+            arena_h = getattr(world.arena, "height", 1000.0)
+            try:
+                from arena.procedural_arena import Hazard
+                h_id = len(world.arena.hazards) + random.randint(10000, 99999)
+                kind = "heat_zone" if random.random() > 0.5 else "frost_zone"
+                h = Hazard(id=h_id, x=random.uniform(100, arena_w-100), y=random.uniform(100, arena_h-100), radius=150.0, kind=kind, damage=0.0)
+                h.duration = 15.0
+                world.arena.hazards.append(h)
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.duration = 15.0
+                        self.active = True
+                h = FallbackHazard(id=len(world.arena.hazards) + random.randint(10000, 99999), x=random.uniform(100, arena_w-100), y=random.uniform(100, arena_h-100), radius=150.0, kind="heat_zone" if random.random() > 0.5 else "frost_zone", damage=0.0)
+                world.arena.hazards.append(h)
+        to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") in ["heat_zone", "frost_zone"]:
+                if hasattr(h, "duration"):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        to_remove.append(h)
+                        continue
+                h_x, h_y, h_r = getattr(h, "x", 0.0), getattr(h, "y", 0.0), getattr(h, "radius", 150.0)
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+                    b_x, b_y = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                    dist = math.hypot(b_x - h_x, b_y - h_y)
+                    if dist < h_r + getattr(b, "radius", 10.0):
+                        is_frozen = getattr(b, "is_frozen", False)
+                        if getattr(h, "kind", "") == "heat_zone" and is_frozen:
+                            b.thaw_progress = getattr(b, "thaw_progress", 0.0) + delta
+                            if b.thaw_progress >= 3.0:
+                                self._unfreeze_ball(b)
+                                b.thaw_progress = 0.0
+                        if getattr(h, "kind", "") == "frost_zone" and is_frozen:
+                            current_hp = getattr(b, "hp", 100.0)
+                            last_hp = getattr(b, "_frost_last_hp", current_hp)
+                            if current_hp < last_hp:
+                                b.hp = 0
+                                b.alive = False
+                                b.is_frozen = False
+        for h in to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+        for b in balls:
+            if getattr(b, "alive", False):
+                b._frost_last_hp = getattr(b, "hp", 100.0)
+
 GAME_MODES['freeze_tag'] = FreezeTagMode()
+GAME_MODES['thermal_freeze_tag'] = ThermalFreezeTagMode()
 GAME_MODES['vortex_orbit'] = VortexOrbitMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
 

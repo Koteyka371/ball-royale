@@ -1,0 +1,4 @@
+{
+  "title": "Gravity well that specifically targets high health players",
+  "description": "A gravity well that pulls players with hp > 75 towards the center."
+}
