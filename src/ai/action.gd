@@ -27607,6 +27607,15 @@ func _use_skill():
                         e.x += (kb_dx / kb_dist) * kb_force
                         e.y += (kb_dy / kb_dist) * kb_force
 
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("intangible", false)
+                self.ball.set_meta("invulnerable", false)
+                self.ball.set_meta("quantum_state", false)
+            else:
+                self.ball.intangible = false
+                self.ball.invulnerable = false
+                self.ball.quantum_state = false
+
             if killed_enemy:
                 if "skill_timer" in self.ball:
                     self.ball.skill_timer = 0.0
@@ -28019,8 +28028,70 @@ func _use_skill():
                     teleport_x = result[0]
                     teleport_y = result[1]
 
+                # Quantum state immunity
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("intangible", true)
+                    self.ball.set_meta("invulnerable", true)
+                    self.ball.set_meta("quantum_state", true)
+                else:
+                    self.ball.intangible = true
+                    self.ball.invulnerable = true
+                    self.ball.quantum_state = true
+
+                var old_x = self.ball.x
+                var old_y = self.ball.y
+
                 self.ball.x = teleport_x
                 self.ball.y = teleport_y
+
+                # Decoy logic
+                var decoy = null
+                if self.ball.has_method("duplicate"):
+                    decoy = self.ball.duplicate()
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    decoy = self.ball.duplicate(true)
+
+                if decoy != null:
+                    if decoy.has_method("set_meta"):
+                        decoy.set_meta("id", randi() % 90000 + 10000)
+                        decoy.set_meta("owner_id", self.ball.get_meta("id") if self.ball.has_meta("id") else null)
+                        decoy.set_meta("is_decoy", true)
+                        decoy.set_meta("decoy_type", "explosive")
+                        decoy.set_meta("decoy_timer", 5.0)
+                        var b_hp = 100
+                        if self.ball.has_meta("max_hp"): b_hp = self.ball.get_meta("max_hp")
+                        elif "max_hp" in self.ball: b_hp = self.ball.max_hp
+                        decoy.set_meta("hp", b_hp * 0.5)
+                        decoy.set_meta("max_hp", b_hp * 0.5)
+                        decoy.set_meta("damage", 0)
+                        decoy.set_meta("skill_timer", 9999.0)
+                        decoy.set_meta("SKILL", null)
+                        decoy.set_meta("skill", null)
+                        decoy.set_meta("active_skill", null)
+                    else:
+                        decoy.id = randi() % 90000 + 10000
+                        decoy.owner_id = self.ball.id if "id" in self.ball else null
+                        decoy.is_decoy = true
+                        decoy.decoy_type = "explosive"
+                        decoy.decoy_timer = 5.0
+                        var b_hp = 100
+                        if "max_hp" in self.ball: b_hp = self.ball.max_hp
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): b_hp = self.ball.get_meta("max_hp")
+                        decoy.hp = b_hp * 0.5
+                        decoy.max_hp = b_hp * 0.5
+                        decoy.damage = 0
+                        decoy.skill_timer = 9999.0
+                        decoy.SKILL = null
+                        decoy.skill = null
+                        decoy.active_skill = null
+
+                    decoy.x = old_x
+                    decoy.y = old_y
+
+                    if "balls" in self.world:
+                        self.world.balls.append(decoy)
+
+                # Quantum state remains true for collision sweep
 
                 for e in _get_enemies():
                     var check_hp_e = 1.0
@@ -28083,6 +28154,15 @@ func _use_skill():
                         self.ball.set_meta("stamina_speed_burst_timer", burst + 0.5)
                     else:
                         self.ball.stamina_speed_burst_timer = burst + 0.5
+
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("intangible", false)
+                self.ball.set_meta("invulnerable", false)
+                self.ball.set_meta("quantum_state", false)
+            else:
+                self.ball.intangible = false
+                self.ball.invulnerable = false
+                self.ball.quantum_state = false
 
             if killed_enemy:
                 if self.ball.has_method("set_meta"):

@@ -14723,8 +14723,48 @@ class Action:
                         if isinstance(res, (list, tuple)):
                             teleport_x, teleport_y = res[0], res[1]
 
+                    # Quantum state immunity and decoy logic
+                    import copy
+                    import random
+
+                    self.ball.intangible = True
+                    self.ball.invulnerable = True
+                    self.ball.quantum_state = True
+                    if hasattr(self.ball, "set_meta"):
+                        self.ball.set_meta("intangible", True)
+                        self.ball.set_meta("invulnerable", True)
+                        self.ball.set_meta("quantum_state", True)
+
+                    # Store original position
+                    old_x = self.ball.x
+                    old_y = self.ball.y
+
                     self.ball.x = teleport_x
                     self.ball.y = teleport_y
+
+                    # Create explosive decoy
+                    decoy = copy.copy(self.ball)
+                    decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                    decoy.owner_id = getattr(self.ball, "id", None)
+                    decoy.is_decoy = True
+                    decoy.decoy_type = "explosive"
+                    decoy.decoy_timer = 5.0
+                    decoy.x = old_x
+                    decoy.y = old_y
+                    decoy.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                    decoy.max_hp = decoy.hp
+                    decoy.damage = 0
+                    decoy.skill_timer = 9999.0
+                    decoy.SKILL = None
+                    decoy.skill = None
+                    decoy.active_skill = None
+                    self.world.balls.append(decoy)
+
+                    # Keep quantum state active temporarily by appending to a list of states
+                    # (This loop resolves immediately in tick, but setting it false immediately
+                    # defeats the purpose if enemies are checked in the same tick).
+                    # Since enemies loop happens *after* this in the same block, we MUST NOT turn it off yet.
+                    # We will turn it off manually right after the collision check or let the engine tick handle it.
 
                     # Deal damage to enemies we pass through or land on
                     for enemy in self._get_enemies():
@@ -14754,6 +14794,15 @@ class Action:
                     if jumps > 1:
                         # Refreshes a minor stamina burst
                         self.ball.stamina_speed_burst_timer = getattr(self.ball, "stamina_speed_burst_timer", 0.0) + 0.5
+
+                # Turn off quantum state now that collision sweeps are done
+                self.ball.intangible = False
+                self.ball.invulnerable = False
+                self.ball.quantum_state = False
+                if hasattr(self.ball, "set_meta"):
+                    self.ball.set_meta("intangible", False)
+                    self.ball.set_meta("invulnerable", False)
+                    self.ball.set_meta("quantum_state", False)
 
                 # Reset cooldown if an enemy was killed during the dash
                 if killed_enemy:
