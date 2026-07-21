@@ -1,0 +1,4 @@
+{
+  "title": "Twitch Loyalty Shop: Cosmetic Auras",
+  "description": "A new integration where Twitch viewers can type !aura <color> <target_ball_id> to spend their viewer loyalty points, granting their favorite ball a cosmetic aura and a minor one-time buff for the current match. This encourages viewers to stick around to build loyalty for their favorite AI."
+}

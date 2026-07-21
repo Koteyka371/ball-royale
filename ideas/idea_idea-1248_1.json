@@ -1,0 +1,4 @@
+{
+  "title": "Twitch Spectator Voting: Hazard Upgrades",
+  "description": "Allow spectators to vote to upgrade a specific hazard (e.g., increase meteor radius, double poison cloud damage) rather than just spawning them. The command !upgrade_hazard <hazard_kind> will let Twitch users spend their loyalty points to enhance the threat level of obstacles, triggering visually unique 'super' hazard effects."
+}

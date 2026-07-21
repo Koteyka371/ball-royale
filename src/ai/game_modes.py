@@ -307,6 +307,32 @@ class GameMode:
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+
+        # Hazard control logic (Twitch spectator interaction)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "control_timer", 0) > 0:
+                    h.control_timer -= delta
+                    # Move the hazard towards the target location
+                    target_x = getattr(h, "control_target_x", h.x)
+                    target_y = getattr(h, "control_target_y", h.y)
+
+                    dx = target_x - h.x
+                    dy = target_y - h.y
+                    dist = (dx**2 + dy**2)**0.5
+
+                    if dist > 5.0:
+                        speed = 150.0 * delta # 150 units per second
+                        if speed > dist:
+                            speed = dist
+
+                        h.x += (dx / dist) * speed
+                        h.y += (dy / dist) * speed
+                    else:
+                        # Clear target if reached
+                        h.control_target_x = h.x
+                        h.control_target_y = h.y
+
         # Black Hole Mine detonating logic
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             to_remove = []

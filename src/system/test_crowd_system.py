@@ -431,3 +431,48 @@ def test_viewer_loyalty():
 
     assert system.viewer_loyalty.get("SmartVoter", 0) == 10
     assert system.viewer_loyalty.get("BadVoter", 0) == 0
+
+
+
+
+
+class MockArena:
+    def __init__(self):
+        self.hazards = []
+
+class MockSimpleHazard:
+    def __init__(self, id, x, y, radius, kind, damage):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.kind = kind
+        self.damage = damage
+
+def test_spectator_control_hazard():
+    world = MockWorld()
+    world.arena = MockArena()
+    world.arena.hazards = [MockSimpleHazard(1, 100, 100, 10.0, "meteor", 50.0)]
+
+
+    crowd = CrowdSystem(world)
+
+    # Process control command
+    crowd.process_external_command("viewer1", "!control meteor 500 500", [])
+
+    # Hazard should be controlled
+    hazard = world.arena.hazards[0]
+    assert getattr(hazard, "controlled_by", None) == "viewer1"
+    assert getattr(hazard, "control_target_x", 0) == 500
+    assert getattr(hazard, "control_target_y", 0) == 500
+    assert getattr(hazard, "control_timer", 0) == 10.0
+
+    # Tick GameMode to move hazard
+    from ai.game_modes import GameMode
+    mode = GameMode()
+    mode.tick(world, [], delta=1.0)
+
+    # Hazard should move towards 500, 500 (dx=400, dy=400, dist=565.6, speed=150*1)
+    assert hazard.x > 100
+    assert hazard.y > 100
+    assert getattr(hazard, "control_timer", 0) == 9.0
