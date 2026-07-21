@@ -50,6 +50,10 @@ class RandomTeleporterMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("teleport_out", {"message": "Teleported!", "x": b.x, "y": b.y})
 
+                        # Reset velocity to 0
+                        if hasattr(b, "vx"): b.vx = 0.0
+                        if hasattr(b, "vy"): b.vy = 0.0
+
                         b.x = random.uniform(50, max(50, arena_w - 50))
                         b.y = random.uniform(50, max(50, arena_h - 50))
 

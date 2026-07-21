@@ -90,9 +90,13 @@ func tick(world, balls, delta = 0.016):
 					if typeof(b) == TYPE_DICTIONARY:
 						b["x"] = new_x
 						b["y"] = new_y
+						b["vx"] = 0.0
+						b["vy"] = 0.0
 					else:
 						if "x" in b: b.x = new_x
 						if "y" in b: b.y = new_y
+						if "vx" in b: b.vx = 0.0
+						if "vy" in b: b.vy = 0.0
 
 					if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
 						world.add_event("teleport_in", {"message": "Arrived!", "x": new_x, "y": new_y})
