@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1292] Prismatic Aura Boss — *2026-07-21 21:48:57 UTC*
+
+A new boss ball type that rapidly cycles through aura colors. Hitting the boss while its aura matches your own heals you instead of damaging the boss, making timing crucial for takedowns.
+
+---
+
 ## [idea-1192] Mirror Ball Variant — *2026-07-21 21:48:52 UTC*
 
 A new ball type that perfectly reflects any negative status effect (like EMP or poison) back to the hazard source (destroying it) or directly to the attacker, but is highly vulnerable to pure kinetic damage.
