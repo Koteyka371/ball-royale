@@ -23691,9 +23691,11 @@ class EntangledHazardsMode(GameMode):
         hazards_by_id = {h.id: h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "entangled_hazard"}
         balls_near_hazard = {h_id: [] for h_id in hazards_by_id}
 
+        deltas = {}
         for b in balls:
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
+            deltas[b.id] = {"hp_loss": 0.0, "status": {eff: 0.0 for eff in self.status_effects}}
             bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
             for h_id, h in hazards_by_id.items():
                 hx, hy, hr = getattr(h, "x", 0.0), getattr(h, "y", 0.0), getattr(h, "radius", 100.0)
@@ -23728,14 +23730,8 @@ class EntangledHazardsMode(GameMode):
                         damage_taken = state.hp - curr_hp
                         shared_damage = damage_taken * 0.5
                         for t in targets:
-                            t_hp = getattr(t, "hp", 100.0)
-                            if hasattr(t, "take_damage"):
-                                t.take_damage(shared_damage)
-                            else:
-                                t.hp = t_hp - shared_damage
-                                if t.hp <= 0:
-                                    t.hp = 0
-                                    t.alive = False
+                            if t.id in deltas:
+                                deltas[t.id]["hp_loss"] += shared_damage
 
                     for eff in self.status_effects:
                         curr_eff = getattr(b, eff, 0.0)
@@ -23743,7 +23739,28 @@ class EntangledHazardsMode(GameMode):
                         if curr_eff > state_eff:
                             delta_eff = (curr_eff - state_eff) * 0.5
                             for t in targets:
-                                setattr(t, eff, getattr(t, eff, 0.0) + delta_eff)
+                                if t.id in deltas:
+                                    deltas[t.id]["status"][eff] += delta_eff
+
+        # Apply deltas
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            d = deltas.get(b.id)
+            if d:
+                if d["hp_loss"] > 0:
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(d["hp_loss"])
+                    else:
+                        b.hp = getattr(b, "hp", 100.0) - d["hp_loss"]
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+
+                for eff, val in d["status"].items():
+                    if val > 0:
+                        setattr(b, eff, getattr(b, eff, 0.0) + val)
 
             self._init_prev_state(b)
 
