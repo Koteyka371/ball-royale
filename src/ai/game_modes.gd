@@ -2240,9 +2240,14 @@ class BattleRoyaleMode extends GameMode:
 
 	var dark_phase_timer: float = 0.0
 	var is_dark_phase: bool = false
+
 	var weather_timer: float = 0.0
 	var weather: String = "clear"
+	var acid_rain_timer: float = 0.0
+	var acid_rain_duration: float = 0.0
+	var is_acid_rain_active: bool = false
 	var supply_drop_timer: float = 0.0
+
 	var high_tier_supply_drop_timer: float = 0.0
 	var high_tier_drops: Array = []
 	var zone_initialized: bool = false
@@ -2262,9 +2267,11 @@ class BattleRoyaleMode extends GameMode:
 	var obstacle_timer: float = 0.0
 	var random_event_timer: float = 0.0
 
+
 	func _init() -> void:
 		name = "Battle Royale"
-		description = "Last man standing. Everyone for themselves. Includes periodic dark phases."
+		description = "Last man standing. Everyone for themselves. Includes periodic dark phases. Periodically, global acid rain falls, dealing DoT unless shielded."
+
 		if not has_meta("shadow_monsters"):
 			set_meta("shadow_monsters", [])
 
@@ -2586,6 +2593,65 @@ class BattleRoyaleMode extends GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Acid Rain logic
+		if not is_acid_rain_active:
+			acid_rain_timer += delta
+			if acid_rain_timer > 45.0:
+				is_acid_rain_active = true
+				acid_rain_timer = 0.0
+				acid_rain_duration = 15.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("acid_rain_start", {"message": "Acid Rain has started! Find a shield or shelter!"})
+		else:
+			acid_rain_duration -= delta
+			if acid_rain_duration <= 0:
+				is_acid_rain_active = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("acid_rain_end", {"message": "Acid Rain has subsided."})
+			else:
+				for b in balls:
+					var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+					if is_alive and b_type != "spectator":
+						var is_shielded = false
+						var has_hazmat = false
+						var has_umbrella = false
+						var is_immune = false
+
+						if typeof(b) == TYPE_DICTIONARY:
+							is_shielded = b.get("shielding", 0.0) > 0 or b.get("kinetic_shield_active", false)
+							has_hazmat = b.get("hazmat_booster_timer", 0.0) > 0 or b.get("mega_hazmat_booster_timer", 0.0) > 0
+							has_umbrella = b.get("umbrella_booster_timer", 0.0) > 0
+							is_immune = b.get("weather_immunity_timer", 0.0) > 0
+						else:
+							is_shielded = (b.shielding > 0 if "shielding" in b else false) or (b.kinetic_shield_active if "kinetic_shield_active" in b else false)
+							has_hazmat = (b.hazmat_booster_timer > 0 if "hazmat_booster_timer" in b else false) or (b.mega_hazmat_booster_timer > 0 if "mega_hazmat_booster_timer" in b else false)
+							has_umbrella = (b.umbrella_booster_timer > 0 if "umbrella_booster_timer" in b else false)
+							is_immune = (b.weather_immunity_timer > 0 if "weather_immunity_timer" in b else false)
+
+						if not is_shielded and not has_hazmat and not has_umbrella and not is_immune:
+							var damage = 10.0 * delta
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] -= damage
+								if b["hp"] <= 0:
+									b["hp"] = 0
+									b["alive"] = false
+									if not b.has("killer") or not b["killer"]:
+										b["killer"] = "acid_rain"
+							else:
+								if b.has_method("take_damage"):
+									b.take_damage(damage)
+								else:
+									b.hp -= damage
+									if b.hp <= 0:
+										b.hp = 0
+										b.alive = false
+										if not ("killer" in b and b.killer):
+											if "killer" in b:
+												b.killer = "acid_rain"
+											elif b.has_method("set_meta"):
+												b.set_meta("killer", "acid_rain")
+
 		# Evaluate crowd system
 		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
 			var crowd = world.get_node("CrowdSystem")
