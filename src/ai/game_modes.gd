@@ -41300,7 +41300,68 @@ class TimeRewindAltarMode extends GameMode:
 							if "alive" in b: b.alive = false
 							elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("alive", false)
 
+class RisingLavaMode extends GameMode:
+	var lava_y: float = 10000.0
+	var initialized: bool = false
+
+	func _init() -> void:
+		super._init()
+		name = "Rising Lava"
+		description = "Lava rises from the bottom of the screen, destroying low platforms and damaging balls."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+		if not initialized:
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
+				lava_y = world.arena.height
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and "height" in world.arena:
+				lava_y = world.arena.height
+			else:
+				lava_y = 2000.0
+			initialized = true
+
+		lava_y -= 10.0 * delta
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and "platforms" in world.arena:
+			var new_platforms = []
+			for p in world.arena.platforms:
+				if p.y <= lava_y:
+					new_platforms.append(p)
+			world.arena.platforms = new_platforms
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("platforms"):
+			var new_platforms = []
+			for p in world.arena.platforms:
+				if typeof(p) == TYPE_DICTIONARY and p.get("y", 0.0) <= lava_y:
+					new_platforms.append(p)
+				elif typeof(p) == TYPE_OBJECT and p.get("y") <= lava_y:
+					new_platforms.append(p)
+			world.arena.platforms = new_platforms
+
+		for b in balls:
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive") if typeof(b) == TYPE_OBJECT and "alive" in b else b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive") else false
+			if alive:
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y") if typeof(b) == TYPE_OBJECT and "y" in b else 0.0
+				if by > lava_y:
+					var hp = b.get("hp", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp") if typeof(b) == TYPE_OBJECT and "hp" in b else 0.0
+					hp -= 50.0 * delta
+					if hp <= 0:
+						hp = 0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+							b["killer"] = "lava"
+						elif typeof(b) == TYPE_OBJECT and "alive" in b:
+							b.alive = false
+							b.killer = "lava"
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+							b.set_meta("alive", false)
+							b.set_meta("killer", "lava")
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp
+					elif typeof(b) == TYPE_OBJECT and "hp" in b:
+						b.hp = hp
+
 GAME_MODES = {
+	"rising_lava": RisingLavaMode.new(),
 	"time_rewind_altar": TimeRewindAltarMode.new(),
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"roaming_doppelganger": RoamingDoppelgangerMode.new(),

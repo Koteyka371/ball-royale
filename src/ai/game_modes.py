@@ -25341,7 +25341,39 @@ class TimeRewindAltarMode(GameMode):
                         b.hp = 0.0
                         b.alive = False
 
+class RisingLavaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Rising Lava"
+        self.description = "Lava rises from the bottom of the screen, destroying low platforms and damaging balls."
+        self.lava_y = 10000.0  # arbitrary high value, updated on first tick
+        self.initialized = False
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        if not self.initialized:
+            if hasattr(world, 'arena') and hasattr(world.arena, 'height'):
+                self.lava_y = world.arena.height
+            else:
+                self.lava_y = 2000.0
+            self.initialized = True
+
+        self.lava_y -= 10.0 * delta
+
+        if hasattr(world, 'arena') and hasattr(world.arena, 'platforms'):
+            world.arena.platforms = [p for p in world.arena.platforms if getattr(p, 'y', 0.0) < self.lava_y]
+
+        for b in balls:
+            if getattr(b, 'alive', False):
+                if getattr(b, 'y', 0.0) > self.lava_y:
+                    b.hp -= 50.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        b.killer = "lava"
+
 GAME_MODES = {
+    'rising_lava': RisingLavaMode(),
     'time_rewind_altar': TimeRewindAltarMode(),
     'teleport_dash_mutator': TeleportDashMutatorMode(),
     'random_teleport_dash': RandomTeleportDashMode(),
