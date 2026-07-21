@@ -40305,6 +40305,7 @@ class SlimeBossMode extends GameMode:
 
 GAME_MODES = {
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
+	"wrap_around": WrapAroundMode.new(),
 
 	"slime_boss": SlimeBossMode.new(),
 	"explosive_meteors": ExplosiveMeteorsMode.new(),
@@ -48481,3 +48482,150 @@ class CursedBoosterMode extends GameMode:
 		super._init()
 		self.name = "Cursed Boosters"
 		self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
+
+class WrapAroundMode extends GameMode:
+	func _init():
+		name = "Wrap Around Arena"
+		description = "Hitting a map boundary teleports you to the opposite side with inverted velocity instead of bouncing."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not world.has("arena") or typeof(world["arena"]) != TYPE_DICTIONARY:
+			return
+
+		var arena = world["arena"]
+		var arena_width = 800.0
+		if arena.has("width"):
+			arena_width = arena["width"]
+
+		var arena_height = 600.0
+		if arena.has("height"):
+			arena_height = arena["height"]
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("alive") or not b["alive"]:
+					continue
+
+				var radius = 15.0
+				if b.has("radius"):
+					radius = b["radius"]
+
+				var x = 0.0
+				if b.has("x"):
+					x = b["x"]
+
+				var y = 0.0
+				if b.has("y"):
+					y = b["y"]
+
+				var teleported = false
+
+				if x - radius <= 0:
+					b["x"] = arena_width - radius - 1.0
+					if b.has("vx"):
+						b["vx"] = -b["vx"]
+					teleported = true
+				elif x + radius >= arena_width:
+					b["x"] = radius + 1.0
+					if b.has("vx"):
+						b["vx"] = -b["vx"]
+					teleported = true
+
+				if y - radius <= 0:
+					b["y"] = arena_height - radius - 1.0
+					if b.has("vy"):
+						b["vy"] = -b["vy"]
+					teleported = true
+				elif y + radius >= arena_height:
+					b["y"] = radius + 1.0
+					if b.has("vy"):
+						b["vy"] = -b["vy"]
+					teleported = true
+			elif b is Object:
+				var is_alive = true
+				if 'alive' in b:
+					is_alive = b.alive
+				elif b.has_meta('alive'):
+					is_alive = b.get_meta('alive')
+				if not is_alive:
+					continue
+
+				var radius = 15.0
+				if 'radius' in b:
+					radius = b.radius
+				elif b.has_meta('radius'):
+					radius = b.get_meta('radius')
+
+				var x = 0.0
+				if 'x' in b:
+					x = b.x
+				elif b.has_meta('x'):
+					x = b.get_meta('x')
+
+				var y = 0.0
+				if 'y' in b:
+					y = b.y
+				elif b.has_meta('y'):
+					y = b.get_meta('y')
+
+				var teleported = false
+
+				if x - radius <= 0:
+					if 'x' in b:
+						b.x = arena_width - radius - 1.0
+					elif b.has_meta('x'):
+						b.set_meta('x', arena_width - radius - 1.0)
+
+					var vx = 0.0
+					if 'vx' in b:
+						vx = b.vx
+						b.vx = -vx
+					elif b.has_meta('vx'):
+						vx = b.get_meta('vx')
+						b.set_meta('vx', -vx)
+					teleported = true
+				elif x + radius >= arena_width:
+					if 'x' in b:
+						b.x = radius + 1.0
+					elif b.has_meta('x'):
+						b.set_meta('x', radius + 1.0)
+
+					var vx = 0.0
+					if 'vx' in b:
+						vx = b.vx
+						b.vx = -vx
+					elif b.has_meta('vx'):
+						vx = b.get_meta('vx')
+						b.set_meta('vx', -vx)
+					teleported = true
+
+				if y - radius <= 0:
+					if 'y' in b:
+						b.y = arena_height - radius - 1.0
+					elif b.has_meta('y'):
+						b.set_meta('y', arena_height - radius - 1.0)
+
+					var vy = 0.0
+					if 'vy' in b:
+						vy = b.vy
+						b.vy = -vy
+					elif b.has_meta('vy'):
+						vy = b.get_meta('vy')
+						b.set_meta('vy', -vy)
+					teleported = true
+				elif y + radius >= arena_height:
+					if 'y' in b:
+						b.y = radius + 1.0
+					elif b.has_meta('y'):
+						b.set_meta('y', radius + 1.0)
+
+					var vy = 0.0
+					if 'vy' in b:
+						vy = b.vy
+						b.vy = -vy
+					elif b.has_meta('vy'):
+						vy = b.get_meta('vy')
+						b.set_meta('vy', -vy)
+					teleported = true
