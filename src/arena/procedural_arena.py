@@ -1299,6 +1299,9 @@ class ProceduralArena:
                     kind = "orbital_accelerator"
                     damage = 0.0
                 elif random.random() < 0.05:
+                    kind = "phantom_grabber"
+                    damage = 10.0
+                elif random.random() < 0.05:
                     kind = "loadout_fragment"
                     damage = 0.0
                 elif random.random() < 0.05:
