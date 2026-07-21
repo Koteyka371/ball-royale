@@ -22291,7 +22291,7 @@
     },
     {
       "id": "idea-1301",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Combination Evolutions",
@@ -32792,6 +32792,23 @@
         "src/ai/aura_pulse_amplifier.py",
         "src/ai/aura_pulse_amplifier.gd",
         "tests/test_aura_pulse_amplifier.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1918",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Projectiles",
+      "description": "Projectiles become smaller and deal less damage over time, forcing players to hit enemies at closer ranges to maximize effect.",
+      "allowed_paths": [
+        "src/ai/shrinking_projectiles.py",
+        "src/ai/shrinking_projectiles.gd",
+        "tests/test_shrinking_projectiles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

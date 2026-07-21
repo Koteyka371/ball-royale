@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1301] Aura Combination Evolutions — *2026-07-21 23:23:19 UTC*
+
+When balls with different colored auras collide, instead of just an explosion, there's a small chance their auras combine to create a rare 'hybrid' aura color that grants both base aura effects for a short duration.
+
+---
+
 ## [idea-1265] Portal Mode — *2026-07-21 23:21:45 UTC*
 
 A game mode where pairs of connected portals spawn periodically. Shooting a portal transfers attacks to the other portal, and balls can teleport through them to escape or ambush enemies.
