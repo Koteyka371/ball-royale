@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Entanglement Mode",
+    "description": "Players are randomly paired at the start of a match. If one takes damage, the other takes a percentage of it. If one is healed, the other gets a portion of the heal. Forces cooperative play even among randomly matched players."
+}
