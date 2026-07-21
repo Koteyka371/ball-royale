@@ -26037,7 +26037,52 @@ class WeatherClashMode(GameMode):
                     b.damage = base_damage
 
 
+
+class HealerFreezeTagMode(FreezeTagMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Healer Freeze Tag"
+        self.description = "Everyone starts frozen except for one Healer per team. The healers must dodge hazards and quickly unfreeze their entire team before the other healer does."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        team_healers_assigned = {"Red": False, "Blue": False}
+
+        # Freeze everyone initially
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                self._freeze_ball(b)
+
+        # Assign one healer per team
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                team = getattr(b, "team", None)
+                if team and not team_healers_assigned.get(team, False):
+                    team_healers_assigned[team] = True
+                    b.is_healer = True
+                    self._unfreeze_ball(b)
+                else:
+                    b.is_healer = False
+
+        # Add hazards
+        from arena.procedural_arena import Hazard
+        import random
+        for i in range(5):
+            h = Hazard(
+                id=9900+i,
+                kind="spike",
+                x=random.uniform(100.0, 900.0),
+                y=random.uniform(100.0, 900.0),
+                radius=15.0,
+                damage=10.0
+            )
+            h.vx = random.uniform(-50.0, 50.0)
+            h.vy = random.uniform(-50.0, 50.0)
+            world.arena.hazards.append(h)
+
 GAME_MODES['freeze_tag'] = FreezeTagMode()
+GAME_MODES['healer_freeze_tag'] = HealerFreezeTagMode()
+
 GAME_MODES['vortex_orbit'] = VortexOrbitMode()
 GAME_MODES['weather_clash'] = WeatherClashMode()
 

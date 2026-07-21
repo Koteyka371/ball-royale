@@ -40303,6 +40303,50 @@ class SlimeBossMode extends GameMode:
 						boss["slime_shoot_timer"] = shoot_timer
 
 
+class HealerFreezeTagMode extends FreezeTagMode:
+	func _init():
+		name = "Healer Freeze Tag"
+		description = "Everyone starts frozen except for one Healer per team. The healers must dodge hazards and quickly unfreeze their entire team before the other healer does."
+
+	func setup(world, balls):
+		super(world, balls)
+		var team_healers_assigned = {"Red": false, "Blue": false}
+		for b in balls:
+			var ball_type = null
+			if "ball_type" in b: ball_type = b.ball_type
+			elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+			if ball_type != "spectator":
+				_freeze_ball(b)
+
+		for b in balls:
+			var ball_type = null
+			if "ball_type" in b: ball_type = b.ball_type
+			elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+			if ball_type != "spectator":
+				var team = null
+				if "team" in b: team = b.team
+				elif b.has_method("has_meta") and b.has_meta("team"): team = b.get_meta("team")
+
+				if team != null and not team_healers_assigned.get(team, false):
+					team_healers_assigned[team] = true
+					if "is_healer" in b: b.is_healer = true
+					elif b.has_method("set_meta"): b.set_meta("is_healer", true)
+					_unfreeze_ball(b)
+				else:
+					if "is_healer" in b: b.is_healer = false
+					elif b.has_method("set_meta"): b.set_meta("is_healer", false)
+
+		if "arena" in world and "hazards" in world.arena:
+			for i in range(5):
+				world.arena.hazards.append({
+					"kind": "spike",
+					"x": 500.0 + (i * 50.0),
+					"y": 500.0 - (i * 50.0),
+					"vx": 20.0,
+					"vy": -20.0,
+					"radius": 15.0
+				})
+
 GAME_MODES = {
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 
@@ -40351,6 +40395,7 @@ GAME_MODES = {
 	"entangled_arena": EntangledArenaMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
+	"healer_freeze_tag": HealerFreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
 	"blackout_event": BlackoutEventMode.new(),
 	"haunted_event": HauntedEventMode.new(),

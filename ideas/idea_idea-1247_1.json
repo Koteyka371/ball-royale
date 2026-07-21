@@ -1,0 +1,4 @@
+{
+  "title": "Poison Tag",
+  "description": "Like tag, but the tagger is poisoned and loses HP over time. When they tag someone, the poison transfers to the new tagger."
+}
