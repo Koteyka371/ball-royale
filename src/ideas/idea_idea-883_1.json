@@ -1,0 +1,4 @@
+{
+    "title": "Chain Entanglement Booster",
+    "description": "An upgraded version of the entanglement booster that can link multiple balls sequentially. If Ball A is entangled with Ball B, and Ball B picks up a chain entanglement booster, they can also entangle Ball C. Any health or speed buff picked up by one is distributed across the entire chain, with the percentage split based on the number of linked entities."
+}
