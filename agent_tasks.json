@@ -21439,7 +21439,7 @@
     },
     {
       "id": "idea-1251",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Crumbling Arena Walls",
@@ -31959,6 +31959,23 @@
         "src/ai/ghost_phase.py",
         "src/ai/ghost_phase.gd",
         "tests/test_ghost_phase.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1869",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "High Gravity Well",
+      "description": "A dense region that pulls entities inwards, greatly increasing friction and heavily penalizing movement abilities.",
+      "allowed_paths": [
+        "src/ai/high_gravity_well.py",
+        "src/ai/high_gravity_well.gd",
+        "tests/test_high_gravity_well.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1251] Crumbling Arena Walls — *2026-07-21 04:18:06 UTC*
+
+Wall damage isn't just applied to the players, but also to the arena. Hard wall impacts break pieces off the boundary, expanding the hazard zone inwards and making the playable area more dangerous over time.
+
+---
+
 ## [idea-1161] Quantum Entanglement Ball Type — *2026-07-21 04:10:15 UTC*
 
 A ball type that pairs its health and speed to an enemy at the start of the round. Any damage it takes is partially distributed to the enemy, forcing opponents to rethink target prioritization.
