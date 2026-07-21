@@ -40554,7 +40554,187 @@ class EntangledHazardsMode extends GameMode:
 											elif t.has_method("set_meta"): t.set_meta(eff, t_curr_eff + delta_eff)
 			_init_prev_state(b)
 
+
+class HealerFreezeTagMode extends GameMode:
+	func _init():
+		name = "Healer Freeze Tag"
+		description = "One Healer per team. Healers must dodge hazards and quickly unfreeze their entire team before the other healer does."
+
+	func setup(world, balls):
+		super(world, balls)
+		var playing_balls = []
+		for b in balls:
+			var ball_type = null
+			if "ball_type" in b: ball_type = b.ball_type
+			elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+			if ball_type != "spectator":
+				playing_balls.append(b)
+
+		var mid = playing_balls.size() / 2
+		for i in range(playing_balls.size()):
+			var b = playing_balls[i]
+			if "team" in b: b.team = "Red" if i < mid else "Blue"
+			elif b.has_method("set_meta"): b.set_meta("team", "Red" if i < mid else "Blue")
+
+		var teams = {}
+		for b in playing_balls:
+			var team = null
+			if "team" in b: team = b.team
+			elif b.has_method("has_meta") and b.has_meta("team"): team = b.get_meta("team")
+
+			if team != null:
+				if not teams.has(team):
+					teams[team] = []
+				teams[team].append(b)
+
+		for team in teams.keys():
+			var members = teams[team]
+			for i in range(members.size()):
+				var b = members[i]
+				if i == 0:
+					if "is_healer" in b: b.is_healer = true
+					elif b.has_method("set_meta"): b.set_meta("is_healer", true)
+					if "is_frozen" in b: b.is_frozen = false
+					elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
+				else:
+					if "is_healer" in b: b.is_healer = false
+					elif b.has_method("set_meta"): b.set_meta("is_healer", false)
+					_freeze_ball(b)
+
+	func tick(world, balls, delta=0.016):
+		var alive_balls = []
+		for b in balls:
+			var alive = false
+			if "alive" in b: alive = b.alive
+			elif b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+			var ball_type = null
+			if "ball_type" in b: ball_type = b.ball_type
+			elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+			if alive and ball_type != "spectator":
+				alive_balls.append(b)
+
+		var n = alive_balls.size()
+		for i in range(n):
+			for j in range(i + 1, n):
+				var b1 = alive_balls[i]
+				var b2 = alive_balls[j]
+
+				var b1_x = 0.0
+				if "x" in b1: b1_x = b1.x
+				elif b1.has_method("has_meta") and b1.has_meta("x"): b1_x = b1.get_meta("x")
+
+				var b1_y = 0.0
+				if "y" in b1: b1_y = b1.y
+				elif b1.has_method("has_meta") and b1.has_meta("y"): b1_y = b1.get_meta("y")
+
+				var b1_r = 10.0
+				if "radius" in b1: b1_r = b1.radius
+				elif b1.has_method("has_meta") and b1.has_meta("radius"): b1_r = b1.get_meta("radius")
+
+				var b2_x = 0.0
+				if "x" in b2: b2_x = b2.x
+				elif b2.has_method("has_meta") and b2.has_meta("x"): b2_x = b2.get_meta("x")
+
+				var b2_y = 0.0
+				if "y" in b2: b2_y = b2.y
+				elif b2.has_method("has_meta") and b2.has_meta("y"): b2_y = b2.get_meta("y")
+
+				var b2_r = 10.0
+				if "radius" in b2: b2_r = b2.radius
+				elif b2.has_method("has_meta") and b2.has_meta("radius"): b2_r = b2.get_meta("radius")
+
+				var dist_sq = pow(b1_x - b2_x, 2) + pow(b1_y - b2_y, 2)
+				var min_dist = b1_r + b2_r
+
+				if dist_sq < pow(min_dist, 2):
+					var team1 = null
+					if "team" in b1: team1 = b1.team
+					elif b1.has_method("has_meta") and b1.has_meta("team"): team1 = b1.get_meta("team")
+
+					var team2 = null
+					if "team" in b2: team2 = b2.team
+					elif b2.has_method("has_meta") and b2.has_meta("team"): team2 = b2.get_meta("team")
+
+					if team1 != null and team2 != null and team1 == team2:
+						var b1_frozen = false
+						if "is_frozen" in b1: b1_frozen = b1.is_frozen
+						elif b1.has_method("has_meta") and b1.has_meta("is_frozen"): b1_frozen = b1.get_meta("is_frozen")
+
+						var b2_frozen = false
+						if "is_frozen" in b2: b2_frozen = b2.is_frozen
+						elif b2.has_method("has_meta") and b2.has_meta("is_frozen"): b2_frozen = b2.get_meta("is_frozen")
+
+						if b1_frozen and not b2_frozen:
+							_unfreeze_ball(b1)
+						elif not b1_frozen and b2_frozen:
+							_unfreeze_ball(b2)
+
+	func _freeze_ball(b):
+		if "is_frozen" in b: b.is_frozen = true
+		elif b.has_method("set_meta"): b.set_meta("is_frozen", true)
+		if "stun_timer" in b: b.stun_timer = 9999.0
+		elif b.has_method("set_meta"): b.set_meta("stun_timer", 9999.0)
+		if "frozen_timer" in b: b.frozen_timer = 9999.0
+		elif b.has_method("set_meta"): b.set_meta("frozen_timer", 9999.0)
+		if "vx" in b: b.vx = 0.0
+		elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
+		if "vy" in b: b.vy = 0.0
+		elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
+
+	func _unfreeze_ball(b):
+		if "is_frozen" in b: b.is_frozen = false
+		elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
+		if "stun_timer" in b: b.stun_timer = 0.0
+		elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
+		if "frozen_timer" in b: b.frozen_timer = 0.0
+		elif b.has_method("set_meta"): b.set_meta("frozen_timer", 0.0)
+
+	func check_winner(world, balls):
+		var playing_balls = []
+		for b in balls:
+			var ball_type = null
+			if "ball_type" in b: ball_type = b.ball_type
+			elif b.has_method("has_meta") and b.has_meta("ball_type"): ball_type = b.get_meta("ball_type")
+			if ball_type != "spectator":
+				playing_balls.append(b)
+
+		if playing_balls.size() == 0:
+			return "Draw"
+
+		var team_status = {}
+		for b in playing_balls:
+			var team = null
+			if "team" in b: team = b.team
+			elif b.has_method("has_meta") and b.has_meta("team"): team = b.get_meta("team")
+
+			if team != null:
+				if not team_status.has(team):
+					team_status[team] = {"total": 0, "frozen": 0}
+				team_status[team]["total"] += 1
+
+				var is_frozen = false
+				if "is_frozen" in b: is_frozen = b.is_frozen
+				elif b.has_method("has_meta") and b.has_meta("is_frozen"): is_frozen = b.get_meta("is_frozen")
+
+				if is_frozen:
+					team_status[team]["frozen"] += 1
+
+		var winners = []
+		for team in team_status.keys():
+			var stats = team_status[team]
+			if stats["frozen"] == 0 and stats["total"] > 0:
+				winners.append(team)
+
+		if winners.size() == 1:
+			return winners[0]
+		elif winners.size() > 1:
+			return "Draw"
+
+		return null
+
+
 GAME_MODES = {
+	"healer_freeze_tag": HealerFreezeTagMode.new(),
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
