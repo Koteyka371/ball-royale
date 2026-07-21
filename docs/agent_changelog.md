@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1262] Zoning tools — *2026-07-21 05:50:42 UTC*
+
+A new booster that allows players to create temporary safe zones outside the main circle, encouraging tactical setups for flanking or sniping.
+
+---
+
 ## [idea-1223] Gravity Wells Hazard — *2026-07-21 05:31:27 UTC*
 
 Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously.
