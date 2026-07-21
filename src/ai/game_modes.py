@@ -342,7 +342,7 @@ class GameMode:
                     dist = (dx**2 + dy**2)**0.5
 
                     if dist > 5.0:
-                        speed = 150.0 * delta # 150 units per second
+                        speed = 450.0 * delta # 450 units per second
                         if speed > dist:
                             speed = dist
 

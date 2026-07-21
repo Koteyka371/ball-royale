@@ -93,18 +93,28 @@ class CrowdSystem:
 
                 # Find hazard
                 if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
-                    matching_hazards = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == hazard_kind]
-                    if matching_hazards:
-                        hazard = random.choice(matching_hazards)
-                        hazard.controlled_by = user
-                        hazard.control_timer = 10.0 # 10 seconds of control
+                    # First check if user is already controlling this type of hazard
+                    already_controlled = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == hazard_kind and getattr(h, "controlled_by", None) == user and getattr(h, "control_timer", 0) > 0]
+
+                    if already_controlled:
+                        hazard = already_controlled[0]
+                        hazard.control_timer = 10.0  # Refresh timer
                         hazard.control_target_x = target_x
                         hazard.control_target_y = target_y
+                        # No new loyalty points or announcement
+                    else:
+                        matching_hazards = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == hazard_kind and getattr(h, "control_timer", 0) <= 0]
+                        if matching_hazards:
+                            hazard = random.choice(matching_hazards)
+                            hazard.controlled_by = user
+                            hazard.control_timer = 10.0 # 10 seconds of control
+                            hazard.control_target_x = target_x
+                            hazard.control_target_y = target_y
 
-                        self._add_viewer_loyalty(user, 15)
-                        if hasattr(self.world, 'add_event'):
-                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} took control of a {hazard_kind}!"})
-                            self.excitement_level += 10.0
+                            self._add_viewer_loyalty(user, 15)
+                            if hasattr(self.world, 'add_event'):
+                                self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} took control of a {hazard_kind}!"})
+                                self.excitement_level += 10.0
             except ValueError:
                 pass
         elif cmd == "!weather" and len(parts) >= 2:
