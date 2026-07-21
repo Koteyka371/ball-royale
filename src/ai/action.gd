@@ -31587,6 +31587,63 @@ func _resolve_collisions() -> bool:
                 elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("cosmetic_aura_color"): c2 = other.get_meta("cosmetic_aura_color")
 
                 if c1 != null and c2 != null:
+                    var is_same_team = false
+                    var t1 = null
+                    var t2 = null
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): t1 = self.ball["team"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: t1 = self.ball.team
+                    if typeof(other) == TYPE_DICTIONARY and other.has("team"): t2 = other["team"]
+                    elif typeof(other) == TYPE_OBJECT and "team" in other: t2 = other.team
+
+                    if t1 != null and t2 != null and t1 == t2:
+                        is_same_team = true
+
+                    if c1 == c2 and is_same_team:
+                        var b1_shield_cd = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_aura_shield_cd"): b1_shield_cd = self.ball["_aura_shield_cd"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball and self.ball.get("_aura_shield_cd") != null: b1_shield_cd = self.ball.get("_aura_shield_cd")
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_aura_shield_cd"): b1_shield_cd = self.ball.get_meta("_aura_shield_cd")
+
+                        var b2_shield_cd = 0.0
+                        if typeof(other) == TYPE_DICTIONARY and other.has("_aura_shield_cd"): b2_shield_cd = other["_aura_shield_cd"]
+                        elif typeof(other) == TYPE_OBJECT and "hp" in other and other.get("_aura_shield_cd") != null: b2_shield_cd = other.get("_aura_shield_cd")
+                        elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("_aura_shield_cd"): b2_shield_cd = other.get_meta("_aura_shield_cd")
+
+                        if b1_shield_cd <= 0.0 and b2_shield_cd <= 0.0:
+                            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["_aura_shield_cd"] = 2.0
+                            elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.set("_aura_shield_cd", 2.0)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("_aura_shield_cd", 2.0)
+
+                            if typeof(other) == TYPE_DICTIONARY: other["_aura_shield_cd"] = 2.0
+                            elif typeof(other) == TYPE_OBJECT and "hp" in other: other.set("_aura_shield_cd", 2.0)
+                            elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("_aura_shield_cd", 2.0)
+
+                            var shield_hp = 30.0
+                            var b1_shield = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("shield"): b1_shield = self.ball["shield"]
+                            elif typeof(self.ball) == TYPE_OBJECT and "shield" in self.ball: b1_shield = self.ball.shield
+
+                            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["shield"] = b1_shield + shield_hp
+                            elif typeof(self.ball) == TYPE_OBJECT and "shield" in self.ball: self.ball.shield = b1_shield + shield_hp
+
+                            var b2_shield = 0.0
+                            if typeof(other) == TYPE_DICTIONARY and other.has("shield"): b2_shield = other["shield"]
+                            elif typeof(other) == TYPE_OBJECT and "shield" in other: b2_shield = other.shield
+
+                            if typeof(other) == TYPE_DICTIONARY: other["shield"] = b2_shield + shield_hp
+                            elif typeof(other) == TYPE_OBJECT and "shield" in other: other.shield = b2_shield + shield_hp
+
+                            if self.world != null and self.world.has_method("add_event"):
+                                var b1_id = null
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b1_id = self.ball["id"]
+                                elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b1_id = self.ball.id
+                                self.world.add_event("aura_shield", {"id": b1_id})
+
+                                var b2_id = null
+                                if typeof(other) == TYPE_DICTIONARY and other.has("id"): b2_id = other["id"]
+                                elif typeof(other) == TYPE_OBJECT and "id" in other: b2_id = other.id
+                                self.world.add_event("aura_shield", {"id": b2_id})
+
                     var b1_cd = 0.0
                     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_aura_explosion_cd"): b1_cd = self.ball["_aura_explosion_cd"]
                     elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball and self.ball.get("_aura_explosion_cd") != null: b1_cd = self.ball.get("_aura_explosion_cd")

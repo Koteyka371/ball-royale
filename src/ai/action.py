@@ -16317,6 +16317,21 @@ class Action:
                 if getattr(self.ball, "level", 1) >= 10 and getattr(other, "level", 1) >= 10:
                     c1 = getattr(self.ball, "cosmetic_aura_color", None)
                     c2 = getattr(other, "cosmetic_aura_color", None)
+
+                    if c1 and c2 and c1 == c2 and getattr(self.ball, "team", None) == getattr(other, "team", None):
+                        if getattr(self.ball, "_aura_shield_cd", 0.0) <= 0.0 and getattr(other, "_aura_shield_cd", 0.0) <= 0.0:
+                            self.ball._aura_shield_cd = 2.0
+                            setattr(other, "_aura_shield_cd", 2.0)
+
+                            shield_hp = 30.0
+                            # Applying shield buffer
+                            self.ball.shield = getattr(self.ball, "shield", 0.0) + shield_hp
+                            other.shield = getattr(other, "shield", 0.0) + shield_hp
+
+                            # Add an event for visual feedback
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("aura_shield", {"id": getattr(self.ball, "id", None)})
+                                self.world.add_event("aura_shield", {"id": getattr(other, "id", None)})
                     if c1 and c2 and getattr(self.ball, "_aura_explosion_cd", 0.0) <= 0.0 and getattr(other, "_aura_explosion_cd", 0.0) <= 0.0:
                         self.ball._aura_explosion_cd = 1.0
                         setattr(other, "_aura_explosion_cd", 1.0)
