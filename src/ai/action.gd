@@ -18670,6 +18670,21 @@ func execute(strategy: String, delta: float):
                 nvx = -vx
                 nvy = -vy
 
+            var mutators = []
+            if gm != null and typeof(gm) == TYPE_OBJECT and "mutators" in gm: mutators = gm.mutators
+            elif gm != null and typeof(gm) == TYPE_DICTIONARY and gm.has("mutators"): mutators = gm["mutators"]
+            elif "mutators" in self.world: mutators = self.world.mutators
+            elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("mutators"): mutators = self.world["mutators"]
+
+            var wm = ""
+            if "weekly_mutator" in self.world: wm = self.world.weekly_mutator
+            elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("weekly_mutator"): wm = self.world["weekly_mutator"]
+
+            var is_pinball_mutator = false
+            if gm != null and typeof(gm) == TYPE_OBJECT and "name" in gm and gm.name == "Pinball Mutator": is_pinball_mutator = true
+            elif gm != null and typeof(gm) == TYPE_DICTIONARY and gm.has("name") and gm["name"] == "Pinball Mutator": is_pinball_mutator = true
+            elif "pinball_mutator" in mutators or wm == "pinball_mutator": is_pinball_mutator = true
+
             var is_bouncy_terrain = false
             if "game_mode" in self.world and self.world.game_mode != null:
                 if "name" in self.world.game_mode and self.world.game_mode.name == "Bouncy Terrain":
@@ -18727,6 +18742,8 @@ func execute(strategy: String, delta: float):
                 new_speed = min(speed * 4.0, 5000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
                 new_speed = min(speed * 4.0, 5000.0)
+            elif is_pinball_mutator:
+                new_speed = max(3000.0, speed * 2.5)
             elif is_bouncy_terrain:
                 new_speed = min(speed * 2.5, 3500.0)
             else:
@@ -18766,7 +18783,18 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball["ball_type"]
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice":
+            if is_pinball_mutator:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["dash_cooldown"] = 0.0
+                    self.ball["skill_cooldown"] = 0.0
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "dash_cooldown" in self.ball: self.ball.dash_cooldown = 0.0
+                    if "skill_cooldown" in self.ball: self.ball.skill_cooldown = 0.0
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("dash_cooldown", 0.0)
+                        self.ball.set_meta("skill_cooldown", 0.0)
+
+            if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice" or is_pinball_mutator:
                 pass
             elif wall_state == "spikes":
                 var dmg = 250.0

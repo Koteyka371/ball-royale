@@ -9492,6 +9492,7 @@ class Action:
                 import random
                 angle = _math.atan2(nvy, nvx) + random.uniform(-0.2, 0.2)
                 gm = getattr(self.world, "game_mode", None)
+                is_pinball_mutator = (gm and getattr(gm, "name", "") == "Pinball Mutator") or getattr(self.world, "weekly_mutator", "") == "pinball_mutator" or (getattr(self.world, "mutators_active", False) and "pinball_mutator" in getattr(self.world, "mutators", []))
                 # Bouncy walls cause high-speed ricochets to make dodging harder and create chaotic collisions
                 if wall_state == "ice":
                     new_speed = min(speed * 1.2, 4000.0) # Slippery, slightly bouncy
@@ -9536,6 +9537,8 @@ class Action:
                     new_speed = min(speed * 4.0, 5000.0)
                 elif gm and getattr(gm, "name", "") == "Jump Pad Boundaries":
                     new_speed = min(speed * 4.0, 5000.0)
+                elif is_pinball_mutator:
+                    new_speed = max(3000.0, speed * 2.5)
                 else:
                     new_speed = min(speed * 2.0, 5000.0)
 
@@ -9565,7 +9568,11 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice":
+                if is_pinball_mutator:
+                    if hasattr(self.ball, "dash_cooldown"): self.ball.dash_cooldown = 0.0
+                    if hasattr(self.ball, "skill_cooldown"): self.ball.skill_cooldown = 0.0
+
+                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice" or is_pinball_mutator:
                     pass # Bouncy walls don't deal damage (abyss is already handled)
                 elif wall_state == "spikes":
                     damage = 250.0

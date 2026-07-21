@@ -25446,6 +25446,34 @@ class ChromaBossMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("chroma_boss_aura_change", {"color": boss.cosmetic_aura_color})
 
+class PinballMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pinball Mutator"
+        self.description = "Balls are forced to move continuously but taking damage from walls is disabled. Hitting walls instead provides massive momentum boosts and recharges dash abilities, encouraging a pinball-like playstyle."
+        self.mutators_active = True
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+        import math
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            speed_sq = vx*vx + vy*vy
+            if speed_sq < 250000.0:  # speed < 500
+                if speed_sq > 0.1:
+                    mag = math.sqrt(speed_sq)
+                    b.vx = (vx / mag) * 600.0
+                    b.vy = (vy / mag) * 600.0
+                else:
+                    import random
+                    angle = random.uniform(0, 2 * math.pi)
+                    b.vx = math.cos(angle) * 600.0
+                    b.vy = math.sin(angle) * 600.0
+
+
 GAME_MODES = {
     "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
@@ -32187,6 +32215,7 @@ class WeatherCombinationsMode(GameMode):
                     b.speed = base_speed
 
 GAME_MODES['weather_combinations'] = WeatherCombinationsMode()
+GAME_MODES['pinball_mutator'] = PinballMutatorMode()
 
 GAME_MODES['ice_walls'] = IceWallsMode()
 GAME_MODES['linked_portals'] = LinkedPortalsMode()

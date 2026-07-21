@@ -50492,4 +50492,51 @@ class WeatherCombinationsMode extends GameMode:
 
 GAME_MODES["ice_walls"] = IceWallsMode.new()
 GAME_MODES["weather_combinations"] = WeatherCombinationsMode.new()
+class PinballMutatorMode extends GameMode:
+	func _init() -> void:
+		name = "Pinball Mutator"
+		description = "Balls are forced to move continuously but taking damage from walls is disabled. Hitting walls instead provides massive momentum boosts and recharges dash abilities, encouraging a pinball-like playstyle."
+		mutators_active = true
+
+	func tick(world, balls: Array, delta: float) -> void:
+		apply_dynamic_traits(world, balls, delta)
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY: is_alive = b.get("alive", false)
+			else: is_alive = b.get("alive") if "alive" in b else false
+			if not is_alive: continue
+
+			var vx = 0.0
+			var vy = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				vx = b.get("vx", 0.0)
+				vy = b.get("vy", 0.0)
+			else:
+				if "vx" in b: vx = b.vx
+				elif b.has_method("get_meta") and b.has_meta("vx"): vx = b.get_meta("vx")
+				if "vy" in b: vy = b.vy
+				elif b.has_method("get_meta") and b.has_meta("vy"): vy = b.get_meta("vy")
+
+			var speed_sq = vx*vx + vy*vy
+			if speed_sq < 250000.0:
+				if speed_sq > 0.1:
+					var mag = sqrt(speed_sq)
+					vx = (vx / mag) * 600.0
+					vy = (vy / mag) * 600.0
+				else:
+					var angle = randf() * 2.0 * PI
+					vx = cos(angle) * 600.0
+					vy = sin(angle) * 600.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = vx
+					b["vy"] = vy
+				else:
+					if "vx" in b: b.vx = vx
+					elif b.has_method("set_meta"): b.set_meta("vx", vx)
+					if "vy" in b: b.vy = vy
+					elif b.has_method("set_meta"): b.set_meta("vy", vy)
+
+
+GAME_MODES["pinball_mutator"] = PinballMutatorMode.new()
 GAME_MODES["linked_portals"] = LinkedPortalsMode.new()
