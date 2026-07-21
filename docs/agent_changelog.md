@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1179] Supercharged Balls Event — *2026-07-21 02:13:05 UTC*
+
+If a ball is struck by a lightning hazard and survives the stun, it gains a 'Supercharged' status for 10 seconds. Supercharged balls move 50% faster, emit tiny electric sparks that deal minor damage over time to nearby enemies, and their next attack stuns the target.
+
+---
+
 ## [idea-1243] Acid Rain Event — *2026-07-21 02:13:00 UTC*
 
 Periodically during battle royale matches, acid rain falls globally, applying a small DOT (damage over time) to all balls. Shields mitigate the effect, encouraging players to seek out shield boosters or specific shelter zones.
