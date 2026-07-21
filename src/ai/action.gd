@@ -18083,14 +18083,23 @@ func execute(strategy: String, delta: float):
         if "radius" in self.ball: r = self.ball.radius
         var margin = r + 5.0
 
+        var offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+        if "arena" in self.world and self.world.arena != null and self.world.arena.has_meta("boundary_offsets"):
+            offsets = self.world.arena.get_meta("boundary_offsets")
+
+        var top_bound = offsets["top"]
+        var bottom_bound = h - offsets["bottom"]
+        var left_bound = offsets["left"]
+        var right_bound = w - offsets["right"]
+
         var hit_wall = ""
-        if self.ball.y <= margin:
+        if self.ball.y <= margin + top_bound:
             hit_wall = "top"
-        elif self.ball.y >= h - margin:
+        elif self.ball.y >= bottom_bound - margin:
             hit_wall = "bottom"
-        elif self.ball.x <= margin:
+        elif self.ball.x <= margin + left_bound:
             hit_wall = "left"
-        elif self.ball.x >= w - margin:
+        elif self.ball.x >= right_bound - margin:
             hit_wall = "right"
 
         var wall_state = "normal"
@@ -18116,6 +18125,12 @@ func execute(strategy: String, delta: float):
                 var new_state = new_states[randi() % new_states.size()]
                 self.world.arena.boundary_states[hit_wall] = new_state
                 wall_state = new_state
+                # offsets is already defined at the top of the function
+                if self.world.arena.has_meta("boundary_offsets"):
+                    offsets = self.world.arena.get_meta("boundary_offsets")
+                offsets[hit_wall] += 50.0
+                self.world.arena.set_meta("boundary_offsets", offsets)
+                self.world.arena.boundary_health[hit_wall] = 2000.0
             elif health < 1000.0:
                 wall_state = "damaged_bouncy"
 
@@ -18132,17 +18147,17 @@ func execute(strategy: String, delta: float):
             speed_sq = 0.0
 
             if hit_wall == "top":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", margin + 1.0)
-                if "y" in self.ball: self.ball.y = margin + 1.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", margin + 1.0 + top_bound)
+                if "y" in self.ball: self.ball.y = margin + 1.0 + top_bound
             elif hit_wall == "bottom":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", h - margin - 1.0)
-                if "y" in self.ball: self.ball.y = h - margin - 1.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", bottom_bound - margin - 1.0)
+                if "y" in self.ball: self.ball.y = bottom_bound - margin - 1.0
             elif hit_wall == "left":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", margin + 1.0)
-                if "x" in self.ball: self.ball.x = margin + 1.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", margin + 1.0 + left_bound)
+                if "x" in self.ball: self.ball.x = margin + 1.0 + left_bound
             elif hit_wall == "right":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", w - margin - 1.0)
-                if "x" in self.ball: self.ball.x = w - margin - 1.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", right_bound - margin - 1.0)
+                if "x" in self.ball: self.ball.x = right_bound - margin - 1.0
 
         if speed_sq > 0:
             var speed = sqrt(speed_sq)

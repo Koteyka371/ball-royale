@@ -14,6 +14,7 @@ var danger_grid: Dictionary = {}
 var hazards: Array = []
 
 func _init(_arena_size: float = 2000.0, _seed = null):
+	set_meta("boundary_offsets", {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0})
 	width = _arena_size
 	height = _arena_size
 	rng = RandomNumberGenerator.new()
@@ -59,7 +60,14 @@ func get_random_spawn_point(radius: float) -> Array:
 	return [rng.randf_range(radius, width - radius), rng.randf_range(radius, height - radius)]
 
 func is_point_inside(x: float, y: float, radius: float) -> bool:
-	if not (radius <= x and x <= width - radius and radius <= y and y <= height - radius):
+	var offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+	if has_meta("boundary_offsets"):
+		offsets = get_meta("boundary_offsets")
+	var left_bound = radius + offsets["left"]
+	var right_bound = width - radius - offsets["right"]
+	var top_bound = radius + offsets["top"]
+	var bottom_bound = height - radius - offsets["bottom"]
+	if not (left_bound <= x and x <= right_bound and top_bound <= y and y <= bottom_bound):
 		return false
 	var cx = safe_zone_center[0]
 	var cy = safe_zone_center[1]
@@ -71,18 +79,26 @@ func clamp_position(x: float, y: float, radius: float) -> Array:
 	var new_x = x
 	var new_y = y
 
-	if x < radius:
-		new_x = radius
+	var offsets = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+	if has_meta("boundary_offsets"):
+		offsets = get_meta("boundary_offsets")
+	var left_bound = radius + offsets["left"]
+	var right_bound = width - radius - offsets["right"]
+	var top_bound = radius + offsets["top"]
+	var bottom_bound = height - radius - offsets["bottom"]
+
+	if x < left_bound:
+		new_x = left_bound
 		bounced = true
-	elif x > width - radius:
-		new_x = width - radius
+	elif x > right_bound:
+		new_x = right_bound
 		bounced = true
 
-	if y < radius:
-		new_y = radius
+	if y < top_bound:
+		new_y = top_bound
 		bounced = true
-	elif y > height - radius:
-		new_y = height - radius
+	elif y > bottom_bound:
+		new_y = bottom_bound
 		bounced = true
 
 	var cx = safe_zone_center[0]
