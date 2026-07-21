@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1269] Shattering Ice Walls Modifier — *2026-07-21 18:36:10 UTC*
+
+An arena modifier where walls are made of ice. Hitting the walls at high speed causes them to shatter, temporarily removing the boundary and creating a perilous drop-off zone, but the ice slowly regenerates over time.
+
+---
+
 ## [idea-1110] Mirror Ball Type — *2026-07-21 15:31:08 UTC*
 
 A new ball type that can temporarily turn completely reflective. While active, any direct projectile hits or continuous laser damage is reflected back towards the nearest enemy.
