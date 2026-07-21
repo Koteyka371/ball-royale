@@ -40460,10 +40460,20 @@ class EntangledHazardsMode extends GameMode:
 		for h_id in hazards_by_id.keys():
 			balls_near_hazard[h_id] = []
 
+		var deltas = {}
+
 		for b in balls:
 			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_meta("alive") else (b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else false)
 			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_meta("ball_type") else (b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else null)
 			if not alive or b_type == "spectator": continue
+
+			var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else null)
+			if b_id == null: continue
+
+			var st_dict = {}
+			for eff in status_effects:
+				st_dict[eff] = 0.0
+			deltas[b_id] = {"hp_loss": 0.0, "status": st_dict}
 
 			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else (b.x if typeof(b) == TYPE_OBJECT and "x" in b else 0.0)
 			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else (b.y if typeof(b) == TYPE_OBJECT and "y" in b else 0.0)
@@ -40517,24 +40527,8 @@ class EntangledHazardsMode extends GameMode:
 							var t_id = t.get("id") if typeof(t) == TYPE_DICTIONARY else t.get_meta("id") if typeof(t) == TYPE_OBJECT and t.has_meta("id") else (t.id if typeof(t) == TYPE_OBJECT and "id" in t else null)
 							if t_id != b_id:
 								var t_alive = t.get("alive") if typeof(t) == TYPE_DICTIONARY else t.get_meta("alive") if typeof(t) == TYPE_OBJECT and t.has_meta("alive") else (t.alive if typeof(t) == TYPE_OBJECT and "alive" in t else false)
-								if t_alive:
-									if typeof(t) == TYPE_OBJECT and t.has_method("take_damage"):
-										t.take_damage(shared_damage)
-									else:
-										var t_hp = t.get("hp") if typeof(t) == TYPE_DICTIONARY else t.get_meta("hp") if typeof(t) == TYPE_OBJECT and t.has_meta("hp") else (t.hp if typeof(t) == TYPE_OBJECT and "hp" in t else 100.0)
-										t_hp -= shared_damage
-										if t_hp <= 0:
-											t_hp = 0
-											if typeof(t) == TYPE_DICTIONARY:
-												t["alive"] = false
-											elif typeof(t) == TYPE_OBJECT:
-												if "alive" in t: t.alive = false
-												elif t.has_method("set_meta"): t.set_meta("alive", false)
-										if typeof(t) == TYPE_DICTIONARY:
-											t["hp"] = t_hp
-										elif typeof(t) == TYPE_OBJECT:
-											if "hp" in t: t.hp = t_hp
-											elif t.has_method("set_meta"): t.set_meta("hp", t_hp)
+								if t_alive and deltas.has(t_id):
+									deltas[t_id]["hp_loss"] += shared_damage
 
 					for eff in status_effects:
 						var curr_eff = b.get(eff) if typeof(b) == TYPE_DICTIONARY else b.get_meta(eff) if typeof(b) == TYPE_OBJECT and b.has_meta(eff) else (b.get(eff) if typeof(b) == TYPE_OBJECT and eff in b else 0.0)
@@ -40545,16 +40539,46 @@ class EntangledHazardsMode extends GameMode:
 								var t_id = t.get("id") if typeof(t) == TYPE_DICTIONARY else t.get_meta("id") if typeof(t) == TYPE_OBJECT and t.has_meta("id") else (t.id if typeof(t) == TYPE_OBJECT and "id" in t else null)
 								if t_id != b_id:
 									var t_alive = t.get("alive") if typeof(t) == TYPE_DICTIONARY else t.get_meta("alive") if typeof(t) == TYPE_OBJECT and t.has_meta("alive") else (t.alive if typeof(t) == TYPE_OBJECT and "alive" in t else false)
-									if t_alive:
-										var t_curr_eff = t.get(eff) if typeof(t) == TYPE_DICTIONARY else t.get_meta(eff) if typeof(t) == TYPE_OBJECT and t.has_meta(eff) else (t.get(eff) if typeof(t) == TYPE_OBJECT and eff in t else 0.0)
-										if typeof(t) == TYPE_DICTIONARY:
-											t[eff] = t_curr_eff + delta_eff
-										elif typeof(t) == TYPE_OBJECT:
-											if eff in t: t.set(eff, t_curr_eff + delta_eff)
-											elif t.has_method("set_meta"): t.set_meta(eff, t_curr_eff + delta_eff)
+									if t_alive and deltas.has(t_id):
+										deltas[t_id]["status"][eff] += delta_eff
+
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_meta("alive") else (b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else false)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_meta("ball_type") else (b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else null)
+			var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else null)
+
+			if not alive or b_type == "spectator" or b_id == null: continue
+
+			if deltas.has(b_id):
+				var d = deltas[b_id]
+				if d["hp_loss"] > 0:
+					if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+						b.take_damage(d["hp_loss"])
+					else:
+						var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.get_meta("hp") if typeof(b) == TYPE_OBJECT and b.has_meta("hp") else (b.hp if typeof(b) == TYPE_OBJECT and "hp" in b else 100.0)
+						var new_hp = b_hp - d["hp_loss"]
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = max(0.0, new_hp)
+							if new_hp <= 0: b["alive"] = false
+						elif typeof(b) == TYPE_OBJECT:
+							if "hp" in b:
+								b.hp = max(0.0, new_hp)
+								if new_hp <= 0: b.alive = false
+							elif b.has_method("set_meta"):
+								b.set_meta("hp", max(0.0, new_hp))
+								if new_hp <= 0: b.set_meta("alive", false)
+				for eff in status_effects:
+					if d["status"][eff] > 0:
+						var b_eff = b.get(eff) if typeof(b) == TYPE_DICTIONARY else b.get_meta(eff) if typeof(b) == TYPE_OBJECT and b.has_meta(eff) else (b.get(eff) if typeof(b) == TYPE_OBJECT and eff in b else 0.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b[eff] = b_eff + d["status"][eff]
+						elif typeof(b) == TYPE_OBJECT:
+							if eff in b:
+								b.set(eff, b_eff + d["status"][eff])
+							elif b.has_method("set_meta"):
+								b.set_meta(eff, b_eff + d["status"][eff])
+
 			_init_prev_state(b)
-
-
 class HealerFreezeTagMode extends GameMode:
 	func _init():
 		name = "Healer Freeze Tag"
