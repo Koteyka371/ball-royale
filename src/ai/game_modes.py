@@ -24750,6 +24750,87 @@ class SlimeBossMode(GameMode):
                                     proj.duration = 2.0
                                     world.arena.hazards.append(proj)
 
+class BouncingProjectilesMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bouncing Projectiles Mutator"
+        self.description = "All projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating."
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(getattr(world, "arena", None), "width", 1000)
+        arena_height = getattr(getattr(world, "arena", None), "height", 1000)
+
+        for proj in getattr(world, "projectiles", []) + getattr(world.arena, "hazards", []):
+            if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                continue
+
+            b_type = getattr(proj, "ball_type", getattr(proj, "kind", ""))
+            is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(proj, "is_projectile", False) or getattr(proj, "is_spell", False)
+
+            if not is_proj:
+                continue
+
+            bounces = getattr(proj, "bounces", 0)
+            if bounces >= 3:
+                proj.alive = False
+                if hasattr(proj, "hp"):
+                    proj.hp = 0
+                continue
+
+            x = getattr(proj, "x", 0)
+            y = getattr(proj, "y", 0)
+            radius = getattr(proj, "radius", 5.0)
+            vx = getattr(proj, "vx", 0)
+            vy = getattr(proj, "vy", 0)
+
+            bounced = False
+            if x - radius < 0 and vx < 0:
+                proj.vx = -vx
+                proj.x = radius
+                bounced = True
+            elif x + radius > arena_width and vx > 0:
+                proj.vx = -vx
+                proj.x = arena_width - radius
+                bounced = True
+
+            if y - radius < 0 and vy < 0:
+                proj.vy = -vy
+                proj.y = radius
+                bounced = True
+            elif y + radius > arena_height and vy > 0:
+                proj.vy = -vy
+                proj.y = arena_height - radius
+                bounced = True
+
+            # Hazards collisions (just simple AABB or circle for hazards that aren't this projectile)
+            for h in getattr(world.arena, "hazards", []):
+                if h == proj:
+                    continue
+                # For hazards, if they collide, bounce
+                hx = getattr(h, "x", 0)
+                hy = getattr(h, "y", 0)
+                hradius = getattr(h, "radius", 5.0)
+                dist_sq = (x - hx)**2 + (y - hy)**2
+                if dist_sq < (radius + hradius)**2:
+                    # Simple reflection normal
+                    nx = x - hx
+                    ny = y - hy
+                    length = (nx**2 + ny**2)**0.5
+                    if length > 0:
+                        nx /= length
+                        ny /= length
+                        # dot product
+                        dot = vx * nx + vy * ny
+                        if dot < 0: # moving towards each other
+                            proj.vx = vx - 2 * dot * nx
+                            proj.vy = vy - 2 * dot * ny
+                            bounced = True
+
+            if bounced:
+                proj.bounces = bounces + 1
+
 class WrapAroundMode(GameMode):
     """
     An arena mode where hitting a map boundary doesn't just bounce you, but teleports you to the opposite side of the map with inverted velocity.
@@ -25464,6 +25545,7 @@ GAME_MODES = {
     'entangled_hazards_mode': EntangledHazardsMode(),
 
 
+    "bouncing_projectiles_mutator": BouncingProjectilesMutatorMode(),
     "wrap_around": WrapAroundMode(),
     "slime_boss": SlimeBossMode(),
     "explosive_meteors": ExplosiveMeteorsMode(),

@@ -41616,6 +41616,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
+	"bouncing_projectiles_mutator": BouncingProjectilesMutatorMode.new(),
 	"wrap_around": WrapAroundMode.new(),
 
 	"slime_boss": SlimeBossMode.new(),
@@ -49911,6 +49912,167 @@ class CursedBoosterMode extends GameMode:
 		super._init()
 		self.name = "Cursed Boosters"
 		self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
+
+class BouncingProjectilesMutatorMode extends GameMode:
+	func _init():
+		name = "Bouncing Projectiles Mutator"
+		description = "All projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena = world.get("arena", {})
+		var arena_width = arena.get("width", 1000.0)
+		var arena_height = arena.get("height", 1000.0)
+		var projectiles = world.get("projectiles", [])
+		var hazards = arena.get("hazards", [])
+
+		var all_entities = []
+		for p in projectiles:
+			all_entities.append(p)
+		for h in hazards:
+			all_entities.append(h)
+
+		for proj in all_entities:
+			var is_alive = true
+			if typeof(proj) == TYPE_OBJECT:
+				if proj.has_method("is_alive"):
+					is_alive = proj.is_alive()
+				else:
+					is_alive = proj.get("alive", true)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				is_alive = proj.get("alive", true)
+
+			var hp = 1.0
+			if typeof(proj) == TYPE_OBJECT:
+				hp = proj.get("hp", 1.0)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				hp = proj.get("hp", 1.0)
+
+			if not is_alive and hp <= 0:
+				continue
+
+			var b_type = ""
+			if typeof(proj) == TYPE_OBJECT:
+				b_type = proj.get("ball_type", proj.get("kind", ""))
+			elif typeof(proj) == TYPE_DICTIONARY:
+				b_type = proj.get("ball_type", proj.get("kind", ""))
+
+			var is_proj_flag = false
+			if typeof(proj) == TYPE_OBJECT:
+				is_proj_flag = proj.get("is_projectile", false) or proj.get("is_spell", false)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				is_proj_flag = proj.get("is_projectile", false) or proj.get("is_spell", false)
+
+			var is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or is_proj_flag
+
+			if not is_proj:
+				continue
+
+			var bounces = 0
+			if typeof(proj) == TYPE_OBJECT:
+				if proj.has_meta("bounces"):
+					bounces = proj.get_meta("bounces")
+				elif "bounces" in proj:
+					bounces = proj.get("bounces")
+			elif typeof(proj) == TYPE_DICTIONARY:
+				bounces = proj.get("bounces", 0)
+
+			if bounces >= 3:
+				if typeof(proj) == TYPE_OBJECT:
+					if "alive" in proj:
+						proj.set("alive", false)
+					if "hp" in proj:
+						proj.set("hp", 0)
+				elif typeof(proj) == TYPE_DICTIONARY:
+					proj["alive"] = false
+					proj["hp"] = 0
+				continue
+
+			var x = 0.0
+			var y = 0.0
+			var radius = 5.0
+			var vx = 0.0
+			var vy = 0.0
+
+			if typeof(proj) == TYPE_OBJECT:
+				x = proj.get("x", 0.0)
+				y = proj.get("y", 0.0)
+				radius = proj.get("radius", 5.0)
+				vx = proj.get("vx", 0.0)
+				vy = proj.get("vy", 0.0)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				x = proj.get("x", 0.0)
+				y = proj.get("y", 0.0)
+				radius = proj.get("radius", 5.0)
+				vx = proj.get("vx", 0.0)
+				vy = proj.get("vy", 0.0)
+
+			var bounced = false
+			if x - radius < 0 and vx < 0:
+				vx = -vx
+				x = radius
+				bounced = true
+			elif x + radius > arena_width and vx > 0:
+				vx = -vx
+				x = arena_width - radius
+				bounced = true
+
+			if y - radius < 0 and vy < 0:
+				vy = -vy
+				y = radius
+				bounced = true
+			elif y + radius > arena_height and vy > 0:
+				vy = -vy
+				y = arena_height - radius
+				bounced = true
+
+			for h in hazards:
+				if h == proj:
+					continue
+				var hx = 0.0
+				var hy = 0.0
+				var hradius = 5.0
+				if typeof(h) == TYPE_OBJECT:
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+					hradius = h.get("radius", 5.0)
+				elif typeof(h) == TYPE_DICTIONARY:
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+					hradius = h.get("radius", 5.0)
+
+				var dist_sq = pow(x - hx, 2) + pow(y - hy, 2)
+				if dist_sq < pow(radius + hradius, 2):
+					var nx = x - hx
+					var ny = y - hy
+					var length = sqrt(pow(nx, 2) + pow(ny, 2))
+					if length > 0:
+						nx /= length
+						ny /= length
+						var dot = vx * nx + vy * ny
+						if dot < 0:
+							vx = vx - 2 * dot * nx
+							vy = vy - 2 * dot * ny
+							bounced = true
+
+			if bounced:
+				bounces += 1
+				if typeof(proj) == TYPE_OBJECT:
+					proj.set("x", x)
+					proj.set("y", y)
+					proj.set("vx", vx)
+					proj.set("vy", vy)
+					if proj.has_method("set_meta"):
+						proj.set_meta("bounces", bounces)
+					elif "bounces" in proj:
+						proj.set("bounces", bounces)
+				elif typeof(proj) == TYPE_DICTIONARY:
+					proj["x"] = x
+					proj["y"] = y
+					proj["vx"] = vx
+					proj["vy"] = vy
+					proj["bounces"] = bounces
 
 class WrapAroundMode extends GameMode:
 	func _init():
