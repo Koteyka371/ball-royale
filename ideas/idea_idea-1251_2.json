@@ -1,4 +1,0 @@
-{
-  "title": "Collapsing Geometry Arena",
-  "description": "An arena map where taking damage near walls randomly alters the shape of the boundary, creating dynamic jagged paths and trapping mechanics as the walls deform instead of just breaking."
-}
