@@ -24035,7 +24035,30 @@ class RandomTeleportDashMode(GameMode):
                 b.random_teleport_cooldown -= delta
 
 
+
+class TeleportDashMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Teleport Dash Mutator"
+        self.description = "Replaces the dash skill with a short-range instantaneous teleport that can pass through thin walls but has a longer cooldown."
+        self.mutators_active = True
+        self.mutators = ["teleport_dash"]
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+                continue
+
 GAME_MODES = {
+    'teleport_dash_mutator': TeleportDashMutatorMode(),
     'random_teleport_dash': RandomTeleportDashMode(),
     'roaming_doppelganger': RoamingDoppelgangerMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),

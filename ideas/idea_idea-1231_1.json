@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Mutator",
+  "description": "A mutator where any ball dropping below 30% HP instantly swaps positions with the highest HP enemy in the arena."
+}
