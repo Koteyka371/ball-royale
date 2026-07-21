@@ -71,6 +71,26 @@ def test_grapple_to_ball():
     action = Action(ball, world)
     action._use_skill()
 
+    # User is pulled
+    assert ball.x == 700.0
+    assert ball.y == 500.0
+
+    # Target ball remains stationary
+    assert target_ball.x == 600.0
+    assert target_ball.y == 500.0
+
+def test_grapple_to_enemy_ball():
+    world = MockWorld()
+    ball = MockBall(500, 500)
+    world.balls.append(ball)
+
+    target_ball = MockBall(600, 500)
+    target_ball.team = 2
+    world.balls.append(target_ball)
+
+    action = Action(ball, world)
+    action._use_skill()
+
     # User remains stationary
     assert ball.x == 500.0
     assert ball.y == 500.0
