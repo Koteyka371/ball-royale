@@ -23747,6 +23747,82 @@ class EntangledHazardsMode(GameMode):
 
             self._init_prev_state(b)
 
+
+class ElasticTetherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Elastic Tether"
+        self.description = "Pairs of players are tethered together. If they move too far apart, they are snapped back towards each other, dealing collision damage."
+        self.max_distance = 250.0
+        self.snap_force = 800.0
+        self.collision_damage = 30.0
+        self.collision_cooldown = 1.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", False)]
+        random.shuffle(alive_balls)
+
+        # Clear existing
+        for b in balls:
+            b.tether_target = None
+            b.tether_cooldown = 0.0
+
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+            b1.tether_target = b2
+            b2.tether_target = b1
+            b1.tether_cooldown = 0.0
+            b2.tether_cooldown = 0.0
+
+    def tick(self, world, balls, delta: float = 0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b.tether_cooldown = max(0.0, getattr(b, "tether_cooldown", 0.0) - delta)
+
+            target = getattr(b, "tether_target", None)
+            # Only process if b is the "first" in the pair by ID to avoid double-processing
+            if target and getattr(target, "alive", False) and getattr(b, "id", 0) < getattr(target, "id", 0):
+                dx = target.x - b.x
+                dy = target.y - b.y
+                dist = math.hypot(dx, dy)
+
+                if dist > self.max_distance:
+                    excess = dist - self.max_distance
+                    pull = (excess / self.max_distance) * self.snap_force
+
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    b.vx = getattr(b, "vx", 0.0) + nx * pull * delta
+                    b.vy = getattr(b, "vy", 0.0) + ny * pull * delta
+
+                    target.vx = getattr(target, "vx", 0.0) - nx * pull * delta
+                    target.vy = getattr(target, "vy", 0.0) - ny * pull * delta
+
+                # Collision damage
+                b_radius = getattr(b, "radius", 15.0)
+                t_radius = getattr(target, "radius", 15.0)
+
+                if dist < b_radius + t_radius + 5.0:
+                    if getattr(b, "tether_cooldown", 0.0) <= 0.0 and getattr(target, "tether_cooldown", 0.0) <= 0.0:
+                        b.tether_cooldown = self.collision_cooldown
+                        target.tether_cooldown = self.collision_cooldown
+
+                        if hasattr(world, "_deal_damage"):
+                            world._deal_damage(target, b, self.collision_damage)
+                            world._deal_damage(b, target, self.collision_damage)
+                        else:
+                            b.hp = getattr(b, "hp", 100.0) - self.collision_damage
+                            target.hp = getattr(target, "hp", 100.0) - self.collision_damage
+
 GAME_MODES = {
     'entangled_hazards_mode': EntangledHazardsMode(),
 
@@ -25191,6 +25267,7 @@ class TetheredRoyaleMode(GameMode):
                 b.damage = getattr(b, "base_damage", 20.0)
 
 GAME_MODES["tethered_royale"] = TetheredRoyaleMode()
+GAME_MODES["elastic_tether"] = ElasticTetherMode()
 GAME_MODES["rubber_band"] = RubberBandMode()
 class RiftRouletteMode(GameMode):
     def __init__(self):
