@@ -23548,8 +23548,249 @@ class ToxicFloodRoyaleMode(GameMode):
                     b.killer = "Toxic Flood"
 
 
+
+class SlimeBossMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Slime Boss"
+        self.description = "A giant slime boss that leaves a massive trail of slime and shoots slime balls. Splits into two smaller slimes when destroyed."
+        self.boss_id = None
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        # Spawn the boss
+        import random
+        try:
+            from ai.action import base_class_map
+        except ImportError:
+            base_class_map = {}
+
+        boss_x = random.uniform(200, getattr(world.arena, "width", 1000) - 200)
+        boss_y = random.uniform(200, getattr(world.arena, "height", 1000) - 200)
+
+        # Create a mock ball for the boss to ensure compatibility with MockBall
+        # We will dynamically create a mock class based on the first ball if possible
+        if balls:
+            base_ball = balls[0]
+            boss_class = type(base_ball)
+        else:
+            boss_class = type('MockBoss', (object,), {})
+
+        boss = boss_class()
+
+        # Initialize necessary attributes based on what balls usually have
+        if balls:
+            for attr in dir(balls[0]):
+                if not attr.startswith('__') and not callable(getattr(balls[0], attr)):
+                    try:
+                        setattr(boss, attr, getattr(balls[0], attr))
+                    except AttributeError:
+                        pass
+
+        boss.id = getattr(world, "next_id", random.randint(10000, 99999))
+        self.boss_id = boss.id
+        boss.x = boss_x
+        boss.y = boss_y
+        boss.ball_type = "juggernaut"
+        boss.team = "boss"
+        boss.max_hp = 3000.0
+        boss.hp = 3000.0
+        boss.damage = 30.0
+        boss.radius = 40.0
+        boss.speed = 80.0
+        boss.alive = True
+
+        boss.slime_trail_timer = 0.0
+        boss.slime_shoot_timer = 3.0
+        boss.is_slime_boss = True
+
+        balls.append(boss)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        # Update slime projectiles
+        projectiles_to_remove = []
+        patches_to_add = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "slime_projectile":
+                h.x += getattr(h, "vx", 0) * delta
+                h.y += getattr(h, "vy", 0) * delta
+                h.duration -= delta
+
+                # Check collision with players
+                hit = False
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "team", "") != "boss":
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        if dx*dx + dy*dy <= (b.radius + h.radius)**2:
+                            b.hp -= getattr(h, "damage", 10)
+                            b.slow_timer = max(getattr(b, "slow_timer", 0.0), 3.0)
+                            hit = True
+                            break
+
+                if hit or h.duration <= 0:
+                    projectiles_to_remove.append(h)
+                    try:
+                        from arena.procedural_arena import Hazard
+                        patch = Hazard(id=len(world.arena.hazards) + 9000, x=h.x, y=h.y, radius=30.0, kind="slime", damage=0.0)
+                        patch.active = True
+                        patch.duration = 10.0
+                        patches_to_add.append(patch)
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                        patch = Hazard(id=len(world.arena.hazards) + 9000, x=h.x, y=h.y, radius=30.0, kind="slime", damage=0.0)
+                        patch.duration = 10.0
+                        patches_to_add.append(patch)
+
+
+        # Apply slow from slime patches
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "slime":
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "team", "") != "boss":
+                        dx = b.x - h.x
+                        dy = b.y - h.y
+                        if dx*dx + dy*dy <= (b.radius + h.radius)**2:
+                            b.slow_timer = max(getattr(b, "slow_timer", 0.0), 1.0)
+
+        for p in projectiles_to_remove:
+            if p in world.arena.hazards:
+                world.arena.hazards.remove(p)
+        for p in patches_to_add:
+            world.arena.hazards.append(p)
+
+        # Find boss and minions
+        boss = None
+        for b in balls:
+            if getattr(b, "id", None) == self.boss_id:
+                boss = b
+                break
+
+        if boss:
+            if boss.hp <= 0 or not boss.alive:
+                boss.alive = False
+                if boss in balls:
+                    balls.remove(boss)
+
+                # Split into two smaller slimes
+                if not getattr(boss, "is_slime_minion", False):
+                    import random
+                    for i in range(2):
+                        boss_class = type(boss)
+                        minion = boss_class()
+
+                        for attr in dir(boss):
+                            if not attr.startswith('__') and not callable(getattr(boss, attr)):
+                                try:
+                                    setattr(minion, attr, getattr(boss, attr))
+                                except AttributeError:
+                                    pass
+
+                        minion.id = getattr(world, "next_id", random.randint(10000, 99999)) + i + 1
+                        minion.x = boss.x + random.choice([-20, 20])
+                        minion.y = boss.y + random.choice([-20, 20])
+                        minion.max_hp = boss.max_hp * 0.4
+                        minion.hp = minion.max_hp
+                        minion.radius = boss.radius * 0.6
+                        minion.speed = boss.speed * 1.5
+                        minion.damage = boss.damage * 0.6
+                        minion.alive = True
+                        minion.is_slime_minion = True
+                        minion.slime_trail_timer = 0.0
+
+                        balls.append(minion)
+            else:
+                # Trail logic
+                boss.slime_trail_timer = getattr(boss, "slime_trail_timer", 0.0) - delta
+                if boss.slime_trail_timer <= 0:
+                    boss.slime_trail_timer = 0.2
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                        trail = Hazard(id=len(world.arena.hazards) + 9000, x=boss.x, y=boss.y, radius=25.0, kind="slime", damage=0.0)
+                        trail.active = True
+                        trail.duration = 10.0
+                        world.arena.hazards.append(trail)
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                        trail = Hazard(id=len(world.arena.hazards) + 9000, x=boss.x, y=boss.y, radius=25.0, kind="slime", damage=0.0)
+                        trail.duration = 10.0
+                        world.arena.hazards.append(trail)
+
+                # Shooting logic
+                if not getattr(boss, "is_slime_minion", False):
+                    boss.slime_shoot_timer = getattr(boss, "slime_shoot_timer", 3.0) - delta
+                    if boss.slime_shoot_timer <= 0:
+                        boss.slime_shoot_timer = 3.0
+
+                        # Find closest enemy
+                        closest_enemy = None
+                        min_dist = 999999
+                        for b in balls:
+                            if b != boss and getattr(b, "alive", False) and getattr(b, "team", "") != boss.team:
+                                dist = (b.x - boss.x)**2 + (b.y - boss.y)**2
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    closest_enemy = b
+
+                        if closest_enemy:
+                            import math
+                            dx = closest_enemy.x - boss.x
+                            dy = closest_enemy.y - boss.y
+                            mag = math.sqrt(dx*dx + dy*dy)
+                            if mag > 0:
+                                vx = (dx / mag) * 300.0
+                                vy = (dy / mag) * 300.0
+
+                                try:
+                                    from arena.procedural_arena import Hazard
+                                    proj = Hazard(id=len(world.arena.hazards) + 9000, x=boss.x, y=boss.y, radius=15.0, kind="slime_projectile", damage=20.0)
+                                    proj.active = True
+                                    proj.vx = vx
+                                    proj.vy = vy
+                                    proj.duration = 2.0
+                                    world.arena.hazards.append(proj)
+                                except ImportError:
+                                    class Hazard:
+                                        def __init__(self, id, x, y, radius, kind, damage):
+                                            self.id = id
+                                            self.x = x
+                                            self.y = y
+                                            self.radius = radius
+                                            self.kind = kind
+                                            self.damage = damage
+                                            self.active = True
+                                    proj = Hazard(id=len(world.arena.hazards) + 9000, x=boss.x, y=boss.y, radius=15.0, kind="slime_projectile", damage=20.0)
+                                    proj.vx = vx
+                                    proj.vy = vy
+                                    proj.duration = 2.0
+                                    world.arena.hazards.append(proj)
+
+
 GAME_MODES = {
 
+    "slime_boss": SlimeBossMode(),
     "explosive_meteors": ExplosiveMeteorsMode(),
     "void_tiles": VoidTilesMode(),
     "cursed_boosters": CursedBoosterMode(),

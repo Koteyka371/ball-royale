@@ -39700,9 +39700,582 @@ class ToxicFloodRoyaleMode extends GameMode:
 						b.killer = "Toxic Flood"
 
 
+
+class SlimeBossMode extends GameMode:
+	var boss_id = -1
+
+	func _init():
+		self.name = "Slime Boss"
+		self.description = "A giant slime boss that leaves a massive trail of slime and shoots slime balls. Splits into two smaller slimes when destroyed."
+		self.boss_id = -1
+
+	func setup(world, balls):
+		super.setup(world, balls)
+
+		if typeof(world) == TYPE_OBJECT and world.has_method("get_node"):
+			if world.has_node("Arena"):
+				var arena = world.get_node("Arena")
+				if not "hazards" in arena:
+					arena.hazards = []
+
+		# Spawn boss
+		var boss_x = randf_range(200.0, 800.0)
+		var boss_y = randf_range(200.0, 800.0)
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				boss_x = randf_range(200.0, world.arena.width - 200.0)
+			if "height" in world.arena:
+				boss_y = randf_range(200.0, world.arena.height - 200.0)
+
+		var boss = null
+		if balls.size() > 0:
+			var base_ball = balls[0]
+			var script = base_ball.get_script()
+			if script != null:
+				boss = script.new()
+			else:
+				boss = {}
+		else:
+			boss = {}
+
+		var next_id = randi() % 90000 + 10000
+		if typeof(world) == TYPE_OBJECT and "next_id" in world:
+			next_id = world.next_id
+
+		self.boss_id = next_id
+
+		if typeof(boss) == TYPE_DICTIONARY:
+			boss["id"] = next_id
+			boss["x"] = boss_x
+			boss["y"] = boss_y
+			boss["ball_type"] = "juggernaut"
+			boss["team"] = "boss"
+			boss["max_hp"] = 3000.0
+			boss["hp"] = 3000.0
+			boss["damage"] = 30.0
+			boss["radius"] = 40.0
+			boss["speed"] = 80.0
+			boss["alive"] = true
+			boss["slime_trail_timer"] = 0.0
+			boss["slime_shoot_timer"] = 3.0
+			boss["is_slime_boss"] = true
+			boss["is_slime_minion"] = false
+		else:
+			if "id" in boss: boss.id = next_id
+			if "x" in boss: boss.x = boss_x
+			if "y" in boss: boss.y = boss_y
+			if "ball_type" in boss: boss.ball_type = "juggernaut"
+			if "team" in boss: boss.team = "boss"
+			if "max_hp" in boss: boss.max_hp = 3000.0
+			if "hp" in boss: boss.hp = 3000.0
+			if "damage" in boss: boss.damage = 30.0
+			if "radius" in boss: boss.radius = 40.0
+			if "speed" in boss: boss.speed = 80.0
+			if "alive" in boss: boss.alive = true
+
+			if boss.has_method("set_meta"):
+				boss.set_meta("slime_trail_timer", 0.0)
+				boss.set_meta("slime_shoot_timer", 3.0)
+				boss.set_meta("is_slime_boss", true)
+				boss.set_meta("is_slime_minion", false)
+			else:
+				boss["slime_trail_timer"] = 0.0
+				boss["slime_shoot_timer"] = 3.0
+				boss["is_slime_boss"] = true
+				boss["is_slime_minion"] = false
+
+		balls.append(boss)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var arena = null
+		if typeof(world) == TYPE_OBJECT:
+			if "arena" in world:
+				arena = world.arena
+			elif world.has_method("get_node") and world.has_node("Arena"):
+				arena = world.get_node("Arena")
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena = world["arena"]
+
+		if arena == null: return
+
+		if not "hazards" in arena: return
+
+		var projectiles_to_remove = []
+		var patches_to_add = []
+		for h in arena.hazards:
+			var kind = ""
+			if typeof(h) == TYPE_OBJECT:
+				if "kind" in h: kind = h.kind
+			elif typeof(h) == TYPE_DICTIONARY:
+				if h.has("kind"): kind = h["kind"]
+
+			if kind == "slime_projectile":
+				if typeof(h) == TYPE_OBJECT:
+					var vx = 0.0
+					if h.has_meta("vx"): vx = h.get_meta("vx")
+					elif "vx" in h: vx = h.vx
+
+					var vy = 0.0
+					if h.has_meta("vy"): vy = h.get_meta("vy")
+					elif "vy" in h: vy = h.vy
+
+					var h_duration = 0.0
+					if h.has_meta("duration"): h_duration = h.get_meta("duration")
+					elif "duration" in h: h_duration = h.duration
+
+					h.x += vx * delta
+					h.y += vy * delta
+					h_duration -= delta
+
+					if h.has_meta("duration"): h.set_meta("duration", h_duration)
+					elif "duration" in h: h.duration = h_duration
+
+					var hit = false
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_OBJECT:
+							if "alive" in b: b_alive = b.alive
+						elif typeof(b) == TYPE_DICTIONARY:
+							if b.has("alive"): b_alive = b["alive"]
+
+						var b_team = ""
+						if typeof(b) == TYPE_OBJECT:
+							if "team" in b: b_team = b.team
+						elif typeof(b) == TYPE_DICTIONARY:
+							if b.has("team"): b_team = b["team"]
+
+						if b_alive and b_team != "boss":
+							var b_x = b.x if typeof(b) == TYPE_OBJECT else b["x"]
+							var b_y = b.y if typeof(b) == TYPE_OBJECT else b["y"]
+							var b_rad = 15.0
+							if typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+							elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b["radius"]
+
+							var h_rad = 15.0
+							if "radius" in h: h_rad = h.radius
+
+							var dx = b_x - h.x
+							var dy = b_y - h.y
+							if dx*dx + dy*dy <= (b_rad + h_rad)*(b_rad + h_rad):
+								var h_dmg = 20.0
+								if "damage" in h: h_dmg = h.damage
+
+								if typeof(b) == TYPE_OBJECT:
+									if "hp" in b: b.hp -= h_dmg
+
+									var slow_t = 3.0
+									if "slow_timer" in b:
+										if b.slow_timer < 3.0: slow_t = 3.0
+										else: slow_t = b.slow_timer
+										b.slow_timer = slow_t
+									elif b.has_method("set_meta"):
+										if b.has_meta("slow_timer"):
+											if b.get_meta("slow_timer") < 3.0: slow_t = 3.0
+											else: slow_t = b.get_meta("slow_timer")
+										b.set_meta("slow_timer", slow_t)
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("hp"): b["hp"] -= h_dmg
+									if b.has("slow_timer"):
+										if b["slow_timer"] < 3.0: b["slow_timer"] = 3.0
+									else:
+										b["slow_timer"] = 3.0
+								hit = true
+								break
+
+					if hit or h_duration <= 0:
+						projectiles_to_remove.append(h)
+						var HazardType = null
+						if load("res://src/ai/game_modes.gd"):
+							HazardType = load("res://src/ai/game_modes.gd").Hazard
+						if HazardType != null:
+							var patch = HazardType.new(arena.hazards.size() + 9000, h.x, h.y, 30.0, "slime", 0.0)
+							if patch.has_method("set_meta"):
+								patch.set_meta("duration", 10.0)
+							else:
+								patch.duration = 10.0
+							patches_to_add.append(patch)
+
+				elif typeof(h) == TYPE_DICTIONARY:
+					var vx = 0.0
+					if h.has("vx"): vx = h["vx"]
+					var vy = 0.0
+					if h.has("vy"): vy = h["vy"]
+					var h_duration = 0.0
+					if h.has("duration"): h_duration = h["duration"]
+
+					h["x"] += vx * delta
+					h["y"] += vy * delta
+					h["duration"] = h_duration - delta
+
+					var hit = false
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_OBJECT:
+							if "alive" in b: b_alive = b.alive
+						elif typeof(b) == TYPE_DICTIONARY:
+							if b.has("alive"): b_alive = b["alive"]
+
+						var b_team = ""
+						if typeof(b) == TYPE_OBJECT:
+							if "team" in b: b_team = b.team
+						elif typeof(b) == TYPE_DICTIONARY:
+							if b.has("team"): b_team = b["team"]
+
+						if b_alive and b_team != "boss":
+							var b_x = b.x if typeof(b) == TYPE_OBJECT else b["x"]
+							var b_y = b.y if typeof(b) == TYPE_OBJECT else b["y"]
+							var b_rad = 15.0
+							if typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+							elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b["radius"]
+
+							var h_rad = 15.0
+							if h.has("radius"): h_rad = h["radius"]
+
+							var dx = b_x - h["x"]
+							var dy = b_y - h["y"]
+							if dx*dx + dy*dy <= (b_rad + h_rad)*(b_rad + h_rad):
+								var h_dmg = 20.0
+								if h.has("damage"): h_dmg = h["damage"]
+
+								if typeof(b) == TYPE_OBJECT:
+									if "hp" in b: b.hp -= h_dmg
+									var slow_t = 3.0
+									if "slow_timer" in b:
+										if b.slow_timer > 3.0: slow_t = b.slow_timer
+										b.slow_timer = slow_t
+									elif b.has_method("set_meta"):
+										if b.has_meta("slow_timer"):
+											if b.get_meta("slow_timer") > 3.0: slow_t = b.get_meta("slow_timer")
+										b.set_meta("slow_timer", slow_t)
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("hp"): b["hp"] -= h_dmg
+									if b.has("slow_timer"):
+										if b["slow_timer"] < 3.0: b["slow_timer"] = 3.0
+									else:
+										b["slow_timer"] = 3.0
+								hit = true
+								break
+
+					if hit or h["duration"] <= 0:
+						projectiles_to_remove.append(h)
+						var patch = {
+							"id": arena.hazards.size() + 9000,
+							"x": h["x"],
+							"y": h["y"],
+							"radius": 30.0,
+							"kind": "slime",
+							"damage": 0.0,
+							"active": true,
+							"duration": 10.0
+						}
+						patches_to_add.append(patch)
+
+
+		for h in arena.hazards:
+			var kind = ""
+			if typeof(h) == TYPE_OBJECT:
+				if "kind" in h: kind = h.kind
+			elif typeof(h) == TYPE_DICTIONARY:
+				if h.has("kind"): kind = h["kind"]
+
+			if kind == "slime":
+				for b in balls:
+					var b_alive = false
+					if typeof(b) == TYPE_OBJECT:
+						if "alive" in b: b_alive = b.alive
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("alive"): b_alive = b["alive"]
+
+					var b_team = ""
+					if typeof(b) == TYPE_OBJECT:
+						if "team" in b: b_team = b.team
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("team"): b_team = b["team"]
+
+					if b_alive and b_team != "boss":
+						var b_x = b.x if typeof(b) == TYPE_OBJECT else b["x"]
+						var b_y = b.y if typeof(b) == TYPE_OBJECT else b["y"]
+						var b_rad = 15.0
+						if typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+						elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b["radius"]
+
+						var h_rad = 15.0
+						if typeof(h) == TYPE_OBJECT and "radius" in h: h_rad = h.radius
+						elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_rad = h["radius"]
+
+						var dx = b_x - (h.x if typeof(h) == TYPE_OBJECT else h["x"])
+						var dy = b_y - (h.y if typeof(h) == TYPE_OBJECT else h["y"])
+						if dx*dx + dy*dy <= (b_rad + h_rad)*(b_rad + h_rad):
+							var slow_t = 1.0
+							if typeof(b) == TYPE_OBJECT:
+								if "slow_timer" in b:
+									if b.slow_timer > 1.0: slow_t = b.slow_timer
+									b.slow_timer = slow_t
+								elif b.has_method("set_meta"):
+									if b.has_meta("slow_timer"):
+										if b.get_meta("slow_timer") > 1.0: slow_t = b.get_meta("slow_timer")
+									b.set_meta("slow_timer", slow_t)
+							elif typeof(b) == TYPE_DICTIONARY:
+								if b.has("slow_timer"):
+									if b["slow_timer"] < 1.0: b["slow_timer"] = 1.0
+								else:
+									b["slow_timer"] = 1.0
+
+		for p in projectiles_to_remove:
+			if p in arena.hazards:
+				arena.hazards.erase(p)
+		for p in patches_to_add:
+			arena.hazards.append(p)
+
+		var boss = null
+		for b in balls:
+			var b_id = -1
+			if typeof(b) == TYPE_OBJECT:
+				if "id" in b: b_id = b.id
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.has("id"): b_id = b["id"]
+
+			if b_id == self.boss_id:
+				boss = b
+				break
+
+		if boss != null:
+			var b_hp = 1.0
+			var b_alive = true
+			if typeof(boss) == TYPE_OBJECT:
+				if "hp" in boss: b_hp = boss.hp
+				if "alive" in boss: b_alive = boss.alive
+			elif typeof(boss) == TYPE_DICTIONARY:
+				if boss.has("hp"): b_hp = boss["hp"]
+				if boss.has("alive"): b_alive = boss["alive"]
+
+			if b_hp <= 0 or not b_alive:
+				if typeof(boss) == TYPE_OBJECT:
+					if "alive" in boss: boss.alive = false
+				elif typeof(boss) == TYPE_DICTIONARY:
+					if boss.has("alive"): boss["alive"] = false
+
+				if boss in balls:
+					balls.erase(boss)
+
+				var is_minion = false
+				if typeof(boss) == TYPE_OBJECT:
+					if boss.has_meta("is_slime_minion"): is_minion = boss.get_meta("is_slime_minion")
+					elif "is_slime_minion" in boss: is_minion = boss.is_slime_minion
+				elif typeof(boss) == TYPE_DICTIONARY:
+					if boss.has("is_slime_minion"): is_minion = boss["is_slime_minion"]
+
+				if not is_minion:
+					for i in range(2):
+						var minion = null
+						if typeof(boss) == TYPE_OBJECT:
+							var script = boss.get_script()
+							if script != null:
+								minion = script.new()
+							else:
+								minion = {}
+						else:
+							minion = {}
+
+						var boss_x = boss.x if typeof(boss) == TYPE_OBJECT else boss["x"]
+						var boss_y = boss.y if typeof(boss) == TYPE_OBJECT else boss["y"]
+						var boss_max_hp = 3000.0
+						if typeof(boss) == TYPE_OBJECT and "max_hp" in boss: boss_max_hp = boss.max_hp
+						elif typeof(boss) == TYPE_DICTIONARY and boss.has("max_hp"): boss_max_hp = boss["max_hp"]
+
+						var boss_rad = 40.0
+						if typeof(boss) == TYPE_OBJECT and "radius" in boss: boss_rad = boss.radius
+						elif typeof(boss) == TYPE_DICTIONARY and boss.has("radius"): boss_rad = boss["radius"]
+
+						var boss_speed = 80.0
+						if typeof(boss) == TYPE_OBJECT and "speed" in boss: boss_speed = boss.speed
+						elif typeof(boss) == TYPE_DICTIONARY and boss.has("speed"): boss_speed = boss["speed"]
+
+						var boss_dmg = 30.0
+						if typeof(boss) == TYPE_OBJECT and "damage" in boss: boss_dmg = boss.damage
+						elif typeof(boss) == TYPE_DICTIONARY and boss.has("damage"): boss_dmg = boss["damage"]
+
+						var m_id = randi() % 90000 + 10000 + i + 1
+
+						if typeof(minion) == TYPE_DICTIONARY:
+							minion["id"] = m_id
+							minion["x"] = boss_x + [-20, 20][randi() % 2]
+							minion["y"] = boss_y + [-20, 20][randi() % 2]
+							minion["max_hp"] = boss_max_hp * 0.4
+							minion["hp"] = minion["max_hp"]
+							minion["radius"] = boss_rad * 0.6
+							minion["speed"] = boss_speed * 1.5
+							minion["damage"] = boss_dmg * 0.6
+							minion["alive"] = true
+							minion["is_slime_minion"] = true
+							minion["slime_trail_timer"] = 0.0
+							minion["team"] = "boss"
+							minion["ball_type"] = "juggernaut"
+						else:
+							if "id" in minion: minion.id = m_id
+							if "x" in minion: minion.x = boss_x + [-20, 20][randi() % 2]
+							if "y" in minion: minion.y = boss_y + [-20, 20][randi() % 2]
+							if "max_hp" in minion: minion.max_hp = boss_max_hp * 0.4
+							if "hp" in minion: minion.hp = minion.max_hp
+							if "radius" in minion: minion.radius = boss_rad * 0.6
+							if "speed" in minion: minion.speed = boss_speed * 1.5
+							if "damage" in minion: minion.damage = boss_dmg * 0.6
+							if "alive" in minion: minion.alive = true
+							if "team" in minion: minion.team = "boss"
+							if "ball_type" in minion: minion.ball_type = "juggernaut"
+
+							if minion.has_method("set_meta"):
+								minion.set_meta("is_slime_minion", true)
+								minion.set_meta("slime_trail_timer", 0.0)
+							else:
+								minion["is_slime_minion"] = true
+								minion["slime_trail_timer"] = 0.0
+
+						balls.append(minion)
+			else:
+				var trail_timer = 0.0
+				if typeof(boss) == TYPE_OBJECT:
+					if boss.has_meta("slime_trail_timer"): trail_timer = boss.get_meta("slime_trail_timer")
+					elif "slime_trail_timer" in boss: trail_timer = boss.slime_trail_timer
+				elif typeof(boss) == TYPE_DICTIONARY:
+					if boss.has("slime_trail_timer"): trail_timer = boss["slime_trail_timer"]
+
+				trail_timer -= delta
+
+				if trail_timer <= 0:
+					trail_timer = 0.2
+					var bx = boss.x if typeof(boss) == TYPE_OBJECT else boss["x"]
+					var by = boss.y if typeof(boss) == TYPE_OBJECT else boss["y"]
+
+					var HazardType = null
+					if load("res://src/ai/game_modes.gd"):
+						HazardType = load("res://src/ai/game_modes.gd").Hazard
+					if HazardType != null:
+						var trail = HazardType.new(arena.hazards.size() + 9000, bx, by, 25.0, "slime", 0.0)
+						if trail.has_method("set_meta"):
+							trail.set_meta("duration", 10.0)
+						else:
+							trail.duration = 10.0
+						arena.hazards.append(trail)
+					else:
+						var trail = {
+							"id": arena.hazards.size() + 9000,
+							"x": bx,
+							"y": by,
+							"radius": 25.0,
+							"kind": "slime",
+							"damage": 0.0,
+							"active": true,
+							"duration": 10.0
+						}
+						arena.hazards.append(trail)
+
+				if typeof(boss) == TYPE_OBJECT:
+					if boss.has_meta("slime_trail_timer"): boss.set_meta("slime_trail_timer", trail_timer)
+					elif "slime_trail_timer" in boss: boss.slime_trail_timer = trail_timer
+				elif typeof(boss) == TYPE_DICTIONARY:
+					boss["slime_trail_timer"] = trail_timer
+
+				var is_minion = false
+				if typeof(boss) == TYPE_OBJECT:
+					if boss.has_meta("is_slime_minion"): is_minion = boss.get_meta("is_slime_minion")
+					elif "is_slime_minion" in boss: is_minion = boss.is_slime_minion
+				elif typeof(boss) == TYPE_DICTIONARY:
+					if boss.has("is_slime_minion"): is_minion = boss["is_slime_minion"]
+
+				if not is_minion:
+					var shoot_timer = 3.0
+					if typeof(boss) == TYPE_OBJECT:
+						if boss.has_meta("slime_shoot_timer"): shoot_timer = boss.get_meta("slime_shoot_timer")
+						elif "slime_shoot_timer" in boss: shoot_timer = boss.slime_shoot_timer
+					elif typeof(boss) == TYPE_DICTIONARY:
+						if boss.has("slime_shoot_timer"): shoot_timer = boss["slime_shoot_timer"]
+
+					shoot_timer -= delta
+					if shoot_timer <= 0:
+						shoot_timer = 3.0
+
+						var bx = boss.x if typeof(boss) == TYPE_OBJECT else boss["x"]
+						var by = boss.y if typeof(boss) == TYPE_OBJECT else boss["y"]
+						var boss_team = boss.team if typeof(boss) == TYPE_OBJECT else boss["team"]
+
+						var closest_enemy = null
+						var min_dist = 999999.0
+
+						for b in balls:
+							if b != boss:
+								var b_alive = false
+								if typeof(b) == TYPE_OBJECT:
+									if "alive" in b: b_alive = b.alive
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("alive"): b_alive = b["alive"]
+
+								var b_team = ""
+								if typeof(b) == TYPE_OBJECT:
+									if "team" in b: b_team = b.team
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("team"): b_team = b["team"]
+
+								if b_alive and b_team != boss_team:
+									var bx2 = b.x if typeof(b) == TYPE_OBJECT else b["x"]
+									var by2 = b.y if typeof(b) == TYPE_OBJECT else b["y"]
+									var dist = (bx2 - bx)*(bx2 - bx) + (by2 - by)*(by2 - by)
+									if dist < min_dist:
+										min_dist = dist
+										closest_enemy = b
+
+						if closest_enemy != null:
+							var cx = closest_enemy.x if typeof(closest_enemy) == TYPE_OBJECT else closest_enemy["x"]
+							var cy = closest_enemy.y if typeof(closest_enemy) == TYPE_OBJECT else closest_enemy["y"]
+							var dx = cx - bx
+							var dy = cy - by
+							var mag = sqrt(dx*dx + dy*dy)
+							if mag > 0:
+								var vx = (dx / mag) * 300.0
+								var vy = (dy / mag) * 300.0
+
+								var HazardType = null
+								if load("res://src/ai/game_modes.gd"):
+									HazardType = load("res://src/ai/game_modes.gd").Hazard
+								if HazardType != null:
+									var proj = HazardType.new(arena.hazards.size() + 9000, bx, by, 15.0, "slime_projectile", 20.0)
+									if proj.has_method("set_meta"):
+										proj.set_meta("vx", vx)
+										proj.set_meta("vy", vy)
+										proj.set_meta("duration", 2.0)
+									else:
+										proj["vx"] = vx
+										proj["vy"] = vy
+										proj["duration"] = 2.0
+									arena.hazards.append(proj)
+								else:
+									var proj = {
+										"id": arena.hazards.size() + 9000,
+										"x": bx,
+										"y": by,
+										"radius": 15.0,
+										"kind": "slime_projectile",
+										"damage": 20.0,
+										"active": true,
+										"vx": vx,
+										"vy": vy,
+										"duration": 2.0
+									}
+									arena.hazards.append(proj)
+
+					if typeof(boss) == TYPE_OBJECT:
+						if boss.has_meta("slime_shoot_timer"): boss.set_meta("slime_shoot_timer", shoot_timer)
+						elif "slime_shoot_timer" in boss: boss.slime_shoot_timer = shoot_timer
+					elif typeof(boss) == TYPE_DICTIONARY:
+						boss["slime_shoot_timer"] = shoot_timer
+
+
 GAME_MODES = {
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 
+	"slime_boss": SlimeBossMode.new(),
 	"explosive_meteors": ExplosiveMeteorsMode.new(),
 	"void_tiles": VoidTilesMode.new(),
 	"chronosphere_event": ChronosphereEventMode.new(),
