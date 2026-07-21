@@ -1,0 +1,4 @@
+{
+  "title": "Aura Overload Event",
+  "description": "An event where player auras rapidly expand over time. The larger the aura, the more damage you deal, but taking damage instantly reduces the aura size back to minimum."
+}
