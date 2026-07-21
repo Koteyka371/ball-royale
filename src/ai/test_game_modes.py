@@ -2035,6 +2035,19 @@ def test_mirage_safe_zone():
         assert getattr(hazard, "active", True) == False
         assert len(world.arena.hazards) > 1
         assert any(getattr(h, "kind", "") == "disguised_trap" for h in world.arena.hazards)
+
+    # Check if fire_zone was spawned (50% chance, random.random() > 0.5)
+    with unittest.mock.patch('random.random', return_value=0.9):
+        # Reset hazard
+        hazard.duration = 10.0
+        hazard.active = True
+        world.arena.hazards = [hazard]
+        action = Action(ball, world)
+        action.execute("idle", 0.1)
+
+        assert getattr(hazard, "duration", 10.0) == 0.0
+        assert getattr(hazard, "active", True) == False
+        assert any(getattr(h, "kind", "") == "fire_zone" for h in world.arena.hazards)
 import pytest
 from ai.action import Action
 
