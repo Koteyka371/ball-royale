@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1264] Bouncy Bullet Booster — *2026-07-21 22:14:44 UTC*
+
+A booster that modifies standard ranged attacks so they bounce off walls multiple times, retaining their damage properties, effectively turning the arena into a pinball machine of projectiles.
+
+---
+
 ## [idea-1292] Prismatic Aura Boss — *2026-07-21 21:48:57 UTC*
 
 A new boss ball type that rapidly cycles through aura colors. Hitting the boss while its aura matches your own heals you instead of damaging the boss, making timing crucial for takedowns.

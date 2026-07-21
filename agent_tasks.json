@@ -21660,7 +21660,7 @@
     },
     {
       "id": "idea-1264",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Bullet Booster",
@@ -32537,6 +32537,74 @@
         "src/arena/mirror_dimension_arena.py",
         "src/arena/mirror_dimension_arena.gd",
         "tests/test_mirror_dimension_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1903",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Overload Event",
+      "description": "An event where player auras rapidly expand over time. The larger the aura, the more damage you deal, but taking damage instantly reduces the aura size back to minimum.",
+      "allowed_paths": [
+        "src/ai/aura_overload.py",
+        "src/ai/aura_overload.gd",
+        "tests/test_aura_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1904",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflective Mirror Walls",
+      "description": "Walls around the map occasionally become mirrors for a few seconds. Lasers and projectiles shot at them bounce directly back at the attacker, making players careful where they shoot.",
+      "allowed_paths": [
+        "src/ai/reflective_mirror_walls.py",
+        "src/ai/reflective_mirror_walls.gd",
+        "tests/test_reflective_mirror_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1905",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chroma Dash Mutator",
+      "description": "A mutator where dashing leaves a trail matching your current cosmetic aura color. Stepping on trails of different colors causes a short stun, while stepping on trails of the same color grants a temporary speed boost.",
+      "allowed_paths": [
+        "src/ai/chroma_dash_mutator.py",
+        "src/ai/chroma_dash_mutator.gd",
+        "tests/test_chroma_dash_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1906",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echoing Steps Booster",
+      "description": "A booster that leaves a trail of harmless echoes behind the player. Enemies that walk into the echoes get a small slow effect, helping to escape pursuers.",
+      "allowed_paths": [
+        "src/ai/echoing_steps_booster.py",
+        "src/ai/echoing_steps_booster.gd",
+        "tests/test_echoing_steps_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
