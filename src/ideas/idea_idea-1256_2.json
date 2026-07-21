@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Accumulator Booster",
+  "description": "A booster that stores the kinetic energy of all movement over 5 seconds. When the timer expires, it releases the energy as an AoE burst damage proportional to the total distance traveled."
+}
