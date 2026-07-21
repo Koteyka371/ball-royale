@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1250] Mirage Terrain Hazard — *2026-07-21 04:00:51 UTC*
+
+A hazard zone that visually mimics a safe area or a beneficial spring but reveals its true damaging nature only when a player steps into it.
+
+---
+
 ## [idea-1222] Teleport Anchor Traps — *2026-07-21 04:00:47 UTC*
 
 Introduce a new player-deployable trap called the 'Anchor Trap'. When an enemy ball enters the trap's radius, their movement abilities (like dash or teleport) are completely disabled for 5 seconds, effectively rooting them in the general area and disabling escape mechanics.
