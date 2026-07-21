@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1192] Mirror Ball Variant — *2026-07-21 21:48:52 UTC*
+
+A new ball type that perfectly reflects any negative status effect (like EMP or poison) back to the hazard source (destroying it) or directly to the attacker, but is highly vulnerable to pure kinetic damage.
+
+---
+
 ## [idea-1288] Aura Harmony Bonus — *2026-07-21 21:44:30 UTC*
 
 When balls with the same cosmetic aura color stay near each other without colliding, their aura intensity scales up and provides a passive healing buff to both players. If they collide, it triggers the elemental explosion instead.

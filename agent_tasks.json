@@ -20435,7 +20435,7 @@
     },
     {
       "id": "idea-1192",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Ball Variant",
@@ -32486,6 +32486,57 @@
         "src/ai/black_hole_eruption.py",
         "src/ai/black_hole_eruption.gd",
         "tests/test_black_hole_eruption.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1900",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Pulse Bomb",
+      "description": "A new hazard that absorbs the aura color of the first ball that touches it. Once charged, it pulses in waves, healing players with the matching aura and damaging those with different auras, encouraging territory control.",
+      "allowed_paths": [
+        "src/ai/aura_pulse_bomb.py",
+        "src/ai/aura_pulse_bomb.gd",
+        "tests/test_aura_pulse_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1901",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Harmony Mode",
+      "description": "A new game mode where teams are formed dynamically based on players acquiring the same aura color. Players with matching auras cannot damage each other and instead form powerful tethered energy links that damage any non-matching players caught between them.",
+      "allowed_paths": [
+        "src/ai/aura_harmony.py",
+        "src/ai/aura_harmony.gd",
+        "tests/test_aura_harmony.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1902",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Dimension Arena Mode",
+      "description": "An arena mode where the screen is split down the middle. Passing through the central divide mirrors all properties (speed, health changes) until returning to the original side, creating mind-bending chase scenarios.",
+      "allowed_paths": [
+        "src/arena/mirror_dimension_arena.py",
+        "src/arena/mirror_dimension_arena.gd",
+        "tests/test_mirror_dimension_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
