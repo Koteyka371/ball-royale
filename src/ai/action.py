@@ -3150,7 +3150,7 @@ class Action:
                             self.world.arena.hazards.append(bh)
 
 
-                if getattr(hazard, "kind", "") == "sticky_bomb":
+                if getattr(hazard, "kind", "") in ["sticky_bomb", "sticky_bomb_trap"]:
                     attached_id = getattr(hazard, "attached_id", None)
                     if attached_id is None:
                         if hasattr(self.world, "balls"):
