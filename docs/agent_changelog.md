@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1263] Aura of Repulsion Booster — *2026-07-21 19:08:38 UTC*
+
+When picked up, this booster grants a temporary aura that forcefully pushes away incoming hazards and projectiles, protecting the ball but also potentially pushing hazards toward allies.
+
+---
+
 ## [idea-1210] Quantum Teleportation Pads — *2026-07-21 19:08:32 UTC*
 
 Pairs of teleportation pads that can be deployed across the map. Players or hazards passing over them instantly jump to the linked pad, keeping momentum intact for creative ambushes or escapes.
