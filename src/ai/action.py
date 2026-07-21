@@ -16949,6 +16949,19 @@ class Action:
                             elif effect == "stun":
                                 self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 3.0)
                             hazard.duration = 0.0
+                if getattr(hazard, "kind", "") == "low_gravity":
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    if dist_sq < getattr(hazard, "radius", 60.0)**2:
+                        self.ball.is_frictionless = True
+                        import random
+                        # Randomize speed a bit
+                        speed_mult = random.uniform(0.5, 1.5)
+                        base_s = getattr(self.ball, "base_speed", 100.0)
+                        self.ball.speed = base_s * speed_mult
+
+                        # Increased bounciness will be implemented via an attribute or meta.
+                        self.ball.bounciness_multiplier = max(getattr(self.ball, "bounciness_multiplier", 1.0), 2.0)
+
                 if getattr(hazard, "kind", "") == "zero_gravity_trap_hazard":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
