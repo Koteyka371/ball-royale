@@ -134,24 +134,58 @@ func process_external_command(user: String, command: String, balls: Array):
 
                     if k == hazard_kind:
                         matching_hazards.append(h)
+                if matching_hazards.size() == 0 and hazard_kind == "any":
+                    matching_hazards = world.arena.hazards
 
                 if matching_hazards.size() > 0:
-                    var hazard = matching_hazards[randi() % matching_hazards.size()]
+                    var hazard = matching_hazards[0]
+                    var min_dist = INF
+                    for h in matching_hazards:
+                        var hx = 0.0
+                        var hy = 0.0
+                        if typeof(h) == TYPE_OBJECT:
+                            if "x" in h: hx = float(h.x)
+                            if "y" in h: hy = float(h.y)
+                        elif typeof(h) == TYPE_DICTIONARY:
+                            if h.has("x"): hx = float(h["x"])
+                            if h.has("y"): hy = float(h["y"])
+
+                        var dist = (hx - target_x) * (hx - target_x) + (hy - target_y) * (hy - target_y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            hazard = h
+
+                    var h_kind = hazard_kind
+
                     if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"):
                         hazard.set("controlled_by", user)
                         hazard.set("control_timer", 10.0)
                         hazard.set("control_target_x", target_x)
                         hazard.set("control_target_y", target_y)
+                        if "kind" in hazard: h_kind = hazard.kind
                     elif typeof(hazard) == TYPE_DICTIONARY:
                         hazard["controlled_by"] = user
                         hazard["control_timer"] = 10.0
                         hazard["control_target_x"] = target_x
                         hazard["control_target_y"] = target_y
+                        if hazard.has("kind"): h_kind = hazard["kind"]
+
+                    if world.has_method("add_event"):
+                        var hx = 0.0
+                        var hy = 0.0
+                        if typeof(hazard) == TYPE_OBJECT:
+                            if "x" in hazard: hx = float(hazard.x)
+                            if "y" in hazard: hy = float(hazard.y)
+                        elif typeof(hazard) == TYPE_DICTIONARY:
+                            if hazard.has("x"): hx = float(hazard["x"])
+                            if hazard.has("y"): hy = float(hazard["y"])
+                        world.add_event("visual_effect", {"type": "hazard_control", "x": hx, "y": hy, "target_x": target_x, "target_y": target_y, "duration": 10.0})
 
                     _add_viewer_loyalty(user, 15)
                     if world.has_method("add_event"):
-                        world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " took control of a " + hazard_kind + "!"})
-                        excitement_level += 10.0
+                        world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " took control of a " + h_kind + "!"})
+                    excitement_level += 10.0
+
 
     elif cmd == "!weather" and parts.size() >= 2:
         if excitement_level >= 50.0:

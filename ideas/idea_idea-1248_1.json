@@ -1,4 +1,4 @@
 {
-  "title": "Twitch Spectator Voting: Hazard Upgrades",
-  "description": "Allow spectators to vote to upgrade a specific hazard (e.g., increase meteor radius, double poison cloud damage) rather than just spawning them. The command !upgrade_hazard <hazard_kind> will let Twitch users spend their loyalty points to enhance the threat level of obstacles, triggering visually unique 'super' hazard effects."
+  "title": "Interactive VIP Spectator Seats",
+  "description": "Allow viewers with high loyalty points to purchase a 'VIP Seat' via a Twitch command. This seat spawns as a special spectator entity in the arena that cannot die but can passively buff nearby favored players or slightly repel unfavored players."
 }

@@ -93,16 +93,26 @@ class CrowdSystem:
                 # Find hazard
                 if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
                     matching_hazards = [h for h in self.world.arena.hazards if getattr(h, "kind", "") == hazard_kind]
+
+                    if not matching_hazards and hazard_kind == "any":
+                        matching_hazards = [h for h in self.world.arena.hazards]
+
                     if matching_hazards:
-                        hazard = random.choice(matching_hazards)
+                        # Find hazard closest to the target
+                        hazard = min(matching_hazards, key=lambda h: (getattr(h, "x", 0) - target_x)**2 + (getattr(h, "y", 0) - target_y)**2)
+
                         hazard.controlled_by = user
                         hazard.control_timer = 10.0 # 10 seconds of control
                         hazard.control_target_x = target_x
                         hazard.control_target_y = target_y
 
+                        # Add a visual effect to indicate it is controlled
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("visual_effect", {"type": "hazard_control", "x": getattr(hazard, "x", 0), "y": getattr(hazard, "y", 0), "target_x": target_x, "target_y": target_y, "duration": 10.0})
+
                         self._add_viewer_loyalty(user, 15)
                         if hasattr(self.world, 'add_event'):
-                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} took control of a {hazard_kind}!"})
+                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} took control of a {getattr(hazard, 'kind', hazard_kind)}!"})
                             self.excitement_level += 10.0
             except ValueError:
                 pass

@@ -476,3 +476,25 @@ def test_spectator_control_hazard():
     assert hazard.x > 100
     assert hazard.y > 100
     assert getattr(hazard, "control_timer", 0) == 9.0
+
+
+def test_spectator_control_any_hazard():
+    world = MockWorld()
+    world.arena = MockArena()
+    # Add multiple hazards
+    h1 = MockSimpleHazard(1, 100, 100, 10.0, "meteor", 50.0)
+    h2 = MockSimpleHazard(2, 400, 400, 10.0, "poison_cloud", 50.0)
+    world.arena.hazards = [h1, h2]
+
+    crowd = CrowdSystem(world)
+
+    # Process control command for "any" with target close to h2 (400, 400)
+    crowd.process_external_command("viewer1", "!control any 390 390", [])
+
+    # h2 should be controlled because it's closest
+    assert getattr(h2, "controlled_by", None) == "viewer1"
+    assert getattr(h2, "control_target_x", 0) == 390
+    assert getattr(h2, "control_target_y", 0) == 390
+    assert getattr(h2, "control_timer", 0) == 10.0
+
+    assert getattr(h1, "controlled_by", None) is None
