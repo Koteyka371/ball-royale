@@ -2130,7 +2130,7 @@ func _attempt_damage(attacker, target) -> void:
 									if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
 									var h_kind = ""
 									if typeof(h) == TYPE_OBJECT and h.has_meta("kind"): h_kind = h.get_meta("kind")
-									if t_var == "emp_trap" or h_kind == "lightning_rod":
+									if t_var == "emp_trap" or h_kind == "lightning_rod" or h_kind == "deployable_lightning_rod":
 										nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
 									else:
 										nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
@@ -8495,7 +8495,7 @@ func execute(strategy: String, delta: float):
                                     if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
                                     var h_kind = ""
                                     if typeof(h) == TYPE_OBJECT and h.has_meta("kind"): h_kind = h.get_meta("kind")
-                                    if t_var == "emp_trap" or h_kind == "lightning_rod":
+                                    if t_var == "emp_trap" or h_kind == "lightning_rod" or h_kind == "deployable_lightning_rod":
                                         nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
                                     else:
                                         nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
@@ -10957,6 +10957,101 @@ func execute(strategy: String, delta: float):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
 
 
+                elif hazard.kind == "deployable_lightning_rod":
+                    var current_tick = 0
+                    if self.world.get("tick") != null:
+                        current_tick = self.world.tick
+
+                    var last_updated = -1
+                    if hazard.has("last_updated_tick"):
+                        last_updated = hazard.last_updated_tick
+
+                    if last_updated != current_tick:
+                        hazard.last_updated_tick = current_tick
+                        var h_dur = 15.0
+                        if hazard.has("duration"): h_dur = float(hazard.duration)
+                        h_dur -= delta
+                        hazard.duration = h_dur
+
+                        if h_dur <= 0:
+                            hazard.active = false
+                            if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
+                                var hidx = self.world.arena.hazards.find(hazard)
+                                if hidx != -1: self.world.arena.hazards.remove_at(hidx)
+                            continue
+
+                        var p_rad = 250.0
+                        if hazard.has("pulse_radius"): p_rad = float(hazard.pulse_radius)
+
+                        if self.world.get("balls") != null:
+                            for b in self.world.balls:
+                                var b_alive = true
+                                if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+                                elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+                                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                if b_alive:
+                                    var b_team = ""
+                                    if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+                                    elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                                    var bx = 0.0
+                                    var by = 0.0
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        bx = b.x
+                                        by = b.y
+                                    else:
+                                        bx = b.x
+                                        by = b.y
+
+                                    var br = 10.0
+                                    if typeof(b) == TYPE_DICTIONARY and b.has("radius"): br = float(b.radius)
+                                    elif typeof(b) == TYPE_OBJECT and "radius" in b: br = float(b.radius)
+
+                                    var dist_sq = (bx - hazard.x) * (bx - hazard.x) + (by - hazard.y) * (by - hazard.y)
+                                    if dist_sq <= (p_rad + br) * (p_rad + br):
+                                        if b_team == hazard.team:
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                b.energy_shield_active = true
+                                                var c_hp = 0.0
+                                                if b.has("energy_shield_hp"): c_hp = float(b.energy_shield_hp)
+                                                b.energy_shield_hp = max(c_hp, 50.0)
+                                            elif typeof(b) == TYPE_OBJECT:
+                                                if "energy_shield_active" in b: b.energy_shield_active = true
+                                                elif b.has_method("set_meta"): b.set_meta("energy_shield_active", true)
+                                                var c_hp = 0.0
+                                                if "energy_shield_hp" in b: c_hp = float(b.energy_shield_hp)
+                                                elif b.has_method("has_meta") and b.has_meta("energy_shield_hp"): c_hp = float(b.get_meta("energy_shield_hp"))
+                                                if "energy_shield_hp" in b: b.energy_shield_hp = max(c_hp, 50.0)
+                                                elif b.has_method("set_meta"): b.set_meta("energy_shield_hp", max(c_hp, 50.0))
+                                        elif b_team != hazard.team:
+                                            var charge = 0.0
+                                            if hazard.has("charge"): charge = float(hazard.charge)
+                                            var max_charge = 100.0
+                                            if hazard.has("max_charge"): max_charge = float(hazard.max_charge)
+                                            if charge >= max_charge:
+                                                if typeof(b) == TYPE_DICTIONARY:
+                                                    var st = 0.0
+                                                    if b.has("stun_timer"): st = float(b.stun_timer)
+                                                    b.stun_timer = max(st, 2.0)
+                                                elif typeof(b) == TYPE_OBJECT:
+                                                    var st = 0.0
+                                                    if "stun_timer" in b: st = float(b.stun_timer)
+                                                    elif b.has_method("has_meta") and b.has_meta("stun_timer"): st = float(b.get_meta("stun_timer"))
+                                                    if "stun_timer" in b: b.stun_timer = max(st, 2.0)
+                                                    elif b.has_method("set_meta"): b.set_meta("stun_timer", max(st, 2.0))
+                                                if self.has_method("_spawn_directed_particles"):
+                                                    self._spawn_directed_particles(hazard, b, "lightning")
+
+                        var charge2 = 0.0
+                        if hazard.has("charge"): charge2 = float(hazard.charge)
+                        var max_charge2 = 100.0
+                        if hazard.has("max_charge"): max_charge2 = float(hazard.max_charge)
+                        if charge2 >= max_charge2:
+                            hazard.charge = 0.0
+                            if self.world.get("events") != null:
+                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
                 elif hazard.kind == "deployable_thumper":
                     var current_tick = 0
                     if self.world.get("tick") != null:
@@ -15395,12 +15490,16 @@ func execute(strategy: String, delta: float):
                             elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
                                 b_type = str(self.ball.get_meta("ball_type")).to_lower()
 
-                            if b_type == "lightning_rod":
+                            if b_type == "lightning_rod" or b_type == "deployable_lightning_rod":
                                 if "hp" in self.ball:
                                     var maxhp = 100
                                     if "max_hp" in self.ball:
                                         maxhp = self.ball.max_hp
-                                    self.ball.hp = min(maxhp, self.ball.hp + hazard.damage)
+                                    if b_type == "deployable_lightning_rod":
+                                        if "charge" in self.ball: self.ball.charge = float(self.ball.charge) + float(hazard.damage)
+                                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["charge"] = float(self.ball.get("charge", 0.0)) + float(hazard.damage)
+                                    else:
+                                        if "hp" in self.ball: self.ball.hp = min(maxhp, self.ball.hp + hazard.damage)
                                 if self.ball.has_method("set_meta"):
                                     self.ball.set_meta("supercharge_timer", 5.0)
                                 elif "supercharge_timer" in self.ball:
@@ -22280,7 +22379,7 @@ func _collect_booster(delta: float):
                         var idx35 = w_hazards35.find(nearest)
                         if idx35 != -1: w_hazards35.remove_at(idx35)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'throw_noise_maker']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'throw_noise_maker', 'deploy_lightning_rod']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -25082,7 +25181,7 @@ func _use_skill():
                                 a_type = str(local_enemy.ball_type).to_lower()
                             elif typeof(local_enemy) == TYPE_OBJECT and local_enemy.has_method("get_meta") and local_enemy.has_meta("ball_type"):
                                 a_type = str(local_enemy.get_meta("ball_type")).to_lower()
-                            if a_type == "lightning_rod":
+                            if a_type == "lightning_rod" or a_type == "deployable_lightning_rod":
                                 target = local_enemy
                                 break
 
@@ -29194,6 +29293,38 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "deploy_lightning_rod":
+            if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
+                var bid = -1
+                var bteam = ""
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("id"): bid = self.ball.id
+                    if self.ball.has("team"): bteam = self.ball.team
+                    if self.ball.has("x"): bx = self.ball.x
+                    if self.ball.has("y"): by = self.ball.y
+                else:
+                    if "id" in self.ball: bid = self.ball.id
+                    if "team" in self.ball: bteam = self.ball.team
+                    bx = self.ball.x
+                    by = self.ball.y
+
+                var node = {
+                    "id": "lrod_" + str(bid) + "_" + str(self.world.tick),
+                    "kind": "deployable_lightning_rod",
+                    "x": bx,
+                    "y": by,
+                    "radius": 15.0,
+                    "team": bteam,
+                    "active": true,
+                    "duration": 15.0,
+                    "charge": 0.0,
+                    "max_charge": 100.0,
+                    "pulse_radius": 250.0,
+                    "owner_id": bid
+                }
+                self.world.arena.hazards.append(node)
         elif skill_name == "deployable_thumper":
             if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
                 var bid = -1
@@ -30951,7 +31082,7 @@ func _resolve_collisions() -> bool:
                                 var e_kind = ""
                                 if typeof(e) == TYPE_OBJECT and "kind" in e: e_kind = e.kind
                                 elif typeof(e) == TYPE_DICTIONARY and e.has("kind"): e_kind = e["kind"]
-                                if e_kind == "lightning_rod":
+                                if e_kind == "lightning_rod" or e_kind == "deployable_lightning_rod":
                                     var e_x = e.x if typeof(e) == TYPE_OBJECT else e["x"]
                                     var e_y = e.y if typeof(e) == TYPE_OBJECT else e["y"]
                                     var c_x = current_pos.x if typeof(current_pos) == TYPE_OBJECT else current_pos["x"]
@@ -30965,10 +31096,15 @@ func _resolve_collisions() -> bool:
                             if typeof(next_target) == TYPE_OBJECT and "kind" in next_target: nt_kind = next_target.kind
                             elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("kind"): nt_kind = next_target["kind"]
 
-                            if nt_kind == "lightning_rod":
-                                if typeof(next_target) == TYPE_OBJECT and "active" in next_target: next_target.active = false
-                                elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("active"): next_target["active"] = false
-                                elif typeof(next_target) == TYPE_OBJECT and next_target.has_method("set_meta"): next_target.set_meta("active", false)
+                            if nt_kind == "lightning_rod" or nt_kind == "deployable_lightning_rod":
+                                if nt_kind == "deployable_lightning_rod":
+                                    var add_charge = chain_damage * 2.0
+                                    if typeof(next_target) == TYPE_OBJECT and "charge" in next_target: next_target.charge = float(next_target.charge) + add_charge
+                                    elif typeof(next_target) == TYPE_DICTIONARY: next_target["charge"] = float(next_target.get("charge", 0.0)) + add_charge
+                                else:
+                                    if typeof(next_target) == TYPE_OBJECT and "active" in next_target: next_target.active = false
+                                    elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("active"): next_target["active"] = false
+                                    elif typeof(next_target) == TYPE_OBJECT and next_target.has_method("set_meta"): next_target.set_meta("active", false)
 
                                 var balls_list = []
                                 if self.world != null and "balls" in self.world: balls_list = self.world.balls

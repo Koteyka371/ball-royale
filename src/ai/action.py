@@ -1121,7 +1121,7 @@ class Action:
                             dist_sq = (h.x - current_target.x)**2 + (h.y - current_target.y)**2
                             if dist_sq < chain_range_sq:
                                 # Attract lightning to emp_trap
-                                if getattr(h, "trap_variant", "") == "emp_trap" or getattr(h, "kind", "") == "lightning_rod":
+                                if getattr(h, "trap_variant", "") == "emp_trap" or getattr(h, "kind", "") in ["lightning_rod", "deployable_lightning_rod"]:
                                     nearby_entities.append((-999999 + dist_sq, h, "hazard")) # High priority
                                 else:
                                     nearby_entities.append((dist_sq, h, "hazard"))
@@ -1267,7 +1267,10 @@ class Action:
                             setattr(next_entity, "emp_charge", charge)
                             if charge >= 50.0:
                                 # Trigger EMP burst
-                                setattr(next_entity, "active", False)
+                                if getattr(next_entity, "kind", "") == "deployable_lightning_rod":
+                                    next_entity.charge = getattr(next_entity, "charge", 0.0) + getattr(attacker, "damage", 10.0) * 2.0
+                                else:
+                                    setattr(next_entity, "active", False)
                                 if hasattr(self.world, "balls"):
                                     for b in self.world.balls:
                                         if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(next_entity, "owner_id", None):
@@ -1282,8 +1285,11 @@ class Action:
                                                     b.speed = getattr(b, "base_speed", 100.0) * 0.5
                                                     b.is_scrambled = True
                                                     b.scramble_timer = 3.0
-                        elif getattr(next_entity, "kind", "") == "lightning_rod":
-                            setattr(next_entity, "active", False)
+                        elif getattr(next_entity, "kind", "") in ["lightning_rod", "deployable_lightning_rod"]:
+                            if getattr(next_entity, "kind", "") == "deployable_lightning_rod":
+                                next_entity.charge = getattr(next_entity, "charge", 0.0) + getattr(attacker, "damage", 10.0) * 2.0
+                            else:
+                                setattr(next_entity, "active", False)
                             if hasattr(self.world, "balls"):
                                 amplified_damage = current_damage * 2.0
                                 valid_targets = [b for b in self.world.balls if getattr(b, "alive", True) and b not in hit_entities]
@@ -5666,6 +5672,50 @@ class Action:
                                     beam.hit_ids = []
                                     self.world.arena.hazards.append(beam)
 
+                    elif hazard.kind == "deployable_lightning_rod":
+                        # Only update once per tick
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 15.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                if hazard in self.world.arena.hazards:
+                                    self.world.arena.hazards.remove(hazard)
+                                continue
+
+                            # Apply shield to nearby allies
+                            pulse_radius = getattr(hazard, "pulse_radius", 250.0)
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
+                                        dx = b.x - hazard.x
+                                        dy = b.y - hazard.y
+                                        dist_sq = dx*dx + dy*dy
+                                        if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
+                                            b.energy_shield_active = True
+                                            b.energy_shield_hp = max(getattr(b, "energy_shield_hp", 0.0), 50.0)
+
+                            # Stun nearby enemies if fully charged
+                            charge = getattr(hazard, "charge", 0.0)
+                            max_charge = getattr(hazard, "max_charge", 100.0)
+                            if charge >= max_charge:
+                                hazard.charge = 0.0
+                                # Shockwave
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
+
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(hazard, "team", ""):
+                                            dx = b.x - hazard.x
+                                            dy = b.y - hazard.y
+                                            dist_sq = dx*dx + dy*dy
+                                            if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
+                                                b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+                                                if hasattr(self, "_spawn_directed_particles"):
+                                                    self._spawn_directed_particles(hazard, b, "lightning")
                     elif hazard.kind == "deployable_thumper":
                         # Only update once per tick to avoid multiple balls updating the timer
                         current_tick = getattr(self.world, "tick", 0)
@@ -7958,9 +8008,12 @@ class Action:
                             if not getattr(hazard, "hit_targets", False):
                                 hazard.hit_targets = True
                                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
-                                if b_type == "lightning_rod":
+                                if b_type == "lightning_rod" or getattr(self.ball, "kind", "") == "deployable_lightning_rod":
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + hazard.damage)
-                                    self.ball.supercharge_timer = 5.0
+                                    if getattr(self.ball, "kind", "") == "deployable_lightning_rod":
+                                        self.ball.charge = getattr(self.ball, "charge", 0.0) + hazard.damage
+                                    else:
+                                        self.ball.supercharge_timer = 5.0
 
                                     absorbs = getattr(self.ball, "recent_absorbs", 0) + 1
                                     self.ball.recent_absorbs = absorbs
@@ -11292,7 +11345,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'throw_noise_maker']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'throw_noise_maker', 'deploy_lightning_rod']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -15433,6 +15486,24 @@ class Action:
                     except ImportError:
                         pass
 
+            elif skill_name == "deploy_lightning_rod":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class LightningRodNode:
+                        pass
+                    node = LightningRodNode()
+                    node.id = f"lrod_{self.ball.id}_{self.world.tick}"
+                    node.kind = "deployable_lightning_rod"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 15.0
+                    node.team = getattr(self.ball, "team", "")
+                    node.active = True
+                    node.duration = 15.0
+                    node.charge = 0.0
+                    node.max_charge = 100.0
+                    node.pulse_radius = 250.0
+                    node.owner_id = self.ball.id
+                    self.world.arena.hazards.append(node)
             elif skill_name == "deployable_thumper":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class ThumperNode:
@@ -15932,14 +16003,17 @@ class Action:
                                     if d < best_dist and d <= 40000.0: # 200^2
                                         best_dist = d
                                         next_target = e
-                                elif e not in bounced_enemies and getattr(e, "kind", "") == "lightning_rod":
+                                elif e not in bounced_enemies and getattr(e, "kind", "") in ["lightning_rod", "deployable_lightning_rod"]:
                                     d = (e.x - current_pos.x)**2 + (e.y - current_pos.y)**2
                                     if (-999999 + d) < best_dist and d <= 40000.0:
                                         best_dist = -999999 + d
                                         next_target = e
                             if next_target:
-                                if getattr(next_target, "kind", "") == "lightning_rod":
-                                    setattr(next_target, "active", False)
+                                if getattr(next_target, "kind", "") in ["lightning_rod", "deployable_lightning_rod"]:
+                                    if getattr(next_target, "kind", "") == "deployable_lightning_rod":
+                                        next_target.charge = getattr(next_target, "charge", 0.0) + chain_damage * 2.0
+                                    else:
+                                        setattr(next_target, "active", False)
                                     if hasattr(self.world, "balls"):
                                         amplified_damage = chain_damage * 2.0
                                         valid_targets = [b for b in self.world.balls if getattr(b, "alive", True) and b not in bounced_enemies]
