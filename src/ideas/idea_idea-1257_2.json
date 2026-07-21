@@ -1,0 +1,4 @@
+{
+  "title": "Elemental Affinity Mutator",
+  "description": "A global game mutator where each ball randomly gets assigned an elemental affinity (e.g. fire, water, earth, poison) at spawn. While matching their affinity, they gain passive buffs inside hazards of that type and take increased damage from opposing elements."
+}

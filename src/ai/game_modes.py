@@ -46,6 +46,26 @@ class GameMode:
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         if hasattr(world, "arena") and world.arena is not None:
@@ -394,6 +414,26 @@ class GameMode:
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
         is_raining = getattr(world.arena, "is_raining", False) if hasattr(world, "arena") else False
 
         if weather in ["rain", "thunderstorm"] or is_raining:
@@ -1017,6 +1057,26 @@ class DraftRoyaleMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -1260,6 +1320,26 @@ class BattleRoyaleMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -3259,6 +3339,26 @@ class TeamDeathmatchMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -3364,6 +3464,26 @@ class ZombieInfectionMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -3515,6 +3635,26 @@ class GuildBossFightMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -3686,6 +3826,26 @@ class BossFightMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -4009,6 +4169,26 @@ class DualPayloadMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -4479,6 +4659,26 @@ class EscortMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -4948,6 +5148,26 @@ class VIPDefenseMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -5060,6 +5280,26 @@ class SurvivalMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -5243,6 +5483,26 @@ class CaptureTheFlagMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -5370,6 +5630,26 @@ class EvolutionarySimulationMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -5618,6 +5898,26 @@ class MassiveGravityWellMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -5819,6 +6119,26 @@ class KingOfTheHillMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -5986,6 +6306,26 @@ class SweepingBlackHoleMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -6247,6 +6587,26 @@ class WeatherChaosMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -7085,6 +7445,26 @@ class DominationMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -7378,6 +7758,26 @@ class MemoryTrapsMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -7530,6 +7930,26 @@ class CustomMatchMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -7784,6 +8204,26 @@ class EcholocationMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -7940,6 +8380,26 @@ class PitchBlackMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -8080,6 +8540,26 @@ class VisionReducedMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -8232,6 +8712,26 @@ class EMPBurstMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -8353,6 +8853,26 @@ class DynamicHazardsMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -9566,6 +10086,26 @@ class MirrorMatchMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -9681,6 +10221,26 @@ class VolatileClonesMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -9907,6 +10467,26 @@ class CloneChaosMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -10153,6 +10733,26 @@ class BumperBallsMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -10431,6 +11031,26 @@ class ModifierZonesMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -10635,6 +11255,26 @@ class WindstormMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -11049,6 +11689,26 @@ class BountyHuntMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -11570,6 +12230,26 @@ class GravityWellMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -12377,6 +13057,26 @@ class MagneticCollisionsMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -12749,6 +13449,26 @@ class PinballMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -14126,6 +14846,26 @@ class StaminaSpeedMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -14276,6 +15016,26 @@ class HazardBilliardsMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -15038,6 +15798,26 @@ class DailyMutatorMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -15180,6 +15960,26 @@ class BlackMarketMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -15561,6 +16361,26 @@ class BlizzardMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -15735,6 +16555,26 @@ class MeteorShowerMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -15939,6 +16779,26 @@ class CursedBuffZoneMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -16096,6 +16956,26 @@ class RhythmPanelsMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -16615,6 +17495,26 @@ class ArtifactUpgraderMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -16829,6 +17729,26 @@ class SweepingPaddlesMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -17381,6 +18301,26 @@ class InvisibleDecoysMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -17991,6 +18931,26 @@ class JuggernautMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -18406,6 +19366,26 @@ class TickingPayloadMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -18894,6 +19874,26 @@ class WeaponCollectionMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -19336,6 +20336,26 @@ class CenterBlackHoleMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -20398,6 +21418,26 @@ class DynamicWeatherTransitionsMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         for b in balls:
             if not getattr(b, "alive", False):
@@ -24239,6 +25279,26 @@ class RollingBouldersMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -24510,6 +25570,26 @@ class SoulLinkMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -24810,6 +25890,26 @@ class TagTeamMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -25049,6 +26149,26 @@ class CrossfireMode(GameMode):
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
 
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
+
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
         for b in balls:
@@ -25184,6 +26304,26 @@ class TeleporterHubMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
@@ -25931,6 +27071,26 @@ class FreezeTagMode(GameMode):
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
             weather = getattr(world.arena, "weather", "")
+
+        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for b in world.boosters:
+                if not getattr(b, "mutated_env", None):
+                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
+                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
+                    for h in world.arena.hazards:
+                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
+                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
+                            dx = bx - hx
+                            dy = by - hy
+                            if dx*dx + dy*dy <= hr*hr:
+                                if isinstance(b, dict):
+                                    b["mutated_env"] = hk
+                                else:
+                                    setattr(b, "mutated_env", hk)
+                                break
 
         arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
 
