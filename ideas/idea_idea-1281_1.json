@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A new arena hazard that doesn't deal damage, but upon collision, it swaps the player's position with a randomly selected enemy, instantly disorienting both and potentially dropping the enemy into a trap."
+}

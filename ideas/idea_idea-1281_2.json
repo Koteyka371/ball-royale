@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Reversal Shield",
+  "description": "An active skill that creates a bubble for 3 seconds. Any incoming physics impulse (like a ram or a slingshot from a gravity well) is absorbed and redirected back at the attacker, sending them flying instead."
+}
