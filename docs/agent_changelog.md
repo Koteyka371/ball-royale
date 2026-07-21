@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1217] Quantum Leap Modifier — *2026-07-21 19:00:41 UTC*
+
+A rare game mode modifier where instead of standard dashes, ball abilities have a chance to trigger a randomized, short-range teleport around the arena. This creates high-stakes, unpredictable positioning during engagements, making both escapes and chases thrilling.
+
+---
+
 ## [idea-1269] Shattering Ice Walls Modifier — *2026-07-21 18:36:10 UTC*
 
 An arena modifier where walls are made of ice. Hitting the walls at high speed causes them to shatter, temporarily removing the boundary and creating a perilous drop-off zone, but the ice slowly regenerates over time.
