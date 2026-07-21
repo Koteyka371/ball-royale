@@ -105,6 +105,15 @@ def test_supercharge_non_robotic():
     assert getattr(ball, "supercharge_timer", 0.0) == 0.0
     # It should be stunned (1.0 - 0.1 = 0.9)
     assert getattr(ball, "stutter_timer", 0.0) == 0.9
+    assert ball.pending_supercharge == True
+
+    # Advance time to clear stun
+    world.arena.hazards = []
+    action.execute("idle", 0.9)
+    assert getattr(ball, "stutter_timer", 0.0) == 0.0
+    assert getattr(ball, "supercharge_timer", 0.0) == 10.0
+    assert getattr(ball, "supercharge_stun_ready", False) == True
+    assert ball.pending_supercharge == False
 
 def test_supercharge_metal():
     ball = MockBall(ball_type="knight", speed=2.0, damage=10.0)
