@@ -21796,7 +21796,7 @@
     },
     {
       "id": "idea-1272",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Decor",
@@ -32180,6 +32180,40 @@
         "src/ai/static_field.py",
         "src/ai/static_field.gd",
         "tests/test_static_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1882",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Silence Immunity Booster",
+      "description": "A booster that gives the player immunity to silence effects for 15 seconds.",
+      "allowed_paths": [
+        "src/ai/silence_immunity_booster.py",
+        "src/ai/silence_immunity_booster.gd",
+        "tests/test_silence_immunity_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1883",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Global Silence Event",
+      "description": "Occasionally a global event triggers that silences all abilities for a short period.",
+      "allowed_paths": [
+        "src/ai/global_silence.py",
+        "src/ai/global_silence.gd",
+        "tests/test_global_silence.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
