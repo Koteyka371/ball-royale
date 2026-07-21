@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1223] Gravity Wells Hazard — *2026-07-21 05:31:27 UTC*
+
+Invisible gravity wells spawn randomly in the arena. If a player approaches within a certain radius, they are pulled towards the center, altering their movement vector continuously.
+
+---
+
 ## [idea-1190] Quantum Entanglement Hazards — *2026-07-21 05:20:12 UTC*
 
 A hazard that spawns in pairs across the arena. Any damage or status effect taken by a ball near one hazard is partially duplicated and dealt to any ball standing near its paired hazard.
