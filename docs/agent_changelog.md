@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1260] Kinetic Discharge — *2026-07-21 09:39:40 UTC*
+
+Entities with Speed Overdrive deal bonus damage based on their current speed when colliding with enemies, converting speed into kinetic burst damage.
+
+---
+
 ## [idea-883] Quantum Entanglement Buff — *2026-07-21 09:30:57 UTC*
 
 A new booster that links two balls together dynamically. When one ball picks up a health pack or speed boost, the entangled ball also receives a partial percentage of that buff regardless of distance.
