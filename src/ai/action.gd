@@ -18616,6 +18616,68 @@ func execute(strategy: String, delta: float):
                 if inv_t < 0: inv_t = 0.0
                 self.ball.set_meta("invert_timer", inv_t)
 
+        var safe_zone_t = 0.0
+        if "safe_zone_booster_timer" in self.ball:
+            safe_zone_t = float(self.ball.safe_zone_booster_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("safe_zone_booster_timer"):
+            safe_zone_t = float(self.ball.get_meta("safe_zone_booster_timer"))
+
+        if safe_zone_t > 0:
+            safe_zone_t -= delta
+            if safe_zone_t < 0:
+                safe_zone_t = 0.0
+            if "safe_zone_booster_timer" in self.ball:
+                self.ball.safe_zone_booster_timer = safe_zone_t
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("safe_zone_booster_timer", safe_zone_t)
+
+            var hz_imm = 0.0
+            if "hazard_immunity_timer" in self.ball: hz_imm = float(self.ball.hazard_immunity_timer)
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("hazard_immunity_timer"): hz_imm = float(self.ball.get_meta("hazard_immunity_timer"))
+            hz_imm = max(hz_imm, 0.5)
+            if "hazard_immunity_timer" in self.ball: self.ball.hazard_immunity_timer = hz_imm
+            if self.ball.has_method("set_meta"): self.ball.set_meta("hazard_immunity_timer", hz_imm)
+
+            if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                var found = false
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                for h in self.world.arena.hazards:
+                    var h_kind = ""
+                    if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+                    elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+
+                    var h_owner = null
+                    if typeof(h) == TYPE_DICTIONARY and h.has("owner_id"): h_owner = h.owner_id
+                    elif typeof(h) == TYPE_OBJECT and "owner_id" in h: h_owner = h.owner_id
+
+                    if h_kind == "personal_safe_zone" and h_owner != null and h_owner == my_id:
+                        if typeof(h) == TYPE_DICTIONARY:
+                            h["x"] = self.ball.x
+                            h["y"] = self.ball.y
+                            h["duration"] = safe_zone_t
+                        elif typeof(h) == TYPE_OBJECT:
+                            if "x" in h: h.x = self.ball.x
+                            if "y" in h: h.y = self.ball.y
+                            if "duration" in h: h.duration = safe_zone_t
+                        found = true
+                        break
+
+                if not found:
+                    var new_hz = {
+                        "x": self.ball.x,
+                        "y": self.ball.y,
+                        "kind": "personal_safe_zone",
+                        "radius": 40.0,
+                        "duration": safe_zone_t,
+                        "active": true,
+                        "owner_id": my_id,
+                        "damage": 0.0
+                    }
+                    self.world.arena.hazards.append(new_hz)
+
         var haz_imm_timer = 0.0
         if "hazard_immunity_timer" in self.ball:
             haz_imm_timer = float(self.ball.hazard_immunity_timer)
@@ -21352,7 +21414,22 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.remove_at(idx)
 
 
+            elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "safe_zone_booster":
+                self.ball.set_meta("safe_zone_booster_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "safe_zone_booster":
+                self.ball.set_meta("safe_zone_booster_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "time_stop_booster":
+
                 var entities = []
                 if self.world != null:
                     if "entities" in self.world: entities = self.world.entities
@@ -23320,7 +23397,22 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "safe_zone_booster":
+                self.ball.set_meta("safe_zone_booster_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "safe_zone_booster":
+                self.ball.set_meta("safe_zone_booster_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "time_stop_booster":
+
                 var entities = []
                 if self.world != null:
                     if "entities" in self.world: entities = self.world.entities
