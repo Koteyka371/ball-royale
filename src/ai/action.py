@@ -1579,6 +1579,12 @@ class Action:
                 if getattr(self.ball, "stun_timer", 0.0) <= 0.0:
                     self.ball.is_stunned = False
 
+        if getattr(self.ball, "is_bounty_target", False):
+            if hasattr(self.ball, "bounty_target_timer"):
+                self.ball.bounty_target_timer -= delta
+                if self.ball.bounty_target_timer <= 0:
+                    self.ball.is_bounty_target = False
+
         if getattr(self.ball, "is_stunned", False):
             if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
                 return
@@ -2362,6 +2368,20 @@ class Action:
         if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter":
             if not hasattr(self.ball, "bounty_indicator_timer"):
                 self.ball.bounty_indicator_timer = 2.0
+
+            if getattr(self.ball, "bounty_extension_active", False):
+                target_in_stealth = False
+                if hasattr(self.world, "balls"):
+                    for other in self.world.balls:
+                        if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
+                            if getattr(other, "is_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False):
+                                if getattr(other, "stealth_active", False) or getattr(other, "has_stealth_drone", False) or getattr(other, "stealth_booster_timer", 0.0) > 0.0 or getattr(other, "stealth_timer", 0.0) > 0.0:
+                                    target_in_stealth = True
+
+                                    break
+                if target_in_stealth:
+                    self.ball.bounty_indicator_timer = 0.0
+
             self.ball.bounty_indicator_timer -= delta
             if self.ball.bounty_indicator_timer <= 0.0:
                 self.ball.bounty_indicator_timer = 2.0
@@ -5822,7 +5842,15 @@ class Action:
                         if hazard_is_active and hazard_team != my_team:
                             dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                             if dist_sq < (getattr(hazard, "radius", 20.0) + self.ball.radius)**2:
+                                owner_extension = False
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "id", None) == getattr(hazard, "owner_id", None):
+                                            if getattr(b, "bounty_extension_active", False):
+                                                owner_extension = True
+                                            break
                                 self.ball.is_bounty_target = True
+                                self.ball.bounty_target_timer = 20.0 if owner_extension else 10.0
                                 self.ball.bounty_target_owner = getattr(hazard, "owner_id", None)
                                 hazard.duration = 0.0
                                 hazard.active = False
@@ -11900,6 +11928,12 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "bounty_extension_item":
+                    self.ball.bounty_extension_active = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "stealth_booster":
