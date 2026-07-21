@@ -1193,10 +1193,11 @@ class BattleRoyaleMode(GameMode):
     def calculate_bounty_reward(self, target_bounty: int) -> int:
         return int(15 * (1.2 ** target_bounty))
 
+
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
-        self.description = "Last man standing. The safe zone shrinks and moves. Areas outside the safe zone turn into damaging lava, punishing displacement heavily."
+        self.description = "Last man standing. The safe zone shrinks and moves. Areas outside the safe zone turn into damaging lava, punishing displacement heavily. Periodically, global acid rain falls, dealing DoT unless shielded."
         self.dark_phase_timer = 0.0
         self.is_dark_phase = False
         self.shadow_monsters = []
@@ -1205,7 +1206,11 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer = 0.0
         self.next_weather = "clear"
         self.weather_warning_issued = False
+        self.acid_rain_timer = 0.0
+        self.acid_rain_duration = 0.0
+        self.is_acid_rain_active = False
         self.supply_drop_timer = 0.0
+
         self.high_tier_supply_drop_timer = 0.0
         self.high_tier_drops = []
         self.zone_initialized = False
@@ -1432,6 +1437,7 @@ class BattleRoyaleMode(GameMode):
                 continue
 
 
+
         for b in balls:
             w_timer = getattr(b, "weather_immunity_timer", 0.0)
             if isinstance(w_timer, (int, float)) and w_timer > 0.0:
@@ -1445,7 +1451,65 @@ class BattleRoyaleMode(GameMode):
                 else:
                     b.time_since_death += delta
 
+        # Acid Rain logic
+        if not self.is_acid_rain_active:
+            self.acid_rain_timer += delta
+            if self.acid_rain_timer > 45.0: # Starts every ~45 seconds
+                self.is_acid_rain_active = True
+                self.acid_rain_timer = 0.0
+                self.acid_rain_duration = 15.0 # Lasts 15 seconds
+                if hasattr(world, "add_event"):
+                    world.add_event("acid_rain_start", {"message": "Acid Rain has started! Find a shield or shelter!"})
+        else:
+            self.acid_rain_duration -= delta
+            if self.acid_rain_duration <= 0:
+                self.is_acid_rain_active = False
+                if hasattr(world, "add_event"):
+                    world.add_event("acid_rain_end", {"message": "Acid Rain has subsided."})
+            else:
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+
+                        # Check if shielded
+                        s_val = getattr(b, "shielding", 0.0)
+                        is_shielded = (isinstance(s_val, (int, float)) and s_val > 0) or getattr(b, "kinetic_shield_active", False)
+
+                        h_val = getattr(b, "hazmat_booster_timer", 0.0)
+                        h_val_m = getattr(b, "mega_hazmat_booster_timer", 0.0)
+                        has_hazmat = (isinstance(h_val, (int, float)) and h_val > 0) or (isinstance(h_val_m, (int, float)) and h_val_m > 0)
+
+                        u_val = getattr(b, "umbrella_booster_timer", 0.0)
+                        has_umbrella = (isinstance(u_val, (int, float)) and u_val > 0)
+
+                        w_val = getattr(b, "weather_immunity_timer", 0.0)
+                        is_immune = (isinstance(w_val, (int, float)) and w_val > 0)
+
+
+
+                        # Apply DoT if unprotected
+                        if not is_shielded and not has_hazmat and not has_umbrella and not is_immune:
+                            damage = 10.0 * delta
+                            if hasattr(b, "take_damage"):
+                                try:
+                                    b.take_damage(damage)
+                                except TypeError:
+                                    b.hp -= damage
+                                    if b.hp <= 0:
+                                        b.hp = 0
+                                        b.alive = False
+                                        if not hasattr(b, "killer") or not b.killer:
+                                            b.killer = "acid_rain"
+                            else:
+                                b.hp -= damage
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = False
+                                    if not hasattr(b, "killer") or not b.killer:
+                                        b.killer = "acid_rain"
+
+
         import math
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "invisible_wall":
