@@ -31624,7 +31624,7 @@ class OrbitalCrosshairMode(GameMode):
     def setup(self, world, balls):
         super().setup(world, balls)
         self.crosshairs = []
-        self.spawn_timer = 5.0
+        self.spawn_timer = 3.0
 
     def tick(self, world, balls, delta=0.016):
         import math
@@ -31713,6 +31713,8 @@ class OrbitalCrosshairMode(GameMode):
                             world.next_id += 1
                         if hasattr(world, "add_event"):
                             world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike fired!"})
+                else:
+                    active_crosshairs.append(ch)
             # if firing, we don't append it to active, it just disappears after firing
 
         self.crosshairs = active_crosshairs
@@ -31728,6 +31730,9 @@ class OrbitalCrosshairMode(GameMode):
                                 # Drain stamina regen (set to 0 or drain)
                                 if hasattr(b, "stamina"):
                                     b.stamina = max(0.0, b.stamina - 20.0 * delta)
+                                # Heavily slow
+                                base_speed_multiplier = getattr(b, "base_speed_multiplier", 1.0)
+                                b.speed_multiplier = base_speed_multiplier * 0.5
                                 # Deal slight damage
                                 damage = 10.0 * delta
                                 if hasattr(b, "take_damage"):

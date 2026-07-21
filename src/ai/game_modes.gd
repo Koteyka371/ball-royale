@@ -49053,7 +49053,7 @@ class OrbitalCrosshairMode extends GameMode:
 	func setup(world, balls: Array) -> void:
 		.setup(world, balls)
 		crosshairs = []
-		spawn_timer = 5.0
+		spawn_timer = 3.0
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		.tick(world, balls, delta)
@@ -49232,6 +49232,8 @@ class OrbitalCrosshairMode extends GameMode:
 							hazards.append(h)
 							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Orbital strike fired!"})
+				else:
+					active_crosshairs.append(ch)
 
 		crosshairs = active_crosshairs
 
@@ -49296,6 +49298,7 @@ class OrbitalCrosshairMode extends GameMode:
 							if typeof(b) == TYPE_DICTIONARY:
 								var stam = b.get("stamina", 0.0)
 								b["stamina"] = max(0.0, stam - 20.0 * delta)
+								b["speed_multiplier"] = b.get("base_speed_multiplier", 1.0) * 0.5
 								var damage = 10.0 * delta
 								b["hp"] = b.get("hp", 100.0) - damage
 								if b["hp"] <= 0:
@@ -49312,6 +49315,17 @@ class OrbitalCrosshairMode extends GameMode:
 									b.set_meta("stamina", stam)
 								if "stamina" in b:
 									b.stamina = stam
+
+								var base_sm = 1.0
+								if b.has_method("has_meta") and b.has_meta("base_speed_multiplier"):
+									base_sm = b.get_meta("base_speed_multiplier")
+								elif "base_speed_multiplier" in b:
+									base_sm = b.base_speed_multiplier
+								var sm = base_sm * 0.5
+								if b.has_method("set_meta"):
+									b.set_meta("speed_multiplier", sm)
+								if "speed_multiplier" in b:
+									b.speed_multiplier = sm
 
 								var damage = 10.0 * delta
 								if b.has_method("take_damage"):

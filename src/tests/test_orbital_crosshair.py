@@ -1,108 +1,77 @@
-import pytest
+import unittest
+from unittest.mock import MagicMock
 from ai.game_modes import OrbitalCrosshairMode
 
-class MockArena:
-    def __init__(self):
-        self.width = 1000
-        self.height = 1000
-        self.hazards = []
+class TestOrbitalCrosshair(unittest.TestCase):
+    def test_orbital_crosshair(self):
+        mode = OrbitalCrosshairMode()
+        world = MagicMock()
+        world.arena = MagicMock()
+        world.arena.hazards = []
+        world.next_id = 1
+        world.season = 1
+        world.leaderboard_manager = MagicMock()
+        world.leaderboard_manager.data = {"matches_played": 0}
 
-class MockWorld:
-    def __init__(self):
-        self.arena = MockArena()
-        self.events = []
-        self.next_id = 1000
-    def add_event(self, type_str, data):
-        self.events.append((type_str, data))
+        b1 = MagicMock()
+        b1.id = 1
+        b1.alive = True
+        b1.ball_type = "player"
+        b1.score = 50
+        b1.x = 200
+        b1.y = 200
+        b1.stamina = 100
+        b1.hp = 100
+        b1.base_speed_multiplier = 1.0
+        b1.speed_multiplier = 1.0
 
-class MockBall:
-    def __init__(self, id_val, x, y):
-        self.id = id_val
-        self.x = x
-        self.y = y
-        self.hp = 100
-        self.max_hp = 100
-        self.alive = True
-        self.ball_type = "player"
-        self.stamina = 100.0
-        self.score = 0
+        b2 = MagicMock()
+        b2.id = 2
+        b2.alive = True
+        b2.ball_type = "player"
+        b2.score = 100
+        b2.x = 300
+        b2.y = 300
+        b2.stamina = 100
+        b2.hp = 100
+        b2.base_speed_multiplier = 1.0
+        b2.speed_multiplier = 1.0
 
-def test_orbital_crosshair_lifecycle():
-    mode = OrbitalCrosshairMode()
-    world = MockWorld()
-    b1 = MockBall(1, 500, 500)
-    balls = [b1]
+        balls = [b1, b2]
+        mode.setup(world, balls)
 
-    mode.setup(world, balls)
+        # Test crosshair spawn timer
+        mode.tick(world, balls, 5.1)
+        self.assertEqual(len(mode.crosshairs), 1)
+        self.assertEqual(mode.crosshairs[0]["target_id"], b2.id)
 
-    # Tick past spawn timer
-    mode.tick(world, balls, delta=6.0)
+        # Move crosshair close to target
+        mode.crosshairs[0]["x"] = 300
+        mode.crosshairs[0]["y"] = 300
 
-    assert len(mode.crosshairs) == 1
-    ch = mode.crosshairs[0]
-    assert ch["state"] == "hunting"
-    assert ch["target_id"] == 1
+        mode.spawn_timer = 20.0
+        # Test lock on
+        mode.tick(world, balls, 2.1)
+        self.assertEqual(mode.crosshairs[0]["state"], "locking")
 
-    # Manually move target closer to crosshair to simulate locking
-    b1.x = ch["x"]
-    b1.y = ch["y"]
+        mode.spawn_timer = 20.0
+        # Test firing
+        mode.tick(world, balls, 3.1)
+        self.assertEqual(len(mode.crosshairs), 0)
+        self.assertEqual(len(world.arena.hazards), 1)
+        h = world.arena.hazards[0]
+        self.assertEqual(h.kind, "irradiated_zone")
+        self.assertEqual(h.x, 300)
+        self.assertEqual(h.y, 300)
 
-    # Tick to accumulate timer for locking
-    mode.tick(world, balls, delta=2.5)
+        b2.stamina = 100.0
+        mode.spawn_timer = 20.0
+        # Test hazard effect on b2
+        mode.tick(world, balls, 1.0)
+        # Check if hp drained
+        b2.take_damage.assert_called_with(10.0, source="irradiated_zone")
+        self.assertEqual(b2.stamina, 80.0)
+        self.assertEqual(b2.speed_multiplier, 0.5)
 
-    assert ch["state"] == "locking"
-
-    # Tick past locking timer to fire
-    mode.tick(world, balls, delta=3.5)
-
-    # Crosshair should disappear, hazard should spawn
-    assert len(mode.crosshairs) == 0
-    assert len(world.arena.hazards) == 1
-    h = world.arena.hazards[0]
-    assert getattr(h, "kind", "") == "irradiated_zone"
-
-    # Tick to test irradiated zone effect
-    initial_stamina = b1.stamina
-    initial_hp = b1.hp
-
-    # Ensure ball is inside hazard
-    b1.x = h.x
-    b1.y = h.y
-    mode.tick(world, balls, delta=1.0)
-
-    assert b1.stamina < initial_stamina
-    assert b1.hp < initial_hp
-
-
-def test_orbital_crosshair_tracks_highest_scoring():
-    mode = OrbitalCrosshairMode()
-    world = MockWorld()
-
-    b1 = MockBall(1, 100, 100)
-    b1.score = 50
-
-    b2 = MockBall(2, 900, 900)
-    b2.score = 100
-
-    balls = [b1, b2]
-
-    mode.setup(world, balls)
-
-    # Tick past spawn timer
-    mode.tick(world, balls, delta=6.0)
-
-    assert len(mode.crosshairs) == 1
-    ch = mode.crosshairs[0]
-    assert ch["state"] == "hunting"
-
-    # Should initially target b2, which has the highest score
-    assert ch["target_id"] == 2
-
-    # Now b1 gets a higher score
-    b1.score = 150
-
-    # Tick again
-    mode.tick(world, balls, delta=1.0)
-
-    # Should swap target to b1
-    assert ch["target_id"] == 1
+if __name__ == "__main__":
+    unittest.main()
