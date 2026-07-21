@@ -30372,4 +30372,97 @@ class IceWallsMode(GameMode):
                         if hasattr(world.arena, "boundary_offsets"):
                             world.arena.boundary_offsets[wall] = max(0.0, world.arena.boundary_offsets.get(wall, 0.0) - 50.0)
 
+
+class LinkedPortalsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Linked Portals"
+        self.description = "Pairs of teleportation pads that can be deployed across the map. Players or hazards passing over them instantly jump to the linked pad, keeping momentum intact for creative ambushes or escapes."
+        self.portals = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") and world.arena else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") and world.arena else 600
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer -= self.spawn_interval
+
+            import random
+            p1 = {
+                "x": random.uniform(50, max(50, arena_w - 50)),
+                "y": random.uniform(50, max(50, arena_h - 50)),
+                "radius": 30.0,
+                "lifetime": 10.0,
+                "linked_id": 1
+            }
+            p2 = {
+                "x": random.uniform(50, max(50, arena_w - 50)),
+                "y": random.uniform(50, max(50, arena_h - 50)),
+                "radius": 30.0,
+                "lifetime": 10.0,
+                "linked_id": 0
+            }
+            p1["link"] = p2
+            p2["link"] = p1
+            self.portals.extend([p1, p2])
+            if hasattr(world, "add_event"):
+                world.add_event("portal_spawn", {"message": "A linked portal pair appeared!", "x": p1["x"], "y": p1["y"]})
+
+        active_portals = []
+        for portal in self.portals:
+            portal["lifetime"] -= delta
+            if portal["lifetime"] > 0:
+                active_portals.append(portal)
+        self.portals = active_portals
+
+        # Check for teleportation
+        for portal in self.portals:
+            if portal.get("cooldown", 0) > 0:
+                portal["cooldown"] -= delta
+                continue
+
+            px, py, pr = portal["x"], portal["y"], portal["radius"]
+            for b in balls:
+                if getattr(b, "alive", False):
+                    dx = getattr(b, "x", 0.0) - px
+                    dy = getattr(b, "y", 0.0) - py
+                    import math
+                    dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < pr + getattr(b, "radius", 10.0):
+                        linked = portal["link"]
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("teleport_out", {"message": "Teleported!", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+
+                        b.x = linked["x"]
+                        b.y = linked["y"]
+                        # Keep momentum intact
+
+                        linked["cooldown"] = 0.5
+                        portal["cooldown"] = 0.5
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("teleport_in", {"message": "Arrived!", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                        break
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    dx = getattr(h, "x", 0.0) - px
+                    dy = getattr(h, "y", 0.0) - py
+                    import math
+                    dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < pr + getattr(h, "radius", 10.0):
+                        linked = portal["link"]
+                        h.x = linked["x"]
+                        h.y = linked["y"]
+                        linked["cooldown"] = 0.5
+                        portal["cooldown"] = 0.5
+                        break
+
 GAME_MODES['ice_walls'] = IceWallsMode()
+GAME_MODES['linked_portals'] = LinkedPortalsMode()

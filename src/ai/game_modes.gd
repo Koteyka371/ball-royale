@@ -49584,4 +49584,175 @@ class IceWallsMode extends GameMode:
                             offsets[wall] = max(0.0, current_offset - 50.0)
                             world.arena.set_meta("boundary_offsets", offsets)
 
+
+class LinkedPortalsMode extends GameMode:
+    var portals = []
+    var spawn_timer = 0.0
+    var spawn_interval = 5.0
+
+    func _init():
+        super._init()
+        name = "Linked Portals"
+        description = "Pairs of teleportation pads that can be deployed across the map. Players or hazards passing over them instantly jump to the linked pad, keeping momentum intact for creative ambushes or escapes."
+
+    func tick(world, balls, delta = 0.016):
+        super.tick(world, balls, delta)
+
+        var arena_w = 800.0
+        var arena_h = 600.0
+        if world != null:
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+                var arena = world.get("arena")
+                if typeof(arena) == TYPE_DICTIONARY:
+                    arena_w = arena.get("width", 800.0)
+                    arena_h = arena.get("height", 600.0)
+                elif arena != null:
+                    if "width" in arena: arena_w = arena.width
+                    if "height" in arena: arena_h = arena.height
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY:
+                    arena_w = world.arena.get("width", 800.0)
+                    arena_h = world.arena.get("height", 600.0)
+                else:
+                    if "width" in world.arena: arena_w = world.arena.width
+                    if "height" in world.arena: arena_h = world.arena.height
+
+        spawn_timer += delta
+        if spawn_timer >= spawn_interval:
+            spawn_timer -= spawn_interval
+            var p_x1 = randf_range(50.0, max(50.0, arena_w - 50.0))
+            var p_y1 = randf_range(50.0, max(50.0, arena_h - 50.0))
+            var p_x2 = randf_range(50.0, max(50.0, arena_w - 50.0))
+            var p_y2 = randf_range(50.0, max(50.0, arena_h - 50.0))
+            var p1 = {
+                "x": p_x1,
+                "y": p_y1,
+                "radius": 30.0,
+                "lifetime": 10.0,
+                "cooldown": 0.0
+            }
+            var p2 = {
+                "x": p_x2,
+                "y": p_y2,
+                "radius": 30.0,
+                "lifetime": 10.0,
+                "cooldown": 0.0
+            }
+            p1["link"] = p2
+            p2["link"] = p1
+            portals.append(p1)
+            portals.append(p2)
+
+            if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+                pass
+            elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+                world.add_event("portal_spawn", {"message": "A linked portal pair appeared!", "x": p_x1, "y": p_y1})
+
+        var active_portals = []
+        for portal in portals:
+            portal["lifetime"] -= delta
+            if portal["lifetime"] > 0:
+                active_portals.append(portal)
+        portals = active_portals
+
+        for portal in portals:
+            if portal.has("cooldown") and portal["cooldown"] > 0:
+                portal["cooldown"] -= delta
+                continue
+
+            var px = portal["x"]
+            var py = portal["y"]
+            var pr = portal["radius"]
+
+            var teleported = false
+
+            for b in balls:
+                var alive = false
+                var bx = 0.0
+                var by = 0.0
+                var br = 10.0
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    alive = b.get("alive", false)
+                    bx = b.get("x", 0.0)
+                    by = b.get("y", 0.0)
+                    br = b.get("radius", 10.0)
+                else:
+                    if "alive" in b: alive = b.alive
+                    if "x" in b: bx = b.x
+                    if "y" in b: by = b.y
+                    if "radius" in b: br = b.radius
+
+                if alive:
+                    var dx = bx - px
+                    var dy = by - py
+                    var dist = sqrt(dx * dx + dy * dy)
+                    if dist < pr + br:
+                        var linked = portal["link"]
+
+                        if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+                            world.add_event("teleport_out", {"message": "Teleported!", "x": bx, "y": by})
+
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["x"] = linked["x"]
+                            b["y"] = linked["y"]
+                        else:
+                            if "x" in b: b.x = linked["x"]
+                            if "y" in b: b.y = linked["y"]
+
+                        portal["cooldown"] = 0.5
+                        linked["cooldown"] = 0.5
+                        teleported = true
+
+                        if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+                            world.add_event("teleport_in", {"message": "Arrived!", "x": linked["x"], "y": linked["y"]})
+                        break
+
+            if teleported:
+                continue
+
+            # Check hazards
+            var hazards = []
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+                var arena = world.get("arena")
+                if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+                    hazards = arena.get("hazards", [])
+                elif arena != null and "hazards" in arena:
+                    hazards = arena.hazards
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+                    hazards = world.arena.get("hazards", [])
+                elif "hazards" in world.arena:
+                    hazards = world.arena.hazards
+
+            for h in hazards:
+                var hx = 0.0
+                var hy = 0.0
+                var hr = 10.0
+
+                if typeof(h) == TYPE_DICTIONARY:
+                    hx = h.get("x", 0.0)
+                    hy = h.get("y", 0.0)
+                    hr = h.get("radius", 10.0)
+                else:
+                    if "x" in h: hx = h.x
+                    if "y" in h: hy = h.y
+                    if "radius" in h: hr = h.radius
+
+                var dx = hx - px
+                var dy = hy - py
+                var dist = sqrt(dx * dx + dy * dy)
+                if dist < pr + hr:
+                    var linked = portal["link"]
+                    if typeof(h) == TYPE_DICTIONARY:
+                        h["x"] = linked["x"]
+                        h["y"] = linked["y"]
+                    else:
+                        if "x" in h: h.x = linked["x"]
+                        if "y" in h: h.y = linked["y"]
+                    portal["cooldown"] = 0.5
+                    linked["cooldown"] = 0.5
+                    break
+
 GAME_MODES["ice_walls"] = IceWallsMode.new()
+GAME_MODES["linked_portals"] = LinkedPortalsMode.new()
