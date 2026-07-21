@@ -267,7 +267,11 @@ class GameMode:
                 world.arena.weather = random.choice(["clear", "wind", "fog"])
                 world.arena.seasonal_modifier = "autumn"
             elif season_index == 4:
-                world.arena.weather = random.choice(["clear", "snow", "blizzard"])
+                # Winter season: much more likely to have snow or blizzard
+                world.arena.weather = random.choices(
+                    ["clear", "snow", "blizzard"],
+                    weights=[0.1, 0.45, 0.45]
+                )[0]
                 world.arena.seasonal_modifier = "winter"
 
         modifiers = {
@@ -2045,7 +2049,11 @@ class BattleRoyaleMode(GameMode):
                 # Check if it was killed, not exploded
                 # We know it was defeated if it's dead but time_alive < 30.0
                 dead_behemoth = next((b for b in balls if getattr(b, 'is_behemoth', False) and not getattr(b, 'alive', False)), None)
-                if dead_behemoth and getattr(dead_behemoth, 'time_alive', 30.0) < 30.0 and not getattr(dead_behemoth, 'reward_given', False):
+                try:
+                    is_defeated = dead_behemoth and getattr(dead_behemoth, 'time_alive', 30.0) < 30.0 and not getattr(dead_behemoth, 'reward_given', False)
+                except TypeError:
+                    is_defeated = False
+                if is_defeated:
                     dead_behemoth.reward_given = True
                     if hasattr(world, 'add_event'):
                         world.add_event('behemoth_defeated', {

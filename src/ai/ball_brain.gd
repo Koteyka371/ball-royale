@@ -134,6 +134,55 @@ func _init(ball_ref, world_ref):
     elif "skin" in self.ball:
         skin = self.ball.skin
 
+    # Determine current weather if possible to apply skin-specific weather buffs
+    var current_weather = "clear"
+    if self.world != null:
+        if typeof(self.world) == TYPE_OBJECT:
+            if "game_mode" in self.world and self.world.game_mode != null:
+                if typeof(self.world.game_mode) == TYPE_OBJECT and "weather" in self.world.game_mode:
+                    current_weather = self.world.game_mode.weather
+                elif typeof(self.world.game_mode) == TYPE_DICTIONARY and self.world.game_mode.has("weather"):
+                    current_weather = self.world.game_mode["weather"]
+            elif "arena" in self.world and self.world.arena != null:
+                if typeof(self.world.arena) == TYPE_OBJECT and "weather" in self.world.arena:
+                    current_weather = self.world.arena.weather
+                elif typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("weather"):
+                    current_weather = self.world.arena["weather"]
+        elif typeof(self.world) == TYPE_DICTIONARY:
+            if self.world.has("game_mode") and self.world["game_mode"] != null:
+                if typeof(self.world["game_mode"]) == TYPE_OBJECT and "weather" in self.world["game_mode"]:
+                    current_weather = self.world["game_mode"].weather
+                elif typeof(self.world["game_mode"]) == TYPE_DICTIONARY and self.world["game_mode"].has("weather"):
+                    current_weather = self.world["game_mode"]["weather"]
+            elif self.world.has("arena") and self.world["arena"] != null:
+                if typeof(self.world["arena"]) == TYPE_OBJECT and "weather" in self.world["arena"]:
+                    current_weather = self.world["arena"].weather
+                elif typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].has("weather"):
+                    current_weather = self.world["arena"]["weather"]
+
+    if skin == "snow_tires" and (current_weather == "snow" or current_weather == "blizzard"):
+        var current_speed = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+            current_speed = self.ball.get_meta("speed")
+        elif "speed" in self.ball:
+            current_speed = self.ball.speed
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("speed", current_speed * 1.25)
+        elif "speed" in self.ball:
+            self.ball.speed = current_speed * 1.25
+
+        var current_res = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("status_resistance"):
+            current_res = self.ball.get_meta("status_resistance")
+        elif "status_resistance" in self.ball:
+            current_res = self.ball.status_resistance
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("status_resistance", current_res + 0.30)
+        elif "status_resistance" in self.ball:
+            self.ball.status_resistance = current_res + 0.30
+
     if skin == "veteran":
         var current_res = 0.0
         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("status_resistance"):

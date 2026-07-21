@@ -118,6 +118,20 @@ class BallBrain:
             pass
                 # Apply skin-based passive perks
         skin = getattr(self.ball, "skin", "default")
+
+        # Determine current weather if possible to apply skin-specific weather buffs
+        current_weather = "clear"
+        if hasattr(self, "world"):
+            if getattr(self.world, "game_mode", None) and hasattr(self.world.game_mode, "weather"):
+                current_weather = self.world.game_mode.weather
+            elif getattr(self.world, "arena", None) and hasattr(self.world.arena, "weather"):
+                current_weather = self.world.arena.weather
+
+        # Snow tires cosmetic buff globally during snow/blizzard weather
+        if skin == "snow_tires" and current_weather in ["snow", "blizzard"]:
+            self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.25
+            self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.30
+
         if skin == "veteran":
             self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.02
         elif skin == "legendary":
