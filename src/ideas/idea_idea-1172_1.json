@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Hook",
+  "description": "A new active skill that allows a player to shoot a kinetic hook. If it hits an enemy, it pulls the enemy towards the player, dealing damage on collision. If it hits a wall, it pulls the player towards the wall rapidly, enabling quick escapes or repositioning."
+}

@@ -749,6 +749,14 @@ class GameMode:
                     target_id = getattr(m, "target_id", None)
                     target = next((b for b in balls if getattr(b, "id", None) == target_id), None)
 
+
+
+
+
+
+
+
+
                     if not target or not getattr(target, "alive", False):
                         setattr(m, "mine_state", "orbiting")
                         continue
@@ -31804,6 +31812,15 @@ class OrbitalCrosshairMode(GameMode):
                         target = highest_scoring_ball
                         ch["target_id"] = getattr(target, "id", None)
 
+
+                ol_t = getattr(target, "orbital_link_timer", 0.0)
+                if target and isinstance(ol_t, (int, float)) and ol_t > 0.0:
+                    # orbital link redirects
+                    enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(target, "team", "") and getattr(b, "ball_type", "") != "spectator"]
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - target.x)**2 + (e.y - target.y)**2)
+                        target = closest_enemy
+                        ch["target_id"] = getattr(target, "id", None)
                 if not target or not getattr(target, "alive", False):
                     if not valid_balls:
                         continue # No targets left
@@ -31857,12 +31874,17 @@ class OrbitalCrosshairMode(GameMode):
 
         self.crosshairs = active_crosshairs
 
+
         # Process irradiated_zone hazards
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "irradiated_zone" and getattr(h, "active", True):
                     for b in balls:
+                        ol_t = getattr(b, "orbital_link_timer", 0.0)
+                        if isinstance(ol_t, (int, float)) and ol_t > 0.0:
+                            continue
                         if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+
                             dist = math.hypot(b.x - h.x, b.y - h.y)
                             if dist <= getattr(h, "radius", 80.0):
                                 # Drain stamina regen (set to 0 or drain)

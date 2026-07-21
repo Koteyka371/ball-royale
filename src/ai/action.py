@@ -1397,6 +1397,10 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+
+        if hasattr(self.ball, "orbital_link_timer"):
+            if getattr(self.ball, "orbital_link_timer", 0.0) > 0.0:
+                self.ball.orbital_link_timer -= delta
         if not getattr(self.ball, "alive", True) and getattr(self.ball, "ball_type", "") == "ghost":
             self._handle_ghost_behavior(delta)
             return
@@ -7800,7 +7804,12 @@ class Action:
                                         self.ball.alive = False
                             continue
 
+
                         elif hazard.kind == "orbital_debris":
+                            ol_t = getattr(self.ball, "orbital_link_timer", 0.0)
+                            if isinstance(ol_t, (int, float)) and ol_t > 0.0:
+                                continue
+                            # Debris hazards push balls away continuously, making the crater area extremely slippery
                             # Debris hazards push balls away continuously, making the crater area extremely slippery
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -11342,6 +11351,16 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+
+                elif getattr(nearest, "kind", None) == "orbital_link_booster":
+                    self.ball.orbital_link_timer = 10.0
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "orbital_link", "x": self.ball.x, "y": self.ball.y})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "overclock_booster":
                     if "overclock_booster" not in self.ball.inventory:
                         self.ball.inventory.append("overclock_booster")

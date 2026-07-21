@@ -49245,6 +49245,71 @@ class OrbitalCrosshairMode extends GameMode:
 						target = b
 						break
 
+
+				var ol_timer = 0.0
+				if typeof(target) == TYPE_DICTIONARY:
+					ol_timer = target.get("orbital_link_timer", 0.0)
+				elif target != null and target.has_method("has_meta") and target.has_meta("orbital_link_timer"):
+					ol_timer = target.get_meta("orbital_link_timer")
+				elif target != null and "orbital_link_timer" in target:
+					ol_timer = target.orbital_link_timer
+
+				if ol_timer > 0.0:
+					var enemies = []
+					var target_team = ""
+					if typeof(target) == TYPE_DICTIONARY:
+						target_team = str(target.get("team", ""))
+					elif target != null:
+						target_team = str(target.team) if "team" in target else ""
+
+					for b in balls:
+						var is_alive = false
+						var b_type = ""
+						var b_team = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							b_type = str(b.get("ball_type", ""))
+							b_team = str(b.get("team", ""))
+						else:
+							is_alive = b.get("alive") if "alive" in b else false
+							b_type = str(b.ball_type) if "ball_type" in b else ""
+							b_team = str(b.team) if "team" in b else ""
+						if is_alive and b_team != target_team and b_type != "spectator":
+							enemies.append(b)
+
+					if enemies.size() > 0:
+						var min_dist = 999999999.0
+						var closest_enemy = null
+						var tx = 0.0
+						var ty = 0.0
+						if typeof(target) == TYPE_DICTIONARY:
+							tx = target.get("x", 0.0)
+							ty = target.get("y", 0.0)
+						elif target != null:
+							tx = target.x if "x" in target else 0.0
+							ty = target.y if "y" in target else 0.0
+
+						for e in enemies:
+							var ex = 0.0
+							var ey = 0.0
+							if typeof(e) == TYPE_DICTIONARY:
+								ex = e.get("x", 0.0)
+								ey = e.get("y", 0.0)
+							else:
+								ex = e.x if "x" in e else 0.0
+								ey = e.y if "y" in e else 0.0
+							var dx2 = ex - tx
+							var dy2 = ey - ty
+							var d2 = dx2*dx2 + dy2*dy2
+							if d2 < min_dist:
+								min_dist = d2
+								closest_enemy = e
+						if closest_enemy != null:
+							target = closest_enemy
+							if typeof(target) == TYPE_DICTIONARY:
+								ch["target_id"] = target.get("id")
+							else:
+								ch["target_id"] = target.id if "id" in target else null
 				if target == null:
 					var valid_balls = []
 					for b in balls:
@@ -49378,9 +49443,21 @@ class OrbitalCrosshairMode extends GameMode:
 				h_y = h.y if "y" in h else 0.0
 				h_radius = h.radius if "radius" in h else 80.0
 
+
 			if h_kind == "irradiated_zone" and is_active:
 				for b in balls:
+					var ol_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						ol_timer = b.get("orbital_link_timer", 0.0)
+					elif b.has_method("has_meta") and b.has_meta("orbital_link_timer"):
+						ol_timer = b.get_meta("orbital_link_timer")
+					elif "orbital_link_timer" in b:
+						ol_timer = b.orbital_link_timer
+					if ol_timer > 0.0:
+						continue
+
 					var is_alive = false
+
 					var b_type = ""
 					var bx = 0.0
 					var by = 0.0
