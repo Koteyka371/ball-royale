@@ -1,4 +1,4 @@
 {
-  "title": "Cosmic Distortion Event",
-  "description": "A dynamic arena event where gravity randomly shifts in strength and direction every 15 seconds. Balls with lower mass are affected more strongly, creating unpredictable trajectories and forcing AI to adapt their movement strategies on the fly. Balls with the 'Juggernaut' booster or similar heavy traits are more resistant but suffer from increased stamina drain."
+  "title": "Chrono-Shifter Core",
+  "description": "A booster that allows the ball to record its path for 5 seconds. Upon taking fatal damage, it rewinds time to its initial position and restores HP to the state it was at the beginning of the recording."
 }

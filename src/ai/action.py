@@ -9797,7 +9797,7 @@ class Action:
             if hasattr(self.world, "events"):
                 self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
 
-        if start_hp > 0 and getattr(self.ball, "hp", 0) <= getattr(self.ball, "max_hp", 100) * 0.2 and getattr(self.ball, "quantum_leap_active", False):
+        if start_hp > 0 and current_hp <= getattr(self.ball, "max_hp", 100) * 0.2 and getattr(self.ball, "quantum_leap_active", False):
             target = None
             min_dist_sq = float('inf')
 
@@ -9818,6 +9818,8 @@ class Action:
                             target = h
 
             if target:
+                target_x = target.x
+                target_y = target.y
                 if hasattr(target, "alive"):
                     target.alive = False
                     if hasattr(target, "hp"):
@@ -9828,14 +9830,14 @@ class Action:
                 if hasattr(self.world, "events"):
                     self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
 
-                self.ball.x = target.x
-                self.ball.y = target.y
+                self.ball.x = target_x
+                self.ball.y = target_y
 
-                if current_hp <= 0:
-                    self.ball.hp = getattr(self.ball, "max_hp", 100) * 0.2
-                    current_hp = self.ball.hp
-                    damage_taken = 0.0
-                    self.ball.alive = True
+                # Restore to 20% if below
+                self.ball.hp = getattr(self.ball, "max_hp", 100) * 0.2
+                current_hp = self.ball.hp
+                damage_taken = 0.0
+                self.ball.alive = True
 
                 self.ball.quantum_leap_active = False
 
