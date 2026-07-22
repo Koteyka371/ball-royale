@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1331] Quantum Leap Padding — *2026-07-22 22:37:03 UTC*
+
+A new booster that grants the ball a temporary 'Quantum Leap' state. When falling below 20% HP, the ball automatically teleports to the location of the nearest decoy or friendly drone instead of taking fatal damage, consuming the decoy in the process.
+
+---
+
 ## [idea-1361] Shrinking Arena Mod — *2026-07-22 22:34:39 UTC*
 
 Every 30 seconds the arena size is reduced by 10%, forcing players into closer combat.

@@ -22807,7 +22807,7 @@
     },
     {
       "id": "idea-1331",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Leap Padding",
@@ -34619,6 +34619,40 @@
         "src/ai/payload_anti_gravity_field.py",
         "src/ai/payload_anti_gravity_field.gd",
         "tests/test_payload_anti_gravity_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2025",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Expanding Arena Mode",
+      "description": "Every 30 seconds the arena size increases by 10%, giving players more space but making it harder to find resources and forcing ranged encounters.",
+      "allowed_paths": [
+        "src/arena/expanding_arena.py",
+        "src/arena/expanding_arena.gd",
+        "tests/test_expanding_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2026",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Arena Shape Shifting Mode",
+      "description": "Every 60 seconds, the arena smoothly morphs between different shapes (e.g., from square to circle to cross), forcing players to constantly adapt their positioning to avoid corners.",
+      "allowed_paths": [
+        "src/arena/arena_shape_shifting.py",
+        "src/arena/arena_shape_shifting.gd",
+        "tests/test_arena_shape_shifting.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
