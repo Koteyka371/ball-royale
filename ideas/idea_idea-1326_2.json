@@ -1,4 +1,4 @@
 {
-  "title": "Radioactive Fallout Game Mode",
-  "description": "A survival-focused game mode where random patches of the arena become irradiated. These radioactive zones slowly expand, applying a unique mutation debuff to any ball caught inside, reducing max stamina and gradually transforming their appearance until they find an anti-radiation booster."
+  "title": "Bouncy Walls Modifier",
+  "description": "A new arena modifier where hitting the arena walls applies an elastic bounce that temporarily increases the ball's max speed beyond the normal cap for 2 seconds. This encourages risky play where players intentionally bounce off walls to gain an edge in speed during pursuits or evasions."
 }

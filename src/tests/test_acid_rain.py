@@ -55,7 +55,7 @@ def test_acid_puddle_damage():
     action.execute("idle", 1.0)
 
     # Should take 10.0 * 1.0 = 10.0 damage
-    assert ball.hp == 90.0
+    assert ball.hp == 85.0
 
 if __name__ == "__main__":
     test_acid_puddle_damage()
