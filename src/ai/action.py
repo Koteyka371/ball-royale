@@ -15207,8 +15207,31 @@ class Action:
                             # Enemy ball - pull them
                             closest_target.x -= (dx / dist) * pull_dist
                             closest_target.y -= (dy / dist) * pull_dist
+                        elif closest_target_type == "hazard":
+                            # Tangential swing around hazard
+                            # Instead of pulling towards the target, we swing around it tangentially.
+                            speed_boost = 100.0
+                            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                current_speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
+                                if current_speed > 0:
+                                    # Cross product with Z axis gives perpendicular tangent vector to the dx, dy vector from us to target
+                                    # Vector from ball to target is (dx, dy)
+                                    # A tangent vector is (-dy, dx) or (dy, -dx). We pick the one closer to our current velocity to conserve momentum.
+                                    t1_x, t1_y = -dy, dx
+                                    t2_x, t2_y = dy, -dx
+                                    dot1 = self.ball.vx * t1_x + self.ball.vy * t1_y
+                                    dot2 = self.ball.vx * t2_x + self.ball.vy * t2_y
+                                    if dot1 > dot2:
+                                        t_x, t_y = t1_x, t1_y
+                                    else:
+                                        t_x, t_y = t2_x, t2_y
+
+                                    t_len = math.sqrt(t_x**2 + t_y**2)
+                                    if t_len > 0:
+                                        self.ball.vx += (t_x / t_len) * speed_boost
+                                        self.ball.vy += (t_y / t_len) * speed_boost
                         else:
-                            # Ally ball or hazard/item - pull user towards target
+                            # Ally ball or item - pull user towards target normally
                             self.ball.x += (dx / dist) * pull_dist
                             self.ball.y += (dy / dist) * pull_dist
                             self.ball.x = max(0.0, min(arena_width, self.ball.x))
@@ -15224,15 +15247,24 @@ class Action:
                                     self.world.items.append(mat)
                 else:
                     # Grapple to wall
-                    ball_radius = getattr(self.ball, "radius", 15)
-                    if closest_wall == "left":
-                        self.ball.x = max(float(ball_radius), self.ball.x - pull_dist)
-                    elif closest_wall == "right":
-                        self.ball.x = min(float(arena_width) - float(ball_radius), self.ball.x + pull_dist)
-                    elif closest_wall == "top":
-                        self.ball.y = max(float(ball_radius), self.ball.y - pull_dist)
-                    elif closest_wall == "bottom":
-                        self.ball.y = min(float(arena_height) - float(ball_radius), self.ball.y + pull_dist)
+                    # Tangential swing along the wall instead of pulling towards it
+                    speed_boost = 100.0
+                    if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                        current_speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
+                        if current_speed > 0:
+                            # Boost along the wall direction
+                            if closest_wall in ["left", "right"]:
+                                # Wall is vertical, boost in y direction
+                                if self.ball.vy >= 0:
+                                    self.ball.vy += speed_boost
+                                else:
+                                    self.ball.vy -= speed_boost
+                            elif closest_wall in ["top", "bottom"]:
+                                # Wall is horizontal, boost in x direction
+                                if self.ball.vx >= 0:
+                                    self.ball.vx += speed_boost
+                                else:
+                                    self.ball.vx -= speed_boost
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
