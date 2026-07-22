@@ -24410,7 +24410,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -28007,6 +28007,40 @@ func _use_skill():
 
                                 if b.has_method("set_meta"):
                                     b.set_meta("state_history", [])
+
+        elif skill_name == "tactical_rewind":
+            var history = []
+            if typeof(my_ball) == TYPE_DICTIONARY:
+                history = my_ball.get("state_history", [])
+            else:
+                if my_ball.has_method("has_meta") and my_ball.has_meta("state_history"):
+                    history = my_ball.get_meta("state_history")
+                elif "state_history" in my_ball:
+                    history = my_ball.state_history
+
+            if history.size() > 0:
+                var past_state = history[0]
+                if typeof(my_ball) == TYPE_DICTIONARY:
+                    my_ball["x"] = past_state["x"]
+                    my_ball["y"] = past_state["y"]
+                    if past_state["hp"] > my_ball.get("hp", 0.0):
+                        my_ball["hp"] = past_state["hp"]
+                    my_ball["stun_timer"] = 0.0
+                    my_ball["silence_timer"] = 0.0
+                    my_ball["is_stunned"] = false
+                    my_ball["poison_timer"] = 0.0
+                    my_ball["state_history"] = []
+                else:
+                    my_ball.x = past_state["x"]
+                    my_ball.y = past_state["y"]
+                    if past_state["hp"] > my_ball.get("hp", 0.0):
+                        my_ball.hp = past_state["hp"]
+                    if "stun_timer" in my_ball: my_ball.stun_timer = 0.0
+                    if "silence_timer" in my_ball: my_ball.silence_timer = 0.0
+                    if "is_stunned" in my_ball: my_ball.is_stunned = false
+                    if "poison_timer" in my_ball: my_ball.poison_timer = 0.0
+                    if "state_history" in my_ball: my_ball.state_history = []
+                    elif my_ball.has_method("set_meta"): my_ball.set_meta("state_history", [])
 
         elif skill_name == "time_rewind_self":
             var history = []
