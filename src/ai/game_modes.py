@@ -27785,7 +27785,154 @@ class ShrinkingArenaMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("arena_shrunk", {"width": new_w, "height": new_h})
 
+
+class ExpandingLavaRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Expanding Lava Royale"
+        self.description = "A battle royale variation where the center is lava and expands outwards, forcing players to eventually fight on the very edges of the map while dodging environmental hazards."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.danger_radius = 0.0
+        self.max_danger_radius = 500.0
+        self.expand_rate = 15.0
+        self.inside_damage_per_second = 25.0
+        self.hazard_timer = 0.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.danger_radius = 50.0
+        self.max_danger_radius = max(arena_width, arena_height) / 1.5
+        self.hazard_timer = 3.0
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for i, b in enumerate(valid_balls):
+            if i >= 20:
+                b.ball_type = "spectator"
+                b.alive = False
+            else:
+                b.team = getattr(b, "team", b.ball_type)
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+
+        if self.danger_radius < self.max_danger_radius:
+            self.danger_radius += self.expand_rate * delta
+            if self.danger_radius > self.max_danger_radius:
+                self.danger_radius = self.max_danger_radius
+
+        damage_this_tick = self.inside_damage_per_second * delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                dx = bx - self.zone_x
+                dy = by - self.zone_y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist <= self.danger_radius:
+                    b.hp -= damage_this_tick
+                    # Apply burn effect like Lava Royale
+                    if not getattr(b, "weather_immunity_timer", 0) > 0:
+                        b.burn_timer = getattr(b, "burn_timer", 0.0) + delta
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+                        b.killer = "lava"
+
+                # Push players out so they feel the expansion (optional but fits the description)
+                if dist > 0.1 and dist <= self.danger_radius + 20.0:
+                    push_strength = 200.0
+                    if not hasattr(b, "vx"): b.vx = 0.0
+                    if not hasattr(b, "vy"): b.vy = 0.0
+                    b.vx += (dx / dist) * push_strength * delta
+                    b.vy += (dy / dist) * push_strength * delta
+
+        # Spawn environmental hazards on the outer edges
+        self.hazard_timer -= delta
+        if self.hazard_timer <= 0.0 and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            self.hazard_timer = 2.0
+            angle = self.random.uniform(0, math.pi * 2.0)
+            # Spawn hazard outside the danger radius, closer to the edge
+            dist = self.random.uniform(self.danger_radius + 50.0, max(arena_width, arena_height))
+            hx = self.zone_x + math.cos(angle) * dist
+            hy = self.zone_y + math.sin(angle) * dist
+
+            hx = max(50.0, min(arena_width - 50.0, hx))
+            hy = max(50.0, min(arena_height - 50.0, hy))
+
+            h_id = len(world.arena.hazards) + self.random.randint(10000, 99999)
+
+            try:
+                from arena.procedural_arena import Hazard
+                hazard = Hazard(id=h_id, x=hx, y=hy, radius=40.0, kind="fire_zone", damage=15.0)
+                hazard.duration = 10.0
+                hazard.active = True
+                world.arena.hazards.append(hazard)
+            except ImportError:
+                class TempHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.duration = 10.0
+                        self.active = True
+                hazard = TempHazard(h_id, hx, hy, 40.0, "fire_zone", 15.0)
+                world.arena.hazards.append(hazard)
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        if len(alive) == 0:
+            if hasattr(self, "_award_skill_points"):
+                self._award_skill_points()
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            if hasattr(self, "_award_skill_points"):
+                self._award_skill_points()
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            if hasattr(self, "_award_skill_points"):
+                self._award_skill_points()
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", None))
+
+        return None
+
+
 GAME_MODES = {
+    'expanding_lava_royale': ExpandingLavaRoyaleMode(),
     'massive_pinball_arena': MassivePinballArenaMode(),
     "aura_pulse_event": AuraPulseEventMode(),
     'trickster_event': TricksterEventMode(),

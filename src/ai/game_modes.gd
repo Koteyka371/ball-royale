@@ -44093,7 +44093,238 @@ class ShrinkingArenaMode extends GameMode:
 				elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
 					world.add_event.call("arena_shrunk", {"width": new_w, "height": new_h})
 
+
+class ExpandingLavaRoyaleMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var danger_radius: float = 0.0
+	var max_danger_radius: float = 500.0
+	var expand_rate: float = 15.0
+	var inside_damage_per_second: float = 25.0
+	var hazard_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Expanding Lava Royale"
+		description = "A battle royale variation where the center is lava and expands outwards, forcing players to eventually fight on the very edges of the map while dodging environmental hazards."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+			else:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		danger_radius = 50.0
+		max_danger_radius = max(arena_width, arena_height) / 1.5
+		hazard_timer = 3.0
+
+		for b in balls:
+			if "ball_type" in b and b.ball_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = b.get("team", b.ball_type)
+				else:
+					if "team" in b:
+						b.team = b.team if b.team != null and str(b.team) != "" else b.ball_type
+					else:
+						b.set("team", b.ball_type)
+
+		if typeof(world) == TYPE_DICTIONARY:
+			if not ("dead_balls" in world):
+				world["dead_balls"] = []
+		else:
+			if not ("dead_balls" in world):
+				world.dead_balls = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) == TYPE_DICTIONARY:
+			if not ("dead_balls" in world): world["dead_balls"] = []
+		else:
+			if not ("dead_balls" in world): world.dead_balls = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		var arena_hazards = null
+		if "arena" in world and world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+				if "hazards" in world.arena: arena_hazards = world.arena.hazards
+			else:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+				if "hazards" in world.arena: arena_hazards = world.arena.hazards
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive
+
+			if not is_alive:
+				if not (b in world.dead_balls):
+					if typeof(b) == TYPE_DICTIONARY: b["time_since_death"] = 0.0
+					else: b.time_since_death = 0.0
+					world.dead_balls.append(b)
+				else:
+					if typeof(b) == TYPE_DICTIONARY: b["time_since_death"] += delta
+					else: b.time_since_death += delta
+
+		if danger_radius < max_danger_radius:
+			danger_radius += expand_rate * delta
+			if danger_radius > max_danger_radius:
+				danger_radius = max_danger_radius
+
+		var damage_this_tick = inside_damage_per_second * delta
+
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", null)
+			else:
+				is_alive = b.alive
+				b_type = b.ball_type
+
+			if is_alive and b_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x
+					by = b.y
+
+				var dx = bx - zone_x
+				var dy = by - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist <= danger_radius:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] -= damage_this_tick
+						var w_timer = b.get("weather_immunity_timer", 0.0)
+						if w_timer <= 0.0:
+							b["burn_timer"] = b.get("burn_timer", 0.0) + delta
+						if b["hp"] <= 0:
+							b["alive"] = false
+							b["hp"] = 0
+							b["killer"] = "lava"
+					else:
+						b.hp -= damage_this_tick
+						var w_timer = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if w_timer <= 0.0:
+							if "burn_timer" in b: b.burn_timer += delta
+							elif b.has_method("set_meta"): b.set_meta("burn_timer", b.get_meta("burn_timer", 0.0) + delta)
+						if b.hp <= 0:
+							b.alive = false
+							b.hp = 0
+							if "killer" in b: b.killer = "lava"
+
+				if dist > 0.1 and dist <= danger_radius + 20.0:
+					var push_strength = 200.0
+					if typeof(b) == TYPE_DICTIONARY:
+						if not ("vx" in b): b["vx"] = 0.0
+						if not ("vy" in b): b["vy"] = 0.0
+						b["vx"] += (dx / dist) * push_strength * delta
+						b["vy"] += (dy / dist) * push_strength * delta
+					else:
+						if not ("vx" in b): b.vx = 0.0
+						if not ("vy" in b): b.vy = 0.0
+						b.vx += (dx / dist) * push_strength * delta
+						b.vy += (dy / dist) * push_strength * delta
+
+		hazard_timer -= delta
+		if hazard_timer <= 0.0 and arena_hazards != null:
+			hazard_timer = 2.0
+			var angle = randf_range(0, PI * 2.0)
+			var h_dist = randf_range(danger_radius + 50.0, max(arena_width, arena_height))
+			var hx = zone_x + cos(angle) * h_dist
+			var hy = zone_y + sin(angle) * h_dist
+
+			hx = max(50.0, min(arena_width - 50.0, hx))
+			hy = max(50.0, min(arena_height - 50.0, hy))
+
+			var h_id = arena_hazards.size() + randi() % 90000 + 10000
+
+			var HazardObj = null
+			if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+				HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
+
+			if HazardObj != null:
+				var hazard = HazardObj.new(h_id, hx, hy, 40.0, "fire_zone", 15.0)
+				hazard.active = true
+				if hazard.has_method("set_meta"):
+					hazard.set_meta("duration", 10.0)
+				arena_hazards.append(hazard)
+			else:
+				var h_dict = {
+					"id": h_id,
+					"x": hx,
+					"y": hy,
+					"radius": 40.0,
+					"kind": "fire_zone",
+					"damage": 15.0,
+					"duration": 10.0,
+					"active": true
+				}
+				arena_hazards.append(h_dict)
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", null)
+			else:
+				is_alive = b.alive
+				b_type = b.ball_type
+			if is_alive and b_type != "spectator":
+				alive.append(b)
+
+		if alive.size() == 0:
+			if has_method("_award_skill_points"):
+				call("_award_skill_points")
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			var t = null
+			if typeof(b) == TYPE_DICTIONARY:
+				t = b.get("team", b.get("ball_type", null))
+			else:
+				t = b.get("team") if "team" in b and b.team != null and str(b.team) != "" else b.ball_type
+			if t != null:
+				teams_alive[t] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"):
+				call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			if has_method("_award_skill_points"):
+				call("_award_skill_points")
+			if typeof(alive[0]) == TYPE_DICTIONARY:
+				return alive[0].get("team", alive[0].get("ball_type", null))
+			else:
+				return alive[0].get("team") if "team" in alive[0] and alive[0].team != null and str(alive[0].team) != "" else alive[0].ball_type
+
+		return null
+
+
 GAME_MODES = {
+	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
 	"aura_pulse_event": AuraPulseEventMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
