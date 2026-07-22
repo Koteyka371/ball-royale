@@ -23348,6 +23348,63 @@ func _collect_booster(delta: float):
                     var idx = world.boosters.find(nearest)
                     if idx != -1:
                         world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "vision_reduction_trap":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("vision_reduction_timer", 5.0)
+                elif "vision_reduction_timer" in self.ball:
+                    self.ball.vision_reduction_timer = 5.0
+                else:
+                    self.ball.vision_reduction_timer = 5.0
+
+                var vr_applied = false
+                if "vision_reduction_applied" in self.ball:
+                    vr_applied = self.ball.vision_reduction_applied
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("vision_reduction_applied"):
+                    vr_applied = self.ball.get_meta("vision_reduction_applied")
+
+                if not vr_applied:
+                    var has_base = false
+                    if "base_perception_radius" in self.ball:
+                        has_base = true
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius"):
+                        has_base = true
+
+                    if not has_base:
+                        var p_rad = 250.0
+                        if "perception_radius" in self.ball:
+                            p_rad = float(self.ball.perception_radius)
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("perception_radius"):
+                            p_rad = self.ball.get_meta("perception_radius")
+
+                        if "base_perception_radius" in self.ball:
+                            self.ball.base_perception_radius = p_rad
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("base_perception_radius", p_rad)
+                        else:
+                            self.ball.base_perception_radius = p_rad
+
+                    var b_rad = 250.0
+                    if "base_perception_radius" in self.ball:
+                        b_rad = float(self.ball.base_perception_radius)
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                        b_rad = self.ball.get_meta("base_perception_radius")
+
+                    if "perception_radius" in self.ball:
+                        self.ball.perception_radius = b_rad * 0.2
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("perception_radius", b_rad * 0.2)
+
+                    if "vision_reduction_applied" in self.ball:
+                        self.ball.vision_reduction_applied = true
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("vision_reduction_applied", true)
+                    else:
+                        self.ball.vision_reduction_applied = true
+                if "arena" in self.world and self.world.arena != null:
+                    if "hazards" in self.world.arena and self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "vision_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("vision_booster_timer", 15.0)
@@ -34641,7 +34698,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster"]
+                var pullable = ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -36804,6 +36861,50 @@ func _update_skill_timer(delta: float):
                     b_badges.append("cursed_relic_survivor")
                     if "badges" in self.ball: self.ball.badges = b_badges
                     elif self.ball.has_method("set_meta"): self.ball.set_meta("badges", b_badges)
+
+    var vr_timer = 0.0
+    if "vision_reduction_timer" in self.ball:
+        vr_timer = float(self.ball.vision_reduction_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("vision_reduction_timer"):
+        vr_timer = self.ball.get_meta("vision_reduction_timer")
+    if vr_timer > 0.0:
+        vr_timer -= delta
+        if vr_timer <= 0.0:
+            vr_timer = 0.0
+
+            var vr_applied = false
+            if "vision_reduction_applied" in self.ball:
+                vr_applied = self.ball.vision_reduction_applied
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("vision_reduction_applied"):
+                vr_applied = self.ball.get_meta("vision_reduction_applied")
+
+            var has_base_vr = false
+            if "base_perception_radius" in self.ball:
+                has_base_vr = true
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius"):
+                has_base_vr = true
+
+            if has_base_vr and vr_applied:
+                var b_rad = 250.0
+                if "base_perception_radius" in self.ball:
+                    b_rad = float(self.ball.base_perception_radius)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("base_perception_radius"):
+                    b_rad = self.ball.get_meta("base_perception_radius")
+
+                if "perception_radius" in self.ball:
+                    self.ball.perception_radius = b_rad
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("perception_radius", b_rad)
+
+                if "vision_reduction_applied" in self.ball:
+                    self.ball.vision_reduction_applied = false
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("vision_reduction_applied", false)
+
+        if "vision_reduction_timer" in self.ball:
+            self.ball.vision_reduction_timer = vr_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("vision_reduction_timer", vr_timer)
 
     var vb_timer = 0.0
     if "vision_booster_timer" in self.ball:
