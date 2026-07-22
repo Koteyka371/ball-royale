@@ -15901,6 +15901,9 @@ class Action:
                         dx = closest_target.x - self.ball.x
                         dy = closest_target.y - self.ball.y
 
+                        closest_target_old_x = closest_target.x
+                        closest_target_old_y = closest_target.y
+
                         if closest_target_type == "ball" and getattr(closest_target, "team", -1) != getattr(self.ball, "team", -2):
                             # Enemy ball - pull them
                             closest_target.x -= (dx / dist) * pull_dist
@@ -15935,6 +15938,37 @@ class Action:
                             self.ball.x = max(0.0, min(arena_width, self.ball.x))
                             self.ball.y = max(0.0, min(arena_height, self.ball.y))
 
+
+                        # CHAINING LOGIC: If we hit a target (not a wall), check for a secondary target
+                        chain_dist = 250.0 # Range to look for secondary target
+                        secondary_target = None
+                        secondary_target_type = None
+                        secondary_dist_sq = 999999.0
+
+                        # Find all targets near the closest_target
+                        for t_type, t, _ in grapple_targets:
+                            if t != closest_target:
+                                d_sq = (t.x - closest_target_old_x)**2 + (t.y - closest_target_old_y)**2
+                                if d_sq < chain_dist**2 and d_sq < secondary_dist_sq:
+                                    secondary_target = t
+                                    secondary_target_type = t_type
+                                    secondary_dist_sq = d_sq
+
+                        if secondary_target:
+                            sec_dist = math.sqrt(secondary_dist_sq)
+                            if sec_dist > 0.0001:
+                                sec_dx = secondary_target.x - closest_target_old_x
+                                sec_dy = secondary_target.y - closest_target_old_y
+
+                                if secondary_target_type == "ball" and getattr(secondary_target, "team", -1) != getattr(self.ball, "team", -2):
+                                    secondary_target.x -= (sec_dx / sec_dist) * pull_dist
+                                    secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+                                elif secondary_target_type == "hazard":
+                                    pass # For hazards, we probably don't pull them or swing them in a chain
+                                else:
+                                    # Ally ball or item
+                                    secondary_target.x -= (sec_dx / sec_dist) * pull_dist
+                                    secondary_target.y -= (sec_dy / sec_dist) * pull_dist
                         if getattr(closest_target, "kind", "") == "grapple_node":
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and closest_target in self.world.arena.hazards:
                                 self.world.arena.hazards.remove(closest_target)
