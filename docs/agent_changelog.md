@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1267] Bounty Trap — *2026-07-22 04:44:01 UTC*
+
+A deployable trap that, when triggered, temporarily turns the victim into a high-threat bounty target for all bounty hunters on the map.
+
+---
+
 ## [idea-1286] Aura Clashes — *2026-07-22 04:43:57 UTC*
 
 When two balls with high-level cosmetic auras (scale >= 2.0) collide, they trigger an 'Aura Clash' shockwave. This shockwave deals no damage but heavily knocks back all nearby entities (including hazards and smaller balls), temporarily silencing them for 2 seconds.
