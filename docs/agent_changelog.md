@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1323] Necromancer Minion Sacrifice — *2026-07-22 19:35:54 UTC*
+
+Allow Necromancers to sacrifice their active minions to instantly heal themselves or gain a temporary shield, giving them an escape option when pressured.
+
+---
+
 ## [idea-1338] Reverse Lava Spread — *2026-07-22 19:30:03 UTC*
 
 After the lava fully expands, it slowly recedes back to the center, creating safe zones that can emerge unexpectedly.
