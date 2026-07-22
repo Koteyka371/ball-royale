@@ -36126,6 +36126,11 @@ class HeavyRainMode:
 				if hazards_to_remove.size() > 0 and world.has_method("add_event"):
 					world.add_event("obstacles_destroyed", {"message": "Heavy Rain washed away small obstacles!"})
 
+class ChaoticPinballMachineMode extends GameMode:
+	func _init() -> void:
+		name = "Chaotic Pinball Machine"
+		description = "Arena walls become extremely bouncy. Colliding with a wall reflects balls at 2x speed, turning the arena into a chaotic pinball machine."
+
 class ExtremeBouncinessMode extends GameMode:
 	func _init() -> void:
 		name = "Extreme Bounciness"
@@ -42068,6 +42073,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"bumper_balls": BumperBallsMode.new(),
 	"sumo_knockout": SumoKnockoutMode.new(),
 	"bouncy_terrain": BouncyTerrainMode.new(),
+	"chaotic_pinball_machine": ChaoticPinballMachineMode.new(),
 	"extreme_bounciness": ExtremeBouncinessMode.new(),
 	"jump_pad_boundaries": JumpPadBoundariesMode.new(),
 	"pinball": PinballMode.new(),

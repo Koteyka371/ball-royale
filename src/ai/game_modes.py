@@ -22127,6 +22127,12 @@ class HeavyRainMode(GameMode):
                 if hazards_to_remove and hasattr(world, "add_event"):
                     world.add_event("obstacles_destroyed", {"message": "Heavy Rain washed away small obstacles!"})
 
+class ChaoticPinballMachineMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chaotic Pinball Machine"
+        self.description = "Arena walls become extremely bouncy. Colliding with a wall reflects balls at 2x speed, turning the arena into a chaotic pinball machine."
+
 class ExtremeBouncinessMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -26000,6 +26006,7 @@ GAME_MODES = {
     "bumper_balls": BumperBallsMode(),
     "sumo_knockout": SumoKnockoutMode(),
     "bouncy_terrain": BouncyTerrainMode(),
+    "chaotic_pinball_machine": ChaoticPinballMachineMode(),
     "extreme_bounciness": ExtremeBouncinessMode(),
     "jump_pad_boundaries": JumpPadBoundariesMode(),
     "pinball": PinballMode(),
