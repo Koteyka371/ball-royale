@@ -30547,6 +30547,9 @@ func _use_skill():
                     var dx = closest_target.x - self.ball.x
                     var dy = closest_target.y - self.ball.y
 
+                    var closest_target_old_x = closest_target.x
+                    var closest_target_old_y = closest_target.y
+
                     if closest_target_type == "ball":
                         var target_team = -1
                         if typeof(closest_target) == TYPE_DICTIONARY and closest_target.has("team"):
@@ -30616,6 +30619,88 @@ func _use_skill():
                         self.ball.y += (dy / dist) * pull_dist
                         self.ball.x = max(0.0, min(arena_width, self.ball.x))
                         self.ball.y = max(0.0, min(arena_height, self.ball.y))
+
+                    # CHAINING LOGIC
+                    var chain_dist = 250.0
+                    var secondary_target = null
+                    var secondary_target_type = ""
+                    var secondary_dist_sq = 999999.0
+
+                    if "balls" in self.world:
+                        for b in self.world.balls:
+                            if b != self.ball and b != closest_target:
+                                var is_alive = true
+                                if "alive" in b: is_alive = b.alive
+                                elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+                                if is_alive:
+                                    var d_sq = (b.x - closest_target_old_x) * (b.x - closest_target_old_x) + (b.y - closest_target_old_y) * (b.y - closest_target_old_y)
+                                    if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
+                                        secondary_target = b
+                                        secondary_target_type = "ball"
+                                        secondary_dist_sq = d_sq
+
+                    if "items" in self.world:
+                        for i_item in self.world.items:
+                            if i_item != closest_target:
+                                var d_sq = (i_item.x - closest_target_old_x) * (i_item.x - closest_target_old_x) + (i_item.y - closest_target_old_y) * (i_item.y - closest_target_old_y)
+                                if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
+                                    secondary_target = i_item
+                                    secondary_target_type = "item"
+                                    secondary_dist_sq = d_sq
+
+                    if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                        for h in self.world.arena.hazards:
+                            if h != closest_target:
+                                var is_disabled_sf = false
+                                if typeof(h) == TYPE_DICTIONARY:
+                                    is_disabled_sf = h.get("is_disabled_by_flare", false)
+                                elif typeof(h) == TYPE_OBJECT:
+                                    if h.has_method("get_meta") and h.has_meta("is_disabled_by_flare"):
+                                        is_disabled_sf = h.get_meta("is_disabled_by_flare")
+                                    elif "is_disabled_by_flare" in h:
+                                        is_disabled_sf = h.is_disabled_by_flare
+                                if is_disabled_sf:
+                                    continue
+                                var d_sq = (h.x - closest_target_old_x) * (h.x - closest_target_old_x) + (h.y - closest_target_old_y) * (h.y - closest_target_old_y)
+                                if d_sq < (chain_dist * chain_dist) and d_sq < secondary_dist_sq:
+                                    secondary_target = h
+                                    secondary_target_type = "hazard"
+                                    secondary_dist_sq = d_sq
+
+                    if secondary_target != null:
+                        var sec_dist = sqrt(secondary_dist_sq)
+                        if sec_dist > 0.0001:
+                            var sec_dx = secondary_target.x - closest_target_old_x
+                            var sec_dy = secondary_target.y - closest_target_old_y
+
+                            if secondary_target_type == "ball":
+                                var sec_team = -1
+                                if typeof(secondary_target) == TYPE_DICTIONARY and secondary_target.has("team"):
+                                    sec_team = secondary_target["team"]
+                                elif typeof(secondary_target) != TYPE_DICTIONARY and "team" in secondary_target:
+                                    sec_team = secondary_target.team
+                                elif secondary_target.has_method("has_meta") and secondary_target.has_meta("team"):
+                                    sec_team = secondary_target.get_meta("team")
+
+                                var my_team = -2
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                                    my_team = self.ball["team"]
+                                elif typeof(self.ball) != TYPE_DICTIONARY and "team" in self.ball:
+                                    my_team = self.ball.team
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta("team"):
+                                    my_team = self.ball.get_meta("team")
+
+                                if sec_team != my_team:
+                                    secondary_target.x -= (sec_dx / sec_dist) * pull_dist
+                                    secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+                                else:
+                                    secondary_target.x -= (sec_dx / sec_dist) * pull_dist
+                                    secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+                            elif secondary_target_type == "hazard":
+                                pass # Don't pull hazards
+                            else:
+                                secondary_target.x -= (sec_dx / sec_dist) * pull_dist
+                                secondary_target.y -= (sec_dy / sec_dist) * pull_dist
             else:
                 var ball_radius = 15.0
                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"):
