@@ -19723,7 +19723,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
         import random
         self.random = random
 
@@ -19785,6 +19785,9 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "violent_quake": booster_kind = "seismic_booster"
             elif self.current_weather == "giant_flood": booster_kind = "life_jacket_booster"
             elif self.current_weather == "solar_eclipse": booster_kind = "vision_booster"
+            elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
+            elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
+            elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
             elif self.current_weather == "celestial_alignment": booster_kind = "starlight_booster"
 
             # Also spawn rain-exclusive umbrella booster in acid rain
@@ -19815,7 +19818,10 @@ class ExtremeWeatherMode(GameMode):
                     "violent_quake": "Tectonic Lord",
                     "giant_flood": "Ocean Overlord",
                     "solar_eclipse": "Umbra Lord",
-                    "celestial_alignment": "Starlight Boss"
+                    "celestial_alignment": "Starlight Boss",
+                    "monsoon": "Monsoon Deity",
+                    "monsoon": "Monsoon Deity",
+                    "monsoon": "Monsoon Deity"
                 }
 
                 boss_name = boss_map.get(self.current_weather)
@@ -19996,6 +20002,76 @@ class ExtremeWeatherMode(GameMode):
                     b.perception_radius = 50.0
             elif self.current_weather == "celestial_alignment":
                 pass # Logic moved to outside the ball loop
+            elif self.current_weather == "monsoon":
+                if not getattr(b, "umbrella_booster_timer", 0.0) > 0 and not getattr(b, "mega_umbrella_booster_timer", 0.0) > 0:
+                    b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 0.4
+                    b.speed = getattr(b, "base_speed", 100.0) * 0.75
+
+            elif self.current_weather == "monsoon":
+                if not getattr(b, "umbrella_booster_timer", 0.0) > 0 and not getattr(b, "mega_umbrella_booster_timer", 0.0) > 0:
+                    b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 0.4
+                    b.speed = getattr(b, "base_speed", 100.0) * 0.75
+                if self.random.random() < 0.1 * delta and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    from arena.procedural_arena import Hazard
+                    import random
+                    h_id = 9600 + len(world.arena.hazards) + random.randint(0, 1000)
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    mud_puddle = Hazard(id=h_id, x=random.uniform(50, arena_w-50), y=random.uniform(50, arena_h-50), radius=30.0, kind="mud_puddle", damage=0.0)
+                    mud_puddle.duration = 8.0
+                    world.arena.hazards.append(mud_puddle)
+
+            elif self.current_weather == "monsoon":
+                if not getattr(b, "umbrella_booster_timer", 0.0) > 0 and not getattr(b, "mega_umbrella_booster_timer", 0.0) > 0:
+                    b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 0.4
+                    b.speed = getattr(b, "base_speed", 100.0) * 0.75
+                if self.random.random() < 0.1 * delta and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    from arena.procedural_arena import Hazard
+                    import random
+                    h_id = 9600 + len(world.arena.hazards) + random.randint(0, 1000)
+                    arena_w = getattr(world.arena, "width", 1000)
+                    arena_h = getattr(world.arena, "height", 1000)
+                    mud_puddle = Hazard(id=h_id, x=random.uniform(50, arena_w-50), y=random.uniform(50, arena_h-50), radius=30.0, kind="mud_puddle", damage=0.0)
+                    mud_puddle.duration = 8.0
+                    world.arena.hazards.append(mud_puddle)
+
+
+        if self.current_weather == "monsoon":
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "water":
+                        if not hasattr(h, "original_radius"):
+                            h.original_radius = getattr(h, "radius", 20.0)
+                        h.radius = min(h.original_radius * 2.0, getattr(h, "radius", 20.0) + 10.0 * delta)
+        elif self.current_weather != "monsoon":
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "water" and hasattr(h, "original_radius"):
+                        if h.radius > h.original_radius:
+                            h.radius = max(h.original_radius, h.radius - 5.0 * delta)
+
+        if self.current_weather == "monsoon":
+            if self.random.random() < 1.5 * delta and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                h_id = 9600 + len(world.arena.hazards) + self.random.randint(0, 1000)
+                arena_w = getattr(world.arena, "width", 1000)
+                arena_h = getattr(world.arena, "height", 1000)
+                mud_puddle = Hazard(id=h_id, x=self.random.uniform(50, arena_w-50), y=self.random.uniform(50, arena_h-50), radius=30.0, kind="mud_puddle", damage=0.0)
+                mud_puddle.duration = 8.0
+                world.arena.hazards.append(mud_puddle)
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "water":
+                        if not hasattr(h, "original_radius"):
+                            h.original_radius = getattr(h, "radius", 20.0)
+                        h.radius = min(h.original_radius * 2.0, getattr(h, "radius", 20.0) + 10.0 * delta)
+        elif self.current_weather != "monsoon":
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "water" and hasattr(h, "original_radius"):
+                        if h.radius > h.original_radius:
+                            h.radius = max(h.original_radius, h.radius - 5.0 * delta)
 
         if self.current_weather == "tsunami":
             if not getattr(self, "tsunami_spawned", False):

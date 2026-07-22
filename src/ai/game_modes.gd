@@ -30795,7 +30795,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -30885,6 +30885,8 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "violent_quake": booster_kind = "seismic_booster"
 			elif current_weather == "giant_flood": booster_kind = "life_jacket_booster"
 			elif current_weather == "solar_eclipse": booster_kind = "vision_booster"
+			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
+			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
 			elif current_weather == "celestial_alignment": booster_kind = "starlight_booster"
 
 			if current_weather == "acid_rain" and world != null and "boosters" in world:
