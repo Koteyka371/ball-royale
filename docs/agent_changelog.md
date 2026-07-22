@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1284] Stamina Overflow State — *2026-07-22 10:10:54 UTC*
+
+If a ball maintains max stamina for 5 continuous seconds, they enter an Overflow state, granting them 20% increased speed and slightly reduced incoming damage until stamina drops below 80%.
+
+---
+
 ## [idea-1333] Volcanic Eruption Event — *2026-07-22 08:04:23 UTC*
 
 During a 'Heatwave' weather event, volcanoes randomly erupt, launching fireballs across the arena. Fireballs leave temporary magma puddles on impact that deal high damage over time.

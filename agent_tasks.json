@@ -22002,7 +22002,7 @@
     },
     {
       "id": "idea-1284",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Overflow State",
@@ -33565,6 +33565,40 @@
         "src/ui/summoner_build.gd",
         "src/ai/summoner_build.py",
         "tests/test_summoner_build.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1963",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Frostbite Weather Mutation",
+      "description": "A new weather event 'Frostbite' that slowly freezes balls unless they keep moving constantly or stay near temporary heat vents that spawn around the arena.",
+      "allowed_paths": [
+        "src/ai/frostbite_mutation.py",
+        "src/ai/frostbite_mutation.gd",
+        "tests/test_frostbite_mutation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1964",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Oasis Trap",
+      "description": "During sandstorm or heatwave weather, mirage safe zones occasionally appear that look like healing areas but are actually quicksand traps that drain stamina.",
+      "allowed_paths": [
+        "src/arena/mirage_oasis_trap.py",
+        "src/arena/mirage_oasis_trap.gd",
+        "tests/test_mirage_oasis_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
