@@ -16446,6 +16446,20 @@ class BlackMarketMode(GameMode):
                 if c in world.currency_pickups:
                     world.currency_pickups.remove(c)
 
+            # Currency burden logic
+            curr = getattr(b, "currency", 0)
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+            if not hasattr(b, "base_radius"):
+                b.base_radius = getattr(b, "radius", 10.0)
+
+            # Applying debuffs and buffs
+            b.speed = b.base_speed * max(0.2, 1.0 - (curr * 0.05))
+            b.damage = b.base_damage * (1.0 + (curr * 0.1))
+            b.radius = b.base_radius * (1.0 + (curr * 0.02))
+
             # Purchase upgrades
             if getattr(b, "purchase_cooldown", 0.0) <= 0.0 and getattr(b, "currency", 0) >= 5:
                 for bm in world.black_markets:
@@ -16457,7 +16471,7 @@ class BlackMarketMode(GameMode):
                         b.purchase_cooldown = 5.0
 
                         # Apply random upgrade
-                        upgrade_type = random.choice(["max_hp", "speed", "damage"])
+                        upgrade_type = random.choice(["max_hp", "speed", "damage", "radius"])
                         if upgrade_type == "max_hp":
                             if not hasattr(b, "base_max_hp"):
                                 b.base_max_hp = getattr(b, "max_hp", 100.0)
@@ -16474,6 +16488,11 @@ class BlackMarketMode(GameMode):
                                 b.base_damage = getattr(b, "damage", 10.0)
                             b.base_damage += 5.0
                             b.damage = b.base_damage
+                        elif upgrade_type == "radius":
+                            if not hasattr(b, "base_radius"):
+                                b.base_radius = getattr(b, "radius", 10.0)
+                            b.base_radius = max(5.0, b.base_radius - 2.0)
+                            b.radius = b.base_radius
 
                         if hasattr(world, "add_event"):
                             world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})

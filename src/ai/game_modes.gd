@@ -25903,6 +25903,50 @@ class BlackMarketMode extends GameMode:
 					if idx < world.currency_pickups.size():
 						world.currency_pickups.remove_at(idx)
 
+			# Currency burden logic
+			var cur_currency = bcurrency
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("base_speed"): b["base_speed"] = float(b.get("speed", 100.0))
+				if not b.has("base_damage"): b["base_damage"] = float(b.get("damage", 10.0))
+				if not b.has("base_radius"): b["base_radius"] = float(b.get("radius", 10.0))
+
+				b["speed"] = float(b["base_speed"]) * max(0.2, 1.0 - (cur_currency * 0.05))
+				b["damage"] = float(b["base_damage"]) * (1.0 + (cur_currency * 0.1))
+				b["radius"] = float(b["base_radius"]) * (1.0 + (cur_currency * 0.02))
+			else:
+				var b_base_speed = b.get_meta("base_speed") if b.has_meta("base_speed") else float(b.get("speed"))
+				if not b.has_meta("base_speed"): b.set_meta("base_speed", b_base_speed)
+				var b_base_damage = b.get_meta("base_damage") if b.has_meta("base_damage") else float(b.get("damage"))
+				if not b.has_meta("base_damage"): b.set_meta("base_damage", b_base_damage)
+				var b_base_radius = b.get_meta("base_radius") if b.has_meta("base_radius") else float(b.get("radius"))
+				if not b.has_meta("base_radius"): b.set_meta("base_radius", b_base_radius)
+
+				b.set("speed", b_base_speed * max(0.2, 1.0 - (cur_currency * 0.05)))
+				b.set("damage", b_base_damage * (1.0 + (cur_currency * 0.1)))
+				b.set("radius", b_base_radius * (1.0 + (cur_currency * 0.02)))
+
+			# Currency burden logic
+			var cur_currency = bcurrency
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("base_speed"): b["base_speed"] = float(b.get("speed", 100.0))
+				if not b.has("base_damage"): b["base_damage"] = float(b.get("damage", 10.0))
+				if not b.has("base_radius"): b["base_radius"] = float(b.get("radius", 10.0))
+
+				b["speed"] = float(b["base_speed"]) * max(0.2, 1.0 - (cur_currency * 0.05))
+				b["damage"] = float(b["base_damage"]) * (1.0 + (cur_currency * 0.1))
+				b["radius"] = float(b["base_radius"]) * (1.0 + (cur_currency * 0.02))
+			else:
+				var b_base_speed = b.get_meta("base_speed") if b.has_meta("base_speed") else float(b.get("speed"))
+				if not b.has_meta("base_speed"): b.set_meta("base_speed", b_base_speed)
+				var b_base_damage = b.get_meta("base_damage") if b.has_meta("base_damage") else float(b.get("damage"))
+				if not b.has_meta("base_damage"): b.set_meta("base_damage", b_base_damage)
+				var b_base_radius = b.get_meta("base_radius") if b.has_meta("base_radius") else float(b.get("radius"))
+				if not b.has_meta("base_radius"): b.set_meta("base_radius", b_base_radius)
+
+				b.set("speed", b_base_speed * max(0.2, 1.0 - (cur_currency * 0.05)))
+				b.set("damage", b_base_damage * (1.0 + (cur_currency * 0.1)))
+				b.set("radius", b_base_radius * (1.0 + (cur_currency * 0.02)))
+
 			if bpcooldown <= 0.0 and bcurrency >= 5 and "black_markets" in world:
 				for bm in world.black_markets:
 					var dx = bx - float(bm["x"])
@@ -25912,7 +25956,7 @@ class BlackMarketMode extends GameMode:
 						bcurrency -= 5
 						bpcooldown = 5.0
 
-						var upgrades = ["max_hp", "speed", "damage"]
+						var upgrades = ["max_hp", "speed", "damage", "radius"]
 						var upgrade_type = upgrades[randi() % upgrades.size()]
 
 						if typeof(b) == TYPE_DICTIONARY:
@@ -25929,6 +25973,10 @@ class BlackMarketMode extends GameMode:
 								if not b.has("base_damage"): b["base_damage"] = float(b.get("damage", 10.0))
 								b["base_damage"] += 5.0
 								b["damage"] = b["base_damage"]
+							elif upgrade_type == "radius":
+								if not b.has("base_radius"): b["base_radius"] = float(b.get("radius", 10.0))
+								b["base_radius"] = max(5.0, b["base_radius"] - 2.0)
+								b["radius"] = b["base_radius"]
 						else:
 							if upgrade_type == "max_hp":
 								var cur_base_mhp = b.get_meta("base_max_hp") if b.has_meta("base_max_hp") else float(b.get("max_hp"))
@@ -25943,6 +25991,10 @@ class BlackMarketMode extends GameMode:
 								var cur_base_dmg = b.get_meta("base_damage") if b.has_meta("base_damage") else float(b.get("damage"))
 								b.set_meta("base_damage", cur_base_dmg + 5.0)
 								b.set("damage", cur_base_dmg + 5.0)
+							elif upgrade_type == "radius":
+								var cur_base_rad = b.get_meta("base_radius") if b.has_meta("base_radius") else float(b.get("radius"))
+								b.set_meta("base_radius", max(5.0, cur_base_rad - 2.0))
+								b.set("radius", max(5.0, cur_base_rad - 2.0))
 
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})

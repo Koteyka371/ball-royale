@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Anomalies",
+  "description": "Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning."
+}
