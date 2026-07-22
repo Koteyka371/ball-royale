@@ -56,6 +56,53 @@ class GuildManager:
         with open(self.filename, 'w') as f:
             json.dump(self.data, f, indent=4)
 
+
+    def pool_mutator_tokens(self, guild_name, amount, profile):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if profile.data.get("mutator_tokens", 0) >= amount:
+                profile.data["mutator_tokens"] -= amount
+                profile.save()
+
+                if "mutator_token_pool" not in guild:
+                    guild["mutator_token_pool"] = 0
+                guild["mutator_token_pool"] += amount
+                self.save()
+                return True
+        return False
+
+    def cast_gvg_mutator_vote(self, guild_name, mutator, tokens_to_spend):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("mutator_token_pool", 0) >= tokens_to_spend:
+                guild["mutator_token_pool"] -= tokens_to_spend
+
+                if "gvg_mutator_votes" not in guild:
+                    guild["gvg_mutator_votes"] = {}
+
+                current_votes = guild["gvg_mutator_votes"].get(mutator, 0)
+                guild["gvg_mutator_votes"][mutator] = current_votes + tokens_to_spend
+                self.save()
+                return True
+        return False
+
+    def get_gvg_match_mutator(self, guild1_name, guild2_name):
+        import random
+        votes = {}
+
+        for g_name in [guild1_name, guild2_name]:
+            if g_name in self.data["guilds"]:
+                g_votes = self.data["guilds"][g_name].get("gvg_mutator_votes", {})
+                for mutator, count in g_votes.items():
+                    votes[mutator] = votes.get(mutator, 0) + count
+
+        if not votes:
+            options = ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost"]
+            return random.choice(options)
+
+        winning_mutator = max(votes.items(), key=lambda x: x[1])[0]
+        return winning_mutator
+
     def create_guild(self, guild_name, creator_id):
         if guild_name in self.data["guilds"]:
             return False

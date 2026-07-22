@@ -20443,6 +20443,16 @@ class GuildVsGuildMode extends GameMode:
 	func setup(world_ref, balls_ref: Array):
 		super.setup(world_ref, balls_ref)
 		guilds = {}
+
+		var gm = GuildManager.new()
+		if gm.has_method("get_gvg_match_mutator"):
+			var g_names = guilds.keys()
+			var guild1 = "GuildA"
+			var guild2 = "GuildB"
+			if g_names.size() > 0: guild1 = g_names[0]
+			if g_names.size() > 1: guild2 = g_names[1]
+			var mutator = gm.get_gvg_match_mutator(guild1, guild2)
+			world_ref.set_meta("active_mutator", mutator)
 		control_points = [
 			{"x": 200, "y": 200, "radius": 50, "owner": null, "progress": 0},
 			{"x": 800, "y": 800, "radius": 50, "owner": null, "progress": 0},
