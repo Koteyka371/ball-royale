@@ -16297,9 +16297,47 @@ class Action:
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
 
+
                 # Secondary stun explosion on collision
                 speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
                 speed_other = math.sqrt(getattr(other, "vx", 0.0)**2 + getattr(other, "vy", 0.0)**2)
+
+                # Aura Clash Check
+                scale_self = getattr(self.ball, "scale", 1.0)
+                scale_other = getattr(other, "scale", 1.0)
+                if scale_self >= 2.0 and scale_other >= 2.0:
+                    if hasattr(self.world, "add_event"):
+                        # We use the midpoint of the collision
+                        clash_x = (self.ball.x + other.x) / 2.0
+                        clash_y = (self.ball.y + other.y) / 2.0
+                        self.world.add_event("aura_clash", {"x": clash_x, "y": clash_y, "radius": 150.0})
+
+                    # Knockback and silence nearby entities
+                    nearby_all = []
+                    if hasattr(self.world, "balls"): nearby_all.extend(self.world.balls)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"): nearby_all.extend(self.world.arena.hazards)
+
+                    clash_x = (self.ball.x + other.x) / 2.0
+                    clash_y = (self.ball.y + other.y) / 2.0
+
+                    for entity in nearby_all:
+                        if not getattr(entity, "alive", True) or not getattr(entity, "active", True): continue
+
+                        dx_clash = entity.x - clash_x
+                        dy_clash = entity.y - clash_y
+                        dist_clash = math.sqrt(dx_clash**2 + dy_clash**2)
+
+                        if dist_clash < 150.0 and dist_clash > 0:
+                            nx_clash = dx_clash / dist_clash
+                            ny_clash = dy_clash / dist_clash
+                            force = 300.0 * (1.0 - (dist_clash / 150.0))
+
+                            if hasattr(entity, "vx"): entity.vx += nx_clash * force
+                            if hasattr(entity, "vy"): entity.vy += ny_clash * force
+
+                            # Silence
+                            setattr(entity, "silence_timer", max(getattr(entity, "silence_timer", 0.0), 2.0))
+
                 if getattr(self.ball, "stun_explosion_armed", False) or getattr(other, "stun_explosion_armed", False):
                     if speed_self > 300 or speed_other > 300:
                         setattr(self.ball, "stun_explosion_armed", False)

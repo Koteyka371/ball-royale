@@ -31446,7 +31446,83 @@ func _resolve_collisions() -> bool:
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
 
+
+            # Aura Clash Check
+            var scale_self = 1.0
+            if "scale" in self.ball: scale_self = float(self.ball.scale)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("scale"): scale_self = float(self.ball.get_meta("scale"))
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("scale"): scale_self = float(self.ball["scale"])
+
+            var scale_other = 1.0
+            if "scale" in other: scale_other = float(other.scale)
+            elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("scale"): scale_other = float(other.get_meta("scale"))
+            elif typeof(other) == TYPE_DICTIONARY and other.has("scale"): scale_other = float(other["scale"])
+
+            if scale_self >= 2.0 and scale_other >= 2.0:
+                var clash_x = 0.0
+                var clash_y = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY and typeof(other) == TYPE_DICTIONARY:
+                    clash_x = (self.ball.get("x", 0.0) + other.get("x", 0.0)) / 2.0
+                    clash_y = (self.ball.get("y", 0.0) + other.get("y", 0.0)) / 2.0
+                else:
+                    var bx = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else 0.0)
+                    var by = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else 0.0)
+                    var ox = other.x if "x" in other else (other.get_meta("x") if other.has_method("has_meta") and other.has_meta("x") else 0.0)
+                    var oy = other.y if "y" in other else (other.get_meta("y") if other.has_method("has_meta") and other.has_meta("y") else 0.0)
+                    clash_x = (bx + ox) / 2.0
+                    clash_y = (by + oy) / 2.0
+
+                if self.world != null and self.world.has_method("add_event"):
+                    self.world.add_event("aura_clash", {"x": clash_x, "y": clash_y, "radius": 150.0})
+
+                var nearby_all = []
+                if "balls" in self.world:
+                    for b in self.world.balls: nearby_all.append(b)
+                if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    for h in self.world.arena.hazards: nearby_all.append(h)
+
+                for entity in nearby_all:
+                    var is_alive = true
+                    if "alive" in entity: is_alive = entity.alive
+                    elif typeof(entity) == TYPE_DICTIONARY and entity.has("alive"): is_alive = entity["alive"]
+                    var is_active = true
+                    if "active" in entity: is_active = entity.active
+                    elif typeof(entity) == TYPE_DICTIONARY and entity.has("active"): is_active = entity["active"]
+
+                    if not is_alive or not is_active: continue
+
+                    var ex = entity.x if "x" in entity else (entity.get("x", 0.0) if typeof(entity) == TYPE_DICTIONARY else (entity.get_meta("x") if entity.has_method("has_meta") and entity.has_meta("x") else 0.0))
+                    var ey = entity.y if "y" in entity else (entity.get("y", 0.0) if typeof(entity) == TYPE_DICTIONARY else (entity.get_meta("y") if entity.has_method("has_meta") and entity.has_meta("y") else 0.0))
+
+                    var dx_clash = ex - clash_x
+                    var dy_clash = ey - clash_y
+                    var dist_clash = sqrt(dx_clash*dx_clash + dy_clash*dy_clash)
+
+                    if dist_clash < 150.0 and dist_clash > 0.0:
+                        var nx_clash = dx_clash / dist_clash
+                        var ny_clash = dy_clash / dist_clash
+                        var force = 300.0 * (1.0 - (dist_clash / 150.0))
+
+                        if typeof(entity) == TYPE_DICTIONARY:
+                            if entity.has("vx"): entity["vx"] += nx_clash * force
+                            if entity.has("vy"): entity["vy"] += ny_clash * force
+                            if entity.has("silence_timer"): entity["silence_timer"] = max(entity["silence_timer"], 2.0)
+                            else: entity["silence_timer"] = 2.0
+                        else:
+                            if "vx" in entity: entity.vx += nx_clash * force
+                            elif entity.has_method("has_meta") and entity.has_meta("vx"): entity.set_meta("vx", entity.get_meta("vx") + nx_clash * force)
+                            if "vy" in entity: entity.vy += ny_clash * force
+                            elif entity.has_method("has_meta") and entity.has_meta("vy"): entity.set_meta("vy", entity.get_meta("vy") + ny_clash * force)
+
+                            var current_st = 0.0
+                            if "silence_timer" in entity: current_st = entity.silence_timer
+                            elif entity.has_method("has_meta") and entity.has_meta("silence_timer"): current_st = entity.get_meta("silence_timer")
+                            var new_st = max(current_st, 2.0)
+                            if "silence_timer" in entity: entity.silence_timer = new_st
+                            elif entity.has_method("set_meta"): entity.set_meta("silence_timer", new_st)
+
             # Secondary stun explosion on collision
+
             var b_vx = 0.0
             var b_vy = 0.0
             if typeof(self.ball) == TYPE_DICTIONARY:
