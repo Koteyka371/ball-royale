@@ -2022,6 +2022,46 @@ class Action:
                             effect = CheerEffect(self.ball.x, self.ball.y, cheer_type, getattr(self.ball, "id", -1))
                             self.world.arena.hazards.append(effect)
 
+        if getattr(self.ball, "ball_type", "") == "skeletal_archer":
+            import math
+            self._update_skill_timer(delta)
+
+            attack_timer = getattr(self.ball, "attack_timer", 0.0)
+            if attack_timer > 0:
+                self.ball.attack_timer = attack_timer - delta
+
+            enemies = self._get_enemies()
+            if enemies:
+                target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                dist = math.hypot(dx, dy)
+
+                spd = getattr(self.ball, "speed", 3.0)
+                if dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    if dist < 150.0:
+                        # Move away
+                        self.ball.x -= nx * spd * delta * 60
+                        self.ball.y -= ny * spd * delta * 60
+                    elif dist > 200.0:
+                        # Move closer
+                        self.ball.x += nx * spd * delta * 60
+                        self.ball.y += ny * spd * delta * 60
+
+                if getattr(self.ball, "attack_timer", 0.0) <= 0.0 and dist < 500.0:
+                    self.ball.attack_timer = 2.0
+                    m_id = getattr(self.world, "next_id", 99999)
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+                    # HomingMissileHazard is in action.py
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 5.0)
+                    m.owner_id = self.ball.id
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        self.world.arena.hazards.append(m)
+
         if getattr(self.ball, "ball_type", "") == "broodling":
             import math
             self._update_skill_timer(delta)
@@ -14314,12 +14354,20 @@ class Action:
                     minion.x += random.uniform(-15, 15)
                     minion.y += random.uniform(-15, 15)
 
-                    minion.hp = 20 # Weak minion
+                    if getattr(self.ball, "ball_type", "") == "necromancer" and random.random() < 0.5:
+                        minion.ball_type = "skeletal_archer"
+                        minion.hp = 15
+                        minion.base_speed = 3.0
+                        minion.attack_timer = 0.0
+                        minion.is_minion = True
+                    else:
+                        minion.hp = 20
+                        minion.base_speed = 2.0
+                        minion.is_minion = True
+
                     minion.max_hp = minion.hp
                     minion.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", getattr(self.ball, "BALL_TYPE", "")))
-                    minion.is_minion = True
                     minion.base_damage = getattr(self.ball, "base_damage", 10.0)
-                    minion.base_speed = getattr(self.ball, "base_speed", 2.0)
                     minion.minion_owner = self.ball.id
                     minion.alive = True
 
