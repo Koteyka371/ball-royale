@@ -1,0 +1,4 @@
+{
+  "title": "Echo Auras",
+  "description": "A new aura type that doesn't provide stats directly, but instead echoes any active buffs on the player to the nearest ally at 50% effectiveness. The Echo Aura has a short duration and drops frequently in team-based game modes to encourage grouping."
+}

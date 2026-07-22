@@ -43925,13 +43925,24 @@ class AuraPulseEventMode extends GameMode:
 										elif key in target:
 											target.set(key, new_scale)
 								else:
+									var cur_val = 0.0
 									if typeof(target) == TYPE_DICTIONARY:
-										target[key] = 5.0
+										if target.has(key):
+											cur_val = float(target[key])
+									elif typeof(target) == TYPE_OBJECT:
+										if key in target:
+											cur_val = float(target.get(key))
+										elif target.has_method("has_meta") and target.has_meta(key):
+											cur_val = float(target.get_meta(key))
+
+									var new_val = max(cur_val, 5.0)
+									if typeof(target) == TYPE_DICTIONARY:
+										target[key] = new_val
 									elif typeof(target) == TYPE_OBJECT:
 										if target.has_method("set_meta"):
-											target.set_meta(key, 5.0)
+											target.set_meta(key, new_val)
 										elif key in target:
-											target.set(key, 5.0)
+											target.set(key, new_val)
 
 class ShrinkingArenaMode extends GameMode:
 	var shrink_timer = 0.0
