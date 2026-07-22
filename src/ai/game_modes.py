@@ -2472,16 +2472,102 @@ class BattleRoyaleMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("final_boss_spawn", {"message": f"A massive {boss_type.capitalize()} has emerged in the center of the safe zone!"})
 
-        # Check boss death
+        # Check boss death / evolve
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "is_final_boss", False):
-                if not getattr(b, "alive", False) and not getattr(b, "reward_given", False):
+                if getattr(b, "alive", False):
+                    # Check for evolution based on safe zone shrinks. We'll use a timer or check zone size
+                    if not hasattr(b, "last_zone_radius"):
+                        b.last_zone_radius = self.zone_radius
+                        b.mutations = []
+                        b.mutation_timer = 0.0
+
+                    # Evolve when zone shrinks by 50 units
+                    if b.last_zone_radius - self.zone_radius >= 50.0:
+                        b.last_zone_radius = self.zone_radius
+                        mutators = ["explosive_aura", "increased_speed", "pulling_gravity", "acid_trail", "shield_regen"]
+                        available = [m for m in mutators if m not in b.mutations]
+                        if available:
+                            import random
+                            rnd = getattr(self, "random", random)
+                            new_mut = rnd.choice(available)
+                            b.mutations.append(new_mut)
+
+                            if new_mut == "increased_speed":
+                                b.base_speed = getattr(b, "base_speed", 120.0) * 1.5
+                                b.speed = b.base_speed
+                            elif new_mut == "explosive_aura":
+                                pass # handled below
+                            elif new_mut == "pulling_gravity":
+                                pass # handled below
+                            elif new_mut == "shield_regen":
+                                b.max_shield = getattr(b, "max_shield", 1000.0)
+                                b.shield = getattr(b, "shield", 1000.0)
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("boss_evolved", {"message": f"The boss evolved and gained {new_mut.replace('_', ' ')}!"})
+
+                    # Apply active mutators
+                    if "acid_trail" in b.mutations:
+                        b.acid_trail_timer = getattr(b, "acid_trail_timer", 0.0) + delta
+                        if b.acid_trail_timer >= 0.5:
+                            b.acid_trail_timer = 0.0
+                            try:
+                                from arena.procedural_arena import Hazard
+                                wall_id = len(getattr(world.arena, "hazards", [])) + getattr(self, "random", __import__("random")).randint(10000, 99999)
+                                wall = Hazard(wall_id, b.x, b.y, 30.0, "acid_puddle", 15.0)
+                                setattr(wall, "duration", 5.0)
+                                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                                    world.arena.hazards.append(wall)
+                            except ImportError:
+                                pass
+                    if "shield_regen" in b.mutations:
+                        if getattr(b, "shield", 0) < getattr(b, "max_shield", 1000.0):
+                            b.shield = min(getattr(b, "max_shield", 1000.0), getattr(b, "shield", 0) + 50.0 * delta)
+
+                    if "explosive_aura" in b.mutations:
+                        # deal small damage to nearby balls
+                        for p in balls:
+                            if p != b and getattr(p, "alive", False) and getattr(p, "ball_type", "") != "spectator":
+                                dist_sq = (b.x - p.x)**2 + (b.y - p.y)**2
+                                if dist_sq <= 150.0**2:
+                                    if hasattr(p, "take_damage"):
+                                        p.take_damage(5.0 * delta)
+                                    else:
+                                        p.hp -= 5.0 * delta
+                                        if p.hp <= 0:
+                                            p.hp = 0
+                                            p.alive = False
+                                            p.killer = b.id
+                    if "pulling_gravity" in b.mutations:
+                        # pull nearby balls
+                        for p in balls:
+                            if p != b and getattr(p, "alive", False) and getattr(p, "ball_type", "") != "spectator":
+                                dx = b.x - p.x
+                                dy = b.y - p.y
+                                dist_sq = dx**2 + dy**2
+                                if dist_sq > 0 and dist_sq <= 300.0**2:
+                                    import math
+                                    dist = math.sqrt(dist_sq)
+                                    pull_strength = 50.0 * delta
+                                    p.x += (dx / dist) * pull_strength
+                                    p.y += (dy / dist) * pull_strength
+
+                elif not getattr(b, "alive", False) and not getattr(b, "reward_given", False):
                     b.reward_given = True
                     killer_id = getattr(b, "killer_id", None)
+                    mut_count = len(getattr(b, "mutations", []))
+                    points = 5000 + mut_count * 2000
                     if hasattr(world, "add_event"):
-                        world.add_event("boss_defeated", {"killer_id": killer_id, "points": 5000, "message": "The final boss was defeated!"})
+                        world.add_event("boss_defeated", {
+                            "killer_id": killer_id,
+                            "points": points,
+                            "message": f"The final boss was defeated! It dropped {mut_count + 1} prestige tokens!",
+                            "prestige_tokens_dropped": mut_count + 1
+                        })
+
 
         # Handle decoy movement mimicking
         for b in list(balls):
