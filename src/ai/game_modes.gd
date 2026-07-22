@@ -2852,6 +2852,33 @@ class BattleRoyaleMode extends GameMode:
 			if world.has_method("set_meta"):
 				world.set_meta("dead_balls", [])
 
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_w = world.arena.width
+			if "height" in world.arena: arena_h = world.arena.height
+		var altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": null, "sabotaged_by": null}]
+		if has_method("set_meta"):
+			set_meta("altars", altars)
+		for b in balls:
+			if b.ball_type != "spectator":
+				b.team = b.ball_type
+				if not b.has_meta("base_perception_radius"):
+					var pr = 250.0
+					if "perception_radius" in b:
+						pr = b.perception_radius
+					b.set_meta("base_perception_radius", pr)
+				if not b.has_meta("base_speed"):
+					if "speed" in b:
+						b.set_meta("base_speed", b.speed)
+					else:
+						b.set_meta("base_speed", 100.0)
+				if not b.has_meta("base_damage"):
+					if "damage" in b:
+						b.set_meta("base_damage", b.damage)
+					else:
+						b.set_meta("base_damage", 10.0)
+
 		capture_points.clear()
 		var arena_width = 1000.0
 		var arena_height = 1000.0
@@ -3002,6 +3029,150 @@ class BattleRoyaleMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		# Acid Rain logic
+		var altars = []
+		if has_meta("altars"):
+			altars = get_meta("altars")
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				if "alive" in b: is_alive = b.alive
+				elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+				if is_alive and b.ball_type != "spectator":
+					var dist_sq = (b.x - altar["x"]) * (b.x - altar["x"]) + (b.y - altar["y"]) * (b.y - altar["y"])
+					if dist_sq <= altar["radius"] * altar["radius"]:
+						var team = b.ball_type
+						if "team" in b: team = b.team
+						if not teams_present.has(team):
+							teams_present[team] = 0
+						teams_present[team] += 1
+
+						var inv = []
+						if typeof(b) == TYPE_DICTIONARY and b.has("inventory"):
+							inv = b.inventory
+						elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("inventory"):
+							inv = b.get_meta("inventory")
+
+						if typeof(inv) == TYPE_ARRAY and inv.has("negative_modifier"):
+							inv.erase("negative_modifier")
+							altar["sabotaged_by"] = team
+							if world != null and typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": team})
+
+						var saboteur = altar.get("sabotaged_by", null)
+						if saboteur != null and saboteur != team:
+							var cur_hp = 100.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								cur_hp = b.hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("hp"):
+								cur_hp = b.get_meta("hp")
+							elif "hp" in b:
+								cur_hp = b.hp
+
+							cur_hp = max(0.0, cur_hp - 15.0 * delta)
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = cur_hp
+							elif typeof(b) != TYPE_DICTIONARY and b.has_method("set_meta"):
+								b.set_meta("hp", cur_hp)
+							elif "hp" in b:
+								b.hp = cur_hp
+
+			if teams_present.size() > 0:
+				var max_team = ""
+				var max_val = -1
+				for t in teams_present.keys():
+					if teams_present[t] > max_val:
+						max_val = teams_present[t]
+						max_team = t
+
+				var tie_count = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_val:
+						tie_count += 1
+
+				if tie_count == 1:
+					if altar["owner"] == max_team:
+						altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+					else:
+						altar["capture_progress"] -= 20.0 * delta
+						if altar["capture_progress"] <= 0:
+							altar["owner"] = max_team
+							altar["capture_progress"] = 0.0
+							weather_timer = 0.0
+							var pref = "clear"
+							if max_team in ["elementalist"]: pref = "thunderstorm"
+							elif max_team in ["druid", "healer", "swamp"]: pref = "rain"
+							elif max_team in ["rogue", "assassin", "stealth"]: pref = "fog"
+							elif max_team in ["mage", "conjurer"]: pref = "snow"
+							elif max_team in ["speed", "scout"]: pref = "wind"
+							elif max_team in ["tank", "brawler"]: pref = "heatwave"
+							elif max_team in ["swarm"]: pref = "sandstorm"
+							else: pref = "thunderstorm"
+
+							if weather != pref:
+								weather = pref
+								if world != null and world.has_method("add_event"):
+									world.add_event("weather_change", {"weather": weather})
+								if weather == "wind":
+									if has_method("set_meta"):
+										set_meta("wind_dx", (randf() * 100.0) - 50.0)
+										set_meta("wind_dy", (randf() * 100.0) - 50.0)
+			else:
+				altar["capture_progress"] = max(0.0, altar["capture_progress"] - 5.0 * delta)
+				if altar["capture_progress"] == 0:
+					altar["owner"] = null
+		if has_method("set_meta"):
+			set_meta("altars", altars)
+
+		if not "weather" in self:
+			if has_method("set_meta"):
+				set_meta("weather", "clear")
+		if not "weather_timer" in self:
+			if has_method("set_meta"):
+				set_meta("weather_timer", 0.0)
+		weather_timer += delta
+
+		if weather_timer > 10.0:
+			weather_timer = 0.0
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+			var old_weather = weather
+			if not has_meta("next_weather"):
+				set_meta("next_weather", weathers[randi() % weathers.size()])
+			weather = get_meta("next_weather")
+			set_meta("next_weather", weathers[randi() % weathers.size()])
+			set_meta("weather_warning_issued", false)
+
+			if old_weather != weather:
+				for b in balls:
+					if "forecast_booster_active" in b and b.forecast_booster_active:
+						b.forecast_booster_active = false
+						if "weather_immunity_timer" in b:
+							b.weather_immunity_timer = 15.0
+					if b.has_method("set_meta"):
+						b.set_meta("forecast_warning_issued", false)
+					else:
+						b.forecast_warning_issued = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("weather_change", {"weather": weather})
+
+			if weather == "wind":
+				if has_method("set_meta"):
+					set_meta("wind_dx", (randf() * 100.0) - 50.0)
+					set_meta("wind_dy", (randf() * 100.0) - 50.0)
+
+		if world != null and "arena" in world and world.arena != null:
+			if "is_foggy" in world.arena: world.arena.is_foggy = (weather in ["fog", "snow", "blizzard"])
+			if "is_raining" in world.arena: world.arena.is_raining = (weather in ["rain", "thunderstorm"])
+			if "is_sandstorming" in world.arena: world.arena.is_sandstorming = (weather == "sandstorm")
+			if "is_snowing" in world.arena: world.arena.is_snowing = (weather in ["snow", "blizzard"])
+			if "is_heatwave" in world.arena: world.arena.is_heatwave = (weather == "heatwave")
+			if "is_lunar_eclipse" in world.arena: world.arena.is_lunar_eclipse = (weather == "lunar_eclipse")
+			if "is_eclipse" in world.arena: world.arena.is_eclipse = (weather == "lunar_eclipse")
+			if "wind_dx" in world.arena: world.arena.wind_dx = get_meta("wind_dx") if (weather == "wind" and has_meta("wind_dx")) else 0.0
+			if "wind_dy" in world.arena: world.arena.wind_dy = get_meta("wind_dy") if (weather == "wind" and has_meta("wind_dy")) else 0.0
+
+
 		if not is_acid_rain_active:
 			acid_rain_timer += delta
 			if acid_rain_timer > 45.0:
