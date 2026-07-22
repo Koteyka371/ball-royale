@@ -2517,6 +2517,73 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var jugg_timer = 0.0
+	if self.ball.has_method("has_meta") and self.ball.has_meta("juggernaut_booster_timer"): jugg_timer = self.ball.get_meta("juggernaut_booster_timer")
+	elif "juggernaut_booster_timer" in self.ball: jugg_timer = self.ball.juggernaut_booster_timer
+
+	if jugg_timer > 0.0:
+		jugg_timer -= delta
+		var applied = false
+		if self.ball.has_method("has_meta") and self.ball.has_meta("juggernaut_applied"): applied = self.ball.get_meta("juggernaut_applied")
+		elif "juggernaut_applied" in self.ball: applied = self.ball.juggernaut_applied
+
+		if not applied:
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("juggernaut_applied", true)
+				if self.ball.has_meta("max_hp"): self.ball.set_meta("max_hp", self.ball.get_meta("max_hp") + 500.0)
+				if self.ball.has_meta("hp"): self.ball.set_meta("hp", self.ball.get_meta("hp") + 500.0)
+				var br = self.ball.get_meta("base_radius") if self.ball.has_meta("base_radius") else 10.0
+				if self.ball.has_meta("radius"): self.ball.set_meta("radius", br * 2.0)
+				var bm = self.ball.get_meta("base_mass") if self.ball.has_meta("base_mass") else 1.0
+				if self.ball.has_meta("mass"): self.ball.set_meta("mass", bm * 5.0)
+				var bs = self.ball.get_meta("base_speed") if self.ball.has_meta("base_speed") else 5.0
+				if self.ball.has_meta("speed"): self.ball.set_meta("speed", bs * 0.5)
+				if self.ball.has_meta("base_speed"):
+					self.ball.set_meta("_jugg_orig_speed", bs)
+					self.ball.set_meta("base_speed", bs * 0.5)
+			else:
+				self.ball.juggernaut_applied = true
+				if "max_hp" in self.ball: self.ball.max_hp += 500.0
+				if "hp" in self.ball: self.ball.hp += 500.0
+				var br = self.ball.base_radius if "base_radius" in self.ball else 10.0
+				if "radius" in self.ball: self.ball.radius = br * 2.0
+				var bm = self.ball.base_mass if "base_mass" in self.ball else 1.0
+				if "mass" in self.ball: self.ball.mass = bm * 5.0
+				var bs = self.ball.base_speed if "base_speed" in self.ball else 5.0
+				if "speed" in self.ball: self.ball.speed = bs * 0.5
+				if "base_speed" in self.ball:
+					self.ball._jugg_orig_speed = bs
+					self.ball.base_speed = bs * 0.5
+
+		if jugg_timer <= 0.0:
+			jugg_timer = 0.0
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("juggernaut_applied", false)
+				if self.ball.has_meta("max_hp"): self.ball.set_meta("max_hp", max(1.0, self.ball.get_meta("max_hp") - 500.0))
+				if self.ball.has_meta("hp"): self.ball.set_meta("hp", min(self.ball.get_meta("hp"), self.ball.get_meta("max_hp")))
+				var br = self.ball.get_meta("base_radius") if self.ball.has_meta("base_radius") else 10.0
+				if self.ball.has_meta("radius"): self.ball.set_meta("radius", br)
+				var bm = self.ball.get_meta("base_mass") if self.ball.has_meta("base_mass") else 1.0
+				if self.ball.has_meta("mass"): self.ball.set_meta("mass", bm)
+				var bs = self.ball.get_meta("base_speed") if self.ball.has_meta("base_speed") else 5.0
+				var orig_bs = self.ball.get_meta("_jugg_orig_speed") if self.ball.has_meta("_jugg_orig_speed") else bs
+				if self.ball.has_meta("base_speed"): self.ball.set_meta("base_speed", orig_bs)
+				if self.ball.has_meta("speed"): self.ball.set_meta("speed", orig_bs)
+			else:
+				self.ball.juggernaut_applied = false
+				if "max_hp" in self.ball: self.ball.max_hp = max(1.0, self.ball.max_hp - 500.0)
+				if "hp" in self.ball: self.ball.hp = min(self.ball.hp, self.ball.max_hp)
+				var br = self.ball.base_radius if "base_radius" in self.ball else 10.0
+				if "radius" in self.ball: self.ball.radius = br
+				var bm = self.ball.base_mass if "base_mass" in self.ball else 1.0
+				if "mass" in self.ball: self.ball.mass = bm
+				var bs = self.ball.base_speed if "base_speed" in self.ball else 5.0
+				var orig_bs = self.ball._jugg_orig_speed if "_jugg_orig_speed" in self.ball else bs
+				if "base_speed" in self.ball: self.ball.base_speed = orig_bs
+				if "speed" in self.ball: self.ball.speed = orig_bs
+
+		if self.ball.has_method("set_meta"): self.ball.set_meta("juggernaut_booster_timer", jugg_timer)
+		else: self.ball.juggernaut_booster_timer = jugg_timer
 
     var is_alive = true
     if "alive" in self.ball: is_alive = self.ball.alive
@@ -22131,6 +22198,21 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "juggernaut_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("juggernaut_booster_timer", 15.0)
+                    if not self.ball.has_meta("base_radius"): self.ball.set_meta("base_radius", self.ball.get_meta("radius") if self.ball.has_meta("radius") else 10.0)
+                    if not self.ball.has_meta("base_mass"): self.ball.set_meta("base_mass", self.ball.get_meta("mass") if self.ball.has_meta("mass") else 1.0)
+                else:
+                    self.ball.juggernaut_booster_timer = 15.0
+                    if not "base_radius" in self.ball: self.ball.base_radius = self.ball.radius if "radius" in self.ball else 10.0
+                    if not "base_mass" in self.ball: self.ball.base_mass = self.ball.mass if "mass" in self.ball else 1.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "tether_booster":
                 var enemies = self._get_enemies_internal()
                 if enemies.size() > 0:

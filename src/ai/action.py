@@ -1398,6 +1398,28 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
 
 
+        if hasattr(self.ball, "juggernaut_booster_timer") and (self.ball.juggernaut_booster_timer > 0 or getattr(self.ball, "juggernaut_applied", False)):
+            self.ball.juggernaut_booster_timer -= delta
+            if not getattr(self.ball, "juggernaut_applied", False):
+                self.ball.juggernaut_applied = True
+                if hasattr(self.ball, "base_speed"): self.ball._jugg_orig_speed = self.ball.base_speed
+                if hasattr(self.ball, "max_hp"): self.ball.max_hp += 500
+                if hasattr(self.ball, "hp"): self.ball.hp += 500
+                if hasattr(self.ball, "radius"): self.ball.radius = getattr(self.ball, "base_radius", 10.0) * 2.0
+                if hasattr(self.ball, "mass"): self.ball.mass = getattr(self.ball, "base_mass", 1.0) * 5.0
+                if hasattr(self.ball, "speed"): self.ball.speed = getattr(self.ball, "base_speed", 5.0) * 0.5
+                if hasattr(self.ball, "base_speed"): self.ball.base_speed = self.ball.base_speed * 0.5
+            if self.ball.juggernaut_booster_timer <= 0:
+                self.ball.juggernaut_booster_timer = 0.0
+                self.ball.juggernaut_applied = False
+                if hasattr(self.ball, "max_hp"): self.ball.max_hp = max(1, self.ball.max_hp - 500)
+                if hasattr(self.ball, "hp"): self.ball.hp = min(self.ball.hp, self.ball.max_hp)
+                if hasattr(self.ball, "radius"): self.ball.radius = getattr(self.ball, "base_radius", 10.0)
+                if hasattr(self.ball, "mass"): self.ball.mass = getattr(self.ball, "base_mass", 1.0)
+                if hasattr(self.ball, "_jugg_orig_speed"):
+                    self.ball.base_speed = self.ball._jugg_orig_speed
+                    if hasattr(self.ball, "speed"): self.ball.speed = self.ball.base_speed
+
         if hasattr(self.ball, "orbital_link_timer"):
             if getattr(self.ball, "orbital_link_timer", 0.0) > 0.0:
                 self.ball.orbital_link_timer -= delta
@@ -11355,6 +11377,15 @@ class Action:
                         target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                         self.ball.storm_link_timer = 5.0
                         self.ball.storm_link_target = target
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "juggernaut_booster":
+                    self.ball.juggernaut_booster_timer = 15.0
+                    if not hasattr(self.ball, "base_radius"): self.ball.base_radius = getattr(self.ball, "radius", 10.0)
+                    if not hasattr(self.ball, "base_mass"): self.ball.base_mass = getattr(self.ball, "mass", 1.0)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
