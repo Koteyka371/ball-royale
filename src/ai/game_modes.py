@@ -254,6 +254,39 @@ class GameMode:
         elif hasattr(world, "profile_manager") and hasattr(world.profile_manager, "leaderboard_manager"):
             season_num = world.profile_manager.leaderboard_manager.data.get("current_season", 1)
 
+
+        # --- Quantum Entangled Trait Logic ---
+        import random
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+        quantum_balls = []
+        for b in alive_balls:
+            traits = getattr(b, "traits", [])
+            if "quantum_entangled" in traits:
+                quantum_balls.append(b)
+
+        if len(quantum_balls) % 2 != 0:
+            # Find a random alive ball without the trait to pair with
+            candidates = [b for b in alive_balls if b not in quantum_balls]
+            if candidates:
+                chosen = random.choice(candidates)
+                if hasattr(chosen, "traits"):
+                    chosen.traits.append("quantum_entangled")
+                else:
+                    chosen.traits = ["quantum_entangled"]
+                quantum_balls.append(chosen)
+
+        random.shuffle(quantum_balls)
+        for i in range(0, len(quantum_balls) - 1, 2):
+            b1 = quantum_balls[i]
+            b2 = quantum_balls[i+1]
+            b1.quantum_entangled_partner = b2
+            b2.quantum_entangled_partner = b1
+            b1.quantum_prev_hp = getattr(b1, "hp", 100.0)
+            b2.quantum_prev_hp = getattr(b2, "hp", 100.0)
+            b1.quantum_enraged = False
+            b2.quantum_enraged = False
+        # ------------------------------------
+
         if getattr(world, "arena", None) is not None:
             import random
             season_index = ((season_num - 1) % 4) + 1
@@ -328,6 +361,55 @@ class GameMode:
                     b.mass = getattr(b, "mass", 1.0) * 0.5
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -1673,6 +1755,55 @@ class BattleRoyaleMode(GameMode):
                     b.speed_boost_timer = getattr(b, "speed_boost_timer", 0.0) + 10.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -3822,6 +3953,55 @@ class ZombieInfectionMode(GameMode):
                         b.team = "Survivor"
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -6001,6 +6181,55 @@ class VampireRoyaleMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -6471,6 +6700,55 @@ class KingOfTheHillMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -6745,6 +7023,55 @@ class BlackHoleMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -6946,6 +7273,55 @@ class WeatherChaosMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -8115,6 +8491,55 @@ class MemoryTrapsMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -8287,6 +8712,55 @@ class CustomMatchMode(GameMode):
         self.mutators_active = mutators_unlocked and len(self.mutators) > 0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -8737,6 +9211,55 @@ class PitchBlackMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -8896,6 +9419,55 @@ class VisionReducedMode(GameMode):
                 b.team = b.ball_type
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
@@ -11609,6 +12181,55 @@ class WindstormMode(GameMode):
                 b.base_damage = getattr(b, "damage", 10.0)
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+
+        # --- Quantum Entangled Trait Logic ---
+        deltas_to_apply = {}
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                if not getattr(b, "quantum_enraged", False):
+                    if not getattr(partner, "alive", False):
+                        b.quantum_enraged = True
+                        b.speed = getattr(b, "speed", 100.0) * 2.0
+                        b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 2.0
+                        b.damage = getattr(b, "damage", 10.0) * 2.0
+                        b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "quantum_enrage", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+                    else:
+                        prev_hp = getattr(b, "quantum_prev_hp", getattr(b, "hp", 100.0))
+                        curr_hp = getattr(b, "hp", 100.0)
+                        diff = curr_hp - prev_hp
+                        if diff != 0:
+                            partner_id = getattr(partner, "id", id(partner))
+                            deltas_to_apply[partner_id] = deltas_to_apply.get(partner_id, 0.0) + (diff * 0.5)
+
+        for b in balls:
+            partner = getattr(b, "quantum_entangled_partner", None)
+            if partner:
+                b_id = getattr(b, "id", id(b))
+                if b_id in deltas_to_apply and getattr(b, "alive", False):
+                    diff = deltas_to_apply[b_id]
+                    if diff < 0:
+                        # Damage
+                        damage_amount = abs(diff)
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage_amount)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - damage_amount)
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+                    elif diff > 0:
+                        # Healing
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + diff)
+
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+                else:
+                    b.quantum_prev_hp = getattr(b, "hp", 100.0)
+        # ------------------------------------
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []

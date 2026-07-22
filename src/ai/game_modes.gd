@@ -373,6 +373,79 @@ class GameMode:
 					elif b.has_method("set_meta") and b.has_meta("base_damage"):
 						b.set_meta("base_damage", float(b.get_meta("base_damage")) * 0.95)
 
+		# --- Quantum Entangled Trait Logic ---
+		var alive_balls = []
+		for b in balls:
+			var b_alive = true
+			if typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else null)
+			if b_alive and b_type != "spectator":
+				alive_balls.append(b)
+
+		var quantum_balls = []
+		for b in alive_balls:
+			var traits_arr = []
+			if typeof(b) == TYPE_OBJECT and "traits" in b and typeof(b.traits) == TYPE_ARRAY:
+				traits_arr = b.traits
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("traits"):
+				var meta_tr = b.get_meta("traits")
+				if typeof(meta_tr) == TYPE_ARRAY:
+					traits_arr = meta_tr
+			elif typeof(b) == TYPE_DICTIONARY and b.has("traits") and typeof(b["traits"]) == TYPE_ARRAY:
+				traits_arr = b["traits"]
+
+			if traits_arr.has("quantum_entangled"):
+				quantum_balls.append(b)
+
+		if quantum_balls.size() % 2 != 0:
+			var candidates = []
+			for b in alive_balls:
+				if not quantum_balls.has(b):
+					candidates.append(b)
+			if candidates.size() > 0:
+				var chosen = candidates[randi() % candidates.size()]
+
+				if typeof(chosen) == TYPE_OBJECT and "traits" in chosen and typeof(chosen.traits) == TYPE_ARRAY:
+					chosen.traits.append("quantum_entangled")
+				elif typeof(chosen) == TYPE_OBJECT and chosen.has_method("get_meta") and chosen.has_meta("traits"):
+					var meta_tr = chosen.get_meta("traits")
+					if typeof(meta_tr) == TYPE_ARRAY:
+						meta_tr.append("quantum_entangled")
+						chosen.set_meta("traits", meta_tr)
+				elif typeof(chosen) == TYPE_DICTIONARY:
+					if not chosen.has("traits"):
+						chosen["traits"] = []
+					if typeof(chosen["traits"]) == TYPE_ARRAY:
+						chosen["traits"].append("quantum_entangled")
+				quantum_balls.append(chosen)
+
+		quantum_balls.shuffle()
+		for i in range(0, quantum_balls.size() - 1, 2):
+			var b1 = quantum_balls[i]
+			var b2 = quantum_balls[i+1]
+
+			if typeof(b1) == TYPE_OBJECT:
+				if b1.has_method("set_meta"):
+					b1.set_meta("quantum_entangled_partner", b2)
+					b1.set_meta("quantum_prev_hp", float(b1.hp) if "hp" in b1 else 100.0)
+					b1.set_meta("quantum_enraged", false)
+			elif typeof(b1) == TYPE_DICTIONARY:
+				b1["quantum_entangled_partner"] = b2
+				b1["quantum_prev_hp"] = float(b1.hp) if b1.has("hp") else 100.0
+				b1["quantum_enraged"] = false
+
+			if typeof(b2) == TYPE_OBJECT:
+				if b2.has_method("set_meta"):
+					b2.set_meta("quantum_entangled_partner", b1)
+					b2.set_meta("quantum_prev_hp", float(b2.hp) if "hp" in b2 else 100.0)
+					b2.set_meta("quantum_enraged", false)
+			elif typeof(b2) == TYPE_DICTIONARY:
+				b2["quantum_entangled_partner"] = b1
+				b2["quantum_prev_hp"] = float(b2.hp) if b2.has("hp") else 100.0
+				b2["quantum_enraged"] = false
+		# ------------------------------------
+
 		var season_num = 1
 		if "leaderboard_manager" in world and world.leaderboard_manager != null:
 			season_num = world.leaderboard_manager.data.get("current_season", 1)
@@ -494,6 +567,121 @@ class GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+
+		# --- Quantum Entangled Trait Logic ---
+		var deltas_to_apply = {}
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+			if not b_alive: continue
+
+			var partner = null
+			if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("quantum_entangled_partner"):
+				partner = b.get_meta("quantum_entangled_partner")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("quantum_entangled_partner"):
+				partner = b["quantum_entangled_partner"]
+
+			if partner != null:
+				var enraged = false
+				if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("quantum_enraged"):
+					enraged = b.get_meta("quantum_enraged")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("quantum_enraged"):
+					enraged = b["quantum_enraged"]
+
+				if not enraged:
+					var p_alive = false
+					if typeof(partner) == TYPE_OBJECT and "alive" in partner: p_alive = partner.alive
+					elif typeof(partner) == TYPE_DICTIONARY and partner.has("alive"): p_alive = partner.alive
+
+					if not p_alive:
+						if typeof(b) == TYPE_OBJECT:
+							if b.has_method("set_meta"): b.set_meta("quantum_enraged", true)
+							if "speed" in b: b.speed = float(b.speed) * 2.0
+							if "base_speed" in b: b.base_speed = float(b.base_speed) * 2.0
+							if "damage" in b: b.damage = float(b.damage) * 2.0
+							if "base_damage" in b: b.base_damage = float(b.base_damage) * 2.0
+						elif typeof(b) == TYPE_DICTIONARY:
+							b["quantum_enraged"] = true
+							if b.has("speed"): b["speed"] = float(b["speed"]) * 2.0
+							if b.has("base_speed"): b["base_speed"] = float(b["base_speed"]) * 2.0
+							if b.has("damage"): b["damage"] = float(b["damage"]) * 2.0
+							if b.has("base_damage"): b["base_damage"] = float(b["base_damage"]) * 2.0
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+							var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+							world.add_event("visual_effect", {"type": "quantum_enrage", "x": bx, "y": by})
+					else:
+						var prev_hp = 100.0
+						if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("quantum_prev_hp"):
+							prev_hp = float(b.get_meta("quantum_prev_hp"))
+						elif typeof(b) == TYPE_DICTIONARY and b.has("quantum_prev_hp"):
+							prev_hp = float(b["quantum_prev_hp"])
+
+						var curr_hp = 100.0
+						if typeof(b) == TYPE_OBJECT and "hp" in b: curr_hp = float(b.hp)
+						elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): curr_hp = float(b["hp"])
+
+						var diff = curr_hp - prev_hp
+						if diff != 0:
+							var p_id = partner.get("id") if typeof(partner) == TYPE_DICTIONARY else (partner.id if "id" in partner else partner.get_instance_id())
+							if not deltas_to_apply.has(p_id):
+								deltas_to_apply[p_id] = 0.0
+							deltas_to_apply[p_id] += (diff * 0.5)
+
+		for b in balls:
+			var partner = null
+			if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("quantum_entangled_partner"):
+				partner = b.get_meta("quantum_entangled_partner")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("quantum_entangled_partner"):
+				partner = b["quantum_entangled_partner"]
+
+			if partner != null:
+				var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else b.get_instance_id())
+				var b_alive = false
+				if typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+
+				if deltas_to_apply.has(b_id) and b_alive:
+					var diff = deltas_to_apply[b_id]
+					if diff < 0:
+						var damage_amount = abs(diff)
+						if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(damage_amount)
+						else:
+							var cur_hp = float(b["hp"]) if typeof(b) == TYPE_DICTIONARY else float(b.hp)
+							var new_hp = max(0.0, cur_hp - damage_amount)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+								if new_hp <= 0: b["alive"] = false
+							else:
+								b.hp = new_hp
+								if new_hp <= 0: b.alive = false
+					elif diff > 0:
+						var max_hp = 100.0
+						if typeof(b) == TYPE_OBJECT and "max_hp" in b: max_hp = float(b.max_hp)
+						elif typeof(b) == TYPE_DICTIONARY and b.has("max_hp"): max_hp = float(b["max_hp"])
+
+						var cur_hp = float(b["hp"]) if typeof(b) == TYPE_DICTIONARY else float(b.hp)
+						var new_hp = min(max_hp, cur_hp + diff)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = new_hp
+						else:
+							b.hp = new_hp
+
+					var cur_hp = float(b["hp"]) if typeof(b) == TYPE_DICTIONARY else float(b.hp)
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("quantum_prev_hp", cur_hp)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["quantum_prev_hp"] = cur_hp
+				else:
+					var cur_hp = float(b["hp"]) if typeof(b) == TYPE_DICTIONARY else (float(b.hp) if "hp" in b else 100.0)
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("quantum_prev_hp", cur_hp)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["quantum_prev_hp"] = cur_hp
+		# ------------------------------------
 
 		# Hazard control logic (Twitch spectator interaction)
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:

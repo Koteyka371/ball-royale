@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tethers",
+  "description": "Add a new tactical skill that allows a player to manually cast a temporary quantum tether on an enemy. While active, any damage the caster takes is equally distributed to the tethered enemy, but moving too far apart breaks the tether."
+}
