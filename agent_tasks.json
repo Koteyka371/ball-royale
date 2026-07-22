@@ -22620,7 +22620,7 @@
     },
     {
       "id": "idea-1320",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Platform Tilt Mechanics",
@@ -33461,6 +33461,41 @@
         "src/arena/shrinking_grid_arena.py",
         "src/arena/shrinking_grid_arena.gd",
         "tests/test_shrinking_grid_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1957",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Bank Investment System",
+      "description": "Allow guilds to invest their resources into a timed vault. After a set period of days, the vault opens, yielding a percentage return based on the guild's level and investment perks, but during this time the guild is vulnerable to sieges where attackers can steal a portion of the locked funds.",
+      "allowed_paths": [
+        "src/ui/guild_bank_investment.py",
+        "src/ui/guild_bank_investment.gd",
+        "src/ai/guild_bank_investment.py",
+        "tests/test_guild_bank_investment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1958",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Market Auction House",
+      "description": "A global real-time auction house where players can bid on extremely rare, procedurally generated boosters using guild resources. The auction only opens during specific times of the day and features items with unique stat combinations not found in standard play.",
+      "allowed_paths": [
+        "src/ai/black_market_auction_house.py",
+        "src/ai/black_market_auction_house.gd",
+        "tests/test_black_market_auction_house.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
