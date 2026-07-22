@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Detonator Mode",
+  "description": "A new game mode where randomly spawned 'Quantum Detonators' explode, leaving behind chaotic zones. These zones randomly teleport players who enter them to another active zone on the map, reversing their current momentum upon exiting."
+}
