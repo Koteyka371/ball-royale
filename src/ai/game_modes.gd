@@ -52158,6 +52158,78 @@ class ElementalChainReactionMode extends GameMode:
 		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()
 GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode.new()
+
+class VolcanicEruptionMode extends GameMode:
+	var eruption_timer = 0.0
+	var eruption_interval = 15.0
+	var eruption_duration = 5.0
+	var is_erupting = false
+	var projectile_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Volcanic Eruption"
+		description = "The center of the arena periodically erupts, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		eruption_timer = 0.0
+		is_erupting = false
+		projectile_timer = 0.0
+
+	func tick(world, delta, balls):
+		super.tick(world, delta, balls)
+
+		if typeof(world) == TYPE_DICTIONARY and not world.has("arena"):
+			return
+		if typeof(world) != TYPE_DICTIONARY and not "arena" in world:
+			return
+
+		eruption_timer += delta
+		if not is_erupting and eruption_timer >= eruption_interval:
+			is_erupting = true
+			eruption_timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+				world["add_event"].call("volcano_eruption_start", {"message": "The volcano is erupting!"})
+			elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+				world.add_event("volcano_eruption_start", {"message": "The volcano is erupting!"})
+		elif is_erupting and eruption_timer >= eruption_duration:
+			is_erupting = false
+			eruption_timer = 0.0
+
+		if is_erupting:
+			projectile_timer -= delta
+			if projectile_timer <= 0.0:
+				projectile_timer = 0.5
+				var arena = world["arena"] if typeof(world) == TYPE_DICTIONARY else world.arena
+				var arena_width = arena.get("width", 1000) if typeof(arena) == TYPE_DICTIONARY else arena.width
+				var arena_height = arena.get("height", 1000) if typeof(arena) == TYPE_DICTIONARY else arena.height
+				var target_x = rand_range(0, arena_width)
+				var target_y = rand_range(0, arena_height)
+
+				var hazard = {
+					"id": randi() % 900000 + 100000,
+					"x": target_x,
+					"y": target_y,
+					"radius": 40.0,
+					"kind": "lava_puddle",
+					"damage": 10.0,
+					"duration": 8.0,
+					"active": true
+				}
+
+				if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+					arena["hazards"].append(hazard)
+				elif typeof(arena) != TYPE_DICTIONARY and "hazards" in arena:
+					arena.hazards.append(hazard)
+
+				if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+					world["add_event"].call("burning_projectile_landed", {"x": target_x, "y": target_y})
+				elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+					world.add_event("burning_projectile_landed", {"x": target_x, "y": target_y})
+
+GAME_MODES['volcanic_eruption'] = VolcanicEruptionMode.new()
+
 GAME_MODES['gravity_shift'] = GravityShiftMode.new()
 
 

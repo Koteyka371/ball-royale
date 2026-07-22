@@ -34157,3 +34157,66 @@ GAME_MODES['falling_tiles_royale'] = FallingTilesRoyaleMode()
 GAME_MODES['tilting_platform'] = TiltingPlatformMode()
 
 GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode()
+
+class VolcanicEruptionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Volcanic Eruption"
+        self.description = "The center of the arena periodically erupts, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
+        self.eruption_timer = 0.0
+        self.eruption_interval = 15.0
+        self.eruption_duration = 5.0
+        self.is_erupting = False
+        self.projectile_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.eruption_timer = 0.0
+        self.is_erupting = False
+        self.projectile_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, 'arena'):
+            return
+
+        self.eruption_timer += delta
+        if not self.is_erupting and self.eruption_timer >= self.eruption_interval:
+            self.is_erupting = True
+            self.eruption_timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("volcano_eruption_start", {"message": "The volcano is erupting!"})
+
+        elif self.is_erupting and self.eruption_timer >= self.eruption_duration:
+            self.is_erupting = False
+            self.eruption_timer = 0.0
+
+        if self.is_erupting:
+            self.projectile_timer -= delta
+            if self.projectile_timer <= 0.0:
+                self.projectile_timer = 0.5 # Drop a projectile every 0.5s
+                import random
+                arena_width = getattr(world.arena, 'width', 1000)
+                arena_height = getattr(world.arena, 'height', 1000)
+                target_x = random.uniform(0, arena_width)
+                target_y = random.uniform(0, arena_height)
+
+                class LavaPuddleHazard:
+                    def __init__(self, x, y):
+                        self.id = random.randint(100000, 999999)
+                        self.x = x
+                        self.y = y
+                        self.radius = 40.0
+                        self.kind = "lava_puddle"
+                        self.damage = 10.0
+                        self.duration = 8.0
+                        self.active = True
+
+                if hasattr(world.arena, 'hazards'):
+                    world.arena.hazards.append(LavaPuddleHazard(target_x, target_y))
+
+                if hasattr(world, "add_event"):
+                    world.add_event("burning_projectile_landed", {"x": target_x, "y": target_y})
+
+GAME_MODES['volcanic_eruption'] = VolcanicEruptionMode()
