@@ -1,0 +1,4 @@
+{
+  "title": "Altar Upgrades for specific builds",
+  "description": "Altars change their behavior depending on who captures them, giving additional buffs related to their class (e.g. Healers capturing an altar gives a slight map-wide healing regen buff to all allies)."
+}

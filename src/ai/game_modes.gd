@@ -2784,6 +2784,15 @@ class BattleRoyaleMode extends GameMode:
 			if world.has_method("set_meta"):
 				world.set_meta("dead_balls", [])
 
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_w = world.arena.width
+			if "height" in world.arena: arena_h = world.arena.height
+		var altars = [{"x": arena_w/2, "y": arena_h/2, "radius": 150.0, "capture_progress": 0.0, "owner": null, "sabotaged_by": null}]
+		if has_method("set_meta"):
+			set_meta("altars", altars)
+
 		capture_points.clear()
 		var arena_width = 1000.0
 		var arena_height = 1000.0
@@ -2933,6 +2942,137 @@ class BattleRoyaleMode extends GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var altars = []
+		if has_method("has_meta") and has_meta("altars"):
+			altars = get_meta("altars")
+		for altar in altars:
+			var teams_present = {}
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else null)
+				if is_alive and b_type != "spectator":
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x", 0.0)
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y", 0.0)
+					var dist_sq = pow(bx - altar["x"], 2) + pow(by - altar["y"], 2)
+					if dist_sq <= pow(altar["radius"], 2):
+						var team = b.get("team") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else b_type)
+						if not teams_present.has(team):
+							teams_present[team] = 0
+						teams_present[team] += 1
+
+						var inv = []
+						if typeof(b) == TYPE_DICTIONARY:
+							inv = b.get("inventory", [])
+						else:
+							if "inventory" in b: inv = b.inventory
+						if inv.has("negative_modifier"):
+							inv.erase("negative_modifier")
+							altar["sabotaged_by"] = team
+							if world != null and world.has_method("add_event"):
+								world.add_event("altar_sabotaged", {"team": team})
+						var saboteur = altar.get("sabotaged_by")
+						if saboteur != null and saboteur != team:
+							var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp", 100.0)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = max(0.0, hp - 15.0 * delta)
+							else:
+								b.hp = max(0.0, hp - 15.0 * delta)
+
+			if teams_present.size() > 0:
+				var max_team = null
+				var max_val = -1
+				for t in teams_present.keys():
+					if teams_present[t] > max_val:
+						max_val = teams_present[t]
+						max_team = t
+				var is_tie = false
+				var count = 0
+				for t in teams_present.keys():
+					if teams_present[t] == max_val:
+						count += 1
+				if count > 1:
+					is_tie = true
+
+				if not is_tie:
+					if altar["owner"] == max_team:
+						altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+					else:
+						altar["capture_progress"] -= 20.0 * delta
+						if altar["capture_progress"] <= 0:
+							altar["owner"] = max_team
+							altar["capture_progress"] = 0.0
+							weather_timer = 0.0
+							var ctype = max_team
+							var pref = "clear"
+							if ctype in ["elementalist"]: pref = "thunderstorm"
+							elif ctype in ["druid", "healer", "swamp"]: pref = "rain"
+							elif ctype in ["rogue", "assassin", "stealth"]: pref = "fog"
+							elif ctype in ["mage", "conjurer"]: pref = "snow"
+							elif ctype in ["speed", "scout"]: pref = "wind"
+							elif ctype in ["tank", "brawler"]: pref = "heatwave"
+							elif ctype in ["swarm"]: pref = "sandstorm"
+							else: pref = "thunderstorm"
+
+							if weather != pref:
+								weather = pref
+								if world != null and world.has_method("add_event"):
+									world.add_event("weather_change", {"weather": weather})
+								if weather == "wind":
+									var rnd = RandomNumberGenerator.new()
+									rnd.randomize()
+									set_meta("wind_dx", rnd.randf_range(-50.0, 50.0))
+									set_meta("wind_dy", rnd.randf_range(-50.0, 50.0))
+			if teams_present.size() == 0:
+				altar["capture_progress"] = max(0.0, altar["capture_progress"] - 5.0 * delta)
+				if altar["capture_progress"] == 0:
+					altar["owner"] = null
+
+		if weather_timer > 10.0:
+			weather_timer = 0.0
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+			var old_weather = weather
+			var nw = get_meta("next_weather") if has_meta("next_weather") else weathers[randi() % weathers.size()]
+			weather = nw
+			set_meta("next_weather", weathers[randi() % weathers.size()])
+			set_meta("weather_warning_issued", false)
+
+			if old_weather != weather:
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT:
+						if "forecast_booster_active" in b and b.forecast_booster_active:
+							b.forecast_booster_active = false
+							if "weather_immunity_timer" in b: b.weather_immunity_timer = 15.0
+						if "forecast_warning_issued" in b: b.forecast_warning_issued = false
+					else:
+						if b.get("forecast_booster_active", false):
+							b["forecast_booster_active"] = false
+							b["weather_immunity_timer"] = 15.0
+						b["forecast_warning_issued"] = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("weather_change", {"weather": weather})
+			if weather == "wind":
+				var rnd = RandomNumberGenerator.new()
+				rnd.randomize()
+				set_meta("wind_dx", rnd.randf_range(-50.0, 50.0))
+				set_meta("wind_dy", rnd.randf_range(-50.0, 50.0))
+		else:
+			weather_timer += delta
+
+		if world != null and "arena" in world and world.arena != null:
+			if "is_foggy" in world.arena: world.arena.is_foggy = (weather in ["fog", "snow", "blizzard"])
+			if "is_raining" in world.arena: world.arena.is_raining = (weather in ["rain", "thunderstorm"])
+			if "is_sandstorming" in world.arena: world.arena.is_sandstorming = (weather == "sandstorm")
+			if "is_snowing" in world.arena: world.arena.is_snowing = (weather in ["snow", "blizzard"])
+			if "is_heatwave" in world.arena: world.arena.is_heatwave = (weather == "heatwave")
+			if "is_lunar_eclipse" in world.arena: world.arena.is_lunar_eclipse = (weather == "lunar_eclipse")
+			if "is_eclipse" in world.arena: world.arena.is_eclipse = (weather == "lunar_eclipse")
+			if "wind_dx" in world.arena: world.arena.wind_dx = get_meta("wind_dx") if (has_meta("wind_dx") and weather == "wind") else 0.0
+			if "wind_dy" in world.arena: world.arena.wind_dy = get_meta("wind_dy") if (has_meta("wind_dy") and weather == "wind") else 0.0
+
 		# Acid Rain logic
 		if not is_acid_rain_active:
 			acid_rain_timer += delta
