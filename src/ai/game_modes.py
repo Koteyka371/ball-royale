@@ -5429,7 +5429,12 @@ class EscortMode(GameMode):
         if defenders:
             self.payload = defenders[0]
             self.payload.ball_type = "payload"
-            self.payload.is_invulnerable = True
+            self.payload.is_invulnerable = False
+            self.payload.max_hp = 5000.0
+            self.payload.hp = 5000.0
+            self.payload.disabled_timer = 0.0
+            self.payload.damage_taken_window = 0.0
+            self.payload.damage_window_timer = 0.0
             self.payload.speed = 0.5
             self.payload.damage = 0.0
             self.payload.x = 100.0
@@ -5649,6 +5654,8 @@ class EscortMode(GameMode):
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
+            if getattr(self.payload, "hp", 5000.0) < 100.0:
+                self.payload.hp = 5000.0 # Heal to prevent dying
 
             # Continuous healing for nearby defenders
             for b in balls:
@@ -5750,6 +5757,37 @@ class EscortMode(GameMode):
                 dx = target_x - getattr(self.payload, "x", 0)
                 dy = target_y - getattr(self.payload, "y", 0)
                 dist = math.hypot(dx, dy)
+
+            # Check if payload took damage
+            current_hp = getattr(self.payload, "hp", 5000.0)
+            if not hasattr(self.payload, "last_hp"):
+                self.payload.last_hp = current_hp
+
+            damage_taken = self.payload.last_hp - current_hp
+            if damage_taken > 0:
+                self.payload.damage_taken_window = getattr(self.payload, "damage_taken_window", 0.0) + damage_taken
+                self.payload.damage_window_timer = 3.0 # 3 second window
+
+            self.payload.last_hp = current_hp
+
+            # Decrease damage window timer
+            if getattr(self.payload, "damage_window_timer", 0.0) > 0:
+                self.payload.damage_window_timer -= delta
+                if self.payload.damage_window_timer <= 0:
+                    self.payload.damage_taken_window = 0.0
+
+            # Disable if enough damage taken
+            if getattr(self.payload, "damage_taken_window", 0.0) > 500.0:
+                self.payload.disabled_timer = 5.0
+                self.payload.damage_taken_window = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("payload_disabled", {"x": self.payload.x, "y": self.payload.y})
+
+            if getattr(self.payload, "disabled_timer", 0.0) > 0:
+                self.payload.disabled_timer -= delta
+                if self.payload.disabled_timer < 0:
+                    self.payload.disabled_timer = 0.0
+                speed_mult *= 0.2  # Slow down heavily when disabled
 
             if dist > 0:
                 base_speed = getattr(self.payload, "speed", 0.5)
@@ -15234,6 +15272,8 @@ class TugOfWarMode(GameMode):
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
+            if getattr(self.payload, "hp", 5000.0) < 100.0:
+                self.payload.hp = 5000.0 # Heal to prevent dying
 
             px = getattr(self.payload, "x", arena_width / 2.0)
             py = getattr(self.payload, "y", arena_height / 2.0)
@@ -20421,6 +20461,8 @@ class ReverseTugOfWarMode(GameMode):
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
+            if getattr(self.payload, "hp", 5000.0) < 100.0:
+                self.payload.hp = 5000.0 # Heal to prevent dying
 
             # Count nearby players to determine movement
             red_count = 0
@@ -20794,6 +20836,8 @@ class TickingPayloadMode(GameMode):
 
         if self.payload and getattr(self.payload, "alive", False):
             import math
+            if getattr(self.payload, "hp", 5000.0) < 100.0:
+                self.payload.hp = 5000.0 # Heal to prevent dying
 
             # Count nearby players to determine movement
             red_count = 0
