@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1305] Aura of Paranoia — *2026-07-22 21:06:05 UTC*
+
+A new hazard type that applies the 'confusion' effect to any ball that stays within it for more than 3 seconds, forcing players to navigate quickly through the zone or risk reversing their controls.
+
+---
+
 ## [idea-1261] Danger zone ping system — *2026-07-22 20:55:42 UTC*
 
 Add a minimap UI ping when the safe zone shrinks. A red flash could indicate a ball is currently taking damage from being outside the zone.

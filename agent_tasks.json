@@ -22361,7 +22361,7 @@
     },
     {
       "id": "idea-1305",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura of Paranoia",
@@ -34092,6 +34092,40 @@
         "src/ai/toxic_minion_mutator.py",
         "src/ai/toxic_minion_mutator.gd",
         "tests/test_toxic_minion_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1994",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Danger Beacons",
+      "description": "Players can pick up a new consumable called 'Danger Beacon'. When placed on the ground, it reveals any player within its radius on the minimap as a red flashing dot, acting as an early warning system against stealthy opponents.",
+      "allowed_paths": [
+        "src/ai/danger_beacons.py",
+        "src/ai/danger_beacons.gd",
+        "tests/test_danger_beacons.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1995",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phantom Safe Zone",
+      "description": "In a special variation of the Safe Zone mode, phantom safe zones occasionally spawn which look completely real but only last for 15 seconds. Stepping into them provides brief immunity from storm damage before unexpectedly dissipating and leaving the players vulnerable.",
+      "allowed_paths": [
+        "src/ai/phantom_safe_zone.py",
+        "src/ai/phantom_safe_zone.gd",
+        "tests/test_phantom_safe_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
