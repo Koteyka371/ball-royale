@@ -43291,7 +43291,148 @@ class CurrencyBurdenMode extends GameMode:
 							world.add_event("altar_deposit", {"ball_id": b.get("id", -1), "amount": buff_amount, "upgrade": upgrade_type})
 						break
 
+class AuraPulseEventMode extends GameMode:
+	func _init().():
+		name = "Aura Pulse Event"
+		description = "A global event where stacking auras pulse outward globally every 15 seconds. During a pulse, all players with active aura buffs grant those buffs to random friendly players anywhere on the map for 5 seconds. If a player with a reversed aura (via the Aura Inverter Trap) pulses, it debuffs enemies map-wide instead."
+
+	var pulse_timer = 0.0
+
+	func tick(world, balls, delta=0.016):
+		pulse_timer += delta
+		if pulse_timer >= 15.0:
+			pulse_timer = 0.0
+			var aura_buff_keys = ["vampiric_aura_timer", "decoy_aura_timer", "cosmetic_aura_scale"]
+
+			for b in balls:
+				if not b.get("alive", true) or b.get("is_decoy", false):
+					continue
+
+				var has_aura = false
+				var active_auras = {}
+
+				for key in aura_buff_keys:
+					var val = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has(key):
+							val = b[key]
+					elif typeof(b) == TYPE_OBJECT:
+						if key in b:
+							val = b.get(key)
+						elif b.has_method("has_meta") and b.has_meta(key):
+							val = b.get_meta(key)
+
+					if typeof(val) == TYPE_REAL or typeof(val) == TYPE_INT:
+						var threshold = 0.0
+						if key == "cosmetic_aura_scale":
+							threshold = 1.0
+						if val > threshold:
+							has_aura = true
+							active_auras[key] = val
+
+				if has_aura:
+					var is_reversed = false
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("aura_inversion_timer"):
+							is_reversed = float(b["aura_inversion_timer"]) > 0.0
+					elif typeof(b) == TYPE_OBJECT:
+						if "aura_inversion_timer" in b:
+							is_reversed = float(b.get("aura_inversion_timer")) > 0.0
+						elif b.has_method("has_meta") and b.has_meta("aura_inversion_timer"):
+							is_reversed = float(b.get_meta("aura_inversion_timer")) > 0.0
+
+					if is_reversed:
+						var enemies = []
+						var b_team = b.get("team", b.get("ball_type", ""))
+
+						for e in balls:
+							if e != b and e.get("alive", true):
+								var e_team = e.get("team", e.get("ball_type", ""))
+								if e_team != b_team:
+									enemies.append(e)
+
+						for e in enemies:
+							var cur_disruption = 0.0
+							if typeof(e) == TYPE_DICTIONARY:
+								if e.has("aura_disruption_timer"):
+									cur_disruption = float(e["aura_disruption_timer"])
+							elif typeof(e) == TYPE_OBJECT:
+								if "aura_disruption_timer" in e:
+									cur_disruption = float(e.get("aura_disruption_timer"))
+								elif e.has_method("has_meta") and e.has_meta("aura_disruption_timer"):
+									cur_disruption = float(e.get_meta("aura_disruption_timer"))
+
+							var new_disruption = max(cur_disruption, 5.0)
+							if typeof(e) == TYPE_DICTIONARY:
+								e["aura_disruption_timer"] = new_disruption
+							elif typeof(e) == TYPE_OBJECT:
+								if e.has_method("set_meta"):
+									e.set_meta("aura_disruption_timer", new_disruption)
+								elif "aura_disruption_timer" in e:
+									e.set("aura_disruption_timer", new_disruption)
+
+							var cur_inversion = 0.0
+							if typeof(e) == TYPE_DICTIONARY:
+								if e.has("aura_inversion_timer"):
+									cur_inversion = float(e["aura_inversion_timer"])
+							elif typeof(e) == TYPE_OBJECT:
+								if "aura_inversion_timer" in e:
+									cur_inversion = float(e.get("aura_inversion_timer"))
+								elif e.has_method("has_meta") and e.has_meta("aura_inversion_timer"):
+									cur_inversion = float(e.get_meta("aura_inversion_timer"))
+
+							var new_inversion = max(cur_inversion, 5.0)
+							if typeof(e) == TYPE_DICTIONARY:
+								e["aura_inversion_timer"] = new_inversion
+							elif typeof(e) == TYPE_OBJECT:
+								if e.has_method("set_meta"):
+									e.set_meta("aura_inversion_timer", new_inversion)
+								elif "aura_inversion_timer" in e:
+									e.set("aura_inversion_timer", new_inversion)
+
+					else:
+						var friendlies = []
+						var b_team = b.get("team", b.get("ball_type", ""))
+
+						for f in balls:
+							if f != b and f.get("alive", true):
+								var f_team = f.get("team", f.get("ball_type", ""))
+								if f_team == b_team:
+									friendlies.append(f)
+
+						if friendlies.size() > 0:
+							var target = friendlies[randi() % friendlies.size()]
+							for key in active_auras:
+								if key == "cosmetic_aura_scale":
+									var cur_scale = 1.0
+									if typeof(target) == TYPE_DICTIONARY:
+										if target.has(key):
+											cur_scale = float(target[key])
+									elif typeof(target) == TYPE_OBJECT:
+										if key in target:
+											cur_scale = float(target.get(key))
+										elif target.has_method("has_meta") and target.has_meta(key):
+											cur_scale = float(target.get_meta(key))
+
+									var new_scale = max(cur_scale, active_auras[key])
+									if typeof(target) == TYPE_DICTIONARY:
+										target[key] = new_scale
+									elif typeof(target) == TYPE_OBJECT:
+										if target.has_method("set_meta"):
+											target.set_meta(key, new_scale)
+										elif key in target:
+											target.set(key, new_scale)
+								else:
+									if typeof(target) == TYPE_DICTIONARY:
+										target[key] = 5.0
+									elif typeof(target) == TYPE_OBJECT:
+										if target.has_method("set_meta"):
+											target.set_meta(key, 5.0)
+										elif key in target:
+											target.set(key, 5.0)
+
 GAME_MODES = {
+	"aura_pulse_event": AuraPulseEventMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),
