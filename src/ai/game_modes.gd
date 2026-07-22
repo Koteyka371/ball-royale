@@ -51603,3 +51603,11 @@ GAME_MODES["ice_walls"] = IceWallsMode.new()
 GAME_MODES["weather_combinations"] = WeatherCombinationsMode.new()
 GAME_MODES["linked_portals"] = LinkedPortalsMode.new()
 GAME_MODES["vip_protection"] = VIPProtectionMode.new()
+
+
+class ElementalChainReactionMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Elemental Chain Reactions"
+		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
+GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()

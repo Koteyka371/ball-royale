@@ -196,6 +196,51 @@ class Action:
                 break
 
     def _attempt_damage(self, attacker, target) -> None:
+
+        # Elemental Chain Reactions mode logic
+        mode = getattr(self.world, 'mode', None)
+        mode_name = getattr(mode, 'name', '') if mode else getattr(self.world, 'current_mode_name', '')
+        if not mode_name and hasattr(self.world, 'game_mode'):
+            mode_name = getattr(self.world.game_mode, 'name', '')
+
+        if mode_name == "Elemental Chain Reactions":
+            # Check attacker element
+            att_type = getattr(attacker, "ball_type", getattr(attacker, "kind", ""))
+            att_traits = [str(t).lower() for t in getattr(attacker, "traits", [])]
+            att_element = getattr(attacker, "element", "")
+
+            is_water = att_element == "water" or "water" in att_type or "swamp" in att_type or "puddle" in att_type or any(t in ["water", "swamp"] for t in att_traits)
+            is_fire = att_element == "fire" or "fire" in att_type or "lava" in att_type or "flare" in att_type or any(t in ["fire", "lava"] for t in att_traits)
+
+            # Hitting a burning ball with a water attack
+            if is_water and getattr(target, "burn_timer", 0.0) > 0:
+                target.burn_timer = 0.0
+                # steam explosion blinds everyone nearby
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 300.0, "damage": 0.0, "type": "steam"})
+
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "alive", True):
+                            dist_sq = (b.x - target.x)**2 + (b.y - target.y)**2
+                            if dist_sq < 300.0**2:
+                                b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 4.0)
+                                b.is_blinded = True
+                # do not return early, let normal damage happen
+
+            # Hitting a frozen ball with a fire attack
+            if is_fire and getattr(target, "frozen_timer", 0.0) > 0:
+                target.frozen_timer = 0.0
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("visual_effect", {"type": "ice_shatter", "x": target.x, "y": target.y})
+
+                # massive burst damage
+                burst_damage = 150.0
+                if hasattr(target, "take_damage"):
+                    target.take_damage(burst_damage)
+                elif hasattr(target, "hp"):
+                    target.hp -= burst_damage
+                # do not return early, let normal damage happen
         if getattr(target, "ball_type", "") == "chroma_boss":
             boss_aura = getattr(target, "cosmetic_aura_color", None)
             attacker_aura = getattr(attacker, "cosmetic_aura_color", None)
