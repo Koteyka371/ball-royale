@@ -33986,7 +33986,7 @@ class FallingTilesRoyaleMode(GameMode):
                     self.tiles[k]["state"] = "warning"
 
                 if hasattr(world, "add_event"):
-                    world.add_event("tiles_warning", {"message": "Some tiles are lighting up!"})
+                    world.add_event("tiles_warning", {"message": "Some tiles are lighting up!", "tiles": self.falling_tiles})
 
         elif self.phase == "warning":
             if self.timer <= 0:
@@ -33995,12 +33995,14 @@ class FallingTilesRoyaleMode(GameMode):
                 for k in self.falling_tiles:
                     self.tiles[k]["state"] = "falling"
                 if hasattr(world, "add_event"):
-                    world.add_event("tiles_falling", {"message": "Tiles are falling!"})
+                    world.add_event("tiles_falling", {"message": "Tiles are falling!", "tiles": self.falling_tiles})
 
         elif self.phase == "falling":
             if self.timer <= 0:
                 self.phase = "wait"
                 self.timer = getattr(self.random, "uniform", lambda a,b: 5.0)(4.0, 8.0)
+                if hasattr(world, "add_event"):
+                    world.add_event("tiles_pit", {"message": "Tiles have fallen!", "tiles": self.falling_tiles})
                 for k in self.falling_tiles:
                     self.tiles[k]["state"] = "pit"
                 self.falling_tiles = []
