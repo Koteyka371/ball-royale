@@ -23147,7 +23147,7 @@
     },
     {
       "id": "idea-1351",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chrono Shift Ability",
@@ -34653,6 +34653,40 @@
         "src/arena/arena_shape_shifting.py",
         "src/arena/arena_shape_shifting.gd",
         "tests/test_arena_shape_shifting.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2027",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nanite Repair Swarm",
+      "description": "When below 30% HP, spawns a swarm of nanites that seeks out nearby debris or destroyed hazards, consuming them to regenerate the ball's health rapidly over a short duration.",
+      "allowed_paths": [
+        "src/ai/nanite_repair_swarm.py",
+        "src/ai/nanite_repair_swarm.gd",
+        "tests/test_nanite_repair_swarm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2028",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chrono-Shifter Core",
+      "description": "A booster that allows the ball to record its path for 5 seconds. Upon taking fatal damage, it rewinds time to its initial position and restores HP to the state it was at the beginning of the recording.",
+      "allowed_paths": [
+        "src/ai/chrono_shifter_core.py",
+        "src/ai/chrono_shifter_core.gd",
+        "tests/test_chrono_shifter_core.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
