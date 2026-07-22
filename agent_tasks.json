@@ -22858,7 +22858,7 @@
     },
     {
       "id": "idea-1334",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Phylactery Mechanism",
@@ -33496,6 +33496,40 @@
         "src/ai/black_market_auction_house.py",
         "src/ai/black_market_auction_house.gd",
         "tests/test_black_market_auction_house.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1959",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnels Game Mode",
+      "description": "Portals appear across the map. Balls entering a portal exit immediately from a random other portal, maintaining their velocity. The portals change locations every 20 seconds.",
+      "allowed_paths": [
+        "src/ai/quantum_tunnels_game.py",
+        "src/ai/quantum_tunnels_game.gd",
+        "tests/test_quantum_tunnels_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1960",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Car Madness Game Mode",
+      "description": "All balls have double size and double bounce physics, causing massive chaotic collisions and ricochets. Arena boundaries are replaced by bouncy forcefields.",
+      "allowed_paths": [
+        "src/ai/bumper_car_madness_game.py",
+        "src/ai/bumper_car_madness_game.gd",
+        "tests/test_bumper_car_madness_game.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

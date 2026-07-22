@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1334] Necromancer Phylactery Mechanism — *2026-07-22 07:52:34 UTC*
+
+Introduce a rare 'Phylactery' drop for the Necromancer. When destroyed, instead of dying, the Necromancer's soul is bound to the Phylactery (which remains stationary for 5 seconds). If the Phylactery is not destroyed within that window, the Necromancer respawns with 50% HP.
+
+---
+
 ## [idea-1320] Platform Tilt Mechanics — *2026-07-22 07:33:12 UTC*
 
 Introduce dynamic platform tilting where sections of the arena slightly slope over time, causing balls to drift slowly towards the edge or center. This forces players to continuously correct their position.
