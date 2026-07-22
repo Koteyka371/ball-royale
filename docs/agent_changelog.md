@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1321] Volcanic Eruption Mutator — *2026-07-22 20:30:45 UTC*
+
+A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial.
+
+---
+
 ## [idea-1309] Weather Altars in Standard Battle Royale — *2026-07-22 20:16:48 UTC*
 
 Add altars from WeatherChaosMode to the standard Battle Royale game mode. Capturing an altar would temporarily grant map-wide weather effects such as a blizzard slowing enemy movement or a heatwave causing damage over time.

@@ -22637,7 +22637,7 @@
     },
     {
       "id": "idea-1321",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Volcanic Eruption Mutator",
@@ -33939,6 +33939,40 @@
         "src/ai/gravity_singularity_booster.py",
         "src/ai/gravity_singularity_booster.gd",
         "tests/test_gravity_singularity_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1985",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Stations in more modes",
+      "description": "Add the weather station altar to other game modes like Juggernaut and Watchtower to add more variety and control points.",
+      "allowed_paths": [
+        "src/ai/stations_in_more_modes.py",
+        "src/ai/stations_in_more_modes.gd",
+        "tests/test_stations_in_more_modes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1986",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Weather Types",
+      "description": "Introduce new seasonal weather types (e.g. Acid Rain, Hail) that are only available during certain ranked seasons.",
+      "allowed_paths": [
+        "src/ai/seasonal_types.py",
+        "src/ai/seasonal_types.gd",
+        "tests/test_seasonal_types.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
