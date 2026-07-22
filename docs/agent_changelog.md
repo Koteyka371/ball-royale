@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1316] Guild Mutator Votes — *2026-07-22 05:37:30 UTC*
+
+Allow guilds to pool their mutator tokens together to heavily influence the mutator of guild-versus-guild matches.
+
+---
+
 ## [idea-1245] Bouncy Borders Mode — *2026-07-22 05:27:22 UTC*
 
 Arena walls become extremely bouncy. Colliding with a wall reflects balls at 2x speed, turning the arena into a chaotic pinball machine.

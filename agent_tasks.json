@@ -22551,7 +22551,7 @@
     },
     {
       "id": "idea-1316",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Mutator Votes",
@@ -33084,6 +33084,40 @@
         "src/ai/shrinking_safe_zones.py",
         "src/ai/shrinking_safe_zones.gd",
         "tests/test_shrinking_safe_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1935",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vortex Centers",
+      "description": "A slow-pulling vortex exists constantly in the middle of the arena, pulling all entities and projectiles toward it over time and dealing crush damage if they reach the center.",
+      "allowed_paths": [
+        "src/ai/vortex_centers.py",
+        "src/ai/vortex_centers.gd",
+        "tests/test_vortex_centers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1936",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Boundaries",
+      "description": "Arena boundaries become covered in sticky slime, catching colliding balls and freezing their momentum for 3 seconds before slowly releasing them.",
+      "allowed_paths": [
+        "src/ai/sticky_boundaries.py",
+        "src/ai/sticky_boundaries.gd",
+        "tests/test_sticky_boundaries.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
