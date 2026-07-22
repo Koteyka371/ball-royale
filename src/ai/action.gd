@@ -9908,6 +9908,10 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): hp = self.ball["hp"]
             elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
 
+            var died_from_decay = false
+            if hp > 0 and hp - (20.0 * delta) <= 0:
+                died_from_decay = true
+
             hp -= 20.0 * delta
 
             if enrage_timer <= 0 or hp <= 0:
@@ -9921,73 +9925,74 @@ func execute(strategy: String, delta: float):
                     self.ball["alive"] = false
                     self.ball["is_enraged"] = false
 
-                var max_hp = 20.0
-                if typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: max_hp = self.ball.max_hp
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
-                elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+                if died_from_decay:
+                    var max_hp = 20.0
+                    if typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: max_hp = self.ball.max_hp
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): max_hp = self.ball["max_hp"]
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
 
-                var explosion_damage = max_hp * 0.5
-                var my_x = 0.0
-                var my_y = 0.0
-                if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: my_x = self.ball.x
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): my_x = self.ball["x"]
-                if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: my_y = self.ball.y
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): my_y = self.ball["y"]
+                    var explosion_damage = max_hp * 0.5
+                    var my_x = 0.0
+                    var my_y = 0.0
+                    if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: my_x = self.ball.x
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): my_x = self.ball["x"]
+                    if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: my_y = self.ball.y
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): my_y = self.ball["y"]
 
-                var my_team = ""
-                if typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
-                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+                    var my_team = ""
+                    if typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
 
-                if self.world != null and "add_event" in self.world:
-                    if self.world.has_method("add_event"):
-                        self.world.add_event("explosion", {"x": my_x, "y": my_y, "radius": 80.0, "damage": explosion_damage})
+                    if self.world != null and "add_event" in self.world:
+                        if self.world.has_method("add_event"):
+                            self.world.add_event("explosion", {"x": my_x, "y": my_y, "radius": 80.0, "damage": explosion_damage})
 
-                if self.world != null and "balls" in self.world:
-                    var _balls = null
-                    if typeof(self.world) == TYPE_OBJECT and "balls" in self.world: _balls = self.world.balls
-                    elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"): _balls = self.world["balls"]
+                    if self.world != null and "balls" in self.world:
+                        var _balls = null
+                        if typeof(self.world) == TYPE_OBJECT and "balls" in self.world: _balls = self.world.balls
+                        elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"): _balls = self.world["balls"]
 
-                    if _balls != null:
-                        for b in _balls:
-                            if b != self.ball:
-                                var is_alive = true
-                                if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
-                                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+                        if _balls != null:
+                            for b in _balls:
+                                if b != self.ball:
+                                    var is_alive = true
+                                    if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+                                    elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
 
-                                var b_team = ""
-                                if typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
-                                elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+                                    var b_team = ""
+                                    if typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+                                    elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
 
-                                if is_alive and b_team != my_team:
-                                    var bx = 0.0
-                                    var by = 0.0
-                                    if typeof(b) == TYPE_OBJECT and "x" in b: bx = b.x
-                                    elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
-                                    if typeof(b) == TYPE_OBJECT and "y" in b: by = b.y
-                                    elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+                                    if is_alive and b_team != my_team:
+                                        var bx = 0.0
+                                        var by = 0.0
+                                        if typeof(b) == TYPE_OBJECT and "x" in b: bx = b.x
+                                        elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+                                        if typeof(b) == TYPE_OBJECT and "y" in b: by = b.y
+                                        elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
 
-                                    var dist_sq = (my_x - bx)*(my_x - bx) + (my_y - by)*(my_y - by)
-                                    if dist_sq <= 6400.0:
-                                        if self.world.has_method("_deal_damage"):
-                                            var old_dmg = 10.0
-                                            if typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: old_dmg = self.ball.damage
-                                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): old_dmg = self.ball["damage"]
+                                        var dist_sq = (my_x - bx)*(my_x - bx) + (my_y - by)*(my_y - by)
+                                        if dist_sq <= 6400.0:
+                                            if self.world.has_method("_deal_damage"):
+                                                var old_dmg = 10.0
+                                                if typeof(self.ball) == TYPE_OBJECT and "damage" in self.ball: old_dmg = self.ball.damage
+                                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("damage"): old_dmg = self.ball["damage"]
 
-                                            if typeof(self.ball) == TYPE_OBJECT: self.ball.set("damage", explosion_damage)
-                                            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["damage"] = explosion_damage
+                                                if typeof(self.ball) == TYPE_OBJECT: self.ball.set("damage", explosion_damage)
+                                                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["damage"] = explosion_damage
 
-                                            self.world._deal_damage(self.ball, b)
+                                                self.world._deal_damage(self.ball, b)
 
-                                            if typeof(self.ball) == TYPE_OBJECT: self.ball.set("damage", old_dmg)
-                                            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["damage"] = old_dmg
-                                        elif typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
-                                            b.take_damage(explosion_damage)
-                                        else:
-                                            var b_hp = 0.0
-                                            if typeof(b) == TYPE_OBJECT and "hp" in b:
-                                                b.set("hp", b.hp - explosion_damage)
-                                            elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
-                                                b["hp"] -= explosion_damage
+                                                if typeof(self.ball) == TYPE_OBJECT: self.ball.set("damage", old_dmg)
+                                                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["damage"] = old_dmg
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                b.take_damage(explosion_damage)
+                                            else:
+                                                var b_hp = 0.0
+                                                if typeof(b) == TYPE_OBJECT and "hp" in b:
+                                                    b.set("hp", b.hp - explosion_damage)
+                                                elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+                                                    b["hp"] -= explosion_damage
             else:
                 if typeof(self.ball) == TYPE_OBJECT:
                     self.ball.set("hp", hp)

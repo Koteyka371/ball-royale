@@ -1,4 +1,4 @@
 {
-  "title": "Toxic Minion Mutator",
-  "description": "A new mutator or item that infuses minions with toxic sludge. When they decay and explode, instead of instant burst damage, they leave behind a persistent poison cloud that slows enemies and deals damage over time."
+  "title": "Necromantic Tether",
+  "description": "A new skill for the Necromancer that creates a dark energy tether between them and their nearest minion. Any damage taken by the Necromancer is split 50/50 with the tethered minion, and the minion's attacks heal the Necromancer for 10% of the damage dealt."
 }

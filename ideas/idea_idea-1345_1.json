@@ -1,4 +1,4 @@
 {
-  "title": "Chain Reaction Explosions",
-  "description": "When a minion explodes, if it catches another allied minion in the blast radius, the second minion also detonates immediately with increased damage, creating the potential for massive chain reactions if positioned correctly."
+  "title": "Minion Swarm Evolution",
+  "description": "If a minion manages to survive for 60 seconds without decaying, it evolves into a permanent 'Elite Minion' that gains ranged attacks and no longer decays over time."
 }

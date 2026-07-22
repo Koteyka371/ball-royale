@@ -22,7 +22,7 @@ def test_necromancer_death_enrages_minions():
     mode = GameMode()
     mode.on_ball_died(world, necro, killer=None)
 
-    assert getattr(minion, "is_enraged", False) == True
+    assert getattr(minion, "is_enraged", False)
     assert minion.enrage_timer == 5.0
     assert minion.base_speed == 6.0
     assert minion.base_damage == 25.0
@@ -48,8 +48,8 @@ def test_minion_decay_when_enraged():
 
     action.execute(strategy={}, delta=4.0)
     assert minion.hp == 0
-    assert getattr(minion, "alive", True) == False
-    assert getattr(minion, "is_enraged", True) == False
+    assert not getattr(minion, "alive", True)
+    assert not getattr(minion, "is_enraged", True)
 
 def test_enraged_minion_large_delta():
     world = MockWorld()
@@ -68,11 +68,10 @@ def test_enraged_minion_large_delta():
 
     assert minion.enrage_timer == -5.0
     assert minion.hp == 0
-    assert getattr(minion, "alive", True) == False
-    assert getattr(minion, "is_enraged", True) == False
+    assert not getattr(minion, "alive", True)
+    assert not getattr(minion, "is_enraged", True)
 
 def test_necromancer_redirects_fatal_damage():
-    import math
     from ai.ball_types_necromancer import Necromancer
     from ai.test_action_advanced import MockWorld, MockBall
 
@@ -105,6 +104,44 @@ def test_necromancer_redirects_fatal_damage():
     necro.take_damage(20.0)
 
     assert necro.hp > 0
-    assert necro.alive == True
-    assert minion1.alive == False
-    assert minion2.alive == True
+    assert necro.alive
+    assert not minion1.alive
+    assert minion2.alive
+
+def test_enraged_minion_explodes_on_death():
+    world = MockWorld()
+
+    # We patch _deal_damage to actually deal damage for testing purposes
+    def mock_deal_damage(attacker, target, dmg=None):
+        if dmg is not None:
+            target.hp -= dmg
+        else:
+            target.hp -= getattr(attacker, "damage", 10.0)
+    world._deal_damage = mock_deal_damage
+
+    minion = MockBall()
+    minion.ball_type = "minion"
+    minion.is_minion = True
+    minion.is_enraged = True
+    minion.enrage_timer = 5.0
+    minion.hp = 10.0
+    minion.max_hp = 100.0
+    minion.team = "undead"
+    minion.x = 0
+    minion.y = 0
+
+    enemy = MockBall()
+    enemy.hp = 100.0
+    enemy.team = "heroes"
+    enemy.x = 10
+    enemy.y = 0
+    enemy.alive = True
+
+    world.balls = [minion, enemy]
+
+    action = Action(minion, world)
+    action.execute(strategy={}, delta=1.0)
+
+    assert not getattr(minion, "alive", True)
+    assert not getattr(minion, "is_enraged", True)
+    assert enemy.hp == 50.0  # max_hp * 0.5 = 50.0
