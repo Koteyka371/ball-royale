@@ -24067,6 +24067,123 @@ class SniperOnlyMode(GameMode):
             if hasattr(b, "traits") and "sniper" not in getattr(b, "traits", []):
                 b.traits.append("sniper")
 
+
+class MassivePinballArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Massive Pinball Arena"
+        self.description = "Arena is filled with multiple massive pinball bumpers. Touching a bumper reflects the ball with high speed. Boosters spawn near the bumpers."
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            if not hasattr(world, "boosters"):
+                world.boosters = []
+
+            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            class BumperHazard:
+                def __init__(self, hid, hx, hy, r, k):
+                    self.id = hid
+                    self.x = hx
+                    self.y = hy
+                    self.radius = r
+                    self.kind = k
+                    self.damage = 0.0
+
+            class Booster:
+                def __init__(self, bid, bx, by, k):
+                    self.id = bid
+                    self.x = bx
+                    self.y = by
+                    self.kind = k
+                    self.active = True
+                    self.radius = 20.0
+
+            hazard_kinds = ["massive_bumper"]
+            booster_kinds = ["overclock_booster", "mega_booster", "health_pack", "shield_booster", "speed_booster"]
+
+            for i in range(8):
+                x = random.uniform(200, arena_width - 200)
+                y = random.uniform(200, arena_height - 200)
+                r = random.uniform(80.0, 150.0)
+                kind = random.choice(hazard_kinds)
+                world.arena.hazards.append(BumperHazard(15000 + i, x, y, r, kind))
+
+                # Spawn a booster near the bumper
+                bx = x + random.uniform(-r - 50, r + 50)
+                by = y + random.uniform(-r - 50, r + 50)
+                b_kind = random.choice(booster_kinds)
+                world.boosters.append(Booster(20000 + i, bx, by, b_kind))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        hazards = []
+        if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
+            hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") == "massive_bumper"]
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b_x = getattr(b, "x", 0.0)
+            b_y = getattr(b, "y", 0.0)
+            b_r = getattr(b, "radius", 20.0)
+
+            for h in hazards:
+                h_x = getattr(h, "x", 0.0)
+                h_y = getattr(h, "y", 0.0)
+                h_r = getattr(h, "radius", 80.0)
+
+                dx = b_x - h_x
+                dy = b_y - h_y
+                dist = math.hypot(dx, dy)
+                min_dist = b_r + h_r
+
+                if dist < min_dist and dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    # Push out
+                    overlap = min_dist - dist
+                    b.x = b_x + nx * overlap
+                    b.y = b_y + ny * overlap
+
+                    # Reflect with high speed
+                    current_speed = getattr(b, "speed", 100.0)
+                    new_speed = min(current_speed * 2.5, 3000.0)
+
+                    # Assuming vx/vy exists, or we just set vx/vy
+                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                        # Calculate dot product
+                        dot = b.vx * nx + b.vy * ny
+                        b.vx = b.vx - 2 * dot * nx
+                        b.vy = b.vy - 2 * dot * ny
+
+                        # Normalize and apply new speed
+                        mag = math.hypot(b.vx, b.vy)
+                        if mag > 0.001:
+                            b.vx = (b.vx / mag) * new_speed
+                            b.vy = (b.vy / mag) * new_speed
+                        else:
+                            b.vx = nx * new_speed
+                            b.vy = ny * new_speed
+                    else:
+                        b.vx = nx * new_speed
+                        b.vy = ny * new_speed
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("bumper_hit", {"ball": b, "bumper": h})
+
+
 class MagneticBumpersMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -27459,6 +27576,7 @@ class AuraPulseEventMode(GameMode):
                                     setattr(target, key, 5.0)
 
 GAME_MODES = {
+    'massive_pinball_arena': MassivePinballArenaMode(),
     "aura_pulse_event": AuraPulseEventMode(),
     'trickster_event': TricksterEventMode(),
     "collapsing_ceiling": CollapsingCeilingMode(),
