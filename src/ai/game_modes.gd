@@ -14176,6 +14176,14 @@ class ShrinkingDangerZoneMode extends GameMode:
 
 				if dist > zone_radius:
 					b.hp -= damage_this_tick
+					if "minimap_ping_timer" not in b or b.minimap_ping_timer <= 0:
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "red", "duration": 0.5})
+						elif typeof(world) == TYPE_DICTIONARY and "add_event" in world:
+							pass
+						b.minimap_ping_timer = 1.0
+					else:
+						b.minimap_ping_timer -= delta
 					# Randomly apply debuff
 					if randf() < 0.2 * delta: # ~20% chance per second
 						var debuff_options = ["slow", "poison", "confusion", "blindness", "stun", "freeze"]
@@ -15464,6 +15472,15 @@ class SafeZoneMode extends GameMode:
 				# If the distance to center is greater than the safe zone radius, inflict damage
 				if distance_to_center > zone_radius:
 					b.hp -= damage_this_tick
+					if "minimap_ping_timer" not in b or b.minimap_ping_timer <= 0:
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "red", "duration": 0.5})
+						elif typeof(world) == TYPE_DICTIONARY and "add_event" in world:
+							# Not strictly a method, but just a safety fallback
+							pass
+						b.minimap_ping_timer = 1.0
+					else:
+						b.minimap_ping_timer -= delta
 					# Randomly apply debuff
 					if randf() < 0.2 * delta: # ~20% chance per second
 						var debuff_options = ["slow", "poison", "confusion", "blindness", "stun", "freeze"]
