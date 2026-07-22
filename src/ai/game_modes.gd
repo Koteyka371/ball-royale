@@ -45866,6 +45866,180 @@ GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
 
+
+class VIPProtectionMode extends GameMode:
+	var vips = {}
+	var heal_radius = 200.0
+	var heal_rate = 15.0
+	var vip_setup_done = false
+	var random_gen = RandomNumberGenerator.new()
+
+	func _init():
+		super._init()
+		self.name = "Spectral VIP Protection"
+		self.description = "One player per team becomes a Spectral VIP. They cannot attack, are highly vulnerable, but emit a constant healing aura for teammates."
+		self.random_gen.randomize()
+
+	func setup(world, balls: Array) -> void:
+		vips.clear()
+		vip_setup_done = false
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		# Group by team
+		var teams = {}
+		var active_balls = []
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				if "alive" in b:
+					is_alive = b.alive
+			if is_alive:
+				active_balls.append(b)
+				var t = 0
+				if typeof(b) == TYPE_DICTIONARY:
+					t = b.get("team", 0)
+				else:
+					if "team" in b:
+						t = b.team
+				if not teams.has(t):
+					teams[t] = []
+				teams[t].append(b)
+
+		if not vip_setup_done and active_balls.size() > 0:
+			for t in teams.keys():
+				var team_balls = teams[t]
+				if team_balls.size() > 0:
+					var vip_idx = random_gen.randi_range(0, team_balls.size() - 1)
+					var vip = team_balls[vip_idx]
+					var v_id = -1
+					if typeof(vip) == TYPE_DICTIONARY:
+						v_id = vip.get("id", -1)
+						vip["is_vip"] = true
+						vip["damage"] = 0.0
+						vip["base_damage"] = 0.0
+					else:
+						if "id" in vip:
+							v_id = vip.id
+						if "is_vip" in vip:
+							vip.is_vip = true
+						else:
+							if vip.has_method("set_meta"):
+								vip.set_meta("is_vip", true)
+						if "damage" in vip: vip.damage = 0.0
+						if "base_damage" in vip: vip.base_damage = 0.0
+
+					vips[t] = v_id
+					if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var bx = 0
+						var by = 0
+						if typeof(vip) == TYPE_DICTIONARY:
+							bx = vip.get("x", 0)
+							by = vip.get("y", 0)
+						else:
+							if "x" in vip: bx = vip.x
+							if "y" in vip: by = vip.y
+						world.add_event("visual_effect", {"type": "vip_aura", "x": bx, "y": by, "team": t})
+			vip_setup_done = true
+
+		var hp_deltas = {}
+
+		for t in teams.keys():
+			if not vips.has(t):
+				continue
+			var vip_id = vips[t]
+			var team_balls = teams[t]
+
+			var vip_ball = null
+			for b in team_balls:
+				var b_id = -1
+				if typeof(b) == TYPE_DICTIONARY:
+					b_id = b.get("id", -1)
+				else:
+					if "id" in b: b_id = b.id
+				if b_id == vip_id:
+					vip_ball = b
+					break
+
+			if vip_ball != null:
+				var is_alive = false
+				if typeof(vip_ball) == TYPE_DICTIONARY:
+					is_alive = vip_ball.get("alive", false)
+					vip_ball["damage"] = 0.0
+					vip_ball["base_damage"] = 0.0
+					vip_ball["energy_shield_active"] = false
+					vip_ball["energy_shield_hp"] = 0.0
+				else:
+					if "alive" in vip_ball: is_alive = vip_ball.alive
+					if "damage" in vip_ball: vip_ball.damage = 0.0
+					if "base_damage" in vip_ball: vip_ball.base_damage = 0.0
+					if "energy_shield_active" in vip_ball: vip_ball.energy_shield_active = false
+					if "energy_shield_hp" in vip_ball: vip_ball.energy_shield_hp = 0.0
+
+				if is_alive:
+					var vx = 0
+					var vy = 0
+					var vr = 10.0
+					if typeof(vip_ball) == TYPE_DICTIONARY:
+						vx = vip_ball.get("x", 0)
+						vy = vip_ball.get("y", 0)
+						vr = vip_ball.get("radius", 10.0)
+					else:
+						if "x" in vip_ball: vx = vip_ball.x
+						if "y" in vip_ball: vy = vip_ball.y
+						if "radius" in vip_ball: vr = vip_ball.radius
+
+					for b in team_balls:
+						if str(b) == str(vip_ball): continue
+						var bx = 0
+						var by = 0
+						var br = 10.0
+						var bid = -1
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0)
+							by = b.get("y", 0)
+							br = b.get("radius", 10.0)
+							bid = b.get("id", -1)
+						else:
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
+							if "radius" in b: br = b.radius
+							if "id" in b: bid = b.id
+
+						var dist_sq = (bx - vx) * (bx - vx) + (by - vy) * (by - vy)
+						if dist_sq < (heal_radius + br + vr) * (heal_radius + br + vr):
+							var heal_amount = heal_rate * delta
+							if hp_deltas.has(bid):
+								hp_deltas[bid] += heal_amount
+							else:
+								hp_deltas[bid] = heal_amount
+
+							if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								if random_gen.randf() < 0.1:
+									world.add_event("visual_effect", {"type": "heal_tick", "x": bx, "y": by})
+
+		for b in active_balls:
+			var bid = -1
+			var bhp = 0.0
+			var bmax_hp = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bid = b.get("id", -1)
+				bhp = b.get("hp", 0.0)
+				bmax_hp = b.get("max_hp", 100.0)
+			else:
+				if "id" in b: bid = b.id
+				if "hp" in b: bhp = b.hp
+				if "max_hp" in b: bmax_hp = b.max_hp
+
+			if hp_deltas.has(bid):
+				var n_hp = min(bmax_hp, bhp + hp_deltas[bid])
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = n_hp
+				else:
+					if "hp" in b: b.hp = n_hp
+
 GAME_MODES["rotating_lasers"] = RotatingLasersMode.new()
 GAME_MODES["elemental_wanderer"] = ElementalWandererMode.new()
 
@@ -51412,3 +51586,4 @@ GAME_MODES["mass_decoy_event"] = MassDecoyEventMode.new()
 GAME_MODES["ice_walls"] = IceWallsMode.new()
 GAME_MODES["weather_combinations"] = WeatherCombinationsMode.new()
 GAME_MODES["linked_portals"] = LinkedPortalsMode.new()
+GAME_MODES["vip_protection"] = VIPProtectionMode.new()
