@@ -3114,6 +3114,41 @@ class Action:
                     setattr(rod, 'owner_id', getattr(self.ball, 'id', None))
                     self.world.arena.hazards.append(rod)
                 self.ball.inventory.remove("lightning_rod_item")
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_acid_puddle" in self.ball.inventory:
+            nearest = self._get_nearest_enemy()
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_acid_puddle")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            acid_id = len(self.world.arena.hazards) + 5000
+                            puddle = Hazard(acid_id, self.ball.x, self.ball.y, 60.0, "deployable_acid_puddle", 0.0)
+                            puddle.duration = 10.0
+                            self.world.arena.hazards.append(puddle)
+                        except ImportError:
+                            pass
+
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_acid_puddle" in self.ball.inventory:
+            nearest = self._get_nearest_enemy()
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_acid_puddle")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            acid_id = f"{len(self.world.arena.hazards)}_{self.world.tick}_acid"
+                            puddle = Hazard(acid_id, self.ball.x, self.ball.y, 60.0, "acid_puddle", 0.0)
+                            puddle.duration = 10.0
+                            setattr(puddle, 'owner_id', getattr(self.ball, 'id', None))
+                            self.world.arena.hazards.append(puddle)
+                        except ImportError:
+                            pass
+
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -6195,6 +6230,64 @@ class Action:
                                                 b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
                                                 if hasattr(self, "_spawn_directed_particles"):
                                                     self._spawn_directed_particles(hazard, b, "lightning")
+                    elif hazard.kind == "deployable_acid_puddle":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 10.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                continue
+
+                            # Apply debuff to balls in radius
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True):
+                                    hx = getattr(hazard, "x", 0)
+                                    hy = getattr(hazard, "y", 0)
+                                    bx = getattr(b, "x", 0)
+                                    by = getattr(b, "y", 0)
+                                    dist_sq = (hx - bx)**2 + (hy - by)**2
+                                    rad_sum = hazard.radius + getattr(b, "radius", 20.0)
+                                    if dist_sq < rad_sum * rad_sum:
+                                        b.acid_debuff_timer = 3.0
+                                        current_stacks = getattr(b, "acid_debuff_stacks", 0)
+                                        stack_cooldown = getattr(b, "acid_stack_cooldown", 0.0)
+                                        if stack_cooldown <= 0:
+                                            b.acid_debuff_stacks = min(current_stacks + 1, 5)
+                                            b.acid_stack_cooldown = 0.5
+                                        else:
+                                            b.acid_stack_cooldown -= delta
+
+                    elif hazard.kind == "acid_puddle":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 10.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                continue
+
+                            # Apply debuff to balls in radius
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True):
+                                    hx = getattr(hazard, "x", 0)
+                                    hy = getattr(hazard, "y", 0)
+                                    bx = getattr(b, "x", 0)
+                                    by = getattr(b, "y", 0)
+                                    dist_sq = (hx - bx)**2 + (hy - by)**2
+                                    rad_sum = hazard.radius + getattr(b, "radius", 20.0)
+                                    if dist_sq < rad_sum * rad_sum:
+                                        b.acid_debuff_timer = 3.0
+                                        current_stacks = getattr(b, "acid_debuff_stacks", 0)
+                                        stack_cooldown = getattr(b, "acid_stack_cooldown", 0.0)
+                                        if stack_cooldown <= 0:
+                                            b.acid_debuff_stacks = min(current_stacks + 1, 5)
+                                            b.acid_stack_cooldown = 0.5
+                                        else:
+                                            b.acid_stack_cooldown -= delta
+
                     elif hazard.kind == "deployable_thumper":
                         # Only update once per tick to avoid multiple balls updating the timer
                         current_tick = getattr(self.world, "tick", 0)
@@ -13252,6 +13345,24 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_acid_puddle":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_acid_puddle")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_acid_puddle":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_acid_puddle")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "gravity_multiplier_booster":
                     self.ball.gravity_multiplier_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -19195,6 +19306,38 @@ class Action:
             if self.ball.time_warp_timer <= 0:
                 self.ball.time_warp_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+
+        if getattr(self.ball, "acid_debuff_timer", 0.0) > 0:
+            self.ball.acid_debuff_timer -= delta
+            stacks = getattr(self.ball, "acid_debuff_stacks", 1)
+            if hasattr(self.ball, "hp"):
+                self.ball.hp -= (5.0 * stacks) * delta
+                if self.ball.hp <= 0 and getattr(self.ball, "alive", True):
+                    self.ball.alive = False
+                    self.ball.hp = 0
+                    self.ball.killer = "acid_puddle"
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * max(0.2, 1.0 - 0.1 * stacks)
+            if self.ball.acid_debuff_timer <= 0:
+                self.ball.acid_debuff_stacks = 0
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+
+
+
+        if getattr(self.ball, "acid_debuff_timer", 0.0) > 0:
+            self.ball.acid_debuff_timer -= delta
+            stacks = getattr(self.ball, "acid_debuff_stacks", 1)
+            if hasattr(self.ball, "hp"):
+                self.ball.hp -= (5.0 * stacks) * delta
+                if self.ball.hp <= 0 and getattr(self.ball, "alive", True):
+                    self.ball.alive = False
+                    self.ball.hp = 0
+                    self.ball.killer = "acid_puddle"
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * max(0.2, 1.0 - 0.1 * stacks)
+            if self.ball.acid_debuff_timer <= 0:
+                self.ball.acid_debuff_stacks = 0
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+
+
 
         if getattr(self.ball, "time_warp_slow_timer", 0.0) > 0:
             self.ball.time_warp_slow_timer -= delta

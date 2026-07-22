@@ -1,0 +1,4 @@
+{
+  "title": "Ice Wall Deployable",
+  "description": "A deployable hazard item that constructs a wide, destructible ice wall in front of the ball. The wall blocks enemy movement and most projectiles but will slowly melt over time, eventually shattering into tiny ice shrapnel that slows nearby units."
+}
