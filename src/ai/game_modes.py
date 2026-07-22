@@ -11617,6 +11617,60 @@ class PacifistKnockoutMode(GameMode):
                         b.hp = 0
                         b.alive = False
 
+class RadiationWindstormMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Radiation Windstorm"
+        self.description = "A hazard that blows continuously in one direction across the arena, randomly shifting angles every 30 seconds. Balls pushed off the edge of the arena by this wind take massive radiation damage."
+        self.wind_angle = 0.0
+        self.wind_speed = 400.0
+        self.angle_timer = 0.0
+        self.radiation_damage = 50.0 # Per second outside arena
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.wind_angle = self.random.uniform(0, 2 * 3.14159)
+        self.angle_timer = 30.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.angle_timer -= delta
+        if self.angle_timer <= 0:
+            self.wind_angle = self.random.uniform(0, 2 * 3.14159)
+            self.angle_timer = 30.0
+            if hasattr(world, "add_event"):
+                world.add_event("wind_shift", {"angle": self.wind_angle, "message": "The wind direction shifted!"})
+
+        import math
+        wind_vx = math.cos(self.wind_angle) * self.wind_speed
+        wind_vy = math.sin(self.wind_angle) * self.wind_speed
+
+        arena_width = getattr(getattr(world, "arena", None), "width", 1000)
+        arena_height = getattr(getattr(world, "arena", None), "height", 1000)
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            # Apply continuous wind force
+            if not getattr(b, "intangible", False):
+                b.x += wind_vx * delta
+                b.y += wind_vy * delta
+
+            # Check if pushed off edge
+            radius = getattr(b, "radius", 10.0)
+            is_outside = (b.x < 0 or b.x > arena_width or b.y < 0 or b.y > arena_height)
+
+            if is_outside:
+                if hasattr(b, "take_damage"):
+                    b.take_damage(self.radiation_damage * delta)
+                elif hasattr(b, "hp"):
+                    b.hp -= self.radiation_damage * delta
+                    if b.hp <= 0:
+                        b.alive = False
+
 class BumperBallsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -27260,6 +27314,7 @@ GAME_MODES = {
     "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
     'time_rewind_altar': TimeRewindAltarMode(),
+    'radiation_windstorm': RadiationWindstormMode(),
     'teleport_dash_mutator': TeleportDashMutatorMode(),
     'random_teleport_dash': RandomTeleportDashMode(),
     'roaming_doppelganger': RoamingDoppelgangerMode(),
