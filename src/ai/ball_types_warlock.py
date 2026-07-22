@@ -84,6 +84,16 @@ class Warlock:
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
         self.hp -= amount
+
+        if self.hp <= 0 and getattr(self, "quantum_relay_timer", 0.0) > 0.0:
+            self.hp = self.max_hp * 0.2
+            self.x = getattr(self, "quantum_relay_x", self.x)
+            self.y = getattr(self, "quantum_relay_y", self.y)
+            self.quantum_relay_timer = 0.0
+            if hasattr(self, "world") and hasattr(self.world, "events"):
+                self.world.events.append({"type": "quantum_relay_triggered", "x": self.x, "y": self.y})
+            return
+
         if self.hp <= 0:
             self.alive = False
 

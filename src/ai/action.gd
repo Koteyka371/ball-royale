@@ -2517,6 +2517,9 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    if ball.get("quantum_relay_timer") != null and ball.get("quantum_relay_timer") > 0.0:
+        ball.set("quantum_relay_timer", ball.get("quantum_relay_timer") - delta)
+
     var is_alive = true
     if "alive" in self.ball: is_alive = self.ball.alive
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("alive"): is_alive = self.ball.get_meta("alive")
@@ -22012,6 +22015,19 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+
+            elif typeof(nearest) == TYPE_OBJECT and nearest.get("kind") == "quantum_relay_booster" or typeof(nearest) == TYPE_DICTIONARY and nearest.get("kind") == "quantum_relay_booster":
+                ball.set("quantum_relay_timer", 20.0)
+                ball.set("quantum_relay_x", ball.x)
+                ball.set("quantum_relay_y", ball.y)
+                if world and world.has_method("add_event"):
+                    world.add_event({"type": "quantum_relay_placed", "x": ball.x, "y": ball.y})
+                if world and typeof(world) == TYPE_OBJECT and world.get("arena") and typeof(world.arena) == TYPE_OBJECT and world.arena.get("hazards"):
+                    if nearest in world.arena.hazards:
+                        world.arena.hazards.erase(nearest)
+                if world and typeof(world) == TYPE_OBJECT and world.get("boosters"):
+                    if nearest in world.boosters:
+                        world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "orbital_link_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("orbital_link_timer", 10.0)
@@ -22933,6 +22949,19 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+
+            elif typeof(nearest) == TYPE_OBJECT and nearest.get("kind") == "quantum_relay_booster" or typeof(nearest) == TYPE_DICTIONARY and nearest.get("kind") == "quantum_relay_booster":
+                ball.set("quantum_relay_timer", 20.0)
+                ball.set("quantum_relay_x", ball.x)
+                ball.set("quantum_relay_y", ball.y)
+                if world and world.has_method("add_event"):
+                    world.add_event({"type": "quantum_relay_placed", "x": ball.x, "y": ball.y})
+                if world and typeof(world) == TYPE_OBJECT and world.get("arena") and typeof(world.arena) == TYPE_OBJECT and world.arena.get("hazards"):
+                    if nearest in world.arena.hazards:
+                        world.arena.hazards.erase(nearest)
+                if world and typeof(world) == TYPE_OBJECT and world.get("boosters"):
+                    if nearest in world.boosters:
+                        world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "orbital_link_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("orbital_link_timer", 10.0)

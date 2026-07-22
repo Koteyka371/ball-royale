@@ -1398,6 +1398,10 @@ class Action:
     def execute(self, strategy: str, delta: float) -> None:
 
 
+
+        if hasattr(self.ball, "quantum_relay_timer"):
+            if getattr(self.ball, "quantum_relay_timer", 0.0) > 0.0:
+                self.ball.quantum_relay_timer -= delta
         if hasattr(self.ball, "orbital_link_timer"):
             if getattr(self.ball, "orbital_link_timer", 0.0) > 0.0:
                 self.ball.orbital_link_timer -= delta
@@ -11366,6 +11370,18 @@ class Action:
                         self.world.boosters.remove(nearest)
 
 
+
+                elif getattr(nearest, "kind", None) == "quantum_relay_booster":
+                    self.ball.quantum_relay_timer = 20.0
+                    self.ball.quantum_relay_x = self.ball.x
+                    self.ball.quantum_relay_y = self.ball.y
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "quantum_relay_placed", "x": self.ball.x, "y": self.ball.y})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "orbital_link_booster":
                     self.ball.orbital_link_timer = 10.0
                     if hasattr(self.world, "events"):

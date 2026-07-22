@@ -60,6 +60,14 @@ func take_damage(amount: float) -> void:
 	if self.hp == self.max_hp and amount > 0:
 		self.first_hit_taken = true
 	self.hp -= amount
+
+	if self.hp <= 0 and self.get("quantum_relay_timer") != null and self.get("quantum_relay_timer") > 0.0:
+		self.hp = self.max_hp * 0.2
+		self.x = self.get("quantum_relay_x") if self.get("quantum_relay_x") != null else self.x
+		self.y = self.get("quantum_relay_y") if self.get("quantum_relay_y") != null else self.y
+		self.set("quantum_relay_timer", 0.0)
+		return
+
 	if self.hp <= 0:
 		self.alive = false
 
