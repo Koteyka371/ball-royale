@@ -1188,6 +1188,38 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
 
+	var wp_target_cosmetic: String = ""
+	if typeof(target) == TYPE_DICTIONARY:
+		wp_target_cosmetic = target.get("cosmetic", "").to_lower().replace(" ", "_")
+	elif typeof(target) == TYPE_OBJECT:
+		if target.has_meta("cosmetic"):
+			wp_target_cosmetic = str(target.get_meta("cosmetic")).to_lower().replace(" ", "_")
+		elif "cosmetic" in target:
+			wp_target_cosmetic = str(target.cosmetic).to_lower().replace(" ", "_")
+
+	if wp_target_cosmetic == "wall_grappler":
+		var wp_attacker_type = ""
+		if typeof(attacker) == TYPE_DICTIONARY:
+			wp_attacker_type = str(attacker.get("ball_type", "")).to_lower()
+		elif typeof(attacker) == TYPE_OBJECT:
+			if attacker.has_meta("ball_type"):
+				wp_attacker_type = str(attacker.get_meta("ball_type")).to_lower()
+			elif "ball_type" in attacker:
+				wp_attacker_type = str(attacker.ball_type).to_lower()
+
+		var wp_is_proj_attacker = (wp_attacker_type == "projectile" or wp_attacker_type == "spell")
+		if not wp_is_proj_attacker:
+			if typeof(attacker) == TYPE_DICTIONARY:
+				wp_is_proj_attacker = bool(attacker.get("is_projectile", false))
+			elif typeof(attacker) == TYPE_OBJECT:
+				if attacker.has_meta("is_projectile"):
+					wp_is_proj_attacker = bool(attacker.get_meta("is_projectile"))
+				elif "is_projectile" in attacker:
+					wp_is_proj_attacker = bool(attacker.is_projectile)
+
+		if wp_is_proj_attacker:
+			original_damage *= 2.0
+
 	var att_emotion = ""
 	if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("emotion"):
 		att_emotion = attacker.get_meta("emotion")
@@ -2690,6 +2722,98 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var wp_cosmetic: String = ""
+	if typeof(self.ball) == TYPE_DICTIONARY:
+		wp_cosmetic = self.ball.get("cosmetic", "").to_lower().replace(" ", "_")
+	elif typeof(self.ball) == TYPE_OBJECT:
+		if self.ball.has_meta("cosmetic"):
+			wp_cosmetic = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+		elif "cosmetic" in self.ball:
+			wp_cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+
+	if wp_cosmetic == "wall_grappler" and strategy in ["flee", "attack", "chase"]:
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if self.world.has("arena") and self.world.arena:
+			arena_width = float(self.world.arena.get("width", 1000.0) if typeof(self.world.arena) == TYPE_DICTIONARY else (self.world.arena.width if "width" in self.world.arena else 1000.0))
+			arena_height = float(self.world.arena.get("height", 1000.0) if typeof(self.world.arena) == TYPE_DICTIONARY else (self.world.arena.height if "height" in self.world.arena else 1000.0))
+
+		var dists = {
+			"left": self.ball.x,
+			"right": arena_width - self.ball.x,
+			"top": self.ball.y,
+			"bottom": arena_height - self.ball.y
+		}
+
+		var closest_wall = "left"
+		var min_val = dists["left"]
+		for k in dists.keys():
+			if dists[k] < min_val:
+				min_val = dists[k]
+				closest_wall = k
+		var closest_wall_dist = min_val
+
+		var closest_bumper = null
+		var closest_bumper_dist_sq = 999999.0
+		if self.world.has("arena") and self.world.arena:
+			var hazards = []
+			if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+				hazards = self.world.arena.hazards
+			elif typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+				hazards = self.world.arena.hazards
+			for hazard in hazards:
+				var kind = ""
+				if typeof(hazard) == TYPE_DICTIONARY:
+					kind = hazard.get("kind", "")
+				elif typeof(hazard) == TYPE_OBJECT:
+					if hazard.has_meta("kind"):
+						kind = hazard.get_meta("kind")
+					elif "kind" in hazard:
+						kind = hazard.kind
+				if kind in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper"]:
+					var hx = 0.0
+					var hy = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hx = float(hazard.get("x", 0.0))
+						hy = float(hazard.get("y", 0.0))
+					else:
+						hx = float(hazard.x) if "x" in hazard else 0.0
+						hy = float(hazard.y) if "y" in hazard else 0.0
+					var dx = hx - self.ball.x
+					var dy = hy - self.ball.y
+					var dist_sq = dx*dx + dy*dy
+					if dist_sq < closest_bumper_dist_sq:
+						closest_bumper_dist_sq = dist_sq
+						closest_bumper = hazard
+
+		var closest_bumper_dist = sqrt(closest_bumper_dist_sq) if closest_bumper_dist_sq < 999999.0 else 999999.0
+		var pull_dist = 500.0 * delta
+
+		if closest_bumper != null and closest_bumper_dist < closest_wall_dist:
+			var hx = 0.0
+			var hy = 0.0
+			if typeof(closest_bumper) == TYPE_DICTIONARY:
+				hx = float(closest_bumper.get("x", 0.0))
+				hy = float(closest_bumper.get("y", 0.0))
+			else:
+				hx = float(closest_bumper.x) if "x" in closest_bumper else 0.0
+				hy = float(closest_bumper.y) if "y" in closest_bumper else 0.0
+			var dx = hx - self.ball.x
+			var dy = hy - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0.0001:
+				self.ball.x += (dx/dist) * pull_dist
+				self.ball.y += (dy/dist) * pull_dist
+		else:
+			if closest_wall == "left":
+				self.ball.x = max(0.0, self.ball.x - pull_dist)
+			elif closest_wall == "right":
+				self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
+			elif closest_wall == "top":
+				self.ball.y = max(0.0, self.ball.y - pull_dist)
+			elif closest_wall == "bottom":
+				self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
+
     if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
         var i = self.world.arena.hazards.size() - 1
         while i >= 0:

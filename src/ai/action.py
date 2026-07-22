@@ -659,6 +659,13 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        target_cosmetic = getattr(target, "cosmetic", "").lower().replace(" ", "_")
+        if target_cosmetic == "wall_grappler":
+            attacker_type = getattr(attacker, "ball_type", "").lower()
+            is_proj = attacker_type in ["projectile", "spell"] or getattr(attacker, "is_projectile", False)
+            if is_proj:
+                original_damage *= 2.0  # Vulnerable to intercepting projectiles
+
         att_emotion = getattr(attacker, "emotion", "")
         if att_emotion in ("anger", "rage"):
             original_damage *= 1.5
@@ -1488,6 +1495,54 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+        if cosmetic == "wall_grappler" and strategy in ("flee", "attack", "chase"):
+            import math
+            arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+            arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+
+            # Find closest wall or bumper
+            dists = {
+                "left": self.ball.x,
+                "right": arena_width - self.ball.x,
+                "top": self.ball.y,
+                "bottom": arena_height - self.ball.y
+            }
+            closest_wall = min(dists, key=dists.get)
+            closest_wall_dist = dists[closest_wall]
+
+            closest_bumper_dist_sq = 999999.0
+            closest_bumper = None
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper"]:
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx*dx + dy*dy
+                        if dist_sq < closest_bumper_dist_sq:
+                            closest_bumper_dist_sq = dist_sq
+                            closest_bumper = hazard
+
+            closest_bumper_dist = math.sqrt(closest_bumper_dist_sq) if closest_bumper_dist_sq < 999999.0 else 999999.0
+
+            pull_dist = 500.0 * delta # rapid pull
+            if closest_bumper and closest_bumper_dist < closest_wall_dist:
+                dx = closest_bumper.x - self.ball.x
+                dy = closest_bumper.y - self.ball.y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    self.ball.x += (dx/dist) * pull_dist
+                    self.ball.y += (dy/dist) * pull_dist
+            else:
+                if closest_wall == "left":
+                    self.ball.x = max(0.0, self.ball.x - pull_dist)
+                elif closest_wall == "right":
+                    self.ball.x = min(float(arena_width), self.ball.x + pull_dist)
+                elif closest_wall == "top":
+                    self.ball.y = max(0.0, self.ball.y - pull_dist)
+                elif closest_wall == "bottom":
+                    self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
+
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in list(self.world.arena.hazards):
