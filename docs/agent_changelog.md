@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1311] Ball Customization Skins — *2026-07-22 05:18:25 UTC*
+
+Allow players to purchase and equip different cosmetic skins for their balls using prestige tokens or skill points, changing their visual appearance without affecting stats.
+
+---
+
 ## [idea-1297] Quantum Relay Booster — *2026-07-22 05:18:20 UTC*
 
 A booster that allows a ball to place a temporary quantum relay beacon. Upon taking fatal damage, the ball is instead teleported to the beacon with 20% health, consuming the relay.
