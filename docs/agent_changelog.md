@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1300] Cosmetic Synergy — *2026-07-22 04:55:07 UTC*
+
+Introduce cosmetic synergies where balls that wear matching cosmetics (e.g., all wearing 'sunglasses') gain a passive team bonus, encouraging teams to coordinate their aesthetic for a small competitive edge.
+
+---
+
 ## [idea-1267] Bounty Trap — *2026-07-22 04:44:01 UTC*
 
 A deployable trap that, when triggered, temporarily turns the victim into a high-threat bounty target for all bounty hunters on the map.

@@ -22274,7 +22274,7 @@
     },
     {
       "id": "idea-1300",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmetic Synergy",
@@ -32929,6 +32929,74 @@
         "src/ai/chain_lightning_tether.py",
         "src/ai/chain_lightning_tether.gd",
         "tests/test_chain_lightning_tether.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1926",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Renegade Bounty Hunters",
+      "description": "If a bounty hunter claims too many bounties without dying, they slowly accumulate 'Renegade Threat'. Once it maxes out, they become a permanent High-Threat Bounty themselves, attracting other hunters but granting them a massive buff to their base speed and damage as long as they survive.",
+      "allowed_paths": [
+        "src/ai/renegade_bounty_hunters.py",
+        "src/ai/renegade_bounty_hunters.gd",
+        "tests/test_renegade_bounty_hunters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1927",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Collisions",
+      "description": "When two entities collide at very high speeds, they form a temporary black hole that pulls nearby entities in and damages them.",
+      "allowed_paths": [
+        "src/ai/black_hole_collisions.py",
+        "src/ai/black_hole_collisions.gd",
+        "tests/test_black_hole_collisions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1928",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Trap Modifiers",
+      "description": "Players can upgrade their Bounty Trap with different variants. For example, an 'Explosive Trap' variant that triggers a small area-of-effect blast alongside marking the target, or a 'Stasis Trap' variant that temporarily roots the victim in place while marking them as a bounty target.",
+      "allowed_paths": [
+        "src/arena/bounty_trap_modifiers.py",
+        "src/arena/bounty_trap_modifiers.gd",
+        "tests/test_bounty_trap_modifiers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1929",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Mastery",
+      "description": "Players with maximum level auras (scale >= 3.0) emit a constant healing aura for nearby allies but move significantly slower.",
+      "allowed_paths": [
+        "src/ai/aura_mastery.py",
+        "src/ai/aura_mastery.gd",
+        "tests/test_aura_mastery.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
