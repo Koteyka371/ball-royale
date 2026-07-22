@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1252] Wall Jump Mastery Mutator — *2026-07-22 04:20:22 UTC*
+
+A game mode mutator where balls are forced to move continuously but taking damage from walls is disabled. Hitting walls instead provides massive momentum boosts and recharges dash abilities, encouraging a pinball-like playstyle.
+
+---
+
 ## [idea-1304] Guild-Exclusive Weather Events — *2026-07-22 00:14:36 UTC*
 
 Implement special weather modifiers (like 'Guild Storm') that can be triggered in Battle Royale using pooled guild resources, providing an advantage or specific status effects to participating guild members.
