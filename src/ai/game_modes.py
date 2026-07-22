@@ -27458,6 +27458,57 @@ class AuraPulseEventMode(GameMode):
                                 else:
                                     setattr(target, key, 5.0)
 
+class ShrinkingArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrinking Arena"
+        self.description = "Every 30 seconds the arena size is reduced by 10%, forcing players into closer combat."
+        self.shrink_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+
+        if not hasattr(self, "shrink_timer"):
+            self.shrink_timer = 0.0
+
+        self.shrink_timer += delta
+
+        if self.shrink_timer >= 30.0:
+            self.shrink_timer -= 30.0
+
+            if hasattr(world, "arena"):
+                old_w = getattr(world.arena, "width", 1000.0)
+                old_h = getattr(world.arena, "height", 1000.0)
+
+                new_w = max(200.0, old_w * 0.9)
+                new_h = max(200.0, old_h * 0.9)
+
+                world.arena.width = new_w
+                world.arena.height = new_h
+
+                for b in balls:
+                    radius = getattr(b, "radius", 15.0)
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+
+                    if bx > new_w - radius:
+                        b.x = new_w - radius
+                    if by > new_h - radius:
+                        b.y = new_h - radius
+
+                if hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        radius = getattr(h, "radius", 0.0)
+                        hx = getattr(h, "x", 0.0)
+                        hy = getattr(h, "y", 0.0)
+                        if hx > new_w - radius:
+                            h.x = new_w - radius
+                        if hy > new_h - radius:
+                            h.y = new_h - radius
+
+                if hasattr(world, "add_event"):
+                    world.add_event("arena_shrunk", {"width": new_w, "height": new_h})
+
 GAME_MODES = {
     "aura_pulse_event": AuraPulseEventMode(),
     'trickster_event': TricksterEventMode(),
@@ -27602,6 +27653,7 @@ GAME_MODES = {
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
     "vampire_royale": VampireRoyaleMode(),
+    "shrinking_arena": ShrinkingArenaMode(),
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),
