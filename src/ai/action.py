@@ -9373,15 +9373,6 @@ class Action:
                                     self.ball.last_attacker_id = None
                                 if hasattr(self.ball, "target_enemy_id"):
                                     self.ball.target_enemy_id = None
-                        elif hazard.kind == "acid_puddle":
-                            hazard_damage = hazard.damage * delta
-                            if hasattr(self.ball, "take_damage"):
-                                self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
-                                self.ball.hp -= hazard_damage
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = False
-                            continue
                         elif hazard.kind == "neutralizing_puddle":
                             if hasattr(self.ball, "base_max_hp"):
                                 if getattr(self.ball, "max_hp", 100.0) < self.ball.base_max_hp:

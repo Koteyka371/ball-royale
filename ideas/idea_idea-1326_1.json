@@ -1,4 +1,4 @@
 {
-  "title": "Ice Wall Deployable",
-  "description": "A deployable hazard item that constructs a wide, destructible ice wall in front of the ball. The wall blocks enemy movement and most projectiles but will slowly melt over time, eventually shattering into tiny ice shrapnel that slows nearby units."
+  "title": "Magnetize Booster",
+  "description": "A booster that applies a magnetic status effect to a ball for a short duration. When magnetized, the ball pulls nearby projectiles and small hazards towards it, acting as a defensive mechanic to intercept incoming attacks for teammates or redirect hazards away from a strategic point."
 }

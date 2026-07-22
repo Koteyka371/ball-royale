@@ -18314,15 +18314,6 @@ func execute(strategy: String, delta: float):
                                 self.ball["memory"] = {}
                                 self.ball["last_attacker_id"] = null
                                 self.ball["target_enemy_id"] = null
-                    elif hazard.kind == "acid_puddle":
-                        var acid_damage = hazard.damage * delta
-                        if self.ball.has_method("take_damage"):
-                            self.ball.take_damage(acid_damage)
-                        elif "hp" in self.ball:
-                            self.ball.hp -= acid_damage
-                            if self.ball.hp <= 0 and "alive" in self.ball:
-                                self.ball.alive = false
-                        continue
                     elif hazard.kind == "neutralizing_puddle":
                         if typeof(self.ball) == TYPE_DICTIONARY:
                             if self.ball.has("base_max_hp"):
