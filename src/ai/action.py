@@ -3796,6 +3796,70 @@ class Action:
                             hazard.vy *= (1.0 - 2.0 * delta)
 
 
+
+                if getattr(hazard, "kind", "") == "thrown_sticky_mine":
+                    attached_id = getattr(hazard, "attached_id", None)
+                    if attached_id is None:
+                        # Moving
+                        hazard.x += getattr(hazard, "vx", 0) * delta
+                        hazard.y += getattr(hazard, "vy", 0) * delta
+
+                        # Check collision
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                    dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                    if dist_sq <= (getattr(hazard, "radius", 15.0) + getattr(b, "radius", 10.0))**2:
+                                        hazard.attached_id = getattr(b, "id", None)
+                                        hazard.vx = 0
+                                        hazard.vy = 0
+                                        break
+
+                        if getattr(hazard, "attached_id", None) is None:
+                            if getattr(hazard, "duration", 0.0) > 0:
+                                hazard.duration -= delta
+                                if hazard.duration <= 0:
+                                    if hazard in self.world.arena.hazards:
+                                        self.world.arena.hazards.remove(hazard)
+                    else:
+                        # Attached
+                        current_attached = None
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "id", None) == attached_id:
+                                    current_attached = b
+                                    break
+
+                        if current_attached and getattr(current_attached, "alive", True):
+                            hazard.x = current_attached.x
+                            hazard.y = current_attached.y
+                        else:
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+
+                        explosion_timer = getattr(hazard, "explosion_timer", 0.0)
+                        if explosion_timer > 0:
+                            hazard.explosion_timer = explosion_timer - delta
+                            if hazard.explosion_timer <= 0:
+                                if hazard in self.world.arena.hazards:
+                                    self.world.arena.hazards.remove(hazard)
+                                explosion_radius = 100.0
+                                explosion_damage = 50.0
+                                if hasattr(self.world, "balls"):
+                                    for b in self.world.balls:
+                                        if getattr(b, "alive", True):
+                                            dx = hazard.x - b.x
+                                            dy = hazard.y - b.y
+                                            if dx*dx + dy*dy <= explosion_radius**2:
+                                                if hasattr(b, "take_damage"):
+                                                    b.take_damage(explosion_damage)
+                                                elif hasattr(b, "hp"):
+                                                    b.hp -= explosion_damage
+                                                    if b.hp <= 0:
+                                                        b.alive = False
+                                                        b.killer = getattr(hazard, "owner_id", None)
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
                 if getattr(hazard, "kind", "") == "thrown_bomb":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -14942,6 +15006,47 @@ class Action:
                     self.world.arena.hazards.append(thrown_bomb)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
+
+            elif skill_name == "throw_sticky_mine":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = __import__('math').sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+
+                    thrown_mine = Hazard(
+                        id=19300 + len(self.world.arena.hazards),
+                        x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        radius=15.0,
+                        kind="thrown_sticky_mine",
+                        damage=0.0
+                    )
+                    setattr(thrown_mine, "vx", nx * 600.0)
+                    setattr(thrown_mine, "vy", ny * 600.0)
+                    setattr(thrown_mine, "duration", 2.0)
+                    setattr(thrown_mine, "owner_id", getattr(self.ball, "id", None))
+                    setattr(thrown_mine, "attached_id", None)
+                    setattr(thrown_mine, "explosion_timer", 3.0)
+                    self.world.arena.hazards.append(thrown_mine)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
             elif skill_name == "throw_bomb":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     enemies = self._get_enemies()

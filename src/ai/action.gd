@@ -31106,6 +31106,54 @@ func _use_skill():
                 if "skill_cooldown" in ball: ball.skill_timer = float(ball.skill_cooldown)
                 else: ball.skill_timer = 5.0
 
+
+        elif skill_name == "throw_sticky_mine":
+            if "hazards" in self.world.arena:
+                var hazards = self.world.arena.hazards
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = null
+                    var min_dist = 9999999.0
+                    for e in enemies:
+                        var dx = e.x - self.ball.x
+                        var dy = e.y - self.ball.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist < min_dist:
+                            min_dist = dist
+                            closest_enemy = e
+                    if closest_enemy != null:
+                        var dx = closest_enemy.x - self.ball.x
+                        var dy = closest_enemy.y - self.ball.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx = dx/dist
+                            ny = dy/dist
+
+                var b_radius = 10.0
+                if "radius" in self.ball: b_radius = self.ball.radius
+
+                var thrown_mine = {
+                    "id": hazards.size() + int(randf() * 90000) + 19300,
+                    "x": self.ball.x + nx * (b_radius + 5.0),
+                    "y": self.ball.y + ny * (b_radius + 5.0),
+                    "radius": 15.0,
+                    "kind": "thrown_sticky_mine",
+                    "damage": 0.0,
+                    "vx": nx * 600.0,
+                    "vy": ny * 600.0,
+                    "duration": 2.0,
+                    "owner_id": self.ball.id if "id" in self.ball else null,
+                    "attached_id": null,
+                    "explosion_timer": 3.0,
+                    "active": true
+                }
+                hazards.append(thrown_mine)
+
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
         elif skill_name == "throw_bomb":
             if "hazards" in self.world.arena:
                 var hazards = self.world.arena.hazards
