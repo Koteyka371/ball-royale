@@ -10,12 +10,18 @@ def test_phantom_replay_hazard_logic():
     world.leaderboard_manager.data.get.return_value = 1
 
     b1 = MagicMock()
+    b1.is_submerged = False
+    b1.submerge_timer = 0.0
+    b1.wet_debuff_timer = 0.0
     b1.id = 1
     b1.alive = True
     b1.x, b1.y = 500, 500
     b1.radius = 10
 
     b2 = MagicMock()
+    b2.is_submerged = False
+    b2.submerge_timer = 0.0
+    b2.wet_debuff_timer = 0.0
     b2.id = 2
     b2.alive = True
     b2.x, b2.y = 100, 100
