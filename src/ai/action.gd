@@ -32127,7 +32127,7 @@ func _clamp_position() -> bool:
         if "radius" in self.ball: radius = self.ball.radius
 
         if "game_mode" in self.world and self.world.game_mode != null:
-            if "name" in self.world.game_mode and self.world.game_mode.name == "Bumper Balls":
+            if "name" in self.world.game_mode and (self.world.game_mode.name == "Bumper Balls" or self.world.game_mode.name == "Radiation Wind"):
                 return false
 
         if is_nan(self.ball.x) or is_inf(self.ball.x):

@@ -39926,6 +39926,117 @@ class BounceLaserMode extends GameMode:
                 world.arena.hazards.append(laser)
 
 
+class RadiationWindMode extends GameMode:
+	var wind_timer = 30.0
+	var wind_dir_x = 1.0
+	var wind_dir_y = 0.0
+	var wind_strength = 200.0
+
+	func _init() -> void:
+		name = "Radiation Wind"
+		description = "A hazard that blows continuously in one direction across the arena, randomly shifting angles every 30 seconds. Balls pushed off the edge of the arena by this wind take massive radiation damage."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var angle = randf_range(0.0, 2.0 * PI)
+		wind_dir_x = cos(angle)
+		wind_dir_y = sin(angle)
+		wind_strength = 200.0
+		wind_timer = 30.0
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		wind_timer -= delta
+		if wind_timer <= 0:
+			wind_timer = 30.0
+			var angle = randf_range(0.0, 2.0 * PI)
+			wind_dir_x = cos(angle)
+			wind_dir_y = sin(angle)
+			if world != null and world.has_method("add_event"):
+				world.add_event("weather_warning", {"type": "weather_warning", "message": "The radiation wind direction is changing!"})
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", false)
+			else:
+				b_alive = b.get("alive") if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", ""))
+			else:
+				if "ball_type" in b:
+					b_type = str(b.ball_type)
+
+			if b_alive and b_type != "spectator":
+				var b_vx = 0.0
+				var b_vy = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					b_vx = b.get("vx", 0.0)
+					b_vy = b.get("vy", 0.0)
+				else:
+					if b.has_method("get_meta") and b.has_meta("vx"):
+						b_vx = b.get_meta("vx")
+					elif "vx" in b:
+						b_vx = float(b.vx)
+
+					if b.has_method("get_meta") and b.has_meta("vy"):
+						b_vy = b.get_meta("vy")
+					elif "vy" in b:
+						b_vy = float(b.vy)
+
+				b_vx += wind_dir_x * wind_strength * delta
+				b_vy += wind_dir_y * wind_strength * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = b_vx
+					b["vy"] = b_vy
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("vx", b_vx)
+						b.set_meta("vy", b_vy)
+					else:
+						if "vx" in b:
+							b.vx = b_vx
+						if "vy" in b:
+							b.vy = b_vy
+
+				var bx = arena_width / 2.0
+				var by = arena_height / 2.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = float(b.get("x"))
+					if b.has("y"): by = float(b.get("y"))
+				else:
+					if "x" in b: bx = float(b.x)
+					if "y" in b: by = float(b.y)
+
+				if bx < 0 or bx > arena_width or by < 0 or by > arena_height:
+					if typeof(b) == TYPE_DICTIONARY:
+						var hp = float(b.get("hp", 100.0))
+						hp -= 500.0 * delta
+						if hp <= 0:
+							hp = 0.0
+							b["alive"] = false
+						b["hp"] = hp
+					else:
+						if b.has_method("take_damage"):
+							b.take_damage(500.0 * delta)
+						elif "hp" in b:
+							var hp = float(b.hp)
+							hp -= 500.0 * delta
+							if hp <= 0:
+								hp = 0.0
+								if "alive" in b:
+									b.alive = false
+							b.hp = hp
+
 class DynamicWindCurrentsMode extends GameMode:
 	var wind_timer = 15.0
 	var wind_dir_x = 1.0
@@ -43121,6 +43232,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"physics_anomaly_event": PhysicsAnomalyEventMode.new(),
 	"escort": EscortMode.new(),
 	"windstorm": WindstormMode.new(),
+	"radiation_wind": RadiationWindMode.new(),
 	"dynamic_wind_currents": DynamicWindCurrentsMode.new(),
 	"modifier_zones": ModifierZonesMode.new(),
 	"modifier_safe_zone": ModifierSafeZoneMode.new(),

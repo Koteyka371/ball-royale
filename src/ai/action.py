@@ -16647,7 +16647,7 @@ class Action:
         radius = getattr(self.ball, "radius", 10.0)
 
         gm = getattr(self.world, "game_mode", None)
-        if gm and getattr(gm, "name", "") == "Bumper Balls":
+        if gm and getattr(gm, "name", "") in ["Bumper Balls", "Radiation Wind"]:
             # In Bumper Balls, balls are pushed off the arena instead of clamping
             return False
 

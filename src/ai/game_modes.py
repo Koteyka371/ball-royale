@@ -25090,6 +25090,63 @@ class ZeroGravityMeteorShowerMode(GameMode):
                                 h.y = arena_height - getattr(h, "radius", 30.0)
                                 h.vy = -abs(h.vy)
 
+class RadiationWindMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Radiation Wind"
+        self.description = "A hazard that blows continuously in one direction across the arena, randomly shifting angles every 30 seconds. Balls pushed off the edge of the arena by this wind take massive radiation damage."
+        self.wind_timer = 30.0
+        self.wind_dir_x = 1.0
+        self.wind_dir_y = 0.0
+        self.wind_strength = 200.0
+        import random
+        self.random = random
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import math
+        angle = self.random.uniform(0, 2 * math.pi)
+        self.wind_dir_x = math.cos(angle)
+        self.wind_dir_y = math.sin(angle)
+        self.wind_strength = 200.0
+        self.wind_timer = 30.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.wind_timer -= delta
+        if self.wind_timer <= 0:
+            self.wind_timer = 30.0
+            import math
+            angle = self.random.uniform(0, 2 * math.pi)
+            self.wind_dir_x = math.cos(angle)
+            self.wind_dir_y = math.sin(angle)
+            if hasattr(world, 'add_event'):
+                world.add_event('weather_warning', {'type': 'weather_warning', 'message': 'The radiation wind direction is changing!'})
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "vx"):
+                    b.vx = 0.0
+                if not hasattr(b, "vy"):
+                    b.vy = 0.0
+                b.vx += self.wind_dir_x * self.wind_strength * delta
+                b.vy += self.wind_dir_y * self.wind_strength * delta
+
+                bx = getattr(b, "x", arena_width / 2)
+                by = getattr(b, "y", arena_height / 2)
+
+                if bx < 0 or bx > arena_width or by < 0 or by > arena_height:
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(500.0 * delta)
+                    elif hasattr(b, "hp"):
+                        b.hp -= 500.0 * delta
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+
 class DynamicWindCurrentsMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -27083,6 +27140,7 @@ GAME_MODES = {
 
     "blackout": BlackoutMode(),
     "windstorm": WindstormMode(),
+    "radiation_wind": RadiationWindMode(),
     "dynamic_wind_currents": DynamicWindCurrentsMode(),
     "modifier_zones": ModifierZonesMode(),
     "modifier_safe_zone": ModifierSafeZoneMode(),
