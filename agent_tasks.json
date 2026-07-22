@@ -22036,7 +22036,7 @@
     },
     {
       "id": "idea-1286",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Clashes",
@@ -32894,6 +32894,41 @@
         "src/ai/wall_crawler_ball.py",
         "src/ai/wall_crawler_ball.gd",
         "tests/test_wall_crawler_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1924",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Conduit Boss",
+      "description": "A new neutral boss entity that spawns during intense weather events (like thunderstorm or blizzard). Defeating it drops a random legendary weather manipulation item, but its attacks scale with the current weather's intensity, forcing players to time their engagements.",
+      "allowed_paths": [
+        "src/ui/conduit_boss.py",
+        "src/ui/conduit_boss.gd",
+        "src/ai/conduit_boss.py",
+        "tests/test_conduit_boss.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1925",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Tether Mode",
+      "description": "A chaotic game mode where all players are permanently tethered by a weak chain lightning link to the nearest player. Moving too far breaks the link but causes a small stun, while staying close causes incremental damage that ramps up over time, forcing constant rotation and positioning.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_tether.py",
+        "src/ai/chain_lightning_tether.gd",
+        "tests/test_chain_lightning_tether.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

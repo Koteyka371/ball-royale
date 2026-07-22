@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1286] Aura Clashes — *2026-07-22 04:43:57 UTC*
+
+When two balls with high-level cosmetic auras (scale >= 2.0) collide, they trigger an 'Aura Clash' shockwave. This shockwave deals no damage but heavily knocks back all nearby entities (including hazards and smaller balls), temporarily silencing them for 2 seconds.
+
+---
+
 ## [idea-981] Lightning Rod Deployable — *2026-07-22 04:39:00 UTC*
 
 A new active item 'lightning_rod_item' that players can drop during thunderstorms. It attracts all nearby lightning strikes to its location and charges up, eventually detonating in a massive chain-lightning EMP blast that disables shields and abilities.
