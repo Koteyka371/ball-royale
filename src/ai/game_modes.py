@@ -26062,7 +26062,95 @@ class ElementalChainReactionMode(GameMode):
         self.name = "Elemental Chain Reactions"
         self.description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 
+
+class CollapsingCeilingMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Collapsing Ceiling"
+        self.description = "The ceiling is collapsing! Safe zones appear, and their vertical height shrinks over time. Balls caught under falling debris are briefly stunned and take massive damage."
+        self.zones = []
+        self.collapse_timer = 0.0
+        self.max_collapse_timer = 10.0
+        self.zone_width = 200.0
+        self.zone_height = 800.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.collapse_timer = self.max_collapse_timer
+        self._spawn_zones(world)
+
+    def _spawn_zones(self, world):
+        import random
+        self.zones = []
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        # Initial safe zones
+        self.zone_height = arena_height
+        for _ in range(3):
+            x = random.uniform(self.zone_width / 2, arena_width - self.zone_width / 2)
+            y = arena_height / 2
+            self.zones.append({"x": x, "y": y, "width": self.zone_width, "height": self.zone_height})
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        self.collapse_timer -= delta
+
+        # Shrink the vertical height
+        shrink_rate = 50.0
+        self.zone_height = max(100.0, self.zone_height - shrink_rate * delta)
+
+        for z in self.zones:
+            z["height"] = self.zone_height
+
+        if self.collapse_timer <= 0:
+            self.collapse_timer = self.max_collapse_timer
+            # Drop the ceiling (damage anyone outside the safe zones vertically or horizontally)
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                if is_immune:
+                    continue
+
+                in_safe_zone = False
+                for z in self.zones:
+                    # check if inside the rectangular safe zone
+                    dx = abs(b.x - z["x"])
+                    dy = abs(b.y - z["y"])
+                    if dx <= z["width"] / 2 and dy <= z["height"] / 2:
+                        in_safe_zone = True
+                        break
+
+                if not in_safe_zone:
+                    # Stun and massive damage
+                    if not getattr(b, "is_stunned", False):
+                        b.is_stunned = True
+                    b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+
+                    damage = 300.0
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(damage)
+                    elif hasattr(b, "hp"):
+                        b.hp -= damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(b, "id") and b.id not in world.dead_balls:
+                                world.dead_balls.append(b.id)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("ball_died", {"id": b.id, "reason": "collapsing_ceiling", "killer_id": -1})
+
+            self._spawn_zones(world)
+
+
 GAME_MODES = {
+    "collapsing_ceiling": CollapsingCeilingMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),
     "biome_safe_zones": BiomeSafeZonesMode(),
     'guild_storm': GuildStormMode(),

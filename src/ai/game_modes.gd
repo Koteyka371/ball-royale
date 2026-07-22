@@ -42063,7 +42063,116 @@ class BiomeSafeZonesMode extends GameMode:
 					if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
 					else: b.hp = hp
 
+
+class CollapsingCeilingMode extends GameMode:
+	var zones: Array = []
+	var collapse_timer: float = 0.0
+	var max_collapse_timer: float = 10.0
+	var zone_width: float = 200.0
+	var zone_height: float = 800.0
+
+	func _init():
+		name = "Collapsing Ceiling"
+		description = "The ceiling is collapsing! Safe zones appear, and their vertical height shrinks over time. Balls caught under falling debris are briefly stunned and take massive damage."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		collapse_timer = max_collapse_timer
+		_spawn_zones(world)
+
+	func _spawn_zones(world) -> void:
+		zones.clear()
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif world.arena.has_method("get"):
+				arena_width = float(world.arena.get("width"))
+				arena_height = float(world.arena.get("height"))
+
+		zone_height = arena_height
+		for i in range(3):
+			var x = randf_range(zone_width / 2.0, arena_width - zone_width / 2.0)
+			var y = arena_height / 2.0
+			zones.append({"x": x, "y": y, "width": zone_width, "height": zone_height})
+
+	func tick(world, balls: Array, delta: float) -> void:
+		if not ("dead_balls" in world):
+			world["dead_balls"] = []
+
+		collapse_timer -= delta
+		var shrink_rate = 50.0
+		zone_height = max(100.0, zone_height - shrink_rate * delta)
+
+		for z in zones:
+			z["height"] = zone_height
+
+		if collapse_timer <= 0:
+			collapse_timer = max_collapse_timer
+			for b in balls:
+				var is_alive = false
+				var is_immune = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					var w_timer = b.get("weather_immunity_timer", 0.0)
+					is_immune = w_timer > 0.0
+				else:
+					is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else false
+					var w_timer = b.get("weather_immunity_timer") if b.has_method("get") and b.get("weather_immunity_timer") != null else 0.0
+					is_immune = w_timer > 0.0
+
+				if not is_alive or is_immune:
+					continue
+
+				var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.get("x")
+				var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.get("y")
+
+				var in_safe_zone = false
+				for z in zones:
+					var dx = abs(b_x - z["x"])
+					var dy = abs(b_y - z["y"])
+					if dx <= z["width"] / 2.0 and dy <= z["height"] / 2.0:
+						in_safe_zone = true
+						break
+
+				if not in_safe_zone:
+					var damage = 300.0
+					if typeof(b) == TYPE_DICTIONARY:
+						b["is_stunned"] = true
+						b["stun_timer"] = max(b.get("stun_timer", 0.0), 2.0)
+						b["hp"] = b.get("hp", 100.0) - damage
+						if b["hp"] <= 0:
+							b["hp"] = 0
+							b["alive"] = false
+							if b.has("id") and not world["dead_balls"].has(b["id"]):
+								world["dead_balls"].append(b["id"])
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("ball_died", {"id": b["id"], "reason": "collapsing_ceiling", "killer_id": -1})
+					else:
+						b.set("is_stunned", true)
+						var current_stun = b.get("stun_timer") if b.has_method("get") and b.get("stun_timer") != null else 0.0
+						b.set("stun_timer", max(current_stun, 2.0))
+						if b.has_method("take_damage"):
+							b.take_damage(damage)
+						else:
+							var hp = b.get("hp") if b.has_method("get") and b.get("hp") != null else 100.0
+							b.set("hp", hp - damage)
+							if b.get("hp") <= 0:
+								b.set("hp", 0)
+								b.set("alive", false)
+								var b_id = b.get("id") if b.has_method("get") else null
+								if b_id != null and not world["dead_balls"].has(b_id):
+									world["dead_balls"].append(b_id)
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+										world.add_event("ball_died", {"id": b_id, "reason": "collapsing_ceiling", "killer_id": -1})
+
+			_spawn_zones(world)
+
+
 GAME_MODES = {
+	"collapsing_ceiling": CollapsingCeilingMode.new(),
 	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"guild_storm": GuildStormMode.new(),
 	"chroma_boss": ChromaBossMode.new(),
