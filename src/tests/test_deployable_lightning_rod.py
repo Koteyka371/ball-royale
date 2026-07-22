@@ -102,7 +102,10 @@ def test_deployable_lightning_rod():
                                 dy = b.y - hazard.y
                                 dist_sq = dx*dx + dy*dy
                                 if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
+                                    b.energy_shield_active = False
+                                    b.energy_shield_hp = 0.0
                                     b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+                                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
                                     if hasattr(action, "_spawn_directed_particles"):
                                         action._spawn_directed_particles(hazard, b, "lightning")
 
@@ -138,10 +141,14 @@ def test_deployable_lightning_rod():
                                 dy = b.y - hazard.y
                                 dist_sq = dx*dx + dy*dy
                                 if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
+                                    b.energy_shield_active = False
+                                    b.energy_shield_hp = 0.0
                                     b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+                                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
                                     if hasattr(action, "_spawn_directed_particles"):
                                         action._spawn_directed_particles(hazard, b, "lightning")
 
     assert rod.charge == 0.0
     assert enemy.stun_timer == 2.0
+    assert getattr(enemy, "silence_timer", 0.0) == 5.0
     assert any(e == {'type': 'visual_effect', 'data': {'type': 'lightning', 'x': rod.x, 'y': rod.y}} for e in world.events)

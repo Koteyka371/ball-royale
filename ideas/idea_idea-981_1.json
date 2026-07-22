@@ -1,0 +1,4 @@
+{
+  "title": "Weather Conduit Boss",
+  "description": "A new neutral boss entity that spawns during intense weather events (like thunderstorm or blizzard). Defeating it drops a random legendary weather manipulation item, but its attacks scale with the current weather's intensity, forcing players to time their engagements."
+}
