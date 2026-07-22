@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1312] Custom Boss Spawns — *2026-07-22 06:27:48 UTC*
+
+Allow viewers to use channel points or specific actions to trigger the spawning of special bosses (like the Juggernaut) dynamically during the match.
+
+---
+
 ## [idea-1318] Lava Eruption Mode — *2026-07-22 06:27:44 UTC*
 
 An arena modification where random sections of the floor erupt into lava geysers, forcing balls to traverse via specific safe paths while increasing their temperature (friction) if they stay near the geysers.
