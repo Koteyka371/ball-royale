@@ -13165,6 +13165,17 @@ class GuildVsGuildMode(GameMode):
         super().setup(world, balls)
         self.world = world
         self.guilds = {}
+
+        try:
+            from system.guild import GuildManager
+            gm = GuildManager()
+            g_names = list(self.guilds.keys())
+            guild1 = g_names[0] if len(g_names) > 0 else "GuildA"
+            guild2 = g_names[1] if len(g_names) > 1 else "GuildB"
+            self.gvg_mutator = gm.get_gvg_match_mutator(guild1, guild2)
+            self.world.active_mutator = self.gvg_mutator
+        except ImportError:
+            pass
         self.control_points = [
             {"x": 200, "y": 200, "radius": 50, "owner": None, "progress": 0},
             {"x": 800, "y": 800, "radius": 50, "owner": None, "progress": 0},

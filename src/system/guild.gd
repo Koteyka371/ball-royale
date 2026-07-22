@@ -63,6 +63,75 @@ func save_guilds():
     if file:
         file.store_string(JSON.stringify(data, "  "))
 
+
+func pool_mutator_tokens(guild_name: String, amount: int, profile) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var current_tokens = 0
+        if profile.data.has("mutator_tokens"):
+            current_tokens = profile.data["mutator_tokens"]
+
+        if current_tokens >= amount:
+            profile.data["mutator_tokens"] = current_tokens - amount
+            if profile.has_method("save_profile"):
+                profile.save_profile()
+
+            if not guild.has("mutator_token_pool"):
+                guild["mutator_token_pool"] = 0
+            guild["mutator_token_pool"] += amount
+            save_guilds()
+            return true
+    return false
+
+func cast_gvg_mutator_vote(guild_name: String, mutator: String, tokens_to_spend: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var pool = 0
+        if guild.has("mutator_token_pool"):
+            pool = guild["mutator_token_pool"]
+
+        if pool >= tokens_to_spend:
+            guild["mutator_token_pool"] = pool - tokens_to_spend
+
+            if not guild.has("gvg_mutator_votes"):
+                guild["gvg_mutator_votes"] = {}
+
+            var current_votes = 0
+            if guild["gvg_mutator_votes"].has(mutator):
+                current_votes = guild["gvg_mutator_votes"][mutator]
+
+            guild["gvg_mutator_votes"][mutator] = current_votes + tokens_to_spend
+            save_guilds()
+            return true
+    return false
+
+func get_gvg_match_mutator(guild1_name: String, guild2_name: String) -> String:
+    var votes = {}
+
+    var check_guilds = [guild1_name, guild2_name]
+    for g_name in check_guilds:
+        if data["guilds"].has(g_name):
+            var guild = data["guilds"][g_name]
+            if guild.has("gvg_mutator_votes"):
+                var g_votes = guild["gvg_mutator_votes"]
+                for mutator in g_votes.keys():
+                    if not votes.has(mutator):
+                        votes[mutator] = 0
+                    votes[mutator] += g_votes[mutator]
+
+    if votes.is_empty():
+        var options = ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost"]
+        return options[randi() % options.size()]
+
+    var max_votes = -1
+    var winning_mutator = ""
+    for mutator in votes.keys():
+        if votes[mutator] > max_votes:
+            max_votes = votes[mutator]
+            winning_mutator = mutator
+
+    return winning_mutator
+
 func create_guild(guild_name: String, creator_id: String) -> bool:
     if data["guilds"].has(guild_name):
         return false
