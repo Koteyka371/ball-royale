@@ -8114,6 +8114,31 @@ func execute(strategy: String, delta: float):
 					hazard.duration -= delta
 					if hazard.duration <= 0:
 						hazard.duration = 0.0
+						var spawn_m = false
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("spawn_magma") and hazard["spawn_magma"]: spawn_m = true
+						elif typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("has_meta") and hazard.has_meta("spawn_magma") and hazard.get_meta("spawn_magma"): spawn_m = true
+						elif typeof(hazard) != TYPE_DICTIONARY and "spawn_magma" in hazard and hazard.spawn_magma: spawn_m = true
+
+						if spawn_m:
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hazard["kind"] = "magma_puddle"
+								hazard["damage"] = hazard.get("damage", 30.0) * 1.5
+								hazard["radius"] = hazard.get("radius", 20.0) * 2.5
+								hazard["vx"] = 0.0
+								hazard["vy"] = 0.0
+								hazard["duration"] = 10.0
+								hazard["spawn_magma"] = false
+							else:
+								hazard.kind = "magma_puddle"
+								var base_dmg = hazard.damage if "damage" in hazard else 30.0
+								hazard.damage = base_dmg * 1.5
+								var base_rad = hazard.radius if "radius" in hazard else 20.0
+								hazard.radius = base_rad * 2.5
+								if "vx" in hazard: hazard.vx = 0.0
+								if "vy" in hazard: hazard.vy = 0.0
+								hazard.duration = 10.0
+								if "spawn_magma" in hazard: hazard.spawn_magma = false
+								if hazard.has_method("set_meta"): hazard.set_meta("spawn_magma", false)
 				if "x" in hazard and "vx" in hazard: hazard.x += hazard.vx * delta
 				if "y" in hazard and "vy" in hazard: hazard.y += hazard.vy * delta
 

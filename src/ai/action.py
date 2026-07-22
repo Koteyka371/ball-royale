@@ -3836,6 +3836,14 @@ class Action:
                         hazard.duration -= delta
                         if hazard.duration <= 0:
                             hazard.duration = 0.0
+                            if getattr(hazard, "spawn_magma", False):
+                                hazard.kind = "magma_puddle"
+                                hazard.damage = getattr(hazard, "damage", 30.0) * 1.5
+                                hazard.radius = getattr(hazard, "radius", 20.0) * 2.5
+                                hazard.vx = 0
+                                hazard.vy = 0
+                                hazard.duration = 10.0
+                                hazard.spawn_magma = False
                             # Let cleanup handle or just wait for other cleanup
 
                     hazard.x += getattr(hazard, "vx", 0) * delta
