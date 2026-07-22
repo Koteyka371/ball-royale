@@ -5656,8 +5656,18 @@ func execute(strategy: String, delta: float):
 
     if "speed_debuff_timer" in self.ball and typeof(self.ball.speed_debuff_timer) in [TYPE_FLOAT, TYPE_INT] and self.ball.speed_debuff_timer > 0.0:
         self.ball.speed_debuff_timer -= delta
+        var base_spd = 100.0
+        if "base_speed" in self.ball: base_spd = self.ball.base_speed
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): base_spd = self.ball.get_meta("base_speed")
+        var mult = 1.0
+        if "speed_debuff_multiplier" in self.ball: mult = self.ball.speed_debuff_multiplier
+        if "speed" in self.ball: self.ball.speed = base_spd * mult
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"): self.ball.set("speed", base_spd * mult)
+
         if self.ball.speed_debuff_timer <= 0.0:
             self.ball.speed_debuff_multiplier = 1.0
+            if "speed" in self.ball: self.ball.speed = base_spd
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"): self.ball.set("speed", base_spd)
 
     var is_d_aura_active = false
     var d_aura_val = 0.0
@@ -16767,6 +16777,27 @@ func execute(strategy: String, delta: float):
                                         if "active" in hazard: hazard.active = false
                                         elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
                             continue
+                    elif hazard.kind == "slow_wall":
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist < (self.ball.radius + hazard.radius) and dist > 0:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var overlap = (self.ball.radius + hazard.radius) - dist
+                            if "x" in self.ball: self.ball.x += nx * overlap
+                            if "y" in self.ball: self.ball.y += ny * overlap
+                            if "speed_debuff_timer" in self.ball:
+                                self.ball.speed_debuff_timer = max(self.ball.speed_debuff_timer, 3.0)
+                            else:
+                                if self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_timer", 3.0)
+                                else: self.ball["speed_debuff_timer"] = 3.0
+                            if "speed_debuff_multiplier" in self.ball:
+                                self.ball.speed_debuff_multiplier = min(self.ball.speed_debuff_multiplier, 0.5)
+                            else:
+                                if self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_multiplier", 0.5)
+                                else: self.ball["speed_debuff_multiplier"] = 0.5
+                        continue
                     elif hazard.kind == "bone_wall":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -20202,6 +20233,18 @@ func execute(strategy: String, delta: float):
                     if "alive" in self.ball: self.ball.alive = false
             elif wall_state == "spikes":
                 new_speed = speed * 0.5
+            elif wall_state == "slow_wall":
+                if "speed_debuff_timer" in self.ball:
+                    self.ball.speed_debuff_timer = max(self.ball.speed_debuff_timer, 3.0)
+                else:
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_timer", 3.0)
+                    else: self.ball["speed_debuff_timer"] = 3.0
+                if "speed_debuff_multiplier" in self.ball:
+                    self.ball.speed_debuff_multiplier = min(self.ball.speed_debuff_multiplier, 0.5)
+                else:
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_multiplier", 0.5)
+                    else: self.ball["speed_debuff_multiplier"] = 0.5
+                new_speed = min(speed * 0.5, 3000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Chaotic Pinball Machine":
                 new_speed = min(speed * 2.0, 10000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Extreme Bounciness":

@@ -2652,8 +2652,11 @@ class Action:
 
         if getattr(self.ball, "speed_debuff_timer", 0.0) > 0:
             self.ball.speed_debuff_timer -= delta
+            # Apply the debuff to movement speed
+            self.ball.speed = getattr(self.ball, "base_speed", 100.0) * getattr(self.ball, "speed_debuff_multiplier", 1.0)
             if self.ball.speed_debuff_timer <= 0:
                 self.ball.speed_debuff_multiplier = 1.0
+                self.ball.speed = getattr(self.ball, "base_speed", 100.0)
 
         if getattr(self.ball, "siren_feared_timer", 0.0) > 0:
             self.ball.siren_feared_timer -= delta
@@ -8773,6 +8776,19 @@ class Action:
                                         self.ball.stutter_timer = 1.0 # Stun
                                         self.ball.pending_supercharge = True
                             continue
+                        elif hazard.kind == "slow_wall":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (self.ball.radius + hazard.radius) and dist > 0:
+                                nx, ny = dx / dist, dy / dist
+                                overlap = (self.ball.radius + hazard.radius) - dist
+                                self.ball.x += nx * overlap
+                                self.ball.y += ny * overlap
+                                self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 3.0)
+                                self.ball.speed_debuff_multiplier = min(getattr(self.ball, "speed_debuff_multiplier", 1.0), 0.5)
+                            continue
                         elif hazard.kind == "bone_wall":
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -10220,6 +10236,10 @@ class Action:
                     self.ball.alive = False
                 elif wall_state == "spikes":
                     new_speed = speed * 0.5
+                elif wall_state == "slow_wall":
+                    self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 3.0)
+                    self.ball.speed_debuff_multiplier = min(getattr(self.ball, "speed_debuff_multiplier", 1.0), 0.5)
+                    new_speed = min(speed * 0.5, 3000.0)
                 elif gm and getattr(gm, "name", "") == "Bouncy Terrain":
                     new_speed = min(speed * 2.5, 3500.0)
                 elif gm and getattr(gm, "name", "") == "Chaotic Pinball Machine":
