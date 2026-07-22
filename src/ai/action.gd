@@ -15970,6 +15970,16 @@ func execute(strategy: String, delta: float):
                     elif hazard.kind == "lightning_strike":
                         if not hazard.has_meta("hit_targets") or not hazard.get_meta("hit_targets"):
                             hazard.set_meta("hit_targets", true)
+                            var lr_timer = 0.0
+                            if self.ball.has_method("has_meta") and self.ball.has_meta("lightning_rod_item_timer"): lr_timer = self.ball.get_meta("lightning_rod_item_timer")
+                            elif "lightning_rod_item_timer" in self.ball: lr_timer = self.ball.lightning_rod_item_timer
+                            if lr_timer > 0.0:
+                                var maxhp = 100.0
+                                if "max_hp" in self.ball: maxhp = float(self.ball.max_hp)
+                                if "hp" in self.ball: self.ball.hp = min(maxhp, float(self.ball.hp) + 100.0)
+                                if "max_stamina" in self.ball and "stamina" in self.ball: self.ball.stamina = self.ball.max_stamina
+                                continue
+
                             var b_type = ""
                             if "ball_type" in self.ball:
                                 b_type = str(self.ball.ball_type).to_lower()
