@@ -17543,6 +17543,99 @@ class PacifistKnockoutMode extends GameMode:
 						else:
 							b.alive = false
 
+class RadiationWindstormMode extends GameMode:
+	var wind_angle: float = 0.0
+	var wind_speed: float = 400.0
+	var angle_timer: float = 0.0
+	var radiation_damage: float = 50.0
+
+	func _init() -> void:
+		name = "Radiation Windstorm"
+		description = "A hazard that blows continuously in one direction across the arena, randomly shifting angles every 30 seconds. Balls pushed off the edge of the arena by this wind take massive radiation damage."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		wind_angle = randf() * PI * 2.0
+		angle_timer = 30.0
+
+	func tick(world, balls: Array, delta: float) -> void:
+		.tick(world, balls, delta)
+		angle_timer -= delta
+		if angle_timer <= 0.0:
+			wind_angle = randf() * PI * 2.0
+			angle_timer = 30.0
+			if world != null and world.has_method("add_event"):
+				world.add_event("wind_shift", {"angle": wind_angle, "message": "The wind direction shifted!"})
+
+		var wind_vx = cos(wind_angle) * wind_speed
+		var wind_vy = sin(wind_angle) * wind_speed
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+		elif world != null:
+			if "width" in world: arena_width = float(world.width)
+			if "height" in world: arena_height = float(world.height)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY: is_alive = b.get("alive", false)
+			else: is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive: continue
+
+			var is_intangible = false
+			if typeof(b) == TYPE_DICTIONARY: is_intangible = b.get("intangible", false)
+			else:
+				if "intangible" in b: is_intangible = b.intangible
+				elif b.has_method("has_meta") and b.has_meta("intangible"): is_intangible = b.get_meta("intangible")
+
+			if not is_intangible:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] = b.get("x", 0.0) + wind_vx * delta
+					b["y"] = b.get("y", 0.0) + wind_vy * delta
+				else:
+					if "x" in b: b.x += wind_vx * delta
+					if "y" in b: b.y += wind_vy * delta
+
+			var radius = 10.0
+			if typeof(b) == TYPE_DICTIONARY: radius = b.get("radius", 10.0)
+			else:
+				if "radius" in b: radius = b.radius
+				elif b.has_method("has_meta") and b.has_meta("radius"): radius = b.get_meta("radius")
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+
+			var is_outside = (bx < 0.0 or bx > arena_width or by < 0.0 or by > arena_height)
+
+			if is_outside:
+				if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+					b.take_damage(radiation_damage * delta)
+				else:
+					var hp = 0.0
+					if typeof(b) == TYPE_DICTIONARY: hp = b.get("hp", 0.0)
+					elif "hp" in b: hp = b.hp
+
+					hp -= radiation_damage * delta
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp
+						if hp <= 0.0: b["alive"] = false
+					else:
+						if "hp" in b: b.hp = hp
+						if hp <= 0.0:
+							if "alive" in b: b.alive = false
+							elif b.has_method("set_meta"): b.set_meta("alive", false)
+
 class BumperBallsMode extends GameMode:
 	func _init() -> void:
 		name = "Bumper Balls"
@@ -43510,6 +43603,7 @@ GAME_MODES = {
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),
+	"radiation_windstorm": RadiationWindstormMode.new(),
 	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"guild_storm": GuildStormMode.new(),
 	"chroma_boss": ChromaBossMode.new(),
