@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1310] Cursed Currency Mode — *2026-07-22 21:41:52 UTC*
+
+Instead of picking up generic boosters, currency pickups now act as both a resource and a burden. The more currency a ball holds, the slower their base speed becomes and their hitbox gets slightly larger, but they deal more damage. Players can deposit this currency at scattered altars (similar to Black Markets) to buy permanent buffs and shed the debuffs, creating a risk-reward dynamic.
+
+---
+
 ## [idea-1332] Magnetic Grapple Loadout — *2026-07-22 21:41:47 UTC*
 
 A new loadout trait that allows players to aim at walls or bumpers and rapidly pull themselves toward the object, providing extreme mobility and new angles of attack, at the cost of being vulnerable to intercepting projectiles.
