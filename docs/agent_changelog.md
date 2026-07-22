@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1173] Lightning Rod Booster — *2026-07-22 19:36:00 UTC*
+
+A new booster that acts as a lightning rod. When collected, the ball becomes immune to lightning strikes for 20 seconds. More importantly, if a lightning strike occurs nearby while the booster is active, the strike is redirected directly onto the player, converting the damage into a massive healing burst and a stamina refill instead of stunning them.
+
+---
+
 ## [idea-1323] Necromancer Minion Sacrifice — *2026-07-22 19:35:54 UTC*
 
 Allow Necromancers to sacrifice their active minions to instantly heal themselves or gain a temporary shield, giving them an escape option when pressured.
