@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1232] Blackout Traps — *2026-07-22 19:44:21 UTC*
+
+Introduce a new trap that, when triggered, heavily reduces the vision range of the ball for a few seconds, forcing them into a disadvantageous position in team fights.
+
+---
+
 ## [idea-1328] Sticky Mine Trap — *2026-07-22 19:44:16 UTC*
 
 A throwable mine that latches onto the first ball it hits. It doesn't slow them down but ticks down an explosion timer, forcing them to run away from allies before it goes off.
