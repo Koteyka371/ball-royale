@@ -1,0 +1,4 @@
+{
+  "title": "Twitch integration: Voting on Boss type",
+  "description": "When a !spawnboss vote is initiated by a viewer, chat can vote on which boss they want to spawn: Juggernaut, Phantom Juggernaut, Elementalist, etc."
+}
