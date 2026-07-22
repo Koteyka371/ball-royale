@@ -427,20 +427,25 @@ func record_gvg_match(guild1_name: String, guild2_name: String, winner_name: Str
         return true
     return false
 
-func unlock_perk(guild_name: String, perk_name: String, cost: int, required_perk: String = "") -> bool:
+func unlock_perk(guild_name: String, perk_name: String, cost: int, required_perk: String = "", required_level: int = 1, currency: String = "guild_xp") -> bool:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        if guild["guild_xp"] >= cost:
-            if not guild.has("perks"):
-                guild["perks"] = []
-            if not guild.has("active_abilities"):
-                guild["active_abilities"] = []
-            if not guild["perks"].has(perk_name):
-                if required_perk == "" or guild["perks"].has(required_perk):
-                    guild["guild_xp"] -= cost
-                    guild["perks"].append(perk_name)
-                    save_guilds()
-                    return true
+        var current_level = 1
+        if guild.has("level"):
+            current_level = guild["level"]
+
+        if current_level >= required_level:
+            if guild.has(currency) and guild[currency] >= cost:
+                if not guild.has("perks"):
+                    guild["perks"] = []
+                if not guild.has("active_abilities"):
+                    guild["active_abilities"] = []
+                if not guild["perks"].has(perk_name):
+                    if required_perk == "" or guild["perks"].has(required_perk):
+                        guild[currency] -= cost
+                        guild["perks"].append(perk_name)
+                        save_guilds()
+                        return true
     return false
 
 func buy_active_ability(guild_name: String, ability_name: String, cost: int, currency: String = "resources") -> bool:

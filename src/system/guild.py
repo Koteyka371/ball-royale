@@ -322,16 +322,17 @@ class GuildManager:
             return True
         return False
 
-    def unlock_perk(self, guild_name, perk_name, cost, required_perk=None):
+    def unlock_perk(self, guild_name, perk_name, cost, required_perk=None, required_level=1, currency="guild_xp"):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
-            if guild["guild_xp"] >= cost:
-                if perk_name not in guild.get("perks", []):
-                    if required_perk is None or required_perk in guild.get("perks", []):
-                        guild["guild_xp"] -= cost
-                        guild.setdefault("perks", []).append(perk_name)
-                        self.save()
-                        return True
+            if guild.get("level", 1) >= required_level:
+                if guild.get(currency, 0) >= cost:
+                    if perk_name not in guild.get("perks", []):
+                        if required_perk is None or required_perk in guild.get("perks", []):
+                            guild[currency] -= cost
+                            guild.setdefault("perks", []).append(perk_name)
+                            self.save()
+                            return True
         return False
 
     def buy_active_ability(self, guild_name, ability_name, cost, currency="resources"):
