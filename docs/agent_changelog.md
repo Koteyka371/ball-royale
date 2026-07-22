@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1285] Bouncing Laser Hazard — *2026-07-22 06:51:36 UTC*
+
+A laser beam hazard that bounces off the arena walls up to a certain number of times, causing a grid of unpredictable danger zones for players.
+
+---
+
 ## [idea-1324] Soul Collector Trait — *2026-07-22 06:47:15 UTC*
 
 Introduce a trait where other ball types can also drop smaller soul fragments on death that temporarily boost the stats of anyone who collects them, promoting aggressive play.
