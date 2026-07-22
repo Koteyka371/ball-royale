@@ -25792,6 +25792,72 @@ class GuildStormMode(GameMode):
                 # Periodic damage to non-members
                 b.hp -= 5.0 * delta
 
+class PinballMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pinball Mutator"
+        self.description = "Balls are forced to move continuously and taking damage from walls is disabled. Hitting walls instead provides massive momentum boosts and recharges dash abilities, encouraging a pinball-like playstyle."
+        self._base_speed_mult = 1.5
+        self._dash_recharge = 1.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        for ball in balls:
+            if hasattr(ball, 'speed'):
+                ball.speed *= self._base_speed_mult
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for ball in balls:
+            if not getattr(ball, "is_alive", True):
+                continue
+
+            # Disable wall damage by clamping position before the physics engine applies it (if applicable) or setting a flag
+            # Note: A real implementation might need to hook into the wall collision event, but here we can simulate it
+            # by detecting proximity to walls and reversing velocity + boosting
+
+            radius = getattr(ball, "radius", 20)
+            hit_wall = False
+
+            # Predict or detect wall hits
+            if getattr(ball, "x", 0) <= radius:
+                ball.x = radius
+                if hasattr(ball, "vx") and ball.vx < 0:
+                    ball.vx = -ball.vx * 1.5
+                    hit_wall = True
+            elif getattr(ball, "x", 0) >= arena_width - radius:
+                ball.x = arena_width - radius
+                if hasattr(ball, "vx") and ball.vx > 0:
+                    ball.vx = -ball.vx * 1.5
+                    hit_wall = True
+
+            if getattr(ball, "y", 0) <= radius:
+                ball.y = radius
+                if hasattr(ball, "vy") and ball.vy < 0:
+                    ball.vy = -ball.vy * 1.5
+                    hit_wall = True
+            elif getattr(ball, "y", 0) >= arena_height - radius:
+                ball.y = arena_height - radius
+                if hasattr(ball, "vy") and ball.vy > 0:
+                    ball.vy = -ball.vy * 1.5
+                    hit_wall = True
+
+            if hit_wall:
+                # Provide momentum boost and recharge dash
+                if hasattr(ball, 'cooldown'):
+                    ball.cooldown = max(0, ball.cooldown - self._dash_recharge)
+                ball.wall_damage_immunity = True
+
+                # We can't easily disable wall damage if it's processed elsewhere,
+                # but we can try to heal the ball if it just took wall damage, or prevent it
+                # by adding an invulnerability frame, or ensuring we bounce before the wall logic
+                if hasattr(ball, 'wall_damage_immunity'):
+                    ball.wall_damage_immunity = True
+
 GAME_MODES = {
     'guild_storm': GuildStormMode(),
     'random_quantum_tunnels': RandomQuantumTunnelsMode(),
@@ -32622,4 +32688,5 @@ class WeatherCombinationsMode(GameMode):
 GAME_MODES['weather_combinations'] = WeatherCombinationsMode()
 
 GAME_MODES['ice_walls'] = IceWallsMode()
+GAME_MODES['pinball_mutator'] = PinballMutatorMode()
 GAME_MODES['linked_portals'] = LinkedPortalsMode()

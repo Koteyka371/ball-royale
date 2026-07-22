@@ -9588,7 +9588,9 @@ class Action:
                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
                 is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice":
+                is_pinball_mutator = gm and getattr(gm, "name", "") == "Pinball Mutator"
+
+                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice" or is_pinball_mutator:
                     pass # Bouncy walls don't deal damage (abyss is already handled)
                 elif wall_state == "spikes":
                     damage = 250.0
