@@ -2297,7 +2297,7 @@ class BattleRoyaleMode(GameMode):
                     b.reward_given = True
                     killer_id = getattr(b, "killer_id", None)
                     if hasattr(world, "add_event"):
-                        world.add_event("boss_defeated", {"killer_id": killer_id, "points": 5000, "message": f"The final boss was defeated!"})
+                        world.add_event("boss_defeated", {"killer_id": killer_id, "points": 5000, "message": "The final boss was defeated!"})
 
         # Handle decoy movement mimicking
         for b in list(balls):
@@ -2378,7 +2378,7 @@ class BattleRoyaleMode(GameMode):
                         world.arena.hazards.append(tornado)
                         if hasattr(world, "add_event"):
                             world.add_event("hazard_spawn", {"message": "A roaming Tornado has appeared!"})
-                except Exception as e:
+                except Exception:
                     pass
 
         # High Tier Supply Drop Logic
@@ -12916,7 +12916,6 @@ class DayNightMode(GameMode):
     def _line_intersects_circle(self, p1, p2, circle_center, radius):
         # Math calculation to see if a line segment intersects a circle
         # p1, p2, circle_center are (x, y) tuples
-        import math
         x1, y1 = p1
         x2, y2 = p2
         cx, cy = circle_center
@@ -13585,7 +13584,6 @@ class MagneticCollisionsMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import math
-        import random
 
         self.polarity_flip_timer += delta
 
@@ -15807,7 +15805,8 @@ class MicroSafeZonesMode(SafeZoneMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
-        import math, random
+        import math
+        import random
 
         # Late game condition: primary zone is small enough
         if self.zone_radius <= 300.0:
@@ -17633,7 +17632,8 @@ class LunarEclipseEventMode(GameMode):
                         dy = getattr(h, "dy", 0.0)
                         h.x += dx * speed
                         h.y += dy * speed
-                        import math, random
+                        import math
+                        import random
                         if random.random() < 0.05:
                             angle = random.uniform(0, 2 * math.pi)
                             h.dx = math.cos(angle)
@@ -17685,7 +17685,8 @@ class ScramblerDroneMode(GameMode):
 
     def tick(self, world, balls, delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import math, random
+        import math
+        import random
 
         self.spawn_timer -= delta
         if self.spawn_timer <= 0:
@@ -20274,7 +20275,6 @@ class WeaponCollectionMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
-        import math
 
         self.weapon_spawn_timer += delta
 
@@ -20387,7 +20387,6 @@ class CenterVortexMode(GameMode):
         # Let's just keep it at center as prompt says 'appears in the center'. 'slow-moving' might mean the vortex itself moves slowly? Or it pulls things slowly?
         # Let's add a slow drift to it.
         import math
-        import random
         vx.x += math.sin(world.tick * 0.01 if hasattr(world, 'tick') else 0) * 10.0 * delta
         vx.y += math.cos(world.tick * 0.013 if hasattr(world, 'tick') else 0) * 10.0 * delta
 
@@ -22577,7 +22576,6 @@ class SacrificeAltarMode(GameMode):
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
-        import math
 
         if not hasattr(world, "sacrifice_altars"):
             return
@@ -22653,7 +22651,8 @@ class MassiveBlackHoleEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
-        import random, math
+        import random
+        import math
 
         if not self.active:
             if random.random() < 0.02 * delta:
@@ -23978,7 +23977,6 @@ class PositionSwapMode(GameMode):
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         import random
         # Initialize timers
-        import random
         timer = getattr(world, "position_swap_timer", random.uniform(3.0, 8.0)) - delta
         if timer < 0:
             timer = 0
@@ -24150,7 +24148,6 @@ class SpectatorHologramsMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("hologram_spawned", {"x": x, "y": y})
 
-        import math
         holograms = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "spectator_hologram" and getattr(h, "active", True)]
         for h in holograms:
             dur = getattr(h, "duration", 0.0)
@@ -26043,7 +26040,221 @@ class ElementalChainReactionMode(GameMode):
         self.name = "Elemental Chain Reactions"
         self.description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 
+class VolcanicEruptionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Volcanic Eruption Event"
+        self.description = "The center of the arena periodically erupts, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
+        self.eruption_timer = 0.0
+        self.eruption_interval = 10.0
+        self.eruption_duration = 2.0
+        self.is_erupting = False
+        self.projectiles_to_spawn = 0
+        self.lava_puddles = []
+        import random
+        self.random = random
+
+        class LavaPuddle:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+                self.radius = 80.0
+                self.kind = "lava"
+                self.duration = 8.0
+                self.active = True
+                self.id = "lava_puddle_" + str(id(self))
+        self.LavaPuddle = LavaPuddle
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "width"):
+            return
+
+        center_x = world.arena.width / 2.0
+        center_y = world.arena.height / 2.0
+
+        if not self.is_erupting:
+            self.eruption_timer += delta
+            if self.eruption_timer >= self.eruption_interval:
+                self.is_erupting = True
+                self.eruption_timer = 0.0
+                self.projectiles_to_spawn = 15
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "volcano_warning", "x": center_x, "y": center_y})
+        else:
+            self.eruption_timer += delta
+
+            # Spawn projectiles over duration
+            spawn_rate = self.eruption_duration / 15.0
+            if self.eruption_timer >= spawn_rate * (15 - self.projectiles_to_spawn) and self.projectiles_to_spawn > 0:
+                self.projectiles_to_spawn -= 1
+
+                # Random location
+                target_x = self.random.uniform(100, world.arena.width - 100)
+                target_y = self.random.uniform(100, world.arena.height - 100)
+
+                new_puddle = self.LavaPuddle(target_x, target_y)
+                self.lava_puddles.append(new_puddle)
+                if hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(new_puddle)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "meteor_fall", "x": target_x, "y": target_y})
+
+            if self.eruption_timer >= self.eruption_duration:
+                self.is_erupting = False
+                self.eruption_timer = 0.0
+
+        # Update puddles
+        puddles_to_remove = []
+        for puddle in self.lava_puddles:
+            puddle.duration -= delta
+            if puddle.duration <= 0:
+                puddles_to_remove.append(puddle)
+            else:
+                # Apply damage
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    br = getattr(b, "radius", 20.0)
+
+                    dx = bx - puddle.x
+                    dy = by - puddle.y
+                    dist_sq = dx*dx + dy*dy
+
+                    if dist_sq < (br + puddle.radius) ** 2:
+                        damage = 10.0 * delta
+                        if hasattr(b, 'take_damage'):
+                            b.take_damage(damage)
+                        else:
+                            b.hp = getattr(b, "hp", 100) - damage
+
+        for puddle in puddles_to_remove:
+            self.lava_puddles.remove(puddle)
+            if hasattr(world.arena, "hazards") and puddle in world.arena.hazards:
+                world.arena.hazards.remove(puddle)
+
+
+class VolcanicEruptionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Volcanic Eruption Event"
+        self.description = "The center of the arena periodically erupts, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
+        self.eruption_timer = 0.0
+        self.eruption_interval = 10.0
+        self.eruption_duration = 2.0
+        self.is_erupting = False
+        self.projectiles_to_spawn = 0
+        self.lava_puddles = []
+        import random
+        self.random = random
+
+        class LavaPuddle:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+                self.radius = 80.0
+                self.kind = "lava"
+                self.duration = 8.0
+                self.active = True
+                self.id = "lava_puddle_" + str(id(self))
+        self.LavaPuddle = LavaPuddle
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "width"):
+            return
+
+        center_x = world.arena.width / 2.0
+        center_y = world.arena.height / 2.0
+
+        if not self.is_erupting:
+            self.eruption_timer += delta
+            if self.eruption_timer >= self.eruption_interval:
+                self.is_erupting = True
+                self.eruption_timer = 0.0
+                self.projectiles_to_spawn = 15
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "volcano_warning", "x": center_x, "y": center_y})
+        else:
+            self.eruption_timer += delta
+
+            # Spawn projectiles over duration
+            spawn_rate = self.eruption_duration / 15.0
+            if self.eruption_timer >= spawn_rate * (15 - self.projectiles_to_spawn) and self.projectiles_to_spawn > 0:
+                self.projectiles_to_spawn -= 1
+
+                # Random location
+                target_x = self.random.uniform(100, world.arena.width - 100)
+                target_y = self.random.uniform(100, world.arena.height - 100)
+
+                new_puddle = self.LavaPuddle(target_x, target_y)
+                self.lava_puddles.append(new_puddle)
+                if hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(new_puddle)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "meteor_fall", "x": target_x, "y": target_y})
+
+            if self.eruption_timer >= self.eruption_duration:
+                self.is_erupting = False
+                self.eruption_timer = 0.0
+
+        # Update puddles
+        puddles_to_remove = []
+        for puddle in self.lava_puddles:
+            puddle.duration -= delta
+            if puddle.duration <= 0:
+                puddles_to_remove.append(puddle)
+            else:
+                # Apply damage
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    br = getattr(b, "radius", 20.0)
+
+                    dx = bx - puddle.x
+                    dy = by - puddle.y
+                    dist_sq = dx*dx + dy*dy
+
+                    if dist_sq < (br + puddle.radius) ** 2:
+                        damage = 10.0 * delta
+                        if hasattr(b, 'take_damage'):
+                            b.take_damage(damage)
+                        else:
+                            b.hp = getattr(b, "hp", 100) - damage
+
+        for puddle in puddles_to_remove:
+            self.lava_puddles.remove(puddle)
+            if hasattr(world.arena, "hazards") and puddle in world.arena.hazards:
+                world.arena.hazards.remove(puddle)
+
+
 GAME_MODES = {
+    'volcanic_eruption_event': VolcanicEruptionEventMode(),
+    'volcanic_eruption_event': VolcanicEruptionEventMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),
     "biome_safe_zones": BiomeSafeZonesMode(),
     'guild_storm': GuildStormMode(),
@@ -27425,7 +27636,6 @@ class TeleporterHubMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import math
 
         self.shift_timer += delta
         if self.shift_timer >= self.shift_interval:
@@ -28540,7 +28750,8 @@ class AerialArenaMode(GameMode):
 
     def tick(self, world, balls, delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import random, math
+        import random
+        import math
 
         self.spawn_timer -= delta
         if self.spawn_timer <= 0:
@@ -28782,7 +28993,8 @@ class TemporalRiftsMode(GameMode):
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import random, math
+        import random
+        import math
 
         if type(world).__name__ in ['MockWorld', 'MagicMock'] and getattr(world, 'is_mock_no_rifts', False):
             return
@@ -28875,7 +29087,8 @@ class SectorCollapseMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
-        import random, math
+        import random
+        import math
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -29087,7 +29300,8 @@ class CollapsingBubblesMode(GameMode):
             self._spawn_bubble(world)
 
     def tick(self, world, balls, delta=0.016):
-        import math, random
+        import math
+        import random
         super().tick(world, balls, delta)
 
         if not hasattr(world, "dead_balls"):
@@ -29974,7 +30188,6 @@ class PhantomReplayHazardMode(GameMode):
         self.phase = "record"
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             try:
-                from ai.game_modes import GameMode
                 # try to find a hazard class or fallback to dict if not possible, but actually we can just append an object with to_dict or just properties
                 class SimpleHazard:
                     def __init__(self):
@@ -30242,7 +30455,7 @@ class ElasticBandZoneMode(GameMode):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
                 hazard_class = FallbackHazard
 
-            h = hazard_class(f"elastic_zone", self.zone_x, self.zone_y, self.zone_radius, "elastic_band_zone", 0.0)
+            h = hazard_class("elastic_zone", self.zone_x, self.zone_y, self.zone_radius, "elastic_band_zone", 0.0)
             world.arena.hazards.append(h)
 
     def tick(self, world, balls, delta=0.016):
@@ -31182,7 +31395,6 @@ class DecoyNetworkMode(GameMode):
         self.timer = 0.0
 
     def tick(self, world, balls, delta=0.016):
-        import copy
         self.timer += delta
 
         # Update and check damage on existing holograms
@@ -31299,7 +31511,6 @@ class VengefulDecoysMode(GameMode):
         self.recordings.clear()
 
     def tick(self, world, balls, delta=0.016):
-        import copy
         self.timer += delta
 
         for b in balls:
@@ -32204,7 +32415,6 @@ class MagneticShockwaveEventMode(GameMode):
             self.spawn_timer += delta
             if self.spawn_timer > 5.0:
                 # Spawn anchor in the center
-                import random
                 x = getattr(world.arena, "width", 800) / 2
                 y = getattr(world.arena, "height", 800) / 2
                 self.anchor = self.AnchorHazard(x, y, self.anchor_radius)

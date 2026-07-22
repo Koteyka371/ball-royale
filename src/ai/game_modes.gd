@@ -42011,7 +42011,162 @@ class BiomeSafeZonesMode extends GameMode:
 					if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
 					else: b.hp = hp
 
+class VolcanicEruptionEventMode extends GameMode:
+	var eruption_timer = 0.0
+	var eruption_interval = 10.0
+	var eruption_duration = 2.0
+	var is_erupting = false
+	var projectiles_to_spawn = 0
+	var lava_puddles = []
+	var random = RandomNumberGenerator.new()
+
+	class LavaPuddle:
+		var x: float
+		var y: float
+		var radius: float = 80.0
+		var kind: String = "lava"
+		var duration: float = 8.0
+		var active: bool = true
+		var id: String
+
+		func _init(_x, _y):
+			x = _x
+			y = _y
+			id = "lava_puddle_" + str(randi())
+
+	func _init():
+		name = "Volcanic Eruption Event"
+		description = "The center of the arena periodically erupts, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
+		random.randomize()
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and world.has_method("get_node"):
+			if "arena" in world and world.arena != null:
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+		elif typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+				if not world.arena.has("hazards"):
+					world.arena["hazards"] = []
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		var has_arena = false
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			has_arena = true
+			arena_width = world.arena.get("width") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.width
+			arena_height = world.arena.get("height") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			has_arena = true
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		if not has_arena:
+			return
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		if not is_erupting:
+			eruption_timer += delta
+			if eruption_timer >= eruption_interval:
+				is_erupting = true
+				eruption_timer = 0.0
+				projectiles_to_spawn = 15
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("visual_effect", {"type": "volcano_warning", "x": center_x, "y": center_y})
+		else:
+			eruption_timer += delta
+
+			var spawn_rate = eruption_duration / 15.0
+			if eruption_timer >= spawn_rate * (15 - projectiles_to_spawn) and projectiles_to_spawn > 0:
+				projectiles_to_spawn -= 1
+
+				var target_x = random.randf_range(100, arena_width - 100)
+				var target_y = random.randf_range(100, arena_height - 100)
+
+				var new_puddle = LavaPuddle.new(target_x, target_y)
+				lava_puddles.append(new_puddle)
+
+				if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if world.arena.has("hazards"):
+							world.arena.hazards.append(new_puddle)
+					else:
+						world.arena.hazards.append(new_puddle)
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					if world.arena.has("hazards"):
+						world.arena.hazards.append(new_puddle)
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("visual_effect", {"type": "meteor_fall", "x": target_x, "y": target_y})
+
+			if eruption_timer >= eruption_duration:
+				is_erupting = false
+				eruption_timer = 0.0
+
+		var puddles_to_remove = []
+		for puddle in lava_puddles:
+			puddle.duration -= delta
+			if puddle.duration <= 0:
+				puddles_to_remove.append(puddle)
+			else:
+				for b in balls:
+					var alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+					else:
+						alive = b.alive if "alive" in b else false
+
+					if not alive:
+						continue
+
+					var bx = 0.0
+					var by = 0.0
+					var br = 20.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						br = b.get("radius", 20.0)
+					else:
+						bx = b.x if "x" in b else (b.position.x if "position" in b else 0.0)
+						by = b.y if "y" in b else (b.position.y if "position" in b else 0.0)
+						br = b.radius if "radius" in b else 20.0
+
+					var dx = bx - puddle.x
+					var dy = by - puddle.y
+					var dist_sq = dx*dx + dy*dy
+
+					if dist_sq < pow(br + puddle.radius, 2):
+						var damage = 10.0 * delta
+						if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(damage)
+						elif typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = b.get("hp", 100.0) - damage
+						elif "hp" in b:
+							b.hp -= damage
+
+		for puddle in puddles_to_remove:
+			lava_puddles.erase(puddle)
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("hazards"):
+						world.arena.hazards.erase(puddle)
+				else:
+					world.arena.hazards.erase(puddle)
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				if world.arena.has("hazards"):
+					world.arena.hazards.erase(puddle)
+
+
 GAME_MODES = {
+	'volcanic_eruption_event': VolcanicEruptionEventMode.new(),
 	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"guild_storm": GuildStormMode.new(),
 	"chroma_boss": ChromaBossMode.new(),

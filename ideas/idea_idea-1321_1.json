@@ -1,0 +1,4 @@
+{
+    "title": "Earthquake Terrain Deformation Mode",
+    "description": "Periodically, a massive earthquake strikes the arena. This doesn't just deal damage, but physically alters the arena. It spawns randomly placed 'fissure' hazards that act like instant-kill or heavy damage traps if fallen into, and 'uplift' hazards which act as impenetrable walls. The map layout changes dynamically every few minutes."
+}
