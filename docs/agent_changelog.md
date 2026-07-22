@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1291] Decoy Swap Module — *2026-07-22 05:51:48 UTC*
+
+A new skill or booster item where activating it allows the player to instantly swap positions with their most recently deployed decoy, consuming the decoy in the process and detonating it at the player's old position.
+
+---
+
 ## [idea-1316] Guild Mutator Votes — *2026-07-22 05:37:30 UTC*
 
 Allow guilds to pool their mutator tokens together to heavily influence the mutator of guild-versus-guild matches.

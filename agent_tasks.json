@@ -22121,7 +22121,7 @@
     },
     {
       "id": "idea-1291",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Swap Module",
@@ -33118,6 +33118,42 @@
         "src/ai/sticky_boundaries.py",
         "src/ai/sticky_boundaries.gd",
         "tests/test_sticky_boundaries.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1937",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Daily Tournaments",
+      "description": "Automated daily mini-tournaments where randomly selected guilds face off in brackets, earning extra GvG points and exclusive resources.",
+      "allowed_paths": [
+        "src/ui/guild_daily_tournaments.py",
+        "src/ui/guild_daily_tournaments.gd",
+        "src/ai/guild_daily_tournaments.py",
+        "tests/test_guild_daily_tournaments.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1938",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Cosmetics Customization",
+      "description": "Allow guild masters to completely customize their HQ visually with unlocked banners, statues, and background elements, which players can see when inspecting the guild.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_cosmetics_customization.py",
+        "src/ui/guild_headquarters_cosmetics_customization.gd",
+        "src/ai/guild_headquarters_cosmetics_customization.py",
+        "tests/test_guild_headquarters_cosmetics_customization.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
