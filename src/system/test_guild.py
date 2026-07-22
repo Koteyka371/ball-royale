@@ -1,5 +1,3 @@
-import os
-import json
 import pytest
 from system.guild import GuildManager
 from system.profile import ProfileManager
@@ -456,3 +454,27 @@ def test_siege_mechanics(temp_guild_file):
     assert gm.record_siege_held("DefenderGuild", 50) == True
     defender = gm.get_guild("DefenderGuild")
     assert defender["guild_xp"] == 150
+
+def test_guild_perk_currency_and_level(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("AdvancedGuild", "p1")
+    guild = gm.get_guild("AdvancedGuild")
+    guild["gvg_points"] = 100
+    guild["guild_xp"] = 100
+    guild["resources"] = 500
+
+    # Try unlocking with level requirement (fails, currently level 1)
+    assert gm.unlock_perk("AdvancedGuild", "hp_5_percent", 50, required_level=2) == False
+
+    # Upgrade level
+    gm.upgrade_guild_level("AdvancedGuild", 0) # cost=0 for gvg_points to save points for perk test
+    assert guild["level"] == 2
+
+    # Try unlocking again (success)
+    assert gm.unlock_perk("AdvancedGuild", "hp_5_percent", 50, required_level=2) == True
+    assert guild["guild_xp"] == 50
+
+    # Unlock with gvg_points
+    assert gm.unlock_perk("AdvancedGuild", "hp_10_percent", 50, required_perk="hp_5_percent", required_level=2, currency="gvg_points") == True
+    assert guild["gvg_points"] == 50
+    assert "hp_10_percent" in gm.get_guild_perks("AdvancedGuild")
