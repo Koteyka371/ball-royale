@@ -12015,13 +12015,7 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
-                elif getattr(nearest, "kind", None) == "lightning_rod_item":
-                    self.ball.lightning_rod_item_timer = 20.0
-                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                        if nearest in self.world.arena.hazards:
-                            self.world.arena.hazards.remove(nearest)
-                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
-                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "disruptor_booster":
                     self.ball.disruptor_aura_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

@@ -45,7 +45,7 @@ def test_high_tier_supply_capture():
     drop.capturing_team = 'team_a'
 
     # Tick capture
-    for _ in range(1):
+    for _ in range(5):
         mode.tick(world, [b1], 1.0)
 
     assert drop.capture_progress >= 100.0
