@@ -495,6 +495,89 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 
+		# Cosmetic Synergy Logic
+		var team_cosmetics = {}
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			if is_alive:
+				var t = ""
+				var c = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					t = b.get("team", "")
+					c = b.get("cosmetic", "").to_lower().strip_edges()
+				else:
+					t = b.team if "team" in b else ""
+					c = b.cosmetic.to_lower().strip_edges() if "cosmetic" in b else ""
+
+				if t != "" and c != "":
+					if not team_cosmetics.has(t):
+						team_cosmetics[t] = {}
+					if not team_cosmetics[t].has(c):
+						team_cosmetics[t][c] = []
+					team_cosmetics[t][c].append(b)
+
+		for t in team_cosmetics.keys():
+			for c in team_cosmetics[t].keys():
+				var members = team_cosmetics[t][c]
+				if members.size() >= 2:
+					for b in members:
+						if typeof(b) == TYPE_DICTIONARY:
+							if not b.has("base_speed"):
+								b["base_speed"] = b.get("speed", 100)
+							if not b.has("base_damage"):
+								b["base_damage"] = b.get("damage", 10)
+
+							b["speed"] = b["base_speed"] * 1.05
+							b["damage"] = b["base_damage"] * 1.05
+						else:
+							var bs = 100
+							if "base_speed" in b:
+								bs = b.base_speed
+							elif b.has_method("has_meta") and b.has_meta("base_speed"):
+								bs = b.get_meta("base_speed")
+							elif "speed" in b:
+								bs = b.speed
+								if b.has_method("set_meta"):
+									b.set_meta("base_speed", bs)
+
+							var bd = 10
+							if "base_damage" in b:
+								bd = b.base_damage
+							elif b.has_method("has_meta") and b.has_meta("base_damage"):
+								bd = b.get_meta("base_damage")
+							elif "damage" in b:
+								bd = b.damage
+								if b.has_method("set_meta"):
+									b.set_meta("base_damage", bd)
+
+							if "speed" in b:
+								b.speed = bs * 1.05
+							if "damage" in b:
+								b.damage = bd * 1.05
+				else:
+					for b in members:
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("base_speed"):
+								b["speed"] = b["base_speed"]
+							if b.has("base_damage"):
+								b["damage"] = b["base_damage"]
+						else:
+							if "base_speed" in b:
+								b.speed = b.base_speed
+							elif b.has_method("has_meta") and b.has_meta("base_speed"):
+								if "speed" in b:
+									b.speed = b.get_meta("base_speed")
+							if "base_damage" in b:
+								b.damage = b.base_damage
+							elif b.has_method("has_meta") and b.has_meta("base_damage"):
+								if "damage" in b:
+									b.damage = b.get_meta("base_damage")
+
 		# Hazard control logic (Twitch spectator interaction)
 		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
 			var arena = world.arena
