@@ -23420,7 +23420,7 @@
     },
     {
       "id": "idea-1367",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Pinball Bumpers Mode",
@@ -34704,6 +34704,40 @@
         "src/ai/chrono_anchor_booster.py",
         "src/ai/chrono_anchor_booster.gd",
         "tests/test_chrono_anchor_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2030",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Storm Chaser Trait",
+      "description": "A new passive trait that grants players a speed boost when moving towards areas affected by extreme weather, encouraging high-risk, high-reward gameplay.",
+      "allowed_paths": [
+        "src/ai/storm_chaser_trait.py",
+        "src/ai/storm_chaser_trait.gd",
+        "tests/test_storm_chaser_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2031",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Predictor Hologram",
+      "description": "An interactive hologram in the arena that visually represents the next weather state, giving observant players an advantage over those ignoring the environment.",
+      "allowed_paths": [
+        "src/ai/predictor_hologram.py",
+        "src/ai/predictor_hologram.gd",
+        "tests/test_predictor_hologram.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
