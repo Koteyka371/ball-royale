@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-981] Lightning Rod Deployable — *2026-07-22 04:39:00 UTC*
+
+A new active item 'lightning_rod_item' that players can drop during thunderstorms. It attracts all nearby lightning strikes to its location and charges up, eventually detonating in a massive chain-lightning EMP blast that disables shields and abilities.
+
+---
+
 ## [idea-1252] Wall Jump Mastery Mutator — *2026-07-22 04:20:22 UTC*
 
 A game mode mutator where balls are forced to move continuously but taking damage from walls is disabled. Hitting walls instead provides massive momentum boosts and recharges dash abilities, encouraging a pinball-like playstyle.
