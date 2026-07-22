@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1363] Decoy payloads — *2026-07-22 23:43:57 UTC*
+
+In Escort mode, Defenders can deploy a decoy payload that travels along an alternate path. The decoy distracts Attackers and draws automated hazards, but it does not count towards winning.
+
+---
+
 ## [idea-1346] Decoy Illusionist Skill — *2026-07-22 23:43:52 UTC*
 
 A new skill or ball type that specializes in spawning multiple low-HP decoys that mirror its movements. These decoys explode when hit by an enemy, dealing minor damage, making the true ball harder to track in chaotic fights.
