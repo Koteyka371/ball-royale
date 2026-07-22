@@ -33621,6 +33621,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1966",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time dilation zones",
+      "description": "Areas in the arena where time flows slower. Projectiles and balls moving through these zones lose half their speed and delta multipliers are halved.",
+      "allowed_paths": [
+        "src/ai/time_dilation_zones.py",
+        "src/ai/time_dilation_zones.gd",
+        "tests/test_time_dilation_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
