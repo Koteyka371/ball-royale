@@ -22257,7 +22257,7 @@
     },
     {
       "id": "idea-1299",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Emotion Status Interactions",
@@ -33735,6 +33735,40 @@
         "src/ai/gravity_mine.py",
         "src/ai/gravity_mine.gd",
         "tests/test_gravity_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1973",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minion Evolution System",
+      "description": "Minions that survive for an extended period or participate in kills can evolve into stronger variants, gaining abilities like small leaps or poison attacks.",
+      "allowed_paths": [
+        "src/ai/minion_evolution.py",
+        "src/ai/minion_evolution.gd",
+        "tests/test_minion_evolution.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1974",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Bone Armor Reflects Damage",
+      "description": "Necromancer's Bone Armor stacks, instead of just reducing flat damage, now reflect a portion of the negated damage back to the attacker as bone splinters, making them dangerous to hit.",
+      "allowed_paths": [
+        "src/ai/necromancer_bone_armor_reflects_damage.py",
+        "src/ai/necromancer_bone_armor_reflects_damage.gd",
+        "tests/test_necromancer_bone_armor_reflects_damage.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

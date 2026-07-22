@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1299] Emotion Status Interactions — *2026-07-22 19:39:27 UTC*
+
+Expand the emotion system so that emotions interact with specific hazards and mechanics. For example, 'fear' makes balls run slightly faster but lose turning radius, while 'anger' increases damage dealt but reduces defense. Balls with 'calm' are immune to sudden stat changes.
+
+---
+
 ## [idea-1173] Lightning Rod Booster — *2026-07-22 19:36:00 UTC*
 
 A new booster that acts as a lightning rod. When collected, the ball becomes immune to lightning strikes for 20 seconds. More importantly, if a lightning strike occurs nearby while the booster is active, the strike is redirected directly onto the player, converting the damage into a massive healing burst and a stamina refill instead of stunning them.
