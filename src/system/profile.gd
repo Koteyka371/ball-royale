@@ -285,16 +285,17 @@ func do_prestige() -> bool:
     return false
 
 
-func place_player_bounty(target_player_id: String, reward_tokens: int) -> bool:
-    var current_tokens = data.get("prestige_tokens", 0)
-    if current_tokens >= reward_tokens:
-        data["prestige_tokens"] = current_tokens - reward_tokens
+func place_player_bounty(target_player_id: String, reward_tokens: int, currency_type: String = "prestige_tokens", placer_id: String = "local_player") -> bool:
+    var current_balance = data.get(currency_type, 0)
+    if current_balance >= reward_tokens:
+        data[currency_type] = current_balance - reward_tokens
         if not data.has("active_bounties"):
             data["active_bounties"] = {}
         if not data["active_bounties"].has(target_player_id):
-            data["active_bounties"][target_player_id] = {"reward": 0, "placer": "local_player"}
+            data["active_bounties"][target_player_id] = {"reward": 0, "placer": placer_id, "currency": currency_type}
         data["active_bounties"][target_player_id]["reward"] += reward_tokens
-        data["active_bounties"][target_player_id]["placer"] = "local_player"
+        data["active_bounties"][target_player_id]["placer"] = placer_id
+        data["active_bounties"][target_player_id]["currency"] = currency_type
         save_profile()
         return true
     return false
@@ -312,11 +313,19 @@ func claim_player_bounty(target_player_id: String, claiming_player_id: String) -
             var placer = "local_player"
             if bounties[target_player_id].has("placer"):
                 placer = bounties[target_player_id]["placer"]
+            var currency = "prestige_tokens"
+            if bounties[target_player_id].has("currency"):
+                currency = bounties[target_player_id]["currency"]
             bounties[target_player_id]["reward"] = 0
+
             if claiming_player_id == "local_player":
-                if not data.has("prestige_tokens"):
-                    data["prestige_tokens"] = 0
-                data["prestige_tokens"] += reward
+                if not data.has(currency):
+                    data[currency] = 0
+                if claiming_player_id == placer:
+                    data[currency] += (reward * 3)
+                else:
+                    data[currency] += int(reward * 0.5)
+
             save_profile()
             return [reward, placer]
     return [0, ""]

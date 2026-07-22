@@ -271,18 +271,20 @@ class ProfileManager:
 
 
 
-    def place_player_bounty(self, target_player_id, reward_tokens):
-        current_tokens = self.data.get("prestige_tokens", 0)
-        if current_tokens >= reward_tokens:
-            self.data["prestige_tokens"] = current_tokens - reward_tokens
+    def place_player_bounty(self, target_player_id, reward_tokens, currency_type="prestige_tokens", placer_id="local_player"):
+        # Support placing with prestige_tokens or skill_points
+        current_balance = self.data.get(currency_type, 0)
+        if current_balance >= reward_tokens:
+            self.data[currency_type] = current_balance - reward_tokens
             if "active_bounties" not in self.data:
                 self.data["active_bounties"] = {}
             # We must store who placed the bounty to apply buff later
-            # structure: active_bounties = {target_player_id: {"reward": X, "placer": "local_player"}}
+            # structure: active_bounties = {target_player_id: {"reward": X, "placer": placer_id, "currency": currency_type}}
             if target_player_id not in self.data["active_bounties"]:
-                self.data["active_bounties"][target_player_id] = {"reward": 0, "placer": "local_player"}
+                self.data["active_bounties"][target_player_id] = {"reward": 0, "placer": placer_id, "currency": currency_type}
             self.data["active_bounties"][target_player_id]["reward"] += reward_tokens
-            self.data["active_bounties"][target_player_id]["placer"] = "local_player" # Since it's from ProfileManager
+            self.data["active_bounties"][target_player_id]["placer"] = placer_id
+            self.data["active_bounties"][target_player_id]["currency"] = currency_type
             self.save()
             return True
         return False
@@ -295,9 +297,15 @@ class ProfileManager:
         if target_player_id in bounties and bounties[target_player_id].get("reward", 0) > 0:
             reward = bounties[target_player_id]["reward"]
             placer = bounties[target_player_id].get("placer", "local_player")
+            currency = bounties[target_player_id].get("currency", "prestige_tokens")
             bounties[target_player_id]["reward"] = 0
-            if claiming_player_id == "local_player":
-                self.data["prestige_tokens"] = self.data.get("prestige_tokens", 0) + reward
+
+            # If the player who placed the bounty claims it, they get triple the investment
+            if claiming_player_id == placer and claiming_player_id == "local_player":
+                self.data[currency] = self.data.get(currency, 0) + (reward * 3)
+            # If a different player claims it, they get a portion (e.g., half), and the placer might get something if we want, but for now just the claimer gets it.
+            elif claiming_player_id == "local_player":
+                self.data[currency] = self.data.get(currency, 0) + int(reward * 0.5)
             else:
                 # Give portion to AI
                 pass
