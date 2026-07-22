@@ -1355,6 +1355,31 @@ class Action:
                             else:
                                 next_entity.stun_timer = 0.2
                     elif e_type in ("hazard", "item", "booster"):
+                        if getattr(next_entity, "kind", "") == "mirage_decoy" and getattr(next_entity, "team", None) != getattr(attacker, "team", None):
+                            # Explode if attacked by enemy
+                            class Hazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+                            emp = Hazard(
+                                id=21000 + len(self.world.arena.hazards),
+                                x=next_entity.x,
+                                y=next_entity.y,
+                                radius=40.0,
+                                kind="emp_burst",
+                                damage=20.0
+                            )
+                            setattr(emp, "duration", 0.5)
+                            setattr(emp, "owner_id", getattr(next_entity, "owner_id", None))
+                            setattr(emp, "team", getattr(next_entity, "team", None))
+                            self.world.arena.hazards.append(emp)
+                            if next_entity in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(next_entity)
+
                         if getattr(next_entity, "trap_variant", "") == "emp_trap":
                             # Absorb damage and charge
                             charge = getattr(next_entity, "emp_charge", 0.0) + current_damage
@@ -1463,6 +1488,52 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in list(self.world.arena.hazards):
+                if getattr(h, "kind", "") == "mirage_decoy":
+                    duration = getattr(h, "duration", 0.0)
+                    duration -= delta
+                    if duration <= 0:
+                        self.world.arena.hazards.remove(h)
+                    else:
+                        setattr(h, "duration", duration)
+
+                        # Check collision with enemies
+                        owner_id = getattr(h, "owner_id", None)
+                        team = getattr(h, "team", None)
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "id", None) != owner_id and getattr(b, "team", None) != team and getattr(b, "alive", True):
+                                    dx = b.x - h.x
+                                    dy = b.y - h.y
+                                    dist_sq = dx * dx + dy * dy
+                                    r = getattr(h, "radius", 10.0) + getattr(b, "radius", 10.0)
+                                    if dist_sq <= r * r:
+                                        # Explode
+                                        class Hazard:
+                                            def __init__(self, id, x, y, radius, kind, damage):
+                                                self.id = id
+                                                self.x = x
+                                                self.y = y
+                                                self.radius = radius
+                                                self.kind = kind
+                                                self.damage = damage
+                                        emp = Hazard(
+                                            id=21000 + len(self.world.arena.hazards),
+                                            x=h.x,
+                                            y=h.y,
+                                            radius=40.0,
+                                            kind="emp_burst",
+                                            damage=20.0
+                                        )
+                                        setattr(emp, "duration", 0.5)
+                                        setattr(emp, "owner_id", owner_id)
+                                        setattr(emp, "team", team)
+                                        self.world.arena.hazards.append(emp)
+                                        if h in self.world.arena.hazards:
+                                            self.world.arena.hazards.remove(h)
+                                        break
 
         # --- Overflow State Logic ---
         stamina_val = getattr(self.ball, "stamina", 100.0)
@@ -2589,6 +2660,36 @@ class Action:
             if self.ball.kinetic_shield_timer <= 0:
                 self.ball.kinetic_shield_active = False
                 self.ball.kinetic_shield_stored_damage = 0.0
+
+        if getattr(self.ball, "mirage_booster_timer", 0.0) > 0:
+            self.ball.mirage_booster_timer -= delta
+            if self.ball.mirage_booster_timer <= 0:
+                self.ball.mirage_booster_timer = 0.0
+            else:
+                self.ball.mirage_spawn_timer = getattr(self.ball, "mirage_spawn_timer", 0.0) + delta
+                if self.ball.mirage_spawn_timer >= 3.0:
+                    self.ball.mirage_spawn_timer -= 3.0
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        mirage = Hazard(
+                            id=20000 + len(self.world.arena.hazards),
+                            x=self.ball.x,
+                            y=self.ball.y,
+                            radius=getattr(self.ball, "radius", 10.0),
+                            kind="mirage_decoy",
+                            damage=0.0
+                        )
+                        setattr(mirage, "duration", 5.0)
+                        setattr(mirage, "owner_id", getattr(self.ball, "id", None))
+                        setattr(mirage, "team", getattr(self.ball, "team", None))
+                        self.world.arena.hazards.append(mirage)
 
         if getattr(self.ball, "shuffle_booster_timer", 0.0) > 0:
             self.ball.shuffle_booster_timer -= delta
@@ -13253,6 +13354,14 @@ class Action:
                     self.ball.juggernaut_booster_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "mirage_booster":
+                    self.ball.mirage_booster_timer = 15.0
+                    self.ball.mirage_spawn_timer = 0.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "damage_link_booster":
