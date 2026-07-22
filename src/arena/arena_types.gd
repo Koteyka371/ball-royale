@@ -863,9 +863,36 @@ class SummerArena extends ProceduralArena:
 
 class LavaArena extends ProceduralArena:
 	var is_lava_theme = true
+	var geyser_timer = 0.0
+	var geyser_interval = 5.0
 
 	func _init(size: float = 2000.0, seed_val = null):
 		super(size, 5, seed_val)
+
+	func update_zone(current_tick: int, delta: float) -> void:
+		super.update_zone(current_tick, delta)
+		geyser_timer += delta
+		if geyser_timer >= geyser_interval:
+			geyser_timer = 0.0
+			var x = randf_range(100, width - 100)
+			var y = randf_range(100, height - 100)
+			var h_id = 8000 + hazards.size() + (randi() % 1000)
+			var geyser = ProceduralArena.Hazard.new(h_id, x, y, 100.0, "lava_geyser", 10.0)
+			geyser.set_meta("duration", 3.0)
+			hazards.append(geyser)
+
+		var surviving_hazards = []
+		for h in hazards:
+			if h.kind == "lava_geyser":
+				if h.has_meta("duration"):
+					var duration = h.get_meta("duration")
+					if duration > 0:
+						h.set_meta("duration", duration - delta)
+						surviving_hazards.append(h)
+			else:
+				surviving_hazards.append(h)
+		hazards = surviving_hazards
+
 
 	func generate() -> void:
 		super.generate()

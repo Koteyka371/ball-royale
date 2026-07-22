@@ -1724,6 +1724,36 @@ class LavaArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
         self.is_lava_theme = True
+        self.geyser_timer = 0.0
+        self.geyser_interval = 5.0
+
+    def update_zone(self, current_tick: int, delta: float):
+        super().update_zone(current_tick, delta)
+        self.geyser_timer += delta
+        import random
+
+        # Geyser eruption logic
+        if self.geyser_timer >= self.geyser_interval:
+            self.geyser_timer = 0.0
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 8000 + len(self.hazards) + random.randint(0, 1000)
+            geyser = Hazard(id=h_id, x=x, y=y, radius=100.0, kind="lava_geyser", damage=10.0)
+            geyser.target_radius = 100.0
+            setattr(geyser, "duration", 3.0)
+            self.hazards.append(geyser)
+
+        # Manage active geysers
+        surviving_hazards = []
+        for h in self.hazards:
+            if getattr(h, "kind", "") == "lava_geyser":
+                duration = getattr(h, "duration", 0.0)
+                if duration > 0:
+                    setattr(h, "duration", duration - delta)
+                    surviving_hazards.append(h)
+            else:
+                surviving_hazards.append(h)
+        self.hazards = surviving_hazards
 
     def generate(self):
         super().generate()
