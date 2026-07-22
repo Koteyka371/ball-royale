@@ -37449,6 +37449,52 @@ class TickingBombMode extends GameMode:
 							}
 							new_explosions.append(exp)
 
+							for other_h in hazards:
+								if other_h != h:
+									var okind = ""
+									var oactive = true
+									if typeof(other_h) == TYPE_DICTIONARY:
+										okind = other_h.get("kind", "")
+										oactive = other_h.get("active", true)
+									elif typeof(other_h) == TYPE_OBJECT:
+										if "kind" in other_h: okind = other_h.kind
+										elif other_h.has_method("has_meta") and other_h.has_meta("kind"): okind = other_h.get_meta("kind")
+										if "active" in other_h: oactive = other_h.active
+										elif other_h.has_method("has_meta") and other_h.has_meta("active"): oactive = other_h.get_meta("active")
+
+									if okind == "ticking_bomb" and oactive:
+										var ox = 0.0
+										var oy = 0.0
+										if typeof(other_h) == TYPE_DICTIONARY:
+											ox = other_h.get("x", 0.0)
+											oy = other_h.get("y", 0.0)
+										elif typeof(other_h) == TYPE_OBJECT:
+											if "x" in other_h: ox = other_h.x
+											elif other_h.has_method("has_meta") and other_h.has_meta("x"): ox = other_h.get_meta("x")
+											if "y" in other_h: oy = other_h.y
+											elif other_h.has_method("has_meta") and other_h.has_meta("y"): oy = other_h.get_meta("y")
+
+										var hx = 0.0
+										var hy = 0.0
+										if typeof(h) == TYPE_DICTIONARY:
+											hx = h.get("x", 0.0)
+											hy = h.get("y", 0.0)
+										elif typeof(h) == TYPE_OBJECT:
+											if "x" in h: hx = h.x
+											elif h.has_method("has_meta") and h.has_meta("x"): hx = h.get_meta("x")
+											if "y" in h: hy = h.y
+											elif h.has_method("has_meta") and h.has_meta("y"): hy = h.get_meta("y")
+
+										var dx = ox - hx
+										var dy = oy - hy
+										var dist = sqrt(dx*dx + dy*dy)
+										if dist <= explosion_radius:
+											if typeof(other_h) == TYPE_DICTIONARY:
+												other_h.duration = 0.0
+											elif typeof(other_h) == TYPE_OBJECT:
+												if "duration" in other_h: other_h.duration = 0.0
+												elif other_h.has_method("set_meta"): other_h.set_meta("duration", 0.0)
+
 							for b in balls:
 								var b_alive = false
 								if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
@@ -37541,6 +37587,52 @@ class TickingBombMode extends GameMode:
 								"active": true
 							}
 							new_explosions.append(exp)
+
+							for other_h in hazards:
+								if other_h != h:
+									var okind = ""
+									var oactive = true
+									if typeof(other_h) == TYPE_DICTIONARY:
+										okind = other_h.get("kind", "")
+										oactive = other_h.get("active", true)
+									elif typeof(other_h) == TYPE_OBJECT:
+										if "kind" in other_h: okind = other_h.kind
+										elif other_h.has_method("has_meta") and other_h.has_meta("kind"): okind = other_h.get_meta("kind")
+										if "active" in other_h: oactive = other_h.active
+										elif other_h.has_method("has_meta") and other_h.has_meta("active"): oactive = other_h.get_meta("active")
+
+									if okind == "ticking_bomb" and oactive:
+										var ox = 0.0
+										var oy = 0.0
+										if typeof(other_h) == TYPE_DICTIONARY:
+											ox = other_h.get("x", 0.0)
+											oy = other_h.get("y", 0.0)
+										elif typeof(other_h) == TYPE_OBJECT:
+											if "x" in other_h: ox = other_h.x
+											elif other_h.has_method("has_meta") and other_h.has_meta("x"): ox = other_h.get_meta("x")
+											if "y" in other_h: oy = other_h.y
+											elif other_h.has_method("has_meta") and other_h.has_meta("y"): oy = other_h.get_meta("y")
+
+										var hx = 0.0
+										var hy = 0.0
+										if typeof(h) == TYPE_DICTIONARY:
+											hx = h.get("x", 0.0)
+											hy = h.get("y", 0.0)
+										elif typeof(h) == TYPE_OBJECT:
+											if "x" in h: hx = h.x
+											elif h.has_method("has_meta") and h.has_meta("x"): hx = h.get_meta("x")
+											if "y" in h: hy = h.y
+											elif h.has_method("has_meta") and h.has_meta("y"): hy = h.get_meta("y")
+
+										var dx = ox - hx
+										var dy = oy - hy
+										var dist = sqrt(dx*dx + dy*dy)
+										if dist <= explosion_radius:
+											if typeof(other_h) == TYPE_DICTIONARY:
+												other_h.duration = 0.0
+											elif typeof(other_h) == TYPE_OBJECT:
+												if "duration" in other_h: other_h.duration = 0.0
+												elif other_h.has_method("set_meta"): other_h.set_meta("duration", 0.0)
 
 							for b in balls:
 								var b_alive = false
