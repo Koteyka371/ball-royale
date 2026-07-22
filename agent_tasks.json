@@ -22739,7 +22739,7 @@
     },
     {
       "id": "idea-1327",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic Anomaly Mode",
@@ -33291,6 +33291,74 @@
         "src/ai/weekend_mutator_bounty.py",
         "src/ai/weekend_mutator_bounty.gd",
         "tests/test_weekend_mutator_bounty.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1947",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thermal Glider Item",
+      "description": "An item that allows players to ride the updrafts from lava geysers, granting temporary invulnerability to floor hazards and a significant speed boost while airborne, but making them vulnerable to anti-air attacks.",
+      "allowed_paths": [
+        "src/ai/thermal_glider_item.py",
+        "src/ai/thermal_glider_item.gd",
+        "tests/test_thermal_glider_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1948",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Volcanic Eruption Boss",
+      "description": "A boss mode where a massive volcano in the center of the arena continuously spawns lava geysers and throws fireballs. Players must dodge the hazards and use water-based items to cool down the boss to defeat it.",
+      "allowed_paths": [
+        "src/ai/volcanic_eruption_boss.py",
+        "src/ai/volcanic_eruption_boss.gd",
+        "tests/test_volcanic_eruption_boss.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1949",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Twitch integration: Bet points on surviving Juggernaut",
+      "description": "Allow stream viewers to place bets using channel points on how long a Juggernaut will survive, or which player will deal the killing blow to the Juggernaut.",
+      "allowed_paths": [
+        "src/ai/twitch_integration_bet_points_on_surviving_juggernaut.py",
+        "src/ai/twitch_integration_bet_points_on_surviving_juggernaut.gd",
+        "tests/test_twitch_integration_bet_points_on_surviving_juggernaut.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1950",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Twitch integration: Voting on Boss type",
+      "description": "When a !spawnboss vote is initiated by a viewer, chat can vote on which boss they want to spawn: Juggernaut, Phantom Juggernaut, Elementalist, etc.",
+      "allowed_paths": [
+        "src/ai/twitch_integration_voting_on_boss_type.py",
+        "src/ai/twitch_integration_voting_on_boss_type.gd",
+        "tests/test_twitch_integration_voting_on_boss_type.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

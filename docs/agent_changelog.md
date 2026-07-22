@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1327] Cosmic Anomaly Mode — *2026-07-22 06:36:05 UTC*
+
+A game mode where the arena gravity occasionally shifts, pulling balls towards the edges or a random point instead of the center. High-prestige players can deploy 'gravity anchors' to resist the effect.
+
+---
+
 ## [idea-1312] Custom Boss Spawns — *2026-07-22 06:27:48 UTC*
 
 Allow viewers to use channel points or specific actions to trigger the spawning of special bosses (like the Juggernaut) dynamically during the match.
