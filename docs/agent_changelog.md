@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1322] Shrinking Grid Mode — *2026-07-22 19:18:22 UTC*
+
+A battle royale variant where the arena is made up of a grid of tiles. Every few seconds, some tiles light up and then fall away, turning into bottomless pits. Players must constantly fight for position on the remaining tiles.
+
+---
+
 ## [idea-1317] Shrinking Arenas Mechanic — *2026-07-22 16:04:24 UTC*
 
 Different quadrants of the arena have their own shrinking mechanic, forcing players to navigate moving safe zones or jump through portals to reach safer quadrants.
