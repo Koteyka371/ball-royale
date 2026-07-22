@@ -10147,6 +10147,13 @@ class ShrinkingDangerZoneMode(GameMode):
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
+                    ping_timer = getattr(b, "minimap_ping_timer", 0.0)
+                    if ping_timer <= 0:
+                        if hasattr(world, "add_event"):
+                            world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "red", "duration": 0.5})
+                        b.minimap_ping_timer = 1.0
+                    else:
+                        b.minimap_ping_timer = ping_timer - delta
                     # Randomly apply debuff
                     if random.random() < 0.2 * delta: # ~20% chance per second
                         debuff = random.choice(["slow", "poison", "confusion", "blindness", "stun", "freeze"])
@@ -10717,6 +10724,13 @@ class SafeZoneMode(GameMode):
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
                     b.hp -= damage_this_tick
+                    ping_timer = getattr(b, "minimap_ping_timer", 0.0)
+                    if ping_timer <= 0:
+                        if hasattr(world, "add_event"):
+                            world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "red", "duration": 0.5})
+                        b.minimap_ping_timer = 1.0
+                    else:
+                        b.minimap_ping_timer = ping_timer - delta
                     # Randomly apply debuff
                     if random.random() < 0.2 * delta: # ~20% chance per second
                         debuff = random.choice(["slow", "poison", "confusion", "blindness", "stun", "freeze"])

@@ -36,8 +36,8 @@ def test_collapse_event():
 
     # It should hit exactly min_zone_radius and trigger collapse
     assert mode.collapse_triggered == True
-    assert len(world.events) == 1
-    assert world.events[0]["type"] == "collapse_event"
+    collapse_events = [e for e in world.events if e.get("type") == "collapse_event"]
+    assert len(collapse_events) == 1
 
     # Check that it pulls balls to center (500, 500)
     mode.tick(world, balls, delta=0.1)
