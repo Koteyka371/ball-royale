@@ -14016,7 +14016,7 @@ class Action:
                 if hasattr(self.world, "balls"):
                     active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                     if active_decoys:
-                        decoy = active_decoys[0]
+                        decoy = active_decoys[-1]
                         tx, ty = self.ball.x, self.ball.y
 
                         self.ball.x, self.ball.y = decoy.x, decoy.y

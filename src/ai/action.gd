@@ -27148,7 +27148,7 @@ func _use_skill():
                             active_decoys.append(b)
 
             if active_decoys.size() > 0:
-                var decoy = active_decoys[0]
+                var decoy = active_decoys[active_decoys.size() - 1]
                 var tx = 0.0
                 var ty = 0.0
                 if "x" in self.ball: tx = self.ball.x

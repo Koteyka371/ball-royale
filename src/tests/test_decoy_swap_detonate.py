@@ -88,3 +88,29 @@ def test_decoy_swap_detonate_swap_and_explode():
 
     # Event added
     assert any(e[0] == "explosion" and e[1]["x"] == 100 and e[1]["y"] == 100 for e in w.events)
+
+def test_decoy_swap_detonate_most_recent():
+    w = MockWorld()
+    b = MockBall(1, 100, 100, "red")
+    b.skill = "decoy_swap_detonate"
+
+    decoy1 = MockBall(2, 200, 200, "red")
+    decoy1.is_decoy = True
+    decoy1.owner_id = 1
+
+    decoy2 = MockBall(3, 300, 300, "red")
+    decoy2.is_decoy = True
+    decoy2.owner_id = 1
+
+    w.balls = [b, decoy1, decoy2]
+
+    act = Action(b, w)
+    act._use_skill()
+
+    # Most recent is decoy2 (at 300, 300)
+    assert b.x == 300
+    assert b.y == 300
+    assert decoy2.hp == 0
+    assert decoy2.alive == False
+    assert decoy1.hp == 100
+    assert decoy1.alive == True
