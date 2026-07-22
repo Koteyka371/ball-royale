@@ -10,7 +10,8 @@ var daily_quests = [
     {"description": "Win a Battle Royale match", "reward": {"skill_points": 200, "cosmetic": "winner_crown"}},
     {"description": "Deal 1000 damage in a single match", "reward": 150},
     {"description": "Deal 10,000 damage", "reward": {"skill_points": 300, "prestige_tokens": 1}},
-    {"description": "Play 3 matches in the current weekly mutator mode", "reward": {"skill_points": 250, "cosmetic": "mutator_badge"}}
+    {"description": "Play 3 matches in the current weekly mutator mode", "reward": {"skill_points": 250, "cosmetic": "mutator_badge"}},
+    {"description": "Get 50 kills in a single match", "reward": {"mutator_tokens": 1}},
 ]
 
 func get_daily_quests() -> Array:
