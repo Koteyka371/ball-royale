@@ -7582,8 +7582,28 @@ func execute(strategy: String, delta: float):
 					self.ball.set_meta("inventory", inv)
 
 
+
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("deployable_mud_puddle"):
+			var nearest = _get_nearest_enemy()
+			if nearest != null:
+				var dist = sqrt(pow(self.ball.x - nearest.x, 2) + pow(self.ball.y - nearest.y, 2))
+				if dist < 300:
+					inv.erase("deployable_mud_puddle")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+					elif "inventory" in self.ball: self.ball.inventory = inv
+					if world != null and "arena" in world and "hazards" in world.arena:
+						var arena = world.arena
+						var mud_id = str(arena.hazards.size()) + "_" + str(world.tick if "tick" in world else 0) + "_mud"
+						var p_puddle = null
+						if load("res://src/arena/procedural_arena.gd") != null:
+							p_puddle = load("res://src/arena/procedural_arena.gd").Hazard.new(mud_id, self.ball.x, self.ball.y, 60.0, "sticky_mud_puddle", 0.0)
+							p_puddle.set_meta("duration", 10.0)
+							if "id" in self.ball: p_puddle.set_meta("owner_id", self.ball.id)
+							arena.hazards.append(p_puddle)
+
+
 		if inv.has("deployable_acid_puddle"):
 			var nearest = _get_nearest_enemy()
 			if nearest != null:
@@ -11949,6 +11969,76 @@ func execute(strategy: String, delta: float):
                             hazard.charge = 0.0
                             if self.world.get("events") != null:
                                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
+
+                elif hazard.kind == "sticky_mud_puddle":
+                    var current_tick = world.tick if "tick" in world else 0
+                    var last_updated = -1
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("last_updated_tick"): last_updated = hazard.get_meta("last_updated_tick")
+                    elif "last_updated_tick" in hazard: last_updated = hazard.last_updated_tick
+
+                    if last_updated != current_tick:
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("last_updated_tick", current_tick)
+                        elif "last_updated_tick" in hazard: hazard.last_updated_tick = current_tick
+
+                        var h_dur = 10.0
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
+                        elif "duration" in hazard: h_dur = hazard.duration
+
+                        h_dur -= delta
+
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", h_dur)
+                        elif "duration" in hazard: hazard.duration = h_dur
+
+                        if h_dur <= 0:
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("active", false)
+                            elif "active" in hazard: hazard.active = false
+                            continue
+
+                        for b in world.balls:
+                            var b_alive = true
+                            if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                            elif "alive" in b: b_alive = b.alive
+                            if b_alive:
+                                var hx = 0
+                                var hy = 0
+                                if typeof(hazard) == TYPE_OBJECT and "x" in hazard:
+                                    hx = hazard.x
+                                    hy = hazard.y
+                                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"):
+                                    hx = hazard["x"]
+                                    hy = hazard["y"]
+
+                                var bx = 0
+                                var by = 0
+                                if typeof(b) == TYPE_OBJECT and "x" in b:
+                                    bx = b.x
+                                    by = b.y
+                                elif typeof(b) == TYPE_DICTIONARY and b.has("x"):
+                                    bx = b["x"]
+                                    by = b["y"]
+
+                                var dist_sq = pow(hx - bx, 2) + pow(hy - by, 2)
+                                var rad_sum = hazard.radius + (b.radius if "radius" in b else 20.0)
+                                if dist_sq < rad_sum * rad_sum:
+                                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                        b.set_meta("mud_debuff_timer", 3.0)
+                                        var stack_cd = b.get_meta("mud_stack_cooldown") if b.has_meta("mud_stack_cooldown") else 0.0
+                                        if stack_cd <= 0:
+                                            var stacks = b.get_meta("mud_debuff_stacks") if b.has_meta("mud_debuff_stacks") else 0
+                                            b.set_meta("mud_debuff_stacks", min(stacks + 1, 5))
+                                            b.set_meta("mud_stack_cooldown", 0.5)
+                                        else:
+                                            b.set_meta("mud_stack_cooldown", stack_cd - delta)
+                                    elif "mud_debuff_timer" in b:
+                                        b.mud_debuff_timer = 3.0
+                                        var stack_cd = b.mud_stack_cooldown if "mud_stack_cooldown" in b else 0.0
+                                        if stack_cd <= 0:
+                                            var stacks = b.mud_debuff_stacks if "mud_debuff_stacks" in b else 0
+                                            b.mud_debuff_stacks = min(stacks + 1, 5)
+                                            b.mud_stack_cooldown = 0.5
+                                        else:
+                                            b.mud_stack_cooldown = stack_cd - delta
+
                 elif hazard.kind == "deployable_acid_puddle":
                     var current_tick = world.tick if "tick" in world else 0
                     var last_updated = -1
@@ -23757,6 +23847,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+
+            elif "kind" in nearest and nearest.kind == "deployable_mud_puddle":
+                var b_inv = []
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+                    if self.ball.has_meta("inventory"): b_inv = self.ball.get_meta("inventory")
+                elif "inventory" in self.ball: b_inv = self.ball.inventory
+                b_inv.append("deployable_mud_puddle")
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", b_inv)
+                elif "inventory" in self.ball: self.ball.inventory = b_inv
+
+                if world != null and "arena" in world and "hazards" in world.arena:
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "gravity_multiplier_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("gravity_multiplier_timer", 10.0)
@@ -38182,6 +38286,85 @@ func _update_skill_timer(delta: float):
             self.ball.homing_missile_tick = hmb_tick
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("homing_missile_tick", hmb_tick)
+
+
+    var mud_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mud_debuff_timer"):
+        mud_timer = float(self.ball.get_meta("mud_debuff_timer"))
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mud_debuff_timer"):
+        mud_timer = float(self.ball["mud_debuff_timer"])
+    elif typeof(self.ball) == TYPE_OBJECT and "mud_debuff_timer" in self.ball:
+        mud_timer = float(self.ball.mud_debuff_timer)
+
+    if mud_timer > 0.0:
+        mud_timer -= delta
+        var stacks = 1
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mud_debuff_stacks"):
+            stacks = int(self.ball.get_meta("mud_debuff_stacks"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mud_debuff_stacks"):
+            stacks = int(self.ball["mud_debuff_stacks"])
+        elif typeof(self.ball) == TYPE_OBJECT and "mud_debuff_stacks" in self.ball:
+            stacks = int(self.ball.mud_debuff_stacks)
+
+        var hp = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = float(self.ball.get_meta("hp"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): hp = float(self.ball["hp"])
+        elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: hp = float(self.ball.hp)
+
+        hp -= (2.0 * stacks) * delta
+
+        var alive = true
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("alive"): alive = self.ball.get_meta("alive")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("alive"): alive = self.ball["alive"]
+        elif typeof(self.ball) == TYPE_OBJECT and "alive" in self.ball: alive = self.ball.alive
+
+        if hp <= 0 and alive:
+            hp = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("alive", false)
+                self.ball.set_meta("killer", "mud_puddle")
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["alive"] = false
+                self.ball["killer"] = "mud_puddle"
+            elif typeof(self.ball) == TYPE_OBJECT:
+                self.ball.alive = false
+                self.ball.killer = "mud_puddle"
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp)
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): self.ball["hp"] = hp
+        elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = hp
+
+        var base_s = 2.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): base_s = float(self.ball.get_meta("base_speed"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): base_s = float(self.ball["base_speed"])
+        elif typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball: base_s = float(self.ball.base_speed)
+
+        var new_speed = base_s * max(0.2, 1.0 - 0.15 * stacks)
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", new_speed)
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): self.ball["speed"] = new_speed
+        elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: self.ball.speed = new_speed
+
+        if mud_timer <= 0:
+            mud_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("mud_debuff_stacks", 0)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["mud_debuff_stacks"] = 0
+            elif typeof(self.ball) == TYPE_OBJECT and "mud_debuff_stacks" in self.ball:
+                self.ball.mud_debuff_stacks = 0
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_s)
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): self.ball["speed"] = base_s
+            elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: self.ball.speed = base_s
+
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+        self.ball.set_meta("mud_debuff_timer", mud_timer)
+    elif typeof(self.ball) == TYPE_DICTIONARY:
+        self.ball["mud_debuff_timer"] = mud_timer
+    elif typeof(self.ball) == TYPE_OBJECT and "mud_debuff_timer" in self.ball:
+        self.ball.mud_debuff_timer = mud_timer
 
     var acid_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("acid_debuff_timer"):
