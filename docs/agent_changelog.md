@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1335] Blizzard Visibility Reduction — *2026-07-22 23:20:25 UTC*
+
+During 'Blizzard' weather events, the camera zoom increases and fog of war is added, significantly reducing visibility. Additionally, entities leave temporary footprints in the snow.
+
+---
+
 ## [idea-1370] Chain Grapple — *2026-07-22 23:20:21 UTC*
 
 Grappling hook now chains to a second target automatically if one is in range when the first target is hit.
