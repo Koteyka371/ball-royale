@@ -659,6 +659,14 @@ class Action:
 
         original_damage = getattr(attacker, "damage", 10.0) * damage_reduction
 
+        att_emotion = getattr(attacker, "emotion", "")
+        if att_emotion in ("anger", "rage"):
+            original_damage *= 1.5
+
+        tgt_emotion = getattr(target, "emotion", "")
+        if tgt_emotion in ("anger", "rage"):
+            original_damage *= 1.5
+
         # Damage multiplier if attacker is sliding on ice patch
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in self.world.arena.hazards:
@@ -9943,6 +9951,26 @@ class Action:
         if delta > 0:
             dx = self.ball.x - old_x
             dy = self.ball.y - old_y
+
+            emotion = getattr(self.ball, "emotion", "")
+
+            if emotion in ("calm", "neutral"):
+                if hasattr(self.ball, "base_speed") and hasattr(self.ball, "speed"):
+                    self.ball.speed = self.ball.base_speed
+                if hasattr(self.ball, "base_damage") and hasattr(self.ball, "damage"):
+                    self.ball.damage = self.ball.base_damage
+
+            if emotion == "fear":
+                # slightly faster
+                dx *= 1.2
+                dy *= 1.2
+                # lose turn radius (momentum)
+                old_dx = getattr(self.ball, "_last_dx", 0.0)
+                old_dy = getattr(self.ball, "_last_dy", 0.0)
+                dx = (dx * 0.2) + (old_dx * 0.8)
+                dy = (dy * 0.2) + (old_dy * 0.8)
+                self.ball.x = old_x + dx
+                self.ball.y = old_y + dy
 
             if getattr(self.ball, "is_in_mud", False):
                 old_dx = getattr(self.ball, "_last_dx", 0.0)
