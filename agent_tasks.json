@@ -22705,7 +22705,7 @@
     },
     {
       "id": "idea-1325",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Mirage Booster",
@@ -33837,6 +33837,91 @@
         "src/ai/electric_grapple.py",
         "src/ai/electric_grapple.gd",
         "tests/test_electric_grapple.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1979",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Contract Drops",
+      "description": "Whenever a ball hits a certain currency threshold, a bounty is placed on them and other balls gain bonus stats when moving towards them.",
+      "allowed_paths": [
+        "src/ai/bounty_contract_drops.py",
+        "src/ai/bounty_contract_drops.gd",
+        "tests/test_bounty_contract_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1980",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blinding Flashbang Trap",
+      "description": "A new hazard that detonates when approached, temporarily setting the vision radius of nearby balls to zero and disabling their ability to attack or pick up items for a brief period.",
+      "allowed_paths": [
+        "src/arena/blinding_flashbang_trap.py",
+        "src/arena/blinding_flashbang_trap.gd",
+        "tests/test_blinding_flashbang_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1981",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrink Ray Weapon",
+      "description": "An equippable weapon that shoots a beam, reducing the target's radius and max speed by 30% for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/shrink_ray_weapon.py",
+        "src/ai/shrink_ray_weapon.gd",
+        "tests/test_shrink_ray_weapon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1982",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrupted Currency Pickups",
+      "description": "A variant of the standard currency pickup that gives 3x the normal value but heavily increases the ball's vulnerability to all sources of damage for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/corrupted_currency_pickups.py",
+        "src/ai/corrupted_currency_pickups.gd",
+        "tests/test_corrupted_currency_pickups.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1983",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Location Mechanic",
+      "description": "A new ball type or item that grants a passive ability where the ball constantly pulses out 'echolocation' waves. Enemies caught in the waves are briefly highlighted, even if outside the ball's base vision radius, creating a powerful tracking advantage.",
+      "allowed_paths": [
+        "src/ai/echo_location_mechanic.py",
+        "src/ai/echo_location_mechanic.gd",
+        "tests/test_echo_location_mechanic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

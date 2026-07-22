@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1325] Quantum Mirage Booster — *2026-07-22 20:10:23 UTC*
+
+A new booster that, when picked up, gives the player a temporary ability to create stationary illusory copies of themselves every few seconds. These mirages deceive enemies and detonate into a small EMP when an enemy touches them or attacks them.
+
+---
+
 ## [idea-1232] Blackout Traps — *2026-07-22 19:44:21 UTC*
 
 Introduce a new trap that, when triggered, heavily reduces the vision range of the ball for a few seconds, forcing them into a disadvantageous position in team fights.
