@@ -1,0 +1,4 @@
+{
+  "title": "Aura Resonance Event",
+  "description": "An arena-wide event where balls with matching aura types (e.g. Vampiric and Vampiric) gradually tether to each other if they stay in range, multiplying their damage and speed up to 3x, but taking shared damage if one of them is hit."
+}

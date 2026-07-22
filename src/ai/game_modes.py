@@ -27118,7 +27118,71 @@ class CurrencyBurdenMode(GameMode):
                             world.add_event("altar_deposit", {"ball": b, "amount": buff_amount, "upgrade": upgrade_type})
                         break
 
+
+class GlobalAuraPulseEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Global Aura Pulse Event"
+        self.description = "A random game event where stacking auras pulse outward globally every 15 seconds."
+        self.timer = 15.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        self.timer -= delta
+        if self.timer <= 0.0:
+            self.timer = 15.0
+
+            import random
+
+            # Find players with active aura buffs
+            actions_to_apply = []
+
+            for b in balls:
+                if not getattr(b, 'alive', True):
+                    continue
+
+                # Check for active auras
+                has_aura_buff = False
+                aura_types = ["aura_booster_timer", "vampiric_aura_timer"]
+                active_auras = []
+                for a in aura_types:
+                    if getattr(b, a, 0.0) > 0.0:
+                        has_aura_buff = True
+                        active_auras.append(a)
+
+                if has_aura_buff:
+                    is_reversed = getattr(b, "aura_inversion_timer", 0.0) > 0.0
+                    team = getattr(b, "team", getattr(b, "ball_type", ""))
+
+                    # Target selection
+                    targets = []
+                    for other in balls:
+                        if not getattr(other, "alive", True) or getattr(other, "id", None) == getattr(b, "id", None):
+                            continue
+                        other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                        if is_reversed:
+                            if other_team != team:
+                                targets.append(other)
+                        else:
+                            if other_team == team:
+                                targets.append(other)
+
+                    if targets:
+                        # Pick a random target
+                        target = random.choice(targets)
+                        actions_to_apply.append((target, active_auras, is_reversed))
+
+            # Apply all actions simultaneously
+            for target, active_auras, is_reversed in actions_to_apply:
+                for a in active_auras:
+                    setattr(target, a, 5.0)
+                if is_reversed:
+                    target.aura_inversion_timer = 5.0
+
+
 GAME_MODES = {
+    'global_aura_pulse': GlobalAuraPulseEventMode(),
     "collapsing_ceiling": CollapsingCeilingMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),
     "biome_safe_zones": BiomeSafeZonesMode(),

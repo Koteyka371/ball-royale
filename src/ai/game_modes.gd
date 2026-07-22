@@ -43055,7 +43055,148 @@ class CurrencyBurdenMode extends GameMode:
 							world.add_event("altar_deposit", {"ball_id": b.get("id", -1), "amount": buff_amount, "upgrade": upgrade_type})
 						break
 
+
+class GlobalAuraPulseEventMode extends GameMode:
+	var timer = 15.0
+
+	func _init() -> void:
+		self.name = "Global Aura Pulse Event"
+		self.description = "A random game event where stacking auras pulse outward globally every 15 seconds."
+
+	func tick(world, balls, delta=0.016):
+		.tick(world, balls, delta)
+
+		timer -= delta
+		if timer <= 0.0:
+			timer = 15.0
+
+			var actions_to_apply = []
+
+			for i in range(balls.size()):
+				var b = balls[i]
+
+				var is_alive = true
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b["alive"]
+				elif typeof(b) != TYPE_DICTIONARY and "alive" in b:
+					is_alive = b.alive
+
+				if not is_alive:
+					continue
+
+				var has_aura_buff = false
+				var aura_types = ["aura_booster_timer", "vampiric_aura_timer"]
+				var active_auras = []
+
+				for a in aura_types:
+					var val = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has(a):
+						val = float(b[a])
+					elif typeof(b) != TYPE_DICTIONARY and a in b:
+						val = float(b.get(a))
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta(a):
+						val = float(b.get_meta(a))
+
+					if val > 0.0:
+						has_aura_buff = true
+						active_auras.append(a)
+
+				if has_aura_buff:
+					var is_reversed = false
+					var ait_val = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("aura_inversion_timer"):
+						ait_val = float(b["aura_inversion_timer"])
+					elif typeof(b) != TYPE_DICTIONARY and "aura_inversion_timer" in b:
+						ait_val = float(b.get("aura_inversion_timer"))
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("aura_inversion_timer"):
+						ait_val = float(b.get_meta("aura_inversion_timer"))
+
+					if ait_val > 0.0:
+						is_reversed = true
+
+					var team = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("team"): team = b["team"]
+						elif b.has("ball_type"): team = b["ball_type"]
+					else:
+						if "team" in b: team = b.team
+						elif "ball_type" in b: team = b.ball_type
+
+					var b_id = -1
+					if typeof(b) == TYPE_DICTIONARY and b.has("id"):
+						b_id = b["id"]
+					elif typeof(b) != TYPE_DICTIONARY and "id" in b:
+						b_id = b.id
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("id"):
+						b_id = b.get_meta("id")
+
+					var targets = []
+					for j in range(balls.size()):
+						var other = balls[j]
+						var o_is_alive = true
+						if typeof(other) == TYPE_DICTIONARY and other.has("alive"):
+							o_is_alive = other["alive"]
+						elif typeof(other) != TYPE_DICTIONARY and "alive" in other:
+							o_is_alive = other.alive
+
+						var o_id = -1
+						if typeof(other) == TYPE_DICTIONARY and other.has("id"):
+							o_id = other["id"]
+						elif typeof(other) != TYPE_DICTIONARY and "id" in other:
+							o_id = other.id
+						elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("id"):
+							o_id = other.get_meta("id")
+
+						if not o_is_alive or o_id == b_id:
+							continue
+
+						var other_team = ""
+						if typeof(other) == TYPE_DICTIONARY:
+							if other.has("team"): other_team = other["team"]
+							elif other.has("ball_type"): other_team = other["ball_type"]
+						else:
+							if "team" in other: other_team = other.team
+							elif "ball_type" in other: other_team = other.ball_type
+
+						if is_reversed:
+							if other_team != team:
+								targets.append(other)
+						else:
+							if other_team == team:
+								targets.append(other)
+
+					if targets.size() > 0:
+						var rng_index = randi() % targets.size()
+						var target = targets[rng_index]
+						actions_to_apply.append({"target": target, "auras": active_auras, "is_reversed": is_reversed})
+
+			for i in range(actions_to_apply.size()):
+				var act = actions_to_apply[i]
+				var target = act["target"]
+				var auras = act["auras"]
+				var is_reversed = act["is_reversed"]
+
+				for a in auras:
+					if typeof(target) == TYPE_DICTIONARY:
+						target[a] = 5.0
+					elif typeof(target) != TYPE_DICTIONARY:
+						if a in target:
+							target.set(a, 5.0)
+						elif target.has_method("set_meta"):
+							target.set_meta(a, 5.0)
+
+				if is_reversed:
+					if typeof(target) == TYPE_DICTIONARY:
+						target["aura_inversion_timer"] = 5.0
+					elif typeof(target) != TYPE_DICTIONARY:
+						if "aura_inversion_timer" in target:
+							target.set("aura_inversion_timer", 5.0)
+						elif target.has_method("set_meta"):
+							target.set_meta("aura_inversion_timer", 5.0)
+
+
 GAME_MODES = {
+	"global_aura_pulse": GlobalAuraPulseEventMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),

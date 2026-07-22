@@ -1,0 +1,4 @@
+{
+  "title": "Aura Syphon Hazard",
+  "description": "A new static arena hazard that drains the duration of any active auras from nearby players, converting the drained time into a growing localized healing pool for anyone who stands in it after the hazard expires."
+}
