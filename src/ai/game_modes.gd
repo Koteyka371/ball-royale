@@ -52974,3 +52974,148 @@ class GravityShiftMode extends GameMode:
                     b["anchor_cooldown"] = max(0.0, cooldown - delta)
                 else:
                     b.set_meta("anchor_cooldown", max(0.0, cooldown - delta))
+
+class VolcanoEruptionEventMode extends GameMode:
+	var eruption_timer: float = 0.0
+	var eruption_interval: float = 20.0
+	var is_erupting: bool = false
+	var eruption_duration: float = 5.0
+	var eruption_duration_timer: float = 0.0
+	var projectile_spawn_timer: float = 0.0
+
+	func _init().():
+		self.name = "Volcano Eruption Event"
+		self.description = "A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles."
+
+	func tick(world, balls, delta=0.016):
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		if not self.is_erupting:
+			self.eruption_timer += delta
+			if self.eruption_timer >= self.eruption_interval:
+				self.eruption_timer = 0.0
+				self.is_erupting = true
+				self.eruption_duration_timer = 0.0
+				self.projectile_spawn_timer = 0.0
+
+				if world.has_method("add_event"):
+					world.add_event("volcano_eruption_start", {"message": "The center of the arena is erupting!"})
+		else:
+			self.eruption_duration_timer += delta
+			self.projectile_spawn_timer += delta
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+
+			var center_x = arena_width / 2.0
+			var center_y = arena_height / 2.0
+
+			if self.projectile_spawn_timer >= 0.5:
+				self.projectile_spawn_timer = 0.0
+
+				var target_x = 50.0 + randf() * (arena_width - 100.0)
+				var target_y = 50.0 + randf() * (arena_height - 100.0)
+
+				var angle = atan2(target_y - center_y, target_x - center_x)
+				var speed = 300.0
+				var dist = sqrt(pow(target_x - center_x, 2) + pow(target_y - center_y, 2))
+
+				var projectile = {
+					"id": world.arena.hazards.size() + (randi() % 90000 + 10000),
+					"x": center_x,
+					"y": center_y,
+					"radius": 15.0,
+					"kind": "volcano_projectile",
+					"damage": 25.0,
+					"vx": cos(angle) * speed,
+					"vy": sin(angle) * speed,
+					"target_x": target_x,
+					"target_y": target_y,
+					"duration": dist / speed,
+					"spawn_magma": true,
+					"active": true
+				}
+				world.arena.hazards.append(projectile)
+
+			if self.eruption_duration_timer >= self.eruption_duration:
+				self.is_erupting = false
+
+		var active_hazards = []
+		for h in world.arena.hazards:
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY:
+				if "kind" in h:
+					kind = h["kind"]
+			else:
+				if h.get("kind") != null:
+					kind = h.get("kind")
+
+			if kind == "volcano_projectile":
+				var is_dict = typeof(h) == TYPE_DICTIONARY
+				var vx = h["vx"] if is_dict else h.get("vx")
+				var vy = h["vy"] if is_dict else h.get("vy")
+				var x = h["x"] if is_dict else h.get("x")
+				var y = h["y"] if is_dict else h.get("y")
+				var duration = h["duration"] if is_dict else h.get("duration")
+
+				x += vx * delta
+				y += vy * delta
+				duration -= delta
+
+				if is_dict:
+					h["x"] = x
+					h["y"] = y
+					h["duration"] = duration
+				else:
+					h.set_meta("x", x) if h.has_meta("x") else null # not setting properties dynamically
+					if h.get("x") != null:
+						h.set("x", x)
+						h.set("y", y)
+						h.set("duration", duration)
+
+				if duration <= 0:
+					var spawn_magma = false
+					if is_dict:
+						spawn_magma = h.get("spawn_magma", false)
+					else:
+						spawn_magma = h.get("spawn_magma")
+						if spawn_magma == null: spawn_magma = false
+
+					if spawn_magma:
+						var puddle = {
+							"id": world.arena.hazards.size() + (randi() % 900000 + 100000),
+							"x": x,
+							"y": y,
+							"radius": 40.0,
+							"kind": "lava_puddle",
+							"damage": 15.0,
+							"duration": 10.0,
+							"active": true
+						}
+						active_hazards.append(puddle)
+						if world.has_method("add_event"):
+							world.add_event("lava_puddle_spawned", {"x": x, "y": y})
+				else:
+					active_hazards.append(h)
+			elif kind == "lava_puddle":
+				var is_dict = typeof(h) == TYPE_DICTIONARY
+				var duration = h["duration"] if is_dict else h.get("duration")
+				duration -= delta
+
+				if is_dict:
+					h["duration"] = duration
+				else:
+					if h.get("duration") != null:
+						h.set("duration", duration)
+
+				if duration > 0:
+					active_hazards.append(h)
+			else:
+				active_hazards.append(h)
+
+		world.arena.hazards = active_hazards

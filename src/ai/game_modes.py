@@ -1,4 +1,3 @@
-
 class WeekendBoss:
     def __init__(self, id_val, x, y):
         self.id = id_val
@@ -34429,3 +34428,142 @@ GAME_MODES['falling_tiles_royale'] = FallingTilesRoyaleMode()
 GAME_MODES['tilting_platform'] = TiltingPlatformMode()
 
 GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode()
+
+class VolcanoEruptionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Volcano Eruption Event"
+        self.description = "A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles."
+        self.eruption_timer = 0.0
+        self.eruption_interval = 20.0
+        self.is_erupting = False
+        self.eruption_duration = 5.0
+        self.eruption_duration_timer = 0.0
+        self.projectile_spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        if not self.is_erupting:
+            self.eruption_timer += delta
+            if self.eruption_timer >= self.eruption_interval:
+                self.eruption_timer = 0.0
+                self.is_erupting = True
+                self.eruption_duration_timer = 0.0
+                self.projectile_spawn_timer = 0.0
+
+                if hasattr(world, "add_event"):
+                    world.add_event("volcano_eruption_start", {"message": "The center of the arena is erupting!"})
+        else:
+            self.eruption_duration_timer += delta
+            self.projectile_spawn_timer += delta
+
+            # Center of the arena
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            center_x = arena_width / 2.0
+            center_y = arena_height / 2.0
+
+            if self.projectile_spawn_timer >= 0.5:
+                self.projectile_spawn_timer = 0.0
+
+                # Spawn a burning projectile
+                target_x = random.uniform(50, arena_width - 50)
+                target_y = random.uniform(50, arena_height - 50)
+
+                angle = math.atan2(target_y - center_y, target_x - center_x)
+                speed = 300.0
+                dist = math.hypot(target_x - center_x, target_y - center_y)
+
+                from arena.arena_types import Hazard
+                projectile = Hazard(
+                    id=len(world.arena.hazards) + random.randint(10000, 99999),
+                    x=center_x,
+                    y=center_y,
+                    radius=15.0,
+                    kind="volcano_projectile",
+                    damage=25.0
+                )
+
+                setattr(projectile, 'vx', math.cos(angle) * speed)
+                setattr(projectile, 'vy', math.sin(angle) * speed)
+                setattr(projectile, 'target_x', target_x)
+                setattr(projectile, 'target_y', target_y)
+                setattr(projectile, 'duration', dist / speed)
+                setattr(projectile, 'spawn_magma', True)
+                setattr(projectile, 'active', True)
+
+                world.arena.hazards.append(projectile)
+
+            if self.eruption_duration_timer >= self.eruption_duration:
+                self.is_erupting = False
+
+        # Update and remove lava puddles and projectiles
+        active_hazards = []
+        for h in world.arena.hazards:
+            kind = getattr(h, "kind", "") if isinstance(h, object) and not isinstance(h, dict) else h.get("kind", "") if isinstance(h, dict) else ""
+
+            if kind == "volcano_projectile":
+                is_obj = not isinstance(h, dict)
+                vx = getattr(h, "vx", 0) if is_obj else h.get("vx", 0)
+                vy = getattr(h, "vy", 0) if is_obj else h.get("vy", 0)
+                x = getattr(h, "x", 0) if is_obj else h.get("x", 0)
+                y = getattr(h, "y", 0) if is_obj else h.get("y", 0)
+                duration = getattr(h, "duration", 0) if is_obj else h.get("duration", 0)
+
+                x += vx * delta
+                y += vy * delta
+                duration -= delta
+
+                if is_obj:
+                    setattr(h, "x", x)
+                    setattr(h, "y", y)
+                    setattr(h, "duration", duration)
+                else:
+                    h["x"] = x
+                    h["y"] = y
+                    h["duration"] = duration
+
+                if duration <= 0:
+                    # Spawn lava puddle
+                    spawn_magma = getattr(h, "spawn_magma", False) if is_obj else h.get("spawn_magma", False)
+                    if spawn_magma:
+                        from arena.arena_types import Hazard
+                        puddle = Hazard(
+                            id=len(world.arena.hazards) + random.randint(100000, 999999),
+                            x=x,
+                            y=y,
+                            radius=40.0,
+                            kind="lava_puddle",
+                            damage=15.0
+                        )
+                        setattr(puddle, 'duration', 10.0)
+                        setattr(puddle, 'active', True)
+                        active_hazards.append(puddle)
+                        if hasattr(world, "add_event"):
+                            world.add_event("lava_puddle_spawned", {"x": x, "y": y})
+                else:
+                    active_hazards.append(h)
+            elif kind == "lava_puddle":
+                is_obj = not isinstance(h, dict)
+                duration = getattr(h, "duration", 0) if is_obj else h.get("duration", 0)
+                duration -= delta
+
+                if is_obj:
+                    setattr(h, "duration", duration)
+                else:
+                    h["duration"] = duration
+
+                if duration > 0:
+                    active_hazards.append(h)
+            else:
+                active_hazards.append(h)
+
+        world.arena.hazards = active_hazards
+
+if 'GAME_MODES' in globals():
+    GAME_MODES['volcano_eruption_event'] = VolcanoEruptionEventMode()

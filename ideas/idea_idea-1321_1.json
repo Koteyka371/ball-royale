@@ -1,0 +1,4 @@
+{
+  "title": "Tornado Event Mode",
+  "description": "Periodically spawn a massive tornado hazard in the center of the arena that moves towards the largest cluster of players, dealing damage and knocking back anyone who touches it."
+}
