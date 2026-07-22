@@ -27250,7 +27250,53 @@ class TricksterEventMode(GameMode):
                     if hasattr(b, "traits") and "trickster" in b.traits:
                         b.traits.remove("trickster")
 
+class AuraPulseEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Pulse Event"
+        self.description = "A global event where stacking auras pulse outward globally every 15 seconds. During a pulse, all players with active aura buffs grant those buffs to random friendly players anywhere on the map for 5 seconds. If a player with a reversed aura (via the Aura Inverter Trap) pulses, it debuffs enemies map-wide instead."
+        self.pulse_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        self.pulse_timer += delta
+        if self.pulse_timer >= 15.0:
+            self.pulse_timer = 0.0
+
+            aura_buff_keys = ["vampiric_aura_timer", "decoy_aura_timer", "cosmetic_aura_scale"]
+
+            for b in balls:
+                if not getattr(b, "alive", True) or getattr(b, "is_decoy", False):
+                    continue
+
+                has_aura = False
+                active_auras = {}
+                for key in aura_buff_keys:
+                    val = getattr(b, key, 0.0)
+                    if isinstance(val, (int, float)) and val > (1.0 if key == "cosmetic_aura_scale" else 0.0):
+                        has_aura = True
+                        active_auras[key] = val
+
+                if has_aura:
+                    is_reversed = getattr(b, "aura_inversion_timer", 0.0) > 0.0
+
+                    if is_reversed:
+                        enemies = [e for e in balls if e != b and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(b, "team", getattr(b, "ball_type", ""))]
+                        for e in enemies:
+                            e.aura_disruption_timer = max(getattr(e, "aura_disruption_timer", 0.0), 5.0)
+                            e.aura_inversion_timer = max(getattr(e, "aura_inversion_timer", 0.0), 5.0)
+                    else:
+                        friendlies = [f for f in balls if f != b and getattr(f, "alive", True) and getattr(f, "team", getattr(f, "ball_type", "")) == getattr(b, "team", getattr(b, "ball_type", ""))]
+                        if friendlies:
+                            target = random.choice(friendlies)
+                            for key in active_auras:
+                                if key == "cosmetic_aura_scale":
+                                    target.cosmetic_aura_scale = max(getattr(target, key, 1.0), active_auras[key])
+                                else:
+                                    setattr(target, key, 5.0)
+
 GAME_MODES = {
+    "aura_pulse_event": AuraPulseEventMode(),
     'trickster_event': TricksterEventMode(),
     "collapsing_ceiling": CollapsingCeilingMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),
