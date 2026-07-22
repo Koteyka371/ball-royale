@@ -1,0 +1,4 @@
+{
+  "title": "Temporal Anchor Booster",
+  "description": "A booster that records the player's current HP and position. After 5 seconds, the player is instantly reverted to the recorded HP and position, allowing for risky plays or immediate escape from bad engagements."
+}

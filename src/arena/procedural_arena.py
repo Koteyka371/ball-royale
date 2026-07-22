@@ -148,7 +148,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "whirlpool", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "temporal_bubble", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "flashbang_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper", "mirage_booster"])
+            kind = random.choice(["spikes", "lava", "whirlpool", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "temporal_bubble", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "flashbang_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper", "mirage_booster", "position_swap_booster"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -188,7 +188,7 @@ class ProceduralArena:
             elif kind == "link_booster":
                 radius = 15.0
                 damage = 0.0
-            elif kind in ["stamina_booster", "weather_booster", "magnet_booster", "material_magnet_booster", "clone_booster", "flashbang_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "mirage_booster"]:
+            elif kind in ["stamina_booster", "weather_booster", "magnet_booster", "material_magnet_booster", "clone_booster", "flashbang_booster", "invert_booster", "freeze_booster", "reverse_gravity_booster", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "mirage_booster", "position_swap_booster"]:
                 radius = 15.0
                 damage = 0.0
             elif kind == "stealth_zone":
@@ -921,7 +921,7 @@ class ProceduralArena:
                     sx = max(50.0, min(self.width - 50.0, sx))
                     sy = max(50.0, min(self.height - 50.0, sy))
 
-                    item_kind = random.choice(["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "material_magnet_booster", "silencer_attachment", "extended_mag_attachment", "modified_scope_attachment", "laser_sight_attachment", "mirage_booster"])
+                    item_kind = random.choice(["healing_spring", "damage_link", "emp_burst", "nemesis_booster", "stamina_booster", "vision_booster", "reverse_gravity_booster", "material_magnet_booster", "silencer_attachment", "extended_mag_attachment", "modified_scope_attachment", "laser_sight_attachment", "mirage_booster", "position_swap_booster"])
 
                     item_id = 9000 + len(self.hazards) + random.randint(0, 1000)
                     drop = Hazard(id=item_id, x=sx, y=sy, radius=20.0, kind=item_kind, damage=0.0)
