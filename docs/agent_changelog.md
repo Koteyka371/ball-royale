@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1304] Guild-Exclusive Weather Events — *2026-07-22 00:14:36 UTC*
+
+Implement special weather modifiers (like 'Guild Storm') that can be triggered in Battle Royale using pooled guild resources, providing an advantage or specific status effects to participating guild members.
+
+---
+
 ## [idea-1271] Lightning Rod Hazard — *2026-07-22 00:11:41 UTC*
 
 A new deployable hazard that acts as a Lightning Rod, attracting any stray lightning bolts towards it and shielding nearby allies. When fully charged, it unleashes a small localized shockwave that stuns nearby enemies.
