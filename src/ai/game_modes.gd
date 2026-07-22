@@ -42661,6 +42661,212 @@ class TiltingPlatformMode extends GameMode:
 						if "y" in b: b.y = by
 
 
+
+class CurrencyBurdenMode extends GameMode:
+	var currency_spawn_timer = 0.0
+
+	func _init():
+		super._init()
+		self.name = "Risk Reward Currency"
+		self.description = "Currency pickups grant damage but slow you down and increase your size. Deposit at altars for permanent buffs."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "currency_pickups" in world:
+			world.currency_pickups = []
+		if not "altars" in world:
+			world.altars = []
+
+		if "boosters" in world:
+			world.boosters = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		for i in range(3):
+			world.altars.append({
+				"x": randf_range(100.0, arena_width - 100.0),
+				"y": randf_range(100.0, arena_height - 100.0),
+				"radius": 50.0
+			})
+
+		for i in range(15):
+			world.currency_pickups.append({
+				"x": randf_range(50.0, arena_width - 50.0),
+				"y": randf_range(50.0, arena_height - 50.0),
+				"type": "currency"
+			})
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") != "spectator":
+					if not b.has("currency"): b["currency"] = 0
+			else:
+				if b.get("ball_type") != "spectator":
+					if not b.has_meta("currency"): b.set_meta("currency", 0)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if "boosters" in world:
+			world.boosters = []
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		currency_spawn_timer += delta
+		if currency_spawn_timer >= 1.5:
+			currency_spawn_timer = 0.0
+			if "currency_pickups" in world and world.currency_pickups.size() < 40:
+				world.currency_pickups.append({
+					"x": randf_range(50.0, arena_width - 50.0),
+					"y": randf_range(50.0, arena_height - 50.0),
+					"type": "currency"
+				})
+
+		for b in balls:
+			var alive = false
+			var is_spec = false
+			var bx = 0.0
+			var by = 0.0
+			var bradius = 10.0
+			var bcurrency = 0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+				is_spec = (b.get("ball_type", "") == "spectator")
+				bx = float(b.get("x", 0.0))
+				by = float(b.get("y", 0.0))
+				bradius = float(b.get("radius", 10.0))
+				bcurrency = int(b.get("currency", 0))
+			else:
+				alive = b.get("alive")
+				is_spec = (b.get("ball_type") == "spectator")
+				bx = float(b.get("x"))
+				by = float(b.get("y"))
+				bradius = float(b.get("radius"))
+				bcurrency = int(b.get_meta("currency")) if b.has_meta("currency") else 0
+
+			if not alive or is_spec:
+				continue
+
+			if "currency_pickups" in world:
+				var pickups_to_remove = []
+				for i in range(world.currency_pickups.size()):
+					var c = world.currency_pickups[i]
+					var dx = bx - float(c["x"])
+					var dy = by - float(c["y"])
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= bradius + 15.0:
+						bcurrency += 1
+						pickups_to_remove.append(i)
+
+				pickups_to_remove.sort_custom(func(a, b): return a > b)
+				for idx in pickups_to_remove:
+					if idx < world.currency_pickups.size():
+						world.currency_pickups.remove_at(idx)
+
+			# Initialize base stats
+			var b_base_speed = 100.0
+			var b_base_damage = 10.0
+			var b_base_radius = 10.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("base_speed"): b["base_speed"] = float(b.get("speed", 100.0))
+				if not b.has("base_damage"): b["base_damage"] = float(b.get("damage", 10.0))
+				if not b.has("base_radius"): b["base_radius"] = float(b.get("radius", 10.0))
+				b_base_speed = float(b["base_speed"])
+				b_base_damage = float(b["base_damage"])
+				b_base_radius = float(b["base_radius"])
+			else:
+				b_base_speed = b.get_meta("base_speed") if b.has_meta("base_speed") else float(b.get("speed", 100.0))
+				if not b.has_meta("base_speed"): b.set_meta("base_speed", b_base_speed)
+				b_base_damage = b.get_meta("base_damage") if b.has_meta("base_damage") else float(b.get("damage", 10.0))
+				if not b.has_meta("base_damage"): b.set_meta("base_damage", b_base_damage)
+				b_base_radius = b.get_meta("base_radius") if b.has_meta("base_radius") else float(b.get("radius", 10.0))
+				if not b.has_meta("base_radius"): b.set_meta("base_radius", b_base_radius)
+
+			# Apply burden
+			var new_speed = b_base_speed * max(0.2, 1.0 - (bcurrency * 0.05))
+			var new_damage = b_base_damage * (1.0 + (bcurrency * 0.1))
+			var new_radius = b_base_radius * (1.0 + (bcurrency * 0.02))
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["speed"] = new_speed
+				b["damage"] = new_damage
+				b["radius"] = new_radius
+				b["currency"] = bcurrency
+			else:
+				b.set("speed", new_speed)
+				b.set("damage", new_damage)
+				b.set("radius", new_radius)
+				b.set_meta("currency", bcurrency)
+
+			# Deposit at altars
+			if bcurrency > 0 and "altars" in world:
+				for altar in world.altars:
+					var dx = bx - float(altar["x"])
+					var dy = by - float(altar["y"])
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= bradius + float(altar["radius"]):
+						var buff_amount = bcurrency
+						bcurrency = 0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["currency"] = 0
+						else:
+							b.set_meta("currency", 0)
+
+						var upgrade_types = ["max_hp", "base_speed", "base_damage"]
+						var upgrade_type = upgrade_types[randi() % upgrade_types.size()]
+
+						if upgrade_type == "max_hp":
+							if typeof(b) == TYPE_DICTIONARY:
+								if not b.has("base_max_hp"): b["base_max_hp"] = float(b.get("max_hp", 100.0))
+								b["base_max_hp"] += 5.0 * buff_amount
+								b["max_hp"] = b["base_max_hp"]
+								b["hp"] = min(b.get("hp", 100.0) + 5.0 * buff_amount, b["max_hp"])
+							else:
+								var bmhp = b.get_meta("base_max_hp") if b.has_meta("base_max_hp") else float(b.get("max_hp", 100.0))
+								b.set_meta("base_max_hp", bmhp + 5.0 * buff_amount)
+								b.set("max_hp", bmhp + 5.0 * buff_amount)
+								b.set("hp", min(float(b.get("hp", 100.0)) + 5.0 * buff_amount, b.get("max_hp")))
+						elif upgrade_type == "base_speed":
+							if typeof(b) == TYPE_DICTIONARY:
+								b["base_speed"] += 2.0 * buff_amount
+								b["speed"] = b["base_speed"]
+							else:
+								var bbs = b.get_meta("base_speed") + 2.0 * buff_amount
+								b.set_meta("base_speed", bbs)
+								b.set("speed", bbs)
+						elif upgrade_type == "base_damage":
+							if typeof(b) == TYPE_DICTIONARY:
+								b["base_damage"] += 1.0 * buff_amount
+								b["damage"] = b["base_damage"]
+							else:
+								var bbd = b.get_meta("base_damage") + 1.0 * buff_amount
+								b.set_meta("base_damage", bbd)
+								b.set("damage", bbd)
+
+						# Reset stats immediately
+						if typeof(b) == TYPE_DICTIONARY:
+							b["speed"] = b["base_speed"]
+							b["damage"] = b["base_damage"]
+							b["radius"] = b["base_radius"]
+						else:
+							b.set("speed", b.get_meta("base_speed"))
+							b.set("damage", b.get_meta("base_damage"))
+							b.set("radius", b.get_meta("base_radius"))
+
+						if world != null and world.has_method("add_event"):
+							world.add_event("altar_deposit", {"ball_id": b.get("id", -1), "amount": buff_amount, "upgrade": upgrade_type})
+						break
+
 GAME_MODES = {
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
@@ -42883,6 +43089,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"blizzard_mode": BlizzardMode.new(),
 
 	"black_market": BlackMarketMode.new(),
+	"currency_burden": CurrencyBurdenMode.new(),
 	"lava_royale": LavaRoyaleMode.new(),
 	"floor_is_lava": FloorIsLavaMode.new(),
 

@@ -16867,7 +16867,7 @@ class BlackMarketMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world, "currency_pickups"):
+        if getattr(world, "currency_pickups", None) is None:
             world.currency_pickups = []
         if not hasattr(world, "black_markets"):
             world.black_markets = []
@@ -26858,6 +26858,140 @@ class TiltingPlatformMode(GameMode):
                         b.y -= ny * drift
 
 
+
+class CurrencyBurdenMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Risk Reward Currency"
+        self.description = "Currency pickups grant damage but slow you down and increase your size. Deposit at altars for permanent buffs."
+        self.currency_spawn_timer = 0.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if getattr(world, "currency_pickups", None) is None:
+            world.currency_pickups = []
+        if not hasattr(world, "altars"):
+            world.altars = []
+
+        # Clear generic boosters
+        if hasattr(world, "boosters"):
+            world.boosters = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        import random
+        # Spawn some altars
+        for _ in range(3):
+            world.altars.append({
+                "x": random.uniform(100, arena_width - 100),
+                "y": random.uniform(100, arena_height - 100),
+                "radius": 50.0
+            })
+
+        # Initial currency
+        for _ in range(15):
+            world.currency_pickups.append({
+                "x": random.uniform(50, arena_width - 50),
+                "y": random.uniform(50, arena_height - 50),
+                "type": "currency"
+            })
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.currency = getattr(b, "currency", 0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        # Suppress generic boosters
+        if hasattr(world, "boosters"):
+            world.boosters = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.currency_spawn_timer += delta
+        if self.currency_spawn_timer >= 1.5:
+            self.currency_spawn_timer = 0.0
+            if len(world.currency_pickups) < 40:
+                world.currency_pickups.append({
+                    "x": random.uniform(50, arena_width - 50),
+                    "y": random.uniform(50, arena_height - 50),
+                    "type": "currency"
+                })
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            # Initialize base stats if not present
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+            if not hasattr(b, "base_radius"):
+                b.base_radius = getattr(b, "radius", 10.0)
+
+            # Collect currency
+            pickups_to_remove = []
+            for c in world.currency_pickups:
+                dx = b.x - c["x"]
+                dy = b.y - c["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist <= b.radius + 15.0:
+                    b.currency = getattr(b, "currency", 0) + 1
+                    pickups_to_remove.append(c)
+
+            for c in pickups_to_remove:
+                if c in world.currency_pickups:
+                    world.currency_pickups.remove(c)
+
+            curr = getattr(b, "currency", 0)
+
+            # Apply Burden / Risk-Reward
+            # Slower speed (min 0.2x)
+            b.speed = b.base_speed * max(0.2, 1.0 - (curr * 0.05))
+            # Higher damage (up to whatever)
+            b.damage = b.base_damage * (1.0 + (curr * 0.1))
+            # Larger radius
+            b.radius = b.base_radius * (1.0 + (curr * 0.02))
+
+            # Deposit at altars
+            if curr > 0:
+                for altar in world.altars:
+                    dx = b.x - altar["x"]
+                    dy = b.y - altar["y"]
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= b.radius + altar["radius"]:
+                        # Buy buff using all currency
+                        buff_amount = curr
+                        b.currency = 0
+
+                        # Apply permanent buff based on amount deposited
+                        upgrade_type = random.choice(["max_hp", "base_speed", "base_damage"])
+                        if upgrade_type == "max_hp":
+                            if not hasattr(b, "base_max_hp"):
+                                b.base_max_hp = getattr(b, "max_hp", 100.0)
+                            b.base_max_hp += 5.0 * buff_amount
+                            b.max_hp = b.base_max_hp
+                            b.hp = min(getattr(b, "hp", 100.0) + 5.0 * buff_amount, b.max_hp)
+                        elif upgrade_type == "base_speed":
+                            b.base_speed += 2.0 * buff_amount
+                        elif upgrade_type == "base_damage":
+                            b.base_damage += 1.0 * buff_amount
+
+                        # Reset dynamic stats calculation
+                        b.speed = b.base_speed
+                        b.damage = b.base_damage
+                        b.radius = b.base_radius
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("altar_deposit", {"ball": b, "amount": buff_amount, "upgrade": upgrade_type})
+                        break
+
 GAME_MODES = {
     "collapsing_ceiling": CollapsingCeilingMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),
@@ -26926,6 +27060,7 @@ GAME_MODES = {
     "blizzard_mode": BlizzardMode(),
 
     "black_market": BlackMarketMode(),
+    "currency_burden": CurrencyBurdenMode(),
     "floor_is_lava": FloorIsLavaMode(),
     "lava_royale": LavaRoyaleMode(),
 
