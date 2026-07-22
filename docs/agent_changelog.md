@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1328] Sticky Mine Trap — *2026-07-22 19:44:16 UTC*
+
+A throwable mine that latches onto the first ball it hits. It doesn't slow them down but ticks down an explosion timer, forcing them to run away from allies before it goes off.
+
+---
+
 ## [idea-1343] Grapple Hook Momentum Swing — *2026-07-22 19:41:48 UTC*
 
 Enhance the grapple hook logic to allow players to use it to swing around hazards or corners, conserving momentum for a speed boost upon release, instead of just pulling them straight towards the target.

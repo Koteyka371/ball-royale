@@ -22756,7 +22756,7 @@
     },
     {
       "id": "idea-1328",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Mine Trap",
@@ -33803,6 +33803,40 @@
         "src/arena/emotion_sync_traps.py",
         "src/arena/emotion_sync_traps.gd",
         "tests/test_emotion_sync_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1977",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Grapple Mod",
+      "description": "Grappling to a surface now acts like a bouncy pad, propelling the player in the opposite direction after they hit the wall.",
+      "allowed_paths": [
+        "src/ai/bouncy_grapple_mod.py",
+        "src/ai/bouncy_grapple_mod.gd",
+        "tests/test_bouncy_grapple_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1978",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Electric Grapple",
+      "description": "Grappling an enemy zaps them, dealing minor damage and slowing them down for a short duration while they are pulled.",
+      "allowed_paths": [
+        "src/ai/electric_grapple.py",
+        "src/ai/electric_grapple.gd",
+        "tests/test_electric_grapple.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
