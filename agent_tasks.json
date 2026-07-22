@@ -32865,6 +32865,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-1922",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Pinball Bumpers Feature",
+      "description": "Add stationary bumper hazards to the arena that massively knock back any ball that touches them, similar to pinball bumpers. Can be combined with the Pinball mutator for maximum chaos.",
+      "allowed_paths": [
+        "src/ai/pinball_bumpers_feature.py",
+        "src/ai/pinball_bumpers_feature.gd",
+        "tests/test_pinball_bumpers_feature.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1923",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall-Crawler Ball Type",
+      "description": "A new ball type that can attach to arena boundaries and move along them to avoid the chaos in the center. Its primary attack is to drop web-mines from the walls, trapping enemies that walk over them.",
+      "allowed_paths": [
+        "src/ai/wall_crawler_ball.py",
+        "src/ai/wall_crawler_ball.gd",
+        "tests/test_wall_crawler_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
