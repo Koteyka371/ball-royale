@@ -34027,5 +34027,133 @@ class FallingTilesRoyaleMode(GameMode):
                     if not getattr(b, "alive", False) and hasattr(world, "add_event"):
                         world.add_event("ball_fell", {"id": getattr(b, "id", None)})
 
+
+class QuadrantRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quadrant Royale"
+        self.description = "The arena is divided into four quadrants, each with its own shrinking safe zone. Portals periodically appear to allow travel between quadrants."
+        self.quadrants = {}
+        self.portals = []
+        self.portal_spawn_timer = 0.0
+        self.damage_per_second = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        self.quadrants = {
+            0: {"x": arena_width * 0.25, "y": arena_height * 0.25, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 5.0},
+            1: {"x": arena_width * 0.75, "y": arena_height * 0.25, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 7.0},
+            2: {"x": arena_width * 0.25, "y": arena_height * 0.75, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 6.0},
+            3: {"x": arena_width * 0.75, "y": arena_height * 0.75, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 8.0}
+        }
+        self.portals = []
+        self.portal_spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        for q_id, q_data in self.quadrants.items():
+            if q_data["radius"] > 30.0:
+                q_data["radius"] -= q_data["shrink_rate"] * delta
+                if q_data["radius"] < 30.0:
+                    q_data["radius"] = 30.0
+
+        self.portal_spawn_timer += delta
+        if self.portal_spawn_timer > 10.0:
+            self.portal_spawn_timer = 0.0
+            if len(self.portals) < 8:
+                keys = list(self.quadrants.keys())
+                random.shuffle(keys)
+                q1_id = keys[0]
+                q2_id = keys[1]
+                q1 = self.quadrants[q1_id]
+                q2 = self.quadrants[q2_id]
+
+                p1_x = q1["x"]
+                p1_y = q1["y"]
+                p2_x = q2["x"]
+                p2_y = q2["y"]
+
+                portal_id_1 = len(self.portals) + 1
+                portal_id_2 = len(self.portals) + 2
+
+                self.portals.append({
+                    "id": portal_id_1, "x": p1_x, "y": p1_y, "radius": 30.0, "target_x": p2_x, "target_y": p2_y, "cooldown": 0.0
+                })
+                self.portals.append({
+                    "id": portal_id_2, "x": p2_x, "y": p2_y, "radius": 30.0, "target_x": p1_x, "target_y": p1_y, "cooldown": 0.0
+                })
+
+                if hasattr(world, "add_event"):
+                    world.add_event("portal_spawned", {"x": p1_x, "y": p1_y})
+                    world.add_event("portal_spawned", {"x": p2_x, "y": p2_y})
+
+        for p in self.portals:
+            if p["cooldown"] > 0:
+                p["cooldown"] -= delta
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            radius = getattr(b, "radius", 15.0)
+
+            teleported = False
+            for p in self.portals:
+                if p["cooldown"] <= 0.0:
+                    dist_sq = (bx - p["x"])**2 + (by - p["y"])**2
+                    if dist_sq < (radius + p["radius"])**2:
+                        b.x = p["target_x"]
+                        b.y = p["target_y"]
+                        p["cooldown"] = 2.0
+
+                        for twin in self.portals:
+                            if twin["x"] == p["target_x"] and twin["y"] == p["target_y"]:
+                                twin["cooldown"] = 2.0
+                                break
+
+                        teleported = True
+                        if hasattr(world, "add_event"):
+                            world.add_event("teleported", {"ball_id": getattr(b, "id", None)})
+                        break
+
+            if teleported:
+                bx = b.x
+                by = b.y
+                # Add a brief invulnerability/cooldown to the ball to prevent chain-teleporting
+                if hasattr(world, "add_event"):
+                    # Give it a small offset so it's not perfectly centered on the portal
+                    import random
+                    b.x += random.uniform(-10.0, 10.0)
+                    b.y += random.uniform(-10.0, 10.0)
+                    bx = b.x
+                    by = b.y
+
+            q_id = 0
+            if bx > arena_width / 2.0: q_id += 1
+            if by > arena_height / 2.0: q_id += 2
+
+            q_data = self.quadrants.get(q_id)
+            if q_data:
+                dist = math.hypot(bx - q_data["x"], by - q_data["y"])
+                if dist > q_data["radius"]:
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(self.damage_per_second * delta)
+                    else:
+                        b.hp = getattr(b, "hp", 100.0) - self.damage_per_second * delta
+                        if b.hp <= 0.0:
+                            b.alive = False
+
 GAME_MODES['falling_tiles_royale'] = FallingTilesRoyaleMode()
 GAME_MODES['tilting_platform'] = TiltingPlatformMode()
+
+GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode()

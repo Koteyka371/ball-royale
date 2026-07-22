@@ -26643,7 +26643,7 @@ class SoulLinkMode extends GameMode:
 	var prev_state: Dictionary = {}
 	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer"]
 
-	func _init().():
+	func _init() -> void:
 		name = "Soul Link"
 		description = "Players are randomly paired. Damage and status effects taken by one are shared with the other."
 
@@ -33757,7 +33757,7 @@ class EntangledArenaMode extends GameMode:
 	var prev_state: Dictionary = {}
 	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
 
-	func _init().():
+	func _init() -> void:
 		name = "Entangled Arena"
 		description = "An arena mode where random pairs of players become 'entangled'. Damage taken by one is partially shared with the other, but they also share healing and buffs. They can choose to cooperate to take down enemies together or risk hurting themselves by attacking their entangled partner."
 
@@ -34097,7 +34097,7 @@ class EntanglementMutatorMode extends GameMode:
 	var prev_state: Dictionary = {}
 	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
 
-	func _init().():
+	func _init() -> void:
 		name = "Entanglement Mutator"
 		description = "Randomly entangles pairs of balls. Any status effect, knockback force, or damage applied to one ball is also mirrored to the other."
 
@@ -36367,7 +36367,7 @@ class CosmicStormMode extends GameMode:
 	var shelters: Array = []
 	var rng = RandomNumberGenerator.new()
 
-	func _init().():
+	func _init() -> void:
 		name = "Cosmic Storm"
 		description = "The entire arena is occasionally bombarded by cosmic storms. Find temporary shelters generated procedurally, or take heavy damage. Shelters have limited capacity."
 
@@ -37343,7 +37343,7 @@ class TickingBombMode extends GameMode:
 	var spawn_timer: float = 0.0
 	var bomb_interval: float = 10.0
 
-	func _init().():
+	func _init() -> void:
 		name = "Ticking Bomb Mode"
 		description = "Bombs periodically spawn around the map, ticking down until they explode in a massive radius."
 
@@ -38012,7 +38012,7 @@ class ElementalWandererMode extends GameMode:
 class ChickenCurseMode extends GameMode:
 	var hazard_id_counter: int = 770000
 
-	func _init().():
+	func _init() -> void:
 		name = "Chicken Curse"
 		description = "A new arena hazard that doesn't deal damage but instead transforms any ball that touches it into a harmless, slow-moving 'chicken' ball for 5 seconds. During this time, the ball cannot use skills or attack, making it highly vulnerable to grouped enemies."
 
@@ -41973,7 +41973,7 @@ class GuildStormMode extends GameMode:
 	var timer = 0.0
 	var guild_members_cache = []
 
-	func _init().():
+	func _init() -> void:
 		name = "Guild Storm"
 		description = "A powerful storm summoned by pooling guild resources. Guild members gain speed and damage buffs, while non-members take periodic damage."
 
@@ -42995,7 +42995,7 @@ class OrbitalMinesMode extends GameMode:
 
 
 class CrossfireMode extends GameMode:
-	func _init().():
+	func _init() -> void:
 		name = "Crossfire"
 		description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
 
@@ -43264,7 +43264,7 @@ class TagTeamMode extends GameMode:
 	var swap_interval: float = 10.0
 	var team_counter: int = 1
 
-	func _init().():
+	func _init() -> void:
 		name = "Tag Team"
 		description = "Players queue as a team of two balls but only one is active at a time. The active ball swaps with their teammate on a cooldown."
 
@@ -43789,7 +43789,7 @@ class TeleporterHubMode extends GameMode:
 	var peripheral_zones: Array = []
 	var portals: Array = []
 
-	func _init().():
+	func _init() -> void:
 		name = "Teleporter Hub"
 		description = "A central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds."
 
@@ -44056,7 +44056,7 @@ class RubberBandMode extends GameMode:
 	var snap_force: float = 1500.0
 	var damage: float = 50.0
 
-	func _init().():
+	func _init() -> void:
 		name = "Rubber Band"
 		description = "Teams are tethered by invisible rubber bands. If they move too far apart, they snap back together with massive force, dealing damage to anything in their path."
 
@@ -44202,7 +44202,7 @@ class RiftRouletteMode extends GameMode:
 	var cycle_interval: float = 8.0
 	var portals: Array = []
 
-	func _init().():
+	func _init() -> void:
 		name = "Rift Roulette"
 		description = "Two pairs of interconnected portals periodically spawn and swap positions, allowing players to instantly traverse the map but also throwing unexpected hazards through the rifts."
 
@@ -44282,7 +44282,7 @@ class ItemMorphMode extends GameMode:
 	var rng = RandomNumberGenerator.new()
 	var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster"]
 
-	func _init().():
+	func _init() -> void:
 		name = "Item Morph"
 		description = "Periodically, all active items and boosters in the arena randomly transform into different item types, keeping players constantly adapting."
 		rng.randomize()
@@ -44341,7 +44341,7 @@ class DisguisedTrapsMode extends GameMode:
 	var trap_interval: float = 5.0
 	var rng = RandomNumberGenerator.new()
 
-	func _init().():
+	func _init() -> void:
 		name = "Disguised Traps"
 		description = "Hazardous traps disguise themselves as dropped loot or exit portals. Upon approach, they spring a net or apply a snare debuff, trapping the player."
 		rng.randomize()
@@ -45227,7 +45227,7 @@ class TemporalRiftsMode extends GameMode:
 	var rift_lifetime = 15.0
 	var rifts = []
 
-	func _init().():
+	func _init() -> void:
 		name = "Temporal Rifts"
 		description = "Random areas on the map become temporal rifts. Any ball passing through a rift has its movement speed drastically slowed down (bullet time effect) or dramatically sped up, making traversing the map more strategic."
 
@@ -45333,7 +45333,7 @@ class SectorCollapseMode extends GameMode:
 	var outside_damage_per_second = 20.0
 	var walls = []
 
-	func _init().():
+	func _init() -> void:
 		name = "Sector Collapse"
 		description = "Sections of the map dynamically collapse and get walled off with unbreakable barriers, forcing players to navigate around them to reach the shrinking safe zone."
 
@@ -45536,7 +45536,7 @@ class ConstrictingBoundaryTrapMode extends GameMode:
 	var shrink_speed = (1000.0 - 300.0) / 3.0
 	var expand_speed = (1000.0 - 300.0) / 3.0
 
-	func _init().():
+	func _init() -> void:
 		name = "Constricting Boundary Trap"
 		description = "A dynamic trap that temporarily causes the entire arena boundaries to rapidly constrict for 10 seconds, forcing intense close-quarters combat before expanding back out."
 
@@ -45658,7 +45658,7 @@ class ConstrictingBoundaryTrapMode extends GameMode:
 class BermudaTriangleMode extends GameMode:
 	var pylons = []
 
-	func _init().():
+	func _init() -> void:
 		name = "Bermuda Triangle"
 		description = "Three pylons spawn on the arena, forming a triangle. Any ball that enters the center of the triangle randomly teleports to a different location on the map, resetting their momentum to zero."
 
@@ -52157,8 +52157,163 @@ class ElementalChainReactionMode extends GameMode:
 		name = "Elemental Chain Reactions"
 		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()
+GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode.new()
 GAME_MODES['gravity_shift'] = GravityShiftMode.new()
 
+
+
+class QuadrantRoyaleMode extends GameMode:
+	var quadrants: Dictionary = {}
+	var portals: Array = []
+	var portal_spawn_timer: float = 0.0
+	var damage_per_second: float = 20.0
+
+	func _init().():
+		name = "Quadrant Royale"
+		description = "The arena is divided into four quadrants, each with its own shrinking safe zone. Portals periodically appear to allow travel between quadrants."
+
+	func setup(world: Node, balls: Array) -> void:
+		.setup(world, balls)
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if world.arena.get("width") != null else 1000.0
+			arena_height = world.arena.get("height") if world.arena.get("height") != null else 1000.0
+
+		quadrants = {
+			0: {"x": arena_width * 0.25, "y": arena_height * 0.25, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 5.0},
+			1: {"x": arena_width * 0.75, "y": arena_height * 0.25, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 7.0},
+			2: {"x": arena_width * 0.25, "y": arena_height * 0.75, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 6.0},
+			3: {"x": arena_width * 0.75, "y": arena_height * 0.75, "radius": min(arena_width, arena_height) * 0.25, "shrink_rate": 8.0}
+		}
+		portals = []
+		portal_spawn_timer = 0.0
+
+	func tick(world: Node, balls: Array, delta: float) -> void:
+		.tick(world, balls, delta)
+
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if world.arena.get("width") != null else 1000.0
+			arena_height = world.arena.get("height") if world.arena.get("height") != null else 1000.0
+
+		for q_id in quadrants.keys():
+			var q_data = quadrants[q_id]
+			if q_data["radius"] > 30.0:
+				q_data["radius"] -= q_data["shrink_rate"] * delta
+				if q_data["radius"] < 30.0:
+					q_data["radius"] = 30.0
+
+		portal_spawn_timer += delta
+		if portal_spawn_timer > 10.0:
+			portal_spawn_timer = 0.0
+			if portals.size() < 8:
+				var keys = quadrants.keys()
+				keys.shuffle()
+				var q1_id = keys[0]
+				var q2_id = keys[1]
+				var q1 = quadrants[q1_id]
+				var q2 = quadrants[q2_id]
+
+				var p1_x = q1["x"]
+				var p1_y = q1["y"]
+				var p2_x = q2["x"]
+				var p2_y = q2["y"]
+
+				var portal_id_1 = portals.size() + 1
+				var portal_id_2 = portals.size() + 2
+
+				portals.append({
+					"id": portal_id_1, "x": p1_x, "y": p1_y, "radius": 30.0, "target_x": p2_x, "target_y": p2_y, "cooldown": 0.0
+				})
+				portals.append({
+					"id": portal_id_2, "x": p2_x, "y": p2_y, "radius": 30.0, "target_x": p1_x, "target_y": p1_y, "cooldown": 0.0
+				})
+
+				if world.has_method("add_event"):
+					world.add_event("portal_spawned", {"x": p1_x, "y": p1_y})
+					world.add_event("portal_spawned", {"x": p2_x, "y": p2_y})
+
+		for i in range(portals.size()):
+			if portals[i]["cooldown"] > 0:
+				portals[i]["cooldown"] -= delta
+
+		for b in balls:
+			if typeof(b) != TYPE_DICTIONARY and typeof(b) != TYPE_OBJECT:
+				continue
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			if is_alive == null:
+				is_alive = true
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get("x")
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get("y")
+			if bx == null: bx = 0.0
+			if by == null: by = 0.0
+			var radius = b.get("radius") if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+			if radius == null: radius = 15.0
+
+			var teleported = false
+			for p in portals:
+				if p["cooldown"] <= 0.0:
+					var dist_sq = pow(bx - p["x"], 2) + pow(by - p["y"], 2)
+					if dist_sq < pow(radius + p["radius"], 2):
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = p["target_x"]
+							b["y"] = p["target_y"]
+						else:
+							b.set("x", p["target_x"])
+							b.set("y", p["target_y"])
+						p["cooldown"] = 2.0
+
+						for twin in portals:
+							if twin["x"] == p["target_x"] and twin["y"] == p["target_y"]:
+								twin["cooldown"] = 2.0
+								break
+
+						teleported = true
+						if world.has_method("add_event"):
+							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+							world.add_event("teleported", {"ball_id": b_id})
+						break
+
+			if teleported:
+				var offset_x = rand_range(-10.0, 10.0)
+				var offset_y = rand_range(-10.0, 10.0)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["x"] += offset_x
+					b["y"] += offset_y
+					bx = b["x"]
+					by = b["y"]
+				else:
+					b.set("x", b.get("x") + offset_x)
+					b.set("y", b.get("y") + offset_y)
+					bx = b.get("x")
+					by = b.get("y")
+
+			var q_id = 0
+			if bx > arena_width / 2.0: q_id += 1
+			if by > arena_height / 2.0: q_id += 2
+
+			if quadrants.has(q_id):
+				var q_data = quadrants[q_id]
+				var dist = sqrt(pow(bx - q_data["x"], 2) + pow(by - q_data["y"], 2))
+				if dist > q_data["radius"]:
+					if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+						b.take_damage(damage_per_second * delta)
+					else:
+						var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+						if hp == null: hp = 100.0
+						hp -= damage_per_second * delta
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+							if hp <= 0.0: b["alive"] = false
+						else:
+							b.set("hp", hp)
+							if hp <= 0.0: b.set("alive", false)
 
 class GravityShiftMode extends GameMode:
     var shift_timer = 0.0
