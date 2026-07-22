@@ -17546,6 +17546,9 @@ class Action:
                     continue
 
 
+
+
+
                 if getattr(hazard, "kind", "") == "geyser":
                     import math
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
@@ -17802,6 +17805,42 @@ class Action:
                             self.world.arena.hazards.append(trap)
 
 
+
+
+
+
+
+
+                if getattr(hazard, "kind", "") == "whirlpool":
+                    import math
+                    dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                    h_rad = getattr(hazard, "radius", 80.0)
+                    if dist < h_rad:
+                        # Suck entities towards the center
+                        if dist > 5.0:
+                            nx = (hazard.x - self.ball.x) / dist
+                            ny = (hazard.y - self.ball.y) / dist
+                            pull_str = 50.0 * (1.0 - dist / h_rad) * delta
+                            self.ball.x += nx * pull_str
+                            self.ball.y += ny * pull_str
+
+                        # Reduce movement speed
+                        self.ball.vx *= (1.0 - 0.5 * delta)
+                        self.ball.vy *= (1.0 - 0.5 * delta)
+
+                        # At the center
+                        if dist < 15.0:
+                            # Submerge or wet debuff
+                            if not getattr(self.ball, "is_submerged", False):
+                                self.ball.is_submerged = True
+                                self.ball.submerge_timer = 2.0
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(getattr(hazard, "damage", 10.0) * delta)
+
+                            current_timer = getattr(self.ball, "wet_debuff_timer", 0.0)
+                            if current_timer <= 0:
+                                self.ball.base_speed = getattr(self.ball, "base_speed", 100.0) * 0.8
+                            self.ball.wet_debuff_timer = 3.0
 
                 if getattr(hazard, "kind", "") == "repulsion_zone":
                     import math

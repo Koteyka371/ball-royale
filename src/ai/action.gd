@@ -34909,7 +34909,73 @@ func _update_skill_timer(delta: float):
                                 elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): self.ball["vy"] += ny * push_force * delta
 
 
-                                if h_kind == "repulsion_zone":
+
+                if h_kind == "whirlpool":
+                    var h_x = 0.0
+                    var h_y = 0.0
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        h_x = hazard.get("x", 0.0)
+                        h_y = hazard.get("y", 0.0)
+                    else:
+                        h_x = hazard.x if "x" in hazard else 0.0
+                        h_y = hazard.y if "y" in hazard else 0.0
+
+                    var dist = sqrt(pow(self.ball.x - h_x, 2) + pow(self.ball.y - h_y, 2))
+                    var h_rad = 80.0
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        h_rad = hazard.get("radius", 80.0)
+                    else:
+                        h_rad = hazard.radius if "radius" in hazard else 80.0
+
+                    if dist < h_rad:
+                        if dist > 5.0:
+                            var nx = (h_x - self.ball.x) / dist
+                            var ny = (h_y - self.ball.y) / dist
+                            var pull_str = 50.0 * (1.0 - dist / h_rad) * delta
+                            self.ball.x += nx * pull_str
+                            self.ball.y += ny * pull_str
+
+                        self.ball.vx *= (1.0 - 0.5 * delta)
+                        self.ball.vy *= (1.0 - 0.5 * delta)
+
+                        if dist < 15.0:
+                            var is_sub = self.ball.get("is_submerged", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.is_submerged if "is_submerged" in self.ball else false)
+                            if not is_sub:
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["is_submerged"] = true
+                                    self.ball["submerge_timer"] = 2.0
+                                else:
+                                    self.ball.set("is_submerged", true)
+                                    self.ball.set("submerge_timer", 2.0)
+
+                                var dmg = 10.0
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    dmg = hazard.get("damage", 10.0)
+                                else:
+                                    dmg = hazard.damage if "damage" in hazard else 10.0
+
+                                if self.ball.has_method("take_damage"):
+                                    self.ball.take_damage(dmg * delta)
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"):
+                                    self.ball["hp"] -= dmg * delta
+                                elif "hp" in self.ball:
+                                    self.ball.hp -= dmg * delta
+
+                            var wet_time = self.ball.get("wet_debuff_timer", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.wet_debuff_timer if "wet_debuff_timer" in self.ball else 0.0)
+                            if wet_time <= 0.0:
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    var b_spd = self.ball.get("base_speed", 100.0)
+                                    self.ball["base_speed"] = b_spd * 0.8
+                                else:
+                                    var b_spd = self.ball.base_speed if "base_speed" in self.ball else 100.0
+                                    self.ball.set("base_speed", b_spd * 0.8)
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["wet_debuff_timer"] = 3.0
+                            else:
+                                self.ball.set("wet_debuff_timer", 3.0)
+
+                if h_kind == "repulsion_zone":
                                     var dx = hazard.x - self.ball.x
                                     var dy = hazard.y - self.ball.y
                                     var dist = sqrt(dx*dx + dy*dy)

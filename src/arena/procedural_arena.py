@@ -143,14 +143,17 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper"])
+            kind = random.choice(["spikes", "lava", "whirlpool", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
             elif kind == "hidden_mine":
                 radius = 15.0
                 damage = 30.0
-            if kind == "spikes":
+            if kind == "whirlpool":
+                radius = random.uniform(50.0, 100.0)
+                damage = 10.0 # mostly slow and submerge/wet debuff
+            elif kind == "spikes":
                 radius = random.uniform(15.0, 30.0)
                 damage = 20.0
             elif kind == "lava":

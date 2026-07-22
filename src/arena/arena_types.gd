@@ -861,6 +861,21 @@ class SummerArena extends ProceduralArena:
 						h.active = false
 
 
+
+class WaterArena extends ProceduralArena:
+	var is_water_theme = true
+	func _init(arena_size: float = 2000.0, seed_val = null):
+		super(arena_size, 5, seed_val)
+	func generate():
+		super.generate()
+		# Add whirlpools
+		for i in range(5):
+			var x = rng.randf_range(100.0, width - 100.0)
+			var y = rng.randf_range(100.0, height - 100.0)
+			var h_id = 6000 + hazards.size()
+			var whirlpool = preload("res://src/arena/procedural_arena.gd").Hazard.new(h_id, x, y, rng.randf_range(50.0, 100.0), "whirlpool", 10.0)
+			hazards.append(whirlpool)
+
 class LavaArena extends ProceduralArena:
 	var is_lava_theme = true
 
