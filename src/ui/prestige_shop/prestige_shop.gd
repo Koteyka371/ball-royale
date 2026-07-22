@@ -19,7 +19,9 @@ func get_available_upgrades() -> Dictionary:
 		"starting_artifact_dash": {"cost": 10, "description": "Start matches with a dash artifact"},
 		"unlock_time_mage": {"cost": 25, "description": "Unlocks the Time-Mage ball archetype"},
 		"shield_capacity_up": {"cost": 10, "description": "Increases reflect shield capacity by 20"},
-		"shield_duration_up": {"cost": 10, "description": "Increases reflect shield duration by 1s"}
+		"shield_duration_up": {"cost": 10, "description": "Increases reflect shield duration by 1s"},
+		"skin_neon": {"cost": 15, "description": "Unlock the Neon skin"},
+		"skin_ninja": {"cost": 15, "description": "Unlock the Ninja skin"}
 	}
 
 func buy_upgrade(upgrade_name: String) -> bool:
@@ -136,6 +138,12 @@ func _refresh_ui():
 		btn.text = upgrade_data["description"] + " (" + str(upgrade_data["cost"]) + " Tokens)"
 		btn.pressed.connect(self._on_buy_pressed.bind(upgrade_name))
 		container.add_child(btn)
+
+
+func equip_skin(skin_name: String) -> bool:
+	if profile_manager != null and profile_manager.has_method("equip_skin"):
+		return profile_manager.equip_skin(skin_name)
+	return false
 
 func _on_buy_pressed(upgrade_name: String):
 	var success = buy_upgrade(upgrade_name)

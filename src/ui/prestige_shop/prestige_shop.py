@@ -13,7 +13,9 @@ class PrestigeShop:
             "starting_artifact_dash": {"cost": 10, "description": "Start matches with a dash artifact"},
             "unlock_time_mage": {"cost": 25, "description": "Unlocks the Time-Mage ball archetype"},
             "shield_capacity_up": {"cost": 10, "description": "Increases reflect shield capacity by 20"},
-            "shield_duration_up": {"cost": 10, "description": "Increases reflect shield duration by 1s"}
+            "shield_duration_up": {"cost": 10, "description": "Increases reflect shield duration by 1s"},
+            "skin_neon": {"cost": 15, "description": "Unlock the Neon skin"},
+            "skin_ninja": {"cost": 15, "description": "Unlock the Ninja skin"}
         }
 
     def buy_upgrade(self, upgrade_name):
@@ -70,6 +72,10 @@ class PrestigeShop:
             return True, f"Won cosmetic: {reward['name']}!"
         else:
             return True, "Won nothing, better luck next time!"
+
+
+    def equip_skin(self, skin_name):
+        return self.profile_manager.equip_skin(skin_name)
 
     def render_ui(self):
         # A simple terminal/text-based UI representation for the python mock environment

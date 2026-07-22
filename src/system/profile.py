@@ -323,6 +323,15 @@ class ProfileManager:
             return True
         return False
 
+
+    def equip_skin(self, skin_name):
+        upgrades = self.data.get("prestige_upgrades", {})
+        if skin_name == "default" or skin_name in self.data.get("cosmetics", []) or f"skin_{skin_name}" in upgrades:
+            self.data["equipped_skin"] = skin_name
+            self.save()
+            return True
+        return False
+
     def add_cosmetic(self, cosmetic_name):
         if "cosmetics" not in self.data:
             self.data["cosmetics"] = []
