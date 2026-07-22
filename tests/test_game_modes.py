@@ -21,6 +21,9 @@ def test_sweeping_lasers_mode():
     b1.y = 50
     b1.hp = 100
     b1.take_damage = MagicMock()
+    b1.is_submerged = False
+    b1.submerge_timer = 0.0
+    b1.wet_debuff_timer = 0.0
 
     b2 = MagicMock()
     b2.alive = True
@@ -28,6 +31,9 @@ def test_sweeping_lasers_mode():
     b2.y = 100
     b2.hp = 100
     b2.take_damage = MagicMock()
+    b2.is_submerged = False
+    b2.submerge_timer = 0.0
+    b2.wet_debuff_timer = 0.0
 
     mode.setup(world, [b1, b2])
 
