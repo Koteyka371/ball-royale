@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Controls Anomaly",
+  "description": "An arena mutator where periodically all movement inputs and vector calculations are inverted for 5 seconds, forcing players and AI to rapidly adapt to inverted mechanics mid-fight."
+}

@@ -4768,6 +4768,26 @@ class Action:
                                 self.ball.x -= nx * force
                                 self.ball.y -= ny * force
 
+
+        in_confusion_zone = False
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "confusion_zone":
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    if dist_sq < getattr(hazard, "radius", 60.0)**2:
+                        in_confusion_zone = True
+                        break
+
+        if in_confusion_zone:
+            if not hasattr(self.ball, "confusion_zone_timer"):
+                self.ball.confusion_zone_timer = 0.0
+            self.ball.confusion_zone_timer += delta
+            if self.ball.confusion_zone_timer > 3.0:
+                self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
+        else:
+            if hasattr(self.ball, "confusion_zone_timer"):
+                self.ball.confusion_zone_timer = 0.0
+
         # Zero gravity processing (friction)
         in_anomaly_zone = False
         in_bouncy_zone = False
@@ -18285,6 +18305,7 @@ class Action:
                                     if siphoned_combo > 0:
                                         owner.combo_multiplier = getattr(owner, "combo_multiplier", 1.0) + siphoned_combo
                 if getattr(hazard, "kind", "") == "polarity_inverter":
+
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                     if dist_sq < getattr(hazard, "radius", 50.0)**2:
                         import math

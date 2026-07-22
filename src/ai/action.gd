@@ -35928,7 +35928,9 @@ func _update_skill_timer(delta: float):
 							var true_trap = HazardObj.new(9999, hx, hy, 150.0, "fire_zone", 25.0)
 							true_trap.duration = 5.0
 							world.arena.hazards.append(true_trap)
+
                 if h_kind == "disguised_trap":
+
                     var h_x = 0.0
                     if "x" in hazard: h_x = hazard.x
                     elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
@@ -35956,6 +35958,53 @@ func _update_skill_timer(delta: float):
                         if "duration" in hazard: hazard.duration = 0.0
                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
+
+    var in_confusion_zone = false
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            var h_kind = ""
+            if typeof(hazard) == TYPE_DICTIONARY:
+                if "kind" in hazard: h_kind = hazard["kind"]
+            elif typeof(hazard) == TYPE_OBJECT:
+                if "kind" in hazard: h_kind = hazard.kind
+                elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+            if h_kind == "confusion_zone":
+                var h_x = 0.0
+                if "x" in hazard: h_x = hazard.x
+                elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                var h_y = 0.0
+                if "y" in hazard: h_y = hazard.y
+                elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                var trig_rad = 60.0
+                if "radius" in hazard: trig_rad = hazard.radius
+                elif hazard.has_method("get_meta") and hazard.has_meta("radius"): trig_rad = hazard.get_meta("radius")
+
+                if dist_sq < trig_rad * trig_rad:
+                    in_confusion_zone = true
+                    break
+
+    if in_confusion_zone:
+        var czt = 0.0
+        if "confusion_zone_timer" in self.ball: czt = self.ball.confusion_zone_timer
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("confusion_zone_timer"): czt = self.ball.get_meta("confusion_zone_timer")
+        czt += delta
+        if "confusion_zone_timer" in self.ball: self.ball.confusion_zone_timer = czt
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_zone_timer", czt)
+
+        if czt > 3.0:
+            var cur_conf = 0.0
+            if "confusion_timer" in self.ball: cur_conf = self.ball.confusion_timer
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("confusion_timer"): cur_conf = self.ball.get_meta("confusion_timer")
+            if cur_conf < 3.0:
+                if "confusion_timer" in self.ball: self.ball.confusion_timer = 3.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", 3.0)
+    else:
+        if "confusion_zone_timer" in self.ball: self.ball.confusion_zone_timer = 0.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_zone_timer", 0.0)
 
     var weather_timer = 0.0
     if "weather_control_timer" in self.ball:

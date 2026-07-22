@@ -1331,7 +1331,11 @@ class ProceduralArena:
                     kind = "loadout_fragment"
                     damage = 0.0
                 elif random.random() < 0.05:
+                    kind = "confusion_zone"
+                    damage = 0.0
+                elif random.random() < 0.05:
                     kind = "decoy_spawner"
+
                     damage = 0.0
                 elif random.random() < 0.05:
                     kind = "geyser"
