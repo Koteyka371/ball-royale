@@ -120,6 +120,8 @@ func complete_quest(quest_index: int) -> bool:
                     add_cosmetic(reward["cosmetic"])
                 if reward.has("prestige_tokens"):
                     data["prestige_tokens"] = data.get("prestige_tokens", 0) + reward["prestige_tokens"]
+                if reward.has("mutator_tokens"):
+                    data["mutator_tokens"] = data.get("mutator_tokens", 0) + reward["mutator_tokens"]
                 if reward.has("material") and reward.has("material_amount"):
                     add_material(reward["material"], reward["material_amount"])
             else:

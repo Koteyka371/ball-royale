@@ -108,6 +108,8 @@ class ProfileManager:
                         self.add_cosmetic(reward["cosmetic"])
                     if "prestige_tokens" in reward:
                         self.data["prestige_tokens"] = self.data.get("prestige_tokens", 0) + reward["prestige_tokens"]
+                    if "mutator_tokens" in reward:
+                        self.data["mutator_tokens"] = self.data.get("mutator_tokens", 0) + reward["mutator_tokens"]
                     if "material" in reward and "material_amount" in reward:
                         self.add_material(reward["material"], reward["material_amount"])
                 else:
