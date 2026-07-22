@@ -894,6 +894,13 @@ def test_floor_is_lava_mode():
     mode.tick(world, [ball], delta=1.0)
     assert ball.hp < 100
 
+    # Test bubbling pool on safe platform
+    ball.hp = 100
+    mode.platforms = [{"x": 500, "y": 500, "radius": 150.0, "timer": 10.0}]
+    mode.bubbling_pools = [{"x": 500, "y": 500, "radius": 40.0, "timer": 10.0}]
+    mode.tick(world, [ball], delta=1.0)
+    assert ball.hp < 100 # Ball is on platform but inside bubbling pool
+
 def test_cursed_buff_zone_mode():
     from ai.game_modes import CursedBuffZoneMode
     mode = CursedBuffZoneMode()

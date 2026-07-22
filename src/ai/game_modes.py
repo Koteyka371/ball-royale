@@ -17446,6 +17446,8 @@ class FloorIsLavaMode(GameMode):
         self.max_lava_radius = max(arena_width, arena_height)
         self.platforms = []
         self.bounce_pads = []
+        self.bubbling_pools = []
+        self.pool_timer = 0.0
         self.platform_timer = 0.0
         self._spawn_platform(arena_width/2.0, arena_height/2.0) # Start with center platform
 
@@ -17499,6 +17501,20 @@ class FloorIsLavaMode(GameMode):
             self._spawn_platform()
             self.platform_timer = random.uniform(5.0, 10.0)
 
+        # Bubbling lava pool logic
+        self.pool_timer -= delta
+        if self.pool_timer <= 0 and self.platforms:
+            target_platform = random.choice(self.platforms)
+            pool_x = target_platform["x"] + random.uniform(-target_platform["radius"] * 0.6, target_platform["radius"] * 0.6)
+            pool_y = target_platform["y"] + random.uniform(-target_platform["radius"] * 0.6, target_platform["radius"] * 0.6)
+            self.bubbling_pools.append({
+                "x": pool_x,
+                "y": pool_y,
+                "radius": random.uniform(20.0, 40.0),
+                "timer": random.uniform(3.0, 6.0)
+            })
+            self.pool_timer = random.uniform(1.0, 3.0)
+
         # Update lifetimes
         for p in list(self.platforms):
             p["timer"] -= delta
@@ -17510,10 +17526,15 @@ class FloorIsLavaMode(GameMode):
             if bp["timer"] <= 0:
                 self.bounce_pads.remove(bp)
 
+        for pool in list(self.bubbling_pools):
+            pool["timer"] -= delta
+            if pool["timer"] <= 0:
+                self.bubbling_pools.remove(pool)
+
         # Make sure bounce pads are placed in arena.hazards
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
-            # Clean up old bounce pads from hazards list
-            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "bounce_pad"]
+            # Clean up old bounce pads and lava pools from hazards list
+            world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") not in ["bounce_pad", "lava"]]
 
             # Add current bounce pads to hazards
             for idx, bp in enumerate(self.bounce_pads):
@@ -17524,6 +17545,17 @@ class FloorIsLavaMode(GameMode):
                 except ImportError:
                     # Fallback to dict
                     new_h = type("Hazard", (), {"id": 99000 + idx, "x": bp["x"], "y": bp["y"], "radius": bp["radius"], "kind": "bounce_pad", "damage": 0.0, "active": True})
+                    world.arena.hazards.append(new_h)
+
+            # Add current bubbling pools to hazards
+            for idx, pool in enumerate(self.bubbling_pools):
+                try:
+                    from arena.procedural_arena import Hazard
+                    new_h = Hazard(id=99100 + idx, x=pool["x"], y=pool["y"], radius=pool["radius"], kind="lava", damage=20.0)
+                    world.arena.hazards.append(new_h)
+                except ImportError:
+                    # Fallback to dict
+                    new_h = type("Hazard", (), {"id": 99100 + idx, "x": pool["x"], "y": pool["y"], "radius": pool["radius"], "kind": "lava", "damage": 20.0, "active": True})
                     world.arena.hazards.append(new_h)
 
         # Damage logic
@@ -17543,7 +17575,13 @@ class FloorIsLavaMode(GameMode):
                     on_platform = True
                     break
 
-            if in_lava and not on_platform:
+            in_bubbling_pool = False
+            for pool in getattr(self, 'bubbling_pools', []):
+                if math.hypot(b.x - pool["x"], b.y - pool["y"]) <= pool["radius"]:
+                    in_bubbling_pool = True
+                    break
+
+            if (in_lava and not on_platform) or (on_platform and in_bubbling_pool):
                 b.hp -= 20.0 * delta # Lava damage
                 b.hp = max(0, b.hp)
                 if b.hp <= 0:
