@@ -126,6 +126,24 @@ func _init(ball_ref, world_ref):
             self.ball.damage *= stat_multiplier
     # Apply skin-based passive perks
     var skin = "default"
+    var equipped = "default"
+    var is_local = false
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("is_local_player") and self.ball.get_meta("is_local_player"):
+        is_local = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_local_player") and self.ball.get("is_local_player"):
+        is_local = true
+    elif "is_local_player" in self.ball and self.ball.is_local_player:
+        is_local = true
+
+    if is_local:
+        var ProfileManager = load("res://src/system/profile.gd")
+        if ProfileManager:
+            var local_pm = ProfileManager.new()
+            if "data" in local_pm:
+                equipped = local_pm.data.get("equipped_skin", "default")
+    if not ("cosmetic" in self.ball and typeof(self.ball) == TYPE_DICTIONARY):
+        if typeof(self.ball) == TYPE_OBJECT and not self.ball.has_meta("cosmetic"):
+            self.ball.set_meta("cosmetic", equipped)
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
         if self.ball.has_meta("skin"):
             skin = self.ball.get_meta("skin")

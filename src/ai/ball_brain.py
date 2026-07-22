@@ -118,6 +118,15 @@ class BallBrain:
             pass
                 # Apply skin-based passive perks
         skin = getattr(self.ball, "skin", "default")
+        equipped = "default"
+        if getattr(self.ball, "is_local_player", False):
+            try:
+                from system.profile import ProfileManager
+                local_pm = ProfileManager("profile.json")
+                equipped = local_pm.data.get("equipped_skin", "default")
+            except Exception:
+                pass
+        self.ball.cosmetic = getattr(self.ball, "cosmetic", equipped)
 
         # Determine current weather if possible to apply skin-specific weather buffs
         current_weather = "clear"

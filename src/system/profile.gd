@@ -338,6 +338,16 @@ func buy_prestige_upgrade(upgrade_name: String, cost: int) -> bool:
         return true
     return false
 
+
+func equip_skin(skin_name: String) -> bool:
+	var upgrades = data.get("prestige_upgrades", {})
+	var cosmetics = data.get("cosmetics", [])
+	if skin_name == "default" or cosmetics.has(skin_name) or upgrades.has("skin_" + skin_name):
+		data["equipped_skin"] = skin_name
+		save_profile()
+		return true
+	return false
+
 func add_cosmetic(cosmetic_name: String):
     if not data.has("cosmetics"):
         data["cosmetics"] = []
