@@ -8353,6 +8353,12 @@ class Action:
                             if not getattr(hazard, "hit_targets", False):
                                 hazard.hit_targets = True
                                 b_type = getattr(self.ball, "ball_type", getattr(type(self.ball), "BALL_TYPE", "")).lower()
+                                if getattr(self.ball, "lightning_rod_item_timer", 0.0) > 0.0:
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + 100.0)
+                                    self.ball.stamina = getattr(self.ball, "max_stamina", 100.0)
+                                    if hasattr(self, "_spawn_skill_particles"):
+                                        self._spawn_skill_particles("lightning")
+                                    continue
                                 if b_type == "lightning_rod" or getattr(self.ball, "kind", "") == "deployable_lightning_rod":
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + hazard.damage)
                                     if getattr(self.ball, "kind", "") == "deployable_lightning_rod":
@@ -11915,6 +11921,13 @@ class Action:
                         self.ball.modified_scope_applied = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "lightning_rod_item":
+                    self.ball.lightning_rod_item_timer = 20.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "disruptor_booster":
