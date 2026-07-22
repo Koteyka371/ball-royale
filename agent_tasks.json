@@ -22790,7 +22790,7 @@
     },
     {
       "id": "idea-1330",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Wind Hazard",
@@ -34177,6 +34177,329 @@
         "src/ai/trickster_explosion_deco.py",
         "src/ai/trickster_explosion_deco.gd",
         "tests/test_trickster_explosion_deco.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1999",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mercenary AI Bots",
+      "description": "Introduce AI mercenary bots that spawn at camps around the arena. Players can pay them using in-game currency or prestige tokens to follow them and attack enemies for a set duration.",
+      "allowed_paths": [
+        "src/ai/mercenary_ai_bots.py",
+        "src/ai/mercenary_ai_bots.gd",
+        "tests/test_mercenary_ai_bots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2000",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Walls Modifier",
+      "description": "A new arena modifier where hitting the arena walls applies an elastic bounce that temporarily increases the ball's max speed beyond the normal cap for 2 seconds. This encourages risky play where players intentionally bounce off walls to gain an edge in speed during pursuits or evasions.",
+      "allowed_paths": [
+        "src/ai/bouncy_walls.py",
+        "src/ai/bouncy_walls.gd",
+        "tests/test_bouncy_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2001",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bone Wall Hazard Spell",
+      "description": "The Lich variation of the Necromancer can periodically summon a 'Bone Wall' hazard in front of it that blocks projectiles and damages balls that collide with it.",
+      "allowed_paths": [
+        "src/arena/bone_wall_spell.py",
+        "src/arena/bone_wall_spell.gd",
+        "tests/test_bone_wall_spell.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2002",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Bone Wall Skill",
+      "description": "Necromancers can summon a wall of bones that blocks projectiles and enemy movement for a short duration.",
+      "allowed_paths": [
+        "src/ai/necromancer_bone_wall_skill.py",
+        "src/ai/necromancer_bone_wall_skill.gd",
+        "tests/test_necromancer_bone_wall_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2003",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Trap Zone",
+      "description": "A deployed area that acts like a large brush. Enemies entering the area have their minimap filled with fake player icons and random shooting sounds, disorienting them while they remain inside the zone.",
+      "allowed_paths": [
+        "src/arena/decoy_trap_zone.py",
+        "src/arena/decoy_trap_zone.gd",
+        "tests/test_decoy_trap_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2004",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Bounce Shield",
+      "description": "A temporary buff that removes all friction from the player's movement and doubles the knockback applied to enemies upon collision. The player bounces rapidly off walls and hazards but cannot use weapons while active.",
+      "allowed_paths": [
+        "src/ai/kinetic_bounce_shield.py",
+        "src/ai/kinetic_bounce_shield.gd",
+        "tests/test_kinetic_bounce_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2005",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Market Altars",
+      "description": "Special altars that only appear during specific weather conditions. They offer extremely rare and powerful items, but purchasing them permanently reduces a player's max health or base speed for the rest of the match.",
+      "allowed_paths": [
+        "src/ai/black_market_altars.py",
+        "src/ai/black_market_altars.gd",
+        "tests/test_black_market_altars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2006",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skeletal Mage Subtype",
+      "description": "Another minion subtype for the Necromancer that stays in the backline and shoots frost bolts that slow enemies.",
+      "allowed_paths": [
+        "src/ai/skeletal_mage_subtype.py",
+        "src/ai/skeletal_mage_subtype.gd",
+        "tests/test_skeletal_mage_subtype.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2007",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Minion Swarm Evolution",
+      "description": "If a minion manages to survive for 60 seconds without decaying, it evolves into a permanent 'Elite Minion' that gains ranged attacks and no longer decays over time.",
+      "allowed_paths": [
+        "src/ai/minion_swarm_evolution.py",
+        "src/ai/minion_swarm_evolution.gd",
+        "tests/test_minion_swarm_evolution.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2008",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Black Hole Trap",
+      "description": "A late-game trap that actively sucks away all active aura buffs from nearby enemies. If an Aura Pulse Event triggers while enemies are caught in the black hole, the trap detonates, spreading the accumulated auras to all friendly units.",
+      "allowed_paths": [
+        "src/arena/aura_black_hole_trap.py",
+        "src/arena/aura_black_hole_trap.gd",
+        "tests/test_aura_black_hole_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2009",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Overdrive",
+      "description": "A booster that drains the user's HP slowly over time but grants massively increased movement speed and damage, healing for double the damage dealt.",
+      "allowed_paths": [
+        "src/ai/vampiric_overdrive.py",
+        "src/ai/vampiric_overdrive.gd",
+        "tests/test_vampiric_overdrive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2010",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Drain Ray",
+      "description": "A channelled active ability that tether to an enemy, slowing them down while continuously draining their health and transferring it to the user.",
+      "allowed_paths": [
+        "src/ai/vampiric_drain_ray.py",
+        "src/ai/vampiric_drain_ray.gd",
+        "tests/test_vampiric_drain_ray.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2011",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Harmonizer Item",
+      "description": "A rare consumable item that permanently increases the map-wide aura pulse radius and effect duration for the user's team, ensuring that stacked auras synchronize and multiply in intensity the longer a match goes on.",
+      "allowed_paths": [
+        "src/ai/aura_harmonizer_item.py",
+        "src/ai/aura_harmonizer_item.gd",
+        "tests/test_aura_harmonizer_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2012",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Bomb Launcher",
+      "description": "A new ranged weapon that fires sticky bombs that adhere to enemy balls or walls. They detonate after a short delay, dealing area-of-effect damage.",
+      "allowed_paths": [
+        "src/ai/sticky_bomb_launcher.py",
+        "src/ai/sticky_bomb_launcher.gd",
+        "tests/test_sticky_bomb_launcher.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2013",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Deflector Shield",
+      "description": "A new cosmetic/trait that has a small chance to teleport incoming projectiles behind the attacker instead of taking damage.",
+      "allowed_paths": [
+        "src/ai/quantum_deflector_shield.py",
+        "src/ai/quantum_deflector_shield.gd",
+        "tests/test_quantum_deflector_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2014",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Contract Board",
+      "description": "A terminal in the lobby where players can view all currently active high-value bounties in the match before they start.",
+      "allowed_paths": [
+        "src/ai/bounty_contract_board.py",
+        "src/ai/bounty_contract_board.gd",
+        "tests/test_bounty_contract_board.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2015",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromantic Tether",
+      "description": "A new skill for the Necromancer that creates a dark energy tether between them and their nearest minion. Any damage taken by the Necromancer is split 50/50 with the tethered minion, and the minion's attacks heal the Necromancer for 10% of the damage dealt.",
+      "allowed_paths": [
+        "src/ai/necromantic_tether.py",
+        "src/ai/necromantic_tether.gd",
+        "tests/test_necromantic_tether.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2016",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Trait",
+      "description": "Players can equip a Bounty Hunter trait that highlights enemies with active bounties on the minimap.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_trait.py",
+        "src/ai/bounty_hunter_trait.gd",
+        "tests/test_bounty_hunter_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2017",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Bubbles",
+      "description": "Instead of a single shrinking storm, the map starts completely toxic, and players must find and fight over small safe bubbles that spawn, drift around the map randomly, and eventually pop, forcing constant repositioning.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_bubbles.py",
+        "src/ai/shrinking_safe_bubbles.gd",
+        "tests/test_shrinking_safe_bubbles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
