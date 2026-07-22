@@ -22534,7 +22534,7 @@
     },
     {
       "id": "idea-1315",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Elementals",
@@ -33154,6 +33154,40 @@
         "src/ui/guild_headquarters_cosmetics_customization.gd",
         "src/ai/guild_headquarters_cosmetics_customization.py",
         "tests/test_guild_headquarters_cosmetics_customization.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1939",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Decoy",
+      "description": "A decoy that randomly swaps positions with the player every 5 seconds until destroyed.",
+      "allowed_paths": [
+        "src/ai/quantum_swap_decoy.py",
+        "src/ai/quantum_swap_decoy.gd",
+        "tests/test_quantum_swap_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1940",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Decoy",
+      "description": "A decoy that slowly pulls all nearby enemies and projectiles towards it before exploding.",
+      "allowed_paths": [
+        "src/ai/magnetic_decoy.py",
+        "src/ai/magnetic_decoy.gd",
+        "tests/test_magnetic_decoy.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
