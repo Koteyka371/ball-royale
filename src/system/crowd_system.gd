@@ -118,6 +118,26 @@ func process_external_command(user: String, command: String, balls: Array):
             world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(user) + " spawned a " + hazard_kind + "!"})
             excitement_level += 5.0
 
+    elif cmd == "!spawnboss" and parts.size() >= 2:
+        var boss_type = parts[1].to_lower()
+        if world != null:
+            var game_mode = null
+            if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+                game_mode = world.get("game_mode")
+            elif typeof(world) == TYPE_DICTIONARY and world.has("game_mode"):
+                game_mode = world["game_mode"]
+
+            if game_mode != null and typeof(game_mode) == TYPE_OBJECT and boss_type == "juggernaut" and game_mode.has_method("_make_juggernaut"):
+                if alive_balls.size() > 0:
+                    var target = alive_balls[randi() % alive_balls.size()]
+                    game_mode._make_juggernaut(world, target)
+
+                    if world.has_method("add_event"):
+                        world.add_event("juggernaut_change", {"message": "Viewer " + _get_user_display(user) + " spawned a Juggernaut!"})
+
+                    _add_viewer_loyalty(user, 20)
+                    excitement_level += 20.0
+
     elif cmd == "!control" and parts.size() >= 4:
         var hazard_kind = parts[1]
         var target_x = parts[2].to_float()

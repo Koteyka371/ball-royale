@@ -88,6 +88,20 @@ class CrowdSystem:
                 self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(user)} spawned a {hazard_kind}!"})
                 self.excitement_level += 5.0
 
+        elif cmd == "!spawnboss" and len(parts) >= 2:
+            boss_type = parts[1].lower()
+            if hasattr(self.world, "game_mode"):
+                if boss_type == "juggernaut" and hasattr(self.world.game_mode, "_make_juggernaut"):
+                    # Find a random valid ball to become the boss
+                    if alive_balls:
+                        target = random.choice(alive_balls)
+                        self.world.game_mode._make_juggernaut(self.world, target)
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("juggernaut_change", {"message": f"Viewer {self._get_user_display(user)} spawned a Juggernaut!"})
+                        self._add_viewer_loyalty(user, 20)
+                        self.excitement_level += 20.0
+
         elif cmd == "!control" and len(parts) >= 4:
             hazard_kind = parts[1]
             try:
