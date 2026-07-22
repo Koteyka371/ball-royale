@@ -27732,7 +27732,7 @@ class AuraPulseEventMode(GameMode):
                                 if key == "cosmetic_aura_scale":
                                     target.cosmetic_aura_scale = max(getattr(target, key, 1.0), active_auras[key])
                                 else:
-                                    setattr(target, key, 5.0)
+                                    setattr(target, key, max(getattr(target, key, 0.0), 5.0))
 
 class ShrinkingArenaMode(GameMode):
     def __init__(self):
