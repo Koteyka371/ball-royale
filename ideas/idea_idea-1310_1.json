@@ -1,4 +1,4 @@
 {
-    "title": "Bounty Contract Drops",
-    "description": "Whenever a ball hits a certain currency threshold, a bounty is placed on them and other balls gain bonus stats when moving towards them."
+  "title": "Quantum Tethers",
+  "description": "Players can throw quantum tethers that link them to enemies or allies. Linked entities share damage, healing, and momentum based on the distance between them, creating highly coordinated team plays or destructive self-sacrifices."
 }
