@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1303] Guild Perks system — *2026-07-22 07:06:13 UTC*
+
+Expand the guild system to include unlockable perks using guild points. For example, members might gain +5% max HP or improved drop rates for crafting materials if the guild reaches a certain level.
+
+---
+
 ## [idea-1285] Bouncing Laser Hazard — *2026-07-22 06:51:36 UTC*
 
 A laser beam hazard that bounces off the arena walls up to a certain number of times, causing a grid of unpredictable danger zones for players.

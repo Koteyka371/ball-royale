@@ -22325,7 +22325,7 @@
     },
     {
       "id": "idea-1303",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Perks system",
@@ -33444,6 +33444,23 @@
         "src/ai/reverse_conveyor_belts.py",
         "src/ai/reverse_conveyor_belts.gd",
         "tests/test_reverse_conveyor_belts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1956",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Grid Arena",
+      "description": "Similar to falling tiles, but the tiles fall from the outside in, slowly making the arena smaller in a grid-like fashion instead of a circular storm.",
+      "allowed_paths": [
+        "src/arena/shrinking_grid_arena.py",
+        "src/arena/shrinking_grid_arena.gd",
+        "tests/test_shrinking_grid_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
