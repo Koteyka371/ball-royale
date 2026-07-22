@@ -22603,7 +22603,7 @@
     },
     {
       "id": "idea-1319",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Collapsing Ceiling Hazard",
@@ -33359,6 +33359,74 @@
         "src/ai/twitch_integration_voting_on_boss_type.py",
         "src/ai/twitch_integration_voting_on_boss_type.gd",
         "tests/test_twitch_integration_voting_on_boss_type.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1951",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gladiator Chains Event",
+      "description": "Random players are chained together with an unbreakable tether. The tether limits distance but also deals damage to any other ball that passes through it. The chained players must coordinate to move, and they share damage taken but gain a unified health pool until the chain breaks.",
+      "allowed_paths": [
+        "src/ai/gladiator_chains.py",
+        "src/ai/gladiator_chains.gd",
+        "tests/test_gladiator_chains.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1952",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Relic Modifier",
+      "description": "Scattered across the map are cursed relics that, when picked up, provide huge temporary stat buffs (like double damage) but drain the ball's health continually over time. A ball can drop the relic by bumping into another ball, passing the curse along in a deadly game of hot potato.",
+      "allowed_paths": [
+        "src/ai/cursed_relic.py",
+        "src/ai/cursed_relic.gd",
+        "tests/test_cursed_relic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1953",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Ricochet Mode",
+      "description": "Balls that hit the arena boundaries don't just bounce, they teleport to the opposite side of the arena with reversed velocity. Players can deploy a temporary 'stabilizer field' that acts as a solid wall for incoming teleported objects, protecting them from surprise attacks.",
+      "allowed_paths": [
+        "src/ai/quantum_ricochet.py",
+        "src/ai/quantum_ricochet.gd",
+        "tests/test_quantum_ricochet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1954",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Anomalies",
+      "description": "Randomly spawning quantum anomalies create unstable regions on the field. Entering these regions scrambles a ball's stats momentarily (randomizing speed, size, and damage) and occasionally teleports them to a linked anomaly on the other side of the map, adding chaos and unpredictable repositioning.",
+      "allowed_paths": [
+        "src/ai/quantum_anomalies.py",
+        "src/ai/quantum_anomalies.gd",
+        "tests/test_quantum_anomalies.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

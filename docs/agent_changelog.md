@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1319] Collapsing Ceiling Hazard — *2026-07-22 06:40:51 UTC*
+
+Instead of dropping panels from below, introduce a collapsing ceiling that shrinks the vertical height in safe zones. Balls caught under falling debris are briefly stunned and take massive damage.
+
+---
+
 ## [idea-1327] Cosmic Anomaly Mode — *2026-07-22 06:36:05 UTC*
 
 A game mode where the arena gravity occasionally shifts, pulling balls towards the edges or a random point instead of the center. High-prestige players can deploy 'gravity anchors' to resist the effect.
