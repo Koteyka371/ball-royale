@@ -32726,3 +32726,93 @@ GAME_MODES['weather_combinations'] = WeatherCombinationsMode()
 GAME_MODES['ice_walls'] = IceWallsMode()
 GAME_MODES['pinball_mutator'] = PinballMutatorMode()
 GAME_MODES['linked_portals'] = LinkedPortalsMode()
+
+
+class VIPProtectionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Spectral VIP Protection"
+        self.description = "One player per team becomes a Spectral VIP. They cannot attack, are highly vulnerable, but emit a constant healing aura for teammates."
+        self.vips = {}
+        self.heal_radius = 200.0
+        self.heal_rate = 15.0  # HP per second
+        self.vip_setup_done = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.vips = {}
+        self.vip_setup_done = False
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Group balls by team
+        teams = {}
+        active_balls = [b for b in balls if getattr(b, 'alive', False)]
+        for b in active_balls:
+            t = getattr(b, 'team', 0)
+            if t not in teams:
+                teams[t] = []
+            teams[t].append(b)
+
+        if not self.vip_setup_done and active_balls:
+            import random
+            for t, team_balls in teams.items():
+                if team_balls:
+                    # Pick a random VIP for each team
+                    vip = random.choice(team_balls)
+                    self.vips[t] = getattr(vip, 'id', id(vip))
+                    vip.is_vip = True
+                    # VIP traits: no attack, vulnerable
+                    vip.damage = 0.0
+                    vip.base_damage = 0.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "vip_aura", "x": vip.x, "y": vip.y, "team": t})
+            self.vip_setup_done = True
+
+        # Process healing aura and vulnerability
+        # Collect HP deltas
+        hp_deltas = {}
+        import random
+        for t, team_balls in teams.items():
+            if t not in self.vips:
+                continue
+
+            vip_id = self.vips[t]
+            vip_ball = None
+            for b in team_balls:
+                if getattr(b, 'id', id(b)) == vip_id:
+                    vip_ball = b
+                    break
+
+            if vip_ball and getattr(vip_ball, 'alive', False):
+                # Ensure VIP cannot attack
+                vip_ball.damage = 0.0
+                vip_ball.base_damage = 0.0
+                vip_ball.energy_shield_active = False # VIP is vulnerable
+                vip_ball.energy_shield_hp = 0.0
+
+                # Heal teammates
+                for b in team_balls:
+                    if b == vip_ball:
+                        continue
+                    if not getattr(b, 'alive', False):
+                        continue
+
+                    dist_sq = (b.x - vip_ball.x)**2 + (b.y - vip_ball.y)**2
+                    if dist_sq < (self.heal_radius + getattr(b, 'radius', 10.0) + getattr(vip_ball, 'radius', 10.0))**2:
+                        heal_amount = self.heal_rate * delta
+                        hp_deltas[getattr(b, 'id', id(b))] = hp_deltas.get(getattr(b, 'id', id(b)), 0.0) + heal_amount
+
+                        if hasattr(world, "add_event"):
+                            if random.random() < 0.1:
+                                world.add_event("visual_effect", {"type": "heal_tick", "x": b.x, "y": b.y})
+
+        # Apply healing
+        for b in active_balls:
+            b_id = getattr(b, 'id', id(b))
+            if b_id in hp_deltas:
+                # IMPORTANT: ensure we apply heal up to max_hp, but max_hp is 100 default
+                b.hp = min(getattr(b, 'max_hp', 100.0), b.hp + hp_deltas[b_id])
+
+GAME_MODES['vip_protection'] = VIPProtectionMode()
