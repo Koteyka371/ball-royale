@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1370] Chain Grapple — *2026-07-22 23:20:21 UTC*
+
+Grappling hook now chains to a second target automatically if one is in range when the first target is hit.
+
+---
+
 ## [idea-1342] Lava Eruption Warning — *2026-07-22 23:20:17 UTC*
 
 Small pools of lava randomly bubble up on the safe platforms, forcing players to constantly adjust their positioning even when on seemingly safe ground.
