@@ -24845,6 +24845,71 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "flashbang_booster":
+                for i in range(3):
+                    var clone = null
+                    if self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        clone = self.ball.duplicate()
+
+                    if clone != null:
+                        if "id" in clone: clone.id = randi() % 90000 + 10000
+                        if "hp" in clone: clone.hp = 1.0
+                        if "max_hp" in clone: clone.max_hp = 1.0
+                        if "damage" in clone: clone.damage = 0.0
+                        if "base_damage" in clone: clone.base_damage = 0.0
+
+                        var self_id = -2
+                        if "id" in self.ball: self_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        var angle = i * (PI * 2.0 / 3.0)
+                        var bspeed = 200.0
+                        if "base_speed" in self.ball: bspeed = self.ball.base_speed
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): bspeed = self.ball.base_speed
+
+                        if clone.has_method("set_meta"):
+                            clone.set_meta("owner_id", self_id)
+                            clone.set_meta("is_decoy", true)
+                            clone.set_meta("decoy_type", "flash")
+                            clone.set_meta("decoy_timer", 5.0)
+                            clone.set_meta("skill_timer", 9999.0)
+                            clone.set_meta("attack_timer", 9999.0)
+                            clone.set_meta("vx", cos(angle) * bspeed)
+                            clone.set_meta("vy", sin(angle) * bspeed)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["owner_id"] = self_id
+                            clone["is_decoy"] = true
+                            clone["decoy_type"] = "flash"
+                            clone["decoy_timer"] = 5.0
+                            clone["skill_timer"] = 9999.0
+                            clone["attack_timer"] = 9999.0
+                            clone["vx"] = cos(angle) * bspeed
+                            clone["vy"] = sin(angle) * bspeed
+                        else:
+                            clone.owner_id = self_id
+                            clone.is_decoy = true
+                            clone.decoy_type = "flash"
+                            clone.decoy_timer = 5.0
+                            clone.skill_timer = 9999.0
+                            clone.attack_timer = 9999.0
+                            clone.vx = cos(angle) * bspeed
+                            clone.vy = sin(angle) * bspeed
+                            if "skill" in clone: clone.skill = ""
+                            if "active_skill" in clone: clone.active_skill = ""
+
+                        if self.world != null and "balls" in self.world:
+                            self.world.balls.append(clone)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "clone_booster":
                 for i in range(2):
                     var clone = null
