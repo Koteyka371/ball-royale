@@ -22430,7 +22430,7 @@
     },
     {
       "id": "idea-1309",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Altars in Standard Battle Royale",
@@ -33922,6 +33922,23 @@
         "src/ai/echo_location_mechanic.py",
         "src/ai/echo_location_mechanic.gd",
         "tests/test_echo_location_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1984",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Singularity Booster",
+      "description": "A booster that allows the player to leave behind a tiny black hole projectile when they dodge. It rapidly pulls in nearby hazards, projectiles, and smaller enemies before violently collapsing and dealing damage.",
+      "allowed_paths": [
+        "src/ai/gravity_singularity_booster.py",
+        "src/ai/gravity_singularity_booster.gd",
+        "tests/test_gravity_singularity_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
