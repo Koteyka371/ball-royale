@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1354] Trickster Mirror Match Event — *2026-07-22 21:20:15 UTC*
+
+An arena event where all players are turned into Tricksters for 30 seconds.
+
+---
+
 ## [idea-1305] Aura of Paranoia — *2026-07-22 21:06:05 UTC*
 
 A new hazard type that applies the 'confusion' effect to any ball that stays within it for more than 3 seconds, forcing players to navigate quickly through the zone or risk reversing their controls.

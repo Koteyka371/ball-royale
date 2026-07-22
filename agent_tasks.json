@@ -23199,7 +23199,7 @@
     },
     {
       "id": "idea-1354",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Mirror Match Event",
@@ -34126,6 +34126,23 @@
         "src/ai/phantom_safe_zone.py",
         "src/ai/phantom_safe_zone.gd",
         "tests/test_phantom_safe_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1996",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Shield Cosmetic",
+      "description": "A cosmetic shield that passively nullifies incoming EMP effects but increases gravity.",
+      "allowed_paths": [
+        "src/ai/emp_shield_cosmetic.py",
+        "src/ai/emp_shield_cosmetic.gd",
+        "tests/test_emp_shield_cosmetic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
