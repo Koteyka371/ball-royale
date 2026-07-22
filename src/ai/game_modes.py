@@ -25894,7 +25894,84 @@ class PinballMutatorMode(GameMode):
                 if hasattr(ball, 'wall_damage_immunity'):
                     ball.wall_damage_immunity = True
 
+
+class ElementalReactionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Elemental Reactions"
+        self.description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        # In this game mode, we need to detect collisions between balls with specific elemental properties.
+        # Check all pairs of balls for recent collisions or closeness.
+        valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+
+        for i in range(len(valid_balls)):
+            b1 = valid_balls[i]
+            for j in range(i + 1, len(valid_balls)):
+                b2 = valid_balls[j]
+
+                # Check collision (overlap)
+                b1_r = getattr(b1, "radius", 10.0)
+                b2_r = getattr(b2, "radius", 10.0)
+                dx = b1.x - b2.x
+                dy = b1.y - b2.y
+                dist_sq = dx*dx + dy*dy
+
+                if dist_sq < (b1_r + b2_r) ** 2:
+                    # They are colliding. Check elements and status.
+                    # We can consider a ball "fire" if its type/traits include fire, or if it's burning.
+                    # Wait, the prompt says "Hitting a burning ball with a water attack..."
+                    # and "...hitting a frozen ball with a fire attack...".
+
+                    def get_element(b):
+                        bt = getattr(b, "ball_type", "").lower()
+                        tr = [t.lower() for t in getattr(b, "traits", [])]
+                        if "water" in bt or "water" in tr or "ice" in bt or "ice" in tr:
+                            return "water"
+                        if "fire" in bt or "fire" in tr or "flame" in bt or "flame" in tr:
+                            return "fire"
+                        return None
+
+                    e1 = get_element(b1)
+                    e2 = get_element(b2)
+
+                    def check_reaction(attacker, target, attacker_element):
+                        if attacker_element == "water" and getattr(target, "burn_timer", 0.0) > 0:
+                            # Steam explosion!
+                            target.burn_timer = 0.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 200.0, "damage": 0.0, "type": "steam"})
+
+                            # Blind everyone nearby
+                            for b in valid_balls:
+                                dsq = (b.x - target.x)**2 + (b.y - target.y)**2
+                                if dsq <= 200.0**2:
+                                    b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 5.0)
+
+                        elif attacker_element == "fire" and getattr(target, "frozen_timer", 0.0) > 0:
+                            # Shatter!
+                            target.frozen_timer = 0.0
+                            target.is_frozen = False
+                            target.stun_timer = 0.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 50.0, "damage": 50.0, "type": "shatter"})
+
+                            if hasattr(target, "take_damage"):
+                                target.take_damage(50.0)
+                            else:
+                                target.hp -= 50.0
+                                if target.hp <= 0:
+                                    target.alive = False
+
+                    check_reaction(b1, b2, e1)
+                    check_reaction(b2, b1, e2)
+
 GAME_MODES = {
+    'elemental_reactions': ElementalReactionMode(),
     'guild_storm': GuildStormMode(),
     'random_quantum_tunnels': RandomQuantumTunnelsMode(),
     "chroma_boss": ChromaBossMode(),

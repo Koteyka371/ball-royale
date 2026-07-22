@@ -41819,7 +41819,109 @@ class GuildStormMode extends GameMode:
 				b.damage = b.base_damage
 				b.hp -= 5.0 * delta
 
+
+class ElementalReactionMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Elemental Reactions"
+		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		var valid_balls = []
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else b.get("ball_type", "")
+			var alive = b.alive if "alive" in b else b.get("alive", false)
+			if alive and b_type != "spectator":
+				valid_balls.append(b)
+
+		for i in range(valid_balls.size()):
+			var b1 = valid_balls[i]
+			for j in range(i + 1, valid_balls.size()):
+				var b2 = valid_balls[j]
+
+				var b1_r = b1.radius if "radius" in b1 else b1.get("radius", 10.0)
+				var b2_r = b2.radius if "radius" in b2 else b2.get("radius", 10.0)
+
+				var b1_x = b1.x if "x" in b1 else b1.get("x", 0.0)
+				var b1_y = b1.y if "y" in b1 else b1.get("y", 0.0)
+				var b2_x = b2.x if "x" in b2 else b2.get("x", 0.0)
+				var b2_y = b2.y if "y" in b2 else b2.get("y", 0.0)
+
+				var dx = b1_x - b2_x
+				var dy = b1_y - b2_y
+				var dist_sq = dx*dx + dy*dy
+
+				if dist_sq < (b1_r + b2_r) * (b1_r + b2_r):
+					var get_element = func(b):
+						var bt = (b.ball_type if "ball_type" in b else b.get("ball_type", "")).to_lower()
+						var tr = b.traits if "traits" in b else b.get("traits", [])
+						for t in tr:
+							var tl = t.to_lower()
+							if tl == "water" or tl == "ice": return "water"
+							if tl == "fire" or tl == "flame": return "fire"
+						if bt.find("water") != -1 or bt.find("ice") != -1: return "water"
+						if bt.find("fire") != -1 or bt.find("flame") != -1: return "fire"
+						return ""
+
+					var e1 = get_element.call(b1)
+					var e2 = get_element.call(b2)
+
+					var check_reaction = func(attacker, target, attacker_element):
+						var t_burn = target.burn_timer if "burn_timer" in target else target.get("burn_timer", 0.0)
+						var t_frozen = target.frozen_timer if "frozen_timer" in target else target.get("frozen_timer", 0.0)
+
+						if attacker_element == "water" and t_burn > 0:
+							if "burn_timer" in target: target.burn_timer = 0.0
+							else: target["burn_timer"] = 0.0
+
+							var tx = target.x if "x" in target else target.get("x", 0.0)
+							var ty = target.y if "y" in target else target.get("y", 0.0)
+
+							if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+								world.add_event("explosion", {"x": tx, "y": ty, "radius": 200.0, "damage": 0.0, "type": "steam"})
+
+							for b in valid_balls:
+								var bx = b.x if "x" in b else b.get("x", 0.0)
+								var by = b.y if "y" in b else b.get("y", 0.0)
+								var dsq = (bx - tx)*(bx - tx) + (by - ty)*(by - ty)
+								if dsq <= 200.0*200.0:
+									var cblind = b.blindness_timer if "blindness_timer" in b else b.get("blindness_timer", 0.0)
+									if "blindness_timer" in b: b.blindness_timer = max(cblind, 5.0)
+									else: b["blindness_timer"] = max(cblind, 5.0)
+
+						elif attacker_element == "fire" and t_frozen > 0:
+							if "frozen_timer" in target: target.frozen_timer = 0.0
+							else: target["frozen_timer"] = 0.0
+							if "is_frozen" in target: target.is_frozen = false
+							else: target["is_frozen"] = false
+							if "stun_timer" in target: target.stun_timer = 0.0
+							else: target["stun_timer"] = 0.0
+
+							var tx = target.x if "x" in target else target.get("x", 0.0)
+							var ty = target.y if "y" in target else target.get("y", 0.0)
+
+							if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+								world.add_event("explosion", {"x": tx, "y": ty, "radius": 50.0, "damage": 50.0, "type": "shatter"})
+
+							if typeof(target) != TYPE_DICTIONARY and target.has_method("take_damage"):
+								target.take_damage(50.0)
+							else:
+								var c_hp = target.hp if "hp" in target else target.get("hp", 100.0)
+								c_hp -= 50.0
+								if "hp" in target: target.hp = c_hp
+								else: target["hp"] = c_hp
+								if c_hp <= 0:
+									if "alive" in target: target.alive = false
+									else: target["alive"] = false
+
+					check_reaction.call(b1, b2, e1)
+					check_reaction.call(b2, b1, e2)
+
+
 GAME_MODES = {
+	"elemental_reactions": ElementalReactionMode.new(),
 	"guild_storm": GuildStormMode.new(),
 	"chroma_boss": ChromaBossMode.new(),
 	"rising_lava": RisingLavaMode.new(),
