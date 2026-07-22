@@ -7451,7 +7451,7 @@ class Action:
                                     if not getattr(self.ball, "is_confused", False):
                                         self.ball.is_confused = True
                                     self.ball.confusion_timer = 3.0
-                                elif trap_variant == "blindness":
+                                elif trap_variant == "blindness" or getattr(hazard, "kind", "") == "blindness_trap":
                                     if not getattr(self.ball, "is_blinded", False):
                                         self.ball.is_blinded = True
                                         self.ball.blindness_timer = 3.0
@@ -7460,7 +7460,10 @@ class Action:
                                         self.ball.perception_radius = self.ball.base_perception_radius * 0.2
                                     else:
                                         self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 3.0)
-                                    hazard.duration = 0.0
+                                    if getattr(hazard, "kind", "") == "blindness_trap":
+                                        hazard.active = False
+                                    else:
+                                        hazard.duration = 0.0
                                 elif trap_variant == "emp":
                                     if getattr(self.ball, "emp_immunity_timer", 0.0) <= 0 and not getattr(self.ball, "is_emped", False):
                                         self.ball.is_emped = True
@@ -8202,6 +8205,22 @@ class Action:
                                     if hasattr(self.world, "add_event"):
                                         self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": hazard.radius + 30.0})
                                 continue
+                        elif hazard.kind == "blindness_trap":
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < (hazard.radius + self.ball.radius) ** 2:
+                                if getattr(hazard, "active", True):
+                                    hazard.active = False
+                                    hazard.duration = 0.0
+                                    if not getattr(self.ball, "is_blinded", False):
+                                        self.ball.is_blinded = True
+                                        self.ball.blindness_timer = 3.0
+                                        if not hasattr(self.ball, "base_perception_radius"):
+                                            self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+                                        self.ball.perception_radius = self.ball.base_perception_radius * 0.2
+                                    else:
+                                        self.ball.blindness_timer = max(getattr(self.ball, "blindness_timer", 0.0), 3.0)
                         elif hazard.kind == "hidden_mine":
                             # Detonate on proximity, disable AI abilities and attacks for 5s
                             dx = hazard.x - self.ball.x

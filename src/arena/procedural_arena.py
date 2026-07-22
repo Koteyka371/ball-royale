@@ -155,6 +155,9 @@ class ProceduralArena:
             elif kind == "hidden_mine":
                 radius = 15.0
                 damage = 30.0
+            elif kind == "blindness_trap":
+                radius = 20.0
+                damage = 0.0
             if kind == "whirlpool":
                 radius = random.uniform(50.0, 100.0)
                 damage = 10.0 # mostly slow and submerge/wet debuff

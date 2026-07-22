@@ -189,6 +189,8 @@ func generate():
             kind = "hidden_mine"
         elif r < 0.35:
             kind = "fake_booster"
+        elif r < 0.37:
+            kind = "blindness_trap"
         elif r < 0.4:
             kind = "decoy_item"
         elif r < 0.42:
@@ -358,6 +360,9 @@ func generate():
         elif kind == "hidden_mine":
             radius = 15.0
             damage = 30.0
+        elif kind == "blindness_trap":
+            radius = 20.0
+            damage = 0.0
         elif kind == "silence_booster":
             radius = 15.0
             damage = 0.0
