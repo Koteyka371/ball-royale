@@ -1283,7 +1283,15 @@ func _attempt_damage(attacker, target) -> void:
 		elif target.has_method("get_meta") and target.has_meta("high_threat") and target.get_meta("high_threat"):
 			target_high_threat = true
 
-		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat):
+
+		var target_is_bounty_target = false
+		if typeof(target) == TYPE_DICTIONARY:
+			target_is_bounty_target = target.get("is_bounty_target", false)
+		elif target.has_method("get_meta") and target.has_meta("is_bounty_target"):
+			target_is_bounty_target = target.get_meta("is_bounty_target")
+		elif "is_bounty_target" in target:
+			target_is_bounty_target = target.is_bounty_target
+		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat or target_is_bounty_target):
 			if "damage" in attacker:
 				attacker.damage = original_damage * 2.0
 
@@ -1911,7 +1919,7 @@ func _attempt_damage(attacker, target) -> void:
 		var pm_local = null
 		if typeof(self.world) == TYPE_OBJECT and "profile_manager" in self.world:
 			pm_local = self.world.profile_manager
-		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat):
+		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat or target_is_bounty_target):
 			var reward_amt = 500
 			if typeof(target) == TYPE_DICTIONARY:
 				reward_amt = target.get("bounty_contract_xp_reward", 500)
@@ -1929,13 +1937,6 @@ func _attempt_damage(attacker, target) -> void:
 				elif pm_local.has_method("save"):
 					pm_local.save()
 
-		var target_is_bounty_target = false
-		if typeof(target) == TYPE_DICTIONARY:
-			target_is_bounty_target = target.get("is_bounty_target", false)
-		elif target.has_method("get_meta") and target.has_meta("is_bounty_target"):
-			target_is_bounty_target = target.get_meta("is_bounty_target")
-		elif "is_bounty_target" in target:
-			target_is_bounty_target = target.is_bounty_target
 
 		if target_is_bounty_target:
 			var owner_id = null
@@ -2050,7 +2051,7 @@ func _attempt_damage(attacker, target) -> void:
 			if attacker.has_meta("charge_level"): cl = float(attacker.get_meta("charge_level"))
 			attacker.set_meta("charge_level", min(100.0, cl + 20.0))
 
-		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat):
+		if b_type_attacker == "bounty_hunter" and (target_is_bounty or target_high_threat or target_is_bounty_target):
 			if "hp" in attacker and "max_hp" in attacker:
 				attacker.hp = attacker.max_hp
 			if "speed_boost_timer" in attacker:
@@ -29807,7 +29808,7 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
-        elif skill_name == "deploy_lightning_rod":
+        elif skill_name == "deploy_lightning_rod", "bounty_trap":
             if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
                 var bid = -1
                 var bteam = ""

@@ -689,7 +689,7 @@ class Action:
                 attacker.damage = original_damage * 1.2
 
             b_type_attacker = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()
-            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False)):
+            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False) or getattr(target, 'is_bounty_target', False)):
                 attacker.damage = original_damage * 2.0
 
             has_ricochet = getattr(target, "ricochet_barrier_timer", 0.0) > 0.0
@@ -1016,7 +1016,7 @@ class Action:
                 self._award_xp(attacker, base_xp, self.world)
 
         if new_hp <= 0 and old_hp > 0:
-            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False)):
+            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False) or getattr(target, 'is_bounty_target', False)):
                 reward_amt = getattr(target, 'bounty_contract_xp_reward', 500)
                 currency_cut = int(reward_amt * 0.1) # 10% of xp as currency
                 pm = getattr(self.world, 'profile_manager', None)
@@ -1066,7 +1066,7 @@ class Action:
             else:
                 attacker.kills = 1
 
-            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False)):
+            if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False) or getattr(target, 'is_bounty_target', False)):
                 attacker.hp = getattr(attacker, "max_hp", 100.0)
                 attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 3.0
                 attacker.attack_speed_buff_timer = getattr(attacker, "attack_speed_buff_timer", 0.0) + 3.0
@@ -11594,7 +11594,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
