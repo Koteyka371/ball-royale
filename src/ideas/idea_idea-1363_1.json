@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Explosion in Escort Mode",
+  "description": "When the decoy payload in Escort Mode is destroyed by Attackers or reaches its false destination, it triggers a massive AoE explosion that damages and knocks back all nearby entities."
+}

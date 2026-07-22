@@ -5272,6 +5272,9 @@ class EscortMode(GameMode):
         self.name = "Escort Mode"
         self.description = "One team defends an invulnerable payload moving towards a goal. The other tries to delay it until time runs out."
         self.payload = None
+        self.decoy = None
+        self.decoy_deployed = False
+        self.decoy_timer = 0.0
         self.goal_x = 900.0
         self.goal_y = 500.0
         self.timer = 180.0
@@ -5432,10 +5435,72 @@ class EscortMode(GameMode):
             self.payload.x = 100.0
             self.payload.y = 500.0
 
+        self.decoy = None
+        self.decoy_deployed = False
+        self.decoy_timer = 0.0
+
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
         if getattr(self, "timer", 0) > 0:
             self.timer -= delta
+
+        # Decoy deployment
+        if not getattr(self, "decoy_deployed", False) and getattr(self, "payload", None):
+            self.decoy_timer = getattr(self, "decoy_timer", 0.0) + delta
+            if self.decoy_timer >= 15.0:
+                self.decoy_deployed = True
+
+                class DecoyPayload:
+                    pass
+                self.decoy = DecoyPayload()
+                self.decoy.id = 99999
+                self.decoy.ball_type = "decoy_payload"
+                self.decoy.team = "Defenders"
+                self.decoy.alive = True
+                self.decoy.x = getattr(self.payload, "x", 100.0)
+                self.decoy.y = getattr(self.payload, "y", 500.0)
+                self.decoy.speed = 0.8
+                self.decoy.hp = 200.0
+                self.decoy.radius = 15.0
+                self.decoy.is_invulnerable = False
+
+                # Pick an alternate path
+                import random
+                alt_paths = [i for i in range(len(self.paths)) if i != getattr(self, "chosen_path", 0)]
+                self.decoy_path_idx = random.choice(alt_paths) if alt_paths else 0
+                self.decoy_waypoint_idx = 0
+
+                balls.append(self.decoy)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("decoy_deployed", {"x": self.decoy.x, "y": self.decoy.y})
+
+        # Update decoy
+        if getattr(self, "decoy_deployed", False) and getattr(self, "decoy", None) and getattr(self.decoy, "alive", False):
+            import math
+            path_data = self.paths[getattr(self, "decoy_path_idx", 0)]
+            waypoints = path_data["waypoints"]
+            wpt_idx = getattr(self, "decoy_waypoint_idx", 0)
+
+            if wpt_idx < len(waypoints):
+                target_x, target_y = waypoints[wpt_idx]
+            else:
+                target_x, target_y = self.goal_x, self.goal_y
+
+            dx = target_x - self.decoy.x
+            dy = target_y - self.decoy.y
+            dist = math.hypot(dx, dy)
+
+            if dist < 10.0 and wpt_idx < len(waypoints) - 1:
+                self.decoy_waypoint_idx = wpt_idx + 1
+                target_x, target_y = waypoints[self.decoy_waypoint_idx]
+                dx = target_x - self.decoy.x
+                dy = target_y - self.decoy.y
+                dist = math.hypot(dx, dy)
+
+            if dist > 0:
+                self.decoy.x += (dx / dist) * self.decoy.speed
+                self.decoy.y += (dy / dist) * self.decoy.speed
 
         # Hack points logic
         if not hasattr(self, "hack_points"):

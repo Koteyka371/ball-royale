@@ -8211,6 +8211,12 @@ class EscortMode extends GameMode:
 	var hacked_timer: float = 0.0
 	var original_path: int = -1
 
+	var decoy = null
+	var decoy_deployed: bool = false
+	var decoy_timer: float = 0.0
+	var decoy_path_idx: int = 0
+	var decoy_waypoint_idx: int = 0
+
 	func _init() -> void:
 		name = "Escort Mode"
 		description = "One team defends an invulnerable payload moving towards a goal. The other tries to delay it until time runs out."
@@ -8435,11 +8441,79 @@ class EscortMode extends GameMode:
 				payload.x = 100.0
 				payload.y = 500.0
 
+		decoy = null
+		decoy_deployed = false
+		decoy_timer = 0.0
+
 	var pulse_timer: float = 0.0
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if timer > 0.0:
 			timer -= delta
+
+		# Decoy deployment
+		if not decoy_deployed and payload != null:
+			decoy_timer += delta
+			if decoy_timer >= 15.0:
+				decoy_deployed = true
+
+				# Create decoy dictionary
+				decoy = {
+					"id": 99999,
+					"ball_type": "decoy_payload",
+					"team": "Defenders",
+					"alive": true,
+					"speed": 0.8,
+					"hp": 200.0,
+					"max_hp": 200.0,
+					"radius": 15.0,
+					"is_invulnerable": false
+				}
+
+				if typeof(payload) == TYPE_DICTIONARY:
+					decoy["x"] = payload.get("x", 100.0)
+					decoy["y"] = payload.get("y", 500.0)
+				else:
+					decoy["x"] = payload.x
+					decoy["y"] = payload.y
+
+				# Pick alternate path
+				var alt_paths = []
+				for i in range(paths.size()):
+					if i != chosen_path:
+						alt_paths.append(i)
+
+				if alt_paths.size() > 0:
+					decoy_path_idx = alt_paths[randi() % alt_paths.size()]
+				else:
+					decoy_path_idx = 0
+				decoy_waypoint_idx = 0
+
+				balls.append(decoy)
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("decoy_deployed", {"x": decoy["x"], "y": decoy["y"]})
+
+		# Update decoy
+		if decoy_deployed and decoy != null and typeof(decoy) == TYPE_DICTIONARY and decoy.get("alive", false):
+			var path_data = paths[decoy_path_idx]
+			var waypoints = path_data["waypoints"]
+			var target_pos = waypoints[decoy_waypoint_idx] if decoy_waypoint_idx < waypoints.size() else Vector2(goal_x, goal_y)
+
+			var dx = target_pos.x - decoy["x"]
+			var dy = target_pos.y - decoy["y"]
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if dist < 10.0 and decoy_waypoint_idx < waypoints.size() - 1:
+				decoy_waypoint_idx += 1
+				target_pos = waypoints[decoy_waypoint_idx]
+				dx = target_pos.x - decoy["x"]
+				dy = target_pos.y - decoy["y"]
+				dist = sqrt(dx * dx + dy * dy)
+
+			if dist > 0:
+				decoy["x"] += (dx / dist) * decoy["speed"]
+				decoy["y"] += (dy / dist) * decoy["speed"]
 
 		for hp in hack_points:
 			if not hp["captured"]:
