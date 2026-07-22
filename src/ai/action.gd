@@ -22771,7 +22771,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -26654,6 +26654,57 @@ func _use_skill():
                             "active": true
                         }
                         self.world.arena.hazards.append(cloud)
+
+        elif skill_name == "devour":
+            if "balls" in self.world:
+                var minions = []
+                for b in self.world.balls:
+                    var is_minion = false
+                    if "ball_type" in b and (b.ball_type == "minion" or b.ball_type == "elite_minion"):
+                        is_minion = true
+                    if is_minion and "team" in b and "team" in self.ball and b.team == self.ball.team:
+                        minions.append(b)
+
+                if minions.size() > 0:
+                    var target_minion = minions[0]
+                    if typeof(target_minion) == TYPE_DICTIONARY:
+                        target_minion["hp"] = 0
+                        target_minion["alive"] = false
+                    else:
+                        target_minion.hp = 0
+                        target_minion.alive = false
+
+                    var is_elite = false
+                    if "ball_type" in target_minion and target_minion.ball_type == "elite_minion":
+                        is_elite = true
+                    elif typeof(target_minion) == TYPE_OBJECT and target_minion.has_method("has_meta") and target_minion.has_meta("is_elite_minion") and target_minion.get_meta("is_elite_minion"):
+                        is_elite = true
+                    elif "is_elite_minion" in target_minion and target_minion.is_elite_minion:
+                        is_elite = true
+
+                    var heal_amount = 100.0 if is_elite else 50.0
+                    var invuln_time = 4.0 if is_elite else 2.0
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball["hp"] = min(self.ball["max_hp"], self.ball["hp"] + heal_amount)
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "hp" in self.ball and "max_hp" in self.ball:
+                            self.ball.hp = min(self.ball.max_hp, self.ball.hp + heal_amount)
+
+                    var current_invuln = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and "invulnerable_timer" in self.ball:
+                        current_invuln = self.ball["invulnerable_timer"]
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "invulnerable_timer" in self.ball: current_invuln = self.ball.invulnerable_timer
+                        elif self.ball.has_meta("invulnerable_timer"): current_invuln = self.ball.get_meta("invulnerable_timer")
+
+                    var new_invuln = max(current_invuln, invuln_time)
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["invulnerable_timer"] = new_invuln
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "invulnerable_timer" in self.ball: self.ball.invulnerable_timer = new_invuln
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("invulnerable_timer", new_invuln)
 
         elif skill_name == "raise_dead":
             if "dead_balls" in self.world:

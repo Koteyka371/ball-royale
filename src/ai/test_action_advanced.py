@@ -1231,3 +1231,139 @@ def test_decoy_network():
 
     assert enemy.hp < 100.0
     assert enemy.speed == 7.0
+
+def test_devour_skill():
+    ball = MockBall(x=100, y=100)
+    ball.id = 1
+    ball.ball_type = "necromancer"
+    ball.skill = "devour"
+    ball.team = "undead"
+    ball.hp = 10.0
+    ball.max_hp = 100.0
+    ball.invulnerable_timer = 0.0
+
+    world = MockWorld()
+
+    minion = MockEntity(x=120, y=120, ball_type="minion")
+    minion.id = 2
+    minion.team = "undead"
+    minion.alive = True
+    minion.hp = 20.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    world.arena = MockArena()
+    world.balls = [ball, minion]
+    world.events = []
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    assert minion.hp == 0
+    assert not minion.alive
+    assert ball.hp == 60.0  # 10 + 50
+    assert ball.invulnerable_timer == 2.0
+
+def test_devour_skill_elite():
+    ball = MockBall(x=100, y=100)
+    ball.id = 1
+    ball.ball_type = "necromancer"
+    ball.skill = "devour"
+    ball.team = "undead"
+    ball.hp = 10.0
+    ball.max_hp = 150.0
+    ball.invulnerable_timer = 0.0
+
+    world = MockWorld()
+
+    minion = MockEntity(x=120, y=120, ball_type="elite_minion")
+    minion.id = 2
+    minion.team = "undead"
+    minion.alive = True
+    minion.hp = 40.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    world.arena = MockArena()
+    world.balls = [ball, minion]
+    world.events = []
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    assert minion.hp == 0
+    assert not minion.alive
+    assert ball.hp == 110.0  # 10 + 100
+    assert ball.invulnerable_timer == 4.0
+
+def test_devour_skill():
+    ball = MockBall(x=100, y=100)
+    ball.id = 1
+    ball.ball_type = "necromancer"
+    ball.skill = "devour"
+    ball.team = "undead"
+    ball.hp = 10.0
+    ball.max_hp = 100.0
+    ball.invulnerable_timer = 0.0
+
+    world = MockWorld()
+
+    minion = MockEntity(x=120, y=120, ball_type="minion")
+    minion.id = 2
+    minion.team = "undead"
+    minion.alive = True
+    minion.hp = 20.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    world.arena = MockArena()
+    world.balls = [ball, minion]
+    world.events = []
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    assert minion.hp == 0
+    assert not minion.alive
+    assert ball.hp == 60.0  # 10 + 50
+    assert ball.invulnerable_timer == 2.0
+
+def test_devour_skill_elite():
+    ball = MockBall(x=100, y=100)
+    ball.id = 1
+    ball.ball_type = "necromancer"
+    ball.skill = "devour"
+    ball.team = "undead"
+    ball.hp = 10.0
+    ball.max_hp = 150.0
+    ball.invulnerable_timer = 0.0
+
+    world = MockWorld()
+
+    minion = MockEntity(x=120, y=120, ball_type="elite_minion")
+    minion.id = 2
+    minion.team = "undead"
+    minion.alive = True
+    minion.hp = 40.0
+
+    class MockArena:
+        def __init__(self):
+            self.hazards = []
+
+    world.arena = MockArena()
+    world.balls = [ball, minion]
+    world.events = []
+
+    action = Action(ball, world)
+    action.execute("use_skill", 0.1)
+
+    assert minion.hp == 0
+    assert not minion.alive
+    assert ball.hp == 110.0  # 10 + 100
+    assert ball.invulnerable_timer == 4.0
