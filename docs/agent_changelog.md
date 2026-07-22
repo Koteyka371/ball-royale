@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1271] Lightning Rod Hazard — *2026-07-22 00:11:41 UTC*
+
+A new deployable hazard that acts as a Lightning Rod, attracting any stray lightning bolts towards it and shielding nearby allies. When fully charged, it unleashes a small localized shockwave that stuns nearby enemies.
+
+---
+
 ## [idea-1306] Necromancer Grave Traps — *2026-07-21 23:59:25 UTC*
 
 When a Necromancer dies, they leave behind a 'Grave Trap' hazard that explodes into bone fragments, damaging and slowing nearby enemies who step on it.

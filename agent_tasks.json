@@ -21779,7 +21779,7 @@
     },
     {
       "id": "idea-1271",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lightning Rod Hazard",
@@ -32826,6 +32826,40 @@
         "src/ai/aura_overcharge_station.py",
         "src/ai/aura_overcharge_station.gd",
         "tests/test_aura_overcharge_station.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1920",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Blood Pact",
+      "description": "A new Necromancer active skill: 'Blood Pact'. Sacrifices 20% of current HP to instantly resurrect one dead teammate as an Elite Minion (with higher base stats than regular minions but lower than a full player). If all teammates are alive, it instead grants all active minions a temporary lifesteal aura that heals the Necromancer.",
+      "allowed_paths": [
+        "src/ai/necromancer_blood_pact.py",
+        "src/ai/necromancer_blood_pact.gd",
+        "tests/test_necromancer_blood_pact.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1921",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grave Robber Booster",
+      "description": "A new neutral drop item called 'Grave Robber Shovel'. When picked up, the player can dig up existing 'Grave Trap' hazards spawned by dead Necromancers. Digging up the trap neutralizes it without triggering the bone fragments and has a high chance to drop a medium healing orb or a rare item, rewarding players for clearing hazards.",
+      "allowed_paths": [
+        "src/ai/grave_robber_booster.py",
+        "src/ai/grave_robber_booster.gd",
+        "tests/test_grave_robber_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
