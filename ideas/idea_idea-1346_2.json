@@ -1,0 +1,4 @@
+{
+  "title": "Vampiric Fog Mode",
+  "description": "A new game mode where an arena-wide fog rolls in periodically. While in the fog, players slowly lose HP, which is converted into global blood orbs that randomly spawn. Collecting these orbs heals players for the drained amount, making exploration high-risk but highly rewarding."
+}
