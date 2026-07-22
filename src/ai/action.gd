@@ -1188,6 +1188,24 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if "damage" in attacker: base_dmg = float(attacker.damage)
 	var original_damage = base_dmg * damage_reduction
 
+	var att_emotion = ""
+	if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("emotion"):
+		att_emotion = attacker.get_meta("emotion")
+	elif "emotion" in attacker:
+		att_emotion = attacker.emotion
+
+	if att_emotion == "anger" or att_emotion == "rage":
+		original_damage *= 1.5
+
+	var tgt_emotion = ""
+	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("emotion"):
+		tgt_emotion = target.get_meta("emotion")
+	elif "emotion" in target:
+		tgt_emotion = target.emotion
+
+	if tgt_emotion == "anger" or tgt_emotion == "rage":
+		original_damage *= 1.5
+
 	if target.has_method("get_meta") and target.has_meta("spotlight_damage_multiplier"):
 		original_damage *= float(target.get_meta("spotlight_damage_multiplier"))
 	elif "spotlight_damage_multiplier" in target:
@@ -19622,6 +19640,55 @@ func execute(strategy: String, delta: float):
     if delta > 0:
         var dx = self.ball.x - old_x
         var dy = self.ball.y - old_y
+
+        var emotion = ""
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("emotion"):
+            emotion = self.ball.get_meta("emotion")
+        elif "emotion" in self.ball:
+            emotion = self.ball.emotion
+
+        if emotion == "calm" or emotion == "neutral":
+            var b_s = null
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
+                b_s = self.ball.get_meta("base_speed")
+            elif "base_speed" in self.ball:
+                b_s = self.ball.base_speed
+            if b_s != null:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("speed", b_s)
+                elif "speed" in self.ball:
+                    self.ball.speed = b_s
+
+            var b_d = null
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("base_damage"):
+                b_d = self.ball.get_meta("base_damage")
+            elif "base_damage" in self.ball:
+                b_d = self.ball.base_damage
+            if b_d != null:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("damage", b_d)
+                elif "damage" in self.ball:
+                    self.ball.damage = b_d
+
+        if emotion == "fear":
+            dx *= 1.2
+            dy *= 1.2
+            var old_dx = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("_last_dx"):
+                old_dx = float(self.ball.get_meta("_last_dx"))
+            elif "_last_dx" in self.ball:
+                old_dx = float(self.ball._last_dx)
+
+            var old_dy = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("_last_dy"):
+                old_dy = float(self.ball.get_meta("_last_dy"))
+            elif "_last_dy" in self.ball:
+                old_dy = float(self.ball._last_dy)
+
+            dx = (dx * 0.2) + (old_dx * 0.8)
+            dy = (dy * 0.2) + (old_dy * 0.8)
+            self.ball.x = old_x + dx
+            self.ball.y = old_y + dy
 
         var is_in_mud = false
         if self.ball.has_method("has_meta") and self.ball.has_meta("is_in_mud"):
