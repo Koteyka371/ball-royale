@@ -32970,3 +32970,83 @@ class VIPProtectionMode(GameMode):
 GAME_MODES['vip_protection'] = VIPProtectionMode()
 
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode()
+
+
+class QuadrantShrinkMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quadrant Shrink"
+        self.description = "Different quadrants of the arena have their own shrinking mechanic, forcing players to navigate moving safe zones or jump through portals to reach safer quadrants."
+        self.quadrants = []
+        self.portals = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.quadrants = [
+            {"id": 0, "rect": (0, 0, arena_w/2, arena_h/2), "safe_x": arena_w/4, "safe_y": arena_h/4, "safe_r": arena_w/4, "shrink_speed": 10.0},
+            {"id": 1, "rect": (arena_w/2, 0, arena_w, arena_h/2), "safe_x": 3*arena_w/4, "safe_y": arena_h/4, "safe_r": arena_w/4, "shrink_speed": 15.0},
+            {"id": 2, "rect": (0, arena_h/2, arena_w/2, arena_h), "safe_x": arena_w/4, "safe_y": 3*arena_h/4, "safe_r": arena_w/4, "shrink_speed": 20.0},
+            {"id": 3, "rect": (arena_w/2, arena_h/2, arena_w, arena_h), "safe_x": 3*arena_w/4, "safe_y": 3*arena_h/4, "safe_r": arena_w/4, "shrink_speed": 25.0}
+        ]
+
+        self.portals = [
+            {"x": arena_w/4, "y": arena_h/2, "target": 1, "cooldown": 0},
+            {"x": arena_w/2, "y": arena_h/4, "target": 2, "cooldown": 0},
+            {"x": 3*arena_w/4, "y": arena_h/2, "target": 3, "cooldown": 0},
+            {"x": arena_w/2, "y": 3*arena_h/4, "target": 0, "cooldown": 0}
+        ]
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        # Shrink quadrants
+        for q in self.quadrants:
+            q["safe_r"] = max(20.0, q["safe_r"] - q["shrink_speed"] * delta)
+            if hasattr(world, "add_event"):
+                import random
+                if random.random() < 0.05:
+                    world.add_event("visual_effect", {"type": "zone_ring", "x": q["safe_x"], "y": q["safe_y"], "radius": q["safe_r"]})
+
+        # Process portals
+        import math
+        for p in self.portals:
+            p["cooldown"] = max(0, p["cooldown"] - delta)
+            if p["cooldown"] > 0: continue
+
+            for b in balls:
+                if not getattr(b, "alive", False): continue
+                dx = b.x - p["x"]
+                dy = b.y - p["y"]
+                if math.sqrt(dx*dx + dy*dy) < 30.0 + getattr(b, "radius", 10.0):
+                    target_q = self.quadrants[p["target"]]
+                    b.x = target_q["safe_x"]
+                    b.y = target_q["safe_y"]
+                    p["cooldown"] = 2.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("visual_effect", {"type": "portal_use", "x": b.x, "y": b.y})
+                    break
+
+        # Damage outside safe zones
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+
+            # Find which quadrant the ball is in
+            in_q = None
+            for q in self.quadrants:
+                x1, y1, x2, y2 = q["rect"]
+                if x1 <= b.x <= x2 and y1 <= b.y <= y2:
+                    in_q = q
+                    break
+
+            if in_q:
+                dist = math.sqrt((b.x - in_q["safe_x"])**2 + (b.y - in_q["safe_y"])**2)
+                if dist > in_q["safe_r"]:
+                    if hasattr(b, 'take_damage'):
+                        b.take_damage(20.0 * delta)
+                    else:
+                        b.hp -= 20.0 * delta
+
+GAME_MODES["quadrant_shrink"] = QuadrantShrinkMode()

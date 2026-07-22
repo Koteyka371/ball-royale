@@ -51611,3 +51611,133 @@ class ElementalChainReactionMode extends GameMode:
 		name = "Elemental Chain Reactions"
 		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()
+
+
+class QuadrantShrinkMode extends GameMode:
+    var quadrants = []
+    var portals = []
+
+    func _init():
+        super._init()
+        name = "Quadrant Shrink"
+        description = "Different quadrants of the arena have their own shrinking mechanic, forcing players to navigate moving safe zones or jump through portals to reach safer quadrants."
+
+    func start(world, balls):
+        super.start(world, balls)
+        var arena_w = 1000.0
+        var arena_h = 1000.0
+
+        if world != null:
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+                var arena = world.get("arena")
+                if typeof(arena) == TYPE_DICTIONARY:
+                    arena_w = arena.get("width", 1000.0)
+                    arena_h = arena.get("height", 1000.0)
+                elif arena != null:
+                    if "width" in arena: arena_w = arena.width
+                    if "height" in arena: arena_h = arena.height
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY:
+                    arena_w = world.arena.get("width", 1000.0)
+                    arena_h = world.arena.get("height", 1000.0)
+                else:
+                    if "width" in world.arena: arena_w = world.arena.width
+                    if "height" in world.arena: arena_h = world.arena.height
+
+        quadrants = [
+            {"id": 0, "rect": [0, 0, arena_w/2, arena_h/2], "safe_x": arena_w/4, "safe_y": arena_h/4, "safe_r": arena_w/4, "shrink_speed": 10.0},
+            {"id": 1, "rect": [arena_w/2, 0, arena_w, arena_h/2], "safe_x": 3*arena_w/4, "safe_y": arena_h/4, "safe_r": arena_w/4, "shrink_speed": 15.0},
+            {"id": 2, "rect": [0, arena_h/2, arena_w/2, arena_h], "safe_x": arena_w/4, "safe_y": 3*arena_h/4, "safe_r": arena_w/4, "shrink_speed": 20.0},
+            {"id": 3, "rect": [arena_w/2, arena_h/2, arena_w, arena_h], "safe_x": 3*arena_w/4, "safe_y": 3*arena_h/4, "safe_r": arena_w/4, "shrink_speed": 25.0}
+        ]
+
+        portals = [
+            {"x": arena_w/4, "y": arena_h/2, "target": 1, "cooldown": 0},
+            {"x": arena_w/2, "y": arena_h/4, "target": 2, "cooldown": 0},
+            {"x": 3*arena_w/4, "y": arena_h/2, "target": 3, "cooldown": 0},
+            {"x": arena_w/2, "y": 3*arena_h/4, "target": 0, "cooldown": 0}
+        ]
+
+    func tick(world, balls, delta = 0.016):
+        super.tick(world, balls, delta)
+
+        for q in quadrants:
+            q["safe_r"] = max(20.0, q["safe_r"] - q["shrink_speed"] * delta)
+            if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+                if randf() < 0.05:
+                    world.add_event("visual_effect", {"type": "zone_ring", "x": q["safe_x"], "y": q["safe_y"], "radius": q["safe_r"]})
+
+        for p in portals:
+            p["cooldown"] = max(0, p["cooldown"] - delta)
+            if p["cooldown"] > 0: continue
+
+            for b in balls:
+                var alive = false
+                var bx = 0.0
+                var by = 0.0
+                var br = 10.0
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    alive = b.get("alive", false)
+                    bx = b.get("x", 0.0)
+                    by = b.get("y", 0.0)
+                    br = b.get("radius", 10.0)
+                else:
+                    if "alive" in b: alive = b.alive
+                    if "x" in b: bx = b.x
+                    if "y" in b: by = b.y
+                    if "radius" in b: br = b.radius
+
+                if not alive: continue
+
+                var dx = bx - p["x"]
+                var dy = by - p["y"]
+                if sqrt(dx*dx + dy*dy) < 30.0 + br:
+                    var target_q = quadrants[p["target"]]
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["x"] = target_q["safe_x"]
+                        b["y"] = target_q["safe_y"]
+                    else:
+                        if "x" in b: b.x = target_q["safe_x"]
+                        if "y" in b: b.y = target_q["safe_y"]
+
+                    p["cooldown"] = 2.0
+                    if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+                        world.add_event("visual_effect", {"type": "portal_use", "x": target_q["safe_x"], "y": target_q["safe_y"]})
+                    break
+
+        for b in balls:
+            var alive = false
+            var bx = 0.0
+            var by = 0.0
+
+            if typeof(b) == TYPE_DICTIONARY:
+                alive = b.get("alive", false)
+                bx = b.get("x", 0.0)
+                by = b.get("y", 0.0)
+            else:
+                if "alive" in b: alive = b.alive
+                if "x" in b: bx = b.x
+                if "y" in b: by = b.y
+
+            if not alive: continue
+
+            var in_q = null
+            for q in quadrants:
+                var rect = q["rect"]
+                if bx >= rect[0] and bx <= rect[2] and by >= rect[1] and by <= rect[3]:
+                    in_q = q
+                    break
+
+            if in_q != null:
+                var dist = sqrt((bx - in_q["safe_x"])*(bx - in_q["safe_x"]) + (by - in_q["safe_y"])*(by - in_q["safe_y"]))
+                if dist > in_q["safe_r"]:
+                    if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
+                        b.take_damage(20.0 * delta)
+                    else:
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["hp"] -= 20.0 * delta
+                        else:
+                            if "hp" in b: b.hp -= 20.0 * delta
+
+GAME_MODES['quadrant_shrink'] = QuadrantShrinkMode.new()

@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Labyrinth Mode",
+  "description": "Instead of a simple shrinking circle, the safe zone shrinks by dynamically shifting procedural labyrinth walls inwards, crushing players caught behind them."
+}

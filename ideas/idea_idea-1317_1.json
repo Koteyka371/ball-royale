@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tangle Hazard",
+  "description": "A hazard zone where balls entering it have their velocity vectors perfectly swapped with another randomly selected ball currently inside the hazard, creating unpredictable ricochet opportunities."
+}
