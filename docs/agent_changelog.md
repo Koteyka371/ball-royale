@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1317] Shrinking Arenas Mechanic — *2026-07-22 16:04:24 UTC*
+
+Different quadrants of the arena have their own shrinking mechanic, forcing players to navigate moving safe zones or jump through portals to reach safer quadrants.
+
+---
+
 ## [idea-1284] Stamina Overflow State — *2026-07-22 10:10:54 UTC*
 
 If a ball maintains max stamina for 5 continuous seconds, they enter an Overflow state, granting them 20% increased speed and slightly reduced incoming damage until stamina drops below 80%.
