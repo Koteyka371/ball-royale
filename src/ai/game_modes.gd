@@ -43598,6 +43598,91 @@ class AuraPulseEventMode extends GameMode:
 										elif key in target:
 											target.set(key, 5.0)
 
+class ShrinkingArenaMode extends GameMode:
+	var shrink_timer = 0.0
+
+	func _init():
+		name = "Shrinking Arena"
+		description = "Every 30 seconds the arena size is reduced by 10%, forcing players into closer combat."
+		shrink_timer = 0.0
+
+	func tick(world, balls, delta = 0.016):
+		apply_dynamic_traits(world, balls, delta)
+
+		if not ("shrink_timer" in self):
+			shrink_timer = 0.0
+
+		shrink_timer += delta
+
+		if shrink_timer >= 30.0:
+			shrink_timer -= 30.0
+
+			if ("arena" in world) and world.arena != null:
+				var old_w = 1000.0
+				var old_h = 1000.0
+
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					old_w = world.arena.get("width", 1000.0)
+					old_h = world.arena.get("height", 1000.0)
+				else:
+					if "width" in world.arena: old_w = world.arena.width
+					if "height" in world.arena: old_h = world.arena.height
+
+				var new_w = max(200.0, old_w * 0.9)
+				var new_h = max(200.0, old_h * 0.9)
+
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["width"] = new_w
+					world.arena["height"] = new_h
+				else:
+					world.arena.width = new_w
+					world.arena.height = new_h
+
+				for b in balls:
+					var radius = 15.0
+					if typeof(b) == TYPE_DICTIONARY:
+						radius = b.get("radius", 15.0)
+						var bx = b.get("x", 0.0)
+						var by = b.get("y", 0.0)
+						if bx > new_w - radius: b["x"] = new_w - radius
+						if by > new_h - radius: b["y"] = new_h - radius
+					else:
+						if "radius" in b: radius = b.radius
+						var bx = 0.0
+						var by = 0.0
+						if "x" in b: bx = b.x
+						if "y" in b: by = b.y
+						if bx > new_w - radius: b.x = new_w - radius
+						if by > new_h - radius: b.y = new_h - radius
+
+				var hazards = []
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					hazards = world.arena.get("hazards", [])
+				else:
+					if "hazards" in world.arena: hazards = world.arena.hazards
+
+				for h in hazards:
+					var radius = 0.0
+					if typeof(h) == TYPE_DICTIONARY:
+						radius = h.get("radius", 0.0)
+						var hx = h.get("x", 0.0)
+						var hy = h.get("y", 0.0)
+						if hx > new_w - radius: h["x"] = new_w - radius
+						if hy > new_h - radius: h["y"] = new_h - radius
+					else:
+						if "radius" in h: radius = h.radius
+						var hx = 0.0
+						var hy = 0.0
+						if "x" in h: hx = h.x
+						if "y" in h: hy = h.y
+						if hx > new_w - radius: h.x = new_w - radius
+						if hy > new_h - radius: h.y = new_h - radius
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("arena_shrunk", {"width": new_w, "height": new_h})
+				elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+					world.add_event.call("arena_shrunk", {"width": new_w, "height": new_h})
+
 GAME_MODES = {
 	"aura_pulse_event": AuraPulseEventMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
@@ -43895,6 +43980,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"king_of_the_hill": KingOfTheHillMode.new(),
 	"moving_zone": MovingZoneMode.new(),
 	"vampire_royale": VampireRoyaleMode.new(),
+	"shrinking_arena": ShrinkingArenaMode.new(),
 	"battle_royale": BattleRoyaleMode.new(),
 	"team_deathmatch": TeamDeathmatchMode.new(),
 	"zombie_infection": ZombieInfectionMode.new(),
