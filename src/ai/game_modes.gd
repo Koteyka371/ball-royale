@@ -34854,6 +34854,8 @@ class LavaRoyaleMode extends GameMode:
 	var zone_target_x: float = 500.0
 	var zone_target_y: float = 500.0
 	var zone_move_speed: float = 30.0
+	var receding: bool = false
+	var max_zone_radius: float = 1000.0
 	var rng = RandomNumberGenerator.new()
 
 	func _init() -> void:
@@ -35058,6 +35060,7 @@ class LavaRoyaleMode extends GameMode:
 			zone_target_x = zone_x
 			zone_target_y = zone_y
 			zone_radius = max(arena_width, arena_height)
+			max_zone_radius = zone_radius
 
 		var arena_width_for_move = 1000.0
 		var arena_height_for_move = 1000.0
@@ -35076,10 +35079,18 @@ class LavaRoyaleMode extends GameMode:
 			zone_target_x = rng.randf_range(buffer, arena_width_for_move - buffer)
 			zone_target_y = rng.randf_range(buffer, arena_height_for_move - buffer)
 
-		if zone_radius > 50.0:
-			zone_radius -= shrink_rate * delta
-			if zone_radius < 50.0:
-				zone_radius = 50.0
+		if not receding:
+			if zone_radius > 50.0:
+				zone_radius -= shrink_rate * delta
+				if zone_radius <= 50.0:
+					zone_radius = 50.0
+					receding = true
+		else:
+			if zone_radius < max_zone_radius:
+				zone_radius += (shrink_rate * 0.5) * delta
+				if zone_radius >= max_zone_radius:
+					zone_radius = max_zone_radius
+					receding = false
 
 		if "arena" in world and world.arena and "hazards" in world.arena and rng.randf() < 0.1 * delta * 60:
 			var angle = rng.randf_range(0, PI * 2)

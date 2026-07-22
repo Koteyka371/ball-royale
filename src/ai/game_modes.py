@@ -22125,6 +22125,8 @@ class LavaRoyaleMode(GameMode):
         self.zone_target_x = 500.0
         self.zone_target_y = 500.0
         self.zone_move_speed = 30.0
+        self.receding = False
+        self.max_zone_radius = 1000.0
         import random
         self.random = random
 
@@ -22156,6 +22158,7 @@ class LavaRoyaleMode(GameMode):
             self.zone_target_x = self.zone_x
             self.zone_target_y = self.zone_y
             self.zone_radius = max(arena_width, arena_height)
+            self.max_zone_radius = self.zone_radius
 
         arena_width_for_move = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height_for_move = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -22171,10 +22174,18 @@ class LavaRoyaleMode(GameMode):
             self.zone_target_x = self.random.uniform(buffer, arena_width_for_move - buffer)
             self.zone_target_y = self.random.uniform(buffer, arena_height_for_move - buffer)
 
-        if self.zone_radius > 50.0:
-            self.zone_radius -= self.shrink_rate * delta
-            if self.zone_radius < 50.0:
-                self.zone_radius = 50.0
+        if not getattr(self, "receding", False):
+            if self.zone_radius > 50.0:
+                self.zone_radius -= self.shrink_rate * delta
+                if self.zone_radius <= 50.0:
+                    self.zone_radius = 50.0
+                    self.receding = True
+        else:
+            if self.zone_radius < getattr(self, "max_zone_radius", 1000.0):
+                self.zone_radius += (self.shrink_rate * 0.5) * delta
+                if self.zone_radius >= getattr(self, "max_zone_radius", 1000.0):
+                    self.zone_radius = getattr(self, "max_zone_radius", 1000.0)
+                    self.receding = False
 
         random_val = getattr(self.random, "random", lambda: 0.0)()
         if hasattr(world, "arena") and hasattr(world.arena, "hazards") and random_val < 0.1 * delta * 60:
