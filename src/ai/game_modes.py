@@ -17724,12 +17724,18 @@ class BlizzardMode(GameMode):
                 self.blizzard_duration = 10.0
                 if hasattr(world, "add_event"):
                     world.add_event("blizzard_warning", {"type": "weather_warning", "message": "A BLIZZARD HAS BEGUN!"})
+                    world.add_event("camera_zoom", {"zoom": 1.5, "duration": 1.0})
+                    if hasattr(world, "arena"):
+                        world.arena.is_foggy = True
         else:
             self.blizzard_duration -= delta
             if self.blizzard_duration <= 0:
                 self.blizzard_active = False
                 if hasattr(world, "add_event"):
                     world.add_event("blizzard_end", {"type": "weather_warning", "message": "The blizzard has ended."})
+                    world.add_event("camera_zoom", {"zoom": 1.0, "duration": 1.0})
+                    if hasattr(world, "arena"):
+                        world.arena.is_foggy = False
 
             self.spawn_timer += delta
             if self.spawn_timer >= 1.0:
@@ -17791,6 +17797,15 @@ class BlizzardMode(GameMode):
             else:
                 setattr(b, "is_sliding", False)
                 setattr(b, "friction_multiplier", 1.0)
+
+                # Leave footprints in the snow when not on ice during a blizzard
+                if self.blizzard_active and (getattr(b, "velocity_x", 0) != 0 or getattr(b, "velocity_y", 0) != 0):
+                    footprint_timer = getattr(b, "footprint_timer", 0.0) + delta
+                    if footprint_timer > 0.1: # drop footprint every 0.1s
+                        if hasattr(world, "add_event"):
+                            world.add_event("footprint", {"x": b.x, "y": b.y, "duration": 2.0})
+                        footprint_timer = 0.0
+                    setattr(b, "footprint_timer", footprint_timer)
 
             b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * speed_mult
 
