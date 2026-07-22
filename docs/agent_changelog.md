@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1270] Whirlpool Traps — *2026-07-22 06:40:56 UTC*
+
+In water-themed arenas, Whirlpools can spawn that slowly suck entities towards the center, reducing movement speed. Entities that reach the center are briefly slowed down or submerge before resurfacing, dropping some HP or receiving a wet debuff.
+
+---
+
 ## [idea-1319] Collapsing Ceiling Hazard — *2026-07-22 06:40:51 UTC*
 
 Instead of dropping panels from below, introduce a collapsing ceiling that shrinks the vertical height in safe zones. Balls caught under falling debris are briefly stunned and take massive damage.
