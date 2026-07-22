@@ -485,10 +485,13 @@ class GameMode:
 
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "is_submerged", False):
-                b.submerge_timer -= delta
+                submerge_timer_val = getattr(b, 'submerge_timer', 0.0)
+                if not isinstance(submerge_timer_val, (int, float)):
+                    submerge_timer_val = 0.0
+                b.submerge_timer = submerge_timer_val - delta
                 # Significantly slow down while submerged
                 b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.2
-                if b.submerge_timer <= 0:
+                if getattr(b, 'submerge_timer', 0.0) <= 0:
                     b.is_submerged = False
                     # Drop some HP
                     if hasattr(b, "take_damage"):
