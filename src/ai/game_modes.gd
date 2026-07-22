@@ -8428,14 +8428,24 @@ class EscortMode extends GameMode:
 			payload = defenders[0]
 			if typeof(payload) == TYPE_DICTIONARY:
 				payload["ball_type"] = "payload"
-				payload["is_invulnerable"] = true
+				payload["is_invulnerable"] = false
+				payload["max_hp"] = 5000.0
+				payload["hp"] = 5000.0
+				payload["disabled_timer"] = 0.0
+				payload["damage_taken_window"] = 0.0
+				payload["damage_window_timer"] = 0.0
 				payload["speed"] = 0.5
 				payload["damage"] = 0.0
 				payload["x"] = 100.0
 				payload["y"] = 500.0
 			else:
 				payload.ball_type = "payload"
-				payload.is_invulnerable = true
+				payload.is_invulnerable = false
+				payload.max_hp = 5000.0
+				payload.hp = 5000.0
+				payload.set("disabled_timer", 0.0)
+				payload.set("damage_taken_window", 0.0)
+				payload.set("damage_window_timer", 0.0)
 				payload.speed = 0.5
 				payload.damage = 0.0
 				payload.x = 100.0
@@ -8635,6 +8645,62 @@ class EscortMode extends GameMode:
 		if payload != null:
 			var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
 			if is_alive:
+				var current_hp = payload.get("hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("hp")
+				if current_hp == null: current_hp = 5000.0
+
+				if current_hp < 100.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["hp"] = 5000.0
+					else:
+						payload.set("hp", 5000.0)
+					current_hp = 5000.0
+
+				var last_hp = payload.get("last_hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("last_hp")
+				if last_hp == null: last_hp = current_hp
+
+				var damage_taken = last_hp - current_hp
+				if damage_taken > 0:
+					var cw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+					if cw == null: cw = 0.0
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_taken_window"] = cw + damage_taken
+						payload["damage_window_timer"] = 3.0
+					else:
+						payload.set("damage_taken_window", cw + damage_taken)
+						payload.set("damage_window_timer", 3.0)
+
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["last_hp"] = current_hp
+				else:
+					payload.set("last_hp", current_hp)
+
+				var dwt = payload.get("damage_window_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_window_timer")
+				if dwt == null: dwt = 0.0
+				if dwt > 0:
+					dwt -= delta
+					if dwt <= 0:
+						if typeof(payload) == TYPE_DICTIONARY:
+							payload["damage_taken_window"] = 0.0
+						else:
+							payload.set("damage_taken_window", 0.0)
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_window_timer"] = dwt
+					else:
+						payload.set("damage_window_timer", dwt)
+
+				var dtw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+				if dtw == null: dtw = 0.0
+				if dtw > 500.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["disabled_timer"] = 5.0
+						payload["damage_taken_window"] = 0.0
+					else:
+						payload.set("disabled_timer", 5.0)
+						payload.set("damage_taken_window", 0.0)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var px_ev = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+						var py_ev = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+						world.add_event("payload_disabled", {"x": px_ev, "y": py_ev})
 				var px = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.x
 				var py = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.y
 				var payload_team = payload.get("team", "") if typeof(payload) == TYPE_DICTIONARY else payload.get("team", "")
@@ -8791,7 +8857,20 @@ class EscortMode extends GameMode:
 						payload.set("has_reflecting_shield", false)
 						payload.set("reflect_projectiles", false)
 
-				var base_spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.speed
+				var disabled_t = payload.get("disabled_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("disabled_timer")
+				if disabled_t == null: disabled_t = 0.0
+
+				if disabled_t > 0:
+					disabled_t -= delta
+					if disabled_t < 0: disabled_t = 0.0
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["disabled_timer"] = disabled_t
+					else:
+						payload.set("disabled_timer", disabled_t)
+					speed_mult *= 0.2
+
+				var base_spd = payload.get("speed", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("speed")
+				if base_spd == null: base_spd = 0.5
 				var spd = base_spd * speed_mult
 
 				var path_data = paths[chosen_path]
@@ -23327,6 +23406,62 @@ class TugOfWarMode extends GameMode:
 		if payload != null:
 			var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
 			if is_alive:
+				var current_hp = payload.get("hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("hp")
+				if current_hp == null: current_hp = 5000.0
+
+				if current_hp < 100.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["hp"] = 5000.0
+					else:
+						payload.set("hp", 5000.0)
+					current_hp = 5000.0
+
+				var last_hp = payload.get("last_hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("last_hp")
+				if last_hp == null: last_hp = current_hp
+
+				var damage_taken = last_hp - current_hp
+				if damage_taken > 0:
+					var cw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+					if cw == null: cw = 0.0
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_taken_window"] = cw + damage_taken
+						payload["damage_window_timer"] = 3.0
+					else:
+						payload.set("damage_taken_window", cw + damage_taken)
+						payload.set("damage_window_timer", 3.0)
+
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["last_hp"] = current_hp
+				else:
+					payload.set("last_hp", current_hp)
+
+				var dwt = payload.get("damage_window_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_window_timer")
+				if dwt == null: dwt = 0.0
+				if dwt > 0:
+					dwt -= delta
+					if dwt <= 0:
+						if typeof(payload) == TYPE_DICTIONARY:
+							payload["damage_taken_window"] = 0.0
+						else:
+							payload.set("damage_taken_window", 0.0)
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_window_timer"] = dwt
+					else:
+						payload.set("damage_window_timer", dwt)
+
+				var dtw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+				if dtw == null: dtw = 0.0
+				if dtw > 500.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["disabled_timer"] = 5.0
+						payload["damage_taken_window"] = 0.0
+					else:
+						payload.set("disabled_timer", 5.0)
+						payload.set("damage_taken_window", 0.0)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var px_ev = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+						var py_ev = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+						world.add_event("payload_disabled", {"x": px_ev, "y": py_ev})
 				var px = payload.get("x", arena_width / 2.0) if typeof(payload) == TYPE_DICTIONARY else payload.x
 				var py = payload.get("y", arena_height / 2.0) if typeof(payload) == TYPE_DICTIONARY else payload.y
 				var pvx = payload.get("vx", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("vx")
@@ -31738,6 +31873,62 @@ class ReverseTugOfWarMode extends GameMode:
 		if payload != null:
 			var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
 			if is_alive:
+				var current_hp = payload.get("hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("hp")
+				if current_hp == null: current_hp = 5000.0
+
+				if current_hp < 100.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["hp"] = 5000.0
+					else:
+						payload.set("hp", 5000.0)
+					current_hp = 5000.0
+
+				var last_hp = payload.get("last_hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("last_hp")
+				if last_hp == null: last_hp = current_hp
+
+				var damage_taken = last_hp - current_hp
+				if damage_taken > 0:
+					var cw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+					if cw == null: cw = 0.0
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_taken_window"] = cw + damage_taken
+						payload["damage_window_timer"] = 3.0
+					else:
+						payload.set("damage_taken_window", cw + damage_taken)
+						payload.set("damage_window_timer", 3.0)
+
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["last_hp"] = current_hp
+				else:
+					payload.set("last_hp", current_hp)
+
+				var dwt = payload.get("damage_window_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_window_timer")
+				if dwt == null: dwt = 0.0
+				if dwt > 0:
+					dwt -= delta
+					if dwt <= 0:
+						if typeof(payload) == TYPE_DICTIONARY:
+							payload["damage_taken_window"] = 0.0
+						else:
+							payload.set("damage_taken_window", 0.0)
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_window_timer"] = dwt
+					else:
+						payload.set("damage_window_timer", dwt)
+
+				var dtw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+				if dtw == null: dtw = 0.0
+				if dtw > 500.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["disabled_timer"] = 5.0
+						payload["damage_taken_window"] = 0.0
+					else:
+						payload.set("disabled_timer", 5.0)
+						payload.set("damage_taken_window", 0.0)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var px_ev = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+						var py_ev = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+						world.add_event("payload_disabled", {"x": px_ev, "y": py_ev})
 				var red_count = 0
 				var blue_count = 0
 
@@ -51763,6 +51954,62 @@ class SharedTugOfWarMode extends TugOfWarMode:
 		if payload != null:
 			var is_alive = payload.get("alive", false) if typeof(payload) == TYPE_DICTIONARY else payload.alive
 			if is_alive:
+				var current_hp = payload.get("hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("hp")
+				if current_hp == null: current_hp = 5000.0
+
+				if current_hp < 100.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["hp"] = 5000.0
+					else:
+						payload.set("hp", 5000.0)
+					current_hp = 5000.0
+
+				var last_hp = payload.get("last_hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("last_hp")
+				if last_hp == null: last_hp = current_hp
+
+				var damage_taken = last_hp - current_hp
+				if damage_taken > 0:
+					var cw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+					if cw == null: cw = 0.0
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_taken_window"] = cw + damage_taken
+						payload["damage_window_timer"] = 3.0
+					else:
+						payload.set("damage_taken_window", cw + damage_taken)
+						payload.set("damage_window_timer", 3.0)
+
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["last_hp"] = current_hp
+				else:
+					payload.set("last_hp", current_hp)
+
+				var dwt = payload.get("damage_window_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_window_timer")
+				if dwt == null: dwt = 0.0
+				if dwt > 0:
+					dwt -= delta
+					if dwt <= 0:
+						if typeof(payload) == TYPE_DICTIONARY:
+							payload["damage_taken_window"] = 0.0
+						else:
+							payload.set("damage_taken_window", 0.0)
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["damage_window_timer"] = dwt
+					else:
+						payload.set("damage_window_timer", dwt)
+
+				var dtw = payload.get("damage_taken_window", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("damage_taken_window")
+				if dtw == null: dtw = 0.0
+				if dtw > 500.0:
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["disabled_timer"] = 5.0
+						payload["damage_taken_window"] = 0.0
+					else:
+						payload.set("disabled_timer", 5.0)
+						payload.set("damage_taken_window", 0.0)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var px_ev = payload.get("x", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+						var py_ev = payload.get("y", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+						world.add_event("payload_disabled", {"x": px_ev, "y": py_ev})
 				var px = payload.get("x", center_x) if typeof(payload) == TYPE_DICTIONARY else payload.x
 				if px > center_x:
 					scores["Red"] += delta
