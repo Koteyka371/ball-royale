@@ -178,8 +178,10 @@ func generate():
         var r = rng.randf()
         var kind = "spikes"
         if r < 0.05:
-            kind = "swap_trap"
+            kind = "whirlpool"
         elif r < 0.10:
+            kind = "swap_trap"
+        elif r < 0.15:
             kind = "shuffle_trap"
         elif r < 0.25:
             kind = "lava"
@@ -264,7 +266,10 @@ func generate():
 
         var radius = 15.0
         var damage = 20.0
-        if kind == "spikes":
+        if kind == "whirlpool":
+            radius = rng.randf_range(50.0, 100.0)
+            damage = 10.0
+        elif kind == "spikes":
             radius = rng.randf_range(15.0, 30.0)
             damage = 20.0
         elif kind == "mirage_safe_zone":

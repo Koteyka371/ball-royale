@@ -1720,6 +1720,31 @@ class SummerArena(ProceduralArena):
                     h.active = False
 
 
+
+class WaterArena(ProceduralArena):
+    def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
+        super().__init__(arena_size, 5, seed)
+        self.is_water_theme = True
+
+    def generate(self):
+        super().generate()
+        import random
+
+        # Add whirlpools
+        for _ in range(5):
+            x = random.uniform(100, self.width - 100)
+            y = random.uniform(100, self.height - 100)
+            h_id = 6000 + len(self.hazards)
+            whirlpool = type("Hazard", (object,), {})()
+            whirlpool.id = h_id
+            whirlpool.x = x
+            whirlpool.y = y
+            whirlpool.radius = random.uniform(50.0, 100.0)
+            whirlpool.kind = "whirlpool"
+            whirlpool.damage = 10.0
+            whirlpool.active = True
+            self.hazards.append(whirlpool)
+
 class LavaArena(ProceduralArena):
     def __init__(self, arena_size: float = 2000.0, seed: int | None = None):
         super().__init__(arena_size, 5, seed)
