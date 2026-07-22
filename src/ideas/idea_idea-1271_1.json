@@ -1,4 +1,1 @@
-{
-  "title": "Quantum Recall Beacon",
-  "description": "A deployable hazard that constantly records the positions of nearby allies. When an ally drops below 20% HP, it instantly teleports them to the beacon's location and consumes the beacon."
-}
+{"title": "Lightning Rod Trap", "description": "A deployable hazard that constantly records the positions of nearby allies. When an ally drops below 20% HP, it instantly teleports them to the beacon's location and consumes the beacon."}
