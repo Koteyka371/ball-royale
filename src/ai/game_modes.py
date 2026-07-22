@@ -25858,7 +25858,133 @@ class PinballMutatorMode(GameMode):
                 if hasattr(ball, 'wall_damage_immunity'):
                     ball.wall_damage_immunity = True
 
+
+class BiomeSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Biome Safe Zones"
+        self.description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages."
+        self.zones = [] # list of {"x": float, "y": float, "radius": float, "target_x": float, "target_y": float, "biome": string}
+        self.min_zone_radius = 50.0
+        self.biomes = ["speed", "damage", "heal", "shield"]
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        import random
+        self.zones = []
+        for i in range(4):
+            r = min(arena_width, arena_height) / 4.0
+            x = random.uniform(r, arena_width - r)
+            y = random.uniform(r, arena_height - r)
+            self.zones.append({
+                "x": x,
+                "y": y,
+                "radius": r,
+                "target_x": random.uniform(r, arena_width - r),
+                "target_y": random.uniform(r, arena_height - r),
+                "biome": self.biomes[i % len(self.biomes)]
+            })
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        # Update zones
+        for zone in self.zones:
+            # shrink
+            if zone["radius"] > self.min_zone_radius:
+                zone["radius"] -= 2.0 * delta
+                if zone["radius"] < self.min_zone_radius:
+                    zone["radius"] = self.min_zone_radius
+
+            # move towards target
+            dx = zone["target_x"] - zone["x"]
+            dy = zone["target_y"] - zone["y"]
+            dist = math.sqrt(dx*dx + dy*dy)
+            speed = 10.0 * delta
+            if dist > speed:
+                zone["x"] += (dx/dist) * speed
+                zone["y"] += (dy/dist) * speed
+            else:
+                zone["x"] = zone["target_x"]
+                zone["y"] = zone["target_y"]
+                zone["target_x"] = random.uniform(200, arena_width - 200)
+                zone["target_y"] = random.uniform(200, arena_height - 200)
+
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(b, "alive", False):
+                continue
+
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            if not hasattr(b, "base_damage"):
+                b.base_damage = getattr(b, "damage", 10.0)
+
+            in_any_zone = False
+            active_biome = None
+            closest_dist = float('inf')
+
+            for zone in self.zones:
+                dx = b.x - zone["x"]
+                dy = b.y - zone["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist <= zone["radius"]:
+                    in_any_zone = True
+                    if dist < closest_dist:
+                        closest_dist = dist
+                        active_biome = zone["biome"]
+
+            # Remove previous modifiers if biome changed or outside zone
+            if getattr(b, "biome_modifier_speed", False) and active_biome != "speed":
+                b.speed = b.base_speed
+                delattr(b, "biome_modifier_speed")
+
+            if getattr(b, "biome_modifier_damage", False) and active_biome != "damage":
+                b.damage = b.base_damage
+                delattr(b, "biome_modifier_damage")
+
+            if in_any_zone and active_biome:
+                if active_biome == "speed":
+                    if not getattr(b, "biome_modifier_speed", False):
+                        b.speed = b.base_speed * 1.5
+                        b.biome_modifier_speed = True
+                elif active_biome == "damage":
+                    if not getattr(b, "biome_modifier_damage", False):
+                        b.damage = b.base_damage * 1.5
+                        b.biome_modifier_damage = True
+                elif active_biome == "heal":
+                    if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                        b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 10.0 * delta)
+                elif active_biome == "shield":
+                    b.energy_shield_active = True
+                    b.energy_shield_hp = getattr(b, "energy_shield_hp", 0.0) + 15.0 * delta
+                    if getattr(b, "energy_shield_hp", 0.0) > 50.0:
+                        b.energy_shield_hp = 50.0
+            else:
+                if not is_immune:
+                    damage = 10.0 * delta
+                    b.hp -= damage
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        if hasattr(b, "id") and b.id not in world.dead_balls:
+                            world.dead_balls.append(b.id)
+                            world.add_event("ball_died", {"id": b.id, "reason": "biome_safe_zones_storm", "killer_id": -1})
+
 GAME_MODES = {
+    "biome_safe_zones": BiomeSafeZonesMode(),
     'guild_storm': GuildStormMode(),
     'random_quantum_tunnels': RandomQuantumTunnelsMode(),
     "chroma_boss": ChromaBossMode(),
