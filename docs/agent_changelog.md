@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1326] Corrosive Acid Trap — *2026-07-22 21:41:36 UTC*
+
+A deployable hazard item that leaves a puddle of acid on the ground. Any ball moving through the puddle receives a stacking damage-over-time debuff that reduces their maximum speed and slowly eats away at their health for several seconds.
+
+---
+
 ## [idea-1341] Evolving Boss Encounters — *2026-07-22 21:41:31 UTC*
 
 Introduce AI bosses in the arena that evolve if left undefeated. Each time the safe zone shrinks, the boss gains a new random mutator (e.g., explosive aura, increased speed, or pulling gravity), turning it into a high-risk, high-reward target that drops multiple prestige tokens and rare artifacts when defeated.
