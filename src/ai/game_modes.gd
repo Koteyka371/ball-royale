@@ -41481,7 +41481,86 @@ class ChromaBossMode extends GameMode:
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("chroma_boss_aura_change", {"color": next_color})
 
+class GuildStormMode extends GameMode:
+	var guild_name = null
+	var cost = 500
+	var storm_active = false
+	var storm_duration = 30.0
+	var timer = 0.0
+	var guild_members_cache = []
+
+	func _init().():
+		name = "Guild Storm"
+		description = "A powerful storm summoned by pooling guild resources. Guild members gain speed and damage buffs, while non-members take periodic damage."
+
+	func setup(world, balls):
+		.setup(world, balls)
+
+		guild_members_cache = []
+		if guild_name != null:
+			var GuildManager = load("res://src/system/guild.gd")
+			if GuildManager != null:
+				var guild_manager = GuildManager.new()
+				var guild = guild_manager.get_guild(guild_name)
+				if guild != null and guild.has("resources") and guild["resources"] >= cost:
+					guild["resources"] -= cost
+					guild_manager.save()
+					storm_active = true
+					if guild.has("members"):
+						guild_members_cache = guild["members"]
+
+					if world.has_method("add_event"):
+						world.add_event("guild_storm", {
+							"type": "guild_storm",
+							"message": "Guild Storm activated by " + guild_name + "!"
+						})
+
+		for b in balls:
+			if not "base_speed" in b:
+				b.base_speed = b.speed if "speed" in b else 100.0
+			if not "base_damage" in b:
+				b.base_damage = b.damage if "damage" in b else 10.0
+
+	func tick(world, balls, delta=0.016):
+		.tick(world, balls, delta)
+
+		if not storm_active:
+			return
+
+		timer += delta
+		if timer >= storm_duration:
+			storm_active = false
+
+			for b in balls:
+				if "base_speed" in b:
+					b.speed = b.base_speed
+				if "base_damage" in b:
+					b.damage = b.base_damage
+
+			if world.has_method("add_event"):
+				world.add_event("guild_storm_end", {
+					"type": "guild_storm_end",
+					"message": "The Guild Storm has dissipated."
+				})
+			return
+
+		for b in balls:
+			var is_member = false
+
+			if guild_name != null and "player_id" in b:
+				if b.player_id in guild_members_cache:
+					is_member = true
+
+			if is_member:
+				b.speed = b.base_speed * 1.5
+				b.damage = b.base_damage * 1.5
+			else:
+				b.speed = b.base_speed
+				b.damage = b.base_damage
+				b.hp -= 5.0 * delta
+
 GAME_MODES = {
+	"guild_storm": GuildStormMode.new(),
 	"chroma_boss": ChromaBossMode.new(),
 	"rising_lava": RisingLavaMode.new(),
 	"time_rewind_altar": TimeRewindAltarMode.new(),

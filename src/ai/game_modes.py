@@ -25610,7 +25610,85 @@ class RandomQuantumTunnelsMode(GameMode):
                     break
 
 
+class GuildStormMode(GameMode):
+    def __init__(self, guild_name=None, cost=500):
+        super().__init__()
+        self.name = "Guild Storm"
+        self.description = "A powerful storm summoned by pooling guild resources. Guild members gain speed and damage buffs, while non-members take periodic damage."
+        self.guild_name = guild_name
+        self.cost = cost
+        self.storm_active = False
+        self.storm_duration = 30.0
+        self.timer = 0.0
+        self.guild_members_cache = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+
+        self.guild_members_cache = []
+        # Check if we can activate it
+        if self.guild_name:
+            from system.guild import GuildManager
+            guild_manager = GuildManager()
+            guild = guild_manager.get_guild(self.guild_name)
+            if guild and guild.get("resources", 0) >= self.cost:
+                guild["resources"] -= self.cost
+                guild_manager.save()
+                self.storm_active = True
+                self.guild_members_cache = guild.get("members", [])
+
+                if hasattr(world, 'add_event'):
+                    world.add_event('guild_storm', {
+                        'type': 'guild_storm',
+                        'message': f"Guild Storm activated by {self.guild_name}!"
+                    })
+
+        for b in balls:
+            if not getattr(b, 'base_speed', None):
+                b.base_speed = getattr(b, 'speed', 100.0)
+            if not getattr(b, 'base_damage', None):
+                b.base_damage = getattr(b, 'damage', 10.0)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not self.storm_active:
+            return
+
+        self.timer += delta
+        if self.timer >= self.storm_duration:
+            self.storm_active = False
+
+            # Reset buffs
+            for b in balls:
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+
+            if hasattr(world, 'add_event'):
+                world.add_event('guild_storm_end', {
+                    'type': 'guild_storm_end',
+                    'message': "The Guild Storm has dissipated."
+                })
+            return
+
+        for b in balls:
+            player_id = getattr(b, 'player_id', None)
+            is_member = False
+
+            if self.guild_name and player_id and player_id in self.guild_members_cache:
+                is_member = True
+
+            if is_member:
+                b.speed = b.base_speed * 1.5
+                b.damage = b.base_damage * 1.5
+            else:
+                b.speed = b.base_speed
+                b.damage = b.base_damage
+                # Periodic damage to non-members
+                b.hp -= 5.0 * delta
+
 GAME_MODES = {
+    'guild_storm': GuildStormMode(),
     'random_quantum_tunnels': RandomQuantumTunnelsMode(),
     "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
