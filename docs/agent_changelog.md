@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1361] Shrinking Arena Mod — *2026-07-22 22:34:39 UTC*
+
+Every 30 seconds the arena size is reduced by 10%, forcing players into closer combat.
+
+---
+
 ## [idea-1364] Sabotage the payload — *2026-07-22 22:30:36 UTC*
 
 In Escort mode, Attackers can now attack the payload directly to slow it down or temporarily disable its movement if enough damage is dealt within a short time window.

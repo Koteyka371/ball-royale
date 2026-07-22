@@ -23318,7 +23318,7 @@
     },
     {
       "id": "idea-1361",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Arena Mod",
@@ -34585,6 +34585,40 @@
         "src/ai/quantum_detonator.py",
         "src/ai/quantum_detonator.gd",
         "tests/test_quantum_detonator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2023",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Overcharge Battery",
+      "description": "In Escort mode, a rare item drops that attackers can use to deal massive chunk damage to the payload at once, or defenders can use to instantly heal and speed boost the payload.",
+      "allowed_paths": [
+        "src/ai/payload_overcharge_battery.py",
+        "src/ai/payload_overcharge_battery.gd",
+        "tests/test_payload_overcharge_battery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2024",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Anti-Gravity Field",
+      "description": "The payload in Escort Mode periodically projects a low-gravity field around itself, making it harder for attackers to accurately hit it but also allowing defenders to perform long jumps.",
+      "allowed_paths": [
+        "src/ai/payload_anti_gravity_field.py",
+        "src/ai/payload_anti_gravity_field.gd",
+        "tests/test_payload_anti_gravity_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
