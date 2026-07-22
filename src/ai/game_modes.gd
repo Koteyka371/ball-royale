@@ -3778,7 +3778,7 @@ class BattleRoyaleMode extends GameMode:
 			if world != null and world.has_method("add_event"):
 				world.add_event("final_boss_spawn", {"message": "A massive " + boss_type.capitalize() + " has emerged in the center of the safe zone!"})
 
-		# Check boss death
+		# Check boss death and evolve
 		for b in balls:
 			var is_final = false
 			if typeof(b) == TYPE_DICTIONARY and b.has("is_final_boss"): is_final = b["is_final_boss"]
@@ -3795,7 +3795,230 @@ class BattleRoyaleMode extends GameMode:
 				elif "reward_given" in b: r_given = b.reward_given
 				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("reward_given"): r_given = b.get_meta("reward_given")
 
-				if not b_alive and not r_given:
+				if b_alive:
+					var has_last_zone = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("last_zone_radius"): has_last_zone = true
+					elif "last_zone_radius" in b: has_last_zone = true
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("last_zone_radius"): has_last_zone = true
+
+					if not has_last_zone:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["last_zone_radius"] = self.get("zone_radius")
+							b["mutations"] = []
+							b["mutation_timer"] = 0.0
+						elif "last_zone_radius" in b:
+							b.last_zone_radius = self.get("zone_radius")
+							b.mutations = []
+							b.mutation_timer = 0.0
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+							b.set_meta("last_zone_radius", self.get("zone_radius"))
+							b.set_meta("mutations", [])
+							b.set_meta("mutation_timer", 0.0)
+
+					var last_zone = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("last_zone_radius"): last_zone = b["last_zone_radius"]
+					elif "last_zone_radius" in b: last_zone = b.last_zone_radius
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("last_zone_radius"): last_zone = b.get_meta("last_zone_radius")
+
+					var mut_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("mutation_timer"): mut_timer = b["mutation_timer"]
+					elif "mutation_timer" in b: mut_timer = b.mutation_timer
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("mutation_timer"): mut_timer = b.get_meta("mutation_timer")
+
+					var mutations = []
+					if typeof(b) == TYPE_DICTIONARY and b.has("mutations"): mutations = b["mutations"]
+					elif "mutations" in b: mutations = b.mutations
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("mutations"): mutations = b.get_meta("mutations")
+
+					if last_zone - self.get("zone_radius") >= 50.0:
+						last_zone = self.get("zone_radius")
+						if typeof(b) == TYPE_DICTIONARY: b["last_zone_radius"] = last_zone
+						elif "last_zone_radius" in b: b.last_zone_radius = last_zone
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("last_zone_radius", last_zone)
+
+						var all_muts = ["explosive_aura", "increased_speed", "pulling_gravity", "acid_trail", "shield_regen"]
+						var available = []
+						for m in all_muts:
+							if not mutations.has(m):
+								available.append(m)
+						if available.size() > 0:
+							var new_mut = available[rng.randi_range(0, available.size() - 1)]
+							mutations.append(new_mut)
+
+							if new_mut == "increased_speed":
+								var base_s = 120.0
+								if typeof(b) == TYPE_DICTIONARY and b.has("base_speed"): base_s = b["base_speed"]
+								elif "base_speed" in b: base_s = b.base_speed
+								elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("base_speed"): base_s = b.get_meta("base_speed")
+
+								base_s *= 1.5
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["base_speed"] = base_s
+									b["speed"] = base_s
+								elif "base_speed" in b:
+									b.base_speed = base_s
+									b.speed = base_s
+								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+									b.set_meta("base_speed", base_s)
+									b.set_meta("speed", base_s)
+							elif new_mut == "shield_regen":
+								var max_sh = 1000.0
+								if typeof(b) == TYPE_DICTIONARY and b.has("max_shield"): max_sh = b["max_shield"]
+								elif "max_shield" in b: max_sh = b.max_shield
+								elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("max_shield"): max_sh = b.get_meta("max_shield")
+
+								var cur_sh = 1000.0
+								if typeof(b) == TYPE_DICTIONARY and b.has("shield"): cur_sh = b["shield"]
+								elif "shield" in b: cur_sh = b.shield
+								elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("shield"): cur_sh = b.get_meta("shield")
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["max_shield"] = max_sh
+									b["shield"] = cur_sh
+								elif "max_shield" in b:
+									b.max_shield = max_sh
+									b.shield = cur_sh
+								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+									b.set_meta("max_shield", max_sh)
+									b.set_meta("shield", cur_sh)
+
+							if world != null and world.has_method("add_event"):
+								world.add_event("boss_evolved", {"message": "The boss evolved and gained " + new_mut.replace("_", " ") + "!"})
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["mutations"] = mutations
+					elif "mutations" in b:
+						b.mutations = mutations
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("mutations", mutations)
+
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						bx = b.get("x") if "x" in b else 0.0
+						by = b.get("y") if "y" in b else 0.0
+
+					if mutations.has("acid_trail"):
+						var acid_t = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("acid_trail_timer"): acid_t = b["acid_trail_timer"]
+						elif "acid_trail_timer" in b: acid_t = b.acid_trail_timer
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("acid_trail_timer"): acid_t = b.get_meta("acid_trail_timer")
+
+						acid_t += delta
+						if acid_t >= 0.5:
+							acid_t = 0.0
+							if "arena" in world and world.arena != null and "hazards" in world.arena:
+								var h_id = world.arena.hazards.size() + rng.randi_range(10000, 99999)
+								var h = {
+									"id": h_id,
+									"x": bx,
+									"y": by,
+									"radius": 30.0,
+									"target_radius": 30.0,
+									"kind": "acid_puddle",
+									"damage": 15.0,
+									"active": true,
+									"duration": 5.0
+								}
+								world.arena.hazards.append(h)
+
+						if typeof(b) == TYPE_DICTIONARY: b["acid_trail_timer"] = acid_t
+						elif "acid_trail_timer" in b: b.acid_trail_timer = acid_t
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("acid_trail_timer", acid_t)
+
+					if mutations.has("shield_regen"):
+						var max_sh = 1000.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("max_shield"): max_sh = b["max_shield"]
+						elif "max_shield" in b: max_sh = b.max_shield
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("max_shield"): max_sh = b.get_meta("max_shield")
+
+						var cur_sh = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("shield"): cur_sh = b["shield"]
+						elif "shield" in b: cur_sh = b.shield
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("shield"): cur_sh = b.get_meta("shield")
+
+						if cur_sh < max_sh:
+							cur_sh = min(max_sh, cur_sh + 50.0 * delta)
+							if typeof(b) == TYPE_DICTIONARY: b["shield"] = cur_sh
+
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						bx = b.get("x") if "x" in b else 0.0
+						by = b.get("y") if "y" in b else 0.0
+
+					if mutations.has("explosive_aura"):
+						for p in balls:
+							if p != b:
+								var p_alive = false
+								if typeof(p) == TYPE_DICTIONARY and p.has("alive"): p_alive = p["alive"]
+								elif "alive" in p: p_alive = p.alive
+
+								var b_type = ""
+								if typeof(p) == TYPE_DICTIONARY and p.has("ball_type"): b_type = p["ball_type"]
+								elif "ball_type" in p: b_type = p.ball_type
+
+								if p_alive and b_type != "spectator":
+									var px = p.get("x", 0.0) if typeof(p) == TYPE_DICTIONARY else (p.get("x") if "x" in p else 0.0)
+									var py = p.get("y", 0.0) if typeof(p) == TYPE_DICTIONARY else (p.get("y") if "y" in p else 0.0)
+									var dist_sq = (bx - px)*(bx - px) + (by - py)*(by - py)
+									if dist_sq <= 150.0 * 150.0:
+										var p_hp = 100.0
+										if typeof(p) == TYPE_DICTIONARY and p.has("hp"): p_hp = p["hp"]
+										elif "hp" in p: p_hp = p.hp
+										elif typeof(p) == TYPE_OBJECT and p.has_method("has_meta") and p.has_meta("hp"): p_hp = p.get_meta("hp")
+
+										p_hp -= 5.0 * delta
+										if p_hp <= 0:
+											p_hp = 0
+											if typeof(p) == TYPE_DICTIONARY: p["alive"] = false
+											elif "alive" in p: p.alive = false
+											var b_id = b.get("id", -1) if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else -1)
+											if typeof(p) == TYPE_DICTIONARY: p["killer_id"] = b_id
+											elif "killer_id" in p: p.killer_id = b_id
+											elif typeof(p) == TYPE_OBJECT and p.has_method("set_meta"): p.set_meta("killer_id", b_id)
+
+										if typeof(p) == TYPE_DICTIONARY: p["hp"] = p_hp
+										elif "hp" in p: p.hp = p_hp
+										elif typeof(p) == TYPE_OBJECT and p.has_method("set_meta"): p.set_meta("hp", p_hp)
+
+					if mutations.has("pulling_gravity"):
+						for p in balls:
+							if p != b:
+								var p_alive = false
+								if typeof(p) == TYPE_DICTIONARY and p.has("alive"): p_alive = p["alive"]
+								elif "alive" in p: p_alive = p.alive
+
+								var b_type = ""
+								if typeof(p) == TYPE_DICTIONARY and p.has("ball_type"): b_type = p["ball_type"]
+								elif "ball_type" in p: b_type = p.ball_type
+
+								if p_alive and b_type != "spectator":
+									var px = p.get("x", 0.0) if typeof(p) == TYPE_DICTIONARY else (p.get("x") if "x" in p else 0.0)
+									var py = p.get("y", 0.0) if typeof(p) == TYPE_DICTIONARY else (p.get("y") if "y" in p else 0.0)
+									var dx = bx - px
+									var dy = by - py
+									var dist_sq = dx*dx + dy*dy
+									if dist_sq > 0 and dist_sq <= 300.0 * 300.0:
+										var dist = sqrt(dist_sq)
+										var pull_strength = 50.0 * delta
+										px += (dx / dist) * pull_strength
+										py += (dy / dist) * pull_strength
+										if typeof(p) == TYPE_DICTIONARY:
+											p["x"] = px
+											p["y"] = py
+										else:
+											if "x" in p: p.x = px
+											if "y" in p: p.y = py
+
+				elif not b_alive and not r_given:
 					if typeof(b) == TYPE_DICTIONARY: b["reward_given"] = true
 					elif "reward_given" in b: b.reward_given = true
 					elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("reward_given", true)
@@ -3805,8 +4028,21 @@ class BattleRoyaleMode extends GameMode:
 					elif "killer_id" in b: killer_id = b.killer_id
 					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("killer_id"): killer_id = b.get_meta("killer_id")
 
+					var mutations = []
+					if typeof(b) == TYPE_DICTIONARY and b.has("mutations"): mutations = b["mutations"]
+					elif "mutations" in b: mutations = b.mutations
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("mutations"): mutations = b.get_meta("mutations")
+
+					var mut_count = mutations.size()
+					var points = 5000 + mut_count * 2000
+
 					if world != null and world.has_method("add_event"):
-						world.add_event("boss_defeated", {"killer_id": killer_id, "points": 5000, "message": "The final boss was defeated!"})
+						world.add_event("boss_defeated", {
+							"killer_id": killer_id,
+							"points": points,
+							"message": "The final boss was defeated! It dropped " + str(mut_count + 1) + " prestige tokens!",
+							"prestige_tokens_dropped": mut_count + 1
+						})
 
 		# Handle decoy movement mimicking
 		for b in balls:
