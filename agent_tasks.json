@@ -22688,7 +22688,7 @@
     },
     {
       "id": "idea-1324",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Soul Collector Trait",
@@ -33427,6 +33427,23 @@
         "src/ai/quantum_anomalies.py",
         "src/ai/quantum_anomalies.gd",
         "tests/test_quantum_anomalies.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1955",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Conveyor Belts",
+      "description": "An arena mode where the floor is entirely made of conveyor belts moving in alternating directions. Every 10 seconds, all the belts reverse their direction simultaneously, forcing players to quickly adjust their momentum to avoid being pushed into hazards at the edges.",
+      "allowed_paths": [
+        "src/ai/reverse_conveyor_belts.py",
+        "src/ai/reverse_conveyor_belts.gd",
+        "tests/test_reverse_conveyor_belts.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

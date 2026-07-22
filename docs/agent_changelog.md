@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1324] Soul Collector Trait — *2026-07-22 06:47:15 UTC*
+
+Introduce a trait where other ball types can also drop smaller soul fragments on death that temporarily boost the stats of anyone who collects them, promoting aggressive play.
+
+---
+
 ## [idea-1270] Whirlpool Traps — *2026-07-22 06:40:56 UTC*
 
 In water-themed arenas, Whirlpools can spawn that slowly suck entities towards the center, reducing movement speed. Entities that reach the center are briefly slowed down or submerge before resurfacing, dropping some HP or receiving a wet debuff.
