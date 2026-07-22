@@ -23062,7 +23062,7 @@
     },
     {
       "id": "idea-1346",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Illusionist Skill",
@@ -34789,6 +34789,108 @@
         "src/ai/altar.py",
         "src/ai/altar.gd",
         "tests/test_altar.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2035",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Lava Traps",
+      "description": "Lava pools periodically pull players towards them with a weak magnetic force, requiring players to actively dash or move against the pull to avoid damage.",
+      "allowed_paths": [
+        "src/arena/magnetic_lava_traps.py",
+        "src/arena/magnetic_lava_traps.gd",
+        "tests/test_magnetic_lava_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2036",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Snowball Fight Mini-Event",
+      "description": "Occasionally in winter maps, a mini-event triggers where normal attacks are replaced with snowballs. Snowballs deal low damage but apply a stacking slow effect. If a player reaches max stacks, they are temporarily frozen in a block of ice.",
+      "allowed_paths": [
+        "src/ai/snowball_fight_mini.py",
+        "src/ai/snowball_fight_mini.gd",
+        "tests/test_snowball_fight_mini.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2037",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Geyser Eruptions",
+      "description": "Lava pools erupt after a brief warning period, launching any player caught inside them high into the air and applying a temporary burn debuff.",
+      "allowed_paths": [
+        "src/ai/geyser_eruptions.py",
+        "src/ai/geyser_eruptions.gd",
+        "tests/test_geyser_eruptions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2038",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Avalanche Environmental Hazard",
+      "description": "During Blizzard mode or in snow biomes, periodic avalanches can occur from the edges of the arena, sweeping across parts of the map. Players caught in the avalanche take damage and are forcefully pushed, potentially into other hazards or out of bounds.",
+      "allowed_paths": [
+        "src/arena/avalanche_environmental.py",
+        "src/arena/avalanche_environmental.gd",
+        "tests/test_avalanche_environmental.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2039",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chaining Limit Upgrade",
+      "description": "An upgrade item that allows the grapple hook to chain more than once. When collected, the hook can chain to up to 3 targets before breaking.",
+      "allowed_paths": [
+        "src/ai/chaining_limit_upgrade.py",
+        "src/ai/chaining_limit_upgrade.gd",
+        "tests/test_chaining_limit_upgrade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2040",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Pull Force Trait",
+      "description": "A new passive trait for balls that increases the pull force of their grapple by 50%, throwing enemies back harder or pulling themselves faster.",
+      "allowed_paths": [
+        "src/ai/grapple_pull_force_trait.py",
+        "src/ai/grapple_pull_force_trait.gd",
+        "tests/test_grapple_pull_force_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

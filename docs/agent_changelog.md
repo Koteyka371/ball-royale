@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1346] Decoy Illusionist Skill — *2026-07-22 23:43:52 UTC*
+
+A new skill or ball type that specializes in spawning multiple low-HP decoys that mirror its movements. These decoys explode when hit by an enemy, dealing minor damage, making the true ball harder to track in chaotic fights.
+
+---
+
 ## [idea-1335] Blizzard Visibility Reduction — *2026-07-22 23:20:25 UTC*
 
 During 'Blizzard' weather events, the camera zoom increases and fog of war is added, significantly reducing visibility. Additionally, entities leave temporary footprints in the snow.
