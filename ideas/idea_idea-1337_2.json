@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Bounce Shield",
+  "description": "A temporary buff that removes all friction from the player's movement and doubles the knockback applied to enemies upon collision. The player bounces rapidly off walls and hazards but cannot use weapons while active."
+}

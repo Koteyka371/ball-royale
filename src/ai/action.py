@@ -12703,6 +12703,41 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "flashbang_booster":
+                    import copy
+                    import math
+                    import random
+                    if hasattr(self.world, "balls"):
+                        for i in range(3):
+                            clone = copy.copy(self.ball)
+                            clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                            if hasattr(self.world, "next_id"):
+                                self.world.next_id += 1
+
+                            # Make fragile
+                            clone.hp = 1.0
+                            clone.max_hp = clone.hp
+                            clone.damage = 0
+                            if hasattr(clone, "base_damage"): clone.base_damage = 0
+                            clone.speed = getattr(self.ball, "speed", 2.0)
+                            clone.owner_id = getattr(self.ball, "id", None)
+                            clone.is_decoy = True
+                            clone.decoy_type = "flash"
+                            clone.decoy_timer = 5.0
+                            clone.skill_timer = 9999.0
+                            clone.attack_timer = 9999.0
+                            clone.SKILL = None
+                            clone.skill = None
+                            if hasattr(clone, "active_skill"):
+                                clone.active_skill = None
+                            clone.vx = math.cos(i * (math.pi * 2 / 3.0)) * getattr(self.ball, "base_speed", 200.0)
+                            clone.vy = math.sin(i * (math.pi * 2 / 3.0)) * getattr(self.ball, "base_speed", 200.0)
+                            self.world.balls.append(clone)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "clone_booster":
                     import copy
                     import math
