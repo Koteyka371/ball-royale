@@ -1,6 +1,5 @@
 import random
 import math
-import random
 
 from typing import Any
 
@@ -1441,6 +1440,22 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        # Decrement wet_debuff_timer and restore speed
+        if getattr(self.ball, "wet_debuff_timer", 0.0) > 0.0:
+            self.ball.wet_debuff_timer -= delta
+            if self.ball.wet_debuff_timer <= 0.0:
+                if hasattr(self.ball, "base_speed"):
+                    self.ball.base_speed /= 0.8
+                    self.ball.speed = getattr(self.ball, "base_speed", 100.0)
+                self.ball.wet_debuff_timer = 0.0
+
+        # Decrement submerge_timer
+        if getattr(self.ball, "submerge_timer", 0.0) > 0.0:
+            self.ball.submerge_timer -= delta
+            if self.ball.submerge_timer <= 0.0:
+                self.ball.is_submerged = False
+                self.ball.submerge_timer = 0.0
 
 
         if hasattr(self.ball, "orbital_link_timer"):
@@ -3642,7 +3657,8 @@ class Action:
                                 owner_id = getattr(hazard, "owner_id", None)
                                 owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
                                 if owner:
-                                    import copy, math
+                                    import copy
+                                    import math
                                     for i in range(3):
                                         angle = i * (2 * math.pi / 3)
                                         decoy = copy.copy(owner)
@@ -6968,7 +6984,8 @@ class Action:
                             if hasattr(hazard, "paired_id") and (current_tick - last_teleport > 20):
                                 pair = next((h for h in self.world.arena.hazards if h.id == hazard.paired_id), None)
                                 if pair:
-                                    import math, random
+                                    import math
+                                    import random
                                     angle = random.uniform(0, 2 * math.pi)
                                     launch_dist = getattr(pair, "radius", 50.0) + 30.0
                                     self.ball.x = pair.x + math.cos(angle) * launch_dist
@@ -15210,7 +15227,8 @@ class Action:
                         self.ball.x += (dx / dist) * dash_dist
                         self.ball.y += (dy / dist) * dash_dist
                 else:
-                    import math, random
+                    import math
+                    import random
                     angle = random.uniform(0, 2 * math.pi)
                     self.ball.x += math.cos(angle) * dash_dist
                     self.ball.y += math.sin(angle) * dash_dist
@@ -17937,6 +17955,7 @@ class Action:
                             if current_timer <= 0:
                                 self.ball.base_speed = getattr(self.ball, "base_speed", 100.0) * 0.8
                             self.ball.wet_debuff_timer = 3.0
+                            self.ball.speed = getattr(self.ball, "base_speed", 100.0)
 
                 if getattr(hazard, "kind", "") == "repulsion_zone":
                     import math
