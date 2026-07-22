@@ -1169,6 +1169,22 @@ class GameMode:
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                 world.arena.hazards.append(soul_fragment)
 
+            # Chance to drop a phylactery item
+            if getattr(self, "random", __import__("random")).random() < 0.2:
+                phylactery_id = f"phylactery_item_{ball.id}"
+                phylactery_item = _SoulHazard(
+                    id=phylactery_id,
+                    x=ball.x,
+                    y=ball.y,
+                    radius=15.0,
+                    kind="phylactery_item",
+                    damage=0.0
+                )
+                setattr(phylactery_item, "owner_id", getattr(ball, "minion_owner", None))
+                if hasattr(world, "boosters"):
+                    world.boosters.append(phylactery_item)
+
+
 
 
         # Necromancer death logic

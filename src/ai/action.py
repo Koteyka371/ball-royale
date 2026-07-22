@@ -1,6 +1,5 @@
 import random
 import math
-import random
 
 from typing import Any
 
@@ -1441,6 +1440,35 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "bound_phylactery_id", None) is not None:
+            # Check phylactery state
+            p_id = self.ball.bound_phylactery_id
+            p_alive = False
+            p_found = False
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for h in self.world.arena.hazards:
+                    if getattr(h, "id", None) == p_id:
+                        p_found = True
+                        p_alive = getattr(h, "active", True)
+                        break
+
+            if not p_alive and p_found: # Destroyed prematurely!
+                self.ball.hp = 0.0
+                self.ball.alive = False
+                self.ball.bound_phylactery_id = None
+                self.ball.intangible = False
+                self.ball.intangible_timer = 0.0
+            elif not p_found: # Time's up! Revive!
+                self.ball.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                self.ball.alive = True
+                self.ball.bound_phylactery_id = None
+                self.ball.intangible = False
+                self.ball.intangible_timer = 0.0
+                self.ball.base_speed = 100.0 # reset speed
+            else:
+                self._idle(delta)
+                return
 
 
         if hasattr(self.ball, "orbital_link_timer"):
@@ -3642,7 +3670,8 @@ class Action:
                                 owner_id = getattr(hazard, "owner_id", None)
                                 owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
                                 if owner:
-                                    import copy, math
+                                    import copy
+                                    import math
                                     for i in range(3):
                                         angle = i * (2 * math.pi / 3)
                                         decoy = copy.copy(owner)
@@ -6968,7 +6997,8 @@ class Action:
                             if hasattr(hazard, "paired_id") and (current_tick - last_teleport > 20):
                                 pair = next((h for h in self.world.arena.hazards if h.id == hazard.paired_id), None)
                                 if pair:
-                                    import math, random
+                                    import math
+                                    import random
                                     angle = random.uniform(0, 2 * math.pi)
                                     launch_dist = getattr(pair, "radius", 50.0) + 30.0
                                     self.ball.x = pair.x + math.cos(angle) * launch_dist
@@ -8341,6 +8371,30 @@ class Action:
                                         if hazard.hp <= 0:
                                             hazard.active = False
                             continue
+                        elif hazard.kind == "phylactery_hazard":
+                            dx = self.ball.x - hazard.x
+                            dy = self.ball.y - hazard.y
+                            import math
+                            dist = math.hypot(dx, dy)
+                            if dist < (self.ball.radius + hazard.radius) and dist > 0:
+                                nx, ny = dx / dist, dy / dist
+                                overlap = (self.ball.radius + hazard.radius) - dist
+                                is_projectile = getattr(self.ball, "ball_type", "") in ["projectile", "spell"] or getattr(self.ball, "is_projectile", False)
+                                if is_projectile:
+                                    self.ball.alive = False
+                                    self.ball.hp = 0
+                                    if hasattr(hazard, "hp"):
+                                        hazard.hp -= getattr(self.ball, "damage", 10.0)
+                                        if hazard.hp <= 0:
+                                            hazard.active = False
+                                else:
+                                    self.ball.x += nx * overlap
+                                    self.ball.y += ny * overlap
+                                    if hasattr(hazard, "hp"):
+                                        hazard.hp -= getattr(self.ball, "damage", 10.0) * delta * 5.0
+                                        if hazard.hp <= 0:
+                                            hazard.active = False
+                            continue
                         elif hazard.kind == "breakable_wall":
                             # Clamp position manually
                             dx = self.ball.x - hazard.x
@@ -9256,6 +9310,46 @@ class Action:
                 decoy.decoy_timer = 2.0
                 decoy.owner_id = getattr(self.ball, "id", None)
                 self.world.balls.append(decoy)
+
+        # Phylactery activation (when Necromancer dies with active buff)
+        if start_hp > 0 and current_hp <= 0 and getattr(self.ball, "phylactery_active", False):
+            self.ball.hp = 1.0 # Temporarily keep alive
+            current_hp = 1.0
+            damage_taken = 0.0
+            self.ball.alive = True
+            self.ball.phylactery_active = False
+            self.ball.intangible = True
+            self.ball.intangible_timer = 5.0
+            self.ball.stealth_booster_timer = max(getattr(self.ball, "stealth_booster_timer", 0.0), 5.0)
+            self.ball.speed = 0.0
+            self.ball.base_speed = 0.0
+
+            # Spawn phylactery hazard
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                    p_id = getattr(self.world, "next_id", __import__("random").randint(10000, 99999))
+                    phylactery = Hazard(id=p_id, x=self.ball.x, y=self.ball.y, radius=20.0, kind="phylactery_hazard", damage=0.0)
+                    setattr(phylactery, "duration", 5.0)
+                    setattr(phylactery, "hp", getattr(self.ball, "max_hp", 100) * 0.5)
+                    setattr(phylactery, "owner_id", getattr(self.ball, "id", None))
+                    setattr(phylactery, "active", True)
+                    self.world.arena.hazards.append(phylactery)
+                except ImportError:
+                    class FallbackHazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                    p_id = getattr(self.world, "next_id", __import__("random").randint(10000, 99999))
+                    phylactery = FallbackHazard(id=p_id, x=self.ball.x, y=self.ball.y, radius=20.0, kind="phylactery_hazard", damage=0.0)
+                    setattr(phylactery, "duration", 5.0)
+                    setattr(phylactery, "hp", getattr(self.ball, "max_hp", 100) * 0.5)
+                    setattr(phylactery, "owner_id", getattr(self.ball, "id", None))
+                    setattr(phylactery, "active", True)
+                    self.world.arena.hazards.append(phylactery)
+
+            self.ball.bound_phylactery_id = p_id
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'poof', 'x': self.ball.x, 'y': self.ball.y}})
                 if hasattr(self.world, "events"):
                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'poof', 'x': self.ball.x, 'y': self.ball.y}})
 
@@ -11351,6 +11445,15 @@ class Action:
         import random
         boosters = self._get_boosters()
         if boosters:
+            # Check for phylactery_item
+            for b in boosters:
+                if getattr(b, "kind", "") == "phylactery_item" and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
+                    self.ball.phylactery_active = True
+                    b.active = False
+                    if hasattr(self.world, "boosters") and b in self.world.boosters:
+                        self.world.boosters.remove(b)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(b)
             # Check for nearby enemies to interrupt collection
             enemies = self._get_enemies()
             ball_radius = getattr(self.ball, "radius", 10.0)
@@ -15210,7 +15313,8 @@ class Action:
                         self.ball.x += (dx / dist) * dash_dist
                         self.ball.y += (dy / dist) * dash_dist
                 else:
-                    import math, random
+                    import math
+                    import random
                     angle = random.uniform(0, 2 * math.pi)
                     self.ball.x += math.cos(angle) * dash_dist
                     self.ball.y += math.sin(angle) * dash_dist

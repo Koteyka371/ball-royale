@@ -2077,6 +2077,21 @@ class GameMode:
 			if "arena" in world and "hazards" in world.arena:
 				world.arena.hazards.append(soul)
 
+				if randf() < 0.2: # 20% chance to drop phylactery item
+					var p_id = "phylactery_item_" + str(b_id)
+					var p_item = {
+						"id": p_id,
+						"x": b_x,
+						"y": b_y,
+						"radius": 15.0,
+						"kind": "phylactery_item",
+						"damage": 0.0,
+						"owner_id": m_owner
+					}
+					if "boosters" in world:
+						world.boosters.append(p_item)
+
+
 		if "arena" in world and "hazards" in world.arena:
 			var drones = []
 			for h in world.arena.hazards:

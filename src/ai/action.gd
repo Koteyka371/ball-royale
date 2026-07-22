@@ -2617,6 +2617,73 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var bound_phylactery_id = null
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bound_phylactery_id"): bound_phylactery_id = self.ball.bound_phylactery_id
+    elif typeof(self.ball) == TYPE_OBJECT and "bound_phylactery_id" in self.ball: bound_phylactery_id = self.ball.bound_phylactery_id
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bound_phylactery_id"): bound_phylactery_id = self.ball.get_meta("bound_phylactery_id")
+
+    if bound_phylactery_id != null:
+        var p_alive = false
+        var p_found = false
+        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+            for h in self.world.arena.hazards:
+                var h_id = null
+                if typeof(h) == TYPE_DICTIONARY and h.has("id"): h_id = h.id
+                elif typeof(h) == TYPE_OBJECT and "id" in h: h_id = h.id
+
+                if h_id == bound_phylactery_id:
+                    p_found = true
+                    var h_active = true
+                    if typeof(h) == TYPE_DICTIONARY and h.has("active"): h_active = h.active
+                    elif typeof(h) == TYPE_OBJECT and "active" in h: h_active = h.active
+                    p_alive = h_active
+                    break
+
+        if not p_alive and p_found: # Destroyed
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["hp"] = 0.0
+                self.ball["alive"] = false
+                self.ball["bound_phylactery_id"] = null
+                self.ball["intangible"] = false
+                self.ball["intangible_timer"] = 0.0
+            else:
+                self.ball.hp = 0.0
+                if "alive" in self.ball: self.ball.alive = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+                if "bound_phylactery_id" in self.ball: self.ball.bound_phylactery_id = null
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("bound_phylactery_id", null)
+                if "intangible" in self.ball: self.ball.intangible = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
+                if "intangible_timer" in self.ball: self.ball.intangible_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 0.0)
+        elif not p_found: # Time's up, Revive!
+            var max_hp = 100.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): max_hp = self.ball.max_hp
+            elif typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: max_hp = self.ball.max_hp
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["hp"] = max_hp * 0.5
+                self.ball["alive"] = true
+                self.ball["bound_phylactery_id"] = null
+                self.ball["intangible"] = false
+                self.ball["intangible_timer"] = 0.0
+                self.ball["base_speed"] = 100.0
+            else:
+                self.ball.hp = max_hp * 0.5
+                if "alive" in self.ball: self.ball.alive = true
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", true)
+                if "bound_phylactery_id" in self.ball: self.ball.bound_phylactery_id = null
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("bound_phylactery_id", null)
+                if "intangible" in self.ball: self.ball.intangible = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
+                if "intangible_timer" in self.ball: self.ball.intangible_timer = 0.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 0.0)
+                if "base_speed" in self.ball: self.ball.base_speed = 100.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("base_speed", 100.0)
+        else:
+            _idle(delta)
+            return
+
     var is_alive = true
     if "alive" in self.ball: is_alive = self.ball.alive
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("alive"): is_alive = self.ball.get_meta("alive")
@@ -15952,6 +16019,66 @@ func execute(strategy: String, delta: float):
                                         self.ball["stutter_timer"] = 1.0
                                         self.ball["pending_supercharge"] = true
                         continue
+                    elif hazard.kind == "phylactery_hazard":
+                        var dx = b_x - h_x
+                        var dy = b_y - h_y
+                        var dist = sqrt(dx * dx + dy * dy)
+                        if dist < (b_radius + h_radius) and dist > 0:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var overlap = (b_radius + h_radius) - dist
+                            var is_proj = b_type_loc == "projectile" or b_type_loc == "spell"
+
+                            if is_proj:
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["alive"] = false
+                                    self.ball["hp"] = 0
+                                else:
+                                    self.ball.hp = 0
+                                    if "alive" in self.ball: self.ball.alive = false
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+
+                                var cur_hp = 10.0
+                                if typeof(hazard) == TYPE_DICTIONARY and hazard.has("hp"): cur_hp = hazard.hp
+                                elif typeof(hazard) == TYPE_OBJECT and "hp" in hazard: cur_hp = hazard.hp
+
+                                cur_hp -= 10.0
+
+                                if typeof(hazard) == TYPE_DICTIONARY: hazard["hp"] = cur_hp
+                                elif typeof(hazard) == TYPE_OBJECT:
+                                    if "hp" in hazard: hazard.hp = cur_hp
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("hp", cur_hp)
+
+                                if cur_hp <= 0:
+                                    if typeof(hazard) == TYPE_DICTIONARY: hazard["active"] = false
+                                    elif typeof(hazard) == TYPE_OBJECT:
+                                        if "active" in hazard: hazard.active = false
+                                        elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            else:
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["x"] += nx * overlap
+                                    self.ball["y"] += ny * overlap
+                                else:
+                                    self.ball.x += nx * overlap
+                                    self.ball.y += ny * overlap
+
+                                var cur_hp = 10.0
+                                if typeof(hazard) == TYPE_DICTIONARY and hazard.has("hp"): cur_hp = hazard.hp
+                                elif typeof(hazard) == TYPE_OBJECT and "hp" in hazard: cur_hp = hazard.hp
+
+                                cur_hp -= 10.0 * delta * 5.0
+
+                                if typeof(hazard) == TYPE_DICTIONARY: hazard["hp"] = cur_hp
+                                elif typeof(hazard) == TYPE_OBJECT:
+                                    if "hp" in hazard: hazard.hp = cur_hp
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("hp", cur_hp)
+
+                                if cur_hp <= 0:
+                                    if typeof(hazard) == TYPE_DICTIONARY: hazard["active"] = false
+                                    elif typeof(hazard) == TYPE_OBJECT:
+                                        if "active" in hazard: hazard.active = false
+                                        elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            continue
                     elif hazard.kind == "bone_wall":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -18303,6 +18430,142 @@ func execute(strategy: String, delta: float):
                 decoy["owner_id"] = o_id
 
             self.world.balls.append(decoy)
+
+    var phylactery_active = false
+    if typeof(self.ball) == TYPE_DICTIONARY: phylactery_active = self.ball.get("phylactery_active", false)
+    elif typeof(self.ball) == TYPE_OBJECT and "phylactery_active" in self.ball: phylactery_active = self.ball.phylactery_active
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("phylactery_active"): phylactery_active = self.ball.get_meta("phylactery_active")
+
+    if start_hp > 0 and current_hp <= 0 and phylactery_active:
+        var max_hp = 100.0
+        var b_id = null
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            if self.ball.has("max_hp"): max_hp = self.ball.max_hp
+            if self.ball.has("id"): b_id = self.ball.id
+        elif typeof(self.ball) == TYPE_OBJECT:
+            if "max_hp" in self.ball: max_hp = self.ball.max_hp
+            if "id" in self.ball: b_id = self.ball.id
+
+        var p_id = randi() % 90000 + 10000
+
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["hp"] = 1.0
+            self.ball["alive"] = true
+            self.ball["phylactery_active"] = false
+            self.ball["intangible"] = true
+            self.ball["intangible_timer"] = 5.0
+            var cur_s = self.ball.get("stealth_booster_timer", 0.0)
+            self.ball["stealth_booster_timer"] = max(cur_s, 5.0)
+            self.ball["speed"] = 0.0
+            self.ball["base_speed"] = 0.0
+            self.ball["bound_phylactery_id"] = p_id
+        else:
+            self.ball.hp = 1.0
+            if "alive" in self.ball: self.ball.alive = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", true)
+
+            if "phylactery_active" in self.ball: self.ball.phylactery_active = false
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("phylactery_active", false)
+
+            if "intangible" in self.ball: self.ball.intangible = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", true)
+
+            if "intangible_timer" in self.ball: self.ball.intangible_timer = 5.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 5.0)
+
+            if "speed" in self.ball: self.ball.speed = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", 0.0)
+
+            if "base_speed" in self.ball: self.ball.base_speed = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("base_speed", 0.0)
+
+            if "bound_phylactery_id" in self.ball: self.ball.bound_phylactery_id = p_id
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("bound_phylactery_id", p_id)
+
+        current_hp = 1.0
+        damage_taken = 0.0
+
+        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+            var b_x = 0.0
+            var b_y = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("x"): b_x = self.ball.x
+                if self.ball.has("y"): b_y = self.ball.y
+            else:
+                if "x" in self.ball: b_x = self.ball.x
+                if "y" in self.ball: b_y = self.ball.y
+
+            var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+            if ProceduralArenaScript != null:
+                var phylactery = ProceduralArenaScript.Hazard.new(p_id, b_x, b_y, 20.0, "phylactery_hazard", 0.0)
+                if phylactery.has_method("set_meta"):
+                    phylactery.set_meta("duration", 5.0)
+                    phylactery.set_meta("hp", max_hp * 0.5)
+                    phylactery.set_meta("owner_id", b_id)
+                    phylactery.set_meta("active", true)
+                else:
+                    phylactery.duration = 5.0
+                    phylactery.hp = max_hp * 0.5
+                    phylactery.owner_id = b_id
+                    phylactery.active = true
+                self.world.arena.hazards.append(phylactery)
+            else:
+                var phylactery = {
+                    "id": p_id, "x": b_x, "y": b_y, "radius": 20.0, "kind": "phylactery_hazard", "damage": 0.0,
+                    "duration": 5.0, "hp": max_hp * 0.5, "owner_id": b_id, "active": true
+                }
+                self.world.arena.hazards.append(phylactery)
+
+
+    var phylactery_active = false
+    if typeof(self.ball) == TYPE_DICTIONARY: phylactery_active = self.ball.get("phylactery_active", false)
+    elif typeof(self.ball) == TYPE_OBJECT and "phylactery_active" in self.ball: phylactery_active = self.ball.phylactery_active
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("phylactery_active"): phylactery_active = self.ball.get_meta("phylactery_active")
+
+    if start_hp > 0 and current_hp <= 0 and phylactery_active:
+        var phylactery_alive = false
+        var b_id = null
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
+        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+
+        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+            for h in self.world.arena.hazards:
+                var h_kind = ""
+                if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+                elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+                elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+                var h_owner = null
+                if typeof(h) == TYPE_DICTIONARY and h.has("owner_id"): h_owner = h.owner_id
+                elif typeof(h) == TYPE_OBJECT and "owner_id" in h: h_owner = h.owner_id
+                elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("owner_id"): h_owner = h.get_meta("owner_id")
+
+                if h_kind == "phylactery" and h_owner == b_id:
+                    var h_active = true
+                    if typeof(h) == TYPE_DICTIONARY and h.has("active"): h_active = h.active
+                    elif typeof(h) == TYPE_OBJECT and "active" in h: h_active = h.active
+                    elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("active"): h_active = h.get_meta("active")
+                    phylactery_alive = h_active
+                    break
+
+        if phylactery_alive:
+            var max_hp = 100.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): max_hp = self.ball.max_hp
+            elif typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: max_hp = self.ball.max_hp
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["hp"] = max_hp * 0.5
+                self.ball["phylactery_active"] = false
+                self.ball["alive"] = true
+            else:
+                self.ball.hp = max_hp * 0.5
+                if "phylactery_active" in self.ball: self.ball.phylactery_active = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("phylactery_active", false)
+                if "alive" in self.ball: self.ball.alive = true
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", true)
+
+            current_hp = max_hp * 0.5
+            damage_taken = 0.0
 
             if "events" in self.world:
                 self.world.events.append({"type": "visual_effect", "data": {"type": "poof", "x": decoy["x"], "y": decoy["y"]}})
@@ -21998,6 +22261,68 @@ func _collect_booster(delta: float):
         return
     var boosters = _get_boosters()
     if boosters.size() > 0:
+        # Check for phylactery_item
+        var b_id = null
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
+        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+
+        for b in boosters:
+            var b_kind = ""
+            if typeof(b) == TYPE_DICTIONARY and b.has("kind"): b_kind = b.kind
+            elif typeof(b) == TYPE_OBJECT and "kind" in b: b_kind = b.kind
+            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("kind"): b_kind = b.get_meta("kind")
+
+            var b_owner = null
+            if typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): b_owner = b.owner_id
+            elif typeof(b) == TYPE_OBJECT and "owner_id" in b: b_owner = b.owner_id
+            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("owner_id"): b_owner = b.get_meta("owner_id")
+
+            if b_kind == "phylactery_item" and b_owner == b_id:
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["phylactery_active"] = true
+                else:
+                    if "phylactery_active" in self.ball: self.ball.phylactery_active = true
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("phylactery_active", true)
+
+                if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                else:
+                    if "active" in b: b.active = false
+                    elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                    self.world.boosters.erase(b)
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                    self.world.arena.hazards.erase(b)
+        # Check for phylactery
+        var b_id = null
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
+        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+
+        for b in boosters:
+            var b_kind = ""
+            if typeof(b) == TYPE_DICTIONARY and b.has("kind"): b_kind = b.kind
+            elif typeof(b) == TYPE_OBJECT and "kind" in b: b_kind = b.kind
+            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("kind"): b_kind = b.get_meta("kind")
+
+            var b_owner = null
+            if typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): b_owner = b.owner_id
+            elif typeof(b) == TYPE_OBJECT and "owner_id" in b: b_owner = b.owner_id
+            elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("owner_id"): b_owner = b.get_meta("owner_id")
+
+            if b_kind == "phylactery" and b_owner == b_id:
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["phylactery_active"] = true
+                else:
+                    if "phylactery_active" in self.ball: self.ball.phylactery_active = true
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("phylactery_active", true)
+
+                if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                else:
+                    if "active" in b: b.active = false
+                    elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                    self.world.boosters.erase(b)
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                    self.world.arena.hazards.erase(b)
         var ball_radius = 10.0
         if "radius" in self.ball: ball_radius = self.ball.radius
 
