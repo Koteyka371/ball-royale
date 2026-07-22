@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1342] Lava Eruption Warning — *2026-07-22 23:20:17 UTC*
+
+Small pools of lava randomly bubble up on the safe platforms, forcing players to constantly adjust their positioning even when on seemingly safe ground.
+
+---
+
 ## [idea-1358] Weather System: Monsoons — *2026-07-22 23:17:25 UTC*
 
 Introduce a monsoon weather event that occasionally triggers during matches. When active, it reduces visibility similar to fog but also dynamically spawns temporary mud puddles and expands existing water bodies across the map. This forces players to adapt their movement paths continuously throughout the match.

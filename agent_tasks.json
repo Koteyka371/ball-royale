@@ -22994,7 +22994,7 @@
     },
     {
       "id": "idea-1342",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lava Eruption Warning",
@@ -34772,6 +34772,23 @@
         "src/ai/dark_matter.py",
         "src/ai/dark_matter.gd",
         "tests/test_dark_matter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2034",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Altar",
+      "description": "An interactive map structure that appears in ExtremeWeatherMode. If a team can hold the altar for 10 continuous seconds without taking damage, they can trigger an immediate weather reroll, bypassing the standard 15-second timer.",
+      "allowed_paths": [
+        "src/ai/altar.py",
+        "src/ai/altar.gd",
+        "tests/test_altar.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
