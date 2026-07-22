@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1348] Aura Resonance Event — *2026-07-22 23:57:59 UTC*
+
+A random game event where stacking auras pulse outward globally every 15 seconds. During a pulse, all players with active aura buffs grant those buffs to random friendly players anywhere on the map for 5 seconds. If a player with a reversed aura (via the Aura Inverter Trap) pulses, it debuffs enemies map-wide instead.
+
+---
+
 ## [idea-1374] Quantum Swap Booster — *2026-07-22 23:57:55 UTC*
 
 A booster that swaps the positions of the ball and the furthest enemy currently alive when picked up, instantly turning the tables or changing combat positioning.
