@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1364] Sabotage the payload — *2026-07-22 22:30:36 UTC*
+
+In Escort mode, Attackers can now attack the payload directly to slow it down or temporarily disable its movement if enough damage is dealt within a short time window.
+
+---
+
 ## [idea-1362] Sticky Wall Hazard — *2026-07-22 22:25:46 UTC*
 
 Players that run into this wall get their speed reduced by 50% for 3 seconds.

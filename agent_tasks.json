@@ -23369,7 +23369,7 @@
     },
     {
       "id": "idea-1364",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sabotage the payload",
@@ -34517,6 +34517,74 @@
         "src/arena/quantum_tangle.py",
         "src/arena/quantum_tangle.gd",
         "tests/test_quantum_tangle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2019",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sludge Bomb",
+      "description": "A new deployable that explodes and creates slow walls in the vicinity.",
+      "allowed_paths": [
+        "src/ai/sludge_bomb.py",
+        "src/ai/sludge_bomb.gd",
+        "tests/test_sludge_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2020",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Glacial Epoch Mutator",
+      "description": "A weekly mutator that slowly freezes the entire arena. Hazard zones like 'Ice Patches' expand continuously, and players must remain near 'Thermal Vents' (new hazard type) to thaw their movement speed penalty. Staying away from vents for too long causes the ball to take gradual freezing damage.",
+      "allowed_paths": [
+        "src/ai/glacial_epoch_mutator.py",
+        "src/ai/glacial_epoch_mutator.gd",
+        "tests/test_glacial_epoch_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2021",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slowing Puddles",
+      "description": "Add new puddle hazards that slow down balls when they roll over them.",
+      "allowed_paths": [
+        "src/ai/slowing_puddles.py",
+        "src/ai/slowing_puddles.gd",
+        "tests/test_slowing_puddles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2022",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Detonator Mode",
+      "description": "A new game mode where randomly spawned 'Quantum Detonators' explode, leaving behind chaotic zones. These zones randomly teleport players who enter them to another active zone on the map, reversing their current momentum upon exiting.",
+      "allowed_paths": [
+        "src/ai/quantum_detonator.py",
+        "src/ai/quantum_detonator.gd",
+        "tests/test_quantum_detonator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
