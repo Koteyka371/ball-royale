@@ -52653,6 +52653,193 @@ class ElementalChainReactionMode extends GameMode:
 		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()
 GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode.new()
+
+
+class VolcanicEruptionEventMode extends GameMode:
+	var eruption_timer: float = 20.0
+	var eruption_duration: float = 5.0
+	var is_erupting: bool = false
+	var projectile_spawn_timer: float = 0.0
+	var projectile_spawn_interval: float = 0.5
+
+	func _init():
+		super._init()
+		name = "Volcanic Eruption Event"
+		description = "A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width: float = 2000.0
+		var arena_height: float = 2000.0
+		if "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 2000.0)
+				arena_height = world.arena.get("height", 2000.0)
+			elif typeof(world.arena) == TYPE_OBJECT:
+				if world.arena.has_method("get"):
+					arena_width = world.arena.get("width")
+					arena_height = world.arena.get("height")
+				else:
+					arena_width = world.arena.width
+					arena_height = world.arena.height
+
+		var center_x: float = arena_width / 2.0
+		var center_y: float = arena_height / 2.0
+
+		if not is_erupting:
+			eruption_timer -= delta
+			if eruption_timer <= 0.0:
+				is_erupting = true
+				eruption_duration = 5.0
+				if world.has("add_event") and typeof(world.add_event) == TYPE_CALLABLE:
+					world.add_event.call("volcanic_eruption_start", {"message": "The arena center is erupting!"})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("volcanic_eruption_start", {"message": "The arena center is erupting!"})
+		else:
+			eruption_duration -= delta
+			if eruption_duration <= 0.0:
+				is_erupting = false
+				eruption_timer = 20.0
+				if world.has("add_event") and typeof(world.add_event) == TYPE_CALLABLE:
+					world.add_event.call("volcanic_eruption_end", {"message": "The eruption has subsided."})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("volcanic_eruption_end", {"message": "The eruption has subsided."})
+			else:
+				projectile_spawn_timer -= delta
+				if projectile_spawn_timer <= 0.0:
+					projectile_spawn_timer = projectile_spawn_interval
+
+					var target_x: float = randf_range(50.0, arena_width - 50.0)
+					var target_y: float = randf_range(50.0, arena_height - 50.0)
+
+					var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+					var hazards_list = []
+					if "arena" in world and world.arena != null:
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							hazards_list = world.arena.get("hazards", [])
+						elif typeof(world.arena) == TYPE_OBJECT:
+							hazards_list = world.arena.hazards
+
+					var t_id: int = hazards_list.size() + (randi() % 90000 + 10000)
+					var projectile = HazardClass.new(t_id, center_x, center_y, 15.0, "lava_projectile", 25.0)
+					if typeof(projectile) == TYPE_OBJECT:
+						if projectile.has_method("set_meta"):
+							projectile.set_meta("target_x", target_x)
+							projectile.set_meta("target_y", target_y)
+
+							var dx: float = target_x - center_x
+							var dy: float = target_y - center_y
+							var dist: float = sqrt(dx * dx + dy * dy)
+							var speed: float = 800.0
+
+							if dist > 0:
+								projectile.set_meta("vx", (dx / dist) * speed)
+								projectile.set_meta("vy", (dy / dist) * speed)
+								projectile.set_meta("duration", dist / speed)
+							else:
+								projectile.set_meta("vx", 0.0)
+								projectile.set_meta("vy", 0.0)
+								projectile.set_meta("duration", 1.0)
+
+					if "arena" in world and world.arena != null:
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							if world.arena.has("hazards"):
+								world.arena.hazards.append(projectile)
+						elif typeof(world.arena) == TYPE_OBJECT:
+							world.arena.hazards.append(projectile)
+
+		if "arena" in world and world.arena != null:
+			var hazards_list = []
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				hazards_list = world.arena.get("hazards", [])
+			elif typeof(world.arena) == TYPE_OBJECT:
+				hazards_list = world.arena.hazards
+
+			var to_remove = []
+			var to_add = []
+
+			for h in hazards_list:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					kind = h.get("kind", "")
+				elif typeof(h) == TYPE_OBJECT:
+					if "kind" in h:
+						kind = h.kind
+					elif h.has_method("get"):
+						kind = h.get("kind")
+
+				if kind == "lava_projectile":
+					var vx: float = 0.0
+					var vy: float = 0.0
+					var duration: float = -1.0
+
+					if typeof(h) == TYPE_OBJECT and h.has_method("get_meta"):
+						vx = h.get_meta("vx", 0.0)
+						vy = h.get_meta("vy", 0.0)
+						duration = h.get_meta("duration", -1.0)
+
+					if typeof(h) == TYPE_DICTIONARY:
+						h["x"] += vx * delta
+						h["y"] += vy * delta
+					elif typeof(h) == TYPE_OBJECT:
+						if "x" in h:
+							h.x += vx * delta
+							h.y += vy * delta
+
+					if duration >= 0.0:
+						duration -= delta
+						if typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+							h.set_meta("duration", duration)
+
+						if duration <= 0.0:
+							to_remove.append(h)
+
+							var h_x: float = 0.0
+							var h_y: float = 0.0
+							if typeof(h) == TYPE_DICTIONARY:
+								h_x = h.get("x", 0.0)
+								h_y = h.get("y", 0.0)
+							elif typeof(h) == TYPE_OBJECT:
+								if "x" in h:
+									h_x = h.x
+									h_y = h.y
+
+							var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+							var t_id: int = hazards_list.size() + (randi() % 90000 + 10000)
+							var lava = HazardClass.new(t_id, h_x, h_y, 40.0, "lava", 20.0)
+							if typeof(lava) == TYPE_OBJECT and lava.has_method("set_meta"):
+								lava.set_meta("duration", 10.0)
+							to_add.append(lava)
+
+				elif kind == "lava":
+					var duration: float = -1.0
+					if typeof(h) == TYPE_OBJECT and h.has_method("get_meta"):
+						duration = h.get_meta("duration", -1.0)
+
+					if duration >= 0.0:
+						duration -= delta
+						if typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+							h.set_meta("duration", duration)
+						if duration <= 0.0:
+							to_remove.append(h)
+
+			for h in to_remove:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if h in world.arena.hazards:
+						world.arena.hazards.erase(h)
+				elif typeof(world.arena) == TYPE_OBJECT:
+					if world.arena.hazards.has(h):
+						world.arena.hazards.erase(h)
+
+			for h in to_add:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena.hazards.append(h)
+				elif typeof(world.arena) == TYPE_OBJECT:
+					world.arena.hazards.append(h)
+
+GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode.new()
+
 GAME_MODES['gravity_shift'] = GravityShiftMode.new()
 
 

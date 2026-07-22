@@ -34429,3 +34429,131 @@ GAME_MODES['falling_tiles_royale'] = FallingTilesRoyaleMode()
 GAME_MODES['tilting_platform'] = TiltingPlatformMode()
 
 GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode()
+
+
+class VolcanicEruptionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Volcanic Eruption Event"
+        self.description = "A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial."
+        self.eruption_timer = 20.0
+        self.eruption_duration = 5.0
+        self.is_erupting = False
+
+        self.projectile_spawn_timer = 0.0
+        self.projectile_spawn_interval = 0.5
+
+        self.center_x = 1000.0
+        self.center_y = 1000.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
+        arena_height = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
+
+        self.center_x = arena_width / 2.0
+        self.center_y = arena_height / 2.0
+
+        if not self.is_erupting:
+            self.eruption_timer -= delta
+            if self.eruption_timer <= 0.0:
+                self.is_erupting = True
+                self.eruption_duration = 5.0
+                if hasattr(world, "add_event"):
+                    world.add_event("volcanic_eruption_start", {"message": "The arena center is erupting!"})
+        else:
+            self.eruption_duration -= delta
+            if self.eruption_duration <= 0.0:
+                self.is_erupting = False
+                self.eruption_timer = 20.0
+                if hasattr(world, "add_event"):
+                    world.add_event("volcanic_eruption_end", {"message": "The eruption has subsided."})
+            else:
+                self.projectile_spawn_timer -= delta
+                if self.projectile_spawn_timer <= 0.0:
+                    self.projectile_spawn_timer = self.projectile_spawn_interval
+
+                    import random
+                    target_x = random.uniform(50.0, arena_width - 50.0)
+                    target_y = random.uniform(50.0, arena_height - 50.0)
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                        HazardClass = Hazard
+                    except ImportError:
+                        class FallbackHazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+                        HazardClass = FallbackHazard
+
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        t_id = len(world.arena.hazards) + random.randint(10000, 99999)
+                        projectile = HazardClass(id=t_id, x=self.center_x, y=self.center_y, radius=15.0, kind="lava_projectile", damage=25.0)
+                        setattr(projectile, "target_x", target_x)
+                        setattr(projectile, "target_y", target_y)
+
+                        import math
+                        dx = target_x - self.center_x
+                        dy = target_y - self.center_y
+                        dist = math.hypot(dx, dy)
+                        speed = 800.0
+                        setattr(projectile, "vx", (dx/dist)*speed if dist > 0 else 0.0)
+                        setattr(projectile, "vy", (dy/dist)*speed if dist > 0 else 0.0)
+                        setattr(projectile, "duration", dist / speed if speed > 0 else 1.0)
+
+                        world.arena.hazards.append(projectile)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            to_remove = []
+            to_add = []
+            for h in list(world.arena.hazards):
+                kind = getattr(h, "kind", "")
+                if kind == "lava_projectile":
+                    h.x += getattr(h, "vx", 0.0) * delta
+                    h.y += getattr(h, "vy", 0.0) * delta
+
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0.0:
+                            to_remove.append(h)
+                            try:
+                                from arena.procedural_arena import Hazard
+                                HazardClass = Hazard
+                            except ImportError:
+                                class FallbackHazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+                                        self.active = True
+                                HazardClass = FallbackHazard
+
+                            import random
+                            t_id = len(world.arena.hazards) + random.randint(10000, 99999)
+                            lava = HazardClass(id=t_id, x=h.x, y=h.y, radius=40.0, kind="lava", damage=20.0)
+                            setattr(lava, "duration", 10.0)
+                            to_add.append(lava)
+
+                elif kind == "lava":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0.0:
+                            to_remove.append(h)
+
+            for h in to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+            for h in to_add:
+                world.arena.hazards.append(h)
+
+GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
