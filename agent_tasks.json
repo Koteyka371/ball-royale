@@ -22773,7 +22773,7 @@
     },
     {
       "id": "idea-1329",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Bombs",
@@ -33633,6 +33633,74 @@
         "src/ai/time_dilation_zones.py",
         "src/ai/time_dilation_zones.gd",
         "tests/test_time_dilation_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1967",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Ice Zone",
+      "description": "When a frozen player is shattered in a frost zone, they explode in a burst of ice shrapnel that applies a massive slowing effect or instant freeze to nearby players, creating a deadly chain reaction.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_ice_zone.py",
+        "src/ai/chain_reaction_ice_zone.gd",
+        "tests/test_chain_reaction_ice_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1968",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Treasure Hunter",
+      "description": "Gold coins randomly spawn across the arena. The more coins you collect, the larger and slower you get. The player with the most coins at the end of the time limit wins.",
+      "allowed_paths": [
+        "src/ai/treasure_hunter.py",
+        "src/ai/treasure_hunter.gd",
+        "tests/test_treasure_hunter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1969",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Tag Mode",
+      "description": "Players shoot non-lethal lasers that bounce off walls. If hit, you are disabled for 3 seconds. The last player remaining without being hit wins.",
+      "allowed_paths": [
+        "src/ai/laser_tag.py",
+        "src/ai/laser_tag.gd",
+        "tests/test_laser_tag.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1970",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Thermal Overload",
+      "description": "Players who stay in a heat zone for too long after being thawed will begin to take continuous fire damage. They must weigh the benefit of unfreezing against the risk of taking severe burn damage.",
+      "allowed_paths": [
+        "src/ai/thermal_overload.py",
+        "src/ai/thermal_overload.gd",
+        "tests/test_thermal_overload.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

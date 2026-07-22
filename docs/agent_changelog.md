@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1329] Chain Reaction Bombs — *2026-07-22 19:26:59 UTC*
+
+Bombs that, when exploded, will trigger the immediate explosion of any other bombs in their blast radius, allowing for massive field-clearing chain reactions.
+
+---
+
 ## [idea-1244] Thawing Environment — *2026-07-22 19:18:26 UTC*
 
 A variant where the arena has dynamic heat zones. Instead of relying purely on allies to unfreeze them, frozen players slowly thaw when pushed into a heat zone. However, if they are pushed into a frost zone, they become permanently shattered if they take any damage.
