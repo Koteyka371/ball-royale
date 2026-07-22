@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1289] Shrinking Safe Zones With Multiple Biomes — *2026-07-22 05:18:29 UTC*
+
+Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages.
+
+---
+
 ## [idea-1311] Ball Customization Skins — *2026-07-22 05:18:25 UTC*
 
 Allow players to purchase and equip different cosmetic skins for their balls using prestige tokens or skill points, changing their visual appearance without affecting stats.
