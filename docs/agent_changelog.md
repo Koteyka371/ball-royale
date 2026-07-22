@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1297] Quantum Relay Booster — *2026-07-22 05:18:20 UTC*
+
+A booster that allows a ball to place a temporary quantum relay beacon. Upon taking fatal damage, the ball is instead teleported to the beacon with 20% health, consuming the relay.
+
+---
+
 ## [idea-1300] Cosmetic Synergy — *2026-07-22 04:55:07 UTC*
 
 Introduce cosmetic synergies where balls that wear matching cosmetics (e.g., all wearing 'sunglasses') gain a passive team bonus, encouraging teams to coordinate their aesthetic for a small competitive edge.
