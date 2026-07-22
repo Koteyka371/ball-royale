@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1362] Sticky Wall Hazard — *2026-07-22 22:25:46 UTC*
+
+Players that run into this wall get their speed reduced by 50% for 3 seconds.
+
+---
+
 ## [idea-1360] Chrono-Stasis Field — *2026-07-22 22:25:40 UTC*
 
 An area-of-effect skill or deployable device that creates a large temporal bubble. Entities inside the bubble have their movement speed, projectile speed, and attack speed reduced to 10% of normal, but they also take 50% less damage from all sources while inside the zone.
