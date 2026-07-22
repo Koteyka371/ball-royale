@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1318] Lava Eruption Mode — *2026-07-22 06:27:44 UTC*
+
+An arena modification where random sections of the floor erupt into lava geysers, forcing balls to traverse via specific safe paths while increasing their temperature (friction) if they stay near the geysers.
+
+---
+
 ## [idea-1313] Mutator Token Daily Quest — *2026-07-22 06:12:04 UTC*
 
 Add a difficult daily quest that rewards mutator tokens, creating an alternative to buying them, which makes voting more accessible for free-to-play players.

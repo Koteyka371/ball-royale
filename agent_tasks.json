@@ -22586,7 +22586,7 @@
     },
     {
       "id": "idea-1318",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lava Eruption Mode",
@@ -33256,6 +33256,41 @@
         "src/ai/necromancer_skill_soul_swap.py",
         "src/ai/necromancer_skill_soul_swap.gd",
         "tests/test_necromancer_skill_soul_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1945",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quest Reroll with Mutator Tokens",
+      "description": "Players can spend 1 Mutator Token to reroll a specific daily quest they don't like, giving them an alternative quest to complete.",
+      "allowed_paths": [
+        "src/ui/quest_reroll_with_mutator_tokens.py",
+        "src/ui/quest_reroll_with_mutator_tokens.gd",
+        "src/ai/quest_reroll_with_mutator_tokens.py",
+        "tests/test_quest_reroll_with_mutator_tokens.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1946",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weekend Mutator Bounty",
+      "description": "A special weekly quest that only appears on weekends, tasking players with winning a match with the active mutator, rewarding a large bundle of Mutator Tokens.",
+      "allowed_paths": [
+        "src/ai/weekend_mutator_bounty.py",
+        "src/ai/weekend_mutator_bounty.gd",
+        "tests/test_weekend_mutator_bounty.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
