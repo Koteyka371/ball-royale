@@ -750,22 +750,62 @@ func update_zone(current_tick: int, delta: float) -> void:
                     var vx = hazard.get_meta("vx") if hazard.has_method("has_meta") and hazard.has_meta("vx") else hazard.vx
                     var vy = hazard.get_meta("vy") if hazard.has_method("has_meta") and hazard.has_meta("vy") else hazard.vy
 
+                    var bounces_left = 5
+                    if hazard.has_method("has_meta") and hazard.has_meta("bounces_left"):
+                        bounces_left = hazard.get_meta("bounces_left")
+                    elif "bounces_left" in hazard:
+                        bounces_left = hazard.bounces_left
+                    elif hazard.has_method("has_meta") and hazard.has_meta("max_bounces"):
+                        bounces_left = hazard.get_meta("max_bounces")
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("bounces_left", bounces_left)
+                    elif "max_bounces" in hazard:
+                        bounces_left = hazard.max_bounces
+                        hazard.bounces_left = bounces_left
+                    else:
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("bounces_left", bounces_left)
+                        elif typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["bounces_left"] = bounces_left
+                        else:
+                            pass # Can't set if missing and not dictionary/meta
+
                     hazard.x += vx * delta
                     hazard.y += vy * delta
 
+                    var bounced = false
                     if hazard.x - hazard.radius < 0:
                         hazard.x = hazard.radius
                         vx = abs(vx)
+                        bounced = true
                     elif hazard.x + hazard.radius > width:
                         hazard.x = width - hazard.radius
                         vx = -abs(vx)
+                        bounced = true
 
                     if hazard.y - hazard.radius < 0:
                         hazard.y = hazard.radius
                         vy = abs(vy)
+                        bounced = true
                     elif hazard.y + hazard.radius > height:
                         hazard.y = height - hazard.radius
                         vy = -abs(vy)
+                        bounced = true
+
+                    if bounced:
+                        bounces_left -= 1
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("bounces_left", bounces_left)
+                        elif "bounces_left" in hazard:
+                            hazard.bounces_left = bounces_left
+
+                        if bounces_left <= 0:
+                            if hazard.has_method("set_meta"):
+                                hazard.set_meta("active", false)
+                            elif "active" in hazard:
+                                hazard.active = false
+                            elif typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["active"] = false
 
                     if hazard.has_method("set_meta"):
                         hazard.set_meta("vx", vx)
