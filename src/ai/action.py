@@ -17777,6 +17777,26 @@ class Action:
                     self.ball.skill_timer = 0.0
 
             self.ball._prev_skill_timer = current_st
+        in_confusion_zone = False
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "confusion_zone":
+                    dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
+                    r = getattr(hazard, "radius", 50.0)
+                    if dist_sq <= r*r:
+                        in_confusion_zone = True
+                        break
+
+        if in_confusion_zone:
+            if not hasattr(self.ball, "confusion_zone_timer"):
+                self.ball.confusion_zone_timer = 0.0
+            self.ball.confusion_zone_timer += delta
+            if self.ball.confusion_zone_timer > 3.0:
+                self.ball.invert_timer = getattr(self.ball, "invert_timer", 0.0) + delta + 0.1
+        else:
+            if hasattr(self.ball, "confusion_zone_timer"):
+                self.ball.confusion_zone_timer = 0.0
+
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)

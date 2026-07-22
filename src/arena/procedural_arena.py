@@ -1262,6 +1262,9 @@ class ProceduralArena:
                 is_reverse_gravity = random.random() < 0.1
                 is_repulsion_field = random.random() < 0.1
                 if random.random() < 0.1:
+                    kind = "confusion_zone"
+                    damage = 0.0
+                elif random.random() < 0.1:
                     kind = "drone_item"
                     damage = 0.0
                 elif random.random() < 0.1:

@@ -34484,6 +34484,47 @@ func _update_skill_timer(delta: float):
                 self.ball._prev_skill_timer = current_st
             elif self.ball.has_method("set_meta"):
                 self.ball.set_meta("_prev_skill_timer", current_st)
+    var in_confusion_zone = false
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            var h_kind = ""
+            if "kind" in hazard: h_kind = hazard.kind
+            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): h_kind = hazard["kind"]
+            elif typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+            if h_kind == "confusion_zone":
+                var hx = hazard.x if "x" in hazard else (hazard["x"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("x"))
+                var hy = hazard.y if "y" in hazard else (hazard["y"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("y"))
+                var bx = self.ball.x if "x" in self.ball else (self.ball["x"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get_meta("x"))
+                var by = self.ball.y if "y" in self.ball else (self.ball["y"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get_meta("y"))
+
+                var dist_sq = (bx - hx)*(bx - hx) + (by - hy)*(by - hy)
+                var r = 50.0
+                if "radius" in hazard: r = float(hazard.radius)
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): r = float(hazard["radius"])
+                elif typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("get_meta") and hazard.has_meta("radius"): r = float(hazard.get_meta("radius"))
+                if dist_sq <= r*r:
+                    in_confusion_zone = true
+                    break
+
+    if in_confusion_zone:
+        var c_timer = 0.0
+        if "confusion_zone_timer" in self.ball: c_timer = float(self.ball.confusion_zone_timer)
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("confusion_zone_timer"): c_timer = float(self.ball.get_meta("confusion_zone_timer"))
+        c_timer += delta
+        if "confusion_zone_timer" in self.ball: self.ball.confusion_zone_timer = c_timer
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("confusion_zone_timer", c_timer)
+
+        if c_timer > 3.0:
+            var inv_t = 0.0
+            if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
+            inv_t = inv_t + delta + 0.1
+            if "invert_timer" in self.ball: self.ball.invert_timer = inv_t
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("invert_timer", inv_t)
+    else:
+        if "confusion_zone_timer" in self.ball: self.ball.confusion_zone_timer = 0.0
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("confusion_zone_timer", 0.0)
+
     var bm_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("blood_magic_timer"):
         bm_timer = float(self.ball.get_meta("blood_magic_timer"))
