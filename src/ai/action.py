@@ -2605,7 +2605,7 @@ class Action:
 
                     if getattr(self.ball, "phase_booster_timer", 0.0) > 0:
                         # Solid hazards have radius or we just continue to bypass all hazard effects
-                        if getattr(hazard, "kind", "") not in ["void_panel", "temporal_rift", "time_rift"]:
+                        if getattr(hazard, "kind", "") not in ["void_panel", "temporal_rift", "time_rift", "temporal_bubble"]:
                             continue
 
                     if getattr(hazard, 'kind', '') in ['poison_cloud', 'poison_nova']:
@@ -4364,6 +4364,22 @@ class Action:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
+                if getattr(hazard, "kind", "") == "temporal_bubble":
+
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+
+                    if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
+
+                        self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.0) * 0.1
+
+                        self.ball.attack_speed = getattr(self.ball, "base_attack_speed", getattr(self.ball, "attack_speed", 1.0)) * 0.1
+
+                        self.ball.projectile_speed_multiplier = getattr(self.ball, "projectile_speed_multiplier", 1.0) * 0.1
+
+                        self.ball.defense_multiplier = getattr(self.ball, "defense_multiplier", 1.0) * 0.5
+
+                        continue
+
                 if getattr(hazard, "kind", "") == "temporal_rift":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= hazard.radius + getattr(self.ball, "radius", 10.0):
@@ -5837,7 +5853,7 @@ class Action:
 
                     if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                         continue
-                    if hazard.kind in ["temporal_rift", "time_rift"]:
+                    if hazard.kind in ["temporal_rift", "time_rift", "temporal_bubble"]:
                             continue
                     if hazard.kind in ("explosive_barrel", "volatile_barrel"):
                         current_tick = getattr(self.world, "tick", 0)
@@ -7748,7 +7764,7 @@ class Action:
                 for hazard in self.world.arena.hazards:
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist < (self.ball.radius + hazard.radius):
-                        if hazard.kind in ["temporal_rift", "time_rift"]:
+                        if hazard.kind in ["temporal_rift", "time_rift", "temporal_bubble"]:
                             continue
                         if hazard.kind in ("explosive_barrel", "volatile_barrel"):
                             if not getattr(hazard, "is_exploded", False):

@@ -148,7 +148,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["spikes", "lava", "whirlpool", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "flashbang_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper", "mirage_booster"])
+            kind = random.choice(["spikes", "lava", "whirlpool", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "temporal_bubble", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "flashbang_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper", "mirage_booster"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -248,7 +248,7 @@ class ProceduralArena:
             elif kind == "mirage_safe_zone":
                 radius = 150.0
                 damage = 0.0
-            elif kind == "temporal_rift":
+            elif kind in ["temporal_rift", "temporal_bubble"]:
                 radius = random.uniform(60.0, 100.0)
                 damage = 0.0
             elif kind == "magnet":
@@ -319,7 +319,7 @@ class ProceduralArena:
 
             hx, hy = self.get_random_spawn_point(radius)
             new_hazard = Hazard(id=i, x=hx, y=hy, radius=radius, kind=kind, damage=damage)
-            if kind == "temporal_rift":
+            if kind in ["temporal_rift", "temporal_bubble"]:
                 new_hazard.time_scale = random.choice([0.5, 1.5, 2.0])
             elif kind == "magnet":
                 setattr(new_hazard, "polarity", random.choice([1, -1]))
@@ -1367,7 +1367,7 @@ class ProceduralArena:
                     target_ly = random.uniform(200, self.height - 200)
                     setattr(new_hazard, "target_x", target_lx)
                     setattr(new_hazard, "target_y", target_ly)
-                if kind == "temporal_rift":
+                if kind in ["temporal_rift", "temporal_bubble"]:
                     setattr(new_hazard, "time_scale", random.choice([0.5, 1.5, 2.0]))
                 elif kind == "breakable_wall":
                     setattr(new_hazard, "hp", 100.0)

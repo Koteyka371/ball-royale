@@ -5605,7 +5605,7 @@ func execute(strategy: String, delta: float):
             elif hazard.has_method("get_meta") and hazard.has_meta("damage") and float(hazard.get_meta("damage")) > 0:
                 has_damage = true
 
-            if haz_imm_active and h_kind_for_skip != "void_panel" and h_kind_for_skip != "temporal_rift" and h_kind_for_skip != "time_rift" and has_damage:
+            if haz_imm_active and h_kind_for_skip != "void_panel" and h_kind_for_skip != "temporal_rift" and h_kind_for_skip != "time_rift" and h_kind_for_skip != "temporal_bubble" and has_damage:
                 continue
 
             if hazard.get("kind") == "slime":
@@ -9170,6 +9170,64 @@ func execute(strategy: String, delta: float):
 									elif typeof(b) == TYPE_DICTIONARY:
 										if b.has("vx"): b["vx"] = -b["vx"]
 										if b.has("vy"): b["vy"] = -b["vy"]
+			if hazard.get("kind") == "temporal_bubble":
+
+				var my_rad = 10.0
+
+				if "radius" in self.ball:
+
+					my_rad = float(self.ball.radius)
+
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("radius"):
+
+					my_rad = float(self.ball.get_meta("radius"))
+
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+
+				if s_dist <= hazard.radius + my_rad:
+
+					if typeof(self.ball) == TYPE_OBJECT:
+
+						if "speed_multiplier" in self.ball: self.ball.speed_multiplier *= 0.1
+
+						else: self.ball.set_meta("speed_multiplier", self.ball.get_meta("speed_multiplier", 1.0) * 0.1)
+
+						if "base_attack_speed" in self.ball: self.ball.attack_speed = self.ball.base_attack_speed * 0.1
+
+						elif "attack_speed" in self.ball: self.ball.attack_speed *= 0.1
+
+						else: self.ball.set_meta("attack_speed", self.ball.get_meta("attack_speed", 1.0) * 0.1)
+
+						if "projectile_speed_multiplier" in self.ball: self.ball.projectile_speed_multiplier *= 0.1
+
+						else: self.ball.set_meta("projectile_speed_multiplier", self.ball.get_meta("projectile_speed_multiplier", 1.0) * 0.1)
+
+						if "defense_multiplier" in self.ball: self.ball.defense_multiplier *= 0.5
+
+						else: self.ball.set_meta("defense_multiplier", self.ball.get_meta("defense_multiplier", 1.0) * 0.5)
+
+					elif typeof(self.ball) == TYPE_DICTIONARY:
+
+						if self.ball.has("speed_multiplier"): self.ball["speed_multiplier"] *= 0.1
+
+						else: self.ball["speed_multiplier"] = 0.1
+
+						if self.ball.has("base_attack_speed"): self.ball["attack_speed"] = self.ball["base_attack_speed"] * 0.1
+
+						elif self.ball.has("attack_speed"): self.ball["attack_speed"] *= 0.1
+
+						else: self.ball["attack_speed"] = 0.1
+
+						if self.ball.has("projectile_speed_multiplier"): self.ball["projectile_speed_multiplier"] *= 0.1
+
+						else: self.ball["projectile_speed_multiplier"] = 0.1
+
+						if self.ball.has("defense_multiplier"): self.ball["defense_multiplier"] *= 0.5
+
+						else: self.ball["defense_multiplier"] = 0.5
+
+					continue
+
 			if hazard.get("kind") == "temporal_rift":
 				var my_rad = 10.0
 				if "radius" in self.ball:
@@ -11356,7 +11414,7 @@ func execute(strategy: String, delta: float):
 
         if "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
-                if hazard.kind in ["temporal_rift", "time_rift"]:
+                if hazard.kind in ["temporal_rift", "time_rift", "temporal_bubble"]:
 			continue
                 if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                     var current_tick = world.get("tick") if world.has_method("get") else 0
@@ -15029,7 +15087,7 @@ func execute(strategy: String, delta: float):
             for hazard in self.world.arena.hazards:
                 var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
                 if s_dist < (self.ball.radius + hazard.radius):
-                    if hazard.kind in ["temporal_rift", "time_rift"]:
+                    if hazard.kind in ["temporal_rift", "time_rift", "temporal_bubble"]:
 			continue
                     if hazard.kind in ["explosive_barrel", "volatile_barrel"]:
                         if not hazard.has_meta("is_exploded") or not hazard.get_meta("is_exploded"):

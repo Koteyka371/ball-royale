@@ -1,0 +1,4 @@
+{
+  "title": "Glacial Epoch Mutator",
+  "description": "A weekly mutator that slowly freezes the entire arena. Hazard zones like 'Ice Patches' expand continuously, and players must remain near 'Thermal Vents' (new hazard type) to thaw their movement speed penalty. Staying away from vents for too long causes the ball to take gradual freezing damage."
+}
