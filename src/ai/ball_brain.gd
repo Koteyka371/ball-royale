@@ -50,6 +50,27 @@ func _init(ball_ref, world_ref):
             elif perk == "speed_10_percent": speed_multi += 0.10
             elif perk == "dmg_5_percent": dmg_multi += 0.05
             elif perk == "dmg_10_percent": dmg_multi += 0.10
+            elif perk == "hp_15_percent": hp_multi += 0.15
+            elif perk == "speed_15_percent": speed_multi += 0.15
+            elif perk == "dmg_15_percent": dmg_multi += 0.15
+            elif perk == "materials_drop_rate_10_percent":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if not self.ball.has("materials_drop_rate"): self.ball["materials_drop_rate"] = 1.0
+                    self.ball["materials_drop_rate"] += 0.10
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    var cur = self.ball.get_meta("materials_drop_rate") if self.ball.has_meta("materials_drop_rate") else 1.0
+                    self.ball.set_meta("materials_drop_rate", cur + 0.10)
+                elif typeof(self.ball) == TYPE_OBJECT and "materials_drop_rate" in self.ball:
+                    self.ball.materials_drop_rate += 0.10
+            elif perk == "materials_drop_rate_20_percent":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if not self.ball.has("materials_drop_rate"): self.ball["materials_drop_rate"] = 1.0
+                    self.ball["materials_drop_rate"] += 0.20
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    var cur = self.ball.get_meta("materials_drop_rate") if self.ball.has_meta("materials_drop_rate") else 1.0
+                    self.ball.set_meta("materials_drop_rate", cur + 0.20)
+                elif typeof(self.ball) == TYPE_OBJECT and "materials_drop_rate" in self.ball:
+                    self.ball.materials_drop_rate += 0.20
 
         if guild_buffs.size() > 0 or guild_perks.size() > 0:
             if "max_hp" in self.ball:

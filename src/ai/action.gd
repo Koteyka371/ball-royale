@@ -2483,7 +2483,20 @@ func _attempt_damage(attacker, target) -> void:
 									var m_type = "Iron Ore"
 									if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("material_type"): m_type = next_entity["material_type"]
 									elif typeof(next_entity) == TYPE_OBJECT and "material_type" in next_entity: m_type = next_entity.material_type
-									pm.add_material(m_type, 1)
+
+									var amount = 0
+									var drop_rate = 1.0
+									var b = self.ball
+									if typeof(b) == TYPE_DICTIONARY and b.has("materials_drop_rate"): drop_rate = b.materials_drop_rate
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("materials_drop_rate"): drop_rate = b.get_meta("materials_drop_rate")
+									elif typeof(b) == TYPE_OBJECT and "materials_drop_rate" in b: drop_rate = b.materials_drop_rate
+									while drop_rate >= 1.0:
+										amount += 1
+										drop_rate -= 1.0
+									if drop_rate > 0 and randf() < drop_rate:
+										amount += 1
+
+									pm.add_material(m_type, amount)
 						elif "hp" in next_entity:
 							next_entity.hp -= current_damage
 							if next_entity.hp <= 0:

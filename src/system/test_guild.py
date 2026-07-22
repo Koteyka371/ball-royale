@@ -267,6 +267,12 @@ def test_guild_perk_progression(temp_guild_file):
     assert gm.unlock_perk("PerkGuild", "hp_10_percent", 100, required_perk="hp_5_percent") == True
     assert "hp_10_percent" in gm.get_guild_perks("PerkGuild")
 
+    gm.data["guilds"]["PerkGuild"]["guild_xp"] = 1000
+    assert gm.unlock_perk("PerkGuild", "materials_drop_rate_10_percent", 150) == True
+    assert "materials_drop_rate_10_percent" in gm.get_guild_perks("PerkGuild")
+    assert gm.unlock_perk("PerkGuild", "materials_drop_rate_20_percent", 300, required_perk="materials_drop_rate_10_percent") == True
+    assert "materials_drop_rate_20_percent" in gm.get_guild_perks("PerkGuild")
+
 def test_guild_level_up(temp_guild_file):
     gm = GuildManager(temp_guild_file)
     gm.create_guild("LevelGuild", "player1")

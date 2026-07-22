@@ -49,6 +49,11 @@ class BallBrain:
                         elif perk == "speed_10_percent": speed_multi += 0.10
                         elif perk == "dmg_5_percent": dmg_multi += 0.05
                         elif perk == "dmg_10_percent": dmg_multi += 0.10
+                        elif perk == "hp_15_percent": hp_multi += 0.15
+                        elif perk == "speed_15_percent": speed_multi += 0.15
+                        elif perk == "dmg_15_percent": dmg_multi += 0.15
+                        elif perk == "materials_drop_rate_10_percent": self.ball.materials_drop_rate = getattr(self.ball, 'materials_drop_rate', 1.0) + 0.10
+                        elif perk == "materials_drop_rate_20_percent": self.ball.materials_drop_rate = getattr(self.ball, 'materials_drop_rate', 1.0) + 0.20
 
                     if guild_buffs or guild_perks:
                         hp_percent = self.ball.hp / self.ball.max_hp if getattr(self.ball, 'max_hp', 0) > 0 else 1.0

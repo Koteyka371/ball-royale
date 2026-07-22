@@ -1347,7 +1347,15 @@ class Action:
                                 pm = getattr(self.world, "profile_manager", None)
                                 if pm and hasattr(pm, "add_material"):
                                     m_type = getattr(next_entity, "material_type", next_entity.get("material_type", "Iron Ore") if isinstance(next_entity, dict) else "Iron Ore")
-                                    pm.add_material(m_type, 1)
+                                    amount = 0
+                                    drop_rate = getattr(self.ball, "materials_drop_rate", 1.0)
+                                    import random
+                                    while drop_rate >= 1.0:
+                                        amount += 1
+                                        drop_rate -= 1.0
+                                    if drop_rate > 0 and random.random() < drop_rate:
+                                        amount += 1
+                                    pm.add_material(m_type, amount)
                         elif hasattr(next_entity, "hp"):
                             next_entity.hp -= current_damage
                             if next_entity.hp <= 0:
