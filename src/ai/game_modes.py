@@ -26036,7 +26036,15 @@ class BiomeSafeZonesMode(GameMode):
                             world.dead_balls.append(b.id)
                             world.add_event("ball_died", {"id": b.id, "reason": "biome_safe_zones_storm", "killer_id": -1})
 
+
+class ElementalChainReactionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Elemental Chain Reactions"
+        self.description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
+
 GAME_MODES = {
+    'elemental_chain_reactions': ElementalChainReactionMode(),
     "biome_safe_zones": BiomeSafeZonesMode(),
     'guild_storm': GuildStormMode(),
     'random_quantum_tunnels': RandomQuantumTunnelsMode(),
@@ -32960,3 +32968,5 @@ class VIPProtectionMode(GameMode):
                 b.hp = min(getattr(b, 'max_hp', 100.0), b.hp + hp_deltas[b_id])
 
 GAME_MODES['vip_protection'] = VIPProtectionMode()
+
+GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode()

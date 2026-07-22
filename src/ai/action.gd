@@ -312,6 +312,105 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			break
 
 func _attempt_damage(attacker, target) -> void:
+
+	var mode_name = ""
+	if typeof(world) == TYPE_OBJECT and "mode" in world and world.mode != null:
+		mode_name = world.mode.get("name") if typeof(world.mode) == TYPE_DICTIONARY else (world.mode.name if "name" in world.mode else "")
+	elif typeof(world) == TYPE_OBJECT and "game_mode" in world and world.game_mode != null:
+		mode_name = world.game_mode.get("name") if typeof(world.game_mode) == TYPE_DICTIONARY else (world.game_mode.name if "name" in world.game_mode else "")
+	elif typeof(world) == TYPE_OBJECT and "current_mode_name" in world:
+		mode_name = world.current_mode_name
+	elif typeof(world) == TYPE_DICTIONARY and world.has("current_mode_name"):
+		mode_name = world.current_mode_name
+
+	if mode_name == "Elemental Chain Reactions":
+		var att_type = attacker.get("ball_type", attacker.get("kind", "")) if typeof(attacker) == TYPE_DICTIONARY else (attacker.ball_type if "ball_type" in attacker else (attacker.kind if "kind" in attacker else ""))
+		var att_element = attacker.get("element", "") if typeof(attacker) == TYPE_DICTIONARY else (attacker.element if "element" in attacker else "")
+		var att_traits = []
+		if typeof(attacker) == TYPE_DICTIONARY and attacker.has("traits"):
+			att_traits = attacker.get("traits")
+		elif typeof(attacker) == TYPE_OBJECT and "traits" in attacker:
+			att_traits = attacker.traits
+
+		var is_water = att_element == "water" or att_type.find("water") != -1 or att_type.find("swamp") != -1 or att_type.find("puddle") != -1
+		if not is_water:
+			for t in att_traits:
+				var ts = str(t).to_lower()
+				if ts == "water" or ts == "swamp":
+					is_water = true
+					break
+
+		var is_fire = att_element == "fire" or att_type.find("fire") != -1 or att_type.find("lava") != -1 or att_type.find("flare") != -1
+		if not is_fire:
+			for t in att_traits:
+				var ts = str(t).to_lower()
+				if ts == "fire" or ts == "lava":
+					is_fire = true
+					break
+
+		var target_burn = 0.0
+		if typeof(target) == TYPE_DICTIONARY and target.has("burn_timer"):
+			target_burn = target.get("burn_timer")
+		elif typeof(target) == TYPE_OBJECT and "burn_timer" in target:
+			target_burn = target.burn_timer
+
+		if is_water and target_burn > 0:
+			if typeof(target) == TYPE_DICTIONARY:
+				target["burn_timer"] = 0.0
+			else:
+				target.burn_timer = 0.0
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("explosion", {"x": target.x if "x" in target else 0.0, "y": target.y if "y" in target else 0.0, "radius": 300.0, "damage": 0.0, "type": "steam"})
+
+			var w_balls = []
+			if typeof(world) == TYPE_OBJECT and "balls" in world:
+				w_balls = world.balls
+			elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+				w_balls = world.balls
+
+			var tx = target.x if "x" in target else 0.0
+			var ty = target.y if "y" in target else 0.0
+			for b in w_balls:
+				var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+				if b_alive:
+					var bx = b.x if "x" in b else 0.0
+					var by = b.y if "y" in b else 0.0
+					var dist_sq = (bx - tx)*(bx - tx) + (by - ty)*(by - ty)
+					if dist_sq < 90000.0:
+						var c_blind = b.get("blindness_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.blindness_timer if "blindness_timer" in b else 0.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["blindness_timer"] = max(c_blind, 4.0)
+							b["is_blinded"] = true
+						else:
+							if "blindness_timer" in b: b.blindness_timer = max(c_blind, 4.0)
+							if "is_blinded" in b: b.is_blinded = true
+			# do not return early, let normal damage happen
+
+		var target_frozen = 0.0
+		if typeof(target) == TYPE_DICTIONARY and target.has("frozen_timer"):
+			target_frozen = target.get("frozen_timer")
+		elif typeof(target) == TYPE_OBJECT and "frozen_timer" in target:
+			target_frozen = target.frozen_timer
+
+		if is_fire and target_frozen > 0:
+			if typeof(target) == TYPE_DICTIONARY:
+				target["frozen_timer"] = 0.0
+			else:
+				target.frozen_timer = 0.0
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "ice_shatter", "x": target.x if "x" in target else 0.0, "y": target.y if "y" in target else 0.0})
+
+			var burst_damage = 150.0
+			if typeof(target) == TYPE_OBJECT and target.has_method("take_damage"):
+				target.take_damage(burst_damage)
+			else:
+				if typeof(target) == TYPE_DICTIONARY and target.has("hp"):
+					target["hp"] -= burst_damage
+				elif typeof(target) == TYPE_OBJECT and "hp" in target:
+					target.hp -= burst_damage
+			# do not return early, let normal damage happen
 	var a_dim = attacker.in_mirror_dimension if "in_mirror_dimension" in attacker else false
 	var t_dim = target.in_mirror_dimension if "in_mirror_dimension" in target else false
 	if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("in_mirror_dimension"):
