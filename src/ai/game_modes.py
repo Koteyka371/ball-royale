@@ -29330,6 +29330,10 @@ class ThermalFreezeTagMode(FreezeTagMode):
                                 b.hp = 0
                                 b.alive = False
                                 b.is_frozen = False
+                                if hasattr(world, 'dead_balls') and hasattr(b, 'id'):
+                                    world.dead_balls.append(b.id)
+                                if hasattr(world, 'add_event'):
+                                    world.add_event('ball_died', {'id': b.id, 'reason': 'shattered', 'killer_id': -1})
         for h in to_remove:
             if h in world.arena.hazards:
                 world.arena.hazards.remove(h)
