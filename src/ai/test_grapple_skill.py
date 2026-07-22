@@ -43,7 +43,8 @@ def test_grapple_to_wall():
     action = Action(ball, world)
     action._use_skill()
 
-    assert ball.x == getattr(ball, "radius", 15.0)
+    # The ball is no longer pulled to the wall, instead it swings tangentially
+    assert ball.x == 100
     assert ball.y == 500.0
 
 def test_grapple_to_entity():

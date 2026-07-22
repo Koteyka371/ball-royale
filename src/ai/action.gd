@@ -29313,6 +29313,45 @@ func _use_skill():
                             self.ball.y += (dy / dist) * pull_dist
                             self.ball.x = max(0.0, min(arena_width, self.ball.x))
                             self.ball.y = max(0.0, min(arena_height, self.ball.y))
+                    elif closest_target_type == "hazard":
+                        # Tangential swing around hazard
+                        var speed_boost = 100.0
+                        var b_vx = 0.0
+                        var b_vy = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            if self.ball.has("vx"): b_vx = float(self.ball.vx)
+                            if self.ball.has("vy"): b_vy = float(self.ball.vy)
+                        elif typeof(self.ball) != TYPE_DICTIONARY:
+                            if "vx" in self.ball: b_vx = float(self.ball.vx)
+                            if "vy" in self.ball: b_vy = float(self.ball.vy)
+
+                        var current_speed = sqrt(b_vx * b_vx + b_vy * b_vy)
+                        if current_speed > 0.0:
+                            var t1_x = -dy
+                            var t1_y = dx
+                            var t2_x = dy
+                            var t2_y = -dx
+                            var dot1 = b_vx * t1_x + b_vy * t1_y
+                            var dot2 = b_vx * t2_x + b_vy * t2_y
+                            var t_x = 0.0
+                            var t_y = 0.0
+                            if dot1 > dot2:
+                                t_x = t1_x
+                                t_y = t1_y
+                            else:
+                                t_x = t2_x
+                                t_y = t2_y
+                            var t_len = sqrt(t_x * t_x + t_y * t_y)
+                            if t_len > 0.0:
+                                b_vx += (t_x / t_len) * speed_boost
+                                b_vy += (t_y / t_len) * speed_boost
+
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball.vx = b_vx
+                                    self.ball.vy = b_vy
+                                elif typeof(self.ball) != TYPE_DICTIONARY:
+                                    if "vx" in self.ball: self.ball.vx = b_vx
+                                    if "vy" in self.ball: self.ball.vy = b_vy
                     else:
                         self.ball.x += (dx / dist) * pull_dist
                         self.ball.y += (dy / dist) * pull_dist
@@ -29326,14 +29365,36 @@ func _use_skill():
                     ball_radius = float(self.ball.radius)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"):
                     ball_radius = float(self.ball.get_meta("radius"))
-                if min_dist == dist_left:
-                    self.ball.x = max(ball_radius, self.ball.x - pull_dist)
-                elif min_dist == dist_right:
-                    self.ball.x = min(arena_width - ball_radius, self.ball.x + pull_dist)
-                elif min_dist == dist_top:
-                    self.ball.y = max(ball_radius, self.ball.y - pull_dist)
-                elif min_dist == dist_bottom:
-                    self.ball.y = min(arena_height - ball_radius, self.ball.y + pull_dist)
+                # Grapple to wall (swing tangentially instead of pulling in)
+                var speed_boost = 100.0
+                var b_vx = 0.0
+                var b_vy = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("vx"): b_vx = float(self.ball.vx)
+                    if self.ball.has("vy"): b_vy = float(self.ball.vy)
+                elif typeof(self.ball) != TYPE_DICTIONARY:
+                    if "vx" in self.ball: b_vx = float(self.ball.vx)
+                    if "vy" in self.ball: b_vy = float(self.ball.vy)
+
+                var current_speed = sqrt(b_vx * b_vx + b_vy * b_vy)
+                if current_speed > 0.0:
+                    if min_dist == dist_left or min_dist == dist_right:
+                        if b_vy >= 0:
+                            b_vy += speed_boost
+                        else:
+                            b_vy -= speed_boost
+                    elif min_dist == dist_top or min_dist == dist_bottom:
+                        if b_vx >= 0:
+                            b_vx += speed_boost
+                        else:
+                            b_vx -= speed_boost
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball.vx = b_vx
+                        self.ball.vy = b_vy
+                    elif typeof(self.ball) != TYPE_DICTIONARY:
+                        if "vx" in self.ball: self.ball.vx = b_vx
+                        if "vy" in self.ball: self.ball.vy = b_vy
 
             if "skill_cooldown" in self.ball:
                 self.ball.skill_timer = self.ball.skill_cooldown
