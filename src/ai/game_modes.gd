@@ -42348,8 +42348,111 @@ class FallingTilesRoyaleMode extends GameMode:
 						elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
 							world.add_event.call("ball_fell", {"id": bid})
 
+
+class TiltingPlatformMode extends GameMode:
+	var tilt_timer: float = 0.0
+	var tilt_duration: float = 10.0
+	var tilt_direction: String = "center"
+	var drift_speed: float = 100.0
+
+	func _init():
+		super._init()
+		name = "Tilting Platform"
+		description = "The arena periodically tilts, causing balls to drift slowly towards the edge or center."
+
+	func apply_dynamic_traits(_world: Variant, _balls: Array, _delta: float) -> void:
+		pass
+
+	func setup(world: Variant, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and not "dead_balls" in world:
+			world.dead_balls = []
+		elif typeof(world) == TYPE_DICTIONARY and not world.has("dead_balls"):
+			world["dead_balls"] = []
+
+		tilt_timer = 0.0
+		tilt_duration = _rng.randf_range(8.0, 12.0)
+		var choices = ["center", "edge"]
+		tilt_direction = choices[_rng.randi_range(0, 1)]
+
+	func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
+		if typeof(world) == TYPE_OBJECT and not "dead_balls" in world:
+			world.dead_balls = []
+		elif typeof(world) == TYPE_DICTIONARY and not world.has("dead_balls"):
+			world["dead_balls"] = []
+
+		tilt_timer += delta
+		if tilt_timer >= tilt_duration:
+			tilt_timer = 0.0
+			tilt_duration = _rng.randf_range(8.0, 12.0)
+			var choices = ["center", "edge"]
+			tilt_direction = choices[_rng.randi_range(0, 1)]
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("platform_tilt", {"direction": tilt_direction})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("add_event") and world["add_event"] is Callable:
+				world["add_event"].call("platform_tilt", {"direction": tilt_direction})
+
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+			else:
+				arena_width = world.arena.width
+				arena_height = world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"] != null:
+			arena_width = world["arena"].get("width", 1000.0)
+			arena_height = world["arena"].get("height", 1000.0)
+
+		var center_x: float = arena_width / 2.0
+		var center_y: float = arena_height / 2.0
+
+		for b in balls:
+			var alive = false
+			var ball_type = null
+			var bx = 0.0
+			var by = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+				ball_type = b.get("ball_type", null)
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				alive = b.alive if "alive" in b else false
+				ball_type = b.ball_type if "ball_type" in b else null
+				bx = b.x if "x" in b else 0.0
+				by = b.y if "y" in b else 0.0
+
+			if alive and ball_type != "spectator":
+				var dx = center_x - bx
+				var dy = center_y - by
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist > 0.1:
+					var nx = dx / dist
+					var ny = dy / dist
+					var drift = drift_speed * delta
+
+					if tilt_direction == "center":
+						bx += nx * drift
+						by += ny * drift
+					elif tilt_direction == "edge":
+						bx -= nx * drift
+						by -= ny * drift
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = bx
+						b["y"] = by
+					else:
+						if "x" in b: b.x = bx
+						if "y" in b: b.y = by
+
+
 GAME_MODES = {
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
+	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),
 	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"guild_storm": GuildStormMode.new(),
