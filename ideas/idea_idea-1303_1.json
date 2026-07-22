@@ -1,4 +1,0 @@
-{
-    "title": "Guild Bank Investment System",
-    "description": "Allow guilds to invest their resources into a timed vault. After a set period of days, the vault opens, yielding a percentage return based on the guild's level and investment perks, but during this time the guild is vulnerable to sieges where attackers can steal a portion of the locked funds."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Tunnels Game Mode",
-  "description": "Portals appear across the map. Balls entering a portal exit immediately from a random other portal, maintaining their velocity. The portals change locations every 20 seconds."
-}

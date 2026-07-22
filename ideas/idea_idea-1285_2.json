@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zones",
-  "description": "Dynamic circular zones that appear during battle and slowly shrink over time. Entities outside the zone take continuous damage until they enter."
-}
