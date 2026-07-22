@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Grid Arena",
+  "description": "Similar to falling tiles, but the tiles fall from the outside in, slowly making the arena smaller in a grid-like fashion instead of a circular storm."
+}
