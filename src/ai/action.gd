@@ -19163,7 +19163,7 @@ func execute(strategy: String, delta: float):
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): b_hp = self.ball.hp
     elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: b_hp = self.ball.hp
 
-    if start_hp > 0 and b_hp <= max_hp * 0.2 and quantum_leap_active:
+    if start_hp > 0 and current_hp <= max_hp * 0.2 and quantum_leap_active:
         var target_obj = null
         var min_dist_sq = 1e9
         var b_id = null
@@ -19286,10 +19286,9 @@ func execute(strategy: String, delta: float):
                 self.ball["x"] = tx
                 self.ball["y"] = ty
                 self.ball["quantum_leap_active"] = false
-                if current_hp <= 0:
-                    self.ball["hp"] = max_hp * 0.2
-                    self.ball["alive"] = true
-                    current_hp = max_hp * 0.2
+                self.ball["hp"] = max_hp * 0.2
+                self.ball["alive"] = true
+                current_hp = max_hp * 0.2
             else:
                 self.ball.x = tx
                 self.ball.y = ty
@@ -19297,13 +19296,12 @@ func execute(strategy: String, delta: float):
                     self.ball.quantum_leap_active = false
                 elif self.ball.has_method("set_meta"):
                     self.ball.set_meta("quantum_leap_active", false)
-                if current_hp <= 0:
-                    self.ball.hp = max_hp * 0.2
-                    if "alive" in self.ball:
-                        self.ball.alive = true
-                    elif self.ball.has_method("set_meta"):
-                        self.ball.set_meta("alive", true)
-                    current_hp = max_hp * 0.2
+                self.ball.hp = max_hp * 0.2
+                if "alive" in self.ball:
+                    self.ball.alive = true
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("alive", true)
+                current_hp = max_hp * 0.2
             damage_taken = 0.0
 
     if start_hp > 0 and current_hp <= 0 and death_defy_active:
