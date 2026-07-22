@@ -49,7 +49,7 @@ class PreGameLobby:
         key = f"{ball_id}_traits"
         self.selections[key] = []
         for trait in traits:
-            if trait in ["swift", "slow", "sturdy", "fragile", "lethal", "weak"]:
+            if trait in ["swift", "slow", "sturdy", "fragile", "lethal", "weak", "soul_dropper"]:
                 self.selections[key].append(trait)
 
     def get_traits(self, ball_id):

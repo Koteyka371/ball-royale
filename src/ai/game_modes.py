@@ -31,6 +31,17 @@ class GameMode:
         self.description = "Base game mode"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -1112,6 +1123,29 @@ class GameMode:
                         "message": f"{killer.id} claimed a kill streak bounty on {ball.id} for {reward} skill points!"
                     })
 
+        # Soul Dropper Trait death logic
+        traits = getattr(ball, "traits", [])
+        if "soul_dropper" in traits and not (getattr(ball, "is_elite_minion", False) and getattr(ball, "ball_type", "").lower() == "elite_minion"):
+            class _SoulHazard:
+                def __init__(self, id, x, y, radius, kind, damage):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.is_disabled_by_flare = False
+            soul_fragment = _SoulHazard(
+                id=f"soul_{ball.id}",
+                x=getattr(ball, "x", 0.0),
+                y=getattr(ball, "y", 0.0),
+                radius=15.0,
+                kind="soul_fragment",
+                damage=0.0
+            )
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(soul_fragment)
+
         # Elite Minion death logic - drops a soul fragment for Necromancer
         if getattr(ball, "is_elite_minion", False) and getattr(ball, "ball_type", "").lower() == "elite_minion":
             class _SoulHazard:
@@ -1203,6 +1237,17 @@ class DraftRoyaleMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -1494,6 +1539,17 @@ class BattleRoyaleMode(GameMode):
         self.behemoth_active = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -3620,6 +3676,17 @@ class TeamDeathmatchMode(GameMode):
         self.description = "Two teams fight until one is eliminated."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -3746,6 +3813,17 @@ class ZombieInfectionMode(GameMode):
         self.bounty_base_reward = 5
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -3917,6 +3995,17 @@ class GuildBossFightMode(GameMode):
         self.tier = tier
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -4108,6 +4197,17 @@ class BossFightMode(GameMode):
         self.description = "One giant boss ball faces off against a team of weaker hunters."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -4451,6 +4551,17 @@ class DualPayloadMode(GameMode):
         self.anti_payload_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -4940,6 +5051,17 @@ class EscortMode(GameMode):
         self.anti_payload_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -5429,6 +5551,17 @@ class VIPDefenseMode(GameMode):
         self.bounty_base_reward = 25
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -5562,6 +5695,17 @@ class SurvivalMode(GameMode):
         self.description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -5764,6 +5908,17 @@ class CaptureTheFlagMode(GameMode):
         self.description = "Teams try to steal the enemy's flag (a special booster) and return it to their base."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -5912,6 +6067,17 @@ class EvolutionarySimulationMode(GameMode):
         self.description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -6179,6 +6345,17 @@ class MassiveGravityWellMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -6400,6 +6577,17 @@ class KingOfTheHillMode(GameMode):
         self.game_time = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -6588,6 +6776,17 @@ class SweepingBlackHoleMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -6869,6 +7068,17 @@ class WeatherChaosMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -7726,6 +7936,17 @@ class DominationMode(GameMode):
             pt.owner = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -8039,6 +8260,17 @@ class MemoryTrapsMode(GameMode):
         self.traps = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -8212,6 +8444,17 @@ class CustomMatchMode(GameMode):
         self._rewards_given = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -8485,6 +8728,17 @@ class EcholocationMode(GameMode):
         self.current_flash_time = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -8661,6 +8915,17 @@ class PitchBlackMode(GameMode):
         self.description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -8822,6 +9087,17 @@ class VisionReducedMode(GameMode):
         self.pulse_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -8993,6 +9269,17 @@ class EMPBurstMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -9135,6 +9422,17 @@ class DynamicHazardsMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -10367,6 +10665,17 @@ class MirrorMatchMode(GameMode):
         self.world = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -10503,6 +10812,17 @@ class VolatileClonesMode(GameMode):
         self.clone_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -10749,6 +11069,17 @@ class CloneChaosMode(GameMode):
         self.clone_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -11015,6 +11346,17 @@ class BumperBallsMode(GameMode):
         self.description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -11312,6 +11654,17 @@ class ModifierZonesMode(GameMode):
         self.zones = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -11537,6 +11890,17 @@ class WindstormMode(GameMode):
         self.tornado_timer = 5.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -11971,6 +12335,17 @@ class BountyHuntMode(GameMode):
         self.bounty_swap_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -12512,6 +12887,17 @@ class GravityWellMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -13349,6 +13735,17 @@ class MagneticCollisionsMode(GameMode):
         self.polarity_flip_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -13742,6 +14139,17 @@ class PinballMode(GameMode):
         self.description = "Lots of bouncy bumpers and physics-based knockback logic to push balls around the arena."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -15138,6 +15546,17 @@ class StaminaSpeedMode(GameMode):
         self.description = "Max stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -15309,6 +15728,17 @@ class HazardBilliardsMode(GameMode):
         self.description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -16090,6 +16520,17 @@ class DailyMutatorMode(GameMode):
         self._rewards_given = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -16253,6 +16694,17 @@ class BlackMarketMode(GameMode):
         self.currency_spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -16672,6 +17124,17 @@ class BlizzardMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -16867,6 +17330,17 @@ class MeteorShowerMode(GameMode):
         self.craters = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -17090,6 +17564,17 @@ class CursedBuffZoneMode(GameMode):
         self.zone_radius = 150.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -17268,6 +17753,17 @@ class RhythmPanelsMode(GameMode):
         self.beat_interval = 2.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -17806,6 +18302,17 @@ class ArtifactUpgraderMode(GameMode):
         self.description = "Protect the wandering crafter NPC from hazards for 30 seconds to upgrade your artifacts!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -18041,6 +18548,17 @@ class SweepingPaddlesMode(GameMode):
         self.sweep_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -18613,6 +19131,17 @@ class InvisibleDecoysMode(GameMode):
         self.description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -19243,6 +19772,17 @@ class JuggernautMode(GameMode):
         self.description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -19679,6 +20219,17 @@ class TickingPayloadMode(GameMode):
         self.winner = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -20186,6 +20737,17 @@ class WeaponCollectionMode(GameMode):
         self.weapon_spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -20649,6 +21211,17 @@ class CenterBlackHoleMode(GameMode):
         self.damage = 10.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -26349,6 +26922,17 @@ class RollingBouldersMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -26641,6 +27225,17 @@ class SoulLinkMode(GameMode):
         self.prev_state[b.id] = state
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -26960,6 +27555,17 @@ class TagTeamMode(GameMode):
         self.team_counter = 1
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -27219,6 +27825,17 @@ class CrossfireMode(GameMode):
         self.description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -27375,6 +27992,17 @@ class TeleporterHubMode(GameMode):
         self.peripheral_zones = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:
@@ -28142,6 +28770,17 @@ class FreezeTagMode(GameMode):
         self.description = "Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            sb_timer = getattr(b, "soul_boost_timer", 0.0)
+            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
+                b.soul_boost_timer -= delta
+                if b.soul_boost_timer <= 0:
+                    b.soul_boost_timer = 0
+                    if hasattr(b, "base_damage"):
+                        b.damage = b.base_damage
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+
         if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
             timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
             if timer > 10.0:

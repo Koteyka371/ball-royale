@@ -2791,17 +2791,33 @@ class Action:
                     continue
 
                 if getattr(h, "kind", "") == "soul_fragment":
-                    # Check if the ball is the owner Necromancer
                     ball_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
-                    if ball_type == "necromancer" and getattr(h, "minion_owner", None) == getattr(self.ball, "id", None):
+                    minion_owner = getattr(h, "minion_owner", None)
+                    can_collect = False
+                    if minion_owner is not None:
+                        # Dropped by Elite Minion, only owner Necromancer can collect
+                        if ball_type == "necromancer" and minion_owner == getattr(self.ball, "id", None):
+                            can_collect = True
+                    else:
+                        # Dropped by soul_dropper trait, anyone can collect
+                        can_collect = True
+
+                    if can_collect:
                         dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
                         if dist_sq < (self.ball.radius + h.radius)**2:
                             # Collect soul fragment
-                            self.ball.max_hp += 2.0
-                            self.ball.hp = min(self.ball.hp + 2.0, self.ball.max_hp)
-                            self.ball.damage += 1.0
-                            if hasattr(self.ball, "base_damage"):
-                                self.ball.base_damage += 1.0
+                            if minion_owner is not None:
+                                self.ball.max_hp += 2.0
+                                self.ball.hp = min(self.ball.hp + 2.0, self.ball.max_hp)
+                                self.ball.damage += 1.0
+                                if hasattr(self.ball, "base_damage"):
+                                    self.ball.base_damage += 1.0
+                            else:
+                                # Temporary boost for non-minion fragments
+                                self.ball.soul_boost_timer = getattr(self.ball, "soul_boost_timer", 0.0) + 5.0
+                                self.ball.damage = getattr(self.ball, "base_damage", self.ball.damage) * 1.5
+                                self.ball.speed = getattr(self.ball, "base_speed", self.ball.speed) * 1.25
+
                             hazards_to_remove.append(h)
                             if hasattr(self.world, "add_event"):
                                 self.world.add_event("soul_fragment_collected", {"ball_id": self.ball.id})
@@ -16951,6 +16967,11 @@ class Action:
             # Check for global eclipse inside the not is_dashing block so it isn't overwritten later
             if hasattr(self.world, "arena") and getattr(self.world.arena, "is_eclipse", False):
                 self.ball.damage = getattr(self.ball, "damage", base_d) * 2.0
+
+            # Soul boost
+            if getattr(self.ball, "soul_boost_timer", 0.0) > 0:
+                self.ball.damage = base_d * 1.5
+                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 1.25
 
             if getattr(self.ball, "is_exhausted", False):
                 self.ball.speed *= 0.5

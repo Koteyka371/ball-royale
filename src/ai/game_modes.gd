@@ -1984,6 +1984,59 @@ class GameMode:
 						"message": killer_id + " claimed a kill streak bounty on " + target_id + " for " + str(reward) + " skill points!"
 					})
 
+		# Soul Dropper Trait death logic
+		var b_traits = []
+		if typeof(ball) == TYPE_DICTIONARY and ball.has("traits"): b_traits = ball.traits
+		elif typeof(ball) == TYPE_OBJECT and "traits" in ball: b_traits = ball.traits
+		elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("traits"): b_traits = ball.get_meta("traits")
+
+		var is_elite_minion = false
+		if typeof(ball) == TYPE_DICTIONARY and ball.has("is_elite_minion"): is_elite_minion = ball.is_elite_minion
+		elif typeof(ball) == TYPE_OBJECT and "is_elite_minion" in ball: is_elite_minion = ball.is_elite_minion
+		elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("is_elite_minion"): is_elite_minion = ball.get_meta("is_elite_minion")
+
+		var check_type = ""
+		if typeof(ball) == TYPE_DICTIONARY and ball.has("ball_type"): check_type = ball.ball_type
+		elif typeof(ball) == TYPE_OBJECT and "ball_type" in ball: check_type = ball.ball_type
+		elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("ball_type"): check_type = ball.get_meta("ball_type")
+
+		if "soul_dropper" in b_traits and not (is_elite_minion and typeof(check_type) == TYPE_STRING and check_type.to_lower() == "elite_minion"):
+			var bx = 0.0
+			var by = 0.0
+			if typeof(ball) == TYPE_DICTIONARY:
+				bx = ball.get("x", 0.0)
+				by = ball.get("y", 0.0)
+			else:
+				bx = ball.x if "x" in ball else 0.0
+				by = ball.y if "y" in ball else 0.0
+
+			var b_id_str = str(ball.id if typeof(ball) != TYPE_DICTIONARY else ball.get("id", ""))
+			var drop_id = "soul_" + b_id_str
+			var arena = null
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"): arena = world.arena
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null: arena = world.arena
+			elif typeof(world) == TYPE_OBJECT and "arena" in world: arena = world.arena
+
+			if arena != null:
+				var arena_hazards = []
+				if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"): arena_hazards = arena.hazards
+				elif typeof(arena) == TYPE_OBJECT and "hazards" in arena: arena_hazards = arena.hazards
+				elif typeof(arena) == TYPE_OBJECT and arena.has_method("get_meta") and arena.has_meta("hazards"): arena_hazards = arena.get_meta("hazards")
+				else:
+					if typeof(arena) == TYPE_DICTIONARY: arena.hazards = []
+					elif typeof(arena) == TYPE_OBJECT: arena.hazards = []
+					arena_hazards = arena.hazards if "hazards" in arena else []
+
+				var drop = null
+				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+					drop = load("res://src/arena/procedural_arena.gd").Hazard.new(drop_id, bx, by, 15.0, "soul_fragment", 0.0)
+				else:
+					drop = {"id": drop_id, "x": bx, "y": by, "radius": 15.0, "kind": "soul_fragment", "damage": 0.0, "active": true, "is_disabled_by_flare": false}
+
+				if drop != null:
+					if typeof(arena_hazards) == TYPE_ARRAY:
+						arena_hazards.append(drop)
+
 		# Elite Minion death logic - drops a soul fragment for Necromancer
 		var is_elite = false
 		if typeof(ball) == TYPE_DICTIONARY and ball.has("is_elite_minion"): is_elite = ball.is_elite_minion
