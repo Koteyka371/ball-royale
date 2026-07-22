@@ -30179,6 +30179,14 @@ class TickingBombMode(GameMode):
                                 self.active = True
                         new_explosions.append(_ExplosionVisual(h.x, h.y))
 
+                        for other_h in world.arena.hazards:
+                            if other_h != h and getattr(other_h, "kind", "") == "ticking_bomb" and getattr(other_h, "active", True):
+                                dx = other_h.x - h.x
+                                dy = other_h.y - h.y
+                                dist = math.sqrt(dx*dx + dy*dy)
+                                if dist <= explosion_radius:
+                                    other_h.duration = 0.0
+
                         for b in balls:
                             if getattr(b, "alive", False):
                                 dx = b.x - h.x
