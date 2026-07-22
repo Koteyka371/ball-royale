@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1266] Juggernaut Buff — *2026-07-22 08:04:17 UTC*
+
+A rare booster drop that massively increases size, health, and mass, but reduces speed. The juggernaut can push hazards into enemies easily.
+
+---
+
 ## [idea-1334] Necromancer Phylactery Mechanism — *2026-07-22 07:52:34 UTC*
 
 Introduce a rare 'Phylactery' drop for the Necromancer. When destroyed, instead of dying, the Necromancer's soul is bound to the Phylactery (which remains stationary for 5 seconds). If the Phylactery is not destroyed within that window, the Necromancer respawns with 50% HP.

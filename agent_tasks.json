@@ -21694,7 +21694,7 @@
     },
     {
       "id": "idea-1266",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Juggernaut Buff",
@@ -33530,6 +33530,41 @@
         "src/ai/bumper_car_madness_game.py",
         "src/ai/bumper_car_madness_game.gd",
         "tests/test_bumper_car_madness_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1961",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Collapse",
+      "description": "When the game reaches a certain time, all boundaries become black hole edges and slowly suck all players to the center.",
+      "allowed_paths": [
+        "src/ai/black_hole_collapse.py",
+        "src/ai/black_hole_collapse.gd",
+        "tests/test_black_hole_collapse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1962",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Summoner Build",
+      "description": "Add a summoner active item that spawns 3 little minion balls around you to protect you.",
+      "allowed_paths": [
+        "src/ui/summoner_build.py",
+        "src/ui/summoner_build.gd",
+        "src/ai/summoner_build.py",
+        "tests/test_summoner_build.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
