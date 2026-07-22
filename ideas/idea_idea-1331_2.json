@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A deployable hazard that links two random enemies together. When one linked enemy takes damage, the other takes a percentage of that damage as well. If one uses a movement ability (like dash or teleport), the other is pulled in that direction. The link breaks if the two balls move too far apart or after a 10-second duration."
+}
