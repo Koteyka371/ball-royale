@@ -194,7 +194,22 @@ class Action:
             else:
                 break
 
+
     def _attempt_damage(self, attacker, target) -> None:
+        has_orig = False
+        orig_dmg = 0.0
+        if getattr(target, "overflow_active", False) and hasattr(attacker, "damage"):
+            has_orig = True
+            orig_dmg = attacker.damage
+            attacker.damage = orig_dmg * 0.85
+
+        try:
+            self._attempt_damage_internal(attacker, target)
+        finally:
+            if has_orig:
+                attacker.damage = orig_dmg
+
+    def _attempt_damage_internal(self, attacker, target) -> None:
 
         # Elemental Chain Reactions mode logic
         mode = getattr(self.world, 'mode', None)
@@ -1440,6 +1455,19 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        # --- Overflow State Logic ---
+        stamina_val = getattr(self.ball, "stamina", 100.0)
+        max_stamina_val = getattr(self.ball, "max_stamina", 100.0)
+        if stamina_val >= max_stamina_val * 0.999:
+            self.ball.max_stamina_timer = getattr(self.ball, "max_stamina_timer", 0.0) + delta
+            if getattr(self.ball, "max_stamina_timer", 0.0) >= 5.0:
+                self.ball.overflow_active = True
+        else:
+            if stamina_val < max_stamina_val * 0.8:
+                self.ball.overflow_active = False
+                self.ball.max_stamina_timer = 0.0
+
 
         if getattr(self.ball, "bound_phylactery_id", None) is not None:
             # Check phylactery state
@@ -4909,6 +4937,9 @@ class Action:
         if getattr(self.ball, "supercharge_timer", 0.0) > 0:
             self.ball.speed *= 1.5
             self.ball.damage *= 1.5
+
+        if getattr(self.ball, "overflow_active", False):
+            self.ball.speed *= 1.2
 
 # Handle minion decay
         if getattr(self.ball, "is_minion", False):
