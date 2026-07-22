@@ -27164,7 +27164,91 @@ class TricksterEventMode(GameMode):
                     if hasattr(b, "traits") and "trickster" in b.traits:
                         b.traits.remove("trickster")
 
+
+class PetTamingMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "pet_taming"
+        self.description = "Players can find and tame wild mini-balls around the arena to gain stat boosts and utility skills."
+        self.wild_pets = []
+
+    def setup(self, world: Any, balls: List[Any]):
+        super().setup(world, balls)
+        import random
+        self.wild_pets = []
+        class WildPet:
+            pass
+        pet_types = [
+            {"kind": "speed_pet", "color": "yellow", "radius": 10},
+            {"kind": "loot_pet", "color": "green", "radius": 10},
+            {"kind": "power_pet", "color": "red", "radius": 10}
+        ]
+        width = getattr(world.arena, 'width', 800) if hasattr(world, 'arena') else 800
+        height = getattr(world.arena, 'height', 600) if hasattr(world, 'arena') else 600
+        for i in range(15):
+            ptype = random.choice(pet_types)
+            p = WildPet()
+            p.id = f"wild_pet_{i}"
+            p.x = random.uniform(50, width - 50)
+            p.y = random.uniform(50, height - 50)
+            p.kind = ptype["kind"]
+            p.color = ptype["color"]
+            p.radius = ptype["radius"]
+            self.wild_pets.append(p)
+
+    def tick(self, world: Any, balls: List[Any], delta: float):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, 'alive', False): continue
+
+            # Follow behavior for already tamed pet
+            if hasattr(b, 'active_pet') and b.active_pet is not None:
+                pet = b.active_pet
+                dx = b.x - pet.x
+                dy = b.y - pet.y
+                dist = math.hypot(dx, dy)
+                if dist > 30:
+                    pet.x += (dx / dist) * 200 * delta
+                    pet.y += (dy / dist) * 200 * delta
+
+                # Apply pet effects
+                if pet.kind == "speed_pet":
+                    if not hasattr(b, "biome_modifier_speed"):
+                        b.biome_modifier_speed = True
+                    b.speed = getattr(b, 'base_speed', 100) * 1.2
+                elif pet.kind == "power_pet":
+                    if not hasattr(b, "biome_modifier_damage"):
+                        b.biome_modifier_damage = True
+                    b.damage = getattr(b, 'base_damage', 10) * 1.3
+                elif pet.kind == "loot_pet":
+                    # Auto loot nearby boosters
+                    if hasattr(world, 'boosters') and isinstance(world.boosters, list):
+                        for booster in world.boosters:
+                            bdx = b.x - booster.x
+                            bdy = b.y - booster.y
+                            if bdx*bdx + bdy*bdy < 200*200:
+                                pdist = math.hypot(bdx, bdy)
+                                if pdist > 0:
+                                    booster.x += (bdx/pdist) * 300 * delta
+                                    booster.y += (bdy/pdist) * 300 * delta
+
+            # Check for taming wild pets
+            if not hasattr(b, 'active_pet') or b.active_pet is None:
+                for p in self.wild_pets[:]:
+                    dx = b.x - p.x
+                    dy = b.y - p.y
+                    bradius = getattr(b, 'radius', 15)
+                    if dx*dx + dy*dy < (bradius + p.radius)**2:
+                        b.active_pet = p
+                        self.wild_pets.remove(p)
+                        if hasattr(world, 'add_event'):
+                            world.add_event("pet_tamed", {"ball_id": getattr(b, 'id', -1), "pet_kind": p.kind})
+                        break
+
 GAME_MODES = {
+    "pet_taming": PetTamingMode(),
     'trickster_event': TricksterEventMode(),
     "collapsing_ceiling": CollapsingCeilingMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),

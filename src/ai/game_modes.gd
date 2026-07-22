@@ -43055,7 +43055,218 @@ class CurrencyBurdenMode extends GameMode:
 							world.add_event("altar_deposit", {"ball_id": b.get("id", -1), "amount": buff_amount, "upgrade": upgrade_type})
 						break
 
+
+class PetTamingMode extends GameMode:
+	var wild_pets = []
+
+	class WildPet:
+		var id = ""
+		var x = 0.0
+		var y = 0.0
+		var kind = ""
+		var color = ""
+		var radius = 10.0
+
+	func _init():
+		super._init()
+		self.name = "pet_taming"
+		self.description = "Players can find and tame wild mini-balls around the arena to gain stat boosts and utility skills."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		wild_pets = []
+		var pet_types = [
+			{"kind": "speed_pet", "color": "yellow", "radius": 10.0},
+			{"kind": "loot_pet", "color": "green", "radius": 10.0},
+			{"kind": "power_pet", "color": "red", "radius": 10.0}
+		]
+		var width = 800.0
+		var height = 600.0
+		if "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				width = world.arena.get("width", 800.0)
+				height = world.arena.get("height", 600.0)
+			else:
+				width = world.arena.width
+				height = world.arena.height
+
+		var rng = RandomNumberGenerator.new()
+		rng.randomize()
+		for i in range(15):
+			var ptype = pet_types[rng.randi() % pet_types.size()]
+			var p = WildPet.new()
+			p.id = "wild_pet_" + str(i)
+			p.x = rng.randf_range(50.0, width - 50.0)
+			p.y = rng.randf_range(50.0, height - 50.0)
+			p.kind = ptype["kind"]
+			p.color = ptype["color"]
+			p.radius = ptype["radius"]
+			wild_pets.append(p)
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", false): continue
+
+				var active_pet = null
+				if b.has("active_pet"):
+					active_pet = b["active_pet"]
+
+				if active_pet != null:
+					var dx = b.get("x", 0.0) - active_pet.x
+					var dy = b.get("y", 0.0) - active_pet.y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 30.0:
+						active_pet.x += (dx / dist) * 200.0 * delta
+						active_pet.y += (dy / dist) * 200.0 * delta
+
+					if active_pet.kind == "speed_pet":
+						b["biome_modifier_speed"] = true
+						b["speed"] = b.get("base_speed", 100.0) * 1.2
+					elif active_pet.kind == "power_pet":
+						b["biome_modifier_damage"] = true
+						b["damage"] = b.get("base_damage", 10.0) * 1.3
+					elif active_pet.kind == "loot_pet":
+						if "boosters" in world and typeof(world.boosters) == TYPE_ARRAY:
+							for booster in world.boosters:
+								var bx = 0.0
+								var by = 0.0
+								if typeof(booster) == TYPE_DICTIONARY:
+									bx = booster.get("x", 0.0)
+									by = booster.get("y", 0.0)
+								else:
+									bx = booster.x
+									by = booster.y
+								var bdx = b.get("x", 0.0) - bx
+								var bdy = b.get("y", 0.0) - by
+								if bdx*bdx + bdy*bdy < 200.0*200.0:
+									var pdist = sqrt(bdx*bdx + bdy*bdy)
+									if pdist > 0.0:
+										if typeof(booster) == TYPE_DICTIONARY:
+											booster["x"] += (bdx/pdist) * 300.0 * delta
+											booster["y"] += (bdy/pdist) * 300.0 * delta
+										else:
+											booster.x += (bdx/pdist) * 300.0 * delta
+											booster.y += (bdy/pdist) * 300.0 * delta
+				else:
+					var i = 0
+					while i < wild_pets.size():
+						var p = wild_pets[i]
+						var dx = b.get("x", 0.0) - p.x
+						var dy = b.get("y", 0.0) - p.y
+						var bradius = b.get("radius", 15.0)
+						if dx*dx + dy*dy < (bradius + p.radius) * (bradius + p.radius):
+							b["active_pet"] = p
+							wild_pets.remove_at(i)
+							if "add_event" in world:
+								if typeof(world) == TYPE_DICTIONARY:
+									pass
+								else:
+									if world.has_method("add_event"):
+										world.add_event("pet_tamed", {"ball_id": b.get("id", -1), "pet_kind": p.kind})
+							break
+						else:
+							i += 1
+			else:
+				var alive = false
+				if b.has_method("has_meta") and b.has_method("get"):
+					alive = b.get("alive")
+				else:
+					alive = b.alive if "alive" in b else false
+				if not alive: continue
+
+				var active_pet = null
+				if b.has_method("has_meta") and b.has_meta("active_pet"):
+					active_pet = b.get_meta("active_pet")
+				elif "active_pet" in b:
+					active_pet = b.active_pet
+
+				if active_pet != null:
+					var bx = b.get("x") if b.has_method("get") else b.x
+					var by = b.get("y") if b.has_method("get") else b.y
+					var dx = bx - active_pet.x
+					var dy = by - active_pet.y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 30.0:
+						active_pet.x += (dx / dist) * 200.0 * delta
+						active_pet.y += (dy / dist) * 200.0 * delta
+
+					if active_pet.kind == "speed_pet":
+						if b.has_method("set_meta"):
+							b.set_meta("biome_modifier_speed", true)
+						else:
+							b.biome_modifier_speed = true
+						var base_spd = b.get("base_speed") if b.has_method("get") else b.base_speed
+						if b.has_method("set"):
+							b.set("speed", base_spd * 1.2)
+						else:
+							b.speed = base_spd * 1.2
+					elif active_pet.kind == "power_pet":
+						if b.has_method("set_meta"):
+							b.set_meta("biome_modifier_damage", true)
+						else:
+							b.biome_modifier_damage = true
+						var base_dmg = b.get("base_damage") if b.has_method("get") else b.base_damage
+						if b.has_method("set"):
+							b.set("damage", base_dmg * 1.3)
+						else:
+							b.damage = base_dmg * 1.3
+					elif active_pet.kind == "loot_pet":
+						if "boosters" in world and typeof(world.boosters) == TYPE_ARRAY:
+							for booster in world.boosters:
+								var booster_x = 0.0
+								var booster_y = 0.0
+								if typeof(booster) == TYPE_DICTIONARY:
+									booster_x = booster.get("x", 0.0)
+									booster_y = booster.get("y", 0.0)
+								else:
+									booster_x = booster.get("x") if booster.has_method("get") else booster.x
+									booster_y = booster.get("y") if booster.has_method("get") else booster.y
+
+								var bdx = bx - booster_x
+								var bdy = by - booster_y
+								if bdx*bdx + bdy*bdy < 200.0*200.0:
+									var pdist = sqrt(bdx*bdx + bdy*bdy)
+									if pdist > 0.0:
+										if typeof(booster) == TYPE_DICTIONARY:
+											booster["x"] += (bdx/pdist) * 300.0 * delta
+											booster["y"] += (bdy/pdist) * 300.0 * delta
+										else:
+											if booster.has_method("set"):
+												booster.set("x", booster_x + (bdx/pdist) * 300.0 * delta)
+												booster.set("y", booster_y + (bdy/pdist) * 300.0 * delta)
+											else:
+												booster.x += (bdx/pdist) * 300.0 * delta
+												booster.y += (bdy/pdist) * 300.0 * delta
+				else:
+					var i = 0
+					while i < wild_pets.size():
+						var p = wild_pets[i]
+						var bx = b.get("x") if b.has_method("get") else b.x
+						var by = b.get("y") if b.has_method("get") else b.y
+						var bradius = b.get("radius") if b.has_method("get") else (b.radius if "radius" in b else 15.0)
+						var dx = bx - p.x
+						var dy = by - p.y
+						if dx*dx + dy*dy < (bradius + p.radius) * (bradius + p.radius):
+							if b.has_method("set_meta"):
+								b.set_meta("active_pet", p)
+							else:
+								b.active_pet = p
+							wild_pets.remove_at(i)
+							if "add_event" in world:
+								if typeof(world) == TYPE_DICTIONARY:
+									pass
+								else:
+									if world.has_method("add_event"):
+										world.add_event("pet_tamed", {"ball_id": b.get("id") if b.has_method("get") else b.id, "pet_kind": p.kind})
+							break
+						else:
+							i += 1
+
 GAME_MODES = {
+	"pet_taming": PetTamingMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),
