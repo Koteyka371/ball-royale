@@ -22517,7 +22517,7 @@
     },
     {
       "id": "idea-1314",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Spectral Escort",
@@ -32997,6 +32997,76 @@
         "src/ai/aura_mastery.py",
         "src/ai/aura_mastery.gd",
         "tests/test_aura_mastery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1930",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skin specific kill effects",
+      "description": "Certain legendary skins could change the particle effects that appear when the ball scores a kill.",
+      "allowed_paths": [
+        "src/ui/skin_specific_kill_effects.py",
+        "src/ui/skin_specific_kill_effects.gd",
+        "src/ai/skin_specific_kill_effects.py",
+        "tests/test_skin_specific_kill_effects.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1931",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnels Biome",
+      "description": "A specific biome safe zone that periodically teleports entities inside it to another random quantum tunnel biome on the map, allowing for rapid escapes or surprise attacks, but making it hard to hold ground.",
+      "allowed_paths": [
+        "src/ai/quantum_tunnels_biome.py",
+        "src/ai/quantum_tunnels_biome.gd",
+        "tests/test_quantum_tunnels_biome.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1932",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Skin recolors via materials",
+      "description": "Allow players to craft specific color palettes using inventory materials to recolor their unlocked skins.",
+      "allowed_paths": [
+        "src/ui/skin_recolors_via_materials.py",
+        "src/ui/skin_recolors_via_materials.gd",
+        "src/ai/skin_recolors_via_materials.py",
+        "tests/test_skin_recolors_via_materials.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1933",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Nullifier Biome",
+      "description": "A biome safe zone where the pull of gravity is significantly reduced, meaning knockback from attacks sends players flying much further, making edge positioning very dangerous.",
+      "allowed_paths": [
+        "src/ai/gravity_nullifier_biome.py",
+        "src/ai/gravity_nullifier_biome.gd",
+        "tests/test_gravity_nullifier_biome.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

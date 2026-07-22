@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1314] Spectral Escort — *2026-07-22 05:21:13 UTC*
+
+A VIP protection mode where one randomly selected ball on each team becomes the Spectral VIP. The VIP cannot attack and is highly vulnerable, but emits a constant healing aura for their teammates. The objective is to keep your VIP alive while hunting down the enemy VIP.
+
+---
+
 ## [idea-1289] Shrinking Safe Zones With Multiple Biomes — *2026-07-22 05:18:29 UTC*
 
 Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages.
