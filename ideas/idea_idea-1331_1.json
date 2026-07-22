@@ -1,4 +1,0 @@
-{
-  "title": "Chrono-Shifter Core",
-  "description": "A booster that allows the ball to record its path for 5 seconds. Upon taking fatal damage, it rewinds time to its initial position and restores HP to the state it was at the beginning of the recording."
-}

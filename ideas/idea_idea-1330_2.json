@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zone Mutator",
-  "description": "A continuously shrinking circular safe zone is present in the arena. Any ball outside this safe zone takes escalating damage over time."
-}

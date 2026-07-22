@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Swap Trap",
-  "description": "A hazard that binds two enemies together when triggered. Any damage or status effect applied to one enemy is symmetrically mirrored onto the other until the bond naturally degrades after 10 seconds or one of them dies."
-}

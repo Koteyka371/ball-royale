@@ -34743,6 +34743,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2032",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Mechanic",
+      "description": "Players can find 'Quantum Boosters' that temporarily allow them to leap over walls and hazards by pressing a skill button, dodging incoming damage while airborne, but at the cost of a long cooldown and vulnerability upon landing.",
+      "allowed_paths": [
+        "src/ai/quantum_leap_mechanic.py",
+        "src/ai/quantum_leap_mechanic.gd",
+        "tests/test_quantum_leap_mechanic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2033",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dark Matter Mode",
+      "description": "A new game mode where the center of the arena slowly becomes a dark matter void that instantly eliminates players. However, staying near the edge of the void grants massive temporary speed buffs and skill recharge, rewarding high-risk, high-reward positioning.",
+      "allowed_paths": [
+        "src/ai/dark_matter.py",
+        "src/ai/dark_matter.gd",
+        "tests/test_dark_matter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

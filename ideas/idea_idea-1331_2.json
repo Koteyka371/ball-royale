@@ -1,4 +1,0 @@
-{
-  "title": "Nanite Repair Swarm",
-  "description": "When below 30% HP, spawns a swarm of nanites that seeks out nearby debris or destroyed hazards, consuming them to regenerate the ball's health rapidly over a short duration."
-}
