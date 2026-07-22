@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Decoy",
+  "description": "A decoy that randomly swaps positions with the player every 5 seconds until destroyed."
+}
