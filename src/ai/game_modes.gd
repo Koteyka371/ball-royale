@@ -27172,12 +27172,18 @@ class BlizzardMode extends GameMode:
 				blizzard_duration = 10.0
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("blizzard_warning", {"type": "weather_warning", "message": "A BLIZZARD HAS BEGUN!"})
+					world.add_event("camera_zoom", {"zoom": 1.5, "duration": 1.0})
+				if "arena" in world:
+					world.arena.is_foggy = true
 		else:
 			blizzard_duration -= delta
 			if blizzard_duration <= 0:
 				blizzard_active = false
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("blizzard_end", {"type": "weather_warning", "message": "The blizzard has ended."})
+					world.add_event("camera_zoom", {"zoom": 1.0, "duration": 1.0})
+				if "arena" in world:
+					world.arena.is_foggy = false
 
 			spawn_timer += delta
 			if spawn_timer >= 1.0:
@@ -27224,6 +27230,15 @@ class BlizzardMode extends GameMode:
 			else:
 				b.set_meta("is_sliding", false)
 				b.set_meta("friction_multiplier", 1.0)
+
+				if blizzard_active and (("velocity_x" in b and b.velocity_x != 0) or ("velocity_y" in b and b.velocity_y != 0)):
+					var footprint_timer = b.get_meta("footprint_timer") if b.has_meta("footprint_timer") else 0.0
+					footprint_timer += delta
+					if footprint_timer > 0.1:
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("footprint", {"x": b.x, "y": b.y, "duration": 2.0})
+						footprint_timer = 0.0
+					b.set_meta("footprint_timer", footprint_timer)
 
 			var base_speed = 100.0
 			if "base_speed" in b:
