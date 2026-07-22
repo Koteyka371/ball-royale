@@ -2549,6 +2549,31 @@ func _attempt_damage_internal(attacker, target) -> void:
 						elif typeof(next_entity) == TYPE_OBJECT and next_entity.has_method("set_meta"):
 							next_entity.set_meta("stun_timer", ne_stun)
 					elif e_type == "hazard" or e_type == "item" or e_type == "booster":
+						var n_kind = next_entity.get("kind") if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("kind") else (next_entity.kind if typeof(next_entity) == TYPE_OBJECT and "kind" in next_entity else "")
+						var n_team = next_entity.get("team") if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("team") else (next_entity.team if typeof(next_entity) == TYPE_OBJECT and "team" in next_entity else null)
+						var a_team = attacker.get_meta("team") if attacker.has_method("get_meta") and attacker.has_meta("team") else (attacker["team"] if typeof(attacker) == TYPE_DICTIONARY and attacker.has("team") else (attacker.team if "team" in attacker else null))
+
+						if n_kind == "mirage_decoy" and n_team != a_team:
+							var n_owner = next_entity.get("owner_id") if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("owner_id") else (next_entity.owner_id if typeof(next_entity) == TYPE_OBJECT and "owner_id" in next_entity else null)
+							var n_x = next_entity.get("x") if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("x") else (next_entity.x if typeof(next_entity) == TYPE_OBJECT and "x" in next_entity else 0.0)
+							var n_y = next_entity.get("y") if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("y") else (next_entity.y if typeof(next_entity) == TYPE_OBJECT and "y" in next_entity else 0.0)
+
+							var emp = {
+								"id": 21000 + self.world.arena.hazards.size(),
+								"x": n_x,
+								"y": n_y,
+								"radius": 40.0,
+								"kind": "emp_burst",
+								"damage": 20.0,
+								"duration": 0.5,
+								"owner_id": n_owner,
+								"team": n_team
+							}
+							self.world.arena.hazards.append(emp)
+							var idx = self.world.arena.hazards.find(next_entity)
+							if idx != -1:
+								self.world.arena.hazards.remove_at(idx)
+
 						var n_t_var = ""
 						if typeof(next_entity) == TYPE_OBJECT and next_entity.has_meta("trap_variant"): n_t_var = next_entity.get_meta("trap_variant")
 
@@ -2665,6 +2690,56 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        var i = self.world.arena.hazards.size() - 1
+        while i >= 0:
+            var h = self.world.arena.hazards[i]
+            var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY and h.has("kind") else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+            if h_kind == "mirage_decoy":
+                var dur = h.get("duration") if typeof(h) == TYPE_DICTIONARY and h.has("duration") else (h.duration if typeof(h) == TYPE_OBJECT and "duration" in h else 0.0)
+                dur -= delta
+                if dur <= 0:
+                    self.world.arena.hazards.remove_at(i)
+                else:
+                    if typeof(h) == TYPE_DICTIONARY: h["duration"] = dur
+                    else: h.duration = dur
+
+                    var owner_id = h.get("owner_id") if typeof(h) == TYPE_DICTIONARY and h.has("owner_id") else (h.owner_id if typeof(h) == TYPE_OBJECT and "owner_id" in h else null)
+                    var team = h.get("team") if typeof(h) == TYPE_DICTIONARY and h.has("team") else (h.team if typeof(h) == TYPE_OBJECT and "team" in h else null)
+                    var h_rad = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
+                    var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+                    var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+
+                    if self.world != null and "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_id = b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if "id" in b else null))
+                            var b_team = b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.team if "team" in b else null))
+                            var b_alive = b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.alive if "alive" in b else true))
+
+                            if b_id != owner_id and b_team != team and b_alive:
+                                var b_x = b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else (b.x if "x" in b else 0.0))
+                                var b_y = b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else (b.y if "y" in b else 0.0))
+                                var dx = b_x - h_x
+                                var dy = b_y - h_y
+                                var dist_sq = dx * dx + dy * dy
+                                var b_rad = b.get_meta("radius") if b.has_method("get_meta") and b.has_meta("radius") else (b["radius"] if typeof(b) == TYPE_DICTIONARY and b.has("radius") else (b.radius if "radius" in b else 10.0))
+                                var r = h_rad + b_rad
+                                if dist_sq <= r * r:
+                                    var emp = {
+                                        "id": 21000 + self.world.arena.hazards.size(),
+                                        "x": h_x,
+                                        "y": h_y,
+                                        "radius": 40.0,
+                                        "kind": "emp_burst",
+                                        "damage": 20.0,
+                                        "duration": 0.5,
+                                        "owner_id": owner_id,
+                                        "team": team
+                                    }
+                                    self.world.arena.hazards.append(emp)
+                                    self.world.arena.hazards.remove_at(i)
+                                    break
+            i -= 1
 
     var bound_phylactery_id = null
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bound_phylactery_id"): bound_phylactery_id = self.ball.bound_phylactery_id
@@ -5604,6 +5679,55 @@ func execute(strategy: String, delta: float):
                 elif typeof(self.world) != TYPE_DICTIONARY and "events" in self.world:
                     self.world.events.append({"type": "time_rewind", "data": {"id": self.ball.get("id", -1) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id}})
             return
+
+    var m_timer = 0.0
+    if self.ball.has_method("get_meta") and self.ball.has_meta("mirage_booster_timer"):
+        m_timer = self.ball.get_meta("mirage_booster_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mirage_booster_timer"):
+        m_timer = self.ball.mirage_booster_timer
+    elif typeof(self.ball) == TYPE_OBJECT and "mirage_booster_timer" in self.ball:
+        m_timer = self.ball.mirage_booster_timer
+
+    if m_timer > 0.0:
+        m_timer -= delta
+        if m_timer <= 0.0:
+            m_timer = 0.0
+            if self.ball.has_method("set_meta"): self.ball.set_meta("mirage_booster_timer", 0.0)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["mirage_booster_timer"] = 0.0
+            else: self.ball.mirage_booster_timer = 0.0
+        else:
+            if self.ball.has_method("set_meta"): self.ball.set_meta("mirage_booster_timer", m_timer)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["mirage_booster_timer"] = m_timer
+            else: self.ball.mirage_booster_timer = m_timer
+
+            var spawn_timer = 0.0
+            if self.ball.has_method("get_meta") and self.ball.has_meta("mirage_spawn_timer"): spawn_timer = self.ball.get_meta("mirage_spawn_timer")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mirage_spawn_timer"): spawn_timer = self.ball.mirage_spawn_timer
+            elif typeof(self.ball) == TYPE_OBJECT and "mirage_spawn_timer" in self.ball: spawn_timer = self.ball.mirage_spawn_timer
+
+            spawn_timer += delta
+            if spawn_timer >= 3.0:
+                spawn_timer -= 3.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var b_id = self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else (self.ball["id"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id") else (self.ball.id if "id" in self.ball else 0))
+                    var b_team = self.ball.get_meta("team") if self.ball.has_method("get_meta") and self.ball.has_meta("team") else (self.ball["team"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team") else (self.ball.team if "team" in self.ball else ""))
+                    var b_radius = self.ball.get_meta("radius") if self.ball.has_method("get_meta") and self.ball.has_meta("radius") else (self.ball["radius"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius") else (self.ball.radius if "radius" in self.ball else 10.0))
+
+                    var mirage = {
+                        "id": 20000 + self.world.arena.hazards.size(),
+                        "x": self.ball.x,
+                        "y": self.ball.y,
+                        "radius": b_radius,
+                        "kind": "mirage_decoy",
+                        "damage": 0.0,
+                        "duration": 5.0,
+                        "owner_id": b_id,
+                        "team": b_team
+                    }
+                    self.world.arena.hazards.append(mirage)
+            if self.ball.has_method("set_meta"): self.ball.set_meta("mirage_spawn_timer", spawn_timer)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["mirage_spawn_timer"] = spawn_timer
+            else: self.ball.mirage_spawn_timer = spawn_timer
 
     if self.ball.has_method("get_meta") and self.ball.has_meta("shuffle_booster_timer") and self.ball.get_meta("shuffle_booster_timer") > 0.0:
         var t = self.ball.get_meta("shuffle_booster_timer")
@@ -18923,6 +19047,108 @@ func execute(strategy: String, delta: float):
             self.ball.x = bx
             self.ball.y = by
         return
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        var i = self.world.arena.hazards.size() - 1
+        while i >= 0:
+            var h = self.world.arena.hazards[i]
+            var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY and h.has("kind") else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+            if h_kind == "mirage_decoy":
+                var dur = h.get("duration") if typeof(h) == TYPE_DICTIONARY and h.has("duration") else (h.duration if typeof(h) == TYPE_OBJECT and "duration" in h else 0.0)
+                dur -= delta
+                if dur <= 0:
+                    self.world.arena.hazards.remove_at(i)
+                else:
+                    if typeof(h) == TYPE_DICTIONARY: h["duration"] = dur
+                    else: h.duration = dur
+
+                    var owner_id = h.get("owner_id") if typeof(h) == TYPE_DICTIONARY and h.has("owner_id") else (h.owner_id if typeof(h) == TYPE_OBJECT and "owner_id" in h else null)
+                    var team = h.get("team") if typeof(h) == TYPE_DICTIONARY and h.has("team") else (h.team if typeof(h) == TYPE_OBJECT and "team" in h else null)
+                    var h_rad = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
+                    var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+                    var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+
+                    if self.world != null and "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_id = b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if "id" in b else null))
+                            var b_team = b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.team if "team" in b else null))
+                            var b_alive = b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.alive if "alive" in b else true))
+
+                            if b_id != owner_id and b_team != team and b_alive:
+                                var b_x = b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else (b.x if "x" in b else 0.0))
+                                var b_y = b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else (b.y if "y" in b else 0.0))
+                                var dx = b_x - h_x
+                                var dy = b_y - h_y
+                                var dist_sq = dx * dx + dy * dy
+                                var b_rad = b.get_meta("radius") if b.has_method("get_meta") and b.has_meta("radius") else (b["radius"] if typeof(b) == TYPE_DICTIONARY and b.has("radius") else (b.radius if "radius" in b else 10.0))
+                                var r = h_rad + b_rad
+                                if dist_sq <= r * r:
+                                    var emp = {
+                                        "id": 21000 + self.world.arena.hazards.size(),
+                                        "x": h_x,
+                                        "y": h_y,
+                                        "radius": 40.0,
+                                        "kind": "emp_burst",
+                                        "damage": 20.0,
+                                        "duration": 0.5,
+                                        "owner_id": owner_id,
+                                        "team": team
+                                    }
+                                    self.world.arena.hazards.append(emp)
+                                    self.world.arena.hazards.remove_at(i)
+                                    break
+            i -= 1
+
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        var i = self.world.arena.hazards.size() - 1
+        while i >= 0:
+            var h = self.world.arena.hazards[i]
+            var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY and h.has("kind") else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+            if h_kind == "mirage_decoy":
+                var dur = h.get("duration") if typeof(h) == TYPE_DICTIONARY and h.has("duration") else (h.duration if typeof(h) == TYPE_OBJECT and "duration" in h else 0.0)
+                dur -= delta
+                if dur <= 0:
+                    self.world.arena.hazards.remove_at(i)
+                else:
+                    if typeof(h) == TYPE_DICTIONARY: h["duration"] = dur
+                    else: h.duration = dur
+
+                    var owner_id = h.get("owner_id") if typeof(h) == TYPE_DICTIONARY and h.has("owner_id") else (h.owner_id if typeof(h) == TYPE_OBJECT and "owner_id" in h else null)
+                    var team = h.get("team") if typeof(h) == TYPE_DICTIONARY and h.has("team") else (h.team if typeof(h) == TYPE_OBJECT and "team" in h else null)
+                    var h_rad = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
+                    var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+                    var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+
+                    if self.world != null and "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_id = b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if "id" in b else null))
+                            var b_team = b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.team if "team" in b else null))
+                            var b_alive = b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.alive if "alive" in b else true))
+
+                            if b_id != owner_id and b_team != team and b_alive:
+                                var b_x = b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else (b.x if "x" in b else 0.0))
+                                var b_y = b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else (b.y if "y" in b else 0.0))
+                                var dx = b_x - h_x
+                                var dy = b_y - h_y
+                                var dist_sq = dx * dx + dy * dy
+                                var b_rad = b.get_meta("radius") if b.has_method("get_meta") and b.has_meta("radius") else (b["radius"] if typeof(b) == TYPE_DICTIONARY and b.has("radius") else (b.radius if "radius" in b else 10.0))
+                                var r = h_rad + b_rad
+                                if dist_sq <= r * r:
+                                    var emp = {
+                                        "id": 21000 + self.world.arena.hazards.size(),
+                                        "x": h_x,
+                                        "y": h_y,
+                                        "radius": 40.0,
+                                        "kind": "emp_burst",
+                                        "damage": 20.0,
+                                        "duration": 0.5,
+                                        "owner_id": owner_id,
+                                        "team": team
+                                    }
+                                    self.world.arena.hazards.append(emp)
+                                    self.world.arena.hazards.remove_at(i)
+                                    break
+            i -= 1
+
     if strategy == "flee":
         _flee(delta)
     elif strategy == "ricochet_attack":
@@ -25682,6 +25908,21 @@ func _collect_booster(delta: float):
                     self.ball.set_meta("juggernaut_booster_timer", 15.0)
                 else:
                     self.ball.juggernaut_booster_timer = 15.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "mirage_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("mirage_booster_timer", 15.0)
+                    self.ball.set_meta("mirage_spawn_timer", 0.0)
+                else:
+                    self.ball.mirage_booster_timer = 15.0
+                    self.ball.mirage_spawn_timer = 0.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
