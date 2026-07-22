@@ -22189,7 +22189,7 @@
     },
     {
       "id": "idea-1295",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Radar Item",
@@ -34687,6 +34687,23 @@
         "src/ai/chrono_shifter_core.py",
         "src/ai/chrono_shifter_core.gd",
         "tests/test_chrono_shifter_core.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2029",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chrono Anchor Booster",
+      "description": "A booster that records your current position, and exactly 5 seconds later snaps you back to it instantly, keeping your current momentum.",
+      "allowed_paths": [
+        "src/ai/chrono_anchor_booster.py",
+        "src/ai/chrono_anchor_booster.gd",
+        "tests/test_chrono_anchor_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

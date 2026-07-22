@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1295] Weather Radar Item — *2026-07-22 22:45:50 UTC*
+
+A new booster/consumable item that reveals the next upcoming weather pattern 10 seconds before it activates, allowing players to find a safe zone or adjust their strategies (e.g., getting away from high friction zones before rain starts).
+
+---
+
 ## [idea-1351] Chrono Shift Ability — *2026-07-22 22:43:35 UTC*
 
 A new ability that allows a ball to 'rewind' its position and health to its state 3 seconds prior. Can be used tactically to dodge incoming anomalous projectiles or recover from a bad positioning.
