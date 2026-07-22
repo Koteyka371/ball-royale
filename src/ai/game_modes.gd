@@ -42677,6 +42677,16 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 								elif b.has_method("set_meta"): b.set_meta("alive", false)
 								if "is_frozen" in b: b.is_frozen = false
 								elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
+								var b_id = -1
+								if "id" in b: b_id = b.id
+								elif b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+								if b_id != -1:
+									if typeof(world) == TYPE_OBJECT and "dead_balls" in world:
+										world.dead_balls.append(b_id)
+										if world.has_method("add_event"):
+											world.add_event("ball_died", {"id": b_id, "reason": "shattered", "killer_id": -1})
+									elif typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
+										world.dead_balls.append(b_id)
 		for h in to_remove:
 			if h in arena.hazards:
 				arena.hazards.erase(h)
