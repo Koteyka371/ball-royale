@@ -12366,7 +12366,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -15240,6 +15240,46 @@ class Action:
                         new_decoys.append(decoy)
 
                     self.world.balls.extend(new_decoys)
+            elif skill_name == "mirage_swarm":
+                import copy
+                import math
+                import random
+                active_illusions = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_illusion", False) and getattr(b, "mimic_owner", None) == self.ball.id and getattr(b, "alive", True)]
+                if active_illusions:
+                    for d in active_illusions:
+                        d.hp = 0
+                        d.alive = False
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
+                elif hasattr(self.world, "balls"):
+                    for i in range(3):
+                        decoy = copy.copy(self.ball)
+                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        decoy.hp = 1.0
+                        decoy.max_hp = 1.0
+                        decoy.damage = 0.0
+
+                        decoy.is_active_clone = True
+                        decoy.is_illusion = True
+                        decoy.mimic_owner = getattr(self.ball, "id", None)
+                        decoy.mimic_timer = 10.0
+
+                        decoy.is_decoy = True
+                        decoy.decoy_type = "explosive"
+
+                        angle = (i * 2 * math.pi / 3)
+                        decoy.x += math.cos(angle) * 25.0
+                        decoy.y += math.sin(angle) * 25.0
+
+                        decoy.skill_timer = 9999.0
+                        decoy.skill = None
+                        if hasattr(decoy, "active_skill"):
+                            decoy.active_skill = None
+
+                        self.world.balls.append(decoy)
+
             elif skill_name == "mass_illusion":
                 import copy
                 import math
