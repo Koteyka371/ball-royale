@@ -23011,7 +23011,7 @@
     },
     {
       "id": "idea-1343",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Hook Momentum Swing",
@@ -33769,6 +33769,40 @@
         "src/ai/necromancer_bone_armor_reflects_damage.py",
         "src/ai/necromancer_bone_armor_reflects_damage.gd",
         "tests/test_necromancer_bone_armor_reflects_damage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1975",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Emotional Override Booster",
+      "description": "A rare booster item that temporarily forces the collector into 'heroism' emotion and makes them glow, significantly boosting their health regen and drawing aggro away from allies.",
+      "allowed_paths": [
+        "src/ai/emotional_override_booster.py",
+        "src/ai/emotional_override_booster.gd",
+        "tests/test_emotional_override_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1976",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Emotion Sync Traps",
+      "description": "Hazards that capture the emotion of the first ball that touches them, and radiate that emotion to all nearby balls in a wide aura for a limited time.",
+      "allowed_paths": [
+        "src/arena/emotion_sync_traps.py",
+        "src/arena/emotion_sync_traps.gd",
+        "tests/test_emotion_sync_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1343] Grapple Hook Momentum Swing — *2026-07-22 19:41:48 UTC*
+
+Enhance the grapple hook logic to allow players to use it to swing around hazards or corners, conserving momentum for a speed boost upon release, instead of just pulling them straight towards the target.
+
+---
+
 ## [idea-1299] Emotion Status Interactions — *2026-07-22 19:39:27 UTC*
 
 Expand the emotion system so that emotions interact with specific hazards and mechanics. For example, 'fear' makes balls run slightly faster but lose turning radius, while 'anger' increases damage dealt but reduces defense. Balls with 'calm' are immune to sudden stat changes.
