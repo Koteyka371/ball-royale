@@ -1,6 +1,5 @@
 import random
 import math
-import random
 
 from typing import Any
 
@@ -3642,7 +3641,8 @@ class Action:
                                 owner_id = getattr(hazard, "owner_id", None)
                                 owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
                                 if owner:
-                                    import copy, math
+                                    import copy
+                                    import math
                                     for i in range(3):
                                         angle = i * (2 * math.pi / 3)
                                         decoy = copy.copy(owner)
@@ -3807,6 +3807,14 @@ class Action:
                         hazard.duration -= delta
                         if hazard.duration <= 0:
                             hazard.duration = 0.0
+                            if getattr(hazard, "spawn_magma", False):
+                                hazard.kind = "magma_puddle"
+                                hazard.damage = getattr(hazard, "damage", 30.0) * 1.5
+                                hazard.radius = getattr(hazard, "radius", 20.0) * 2.5
+                                hazard.vx = 0
+                                hazard.vy = 0
+                                hazard.duration = 10.0
+                                hazard.spawn_magma = False
                             # Let cleanup handle or just wait for other cleanup
 
                     hazard.x += getattr(hazard, "vx", 0) * delta
@@ -6968,7 +6976,8 @@ class Action:
                             if hasattr(hazard, "paired_id") and (current_tick - last_teleport > 20):
                                 pair = next((h for h in self.world.arena.hazards if h.id == hazard.paired_id), None)
                                 if pair:
-                                    import math, random
+                                    import math
+                                    import random
                                     angle = random.uniform(0, 2 * math.pi)
                                     launch_dist = getattr(pair, "radius", 50.0) + 30.0
                                     self.ball.x = pair.x + math.cos(angle) * launch_dist
@@ -15210,7 +15219,8 @@ class Action:
                         self.ball.x += (dx / dist) * dash_dist
                         self.ball.y += (dy / dist) * dash_dist
                 else:
-                    import math, random
+                    import math
+                    import random
                     angle = random.uniform(0, 2 * math.pi)
                     self.ball.x += math.cos(angle) * dash_dist
                     self.ball.y += math.sin(angle) * dash_dist

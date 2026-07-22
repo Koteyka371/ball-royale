@@ -4041,6 +4041,56 @@ class BattleRoyaleMode extends GameMode:
 				world.arena.is_sandstorming = false
 			if self.weather == "heatwave" and not is_imm:
 				world.arena.is_heatwave = true
+				if randf() < 0.2 * delta:
+					var target_x = randf_range(100.0, world.arena.width - 100.0)
+					var target_y = randf_range(100.0, world.arena.height - 100.0)
+					var side = randi() % 4
+					var sx = 0.0
+					var sy = 0.0
+					if side == 0:
+						sx = target_x
+						sy = -50.0
+					elif side == 1:
+						sx = world.arena.width + 50.0
+						sy = target_y
+					elif side == 2:
+						sx = target_x
+						sy = world.arena.height + 50.0
+					else:
+						sx = -50.0
+						sy = target_y
+
+					var angle = atan2(target_y - sy, target_x - sx)
+					var speed = 400.0
+					var dist = sqrt((target_x - sx) * (target_x - sx) + (target_y - sy) * (target_y - sy))
+
+					var hazard_script = null
+					if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+						hazard_script = load("res://src/arena/procedural_arena.gd")
+
+					if hazard_script != null:
+						var fireball = null
+						if hazard_script.has_method("new"):
+							# This won't work well if it's an inner class, usually we use Dictionary or Hazard class directly if imported.
+							pass
+
+						# Fallback to Dictionary
+						fireball = {
+							"id": world.arena.hazards.size() + (randi() % 90000 + 10000),
+							"x": sx,
+							"y": sy,
+							"radius": 20.0,
+							"kind": "fireball_projectile",
+							"damage": 30.0,
+							"vx": cos(angle) * speed,
+							"vy": sin(angle) * speed,
+							"duration": dist / speed,
+							"spawn_magma": true,
+							"active": true
+						}
+						world.arena.hazards.append(fireball)
+						if world.has_method("add_event"):
+							world.add_event("volcano_eruption", {"x": target_x, "y": target_y})
 			else:
 				world.arena.is_heatwave = false
 			if self.weather in ["snow", "blizzard"]:
@@ -10465,6 +10515,45 @@ class WeatherChaosMode extends GameMode:
 				world.arena.is_sandstorming = false
 			if weather == "heatwave" and not is_imm:
 				world.arena.is_heatwave = true
+				if randf() < 0.2 * delta:
+					var target_x = randf_range(100.0, world.arena.width - 100.0)
+					var target_y = randf_range(100.0, world.arena.height - 100.0)
+					var side = randi() % 4
+					var sx = 0.0
+					var sy = 0.0
+					if side == 0:
+						sx = target_x
+						sy = -50.0
+					elif side == 1:
+						sx = world.arena.width + 50.0
+						sy = target_y
+					elif side == 2:
+						sx = target_x
+						sy = world.arena.height + 50.0
+					else:
+						sx = -50.0
+						sy = target_y
+
+					var angle = atan2(target_y - sy, target_x - sx)
+					var speed = 400.0
+					var dist = sqrt((target_x - sx) * (target_x - sx) + (target_y - sy) * (target_y - sy))
+
+					var fireball = {
+						"id": world.arena.hazards.size() + (randi() % 90000 + 10000),
+						"x": sx,
+						"y": sy,
+						"radius": 20.0,
+						"kind": "fireball_projectile",
+						"damage": 30.0,
+						"vx": cos(angle) * speed,
+						"vy": sin(angle) * speed,
+						"duration": dist / speed,
+						"spawn_magma": true,
+						"active": true
+					}
+					world.arena.hazards.append(fireball)
+					if world.has_method("add_event"):
+						world.add_event("volcano_eruption", {"x": target_x, "y": target_y})
 			else:
 				world.arena.is_heatwave = false
 			if weather in ["snow", "blizzard"]:

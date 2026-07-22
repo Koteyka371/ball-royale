@@ -2635,14 +2635,40 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_eclipse = (self.weather == "lunar_eclipse")
 
             if self.weather == "heatwave":
-                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     try:
                         from arena.procedural_arena import Hazard
-                        x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                        y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                        fire = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
-                        setattr(fire, 'duration', 8.0)
-                        world.arena.hazards.append(fire)
+
+                        # Volcano eruption: launch a fireball projectile
+                        target_x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                        target_y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+
+                        # Spawn point from edges
+                        side = getattr(self, "random", __import__("random")).randint(0, 3)
+                        if side == 0:
+                            sx, sy = target_x, -50.0
+                        elif side == 1:
+                            sx, sy = world.arena.width + 50.0, target_y
+                        elif side == 2:
+                            sx, sy = target_x, world.arena.height + 50.0
+                        else:
+                            sx, sy = -50.0, target_y
+
+                        import math
+                        angle = math.atan2(target_y - sy, target_x - sx)
+                        speed = 400.0
+
+                        fireball = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999), x=sx, y=sy, radius=20.0, kind="fireball_projectile", damage=30.0)
+                        setattr(fireball, 'vx', math.cos(angle) * speed)
+                        setattr(fireball, 'vy', math.sin(angle) * speed)
+                        dist = math.hypot(target_x - sx, target_y - sy)
+                        setattr(fireball, 'duration', dist / speed)
+                        setattr(fireball, 'spawn_magma', True)
+
+                        world.arena.hazards.append(fireball)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("volcano_eruption", {"x": target_x, "y": target_y})
                     except ImportError:
                         pass
             if not hasattr(world.arena, "hazards"):
@@ -7471,13 +7497,37 @@ class WeatherChaosMode(GameMode):
                         world.arena.hazards.append(h)
 
             if self.weather == "heatwave":
-                if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
+                if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                     from arena.procedural_arena import Hazard
-                    x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
-                    y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
-                    fire = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000, 9999), x=x, y=y, radius=60.0, kind="fire_zone", damage=5.0)
-                    setattr(fire, 'duration', 8.0)
-                    world.arena.hazards.append(fire)
+
+                    target_x = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.width - 100.0)
+                    target_y = getattr(self, "random", __import__("random")).uniform(100.0, world.arena.height - 100.0)
+
+                    side = getattr(self, "random", __import__("random")).randint(0, 3)
+                    if side == 0:
+                        sx, sy = target_x, -50.0
+                    elif side == 1:
+                        sx, sy = world.arena.width + 50.0, target_y
+                    elif side == 2:
+                        sx, sy = target_x, world.arena.height + 50.0
+                    else:
+                        sx, sy = -50.0, target_y
+
+                    import math
+                    angle = math.atan2(target_y - sy, target_x - sx)
+                    speed = 400.0
+
+                    fireball = Hazard(id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(10000, 99999), x=sx, y=sy, radius=20.0, kind="fireball_projectile", damage=30.0)
+                    setattr(fireball, 'vx', math.cos(angle) * speed)
+                    setattr(fireball, 'vy', math.sin(angle) * speed)
+                    dist = math.hypot(target_x - sx, target_y - sy)
+                    setattr(fireball, 'duration', dist / speed)
+                    setattr(fireball, 'spawn_magma', True)
+
+                    world.arena.hazards.append(fireball)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("volcano_eruption", {"x": target_x, "y": target_y})
 
             if self.weather == "sandstorm":
                 if getattr(self, "random", __import__("random")).random() < 0.05 * delta:
