@@ -53161,3 +53161,74 @@ class GravityShiftMode extends GameMode:
                     b["anchor_cooldown"] = max(0.0, cooldown - delta)
                 else:
                     b.set_meta("anchor_cooldown", max(0.0, cooldown - delta))
+
+
+class TricksterEventMode extends GameMode:
+	var duration = 30.0
+	var timer = 0.0
+	var applied = false
+	var finished = false
+
+	func _init() -> void:
+		name = "Trickster Event"
+		description = "An arena event where all players are turned into Tricksters for 30 seconds."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		.tick(world, balls, delta)
+
+		if finished:
+			return
+
+		if not applied:
+			applied = true
+			for b in balls:
+				var alive = false
+				var team = ""
+				var b_type = null
+				if typeof(b) == TYPE_OBJECT:
+					alive = b.get("alive") if "alive" in b else false
+					team = b.get("team") if "team" in b else ""
+					b_type = b.get("ball_type") if "ball_type" in b else null
+				elif typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+					team = b.get("team", "")
+					b_type = b.get("ball_type", null)
+
+				if not alive or team == "spectator":
+					continue
+
+				if typeof(b) == TYPE_OBJECT:
+					if b.has_method("set_meta"):
+						b.set_meta("original_ball_type_trickster_event", b_type)
+					if "ball_type" in b:
+						b.ball_type = "trickster"
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["original_ball_type_trickster_event"] = b_type
+					b["ball_type"] = "trickster"
+
+		timer += delta
+
+		if timer >= duration:
+			finished = true
+			for b in balls:
+				var alive = false
+				var team = ""
+				if typeof(b) == TYPE_OBJECT:
+					alive = b.get("alive") if "alive" in b else false
+					team = b.get("team") if "team" in b else ""
+				elif typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+					team = b.get("team", "")
+
+				if not alive or team == "spectator":
+					continue
+
+				if typeof(b) == TYPE_OBJECT:
+					if b.has_method("has_meta") and b.has_meta("original_ball_type_trickster_event"):
+						if "ball_type" in b:
+							b.ball_type = b.get_meta("original_ball_type_trickster_event")
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has("original_ball_type_trickster_event"):
+						b["ball_type"] = b["original_ball_type_trickster_event"]
+
+GAME_MODES['trickster_event'] = TricksterEventMode.new()

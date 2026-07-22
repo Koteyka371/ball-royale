@@ -27104,7 +27104,54 @@ class CurrencyBurdenMode(GameMode):
                             world.add_event("altar_deposit", {"ball": b, "amount": buff_amount, "upgrade": upgrade_type})
                         break
 
+
+class TricksterEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Trickster Event"
+        self.description = "An arena event where all players are turned into Tricksters for 30 seconds."
+        self.duration = 30.0
+        self.timer = 0.0
+        self.applied = False
+        self.finished = False
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if self.finished:
+            return
+
+        if not self.applied:
+            self.applied = True
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "team", "") == "spectator":
+                    continue
+                b.original_ball_type_trickster_event = getattr(b, "ball_type", None)
+                b.ball_type = "trickster"
+                if hasattr(b, "traits") and "trickster" not in getattr(b, "traits", []):
+                    b.traits.append("trickster")
+                    b.trickster_event_added_trait = True
+                else:
+                    b.trickster_event_added_trait = False
+
+        self.timer += delta
+
+        if self.timer >= self.duration:
+            self.finished = True
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "team", "") == "spectator":
+                    continue
+                if hasattr(b, "original_ball_type_trickster_event"):
+                    b.ball_type = b.original_ball_type_trickster_event
+                if getattr(b, "trickster_event_added_trait", False):
+                    if hasattr(b, "traits") and "trickster" in b.traits:
+                        b.traits.remove("trickster")
+
 GAME_MODES = {
+    'trickster_event': TricksterEventMode(),
     "collapsing_ceiling": CollapsingCeilingMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),
     "biome_safe_zones": BiomeSafeZonesMode(),
