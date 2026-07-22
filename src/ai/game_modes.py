@@ -33704,6 +33704,7 @@ GAME_MODES['decoy_network'] = DecoyNetworkMode()
 GAME_MODES["chronosphere_event"] = ChronosphereEventMode()
 
 GAME_MODES['toxic_flood_royale'] = ToxicFloodRoyaleMode()
+GAME_MODES['currency_burden'] = CurrencyBurdenMode()
 
 
 class HealerFreezeTagMode(GameMode):

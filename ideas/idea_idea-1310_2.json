@@ -1,4 +1,4 @@
 {
-    "title": "Corrupted Currency Pickups",
-    "description": "A variant of the standard currency pickup that gives 3x the normal value but heavily increases the ball's vulnerability to all sources of damage for 5 seconds."
+  "title": "Shrinking Safe Bubbles",
+  "description": "Instead of a single shrinking storm, the map starts completely toxic, and players must find and fight over small safe bubbles that spawn, drift around the map randomly, and eventually pop, forcing constant repositioning."
 }
