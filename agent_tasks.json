@@ -21609,7 +21609,7 @@
     },
     {
       "id": "idea-1261",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Danger zone ping system",
@@ -33990,6 +33990,108 @@
         "src/ai/orbital_strike.py",
         "src/ai/orbital_strike.gd",
         "tests/test_orbital_strike.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1988",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ice Wall Deployable",
+      "description": "A deployable hazard item that constructs a wide, destructible ice wall in front of the ball. The wall blocks enemy movement and most projectiles but will slowly melt over time, eventually shattering into tiny ice shrapnel that slows nearby units.",
+      "allowed_paths": [
+        "src/ai/ice_wall_deployable.py",
+        "src/ai/ice_wall_deployable.gd",
+        "tests/test_ice_wall_deployable.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1989",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Radioactive Fallout Game Mode",
+      "description": "A survival-focused game mode where random patches of the arena become irradiated. These radioactive zones slowly expand, applying a unique mutation debuff to any ball caught inside, reducing max stamina and gradually transforming their appearance until they find an anti-radiation booster.",
+      "allowed_paths": [
+        "src/ai/radioactive_fallout_game.py",
+        "src/ai/radioactive_fallout_game.gd",
+        "tests/test_radioactive_fallout_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1990",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive HQ Obstacle Course Minigame",
+      "description": "Allow guild members to create custom obstacle courses within their interactive HQ layout using unlocked defenses and traps. Other members can then try to run through the obstacle course as quickly as possible, competing for the best time on a dedicated minigame leaderboard.",
+      "allowed_paths": [
+        "src/ai/interactive_hq_obstacle_course_minigame.py",
+        "src/ai/interactive_hq_obstacle_course_minigame.gd",
+        "tests/test_interactive_hq_obstacle_course_minigame.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1991",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hall of Fame Contributor Titles",
+      "description": "Automatically reward special cosmetic titles or auras to players who appear at the top of their guild's Hall of Fame across different categories (e.g., 'Top Donor', 'GvG Champion'). These prestigious titles would be visible next to their names during public matches.",
+      "allowed_paths": [
+        "src/ai/hall_of_fame_contributor_titles.py",
+        "src/ai/hall_of_fame_contributor_titles.gd",
+        "tests/test_hall_of_fame_contributor_titles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1992",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Distortion Event",
+      "description": "A dynamic arena event where gravity randomly shifts in strength and direction every 15 seconds. Balls with lower mass are affected more strongly, creating unpredictable trajectories and forcing AI to adapt their movement strategies on the fly. Balls with the 'Juggernaut' booster or similar heavy traits are more resistant but suffer from increased stamina drain.",
+      "allowed_paths": [
+        "src/ai/cosmic_distortion.py",
+        "src/ai/cosmic_distortion.gd",
+        "tests/test_cosmic_distortion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1993",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Toxic Minion Mutator",
+      "description": "A new mutator or item that infuses minions with toxic sludge. When they decay and explode, instead of instant burst damage, they leave behind a persistent poison cloud that slows enemies and deals damage over time.",
+      "allowed_paths": [
+        "src/ai/toxic_minion_mutator.py",
+        "src/ai/toxic_minion_mutator.gd",
+        "tests/test_toxic_minion_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

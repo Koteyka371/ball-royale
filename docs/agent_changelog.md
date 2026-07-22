@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1261] Danger zone ping system — *2026-07-22 20:55:42 UTC*
+
+Add a minimap UI ping when the safe zone shrinks. A red flash could indicate a ball is currently taking damage from being outside the zone.
+
+---
+
 ## [idea-1307] Guild Headquarters Customization Interface — *2026-07-22 20:39:46 UTC*
 
 Add an interactive visual headquarters for guilds where unlocked cosmetics, statues, and banners can be arranged. Members can visit their HQ to see top contributors featured in the hall of fame.
