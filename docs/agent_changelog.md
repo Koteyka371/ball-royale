@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1372] Reverse Lava Mode — *2026-07-22 23:58:04 UTC*
+
+A battle royale variation where the center is lava and expands outwards, forcing players to eventually fight on the very edges of the map while dodging environmental hazards.
+
+---
+
 ## [idea-1348] Aura Resonance Event — *2026-07-22 23:57:59 UTC*
 
 A random game event where stacking auras pulse outward globally every 15 seconds. During a pulse, all players with active aura buffs grant those buffs to random friendly players anywhere on the map for 5 seconds. If a player with a reversed aura (via the Aura Inverter Trap) pulses, it debuffs enemies map-wide instead.
