@@ -42224,7 +42224,132 @@ class CollapsingCeilingMode extends GameMode:
 			_spawn_zones(world)
 
 
+
+class FallingTilesRoyaleMode extends GameMode:
+	var grid_size = 50.0
+	var tiles = {}
+	var timer = 0.0
+	var phase = "wait"
+	var warning_duration = 2.0
+	var fall_duration = 3.0
+	var active_tiles = []
+	var falling_tiles = []
+	var is_falling_tiles_royale = true
+	var cols = 0
+	var rows = 0
+
+	func _init():
+		name = "Falling Tiles Royale"
+		description = "A battle royale variant where the arena is made up of a grid of tiles. Every few seconds, some tiles light up and then fall away, turning into bottomless pits."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		tiles = {}
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			arena_width = world.arena.get("width") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.width
+			arena_height = world.arena.get("height") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.height
+
+		cols = int(arena_width / grid_size)
+		rows = int(arena_height / grid_size)
+
+		for c in range(cols):
+			for r in range(rows):
+				tiles[str(c) + "," + str(r)] = {"state": "normal"}
+
+		timer = 5.0
+		phase = "wait"
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		timer -= delta
+
+		if phase == "wait":
+			if timer <= 0:
+				phase = "warning"
+				timer = warning_duration
+				var normal_tiles = []
+				for k in tiles.keys():
+					if tiles[k]["state"] == "normal":
+						normal_tiles.append(k)
+
+				var num_to_fall = int(max(1, int(normal_tiles.size() * 0.1)))
+				if num_to_fall > normal_tiles.size() - 4:
+					num_to_fall = max(1, normal_tiles.size() - 4)
+
+				falling_tiles = []
+				normal_tiles.shuffle()
+				for i in range(min(num_to_fall, normal_tiles.size())):
+					falling_tiles.append(normal_tiles[i])
+					tiles[normal_tiles[i]]["state"] = "warning"
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("tiles_warning", {"message": "Some tiles are lighting up!"})
+					elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event.call("tiles_warning", {"message": "Some tiles are lighting up!"})
+
+		elif phase == "warning":
+			if timer <= 0:
+				phase = "falling"
+				timer = fall_duration
+				for k in falling_tiles:
+					tiles[k]["state"] = "falling"
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("tiles_falling", {"message": "Tiles are falling!"})
+					elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event.call("tiles_falling", {"message": "Tiles are falling!"})
+
+		elif phase == "falling":
+			if timer <= 0:
+				phase = "wait"
+				timer = randf_range(4.0, 8.0)
+				for k in falling_tiles:
+					tiles[k]["state"] = "pit"
+				falling_tiles.clear()
+
+		for b in balls:
+			var is_alive = false
+			var b_type = null
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", null)
+			else:
+				is_alive = b.alive if "alive" in b else false
+				b_type = b.ball_type if "ball_type" in b else null
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var c = int(bx / grid_size)
+			var r = int(by / grid_size)
+			var k = str(c) + "," + str(r)
+
+			if tiles.has(k):
+				var state = tiles[k]["state"]
+				if state == "pit":
+					if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+						b.take_damage(9999.0)
+					else:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = 0.0
+							b["alive"] = false
+						else:
+							b.hp = 0.0
+							b.alive = false
+
+					var final_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+					if not final_alive:
+						var bid = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else b.id
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("ball_fell", {"id": bid})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+							world.add_event.call("ball_fell", {"id": bid})
+
 GAME_MODES = {
+	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),
 	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"guild_storm": GuildStormMode.new(),
