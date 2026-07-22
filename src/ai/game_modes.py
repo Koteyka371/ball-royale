@@ -3610,6 +3610,87 @@ class BattleRoyaleMode(GameMode):
         except Exception:
             pass
 
+
+class BiomeRoyaleMode(BattleRoyaleMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Biome Royale"
+        self.description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities."
+        self.current_biome = "neutral"
+        self.biome_types = ["fire", "ice", "wind", "earth", "neutral"]
+        self.biome_colors = {
+            "fire": (255, 100, 100),
+            "ice": (100, 200, 255),
+            "wind": (200, 255, 200),
+            "earth": (150, 100, 50),
+            "neutral": (200, 200, 200)
+        }
+        self.prev_zone_target_x = 0
+        self.prev_zone_target_y = 0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        self.current_biome = random.choice(self.biome_types) if not getattr(world, "testing_mode", False) else self.current_biome
+        if hasattr(world, "add_event"):
+            world.add_event("biome_change", {"biome": self.current_biome, "color": self.biome_colors[self.current_biome]})
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        if getattr(self, "zone_target_x", 0) != getattr(self, "prev_zone_target_x", 0) or getattr(self, "zone_target_y", 0) != getattr(self, "prev_zone_target_y", 0):
+            self.prev_zone_target_x = getattr(self, "zone_target_x", 0)
+            self.prev_zone_target_y = getattr(self, "zone_target_y", 0)
+            self.current_biome = random.choice(self.biome_types) if not getattr(world, "testing_mode", False) else self.current_biome
+            if hasattr(world, "add_event"):
+                world.add_event("biome_change", {"biome": self.current_biome, "color": self.biome_colors[self.current_biome]})
+
+        for b in balls:
+            if not getattr(b, "alive", False) or not getattr(b, "active", True):
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            dist_sq = (bx - self.zone_x) ** 2 + (by - self.zone_y) ** 2
+
+            base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            base_dmg = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+            base_def = getattr(b, "base_defense_multiplier", 1.0)
+            base_mass = getattr(b, "base_mass", getattr(b, "mass", 1.0))
+
+            if dist_sq <= self.zone_radius ** 2:
+                if self.current_biome == "fire":
+                    b.damage = base_dmg * 1.5
+                    b.speed = base_speed
+                    b.defense_multiplier = base_def
+                    b.mass = base_mass
+                elif self.current_biome == "ice":
+                    b.defense_multiplier = base_def * 0.5
+                    b.damage = base_dmg
+                    b.speed = base_speed
+                    b.mass = base_mass
+                elif self.current_biome == "wind":
+                    b.speed = base_speed * 1.5
+                    b.damage = base_dmg
+                    b.defense_multiplier = base_def
+                    b.mass = base_mass
+                elif self.current_biome == "earth":
+                    b.mass = base_mass * 2.0
+                    b.damage = base_dmg
+                    b.speed = base_speed
+                    b.defense_multiplier = base_def
+                else:
+                    b.damage = base_dmg
+                    b.speed = base_speed
+                    b.defense_multiplier = base_def
+                    b.mass = base_mass
+            else:
+                b.damage = base_dmg
+                b.speed = base_speed
+                b.defense_multiplier = base_def
+                b.mass = base_mass
+
 class TeamDeathmatchMode(GameMode):
     def calculate_bounty_reward(self, target_bounty: int) -> int:
         return int(20 + 10 * target_bounty)
@@ -26030,6 +26111,7 @@ GAME_MODES = {
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
     "vampire_royale": VampireRoyaleMode(),
+    "biome_royale": BiomeRoyaleMode(),
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),

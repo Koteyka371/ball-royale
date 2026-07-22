@@ -2574,6 +2574,138 @@ class ShadowMonster:
 	var ball_type = "shadow_monster"
 	var team = "ShadowMonsters"
 
+
+class BiomeRoyaleMode extends BattleRoyaleMode:
+	var current_biome: String = "neutral"
+	var biome_types: Array = ["fire", "ice", "wind", "earth", "neutral"]
+	var biome_colors: Dictionary = {
+		"fire": Color(1.0, 0.4, 0.4),
+		"ice": Color(0.4, 0.8, 1.0),
+		"wind": Color(0.8, 1.0, 0.8),
+		"earth": Color(0.6, 0.4, 0.2),
+		"neutral": Color(0.8, 0.8, 0.8)
+	}
+	var prev_zone_target_x: float = 0.0
+	var prev_zone_target_y: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Biome Royale"
+		description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities."
+
+	func setup(world: Node, balls: Array) -> void:
+		super.setup(world, balls)
+		current_biome = biome_types[randi() % biome_types.size()]
+		if world.has_method("add_event"):
+			world.add_event("biome_change", {"biome": current_biome, "color": biome_colors[current_biome]})
+
+	func tick(world: Node, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if zone_target_x != prev_zone_target_x or zone_target_y != prev_zone_target_y:
+			prev_zone_target_x = zone_target_x
+			prev_zone_target_y = zone_target_y
+			current_biome = biome_types[randi() % biome_types.size()]
+			if world.has_method("add_event"):
+				world.add_event("biome_change", {"biome": current_biome, "color": biome_colors[current_biome]})
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") == true:
+				is_alive = true
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive") and b["alive"] == true:
+				is_alive = true
+
+			if not is_alive:
+				continue
+
+			var bx = b.get("x")
+			var by = b.get("y")
+			var dist_sq = pow(bx - zone_x, 2) + pow(by - zone_y, 2)
+
+			var base_speed = b.get("base_speed")
+			if base_speed == null: base_speed = b.get("speed")
+			if base_speed == null: base_speed = 100.0
+
+			var base_dmg = b.get("base_damage")
+			if base_dmg == null: base_dmg = b.get("damage")
+			if base_dmg == null: base_dmg = 10.0
+
+			var base_def = b.get("base_defense_multiplier")
+			if base_def == null: base_def = 1.0
+
+			var b_mass = b.get("base_mass")
+			if b_mass == null: b_mass = b.get("mass")
+			if b_mass == null: b_mass = 1.0
+
+			if dist_sq <= pow(zone_radius, 2):
+				if current_biome == "fire":
+					if typeof(b) == TYPE_OBJECT:
+						b.set("damage", base_dmg * 1.5)
+						b.set("speed", base_speed)
+						b.set("defense_multiplier", base_def)
+						b.set("mass", b_mass)
+					else:
+						b["damage"] = base_dmg * 1.5
+						b["speed"] = base_speed
+						b["defense_multiplier"] = base_def
+						b["mass"] = b_mass
+				elif current_biome == "ice":
+					if typeof(b) == TYPE_OBJECT:
+						b.set("defense_multiplier", base_def * 0.5)
+						b.set("damage", base_dmg)
+						b.set("speed", base_speed)
+						b.set("mass", b_mass)
+					else:
+						b["defense_multiplier"] = base_def * 0.5
+						b["damage"] = base_dmg
+						b["speed"] = base_speed
+						b["mass"] = b_mass
+				elif current_biome == "wind":
+					if typeof(b) == TYPE_OBJECT:
+						b.set("speed", base_speed * 1.5)
+						b.set("damage", base_dmg)
+						b.set("defense_multiplier", base_def)
+						b.set("mass", b_mass)
+					else:
+						b["speed"] = base_speed * 1.5
+						b["damage"] = base_dmg
+						b["defense_multiplier"] = base_def
+						b["mass"] = b_mass
+				elif current_biome == "earth":
+					if typeof(b) == TYPE_OBJECT:
+						b.set("mass", b_mass * 2.0)
+						b.set("damage", base_dmg)
+						b.set("speed", base_speed)
+						b.set("defense_multiplier", base_def)
+					else:
+						b["mass"] = b_mass * 2.0
+						b["damage"] = base_dmg
+						b["speed"] = base_speed
+						b["defense_multiplier"] = base_def
+				else:
+					if typeof(b) == TYPE_OBJECT:
+						b.set("damage", base_dmg)
+						b.set("speed", base_speed)
+						b.set("defense_multiplier", base_def)
+						b.set("mass", b_mass)
+					else:
+						b["damage"] = base_dmg
+						b["speed"] = base_speed
+						b["defense_multiplier"] = base_def
+						b["mass"] = b_mass
+			else:
+				if typeof(b) == TYPE_OBJECT:
+					b.set("damage", base_dmg)
+					b.set("speed", base_speed)
+					b.set("defense_multiplier", base_def)
+					b.set("mass", b_mass)
+				else:
+					b["damage"] = base_dmg
+					b["speed"] = base_speed
+					b["defense_multiplier"] = base_def
+					b["mass"] = b_mass
+
 class BattleRoyaleMode extends GameMode:
 	func calculate_bounty_reward(target_kb: int) -> int:
 		return int(15 * pow(1.2, target_kb))
@@ -42098,6 +42230,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"king_of_the_hill": KingOfTheHillMode.new(),
 	"moving_zone": MovingZoneMode.new(),
 	"vampire_royale": VampireRoyaleMode.new(),
+	"biome_royale": BiomeRoyaleMode.new(),
 	"battle_royale": BattleRoyaleMode.new(),
 	"team_deathmatch": TeamDeathmatchMode.new(),
 	"zombie_infection": ZombieInfectionMode.new(),
