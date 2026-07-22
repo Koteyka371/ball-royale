@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1337] Mirage Decoy Mode — *2026-07-22 21:41:42 UTC*
+
+A new hazard/item that when collected spawns 3 fragile, AI-controlled holograms of the player that scatter in random directions. The holograms deal no damage but will detonate into a flashbang effect when destroyed, blinding nearby enemies and masking the real player's escape.
+
+---
+
 ## [idea-1326] Corrosive Acid Trap — *2026-07-22 21:41:36 UTC*
 
 A deployable hazard item that leaves a puddle of acid on the ground. Any ball moving through the puddle receives a stacking damage-over-time debuff that reduces their maximum speed and slowly eats away at their health for several seconds.
