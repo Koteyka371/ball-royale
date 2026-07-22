@@ -332,6 +332,42 @@ class GameMode:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 
+        # Cosmetic Synergy Logic
+        # Group alive balls by team
+        team_cosmetics = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "team", "") != "" and getattr(b, "cosmetic", "") != "":
+                team = getattr(b, "team", "")
+                cosmetic = getattr(b, "cosmetic", "").lower().strip()
+                if team not in team_cosmetics:
+                    team_cosmetics[team] = {}
+                if cosmetic not in team_cosmetics[team]:
+                    team_cosmetics[team][cosmetic] = []
+                team_cosmetics[team][cosmetic].append(b)
+
+        # Apply bonus for teams with matching cosmetics (>= 2 members)
+        for team, cosmetics in team_cosmetics.items():
+            for cosmetic, members in cosmetics.items():
+                if len(members) >= 2:
+                    for b in members:
+                        # Apply small competitive edge using base stats to avoid exponential scaling
+                        # To ensure no exponential growth on fallbacks, explicitly store a one-time baseline if needed,
+                        # or just multiply from a strict baseline. We'll set base_speed if missing.
+                        if not hasattr(b, "base_speed"):
+                            b.base_speed = getattr(b, "speed", 100)
+                        if not hasattr(b, "base_damage"):
+                            b.base_damage = getattr(b, "damage", 10)
+
+                        b.speed = b.base_speed * 1.05
+                        b.damage = b.base_damage * 1.05
+                else:
+                    for b in members:
+                        if hasattr(b, "base_speed"):
+                            b.speed = b.base_speed
+                        if hasattr(b, "base_damage"):
+                            b.damage = b.base_damage
+
+
         # Hazard control logic (Twitch spectator interaction)
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
