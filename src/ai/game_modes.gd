@@ -42389,9 +42389,9 @@ class FallingTilesRoyaleMode extends GameMode:
 					tiles[normal_tiles[i]]["state"] = "warning"
 
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-					world.add_event("tiles_warning", {"message": "Some tiles are lighting up!"})
+					world.add_event("tiles_warning", {"message": "Some tiles are lighting up!", "tiles": falling_tiles})
 					elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
-						world.add_event.call("tiles_warning", {"message": "Some tiles are lighting up!"})
+						world.add_event.call("tiles_warning", {"message": "Some tiles are lighting up!", "tiles": falling_tiles})
 
 		elif phase == "warning":
 			if timer <= 0:
@@ -42400,14 +42400,18 @@ class FallingTilesRoyaleMode extends GameMode:
 				for k in falling_tiles:
 					tiles[k]["state"] = "falling"
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-					world.add_event("tiles_falling", {"message": "Tiles are falling!"})
+					world.add_event("tiles_falling", {"message": "Tiles are falling!", "tiles": falling_tiles})
 					elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
-						world.add_event.call("tiles_falling", {"message": "Tiles are falling!"})
+						world.add_event.call("tiles_falling", {"message": "Tiles are falling!", "tiles": falling_tiles})
 
 		elif phase == "falling":
 			if timer <= 0:
 				phase = "wait"
 				timer = randf_range(4.0, 8.0)
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("tiles_pit", {"message": "Tiles have fallen!", "tiles": falling_tiles})
+				elif typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+					world.add_event.call("tiles_pit", {"message": "Tiles have fallen!", "tiles": falling_tiles})
 				for k in falling_tiles:
 					tiles[k]["state"] = "pit"
 				falling_tiles.clear()
