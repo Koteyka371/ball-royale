@@ -5274,6 +5274,7 @@ class EscortMode(GameMode):
         self.payload = None
         self.decoy = None
         self.decoy_deployed = False
+        self.decoy_exploded = False
         self.decoy_timer = 0.0
         self.goal_x = 900.0
         self.goal_y = 500.0
@@ -5442,6 +5443,7 @@ class EscortMode(GameMode):
 
         self.decoy = None
         self.decoy_deployed = False
+        self.decoy_exploded = False
         self.decoy_timer = 0.0
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
@@ -5481,31 +5483,59 @@ class EscortMode(GameMode):
                     world.add_event("decoy_deployed", {"x": self.decoy.x, "y": self.decoy.y})
 
         # Update decoy
-        if getattr(self, "decoy_deployed", False) and getattr(self, "decoy", None) and getattr(self.decoy, "alive", False):
-            import math
-            path_data = self.paths[getattr(self, "decoy_path_idx", 0)]
-            waypoints = path_data["waypoints"]
-            wpt_idx = getattr(self, "decoy_waypoint_idx", 0)
+        if getattr(self, "decoy_deployed", False) and getattr(self, "decoy", None):
+            if getattr(self.decoy, "hp", 1.0) <= 0.0:
+                self.decoy.alive = False
 
-            if wpt_idx < len(waypoints):
-                target_x, target_y = waypoints[wpt_idx]
-            else:
-                target_x, target_y = self.goal_x, self.goal_y
+            if getattr(self.decoy, "alive", False):
+                import math
+                path_data = self.paths[getattr(self, "decoy_path_idx", 0)]
+                waypoints = path_data["waypoints"]
+                wpt_idx = getattr(self, "decoy_waypoint_idx", 0)
 
-            dx = target_x - self.decoy.x
-            dy = target_y - self.decoy.y
-            dist = math.hypot(dx, dy)
+                if wpt_idx < len(waypoints):
+                    target_x, target_y = waypoints[wpt_idx]
+                else:
+                    target_x, target_y = self.goal_x, self.goal_y
 
-            if dist < 10.0 and wpt_idx < len(waypoints) - 1:
-                self.decoy_waypoint_idx = wpt_idx + 1
-                target_x, target_y = waypoints[self.decoy_waypoint_idx]
                 dx = target_x - self.decoy.x
                 dy = target_y - self.decoy.y
                 dist = math.hypot(dx, dy)
 
-            if dist > 0:
-                self.decoy.x += (dx / dist) * self.decoy.speed
-                self.decoy.y += (dy / dist) * self.decoy.speed
+                if dist < 10.0 and wpt_idx < len(waypoints) - 1:
+                    self.decoy_waypoint_idx = wpt_idx + 1
+                    target_x, target_y = waypoints[self.decoy_waypoint_idx]
+                    dx = target_x - self.decoy.x
+                    dy = target_y - self.decoy.y
+                    dist = math.hypot(dx, dy)
+                elif dist < 10.0 and wpt_idx >= len(waypoints) - 1:
+                    self.decoy.alive = False
+
+                if dist > 0:
+                    self.decoy.x += (dx / dist) * self.decoy.speed
+                    self.decoy.y += (dy / dist) * self.decoy.speed
+
+            # Explosion logic
+            if not getattr(self.decoy, "alive", False) and not getattr(self, "decoy_exploded", False):
+                self.decoy_exploded = True
+                import math
+                if hasattr(world, "add_event"):
+                    world.add_event("decoy_exploded", {"x": self.decoy.x, "y": self.decoy.y})
+                for b in balls:
+                    if b == self.decoy or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+                    bx = getattr(b, "x", 0)
+                    by = getattr(b, "y", 0)
+                    dxx = bx - self.decoy.x
+                    dyy = by - self.decoy.y
+                    bdist = math.hypot(dxx, dyy)
+                    if bdist <= 250.0:
+                        b.hp = max(0.0, getattr(b, "hp", 100.0) - 50.0)
+                        if b.hp <= 0:
+                            b.alive = False
+                        if bdist > 0:
+                            b.vx = getattr(b, "vx", 0.0) + (dxx / bdist) * 400.0
+                            b.vy = getattr(b, "vy", 0.0) + (dyy / bdist) * 400.0
 
         # Hack points logic
         if not hasattr(self, "hack_points"):

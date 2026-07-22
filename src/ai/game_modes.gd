@@ -8213,6 +8213,7 @@ class EscortMode extends GameMode:
 
 	var decoy = null
 	var decoy_deployed: bool = false
+	var decoy_exploded: bool = false
 	var decoy_timer: float = 0.0
 	var decoy_path_idx: int = 0
 	var decoy_waypoint_idx: int = 0
@@ -8505,25 +8506,71 @@ class EscortMode extends GameMode:
 					world.add_event("decoy_deployed", {"x": decoy["x"], "y": decoy["y"]})
 
 		# Update decoy
-		if decoy_deployed and decoy != null and typeof(decoy) == TYPE_DICTIONARY and decoy.get("alive", false):
-			var path_data = paths[decoy_path_idx]
-			var waypoints = path_data["waypoints"]
-			var target_pos = waypoints[decoy_waypoint_idx] if decoy_waypoint_idx < waypoints.size() else Vector2(goal_x, goal_y)
+		if decoy_deployed and decoy != null and typeof(decoy) == TYPE_DICTIONARY:
+			if decoy.get("hp", 1.0) <= 0.0:
+				decoy["alive"] = false
 
-			var dx = target_pos.x - decoy["x"]
-			var dy = target_pos.y - decoy["y"]
-			var dist = sqrt(dx * dx + dy * dy)
+			if decoy.get("alive", false):
+				var path_data = paths[decoy_path_idx]
+				var waypoints = path_data["waypoints"]
+				var target_pos = waypoints[decoy_waypoint_idx] if decoy_waypoint_idx < waypoints.size() else Vector2(goal_x, goal_y)
 
-			if dist < 10.0 and decoy_waypoint_idx < waypoints.size() - 1:
-				decoy_waypoint_idx += 1
-				target_pos = waypoints[decoy_waypoint_idx]
-				dx = target_pos.x - decoy["x"]
-				dy = target_pos.y - decoy["y"]
-				dist = sqrt(dx * dx + dy * dy)
+				var dx = target_pos.x - decoy["x"]
+				var dy = target_pos.y - decoy["y"]
+				var dist = sqrt(dx * dx + dy * dy)
 
-			if dist > 0:
-				decoy["x"] += (dx / dist) * decoy["speed"]
-				decoy["y"] += (dy / dist) * decoy["speed"]
+				if dist < 10.0 and decoy_waypoint_idx < waypoints.size() - 1:
+					decoy_waypoint_idx += 1
+					target_pos = waypoints[decoy_waypoint_idx]
+					dx = target_pos.x - decoy["x"]
+					dy = target_pos.y - decoy["y"]
+					dist = sqrt(dx * dx + dy * dy)
+				elif dist < 10.0 and decoy_waypoint_idx >= waypoints.size() - 1:
+					decoy["alive"] = false
+
+				if dist > 0:
+					decoy["x"] += (dx / dist) * decoy["speed"]
+					decoy["y"] += (dy / dist) * decoy["speed"]
+
+			if not decoy.get("alive", false) and not self.decoy_exploded:
+				self.decoy_exploded = true
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("decoy_exploded", {"x": decoy["x"], "y": decoy["y"]})
+				for b in balls:
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var d_id = decoy.get("id")
+					if b_id != null and d_id != null and b_id == d_id:
+						continue
+					var balive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not balive:
+						continue
+					var btype = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if btype == "spectator":
+						continue
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var dxx = bx - decoy["x"]
+					var dyy = by - decoy["y"]
+					var bdist = sqrt(dxx*dxx + dyy*dyy)
+					if bdist <= 250.0:
+						var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+						var new_hp = max(0.0, bhp - 50.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = new_hp
+							if new_hp <= 0.0:
+								b["alive"] = false
+							if bdist > 0:
+								b["vx"] = b.get("vx", 0.0) + (dxx / bdist) * 400.0
+								b["vy"] = b.get("vy", 0.0) + (dyy / bdist) * 400.0
+						else:
+							b.set("hp", new_hp)
+							if new_hp <= 0.0:
+								b.set("alive", false)
+							if bdist > 0:
+								var cvx = b.get("vx") if b.get("vx") != null else 0.0
+								var cvy = b.get("vy") if b.get("vy") != null else 0.0
+								b.set("vx", cvx + (dxx / bdist) * 400.0)
+								b.set("vy", cvy + (dyy / bdist) * 400.0
 
 		for hp in hack_points:
 			if not hp["captured"]:
