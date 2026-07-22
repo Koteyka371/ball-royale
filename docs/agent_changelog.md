@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1360] Chrono-Stasis Field — *2026-07-22 22:25:40 UTC*
+
+An area-of-effect skill or deployable device that creates a large temporal bubble. Entities inside the bubble have their movement speed, projectile speed, and attack speed reduced to 10% of normal, but they also take 50% less damage from all sources while inside the zone.
+
+---
+
 ## [idea-1330] Solar Wind Hazard — *2026-07-22 22:15:35 UTC*
 
 A hazard that blows continuously in one direction across the arena, randomly shifting angles every 30 seconds. Balls pushed off the edge of the arena by this wind take massive radiation damage.

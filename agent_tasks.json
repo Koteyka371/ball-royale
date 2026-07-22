@@ -23301,7 +23301,7 @@
     },
     {
       "id": "idea-1360",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chrono-Stasis Field",
@@ -34500,6 +34500,23 @@
         "src/ai/shrinking_safe_bubbles.py",
         "src/ai/shrinking_safe_bubbles.gd",
         "tests/test_shrinking_safe_bubbles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2018",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tangle Hazard",
+      "description": "A hazard zone that tethers two balls together quantumly. When one takes damage, the other takes an equal amount. If they move too far apart, the tether snaps and deals massive damage to both.",
+      "allowed_paths": [
+        "src/arena/quantum_tangle.py",
+        "src/arena/quantum_tangle.gd",
+        "tests/test_quantum_tangle.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
