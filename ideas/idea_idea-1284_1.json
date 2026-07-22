@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Treadmill Hazard",
+  "description": "A new procedural arena hazard that acts as a conveyor belt, passively increasing or decreasing ball movement speed based on direction. Hitting the edges of the treadmill forces an immediate direction reverse, conserving momentum."
+}

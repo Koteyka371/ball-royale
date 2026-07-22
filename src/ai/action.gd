@@ -311,7 +311,38 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 		else:
 			break
 
+
 func _attempt_damage(attacker, target) -> void:
+	var has_orig = false
+	var orig_dmg = 0.0
+
+	var overflow = false
+	if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("overflow_active"):
+		overflow = target.get_meta("overflow_active")
+	elif typeof(target) == TYPE_DICTIONARY and target.has("overflow_active"):
+		overflow = target.overflow_active
+	elif typeof(target) == TYPE_OBJECT and "overflow_active" in target:
+		overflow = target.overflow_active
+
+	if overflow:
+		if typeof(attacker) == TYPE_OBJECT and "damage" in attacker:
+			has_orig = true
+			orig_dmg = attacker.damage
+			attacker.damage *= 0.85
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"):
+			has_orig = true
+			orig_dmg = attacker.damage
+			attacker.damage *= 0.85
+
+	_attempt_damage_internal(attacker, target)
+
+	if has_orig:
+		if typeof(attacker) == TYPE_OBJECT and "damage" in attacker:
+			attacker.damage = orig_dmg
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"):
+			attacker.damage = orig_dmg
+
+func _attempt_damage_internal(attacker, target) -> void:
 
 	var mode_name = ""
 	if typeof(world) == TYPE_OBJECT and "mode" in world and world.mode != null:
@@ -9594,6 +9625,17 @@ func execute(strategy: String, delta: float):
                 my_ball.speed *= 1.5
             if "damage" in my_ball:
                 my_ball.damage *= 1.5
+
+        var overflow_active_9622 = false
+        if my_ball.has_method("has_meta") and my_ball.has_meta("overflow_active"):
+            overflow_active_9622 = my_ball.get_meta("overflow_active")
+        elif "overflow_active" in my_ball:
+            overflow_active_9622 = my_ball.overflow_active
+
+        if overflow_active_9622:
+            if "speed" in my_ball:
+                my_ball.speed *= 1.2
+
 
         var burst_timer = 0.0
         if my_ball.has_method("has_meta") and my_ball.has_meta("stamina_speed_burst_timer"):
@@ -33107,6 +33149,17 @@ func _apply_friendly_aura(delta: float):
                 self.ball.speed *= 1.5
             if "damage" in self.ball:
                 self.ball.damage *= 1.5
+
+        var overflow_active_33135 = false
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("overflow_active"):
+            overflow_active_33135 = self.ball.get_meta("overflow_active")
+        elif "overflow_active" in self.ball:
+            overflow_active_33135 = self.ball.overflow_active
+
+        if overflow_active_33135:
+            if "speed" in self.ball:
+                self.ball.speed *= 1.2
+
 
         var over_timer = 0.0
         if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("overcharged_timer"):
