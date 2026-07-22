@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1307] Guild Headquarters Customization Interface — *2026-07-22 20:39:46 UTC*
+
+Add an interactive visual headquarters for guilds where unlocked cosmetics, statues, and banners can be arranged. Members can visit their HQ to see top contributors featured in the hall of fame.
+
+---
+
 ## [idea-1321] Volcanic Eruption Mutator — *2026-07-22 20:30:45 UTC*
 
 A global event that causes the center of the arena to periodically erupt, showering random locations across the map with burning projectiles that leave lingering lava puddles. Provides chaotic area denial.

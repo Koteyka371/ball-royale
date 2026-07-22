@@ -22395,7 +22395,7 @@
     },
     {
       "id": "idea-1307",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Customization Interface",
@@ -33973,6 +33973,23 @@
         "src/ai/seasonal_types.py",
         "src/ai/seasonal_types.gd",
         "tests/test_seasonal_types.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1987",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Strike Event",
+      "description": "A global event where random orbital strikes target the arena. A warning circle appears on the ground, and after a short delay, an orbital laser blasts the area, dealing massive damage to any ball caught inside.",
+      "allowed_paths": [
+        "src/ai/orbital_strike.py",
+        "src/ai/orbital_strike.gd",
+        "tests/test_orbital_strike.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
