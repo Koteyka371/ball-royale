@@ -27164,7 +27164,125 @@ class TricksterEventMode(GameMode):
                     if hasattr(b, "traits") and "trickster" in b.traits:
                         b.traits.remove("trickster")
 
+
+class RevenantMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Revenant Mode"
+        self.description = "Players who die become ghosts connected to their killer. Assist the killer or deal damage to revive."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        pass
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        recent_kills = {}
+
+        for b in balls:
+            # Handle death
+            if getattr(b, "hp", 0) <= 0 and getattr(b, "alive", True):
+                if not getattr(b, "is_ghost", False):
+                    # Become ghost
+                    b.alive = True
+                    b.is_ghost = True
+                    b.hp = 50.0
+                    b.max_hp = 50.0
+                    b.speed = getattr(b, "base_speed", 100.0) * 0.7
+                    b.damage = getattr(b, "base_damage", 10.0) * 0.5
+                    b.ghost_damage_dealt = 0.0
+                    b.ghost_tether_timer = 0.0
+
+                    killer_id = getattr(b, "last_attacker_id", None)
+                    b.killer_id = killer_id
+
+                    if not b.killer_id:
+                        # Find nearest
+                        best_dist = float('inf')
+                        best_id = None
+                        for e in balls:
+                            if e != b and getattr(e, "alive", True) and not getattr(e, "is_ghost", False):
+                                d = (b.x - e.x)**2 + (b.y - e.y)**2
+                                if d < best_dist:
+                                    best_dist = d
+                                    best_id = e.id
+                        b.killer_id = best_id
+
+                else:
+                    # Fully die
+                    b.alive = False
+                    b.hp = 0.0
+                    if getattr(b, "id", None) not in world.dead_balls:
+                        world.dead_balls.append(b.id)
+                    if hasattr(world, "add_event"):
+                        world.add_event('ball_died', {'id': b.id, 'reason': 'ghost_death', 'killer_id': getattr(b, "last_attacker_id", -1)})
+
+                    killer = getattr(b, "last_attacker_id", None)
+                    if killer is not None:
+                        recent_kills[killer] = recent_kills.get(killer, 0) + 1
+
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "is_ghost", False):
+                # Ghost logic
+                # Find killer
+                killer = None
+                for e in balls:
+                    if getattr(e, "id", None) == getattr(b, "killer_id", None):
+                        killer = e
+                        break
+
+                # If killer is dead, free the ghost
+                if not killer or not getattr(killer, "alive", True):
+                    self._revive_ghost(b)
+                    continue
+
+                # If killer got a kill, free the ghost
+                if recent_kills.get(getattr(killer, "id", -1), 0) > 0:
+                    self._revive_ghost(b)
+                    continue
+
+                # Check chip damage
+                for e in balls:
+                    if e != b and e != killer and getattr(e, "alive", True):
+                        last_hp = getattr(e, "revenant_last_hp", e.hp)
+                        if e.hp < last_hp:
+                            dist_sq = (b.x - e.x)**2 + (b.y - e.y)**2
+                            if dist_sq < (getattr(b, "radius", 10.0) + getattr(e, "radius", 10.0) + 40.0)**2:
+                                b.ghost_damage_dealt += (last_hp - e.hp)
+
+                if getattr(b, "ghost_damage_dealt", 0.0) >= 50.0:
+                    self._revive_ghost(b)
+                    continue
+
+                # Tether pull
+                if killer:
+                    dist_sq = (b.x - killer.x)**2 + (b.y - killer.y)**2
+                    if dist_sq > 400.0**2:
+                        dist = math.sqrt(dist_sq)
+                        pull_strength = 200.0
+                        b.vx += (killer.x - b.x) / dist * pull_strength * delta
+                        b.vy += (killer.y - b.y) / dist * pull_strength * delta
+
+        self.last_dead_balls = list(world.dead_balls)
+
+        # Store last hp
+        for b in balls:
+            b.revenant_last_hp = getattr(b, "hp", 0.0)
+
+    def _revive_ghost(self, b):
+        b.is_ghost = False
+        b.hp = 100.0
+        b.max_hp = 100.0
+        b.speed = getattr(b, "base_speed", 100.0)
+        b.damage = getattr(b, "base_damage", 10.0)
+        b.ghost_damage_dealt = 0.0
+
+
 GAME_MODES = {
+    'revenant': RevenantMode(),
     'trickster_event': TricksterEventMode(),
     "collapsing_ceiling": CollapsingCeilingMode(),
     'elemental_chain_reactions': ElementalChainReactionMode(),

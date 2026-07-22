@@ -43056,6 +43056,7 @@ class CurrencyBurdenMode extends GameMode:
 						break
 
 GAME_MODES = {
+	"revenant": RevenantMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),
@@ -53249,3 +53250,199 @@ class TricksterEventMode extends GameMode:
 						b["ball_type"] = b["original_ball_type_trickster_event"]
 
 GAME_MODES['trickster_event'] = TricksterEventMode.new()
+class RevenantMode extends GameMode:
+	var last_dead_balls = []
+
+	func _init():
+		name = "Revenant Mode"
+		description = "Players who die become ghosts connected to their killer. Assist the killer or deal damage to revive."
+
+	func setup(world, balls: Array) -> void:
+		pass
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not ("dead_balls" in world):
+			world.dead_balls = []
+
+		var dead_ball_ids = world.dead_balls
+		var recent_kills = {}
+
+		for b in balls:
+			var is_obj = typeof(b) == TYPE_OBJECT
+			var bhp = b.get("hp") if is_obj else b.get("hp", 0.0)
+			var balive = b.get("alive") if is_obj else b.get("alive", true)
+			var bis_ghost = b.get("is_ghost") if is_obj else b.get("is_ghost", false)
+
+			if bhp <= 0 and balive:
+				if not bis_ghost:
+					if is_obj:
+						b.set("alive", true)
+						b.set("is_ghost", true)
+						b.set("hp", 50.0)
+						b.set("max_hp", 50.0)
+						b.set("speed", b.get("base_speed", 100.0) * 0.7)
+						b.set("damage", b.get("base_damage", 10.0) * 0.5)
+						b.set("ghost_damage_dealt", 0.0)
+
+						var killer_id = b.get("last_attacker_id")
+						b.set("killer_id", killer_id)
+						if killer_id == null:
+							var best_dist = 9999999.0
+							var best_id = null
+							for e in balls:
+								if e != b and (e.get("alive") if typeof(e) == TYPE_OBJECT else e.get("alive", true)) and not (e.get("is_ghost") if typeof(e) == TYPE_OBJECT else e.get("is_ghost", false)):
+									var ex = e.get("x") if typeof(e) == TYPE_OBJECT else e.get("x", 0.0)
+									var ey = e.get("y") if typeof(e) == TYPE_OBJECT else e.get("y", 0.0)
+									var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+									var by = b.get("y") if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+									var d = pow(bx - ex, 2) + pow(by - ey, 2)
+									if d < best_dist:
+										best_dist = d
+										best_id = e.get("id") if typeof(e) == TYPE_OBJECT else e.get("id")
+							b.set("killer_id", best_id)
+					else:
+						b["alive"] = true
+						b["is_ghost"] = true
+						b["hp"] = 50.0
+						b["max_hp"] = 50.0
+						b["speed"] = b.get("base_speed", 100.0) * 0.7
+						b["damage"] = b.get("base_damage", 10.0) * 0.5
+						b["ghost_damage_dealt"] = 0.0
+
+						var killer_id = b.get("last_attacker_id", null)
+						b["killer_id"] = killer_id
+						if killer_id == null:
+							var best_dist = 9999999.0
+							var best_id = null
+							for e in balls:
+								if e != b and (e.get("alive", true) if typeof(e) == TYPE_DICTIONARY else e.get("alive")) and not (e.get("is_ghost", false) if typeof(e) == TYPE_DICTIONARY else e.get("is_ghost")):
+									var ex = e.get("x", 0.0) if typeof(e) == TYPE_DICTIONARY else e.get("x")
+									var ey = e.get("y", 0.0) if typeof(e) == TYPE_DICTIONARY else e.get("y")
+									var bx = b.get("x", 0.0)
+									var by = b.get("y", 0.0)
+									var d = pow(bx - ex, 2) + pow(by - ey, 2)
+									if d < best_dist:
+										best_dist = d
+										best_id = e.get("id") if typeof(e) == TYPE_DICTIONARY else e.get("id")
+							b["killer_id"] = best_id
+				else:
+					var bid = b.get("id") if is_obj else b.get("id")
+					if is_obj:
+						b.set("alive", false)
+						b.set("hp", 0.0)
+					else:
+						b["alive"] = false
+						b["hp"] = 0.0
+					if not (bid in world.dead_balls):
+						world.dead_balls.append(bid)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event('ball_died', {'id': bid, 'reason': 'ghost_death', 'killer_id': b.get("last_attacker_id") if is_obj else b.get("last_attacker_id", -1)})
+
+					var killer = b.get("last_attacker_id") if is_obj else b.get("last_attacker_id", null)
+					if killer != null:
+						if recent_kills.has(killer):
+							recent_kills[killer] += 1
+						else:
+							recent_kills[killer] = 1
+
+		for b in balls:
+			var is_obj = typeof(b) == TYPE_OBJECT
+			var balive = b.get("alive") if is_obj else b.get("alive", true)
+			var bis_ghost = b.get("is_ghost") if is_obj else b.get("is_ghost", false)
+
+			if balive and bis_ghost:
+				var bkiller_id = b.get("killer_id") if is_obj else b.get("killer_id")
+				var killer = null
+				for e in balls:
+					var eid = e.get("id") if typeof(e) == TYPE_OBJECT else e.get("id")
+					if eid != null and eid == bkiller_id:
+						killer = e
+						break
+
+				var kalive = true
+				if killer != null:
+					kalive = killer.get("alive") if typeof(killer) == TYPE_OBJECT else killer.get("alive", true)
+				else:
+					kalive = false
+
+				if not killer or not kalive:
+					_revive_ghost(b)
+					continue
+
+				var kid = killer.get("id") if typeof(killer) == TYPE_OBJECT else killer.get("id")
+				if recent_kills.has(kid) and recent_kills[kid] > 0:
+					_revive_ghost(b)
+					continue
+
+				for e in balls:
+					var ealive = e.get("alive") if typeof(e) == TYPE_OBJECT else e.get("alive", true)
+					if e != b and e != killer and ealive:
+						var ehp = e.get("hp") if typeof(e) == TYPE_OBJECT else e.get("hp", 0.0)
+						var elast = e.get("revenant_last_hp") if typeof(e) == TYPE_OBJECT else e.get("revenant_last_hp", ehp)
+						if elast == null:
+							elast = ehp
+						if ehp < elast:
+							var bx = b.get("x") if is_obj else b.get("x", 0.0)
+							var by = b.get("y") if is_obj else b.get("y", 0.0)
+							var ex = e.get("x") if typeof(e) == TYPE_OBJECT else e.get("x", 0.0)
+							var ey = e.get("y") if typeof(e) == TYPE_OBJECT else e.get("y", 0.0)
+							var dist_sq = pow(bx - ex, 2) + pow(by - ey, 2)
+							var brad = b.get("radius") if is_obj else b.get("radius", 10.0)
+							var erad = e.get("radius") if typeof(e) == TYPE_OBJECT else e.get("radius", 10.0)
+							if dist_sq < pow(brad + erad + 40.0, 2):
+								var prev = b.get("ghost_damage_dealt") if is_obj else b.get("ghost_damage_dealt", 0.0)
+								if is_obj:
+									b.set("ghost_damage_dealt", prev + (elast - ehp))
+								else:
+									b["ghost_damage_dealt"] = prev + (elast - ehp)
+
+				var g_dmg = b.get("ghost_damage_dealt") if is_obj else b.get("ghost_damage_dealt", 0.0)
+				if g_dmg >= 50.0:
+					_revive_ghost(b)
+					continue
+
+				if killer:
+					var bx = b.get("x") if is_obj else b.get("x", 0.0)
+					var by = b.get("y") if is_obj else b.get("y", 0.0)
+					var kx = killer.get("x") if typeof(killer) == TYPE_OBJECT else killer.get("x", 0.0)
+					var ky = killer.get("y") if typeof(killer) == TYPE_OBJECT else killer.get("y", 0.0)
+					var dist_sq = pow(bx - kx, 2) + pow(by - ky, 2)
+					if dist_sq > pow(400.0, 2):
+						var dist = sqrt(dist_sq)
+						var pull = 200.0
+						var bvx = b.get("vx") if is_obj else b.get("vx", 0.0)
+						var bvy = b.get("vy") if is_obj else b.get("vy", 0.0)
+						if is_obj:
+							b.set("vx", bvx + (kx - bx) / dist * pull * delta)
+							b.set("vy", bvy + (ky - by) / dist * pull * delta)
+						else:
+							b["vx"] = bvx + (kx - bx) / dist * pull * delta
+							b["vy"] = bvy + (ky - by) / dist * pull * delta
+
+		last_dead_balls = []
+		for bid in world.dead_balls:
+			last_dead_balls.append(bid)
+
+		for b in balls:
+			var bhp = b.get("hp") if typeof(b) == TYPE_OBJECT else b.get("hp", 0.0)
+			if typeof(b) == TYPE_OBJECT:
+				b.set("revenant_last_hp", bhp)
+			else:
+				b["revenant_last_hp"] = bhp
+
+	func _revive_ghost(b):
+		var is_obj = typeof(b) == TYPE_OBJECT
+		if is_obj:
+			b.set("is_ghost", false)
+			b.set("hp", 100.0)
+			b.set("max_hp", 100.0)
+			b.set("speed", b.get("base_speed", 100.0))
+			b.set("damage", b.get("base_damage", 10.0))
+			b.set("ghost_damage_dealt", 0.0)
+		else:
+			b["is_ghost"] = false
+			b["hp"] = 100.0
+			b["max_hp"] = 100.0
+			b["speed"] = b.get("base_speed", 100.0)
+			b["damage"] = b.get("base_damage", 10.0)
+			b["ghost_damage_dealt"] = 0.0
