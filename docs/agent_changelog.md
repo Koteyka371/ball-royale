@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1374] Quantum Swap Booster — *2026-07-22 23:57:55 UTC*
+
+A booster that swaps the positions of the ball and the furthest enemy currently alive when picked up, instantly turning the tables or changing combat positioning.
+
+---
+
 ## [idea-1363] Decoy payloads — *2026-07-22 23:43:57 UTC*
 
 In Escort mode, Defenders can deploy a decoy payload that travels along an alternate path. The decoy distracts Attackers and draws automated hazards, but it does not count towards winning.

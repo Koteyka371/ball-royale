@@ -23539,7 +23539,7 @@
     },
     {
       "id": "idea-1374",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Booster",
@@ -34891,6 +34891,74 @@
         "src/ai/grapple_pull_force_trait.py",
         "src/ai/grapple_pull_force_trait.gd",
         "tests/test_grapple_pull_force_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2041",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Fog Mode",
+      "description": "A new game mode where an arena-wide fog rolls in periodically. While in the fog, players slowly lose HP, which is converted into global blood orbs that randomly spawn. Collecting these orbs heals players for the drained amount, making exploration high-risk but highly rewarding.",
+      "allowed_paths": [
+        "src/ai/vampiric_fog.py",
+        "src/ai/vampiric_fog.gd",
+        "tests/test_vampiric_fog.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2042",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Payload Booster Drops in Escort Mode",
+      "description": "When the payload in Escort Mode reaches certain checkpoints, it spawns special Booster items that provide temporary buffs to nearby defenders, incentivizing them to stay close and guard the payload.",
+      "allowed_paths": [
+        "src/ai/payload_booster_drops_in_escort.py",
+        "src/ai/payload_booster_drops_in_escort.gd",
+        "tests/test_payload_booster_drops_in_escort.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2043",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Shield Generation",
+      "description": "The Decoy payload in Escort Mode passively generates a small shield for nearby Defenders, making it partially useful even though it doesn't progress the game objective.",
+      "allowed_paths": [
+        "src/ai/decoy_shield_generation.py",
+        "src/ai/decoy_shield_generation.gd",
+        "tests/test_decoy_shield_generation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2044",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tangle Ball Type",
+      "description": "A new ball type that occasionally leaves behind an invisible 'quantum tangle' node when using its dash skill. If enemies trigger the tangle, they and the ball are forcibly teleported to swap positions, disorienting attackers and potentially dropping them into hazards.",
+      "allowed_paths": [
+        "src/ai/quantum_tangle_ball.py",
+        "src/ai/quantum_tangle_ball.gd",
+        "tests/test_quantum_tangle_ball.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
