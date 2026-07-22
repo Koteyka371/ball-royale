@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1332] Magnetic Grapple Loadout — *2026-07-22 21:41:47 UTC*
+
+A new loadout trait that allows players to aim at walls or bumpers and rapidly pull themselves toward the object, providing extreme mobility and new angles of attack, at the cost of being vulnerable to intercepting projectiles.
+
+---
+
 ## [idea-1337] Mirage Decoy Mode — *2026-07-22 21:41:42 UTC*
 
 A new hazard/item that when collected spawns 3 fragile, AI-controlled holograms of the player that scatter in random directions. The holograms deal no damage but will detonate into a flashbang effect when destroyed, blinding nearby enemies and masking the real player's escape.
