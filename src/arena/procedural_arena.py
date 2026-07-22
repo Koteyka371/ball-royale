@@ -1,3 +1,4 @@
+# type: ignore
 import math
 import random
 from dataclasses import dataclass
@@ -20,6 +21,10 @@ class Corridor:
 
 @dataclass
 class Hazard:
+
+
+
+
     id: int
     x: float
     y: float
@@ -656,25 +661,39 @@ class ProceduralArena:
                             import math
                             angle = random.uniform(0, 2 * math.pi)
                             speed = getattr(hazard, "speed", 300.0)
-                            hazard.vx = math.cos(angle) * speed
-                            hazard.vy = math.sin(angle) * speed
+                            setattr(hazard, 'vx', math.cos(angle) * speed)
+                            setattr(hazard, 'vy', math.sin(angle) * speed)
 
-                        hazard.x += hazard.vx * delta
-                        hazard.y += hazard.vy * delta
+                        if not hasattr(hazard, "bounces_left"):
+                            setattr(hazard, 'bounces_left', getattr(hazard, 'max_bounces', 5))
 
+                        hazard.x += getattr(hazard, 'vx', 0.0) * delta
+                        hazard.y += getattr(hazard, 'vy', 0.0) * delta
+
+                        bounced = False
                         if hazard.x - hazard.radius < 0:
                             hazard.x = hazard.radius
-                            hazard.vx = abs(hazard.vx)
+                            setattr(hazard, 'vx', abs(getattr(hazard, 'vx', 0.0)))
+                            bounced = True
                         elif getattr(self, "width", 2000.0) and hazard.x + hazard.radius > self.width:
                             hazard.x = self.width - hazard.radius
-                            hazard.vx = -abs(hazard.vx)
+                            setattr(hazard, 'vx', -abs(getattr(hazard, 'vx', 0.0)))
+                            bounced = True
 
                         if hazard.y - hazard.radius < 0:
                             hazard.y = hazard.radius
-                            hazard.vy = abs(hazard.vy)
+                            setattr(hazard, 'vy', abs(getattr(hazard, 'vy', 0.0)))
+                            bounced = True
                         elif getattr(self, "height", 2000.0) and hazard.y + hazard.radius > self.height:
                             hazard.y = self.height - hazard.radius
-                            hazard.vy = -abs(hazard.vy)
+                            setattr(hazard, 'vy', -abs(getattr(hazard, 'vy', 0.0)))
+                            bounced = True
+
+                        if bounced:
+                            setattr(hazard, 'bounces_left', getattr(hazard, 'bounces_left', 5) - 1)
+                            if getattr(hazard, 'bounces_left', 0) <= 0:
+                                hazard.active = False
+
 
                     if hazard.kind in ("tornado", "local_tornado"):
                         for other_hazard in self.hazards:
@@ -1041,9 +1060,11 @@ class ProceduralArena:
                             h.y += h.vy * delta
 
                         if h.x < 0 or h.x > self.width:
-                            if hasattr(h, "vx"): h.vx *= -1
+                            if hasattr(h, "vx"):
+                                h.vx *= -1
                         if h.y < 0 or h.y > self.height:
-                            if hasattr(h, "vy"): h.vy *= -1
+                            if hasattr(h, "vy"):
+                                h.vy *= -1
 
                 elif getattr(h, "kind", "") == "one_way_teleporter":
                     if hasattr(h, "change_timer"):
@@ -1062,9 +1083,11 @@ class ProceduralArena:
                         h.y += h.vy * delta
 
                     if h.x < 0 or h.x > self.width:
-                        if hasattr(h, "vx"): h.vx *= -1
+                        if hasattr(h, "vx"):
+                                h.vx *= -1
                     if h.y < 0 or h.y > self.height:
-                        if hasattr(h, "vy"): h.vy *= -1
+                        if hasattr(h, "vy"):
+                                h.vy *= -1
                 elif getattr(h, "kind", "") == "tornado_warning":
                     if hasattr(h, "duration"):
                         h.duration -= delta

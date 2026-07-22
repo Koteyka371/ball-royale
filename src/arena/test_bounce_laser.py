@@ -30,5 +30,29 @@ class TestBounceLaser(unittest.TestCase):
         self.assertEqual(laser.x, 120.0)
         self.assertEqual(laser.y, 120.0)
 
+
+    def test_bounce_laser_deactivates_after_bounces(self):
+        arena = ProceduralArena(arena_size=2000.0)
+        laser = Hazard(id=2, x=10.0, y=10.0, radius=20.0, kind="bounce_laser", damage=25.0)
+        laser.bounces_left = 2
+        laser.vx = -100.0
+        laser.vy = 0.0
+        laser.active = True
+        arena.hazards.append(laser)
+
+        # Bounce 1
+        arena.update_zone(current_tick=0, delta=1.0)
+        self.assertEqual(laser.bounces_left, 1)
+        self.assertTrue(laser.active)
+
+        # Move to right side
+        laser.x = 1990.0
+        laser.vx = 100.0
+
+        # Bounce 2
+        arena.update_zone(current_tick=1, delta=1.0)
+        self.assertEqual(laser.bounces_left, 0)
+        self.assertFalse(laser.active)
+
 if __name__ == '__main__':
     unittest.main()
