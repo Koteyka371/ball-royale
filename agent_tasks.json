@@ -21337,7 +21337,7 @@
     },
     {
       "id": "idea-1245",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Borders Mode",
@@ -33067,6 +33067,23 @@
         "src/ai/gravity_nullifier_biome.py",
         "src/ai/gravity_nullifier_biome.gd",
         "tests/test_gravity_nullifier_biome.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1934",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones event",
+      "description": "Periodically, micro safe zones spawn across the map. If a player is not inside a safe zone when the timer hits zero, they suffer a powerful blast of damage. The safe zones shrink continuously until disappearing entirely.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones.py",
+        "src/ai/shrinking_safe_zones.gd",
+        "tests/test_shrinking_safe_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

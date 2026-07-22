@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1245] Bouncy Borders Mode — *2026-07-22 05:27:22 UTC*
+
+Arena walls become extremely bouncy. Colliding with a wall reflects balls at 2x speed, turning the arena into a chaotic pinball machine.
+
+---
+
 ## [idea-1314] Spectral Escort — *2026-07-22 05:21:13 UTC*
 
 A VIP protection mode where one randomly selected ball on each team becomes the Spectral VIP. The VIP cannot attack and is highly vulnerable, but emits a constant healing aura for their teammates. The objective is to keep your VIP alive while hunting down the enemy VIP.
