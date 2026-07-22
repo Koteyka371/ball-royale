@@ -12544,6 +12544,20 @@ func execute(strategy: String, delta: float):
                 elif hazard.kind == "lava":
                     if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
                     elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
+                elif hazard.kind == "lava_geyser":
+                    if not ("active" in hazard) or hazard.active:
+                        var dx = hazard.x - self.ball.x
+                        var dy = hazard.y - self.ball.y
+                        var dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_lava", true)
+                            elif "is_in_lava" in self.ball: self.ball.is_in_lava = true
+
+                            var new_friction = 0.5
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["friction_multiplier"] = new_friction
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("friction_multiplier", new_friction)
                 elif hazard.kind == "flood_zone":
                     if self.ball.has_method("set_meta"): self.ball.set_meta("is_in_flood_zone", true)
                     elif "is_in_flood_zone" in self.ball: self.ball.is_in_flood_zone = true

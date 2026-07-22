@@ -6401,6 +6401,15 @@ class Action:
                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.25
                     elif hazard.kind == "lava":
                         self.ball.is_in_lava = True
+                    elif hazard.kind == "lava_geyser":
+                        if getattr(hazard, "active", True):
+                            dx = hazard.x - self.ball.x
+                            dy = hazard.y - self.ball.y
+                            dist_sq = dx * dx + dy * dy
+                            if dist_sq < hazard.radius * hazard.radius:
+                                self.ball.is_in_lava = True
+                                # Geyser significantly increases temperature/friction
+                                self.ball.friction_multiplier = 0.5
                     elif hazard.kind == "flood_zone":
                         self.ball.is_in_flood_zone = True
                     elif hazard.kind == "poison_cloud":
