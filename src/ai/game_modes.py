@@ -25792,7 +25792,139 @@ class GuildStormMode(GameMode):
                 # Periodic damage to non-members
                 b.hp -= 5.0 * delta
 
+
+class BiomeSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Biome Safe Zones"
+        self.description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages."
+        self.zones = []
+        self.min_zone_radius = 50.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        import random
+
+        # 4 Biomes
+        biomes = ["fire", "ice", "nature", "void"]
+        self.zones = []
+        for b in biomes:
+            self.zones.append({
+                "biome": b,
+                "x": random.uniform(200, arena_width - 200),
+                "y": random.uniform(200, arena_height - 200),
+                "radius": min(arena_width, arena_height) / 3.0,
+                "target_radius": min(arena_width, arena_height) / 3.0,
+                "target_x": random.uniform(200, arena_width - 200),
+                "target_y": random.uniform(200, arena_height - 200)
+            })
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for zone in self.zones:
+            zone["radius"] -= 3.0 * delta
+            if zone["radius"] < self.min_zone_radius:
+                zone["radius"] = self.min_zone_radius
+
+            dx = zone["target_x"] - zone["x"]
+            dy = zone["target_y"] - zone["y"]
+            dist = math.sqrt(dx*dx + dy*dy)
+            speed = 15.0 * delta
+            if dist > speed:
+                zone["x"] += (dx/dist) * speed
+                zone["y"] += (dy/dist) * speed
+            else:
+                zone["x"] = zone["target_x"]
+                zone["y"] = zone["target_y"]
+                zone["target_x"] = random.uniform(150, arena_width - 150)
+                zone["target_y"] = random.uniform(150, arena_height - 150)
+
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(b, "alive", False):
+                continue
+
+            if is_immune:
+                continue
+
+            in_any_zone = False
+            active_biomes = []
+
+            for zone in self.zones:
+                dx = b.x - zone["x"]
+                dy = b.y - zone["y"]
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist <= zone["radius"]:
+                    in_any_zone = True
+                    active_biomes.append(zone["biome"])
+
+            if not in_any_zone:
+                damage = 15.0 * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(damage)
+                else:
+                    b.hp -= damage
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(b, "id") and b.id not in world.dead_balls:
+                        world.dead_balls.append(b.id)
+                        if hasattr(world, "add_event"):
+                            world.add_event("ball_died", {"id": b.id, "reason": "biome_safe_zone", "killer_id": -1})
+            else:
+                # Apply biome effects
+                if not hasattr(b, "base_speed"):
+                    b.base_speed = getattr(b, "speed", 100.0)
+                if not hasattr(b, "base_damage"):
+                    b.base_damage = getattr(b, "damage", 10.0)
+
+                speed_mult = 1.0
+                damage_mult = 1.0
+
+                if "fire" in active_biomes:
+                    damage_mult *= 1.5
+                if "ice" in active_biomes:
+                    if hasattr(b, "energy_shield_timer"):
+                        b.energy_shield_timer = 0.5
+                    else:
+                        b.energy_shield_timer = 0.5
+                        b.energy_shield_active = True
+                if "nature" in active_biomes:
+                    b.hp += 10.0 * delta
+                    if b.hp > getattr(b, "max_hp", 100.0):
+                        b.hp = getattr(b, "max_hp", 100.0)
+                if "void" in active_biomes:
+                    speed_mult *= 1.5
+                    void_damage = 5.0 * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(void_damage)
+                    else:
+                        b.hp -= void_damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(b, "id") and b.id not in world.dead_balls:
+                                world.dead_balls.append(b.id)
+
+                b.speed = b.base_speed * speed_mult
+                b.damage = b.base_damage * damage_mult
+
+
 GAME_MODES = {
+    'biome_safe_zones': BiomeSafeZonesMode(),
     'guild_storm': GuildStormMode(),
     'random_quantum_tunnels': RandomQuantumTunnelsMode(),
     "chroma_boss": ChromaBossMode(),

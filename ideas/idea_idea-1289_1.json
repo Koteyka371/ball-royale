@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Safe Zones Mode",
+    "description": "Safe zones periodically swap locations, teleporting players within them to the new location."
+}
