@@ -41819,7 +41819,185 @@ class GuildStormMode extends GameMode:
 				b.damage = b.base_damage
 				b.hp -= 5.0 * delta
 
+
+class BiomeSafeZonesMode extends GameMode:
+	var zones: Array = []
+	var min_zone_radius: float = 50.0
+	var biomes: Array = ["speed", "damage", "heal", "shield"]
+
+	func _init() -> void:
+		name = "Biome Safe Zones"
+		description = "Each shrinking safe zone acts as a unique biome, granting different passive abilities, allowing for multiple tactical advantages."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+		elif world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		zones.clear()
+		for i in range(4):
+			var r = min(arena_width, arena_height) / 4.0
+			var x = randf_range(r, arena_width - r)
+			var y = randf_range(r, arena_height - r)
+			zones.append({
+				"x": x,
+				"y": y,
+				"radius": r,
+				"target_x": randf_range(r, arena_width - r),
+				"target_y": randf_range(r, arena_height - r),
+				"biome": biomes[i % biomes.size()]
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+		elif world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+		for i in range(zones.size()):
+			var zone = zones[i]
+			if zone.radius > min_zone_radius:
+				zone.radius -= 2.0 * delta
+				if zone.radius < min_zone_radius:
+					zone.radius = min_zone_radius
+
+			var dx = zone.target_x - zone.x
+			var dy = zone.target_y - zone.y
+			var dist = sqrt(dx*dx + dy*dy)
+			var speed = 10.0 * delta
+			if dist > speed:
+				zone.x += (dx/dist) * speed
+				zone.y += (dy/dist) * speed
+			else:
+				zone.x = zone.target_x
+				zone.y = zone.target_y
+				zone.target_x = randf_range(200.0, arena_width - 200.0)
+				zone.target_y = randf_range(200.0, arena_height - 200.0)
+			zones[i] = zone
+
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			if not is_alive:
+				continue
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if b_type == "spectator":
+				continue
+
+			var w_timer = b.get("weather_immunity_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.weather_immunity_timer if "weather_immunity_timer" in b else 0.0)
+			var is_immune = w_timer > 0.0
+
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+			var base_speed = b.get("base_speed", b.get("speed", 100.0)) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0))
+			var base_damage = b.get("base_damage", b.get("damage", 10.0)) if typeof(b) == TYPE_DICTIONARY else (b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0))
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("base_speed"): b["base_speed"] = base_speed
+				if not b.has("base_damage"): b["base_damage"] = base_damage
+			else:
+				if not "base_speed" in b and b.has_method("set_meta"): b.set_meta("base_speed", base_speed)
+				if not "base_damage" in b and b.has_method("set_meta"): b.set_meta("base_damage", base_damage)
+
+			var in_any_zone = false
+			var active_biome = ""
+			var closest_dist = 999999.0
+
+			for zone in zones:
+				var dx = b_x - zone.x
+				var dy = b_y - zone.y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist <= zone.radius:
+					in_any_zone = true
+					if dist < closest_dist:
+						closest_dist = dist
+						active_biome = zone.biome
+
+			var has_speed_mod = b.get("biome_modifier_speed", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("biome_modifier_speed") if b.has_method("has_meta") and b.has_meta("biome_modifier_speed") else false)
+			if has_speed_mod and active_biome != "speed":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = base_speed
+					b["biome_modifier_speed"] = false
+				else:
+					b.speed = base_speed
+					if b.has_method("set_meta"): b.set_meta("biome_modifier_speed", false)
+
+			var has_dmg_mod = b.get("biome_modifier_damage", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("biome_modifier_damage") if b.has_method("has_meta") and b.has_meta("biome_modifier_damage") else false)
+			if has_dmg_mod and active_biome != "damage":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["damage"] = base_damage
+					b["biome_modifier_damage"] = false
+				else:
+					b.damage = base_damage
+					if b.has_method("set_meta"): b.set_meta("biome_modifier_damage", false)
+
+			if in_any_zone and active_biome != "":
+				if active_biome == "speed":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["speed"] = base_speed * 1.5
+						b["biome_modifier_speed"] = true
+					else:
+						b.speed = base_speed * 1.5
+						if b.has_method("set_meta"): b.set_meta("biome_modifier_speed", true)
+				elif active_biome == "damage":
+					if typeof(b) == TYPE_DICTIONARY:
+						b["damage"] = base_damage * 1.5
+						b["biome_modifier_damage"] = true
+					else:
+						b.damage = base_damage * 1.5
+						if b.has_method("set_meta"): b.set_meta("biome_modifier_damage", true)
+				elif active_biome == "heal":
+					var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100.0)
+					var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.max_hp if "max_hp" in b else 100.0)
+					var new_hp = min(max_hp, hp + 10.0 * delta)
+					if typeof(b) == TYPE_DICTIONARY: b["hp"] = new_hp
+					else: b.hp = new_hp
+				elif active_biome == "shield":
+					var sh = b.get("energy_shield_hp", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.energy_shield_hp if "energy_shield_hp" in b else 0.0)
+					var new_sh = min(50.0, sh + 15.0 * delta)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["energy_shield_active"] = true
+						b["energy_shield_hp"] = new_sh
+					else:
+						if "energy_shield_active" in b: b.energy_shield_active = true
+						elif b.has_method("set_meta"): b.set_meta("energy_shield_active", true)
+						if "energy_shield_hp" in b: b.energy_shield_hp = new_sh
+						elif b.has_method("set_meta"): b.set_meta("energy_shield_hp", new_sh)
+			else:
+				if not is_immune:
+					var damage = 10.0 * delta
+					var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100.0)
+					hp -= damage
+					if hp <= 0:
+						hp = 0
+						if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+						else: b.alive = false
+
+						var b_id = b.get("id", -1) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else -1)
+						if b_id != -1 and not world.get_meta("dead_balls").has(b_id):
+							world.get_meta("dead_balls").append(b_id)
+							if world.has_method("add_event"):
+								world.add_event("ball_died", {"id": b_id, "reason": "biome_safe_zones_storm", "killer_id": -1})
+
+					if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
+					else: b.hp = hp
+
 GAME_MODES = {
+	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"guild_storm": GuildStormMode.new(),
 	"chroma_boss": ChromaBossMode.new(),
 	"rising_lava": RisingLavaMode.new(),
