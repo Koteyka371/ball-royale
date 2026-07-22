@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1313] Mutator Token Daily Quest — *2026-07-22 06:12:04 UTC*
+
+Add a difficult daily quest that rewards mutator tokens, creating an alternative to buying them, which makes voting more accessible for free-to-play players.
+
+---
+
 ## [idea-1308] Minion Devour Mechanic — *2026-07-22 06:03:46 UTC*
 
 A new skill for the Necromancer: 'Devour'. The Necromancer consumes a target allied minion to instantly restore a large amount of HP and gain temporary damage immunity.

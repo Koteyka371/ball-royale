@@ -22499,7 +22499,7 @@
     },
     {
       "id": "idea-1313",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mutator Token Daily Quest",
@@ -33188,6 +33188,74 @@
         "src/ai/magnetic_decoy.py",
         "src/ai/magnetic_decoy.gd",
         "tests/test_magnetic_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1941",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Resonance Fields",
+      "description": "A dynamic arena event where invisible quantum fields spawn. When a player dashes through a field, they create a temporary clone of themselves that mimics their last 3 seconds of movement and attacks, confusing enemies and amplifying overall team damage output.",
+      "allowed_paths": [
+        "src/ai/quantum_resonance_fields.py",
+        "src/ai/quantum_resonance_fields.gd",
+        "tests/test_quantum_resonance_fields.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1942",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Skill: Bone Prison",
+      "description": "Traps an enemy in a bone prison, disabling their movement for a few seconds. The prison has its own HP and can be destroyed.",
+      "allowed_paths": [
+        "src/ai/necromancer_skill_bone_prison.py",
+        "src/ai/necromancer_skill_bone_prison.gd",
+        "tests/test_necromancer_skill_bone_prison.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1943",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrupted Altars",
+      "description": "Special corrupted capture points appear randomly in the arena. If successfully captured, the capturing team gains a massive temporary damage boost but starts constantly losing health until they eliminate an enemy player.",
+      "allowed_paths": [
+        "src/ai/corrupted_altars.py",
+        "src/ai/corrupted_altars.gd",
+        "tests/test_corrupted_altars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1944",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Necromancer Skill: Soul Swap",
+      "description": "The Necromancer swaps positions with a targeted minion, making the minion take any incoming damage in the original position.",
+      "allowed_paths": [
+        "src/ai/necromancer_skill_soul_swap.py",
+        "src/ai/necromancer_skill_soul_swap.gd",
+        "tests/test_necromancer_skill_soul_swap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
