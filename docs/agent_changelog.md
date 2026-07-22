@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1341] Evolving Boss Encounters — *2026-07-22 21:41:31 UTC*
+
+Introduce AI bosses in the arena that evolve if left undefeated. Each time the safe zone shrinks, the boss gains a new random mutator (e.g., explosive aura, increased speed, or pulling gravity), turning it into a high-risk, high-reward target that drops multiple prestige tokens and rare artifacts when defeated.
+
+---
+
 ## [idea-1336] Skeletal Archers Minions — *2026-07-22 21:41:26 UTC*
 
 Add a new subtype of minion for the Necromancer: Skeletal Archers. Unlike standard melee minions, these are fragile but can attack enemies from a distance using weak homing projectiles.
