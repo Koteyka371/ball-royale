@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1338] Reverse Lava Spread — *2026-07-22 19:30:03 UTC*
+
+After the lava fully expands, it slowly recedes back to the center, creating safe zones that can emerge unexpectedly.
+
+---
+
 ## [idea-1329] Chain Reaction Bombs — *2026-07-22 19:26:59 UTC*
 
 Bombs that, when exploded, will trigger the immediate explosion of any other bombs in their blast radius, allowing for massive field-clearing chain reactions.

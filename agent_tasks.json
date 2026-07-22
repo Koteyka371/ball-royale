@@ -22926,7 +22926,7 @@
     },
     {
       "id": "idea-1338",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Lava Spread",
@@ -33701,6 +33701,40 @@
         "src/ai/thermal_overload.py",
         "src/ai/thermal_overload.gd",
         "tests/test_thermal_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1971",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Bomb Mode",
+      "description": "Bombs bounce off walls like normal balls and detonate on impact with a player.",
+      "allowed_paths": [
+        "src/ai/bouncy_bomb.py",
+        "src/ai/bouncy_bomb.gd",
+        "tests/test_bouncy_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1972",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Mine Mode",
+      "description": "Mines pull players in slightly before detonating.",
+      "allowed_paths": [
+        "src/ai/gravity_mine.py",
+        "src/ai/gravity_mine.gd",
+        "tests/test_gravity_mine.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
