@@ -22892,7 +22892,7 @@
     },
     {
       "id": "idea-1336",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skeletal Archers Minions",
@@ -34143,6 +34143,40 @@
         "src/ai/emp_shield_cosmetic.py",
         "src/ai/emp_shield_cosmetic.gd",
         "tests/test_emp_shield_cosmetic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1997",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Swap Mastery",
+      "description": "Tricksters can manually choose which decoy they want to swap positions with instead of it being random, allowing for extreme jukes and tactical escapes.",
+      "allowed_paths": [
+        "src/ai/trickster_swap_mastery.py",
+        "src/ai/trickster_swap_mastery.gd",
+        "tests/test_trickster_swap_mastery.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-1998",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Explosion Deco",
+      "description": "When a Trickster's decoy is destroyed or expires, it explodes in a colorful confetti blast that temporarily blinds enemies within a short radius, scrambling their controls.",
+      "allowed_paths": [
+        "src/ai/trickster_explosion_deco.py",
+        "src/ai/trickster_explosion_deco.gd",
+        "tests/test_trickster_explosion_deco.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

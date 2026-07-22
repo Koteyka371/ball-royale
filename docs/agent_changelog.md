@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1336] Skeletal Archers Minions — *2026-07-22 21:41:26 UTC*
+
+Add a new subtype of minion for the Necromancer: Skeletal Archers. Unlike standard melee minions, these are fragile but can attack enemies from a distance using weak homing projectiles.
+
+---
+
 ## [idea-1354] Trickster Mirror Match Event — *2026-07-22 21:20:15 UTC*
 
 An arena event where all players are turned into Tricksters for 30 seconds.
