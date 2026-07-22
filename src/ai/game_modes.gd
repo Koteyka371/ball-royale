@@ -39156,6 +39156,150 @@ class SniperOnlyMode extends GameMode:
 					elif b.has_method("set_meta"):
 						b.set_meta("traits", traits_arr)
 
+
+class MassivePinballArenaMode extends GameMode:
+	func _init() -> void:
+		name = "Massive Pinball Arena"
+		description = "Arena is filled with multiple massive pinball bumpers. Touching a bumper reflects the ball with high speed. Boosters spawn near the bumpers."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_OBJECT and arena.has_method("get"):
+				if not ("hazards" in arena) and typeof(arena.get("hazards")) == TYPE_NIL:
+					arena.hazards = []
+			if not ("boosters" in world) and typeof(world.get("boosters")) == TYPE_NIL:
+				world.boosters = []
+
+			var arena_width = arena.get("width") if "width" in arena else 1000
+			var arena_height = arena.get("height") if "height" in arena else 1000
+
+			var hazard_kinds = ["massive_bumper"]
+			var booster_kinds = ["overclock_booster", "mega_booster", "health_pack", "shield_booster", "speed_booster"]
+
+			for i in range(8):
+				var x = randf_range(200, arena_width - 200)
+				var y = randf_range(200, arena_height - 200)
+				var r = randf_range(80.0, 150.0)
+				var kind = hazard_kinds[randi() % hazard_kinds.size()]
+
+				var hazard = {"id": 15000 + i, "x": x, "y": y, "radius": r, "kind": kind, "damage": 0.0}
+				if "hazards" in arena and typeof(arena.hazards) == TYPE_ARRAY:
+					arena.hazards.append(hazard)
+
+				var bx = x + randf_range(-r - 50, r + 50)
+				var by = y + randf_range(-r - 50, r + 50)
+				var b_kind = booster_kinds[randi() % booster_kinds.size()]
+
+				var booster = {"id": 20000 + i, "x": bx, "y": by, "radius": 20.0, "kind": b_kind, "active": true}
+				if "boosters" in world and typeof(world.boosters) == TYPE_ARRAY:
+					world.boosters.append(booster)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		var hazards = []
+		if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_OBJECT and arena.has_method("get") and arena.get("hazards"):
+				var all_hazards = arena.get("hazards")
+				if typeof(all_hazards) == TYPE_ARRAY:
+					for h in all_hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+							kind = h["kind"]
+						elif typeof(h) == TYPE_OBJECT and "kind" in h:
+							kind = h.kind
+						if kind == "massive_bumper":
+							hazards.append(h)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_r = 20.0
+			var b_vx = 0.0
+			var b_vy = 0.0
+			var b_speed = 100.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+				b_r = b.get("radius", 20.0)
+				b_vx = b.get("vx", 0.0)
+				b_vy = b.get("vy", 0.0)
+				b_speed = b.get("speed", 100.0)
+			else:
+				b_x = b.x if "x" in b else 0.0
+				b_y = b.y if "y" in b else 0.0
+				b_r = b.radius if "radius" in b else 20.0
+				b_vx = b.vx if "vx" in b else 0.0
+				b_vy = b.vy if "vy" in b else 0.0
+				b_speed = b.speed if "speed" in b else 100.0
+
+			for h in hazards:
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_r = 80.0
+				if typeof(h) == TYPE_DICTIONARY:
+					h_x = h.get("x", 0.0)
+					h_y = h.get("y", 0.0)
+					h_r = h.get("radius", 80.0)
+				else:
+					h_x = h.x if "x" in h else 0.0
+					h_y = h.y if "y" in h else 0.0
+					h_r = h.radius if "radius" in h else 80.0
+
+				var dx = b_x - h_x
+				var dy = b_y - h_y
+				var dist = sqrt(dx*dx + dy*dy)
+				var min_dist = b_r + h_r
+
+				if dist < min_dist and dist > 0.001:
+					var nx = dx / dist
+					var ny = dy / dist
+
+					var overlap = min_dist - dist
+					b_x = b_x + nx * overlap
+					b_y = b_y + ny * overlap
+
+					var current_speed = b_speed
+					var new_speed = min(current_speed * 2.5, 3000.0)
+
+					var dot = b_vx * nx + b_vy * ny
+					b_vx = b_vx - 2 * dot * nx
+					b_vy = b_vy - 2 * dot * ny
+
+					var mag = sqrt(b_vx*b_vx + b_vy*b_vy)
+					if mag > 0.001:
+						b_vx = (b_vx / mag) * new_speed
+						b_vy = (b_vy / mag) * new_speed
+					else:
+						b_vx = nx * new_speed
+						b_vy = ny * new_speed
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b_x
+						b["y"] = b_y
+						b["vx"] = b_vx
+						b["vy"] = b_vy
+					else:
+						if "x" in b: b.x = b_x
+						if "y" in b: b.y = b_y
+						if "vx" in b: b.vx = b_vx
+						if "vy" in b: b.vy = b_vy
+
 class MagneticBumpersMode extends GameMode:
 	func _init() -> void:
 		name = "Magnetic Bumpers"
@@ -43875,6 +44019,7 @@ class ShrinkingArenaMode extends GameMode:
 					world.add_event.call("arena_shrunk", {"width": new_w, "height": new_h})
 
 GAME_MODES = {
+	"massive_pinball_arena": MassivePinballArenaMode.new(),
 	"aura_pulse_event": AuraPulseEventMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
