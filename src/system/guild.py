@@ -721,9 +721,47 @@ class GuildManager:
                 "announcer_voices": hq.get("announcer_voices", []),
                 "mini_games": hq.get("mini_games", {}),
                 "defenses": hq.get("defenses", {}),
-                "training_arena_unlocked": hq.get("training_arena_unlocked", False)
+                "training_arena_unlocked": hq.get("training_arena_unlocked", False),
+                "layout": hq.get("layout", {}),
+                "hall_of_fame": hq.get("hall_of_fame", [])
             }
         return None
+    def arrange_hq_item(self, guild_name, item_type, item_id, position_x, position_y):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            hq = guild.setdefault("hq", {})
+            if item_type in ["statues", "banners", "cosmetics", "flags", "defenses"]:
+                # We can arrange it even if not explicitly checked for 'unlocked' to be safe or check if unlocked
+                layout = hq.setdefault("layout", {})
+                type_layout = layout.setdefault(item_type, {})
+                type_layout[item_id] = {"x": position_x, "y": position_y}
+                self.save()
+                return True
+        return False
+
+    def add_to_hall_of_fame(self, guild_name, player_id, category, value, description=""):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            hq = guild.setdefault("hq", {})
+            hof = hq.setdefault("hall_of_fame", [])
+            hof.append({
+                "player_id": player_id,
+                "category": category,
+                "value": value,
+                "description": description
+            })
+            hof.sort(key=lambda x: x.get("value", 0), reverse=True)
+            self.save()
+            return True
+        return False
+
+    def get_hall_of_fame(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            hq = guild.get("hq", {})
+            return hq.get("hall_of_fame", [])
+        return []
+
 
     def unlock_emblem_part(self, guild_name, part_type, part_id, cost):
         if guild_name in self.data["guilds"]:

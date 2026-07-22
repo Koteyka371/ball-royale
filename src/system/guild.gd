@@ -902,7 +902,7 @@ func record_siege_held(defender_name: String, xp_reward: int) -> bool:
 func get_hq_status(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        var hq = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "defenses": {}, "training_arena_unlocked": false}
+        var hq = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": []}
         if guild.has("hq"):
             if guild["hq"].has("statues"): hq["statues"] = guild["hq"]["statues"]
             if guild["hq"].has("banners"): hq["banners"] = guild["hq"]["banners"]
@@ -913,5 +913,59 @@ func get_hq_status(guild_name: String) -> Dictionary:
             if guild["hq"].has("mini_games"): hq["mini_games"] = guild["hq"]["mini_games"]
             if guild["hq"].has("defenses"): hq["defenses"] = guild["hq"]["defenses"]
             if guild["hq"].has("training_arena_unlocked"): hq["training_arena_unlocked"] = guild["hq"]["training_arena_unlocked"]
+            if guild["hq"].has("layout"): hq["layout"] = guild["hq"]["layout"]
+            if guild["hq"].has("hall_of_fame"): hq["hall_of_fame"] = guild["hq"]["hall_of_fame"]
         return hq
     return {}
+
+func arrange_hq_item(guild_name: String, item_type: String, item_id: String, position_x: float, position_y: float) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("hq"):
+            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": []}
+        if not guild["hq"].has("layout"):
+            guild["hq"]["layout"] = {}
+        if not guild["hq"]["layout"].has(item_type):
+            guild["hq"]["layout"][item_type] = {}
+
+        guild["hq"]["layout"][item_type][item_id] = {"x": position_x, "y": position_y}
+        save_guilds()
+        return true
+    return false
+
+func add_to_hall_of_fame(guild_name: String, player_id: String, category: String, value: float, description: String = "") -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if not guild.has("hq"):
+            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": []}
+        if not guild["hq"].has("hall_of_fame"):
+            guild["hq"]["hall_of_fame"] = []
+
+        guild["hq"]["hall_of_fame"].append({
+            "player_id": player_id,
+            "category": category,
+            "value": value,
+            "description": description
+        })
+
+        # In GDScript, a custom sorter function is required for Array.sort_custom
+        # Since we're mimicking dictionary, we might just leave it unsorted or do bubble sort for simplicity
+        var hof = guild["hq"]["hall_of_fame"]
+        var n = hof.size()
+        for i in range(n):
+            for j in range(0, n - i - 1):
+                if hof[j].get("value", 0) < hof[j + 1].get("value", 0):
+                    var temp = hof[j]
+                    hof[j] = hof[j + 1]
+                    hof[j + 1] = temp
+
+        save_guilds()
+        return true
+    return false
+
+func get_hall_of_fame(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("hq") and guild["hq"].has("hall_of_fame"):
+            return guild["hq"]["hall_of_fame"]
+    return []
