@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Explosions",
+  "description": "When a minion explodes, if it catches another allied minion in the blast radius, the second minion also detonates immediately with increased damage, creating the potential for massive chain reactions if positioned correctly."
+}
