@@ -34,6 +34,9 @@ class Necromancer:
         self.personality = Personality("aggressive")
         self.bone_armor_stacks = 0
         self.bone_armor_timer = 0.0
+        self.survival_without_damage = 0.0
+        self.is_lich = False
+        self.skeletal_dragons_summoned = 0
 
     def get_hp_percent(self) -> float:
         return self.hp / self.max_hp if self.max_hp > 0 else 0.0
@@ -86,6 +89,9 @@ class Necromancer:
         if self.hp == self.max_hp and amount > 0:
             self.first_hit_taken = True
 
+        if amount > 0:
+            self.survival_without_damage = 0.0
+
         # Apply bone armor mitigation
         if self.bone_armor_stacks > 0 and amount > 0:
             # Consume 1 stack to mitigate flat damage (e.g., up to 10 flat reduction)
@@ -133,6 +139,60 @@ class Necromancer:
     def tick(self, delta: float) -> None:
         if not self.alive:
             return
+
+        self.survival_without_damage += delta
+        if self.survival_without_damage >= 60.0 and not self.is_lich:
+            self.is_lich = True
+            self.BALL_TYPE = "lich"
+            self.hp = self.max_hp  # Optional heal?
+
+            # Enrage existing minions and spawn skeletal dragons
+            world = getattr(self, "world", None)
+            if not world and hasattr(self, "_cached_world"):
+                world = self._cached_world
+
+            if world and hasattr(world, "balls"):
+                for b in world.balls:
+                    if getattr(b, "minion_owner", None) == self.id and getattr(b, "alive", True):
+                        b.is_enraged = True
+                        b.enrage_timer = 99999.0 # Permanent
+
+                        b.base_speed = getattr(b, 'base_speed', getattr(b, 'speed', 10.0)) * 3.0
+                        b.base_damage = getattr(b, 'base_damage', getattr(b, 'damage', 10.0)) * 2.5
+                        b.speed = b.base_speed
+                        b.damage = b.base_damage
+
+                # Summon 2 skeletal dragons
+                try:
+                    from ai.ball_types_skeletal_dragon import SkeletalDragon
+                except ImportError:
+                    SkeletalDragon = type('SkeletalDragon', (), {})
+
+                for _ in range(2):
+                    dragon_id = len(world.balls) + 1000 + self.skeletal_dragons_summoned
+                    self.skeletal_dragons_summoned += 1
+                    try:
+                        dragon = SkeletalDragon(dragon_id, self.x, self.y)
+                        dragon.minion_owner = self.id
+                        dragon.team = getattr(self, "team", "unknown")
+                        dragon._cached_world = world
+                    except TypeError:
+                        # Fallback for dynamic type if import fails
+                        dragon = type('SkeletalDragon', (), {})()
+                        dragon.id = dragon_id
+                        dragon.ball_type = "skeletal_dragon"
+                        dragon.minion_owner = self.id
+                        dragon.x = self.x
+                        dragon.y = self.y
+                        dragon.hp = 100.0
+                        dragon.alive = True
+                        dragon.team = getattr(self, "team", "unknown")
+                        dragon.has_ranged_breath = True
+                        dragon.is_enraged = True
+                        dragon.enrage_timer = 99999.0
+
+                    world.balls.append(dragon)
+
         self.bone_armor_timer += delta
         while self.bone_armor_timer >= 5.0:  # Periodically generate
             self.bone_armor_timer -= 5.0
