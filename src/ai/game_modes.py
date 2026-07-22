@@ -255,9 +255,22 @@ class GameMode:
                     b.damage = getattr(b, "damage", 10.0) * 0.95
                     if hasattr(b, "base_damage"):
                         b.base_damage *= 0.95
+                elif trait == "quantum_entangled":
+                    pass
 
         """Called at the start of the battle to initialize mode-specific rules/teams."""
 
+
+
+
+        entangled_balls = [b for b in balls if "quantum_entangled" in getattr(b, "traits", [])]
+        import random
+        random.shuffle(entangled_balls)
+        for i in range(0, len(entangled_balls) - 1, 2):
+            b1 = entangled_balls[i]
+            b2 = entangled_balls[i+1]
+            b1.quantum_entangled_partner = b2
+            b2.quantum_entangled_partner = b1
         # Apply global season modifier
         season_num = 1
         if hasattr(world, "leaderboard_manager"):
@@ -11907,6 +11920,10 @@ class BumperBallsMode(GameMode):
                     b.damage = getattr(b, "damage", 10.0) * 0.95
                     if hasattr(b, "base_damage"):
                         b.base_damage *= 0.95
+                elif trait == "quantum_entangled":
+                    pass
+
+
 
         for b in balls:
 
@@ -16231,6 +16248,8 @@ class HazardBilliardsMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+
+
         for b in balls:
 
             b.damage = 0.0

@@ -9909,6 +9909,66 @@ class Action:
             damage_taken = 0
             self.ball.shield_booster_active = False
 
+        # Quantum Entangled Trait (Trait #1293)
+        qe_partner = getattr(self.ball, "quantum_entangled_partner", None)
+        if qe_partner:
+            if not getattr(qe_partner, "alive", True):
+                # Partner is dead -> Enraged State
+                if not getattr(self.ball, "enraged_from_quantum", False):
+                    self.ball.enraged_from_quantum = True
+                    self.ball.speed = getattr(self.ball, "speed", 100.0) * 2.0
+                    self.ball.damage = getattr(self.ball, "damage", 10.0) * 2.0
+                    if hasattr(self.ball, "base_speed"):
+                        self.ball.base_speed *= 2.0
+                    if hasattr(self.ball, "base_damage"):
+                        self.ball.base_damage *= 2.0
+            else:
+                # Share damage
+
+                # Adjust damage_taken by qe_received_damage to prevent infinite loop
+                qe_received_dmg = getattr(self.ball, "qe_received_dmg", 0.0)
+                if qe_received_dmg > 0:
+                    damage_taken = max(0.0, damage_taken - qe_received_dmg)
+                    self.ball.qe_received_dmg = 0.0
+
+                if damage_taken > 0:
+                    half_damage = damage_taken * 0.5
+
+                    qe_partner.qe_received_dmg = getattr(qe_partner, "qe_received_dmg", 0.0) + half_damage
+
+                    if hasattr(qe_partner, "take_damage"):
+                        qe_partner.take_damage(half_damage)
+                    elif hasattr(qe_partner, "hp"):
+                        qe_partner.hp -= half_damage
+                        if qe_partner.hp <= 0:
+                            qe_partner.alive = False
+
+                    # Reduce damage for self
+                    if hasattr(self.ball, "hp"):
+                        self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + half_damage)
+                        current_hp = self.ball.hp
+                        damage_taken = start_hp - current_hp
+
+                # Adjust healing_received by qe_received_heal to prevent infinite loop
+                healing_received = current_hp - start_hp
+                qe_received_heal = getattr(self.ball, "qe_received_heal", 0.0)
+                if qe_received_heal > 0:
+                    healing_received = max(0.0, healing_received - qe_received_heal)
+                    self.ball.qe_received_heal = 0.0
+
+                if healing_received > 0:
+                    half_heal = healing_received * 0.5
+
+                    qe_partner.qe_received_heal = getattr(qe_partner, "qe_received_heal", 0.0) + half_heal
+
+                    if hasattr(qe_partner, "hp"):
+                        qe_partner.hp = min(getattr(qe_partner, "max_hp", 100.0), getattr(qe_partner, "hp", 100.0) + half_heal)
+
+                    # Reduce healing for self
+                    if hasattr(self.ball, "hp"):
+                        self.ball.hp -= half_heal
+                        current_hp = self.ball.hp
+
         # Chaos Link - Damage & Buff Sharing
         quantum_target = getattr(self.ball, "quantum_entanglement_target", None)
         if quantum_target and getattr(quantum_target, "alive", True) and getattr(self.ball, "quantum_entanglement_timer", 0.0) > 0:
