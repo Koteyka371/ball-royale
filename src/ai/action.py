@@ -5123,6 +5123,26 @@ class Action:
                     self.ball.hp = 0
                     self.ball.alive = False
                     self.ball.is_enraged = False
+
+                    # Explode on death
+                    max_hp = getattr(self.ball, "max_hp", 20.0)
+                    explosion_damage = max_hp * 0.5
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "damage": explosion_damage})
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                                dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
+                                if dist <= 80.0:
+                                    if hasattr(self.world, "_deal_damage"):
+                                        old_dmg = getattr(self.ball, "damage", 10.0)
+                                        self.ball.damage = explosion_damage
+                                        self.world._deal_damage(self.ball, b)
+                                        self.ball.damage = old_dmg
+                                    elif hasattr(b, "take_damage"):
+                                        b.take_damage(explosion_damage)
+                                    elif hasattr(b, "hp"):
+                                        b.hp -= explosion_damage
             # Check for elite minion evolution
             if not getattr(self.ball, "is_elite_minion", False):
                 if not hasattr(self.ball, "survival_time"):
