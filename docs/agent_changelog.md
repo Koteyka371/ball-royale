@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1333] Volcanic Eruption Event — *2026-07-22 08:04:23 UTC*
+
+During a 'Heatwave' weather event, volcanoes randomly erupt, launching fireballs across the arena. Fireballs leave temporary magma puddles on impact that deal high damage over time.
+
+---
+
 ## [idea-1266] Juggernaut Buff — *2026-07-22 08:04:17 UTC*
 
 A rare booster drop that massively increases size, health, and mass, but reduces speed. The juggernaut can push hazards into enemies easily.
