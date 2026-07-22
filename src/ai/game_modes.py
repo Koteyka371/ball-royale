@@ -32970,3 +32970,95 @@ class VIPProtectionMode(GameMode):
 GAME_MODES['vip_protection'] = VIPProtectionMode()
 
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode()
+
+
+class GravityShiftMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.id = "Gravity Shift"
+        self.name = "Gravity Shift"
+        self.description = "Gravity occasionally shifts, pulling balls towards the edges or a random point. High prestige players can deploy anchors."
+        self.shift_timer = 0.0
+        self.shift_duration = 0.0
+        self.shift_type = None
+        self.shift_point = (0.0, 0.0)
+        self.shift_strength = 200.0
+        self.anchor_duration = 5.0
+        self.anchors = []
+
+    def setup(self, world: Any, balls: List[Any]):
+        super().setup(world, balls)
+        self.shift_timer = getattr(self, "random", __import__("random")).uniform(5.0, 15.0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float):
+        super().tick(world, balls, delta)
+
+        # Manage anchors
+        for anchor in self.anchors[:]:
+            anchor['timer'] -= delta
+            if anchor['timer'] <= 0:
+                self.anchors.remove(anchor)
+
+        if self.shift_duration > 0:
+            self.shift_duration -= delta
+
+            for b in balls:
+                if not getattr(b, 'alive', True) or not getattr(b, 'active', True): continue
+                if getattr(b, 'ball_type', None) == 'spectator': continue
+
+                # Check for anchor
+                is_anchored = False
+                for anchor in self.anchors:
+                    if anchor['owner_id'] == getattr(b, 'id', None):
+                        is_anchored = True
+                        break
+
+                if is_anchored: continue
+
+                # Apply gravity
+                if self.shift_type == 'point':
+                    dx = self.shift_point[0] - b.x
+                    dy = self.shift_point[1] - b.y
+                    dist = (dx**2 + dy**2)**0.5
+                    if dist > 0:
+                        b.vx += (dx/dist) * self.shift_strength * delta
+                        b.vy += (dy/dist) * self.shift_strength * delta
+                elif self.shift_type == 'edges':
+                    # Push towards nearest edge (assuming standard arena bounds [-300, 300])
+                    # We'll just push outwards from center
+                    dist = (b.x**2 + b.y**2)**0.5
+                    if dist > 0:
+                        b.vx += (b.x/dist) * self.shift_strength * delta
+                        b.vy += (b.y/dist) * self.shift_strength * delta
+
+        else:
+            self.shift_timer -= delta
+            if self.shift_timer <= 0:
+                self.shift_duration = getattr(self, "random", __import__("random")).uniform(3.0, 8.0)
+                self.shift_timer = getattr(self, "random", __import__("random")).uniform(10.0, 20.0)
+                self.shift_type = getattr(self, "random", __import__("random")).choice(['point', 'edges'])
+                if self.shift_type == 'point':
+                    self.shift_point = (getattr(self, "random", __import__("random")).uniform(-200, 200), getattr(self, "random", __import__("random")).uniform(-200, 200))
+                if hasattr(world, 'add_event'):
+                    world.add_event("gravity_shift", {"type": self.shift_type, "duration": self.shift_duration})
+
+        # Player input for anchor
+        for b in balls:
+            if not getattr(b, 'alive', True) or not getattr(b, 'active', True): continue
+
+            # Simulated player input checking (action or key press)
+            # In AI script context, we might check an action flag
+            if getattr(b, 'prestige', 0) >= 3 and getattr(b, 'action_deploy_anchor', False):
+                b.action_deploy_anchor = False # Consume intent
+
+                # Check cooldown
+                if getattr(b, 'anchor_cooldown', 0) <= 0:
+                    b.anchor_cooldown = 15.0
+                    self.anchors.append({'owner_id': getattr(b, 'id', None), 'x': b.x, 'y': b.y, 'timer': self.anchor_duration})
+                    if hasattr(world, 'add_event'):
+                        world.add_event("anchor_deployed", {"owner": getattr(b, 'id', None)})
+
+            if hasattr(b, 'anchor_cooldown'):
+                b.anchor_cooldown -= delta
+
+GAME_MODES['gravity_shift'] = GravityShiftMode()

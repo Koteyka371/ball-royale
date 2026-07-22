@@ -51611,3 +51611,170 @@ class ElementalChainReactionMode extends GameMode:
 		name = "Elemental Chain Reactions"
 		description = "A game mode where elemental attacks trigger chain reactions. Hitting a burning ball with a water attack creates a massive steam explosion that blinds everyone nearby, while hitting a frozen ball with a fire attack instantly shatters their ice for massive burst damage."
 GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()
+GAME_MODES['gravity_shift'] = GravityShiftMode.new()
+
+
+class GravityShiftMode extends GameMode:
+    var shift_timer = 0.0
+    var shift_duration = 0.0
+    var shift_type = ""
+    var shift_point = Vector2(0.0, 0.0)
+    var shift_strength = 200.0
+    var anchor_duration = 5.0
+    var anchors = []
+    var random = RandomNumberGenerator.new()
+
+    func _init():
+        id = "Gravity Shift"
+        name = "Gravity Shift"
+        description = "Gravity occasionally shifts, pulling balls towards the edges or a random point. High prestige players can deploy anchors."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        random.randomize()
+        shift_timer = random.randf_range(5.0, 15.0)
+
+    func tick(world, balls, delta):
+        super.tick(world, balls, delta)
+
+        # Manage anchors
+        var new_anchors = []
+        for anchor in anchors:
+            anchor["timer"] -= delta
+            if anchor["timer"] > 0:
+                new_anchors.append(anchor)
+        anchors = new_anchors
+
+        if shift_duration > 0:
+            shift_duration -= delta
+
+            for b in balls:
+                var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
+                var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
+                if not is_alive or not is_active:
+                    continue
+
+                var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if b.has_meta("ball_type") else ""
+                if b_type == "spectator":
+                    continue
+
+                var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if b.has_meta("id") else null
+
+                # Check for anchor
+                var is_anchored = false
+                for anchor in anchors:
+                    if anchor["owner_id"] == b_id:
+                        is_anchored = true
+                        break
+
+                if is_anchored:
+                    continue
+
+                var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
+                var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
+
+                # Apply gravity
+                if shift_type == "point":
+                    var dx = shift_point.x - b_x
+                    var dy = shift_point.y - b_y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
+                        var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
+                        vx += (dx/dist) * shift_strength * delta
+                        vy += (dy/dist) * shift_strength * delta
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["vx"] = vx
+                            b["vy"] = vy
+                        else:
+                            b.set_meta("vx", vx)
+                            b.set_meta("vy", vy)
+                elif shift_type == "edges":
+                    var dist = sqrt(b_x*b_x + b_y*b_y)
+                    if dist > 0:
+                        var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
+                        var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
+                        vx += (b_x/dist) * shift_strength * delta
+                        vy += (b_y/dist) * shift_strength * delta
+                        if typeof(b) == TYPE_DICTIONARY:
+                            b["vx"] = vx
+                            b["vy"] = vy
+                        else:
+                            b.set_meta("vx", vx)
+                            b.set_meta("vy", vy)
+        else:
+            shift_timer -= delta
+            if shift_timer <= 0:
+                shift_duration = random.randf_range(3.0, 8.0)
+                shift_timer = random.randf_range(10.0, 20.0)
+                var choices = ["point", "edges"]
+                shift_type = choices[random.randi() % choices.size()]
+                if shift_type == "point":
+                    shift_point = Vector2(random.randf_range(-200.0, 200.0), random.randf_range(-200.0, 200.0))
+
+                var world_has_event = false
+                if typeof(world) == TYPE_DICTIONARY:
+                    if world.has("add_event"):
+                        world_has_event = true
+                else:
+                    if world.has_method("add_event"):
+                        world_has_event = true
+
+                if world_has_event:
+                    var event_data = {"type": shift_type, "duration": shift_duration}
+                    if typeof(world) == TYPE_DICTIONARY:
+                        world["add_event"].call("gravity_shift", event_data)
+                    else:
+                        world.add_event("gravity_shift", event_data)
+
+        # Player input for anchor
+        for b in balls:
+            var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
+            var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
+            if not is_alive or not is_active:
+                continue
+
+            var prestige = b.get("prestige") if typeof(b) == TYPE_DICTIONARY else b.get_meta("prestige") if b.has_meta("prestige") else 0
+            var deploy_anchor = b.get("action_deploy_anchor") if typeof(b) == TYPE_DICTIONARY else b.get_meta("action_deploy_anchor") if b.has_meta("action_deploy_anchor") else false
+
+            if prestige >= 3 and deploy_anchor:
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["action_deploy_anchor"] = false
+                else:
+                    b.set_meta("action_deploy_anchor", false)
+
+                var cooldown = b.get("anchor_cooldown") if typeof(b) == TYPE_DICTIONARY else b.get_meta("anchor_cooldown") if b.has_meta("anchor_cooldown") else 0.0
+
+                if cooldown <= 0:
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["anchor_cooldown"] = 15.0
+                    else:
+                        b.set_meta("anchor_cooldown", 15.0)
+
+                    var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get_meta("id") if b.has_meta("id") else null
+                    var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
+                    var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
+
+                    anchors.append({"owner_id": b_id, "x": b_x, "y": b_y, "timer": anchor_duration})
+
+                    var world_has_event = false
+                    if typeof(world) == TYPE_DICTIONARY:
+                        if world.has("add_event"):
+                            world_has_event = true
+                    else:
+                        if world.has_method("add_event"):
+                            world_has_event = true
+
+                    if world_has_event:
+                        var event_data = {"owner": b_id}
+                        if typeof(world) == TYPE_DICTIONARY:
+                            world["add_event"].call("anchor_deployed", event_data)
+                        else:
+                            world.add_event("anchor_deployed", event_data)
+
+            var cooldown = b.get("anchor_cooldown") if typeof(b) == TYPE_DICTIONARY else b.get_meta("anchor_cooldown") if b.has_meta("anchor_cooldown") else null
+            if cooldown != null:
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["anchor_cooldown"] = max(0.0, cooldown - delta)
+                else:
+                    b.set_meta("anchor_cooldown", max(0.0, cooldown - delta))
