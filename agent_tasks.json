@@ -23573,7 +23573,7 @@
     },
     {
       "id": "idea-1376",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Faction Alliances",
@@ -34959,6 +34959,91 @@
         "src/ai/quantum_tangle_ball.py",
         "src/ai/quantum_tangle_ball.gd",
         "tests/test_quantum_tangle_ball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2045",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Plates Mode",
+      "description": "An arena mode where the battle takes place on floating plates that slowly shrink and occasionally tilt, dropping inactive players into an abyss.",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_plates.py",
+        "src/ai/shrinking_safe_plates.gd",
+        "tests/test_shrinking_safe_plates.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2046",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Freezing Edge Mode",
+      "description": "Similar to Expanding Lava, but instead of the center expanding outward, the outer edges slowly freeze inward, slowing down players before fully trapping them in ice.",
+      "allowed_paths": [
+        "src/ai/freezing_edge.py",
+        "src/ai/freezing_edge.gd",
+        "tests/test_freezing_edge.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2047",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Auras",
+      "description": "A new aura type that doesn't provide stats directly, but instead echoes any active buffs on the player to the nearest ally at 50% effectiveness. The Echo Aura has a short duration and drops frequently in team-based game modes to encourage grouping.",
+      "allowed_paths": [
+        "src/ai/echo_auras.py",
+        "src/ai/echo_auras.gd",
+        "tests/test_echo_auras.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2048",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Displacement Mine",
+      "description": "A deployable hazard that, when triggered by an enemy, swaps the enemy's position with the trap's owner, regardless of distance. It can be used strategically for repositioning or to pull high-priority targets into danger.",
+      "allowed_paths": [
+        "src/ai/quantum_displacement_mine.py",
+        "src/ai/quantum_displacement_mine.gd",
+        "tests/test_quantum_displacement_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2049",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Temporal Anchor Booster",
+      "description": "A booster that records the player's current HP and position. After 5 seconds, the player is instantly reverted to the recorded HP and position, allowing for risky plays or immediate escape from bad engagements.",
+      "allowed_paths": [
+        "src/ai/temporal_anchor_booster.py",
+        "src/ai/temporal_anchor_booster.gd",
+        "tests/test_temporal_anchor_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

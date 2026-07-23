@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1376] Nemesis Faction Alliances — *2026-07-23 00:27:02 UTC*
+
+Players can pledge loyalty to their Nemesis, becoming an 'Enforcer' for them. As an Enforcer, the player gets a buff when fighting their Nemesis's enemies but receives a massive debuff if they accidentally damage the Nemesis themselves.
+
+---
+
 ## [idea-1372] Reverse Lava Mode — *2026-07-22 23:58:04 UTC*
 
 A battle royale variation where the center is lava and expands outwards, forcing players to eventually fight on the very edges of the map while dodging environmental hazards.
