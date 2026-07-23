@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1339] Quantum Tethers — *2026-07-23 04:46:08 UTC*
+
+Players can deploy a quantum tether that attaches to an enemy ball. For the next 5 seconds, any knockback or damage taken by the player is partially shared with the tethered enemy. If the enemy moves too far away, the tether violently snaps, causing significant damage and stunning both balls briefly.
+
+---
+
 ## [idea-1365] Solar Flare Event — *2026-07-23 04:46:03 UTC*
 
 A random arena-wide event that temporarily disables all deployable items and boosts, forcing players to rely entirely on core movement and positioning.
