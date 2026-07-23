@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1377] Seasonal Weather Hazards — *2026-07-23 06:08:35 UTC*
+
+Each season could introduce a specific weather hazard dynamically into the arena. For example, 'Abyssal' could spawn whirlpools that pull balls in, and 'Inferno' could occasionally drop meteors that deal AoE damage.
+
+---
+
 ## [idea-1390] Supernova Mine — *2026-07-23 05:56:02 UTC*
 
 A high-risk mine variant that takes 5 seconds to detonate. It projects an expanding aura showing the blast radius. If it detonates, it deals massive damage in a huge area and pushes all balls across the map, applying a blind effect to those looking towards it. Enemies can defuse it by staying within its core for 2 seconds before it blows.
