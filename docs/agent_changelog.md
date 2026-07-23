@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1396] Dynamic Day/Night Cycle Influencing Traits — *2026-07-23 15:45:56 UTC*
+
+Implement a Day/Night cycle where 'Light' units gain increased perception radius and speed during the day, while 'Shadow' units gain stealth and critical hit chance during the night, adding another layer of dynamic trait mechanics.
+
+---
+
 ## [idea-1399] Quantum Entanglement Transfer — *2026-07-23 10:31:07 UTC*
 
 A new hazard that randomly swaps the positions and momentum of two entangled balls when one takes massive damage.
