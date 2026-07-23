@@ -21279,6 +21279,58 @@ class DayNightMode extends GameMode:
 						if "speed" in b: b.speed = base_s * 0.8
 						if "damage" in b: b.damage = base_d * 0.8
 
+
+			# Trait: Light and Shadow for DayNight Cycle
+			var is_night = false
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+				is_night = world.arena.get("is_night", false)
+			elif world != null and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					is_night = world.arena.get("is_night", false)
+				elif "is_night" in world.arena:
+					is_night = world.arena.is_night
+
+			var has_light = b_type.find("light") != -1 or traits.has("light")
+			var has_shadow = b_type.find("shadow") != -1 or traits.has("shadow")
+
+			if has_light:
+				if not is_night:
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						var base_pr = b.get("base_perception_radius", b.get("perception_radius", 150.0))
+						b["speed"] = base_s * 1.3
+						b["perception_radius"] = base_pr * 1.5
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						var base_pr = b.get("base_perception_radius") if "base_perception_radius" in b else b.get("perception_radius", 150.0)
+						if "speed" in b: b.speed = base_s * 1.3
+						if "perception_radius" in b: b.perception_radius = base_pr * 1.5
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						if "base_speed" in b: b["speed"] = b["base_speed"]
+						if "base_perception_radius" in b: b["perception_radius"] = b["base_perception_radius"]
+					else:
+						if "base_speed" in b and "speed" in b: b.speed = b.base_speed
+						if "base_perception_radius" in b and "perception_radius" in b: b.perception_radius = b.base_perception_radius
+
+			if has_shadow:
+				if is_night:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["stealth"] = true
+						var base_cc = b.get("base_crit_chance", b.get("crit_chance", 0.0))
+						b["crit_chance"] = base_cc + 0.25
+					else:
+						if "stealth" in b: b.stealth = true
+						var base_cc = b.get("base_crit_chance") if "base_crit_chance" in b else b.get("crit_chance", 0.0)
+						if "crit_chance" in b: b.crit_chance = base_cc + 0.25
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["stealth"] = false
+						if "base_crit_chance" in b: b["crit_chance"] = b["base_crit_chance"]
+					else:
+						if "stealth" in b: b.stealth = false
+						if "base_crit_chance" in b and "crit_chance" in b: b.crit_chance = b.base_crit_chance
+
 			# Trait: Earth
 			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
 			if is_earth:
