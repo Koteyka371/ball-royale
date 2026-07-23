@@ -28493,7 +28493,83 @@ class SpawningSafeZonesMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("ball_died", {"id": b.id, "reason": "outside_safe_zone", "killer_id": -1})
 
+
+
+
+class FakeBountyMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Fake Bounties"
+        self.description = "Fake bounty targets randomly spawn. They explode into a poison cloud when destroyed."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 15.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        self.spawn_timer += delta
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+            spawn_x = random.uniform(100.0, arena_width - 100.0)
+            spawn_y = random.uniform(100.0, arena_height - 100.0)
+
+            fb_id = random.randint(100000, 999999)
+            if hasattr(world, "next_id"):
+                fb_id = world.next_id
+                world.next_id += 1
+
+            fake_bounty = FakeBountyBall(fb_id, spawn_x, spawn_y)
+            if hasattr(world, "balls"):
+                world.balls.append(fake_bounty)
+
+            # Emit ping
+            if hasattr(world, "events") and isinstance(world.events, list):
+                world.events.append(["bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id}])
+            elif hasattr(world, "add_event"):
+                world.add_event("bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id})
+
+        to_remove = []
+        for b in balls:
+            if getattr(b, "is_fake_bounty", False):
+                if getattr(b, "alive", True):
+                    if hasattr(b, "update"):
+                        b.update(delta, arena_width, arena_height)
+                else:
+                    to_remove.append(b)
+
+        if hasattr(world, "balls"):
+            for b in to_remove:
+                if b in world.balls:
+                    world.balls.remove(b)
+
+                # Explode and spawn poison puddle
+                # Hazard
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+
+                class FallbackHazard:
+                    def __init__(self, x, y):
+                        self.kind = "acid_puddle"
+                        self.x = x
+                        self.y = y
+                        self.radius = 100.0
+                        self.duration = 10.0
+                        self.active = True
+                        self.damage = 10.0
+
+                world.arena.hazards.append(FallbackHazard(b.x, b.y))
+
+                # Explosion event
+                if hasattr(world, "events") and isinstance(world.events, list):
+                    world.events.append(["explosion", {"x": float(b.x), "y": float(b.y), "radius": 100.0, "damage": 10.0}])
+                elif hasattr(world, "add_event"):
+                    world.add_event("explosion", {"x": float(b.x), "y": float(b.y), "radius": 100.0, "damage": 10.0})
+
+
 GAME_MODES = {
+    "fake_bounties_mutator": FakeBountyMutatorMode(),
     "snake_safe_zone": SnakeSafeZoneMode(),
     'lava_eruption_event': LavaEruptionEventMode(),
     "aura_siphon": AuraSiphonMode(),
@@ -34192,6 +34268,14 @@ class FakeBall:
         self.hp -= amount
         if self.hp <= 0:
             self.alive = False
+
+
+class FakeBountyBall(FakeBall):
+    def __init__(self, id_val, start_x, start_y):
+        super().__init__(id_val, start_x, start_y)
+        self.is_bounty = True
+        self.is_fake_bounty = True
+        self.is_bounty_target = True
 
 class MassDecoyEventMode(GameMode):
     def __init__(self):
