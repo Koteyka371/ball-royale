@@ -2750,6 +2750,45 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	if "burning_trail_timer" in self.ball and self.ball.burning_trail_timer > 0.0:
+		self.ball.burning_trail_timer -= delta
+		if "burning_trail_spawn_timer" in self.ball and self.ball.burning_trail_spawn_timer > 0.0:
+			self.ball.burning_trail_spawn_timer -= delta
+
+		if self.ball.burning_trail_timer < 0.0:
+			self.ball.burning_trail_timer = 0.0
+
+		if (!("burning_trail_spawn_timer" in self.ball) or self.ball.burning_trail_spawn_timer <= 0.0) and world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+			if abs(self.ball.vx) > 0.1 or abs(self.ball.vy) > 0.1:
+				self.ball.burning_trail_spawn_timer = 0.1
+				var trail = null
+				trail = {"id": world.get_arena().hazards.size() + 9000, "x": self.ball.x, "y": self.ball.y, "radius": self.ball.radius + 5.0, "kind": "burning_trail_puddle", "damage": 0.0, "active": true, "duration": 2.0}
+				trail["owner_id"] = self.ball.burning_trail_owner_id if "burning_trail_owner_id" in self.ball else -1
+				world.get_arena().hazards.append(trail)
+
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("burning_trail_timer") and self.ball.get_meta("burning_trail_timer") > 0.0:
+		var timer = self.ball.get_meta("burning_trail_timer")
+		timer -= delta
+		var spawn_timer = self.ball.get_meta("burning_trail_spawn_timer") if self.ball.has_meta("burning_trail_spawn_timer") else 0.0
+		if spawn_timer > 0.0:
+			spawn_timer -= delta
+		if timer < 0.0:
+			timer = 0.0
+		self.ball.set_meta("burning_trail_timer", timer)
+		self.ball.set_meta("burning_trail_spawn_timer", spawn_timer)
+
+		if spawn_timer <= 0.0 and world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+			var vx = self.ball.get_meta("vx") if self.ball.has_meta("vx") else (self.ball.vx if "vx" in self.ball else 0.0)
+			var vy = self.ball.get_meta("vy") if self.ball.has_meta("vy") else (self.ball.vy if "vy" in self.ball else 0.0)
+			if abs(vx) > 0.1 or abs(vy) > 0.1:
+				self.ball.set_meta("burning_trail_spawn_timer", 0.1)
+				var trail = null
+				var r = self.ball.get_meta("radius") if self.ball.has_meta("radius") else (self.ball.radius if "radius" in self.ball else 15.0)
+				var x = self.ball.get_meta("x") if self.ball.has_meta("x") else (self.ball.x if "x" in self.ball else 0.0)
+				var y = self.ball.get_meta("y") if self.ball.has_meta("y") else (self.ball.y if "y" in self.ball else 0.0)
+				trail = {"id": world.get_arena().hazards.size() + 9000, "x": x, "y": y, "radius": r + 5.0, "kind": "burning_trail_puddle", "damage": 0.0, "active": true, "duration": 2.0}
+				trail["owner_id"] = self.ball.get_meta("burning_trail_owner_id") if self.ball.has_meta("burning_trail_owner_id") else -1
+				world.get_arena().hazards.append(trail)
 	var wp_cosmetic: String = ""
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		wp_cosmetic = self.ball.get("cosmetic", "").to_lower().replace(" ", "_")
@@ -15966,6 +16005,21 @@ func execute(strategy: String, delta: float):
                                     hazard.duration = 0.0
                                 elif typeof(hazard) == TYPE_DICTIONARY:
                                     hazard["duration"] = 0.0
+                            elif trap_variant == "burning_trail":
+                                var h_own = hazard.get_meta("owner_id") if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else (hazard["owner_id"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else -1))
+                                if "burning_trail_timer" in self.ball:
+                                    self.ball.burning_trail_timer = max(self.ball.burning_trail_timer, 10.0)
+                                    self.ball.burning_trail_owner_id = h_own
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("burning_trail_timer", max(self.ball.get_meta("burning_trail_timer") if self.ball.has_meta("burning_trail_timer") else 0.0, 10.0))
+                                    self.ball.set_meta("burning_trail_owner_id", h_own)
+
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "tar":
                                 if "speed_multiplier" in self.ball:
                                     self.ball.speed_multiplier *= 0.2
@@ -18707,6 +18761,16 @@ func execute(strategy: String, delta: float):
                                 if cur_def < 1.0:
                                     self.ball.set_meta("defense_multiplier", min(1.0, cur_def + 0.5 * delta))
                         continue
+                elif hazard.kind == "burning_trail_puddle":
+                    var h_owner = hazard.get_meta("owner_id") if hazard.has_method("has_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else (hazard["owner_id"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else -1))
+                    var b_id = self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else -2)
+                    if h_owner != b_id:
+                        if self.ball.has_method("take_damage"):
+                            self.ball.take_damage(20.0 * delta)
+                        elif "hp" in self.ball:
+                            self.ball.hp -= 20.0 * delta
+                        elif self.ball.has_method("set_meta") and self.ball.has_meta("hp"):
+                            self.ball.set_meta("hp", self.ball.get_meta("hp") - 20.0 * delta)
                 elif hazard.kind == "tar_puddle":
                     var current_slow = 0.0
                     if "slow_timer" in self.ball: current_slow = self.ball.slow_timer

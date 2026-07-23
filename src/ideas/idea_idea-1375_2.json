@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Rebound Mine",
+  "description": "A throwable mine that arms after hitting the ground. Instead of detonating based on proximity, it absorbs all kinetic energy from projectiles or physical impacts in a small radius. When its capacity is reached, it explodes violently, dealing damage proportional to the absorbed energy and launching everyone nearby."
+}
