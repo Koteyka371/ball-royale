@@ -2625,6 +2625,33 @@ class GameMode:
 								elif typeof(d) == TYPE_DICTIONARY and d.has("x"): d["x"] += (vx/dist) * speed
 								if "y" in d: d.y += (vy/dist) * speed
 								elif typeof(d) == TYPE_DICTIONARY and d.has("y"): d["y"] += (vy/dist) * speed
+								var p_timer = 0.0
+								if "ping_timer" in d: p_timer = d.ping_timer
+								elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("ping_timer"): p_timer = d.get_meta("ping_timer")
+								elif typeof(d) == TYPE_DICTIONARY and d.has("ping_timer"): p_timer = d["ping_timer"]
+								p_timer += delta
+								if p_timer >= 2.0:
+									p_timer = 0.0
+									var dx_curr = 0.0
+									var dy_curr = 0.0
+									if "x" in d: dx_curr = d.x
+									elif typeof(d) == TYPE_DICTIONARY and d.has("x"): dx_curr = d["x"]
+									if "y" in d: dy_curr = d.y
+									elif typeof(d) == TYPE_DICTIONARY and d.has("y"): dy_curr = d["y"]
+									var ev1 = {"type": "nemesis_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": d_owner_id}}
+									var ev2 = {"type": "visual_effect", "data": {"type": "line", "x": float(dx_curr), "y": float(dy_curr), "tx": float(nx), "ty": float(ny), "color": "red"}}
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+										world.add_event("nemesis_compass", ev1.data)
+										world.add_event("visual_effect", ev2.data)
+									elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+										world.events.append(ev1)
+										world.events.append(ev2)
+									elif typeof(world) == TYPE_OBJECT and "events" in world:
+										world.events.append(ev1)
+										world.events.append(ev2)
+								if "ping_timer" in d: d.ping_timer = p_timer
+								elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("ping_timer", p_timer)
+								elif typeof(d) == TYPE_DICTIONARY: d["ping_timer"] = p_timer
 								var r_nem = 10.0
 								if "radius" in nemesis: r_nem = nemesis.radius
 								elif typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("get") and nemesis.get("radius") != null: r_nem = nemesis.get("radius")

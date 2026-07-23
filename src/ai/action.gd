@@ -25847,6 +25847,28 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "nemesis_drone_booster":
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var d = {}
+                    d["id"] = 999000 + self.world.arena.hazards.size()
+                    d["x"] = self.ball.x
+                    d["y"] = self.ball.y
+                    d["radius"] = 8.0
+                    d["kind"] = "nemesis_drone"
+                    d["damage"] = 15.0
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("id") != null: b_id = self.ball.get("id")
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+                    d["owner_id"] = b_id
+                    d["duration"] = 30.0
+                    self.world.arena.hazards.append(d)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "flashbang_booster":
                 for i in range(3):
                     var clone = null
