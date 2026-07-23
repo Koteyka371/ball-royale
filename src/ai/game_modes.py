@@ -27939,6 +27939,84 @@ class AuraSiphonMode(GameMode):
         self.name = "Aura Siphon"
         self.description = "Friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves."
 
+
+class SpawningSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Spawning Safe Zones"
+        self.description = "Safe zones periodically spawn and shrink. Players outside the safe zone take increasing damage over time."
+        self.zones = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 10.0
+        self.shrink_rate = 15.0
+        self.outside_damage = 5.0
+        self.damage_increase_rate = 1.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.zones = []
+        self.spawn_timer = 0.0
+        self.outside_damage = 5.0
+        self._spawn_zone(world)
+
+    def _spawn_zone(self, world):
+        import random
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        x = 200.0 + random.random() * max(0.0, arena_width - 400.0)
+        y = 200.0 + random.random() * max(0.0, arena_height - 400.0)
+        radius = 300.0 + random.random() * 200.0
+        self.zones.append({"x": x, "y": y, "radius": radius})
+        if hasattr(world, "add_event"):
+            world.add_event("safe_zone_spawned", {"x": x, "y": y, "radius": radius})
+
+    def tick(self, world, balls, delta=0.016):
+        self.spawn_timer += delta
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer -= self.spawn_interval
+            self._spawn_zone(world)
+
+        self.outside_damage += self.damage_increase_rate * delta
+
+        # Shrink and remove depleted zones
+        active_zones = []
+        for zone in self.zones:
+            zone["radius"] -= self.shrink_rate * delta
+            if zone["radius"] > 0:
+                active_zones.append(zone)
+        self.zones = active_zones
+
+        damage_this_tick = self.outside_damage * delta
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            in_safe_zone = False
+            for zone in self.zones:
+                dx = b.x - zone["x"]
+                dy = b.y - zone["y"]
+                if dx*dx + dy*dy <= zone["radius"]*zone["radius"]:
+                    in_safe_zone = True
+                    break
+
+            if not in_safe_zone:
+                if hasattr(b, "take_damage"):
+                    b.take_damage(damage_this_tick, "outside_safe_zone")
+                else:
+                    b.hp -= damage_this_tick
+
+                if b.hp <= 0 and getattr(b, "alive", False):
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(b, "id") and b.id not in world.dead_balls:
+                        world.dead_balls.append(b.id)
+                    if hasattr(world, "add_event"):
+                        world.add_event("ball_died", {"id": b.id, "reason": "outside_safe_zone", "killer_id": -1})
+
 GAME_MODES = {
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
@@ -35437,3 +35515,4 @@ class ItemJammerEventMode(GameMode):
                     b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
 
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode()
+GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode()
