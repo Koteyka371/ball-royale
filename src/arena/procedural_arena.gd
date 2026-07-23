@@ -183,6 +183,8 @@ func generate():
             kind = "swap_trap"
         elif r < 0.15:
             kind = "shuffle_trap"
+        elif r < 0.16:
+            kind = "slow_motion_trap"
         elif r < 0.25:
             kind = "lava"
         elif r < 0.34:
@@ -663,7 +665,7 @@ func update_zone(current_tick: int, delta: float) -> void:
             if h.kind == "avalanche":
                 h.y += h.get_meta("vy") * delta if h.has_meta("vy") else 60.0 * delta
                 for other in hazards:
-                    if other.kind in ["trap", "explosive_barrel", "sticky_mine", "puddle", "ice_patch", "spikes", "swap_trap", "shuffle_trap", "proximity_trap"]:
+                    if other.kind in ["trap", "explosive_barrel", "sticky_mine", "puddle", "ice_patch", "spikes", "swap_trap", "shuffle_trap", "slow_motion_trap", "proximity_trap"]:
                         var dist_sq = (h.x - other.x)*(h.x - other.x) + (h.y - other.y)*(h.y - other.y)
                         if dist_sq < h.radius * h.radius:
                             other.is_hidden = true

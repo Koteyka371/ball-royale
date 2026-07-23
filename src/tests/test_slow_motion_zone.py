@@ -97,3 +97,25 @@ def test_slow_motion_zone_projectile_suspension():
     # Projectile should resume and hit
     assert len(attacker.suspended_projectiles) == 0
     assert target.hp <= 90 # Damage taken
+
+def test_slow_motion_trap_speed():
+    world = DummyWorld()
+    ball = DummyBall()
+    ball.x = 0
+    ball.y = 0
+
+    action = Action(1, world)
+    action.ball = ball
+
+    world.arena.hazards.append(DummyHazard(0, 0, 50.0, "slow_motion_trap"))
+
+    action.execute("idle", 1.0)
+
+    # speed and multiplier should be 0.2
+    assert getattr(ball, "slow_motion_zone_active", False) == True
+    assert getattr(ball, "speed", 0.0) == 20.0
+    assert getattr(ball, "speed_multiplier", 1.0) == 0.2
+
+    # skill_timer was 5.0, normally decreases by 1.0, but with zone decreases by 0.5 (since slow_motion_zone_active is True, it gets 0.5 mult)
+    import math
+    assert math.isclose(ball.skill_timer, 4.5)
