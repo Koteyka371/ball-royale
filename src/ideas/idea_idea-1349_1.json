@@ -1,0 +1,4 @@
+{
+  "title": "Aura Disruption Field Generator",
+  "description": "A deployable zone generator that nullifies any active friendly or enemy aura effects within its radius. Useful for shutting down coordinated teams relying heavily on stacked aura buffs like vampirism or damage reflection during engagements."
+}
