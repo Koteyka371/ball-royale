@@ -20597,6 +20597,45 @@ class Action:
                 self.ball.acid_debuff_stacks = 0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
+        if getattr(self.ball, "corrosive_debuff_timer", 0.0) > 0:
+            self.ball.corrosive_debuff_timer -= delta
+            stacks = getattr(self.ball, "corrosive_debuff_stacks", 1)
+            if hasattr(self.ball, "hp"):
+                self.ball.hp -= (5.0 * stacks) * delta
+                if self.ball.hp <= 0 and getattr(self.ball, "alive", True):
+                    self.ball.alive = False
+                    self.ball.hp = 0
+                    self.ball.killer = "corrosive_debuff"
+
+                if getattr(self.ball, "hp", 1.0) <= 0 or not getattr(self.ball, "alive", True):
+                    if getattr(self.ball, "corrosive_exploded", False) == False:
+                        self.ball.corrosive_exploded = True
+                        if hasattr(self.world, "balls"):
+                            import math
+                            radius = 100.0 + (10.0 * stacks)
+                            damage = 20.0 + (10.0 * stacks)
+                            if hasattr(self.world, "events") and isinstance(self.world.events, list):
+                                self.world.events.append(["explosion", {"x": self.ball.x, "y": self.ball.y, "radius": radius, "damage": damage}])
+                            elif hasattr(self.world, "add_event"):
+                                self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": radius, "damage": damage})
+                            for b in self.world.balls:
+                                if b != self.ball and getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                                    dist = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
+                                    if dist <= radius:
+                                        if getattr(b, "alive", True):
+                                            if hasattr(b, "take_damage"):
+                                                b.take_damage(damage)
+                                            elif hasattr(b, "hp"):
+                                                b.hp -= damage
+                                                if b.hp <= 0:
+                                                    b.alive = False
+                                        b.corrosive_debuff_timer = 5.0
+                                        b.corrosive_debuff_stacks = getattr(b, "corrosive_debuff_stacks", 0) + stacks + 1
+
+            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * max(0.2, 1.0 - 0.1 * stacks)
+            if self.ball.corrosive_debuff_timer <= 0:
+                self.ball.corrosive_debuff_stacks = 0
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
 
         if getattr(self.ball, "time_warp_slow_timer", 0.0) > 0:

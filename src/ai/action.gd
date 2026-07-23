@@ -40339,6 +40339,208 @@ func _update_skill_timer(delta: float):
         self.ball.acid_debuff_timer = acid_timer
 
 
+    var corrosive_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("corrosive_debuff_timer"):
+        corrosive_timer = float(self.ball.get_meta("corrosive_debuff_timer"))
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("corrosive_debuff_timer"):
+        corrosive_timer = float(self.ball["corrosive_debuff_timer"])
+    elif typeof(self.ball) == TYPE_OBJECT and "corrosive_debuff_timer" in self.ball:
+        corrosive_timer = float(self.ball.corrosive_debuff_timer)
+
+    if corrosive_timer > 0.0:
+        corrosive_timer -= delta
+
+        var stacks = 1
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("corrosive_debuff_stacks"):
+            stacks = int(self.ball.get_meta("corrosive_debuff_stacks"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("corrosive_debuff_stacks"):
+            stacks = int(self.ball["corrosive_debuff_stacks"])
+        elif typeof(self.ball) == TYPE_OBJECT and "corrosive_debuff_stacks" in self.ball:
+            stacks = int(self.ball.corrosive_debuff_stacks)
+
+        var b_alive = true
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get"):
+            b_alive = self.ball.get("alive") if self.ball.get("alive") != null else true
+        elif "alive" in self.ball:
+            b_alive = self.ball.alive
+
+        var current_hp = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("hp") != null:
+            current_hp = float(self.ball.get("hp"))
+        elif "hp" in self.ball:
+            current_hp = float(self.ball.hp)
+
+        if b_alive:
+            current_hp -= (5.0 * float(stacks)) * delta
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+                self.ball.set("hp", current_hp)
+            elif "hp" in self.ball:
+                self.ball.hp = current_hp
+
+            if current_hp <= 0:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+                    self.ball.set("alive", false)
+                    self.ball.set("hp", 0.0)
+                    self.ball.set("killer", "corrosive_debuff")
+                elif "alive" in self.ball:
+                    self.ball.alive = false
+                    self.ball.hp = 0.0
+                    self.ball.killer = "corrosive_debuff"
+
+        var already_exploded = false
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("corrosive_exploded"):
+            already_exploded = bool(self.ball.get_meta("corrosive_exploded"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("corrosive_exploded"):
+            already_exploded = bool(self.ball["corrosive_exploded"])
+        elif typeof(self.ball) == TYPE_OBJECT and "corrosive_exploded" in self.ball:
+            already_exploded = bool(self.ball.corrosive_exploded)
+
+        if current_hp <= 0 or not b_alive:
+            if not already_exploded:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("corrosive_exploded", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["corrosive_exploded"] = true
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    self.ball.corrosive_exploded = true
+
+                var radius = 100.0 + (10.0 * float(stacks))
+                var explode_damage = 20.0 + (10.0 * float(stacks))
+
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get"):
+                    bx = float(self.ball.get("x")) if self.ball.get("x") != null else 0.0
+                    by = float(self.ball.get("y")) if self.ball.get("y") != null else 0.0
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    bx = float(self.ball.get("x", 0.0))
+                    by = float(self.ball.get("y", 0.0))
+                else:
+                    bx = self.ball.x if "x" in self.ball else 0.0
+                    by = self.ball.y if "y" in self.ball else 0.0
+
+                if self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                    self.world.add_event("explosion", {"x": bx, "y": by, "radius": radius, "damage": explode_damage, "color": "green"})
+
+                if self.world != null and "balls" in self.world:
+                    var my_team = ""
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get"):
+                        my_team = self.ball.get("team") if self.ball.get("team") != null else ""
+                    elif "team" in self.ball:
+                        my_team = self.ball.team
+
+                    for other_b in self.world.balls:
+                        var same = false
+                        if typeof(self.ball) == TYPE_OBJECT and typeof(other_b) == TYPE_OBJECT:
+                            same = (self.ball == other_b)
+                        elif typeof(self.ball) == TYPE_DICTIONARY and typeof(other_b) == TYPE_DICTIONARY:
+                            same = (self.ball.get("id") == other_b.get("id") and self.ball.get("id") != null)
+
+                        if not same:
+                            var o_team = ""
+                            if typeof(other_b) == TYPE_OBJECT and other_b.has_method("get"):
+                                o_team = other_b.get("team") if other_b.get("team") != null else ""
+                            elif "team" in other_b:
+                                o_team = other_b.team
+
+                            if o_team != my_team:
+                                var ox = 0.0
+                                var oy = 0.0
+                                if typeof(other_b) == TYPE_OBJECT and other_b.has_method("get"):
+                                    ox = float(other_b.get("x")) if other_b.get("x") != null else 0.0
+                                    oy = float(other_b.get("y")) if other_b.get("y") != null else 0.0
+                                elif typeof(other_b) == TYPE_DICTIONARY:
+                                    ox = float(other_b.get("x", 0.0))
+                                    oy = float(other_b.get("y", 0.0))
+                                else:
+                                    ox = other_b.x if "x" in other_b else 0.0
+                                    oy = other_b.y if "y" in other_b else 0.0
+
+                                var dist = sqrt(pow(ox - bx, 2) + pow(oy - by, 2))
+                                if dist <= radius:
+                                    var o_alive = true
+                                    if typeof(other_b) == TYPE_OBJECT and other_b.has_method("get"):
+                                        o_alive = other_b.get("alive") if other_b.get("alive") != null else true
+                                    elif "alive" in other_b:
+                                        o_alive = other_b.alive
+
+                                    if o_alive:
+                                        if typeof(other_b) == TYPE_OBJECT and other_b.has_method("take_damage"):
+                                            other_b.take_damage(explode_damage)
+                                        else:
+                                            var o_hp = 100.0
+                                            if typeof(other_b) == TYPE_OBJECT and other_b.has_method("get") and other_b.get("hp") != null:
+                                                o_hp = float(other_b.get("hp"))
+                                            elif "hp" in other_b:
+                                                o_hp = float(other_b.hp)
+
+                                            o_hp -= explode_damage
+
+                                            if typeof(other_b) == TYPE_OBJECT and other_b.has_method("set"):
+                                                other_b.set("hp", o_hp)
+                                            elif "hp" in other_b:
+                                                other_b.hp = o_hp
+
+                                            if o_hp <= 0:
+                                                if typeof(other_b) == TYPE_OBJECT and other_b.has_method("set"):
+                                                    other_b.set("alive", false)
+                                                elif "alive" in other_b:
+                                                    other_b.alive = false
+
+                                    var curr_o_stacks = 0
+                                    if typeof(other_b) == TYPE_OBJECT and other_b.has_method("has_meta") and other_b.has_meta("corrosive_debuff_stacks"):
+                                        curr_o_stacks = int(other_b.get_meta("corrosive_debuff_stacks"))
+                                    elif typeof(other_b) == TYPE_DICTIONARY and other_b.has("corrosive_debuff_stacks"):
+                                        curr_o_stacks = int(other_b["corrosive_debuff_stacks"])
+                                    elif typeof(other_b) == TYPE_OBJECT and "corrosive_debuff_stacks" in other_b:
+                                        curr_o_stacks = int(other_b.corrosive_debuff_stacks)
+
+                                    if typeof(other_b) == TYPE_OBJECT and other_b.has_method("set_meta"):
+                                        other_b.set_meta("corrosive_debuff_timer", 5.0)
+                                        other_b.set_meta("corrosive_debuff_stacks", curr_o_stacks + stacks + 1)
+                                    elif typeof(other_b) == TYPE_DICTIONARY:
+                                        other_b["corrosive_debuff_timer"] = 5.0
+                                        other_b["corrosive_debuff_stacks"] = curr_o_stacks + stacks + 1
+                                    elif typeof(other_b) == TYPE_OBJECT:
+                                        other_b.corrosive_debuff_timer = 5.0
+                                        other_b.corrosive_debuff_stacks = curr_o_stacks + stacks + 1
+
+        var base_spd = 2.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("base_speed") != null:
+            base_spd = float(self.ball.get("base_speed"))
+        elif "base_speed" in self.ball:
+            base_spd = float(self.ball.base_speed)
+
+        var new_spd = base_spd * max(0.2, 1.0 - 0.1 * float(stacks))
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+            self.ball.set("speed", new_spd)
+        elif "speed" in self.ball:
+            self.ball.speed = new_spd
+
+        if corrosive_timer <= 0:
+            corrosive_timer = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("corrosive_debuff_stacks", 0)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["corrosive_debuff_stacks"] = 0
+            elif typeof(self.ball) == TYPE_OBJECT and "corrosive_debuff_stacks" in self.ball:
+                self.ball.corrosive_debuff_stacks = 0
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+                self.ball.set("speed", base_spd)
+            elif "speed" in self.ball:
+                self.ball.speed = base_spd
+
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+        self.ball.set_meta("corrosive_debuff_timer", corrosive_timer)
+    elif typeof(self.ball) == TYPE_DICTIONARY:
+        self.ball["corrosive_debuff_timer"] = corrosive_timer
+    elif typeof(self.ball) == TYPE_OBJECT and "corrosive_debuff_timer" in self.ball:
+        self.ball.corrosive_debuff_timer = corrosive_timer
+
+
     var acid_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("acid_debuff_timer"):
         acid_timer = float(self.ball.get_meta("acid_debuff_timer"))
