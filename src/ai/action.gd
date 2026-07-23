@@ -1275,6 +1275,23 @@ func _attempt_damage_internal(attacker, target) -> void:
 				attacker.hp -= refl_dmg
 		return
 
+	var passive_reflect = 0.0
+	if "passive_reflect_percent" in target:
+		passive_reflect = float(target.passive_reflect_percent)
+	elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("passive_reflect_percent"):
+		passive_reflect = float(target.get_meta("passive_reflect_percent"))
+	if passive_reflect > 0.0:
+		var base_dmg_refl = 10.0
+		if "damage" in attacker: base_dmg_refl = float(attacker.damage)
+		var refl_dmg = base_dmg_refl * passive_reflect
+		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("take_damage"):
+			attacker.take_damage(refl_dmg)
+		elif "hp" in attacker:
+			if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
+				attacker.set_meta("hp", attacker.hp - refl_dmg)
+			else:
+				attacker.hp -= refl_dmg
+
 	var has_damage_reflection = false
 	if "damage_reflection_active" in target and target.damage_reflection_active:
 		has_damage_reflection = true
