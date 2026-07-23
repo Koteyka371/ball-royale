@@ -27938,8 +27938,10 @@ class AuraSiphonMode(GameMode):
         super().__init__()
         self.name = "Aura Siphon"
         self.description = "Friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves."
+from ai.lava_eruption import LavaEruptionEventMode
 
 GAME_MODES = {
+    'lava_eruption_event': LavaEruptionEventMode(),
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
     'massive_pinball_arena': MassivePinballArenaMode(),
