@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Mine",
+  "description": "A deployable mine that, instead of detonating, swaps the positions of the triggering enemy and the owner of the mine. Useful for trapping enemies in bad positions or escaping from dangerous situations by baiting."
+}
