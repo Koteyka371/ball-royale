@@ -1176,6 +1176,30 @@ class GameMode:
                     try:
                         from arena.procedural_arena import Hazard
                         import random
+
+                        # Existing hazards interact with the seasonal theme
+                        for hz in world.arena.hazards:
+                            if getattr(hz, "kind", "") == "trap":
+                                if random.random() < 0.3:
+                                    if theme == "Frost":
+                                        hz.kind = "ice_patch"
+                                        hz.damage = 0.0
+                                        setattr(hz, "duration", 10.0)
+                                    elif theme == "Inferno":
+                                        hz.kind = "fire_zone"
+                                        hz.damage = 30.0
+                                        setattr(hz, "duration", 10.0)
+                                    elif theme == "Void":
+                                        hz.kind = "black_hole"
+                                        hz.damage = 5.0
+                                        setattr(hz, "pull_strength", 50.0)
+                                        setattr(hz, "duration", 8.0)
+                                    elif theme == "Abyssal":
+                                        hz.kind = "whirlpool"
+                                        hz.damage = 0.0
+                                        setattr(hz, "pull_strength", 50.0)
+                                        setattr(hz, "duration", 12.0)
+
                         arena_w = getattr(world.arena, "width", 800.0)
                         arena_h = getattr(world.arena, "height", 600.0)
                         hx = random.uniform(50, arena_w - 50)

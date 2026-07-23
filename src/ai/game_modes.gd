@@ -1612,6 +1612,36 @@ class GameMode:
 					if has_hazards:
 						var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
 						if ProceduralArenaScript != null:
+							var h_arr = []
+							if typeof(arena_ref) == TYPE_DICTIONARY:
+								h_arr = arena_ref["hazards"]
+							else:
+								h_arr = arena_ref.hazards
+
+							for hz in h_arr:
+								if typeof(hz) == TYPE_OBJECT and "kind" in hz and hz.kind == "trap":
+									if randf() < 0.3:
+										if theme == "Frost":
+											hz.kind = "ice_patch"
+											if "damage" in hz: hz.damage = 0.0
+											if hz.has_method("set_meta"): hz.set_meta("duration", 10.0)
+										elif theme == "Inferno":
+											hz.kind = "fire_zone"
+											if "damage" in hz: hz.damage = 30.0
+											if hz.has_method("set_meta"): hz.set_meta("duration", 10.0)
+										elif theme == "Void":
+											hz.kind = "black_hole"
+											if "damage" in hz: hz.damage = 5.0
+											if hz.has_method("set_meta"):
+												hz.set_meta("pull_strength", 50.0)
+												hz.set_meta("duration", 8.0)
+										elif theme == "Abyssal":
+											hz.kind = "whirlpool"
+											if "damage" in hz: hz.damage = 0.0
+											if hz.has_method("set_meta"):
+												hz.set_meta("pull_strength", 50.0)
+												hz.set_meta("duration", 12.0)
+
 							var arena_w = 800.0
 							var arena_h = 600.0
 							if typeof(arena_ref) == TYPE_DICTIONARY:
