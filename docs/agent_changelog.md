@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1388] Quantum Leap Boots — *2026-07-23 07:55:53 UTC*
+
+A new booster that allows players to instantly teleport a short distance forward, bypassing hazards, walls, and other players, but with a high stamina cost per use.
+
+---
+
 ## [idea-1378] Quantum Teleportation Relay — *2026-07-23 07:55:48 UTC*
 
 A deployable structure (similar to a hazard) that allows balls to instantly teleport between two paired relays on the map. This introduces new strategic positioning and ambush opportunities, especially in larger or compartmentalized arenas.
