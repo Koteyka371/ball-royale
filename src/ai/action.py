@@ -1157,6 +1157,17 @@ class Action:
             if damage_dealt > 0:
                 heal_amount = damage_dealt * 2.0
                 attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
+        if getattr(self.world, "mode", None) and getattr(self.world.mode, "name", "") == "Nemesis Sustenance" or getattr(self.world, "game_mode", None) and getattr(self.world.game_mode, "name", "") == "Nemesis Sustenance":
+            pm_local = getattr(self.world, 'profile_manager', None)
+            if pm_local and hasattr(pm_local, 'is_nemesis'):
+                att_b_type = getattr(attacker, 'ball_type', None)
+                tgt_b_type = getattr(target, 'ball_type', None)
+                if att_b_type and tgt_b_type and pm_local.is_nemesis(att_b_type, tgt_b_type):
+                    damage_dealt = max(0, old_hp - new_hp)
+                    if damage_dealt > 0:
+                        heal_amount = damage_dealt * 1.5
+                        attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
+
 
         # Apply Necromancer healing on attack logic
         # Check if attacker is necromancer and if so, check for minions within range

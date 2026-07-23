@@ -45839,7 +45839,14 @@ class RicochetArenaMode extends GameMode:
 		self.description = "Arena walls apply a massive velocity multiplier on bounce."
 		self.velocity_multiplier = 3.0
 
+class NemesisSustenanceMode extends GameMode:
+	func _init():
+		super()
+		self.name = "Nemesis Sustenance"
+		self.description = "Dealing damage to your nemesis heals you."
+
 GAME_MODES = {
+	"nemesis_sustenance": NemesisSustenanceMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
     "ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),

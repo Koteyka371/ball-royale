@@ -2267,6 +2267,44 @@ func _attempt_damage_internal(attacker, target) -> void:
 	var new_hp = 0.0
 	if "hp" in target: new_hp = float(target.hp)
 
+
+	var tgt_btype = ""
+	if typeof(target) == TYPE_OBJECT and "ball_type" in target: tgt_btype = target.ball_type
+	elif typeof(target) == TYPE_DICTIONARY and target.has("ball_type"): tgt_btype = target.ball_type
+
+	if typeof(self.world) == TYPE_OBJECT:
+		var mode_name = ""
+		if "mode" in self.world and self.world.mode != null and typeof(self.world.mode) == TYPE_OBJECT and "name" in self.world.mode:
+			mode_name = self.world.mode.name
+		elif "game_mode" in self.world and self.world.game_mode != null and typeof(self.world.game_mode) == TYPE_OBJECT and "name" in self.world.game_mode:
+			mode_name = self.world.game_mode.name
+
+		if mode_name == "Nemesis Sustenance":
+			var pm = null
+			if "profile_manager" in self.world:
+				pm = self.world.profile_manager
+			var att_b_type = ""
+			if typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker: att_b_type = attacker.ball_type
+			elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("ball_type"): att_b_type = attacker.ball_type
+			if pm != null and pm.has_method("is_nemesis") and att_b_type != "" and tgt_btype != "":
+				if pm.is_nemesis(att_b_type, tgt_btype):
+					var damage_dealt = max(0, old_hp - new_hp)
+					if damage_dealt > 0:
+						var heal_amount = damage_dealt * 1.5
+						var a_hp = 100.0
+						var a_max_hp = 100.0
+						if typeof(attacker) == TYPE_OBJECT:
+							if "hp" in attacker: a_hp = attacker.hp
+							if "max_hp" in attacker: a_max_hp = attacker.max_hp
+						elif typeof(attacker) == TYPE_DICTIONARY:
+							if attacker.has("hp"): a_hp = attacker.hp
+							if attacker.has("max_hp"): a_max_hp = attacker.max_hp
+						var new_attacker_hp = min(a_hp + heal_amount, a_max_hp)
+						if typeof(attacker) == TYPE_OBJECT and "hp" in attacker:
+							attacker.hp = new_attacker_hp
+						elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"):
+							attacker["hp"] = new_attacker_hp
+
 	if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:

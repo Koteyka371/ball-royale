@@ -28679,7 +28679,14 @@ class RicochetArenaMode(GameMode):
         super().tick(world, balls, delta)
         # Bouncing logic is handled in action.py _clamp_position for this mode
 
+class NemesisSustenanceMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nemesis Sustenance"
+        self.description = "Dealing damage to your nemesis heals you."
+
 GAME_MODES = {
+    "nemesis_sustenance": NemesisSustenanceMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
     "snake_safe_zone": SnakeSafeZoneMode(),
