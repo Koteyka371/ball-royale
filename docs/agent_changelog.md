@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1411] Aura Syphoning Skill — *2026-07-23 19:40:46 UTC*
+
+A new active skill that allows a ball to latch onto an enemy's positive buffs (like insulator, kinetic shield, or speed boost) and drain their remaining duration, converting it into health or applying the buff to themselves. If the target has no positive buffs, it deals direct damage instead.
+
+---
+
 ## [idea-1293] Quantum Entanglement Trait — *2026-07-23 19:24:58 UTC*
 
 A rare starting trait where two players are quantum entangled. Whatever damage or healing one receives, the other receives 50% of it. However, if one player is eliminated, the other gains a massive permanent speed and damage boost (Enraged State).

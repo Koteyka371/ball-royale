@@ -24171,7 +24171,7 @@
     },
     {
       "id": "idea-1411",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Syphoning Skill",
@@ -35537,6 +35537,57 @@
         "src/ai/anomaly_zones.py",
         "src/ai/anomaly_zones.gd",
         "tests/test_anomaly_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2079",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Amplifier Trap",
+      "description": "A placeable trap that absorbs kinetic energy from passing friendly balls (increasing their speed slightly) and violently releases it when an enemy approaches, dealing immense knockback.",
+      "allowed_paths": [
+        "src/arena/kinetic_amplifier_trap.py",
+        "src/arena/kinetic_amplifier_trap.gd",
+        "tests/test_kinetic_amplifier_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2080",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Nullifier Field",
+      "description": "A stationary gadget that emits a continuous anti-magic field. Any balls within its radius immediately lose all active aura buffs and cannot re-apply them until they exit the zone, creating safe havens against aura-heavy teams.",
+      "allowed_paths": [
+        "src/ai/aura_nullifier_field.py",
+        "src/ai/aura_nullifier_field.gd",
+        "tests/test_aura_nullifier_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2081",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Swap Event",
+      "description": "A random arena event that selects two random alive balls (from different teams, if possible) and swaps their physical positions after a short delay, with a visual indicator beforehand. This forces players to adapt instantly as they might be teleported directly into an enemy cluster or out of a safe zone.",
+      "allowed_paths": [
+        "src/ai/cosmic_swap.py",
+        "src/ai/cosmic_swap.gd",
+        "tests/test_cosmic_swap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
