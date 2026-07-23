@@ -45519,7 +45519,144 @@ class SpawningSafeZonesMode extends GameMode:
 					if world.has_method("add_event"):
 						world.add_event("ball_died", {"id": bid, "reason": "outside_safe_zone", "killer_id": -1})
 
+
+
+
+class FakeBountyMutatorMode extends GameMode:
+    var spawn_timer = 0.0
+    var spawn_interval = 15.0
+
+    func _init().():
+        self.name = "Fake Bounties"
+        self.description = "Fake bounty targets randomly spawn. They explode into a poison cloud when destroyed."
+
+    func tick(world, balls, delta=0.016):
+        self.spawn_timer += delta
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+            if typeof(world["arena"]) == TYPE_DICTIONARY:
+                if "width" in world["arena"]:
+                    arena_width = world["arena"]["width"]
+                if "height" in world["arena"]:
+                    arena_height = world["arena"]["height"]
+            elif typeof(world["arena"]) == TYPE_OBJECT:
+                if world["arena"].get("width") != null:
+                    arena_width = world["arena"].width
+                if world["arena"].get("height") != null:
+                    arena_height = world["arena"].height
+        elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+            if typeof(world.arena) == TYPE_DICTIONARY:
+                if "width" in world.arena:
+                    arena_width = world.arena.width
+                if "height" in world.arena:
+                    arena_height = world.arena.height
+            elif typeof(world.arena) == TYPE_OBJECT:
+                if world.arena.get("width") != null:
+                    arena_width = world.arena.width
+                if world.arena.get("height") != null:
+                    arena_height = world.arena.height
+
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+            var spawn_x = randf_range(100.0, arena_width - 100.0)
+            var spawn_y = randf_range(100.0, arena_height - 100.0)
+
+            var fb_id = randi() % 900000 + 100000
+            if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+                fb_id = world["next_id"]
+                world["next_id"] += 1
+            elif typeof(world) == TYPE_OBJECT and world.get("next_id") != null:
+                fb_id = world.next_id
+                world.next_id += 1
+
+            var fake_bounty = FakeBountyBall.new(fb_id, spawn_x, spawn_y)
+            if typeof(world) == TYPE_DICTIONARY and "balls" in world:
+                world["balls"].append(fake_bounty)
+            elif typeof(world) == TYPE_OBJECT and world.get("balls") != null:
+                world.balls.append(fake_bounty)
+
+            # Emit ping
+            if typeof(world) == TYPE_DICTIONARY and "events" in world:
+                world["events"].append(["bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id}])
+            elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("bounty_compass", {"target_x": float(spawn_x), "target_y": float(spawn_y), "owner_id": fb_id})
+
+        var to_remove = []
+        for b in balls:
+            var is_fb = false
+            var is_alive = true
+
+            if typeof(b) == TYPE_DICTIONARY:
+                if "is_fake_bounty" in b and b["is_fake_bounty"]:
+                    is_fb = true
+                if "alive" in b:
+                    is_alive = b["alive"]
+            elif typeof(b) == TYPE_OBJECT:
+                if b.get("is_fake_bounty") != null and b.is_fake_bounty:
+                    is_fb = true
+                if b.get("alive") != null:
+                    is_alive = b.alive
+
+            if is_fb:
+                if is_alive:
+                    if typeof(b) == TYPE_DICTIONARY and b.has("update"):
+                        # GDScript dictionaries dont have methods but just in case
+                        pass
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("update"):
+                        b.update(delta, arena_width, arena_height)
+                else:
+                    to_remove.append(b)
+
+        for b in to_remove:
+            if typeof(world) == TYPE_DICTIONARY and "balls" in world:
+                world["balls"].erase(b)
+            elif typeof(world) == TYPE_OBJECT and world.get("balls") != null:
+                world.balls.erase(b)
+
+            var b_x = 0.0
+            var b_y = 0.0
+            if typeof(b) == TYPE_DICTIONARY:
+                b_x = float(b.get("x", 0.0))
+                b_y = float(b.get("y", 0.0))
+            elif typeof(b) == TYPE_OBJECT:
+                b_x = float(b.get("x"))
+                b_y = float(b.get("y"))
+
+            # Spawn hazard
+            var hazard = {
+                "kind": "acid_puddle",
+                "x": b_x,
+                "y": b_y,
+                "radius": 100.0,
+                "duration": 10.0,
+                "active": true,
+                "damage": 10.0
+            }
+
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world["arena"]) == TYPE_DICTIONARY:
+                if not "hazards" in world["arena"]:
+                    world["arena"]["hazards"] = []
+                world["arena"]["hazards"].append(hazard)
+            elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+                if typeof(world.arena) == TYPE_DICTIONARY:
+                    if not "hazards" in world.arena:
+                        world.arena["hazards"] = []
+                    world.arena["hazards"].append(hazard)
+                elif typeof(world.arena) == TYPE_OBJECT:
+                    if world.arena.get("hazards") == null:
+                        world.arena.hazards = []
+                    world.arena.hazards.append(hazard)
+
+            # Explosion event
+            if typeof(world) == TYPE_DICTIONARY and "events" in world:
+                world["events"].append(["explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0}])
+            elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0})
+
+
 GAME_MODES = {
+    "fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
@@ -52199,6 +52336,13 @@ class FakeBall:
         self.hp -= amount
         if self.hp <= 0:
             self.alive = false
+
+
+class FakeBountyBall extends FakeBall:
+    func _init(id_val, start_x, start_y).(id_val, start_x, start_y):
+        self.is_bounty = true
+        self.is_fake_bounty = true
+        self.is_bounty_target = true
 
 class MassDecoyEventMode extends GameMode:
     var spawn_timer = 0.0
