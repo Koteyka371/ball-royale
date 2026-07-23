@@ -54578,3 +54578,186 @@ class TricksterEventMode extends GameMode:
 						b["ball_type"] = b["original_ball_type_trickster_event"]
 
 GAME_MODES['trickster_event'] = TricksterEventMode.new()
+
+class GhostTetherMode extends GameMode:
+	var tether_range = 300.0
+
+	func _init() -> void:
+		self.name = "Ghost Tether"
+		self.description = "Dying doesn't instantly eliminate you. You spawn as a weaker Ghost Ball connected to your killer. Assist your killer or deal enough damage to revive."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var living_killers = []
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false) and not b.get("is_ghost", false):
+					living_killers.append(b.get("id"))
+			else:
+				var is_a = b.get("alive") if "alive" in b else false
+				var is_g = b.get("is_ghost") if "is_ghost" in b else false
+				if is_a and not is_g:
+					living_killers.append(b.get("id"))
+
+		for b in balls:
+			var is_alive = false
+			var is_ghost = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				is_ghost = b.get("is_ghost", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				is_ghost = b.get("is_ghost") if "is_ghost" in b else false
+
+			if is_alive and is_ghost:
+				var killer_id = null
+				if typeof(b) == TYPE_DICTIONARY:
+					killer_id = b.get("tether_killer_id")
+				else:
+					killer_id = b.get("tether_killer_id") if "tether_killer_id" in b else null
+
+				if not living_killers.has(killer_id):
+					if typeof(b) == TYPE_DICTIONARY:
+						b["is_ghost"] = false
+						b["hp"] = b.get("max_hp", 100.0)
+						b["damage"] = b.get("base_damage", 10.0)
+					else:
+						b.is_ghost = false
+						b.hp = b.get("max_hp") if "max_hp" in b else 100.0
+						b.damage = b.get("base_damage") if "base_damage" in b else 10.0
+					if world != null and world.has_method("add_event"):
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else null)
+						world.add_event("ghost_revived", {"ball_id": b_id, "reason": "killer_died"})
+					continue
+
+				var dmg_dealt = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					dmg_dealt = b.get("ghost_damage_dealt", 0.0)
+				else:
+					dmg_dealt = b.get("ghost_damage_dealt") if "ghost_damage_dealt" in b else 0.0
+
+				if dmg_dealt >= 50.0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["is_ghost"] = false
+						b["hp"] = b.get("max_hp", 100.0)
+						b["damage"] = b.get("base_damage", 10.0)
+						b["ghost_damage_dealt"] = 0.0
+					else:
+						b.is_ghost = false
+						b.hp = b.get("max_hp") if "max_hp" in b else 100.0
+						b.damage = b.get("base_damage") if "base_damage" in b else 10.0
+						b.ghost_damage_dealt = 0.0
+					if world != null and world.has_method("add_event"):
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else null)
+						world.add_event("ghost_revived", {"ball_id": b_id, "reason": "damage_threshold"})
+					continue
+
+				var killer_ball = null
+				for kb in balls:
+					var kb_id = null
+					if typeof(kb) == TYPE_DICTIONARY:
+						kb_id = kb.get("id")
+					else:
+						kb_id = kb.get("id") if "id" in kb else null
+					if kb_id == killer_id:
+						killer_ball = kb
+						break
+
+				if killer_ball != null:
+					var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+					var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+					var k_x = killer_ball.get("x", 0.0) if typeof(killer_ball) == TYPE_DICTIONARY else (killer_ball.get("x") if "x" in killer_ball else 0.0)
+					var k_y = killer_ball.get("y", 0.0) if typeof(killer_ball) == TYPE_DICTIONARY else (killer_ball.get("y") if "y" in killer_ball else 0.0)
+
+					var dx = k_x - b_x
+					var dy = k_y - b_y
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist > tether_range:
+						var pull_speed = 150.0
+						if dist > 0:
+							var nx = dx / dist
+							var ny = dy / dist
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] += nx * pull_speed * delta
+								b["y"] += ny * pull_speed * delta
+							else:
+								b.x += nx * pull_speed * delta
+								b.y += ny * pull_speed * delta
+
+	func on_ball_died(world, ball, killer = null) -> void:
+		if super.has_method("on_ball_died"):
+			super.on_ball_died(world, ball, killer)
+
+		if killer != null:
+			var is_k_alive = killer.get("alive", false) if typeof(killer) == TYPE_DICTIONARY else (killer.get("alive") if "alive" in killer else false)
+			if is_k_alive:
+				var k_id = killer.get("id") if typeof(killer) == TYPE_DICTIONARY else (killer.get("id") if "id" in killer else null)
+				var balls = []
+				if world != null:
+					if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+						balls = world.balls
+					elif typeof(world) != TYPE_DICTIONARY and "balls" in world:
+						balls = world.balls
+
+				for gb in balls:
+					var gb_is_ghost = gb.get("is_ghost", false) if typeof(gb) == TYPE_DICTIONARY else (gb.get("is_ghost") if "is_ghost" in gb else false)
+					var gb_tether_id = gb.get("tether_killer_id") if typeof(gb) == TYPE_DICTIONARY else (gb.get("tether_killer_id") if "tether_killer_id" in gb else null)
+
+					if gb_is_ghost and gb_tether_id == k_id:
+						if typeof(gb) == TYPE_DICTIONARY:
+							gb["is_ghost"] = false
+							gb["hp"] = gb.get("max_hp", 100.0)
+							gb["damage"] = gb.get("base_damage", 10.0)
+						else:
+							gb.is_ghost = false
+							gb.hp = gb.get("max_hp") if "max_hp" in gb else 100.0
+							gb.damage = gb.get("base_damage") if "base_damage" in gb else 10.0
+						if world != null and world.has_method("add_event"):
+							var gb_id = gb.get("id") if typeof(gb) == TYPE_DICTIONARY else (gb.get("id") if "id" in gb else null)
+							world.add_event("ghost_revived", {"ball_id": gb_id, "reason": "assist"})
+
+		var is_b_ghost = false
+		if typeof(ball) == TYPE_DICTIONARY:
+			is_b_ghost = ball.get("is_ghost", false)
+		else:
+			is_b_ghost = ball.get("is_ghost") if "is_ghost" in ball else false
+
+		var is_k_alive = false
+		var is_k_ghost = false
+		if killer != null:
+			if typeof(killer) == TYPE_DICTIONARY:
+				is_k_alive = killer.get("alive", false)
+				is_k_ghost = killer.get("is_ghost", false)
+			else:
+				is_k_alive = killer.get("alive") if "alive" in killer else false
+				is_k_ghost = killer.get("is_ghost") if "is_ghost" in killer else false
+
+		if not is_b_ghost and killer != null and is_k_alive and not is_k_ghost:
+			var k_id = killer.get("id") if typeof(killer) == TYPE_DICTIONARY else (killer.get("id") if "id" in killer else null)
+
+			if typeof(ball) == TYPE_DICTIONARY:
+				ball["alive"] = true
+				ball["is_ghost"] = true
+				ball["tether_killer_id"] = k_id
+				ball["ghost_damage_dealt"] = 0.0
+				ball["max_hp"] = 50.0
+				ball["hp"] = 50.0
+				var base_dmg = ball.get("damage", 10.0) * 0.5
+				ball["base_damage"] = base_dmg
+				ball["damage"] = base_dmg
+			else:
+				ball.alive = true
+				ball.is_ghost = true
+				ball.tether_killer_id = k_id
+				ball.ghost_damage_dealt = 0.0
+				ball.max_hp = 50.0
+				ball.hp = 50.0
+				var base_dmg = (ball.get("damage") if "damage" in ball else 10.0) * 0.5
+				if "base_damage" in ball: ball.base_damage = base_dmg
+				if "damage" in ball: ball.damage = base_dmg
+
+			if world != null and world.has_method("add_event"):
+				var b_id = ball.get("id") if typeof(ball) == TYPE_DICTIONARY else (ball.get("id") if "id" in ball else null)
+				world.add_event("ball_turned_ghost", {"ball_id": b_id, "killer_id": k_id})

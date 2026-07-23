@@ -196,6 +196,8 @@ class Action:
 
 
     def _attempt_damage(self, attacker, target) -> None:
+        if getattr(attacker, "is_ghost", False):
+            attacker.ghost_damage_dealt = getattr(attacker, "ghost_damage_dealt", 0.0) + getattr(attacker, "damage", 10.0)
         has_orig = False
         orig_dmg = 0.0
         if getattr(target, "overflow_active", False) and hasattr(attacker, "damage"):

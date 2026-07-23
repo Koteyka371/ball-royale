@@ -35400,3 +35400,104 @@ class VolcanicEruptionEventMode(GameMode):
                 world.arena.hazards.append(h)
 
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
+
+class GhostTetherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ghost Tether"
+        self.description = "Dying doesn't instantly eliminate you. You spawn as a weaker Ghost Ball connected to your killer. Assist your killer or deal enough damage to revive."
+        self.tether_range = 300.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        # Track who is alive and who is not to revive ghosts when killers die
+        living_killers = set()
+        for b in balls:
+            if getattr(b, "alive", False) and not getattr(b, "is_ghost", False):
+                living_killers.add(getattr(b, "id", None))
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "is_ghost", False):
+                # Ghost logic
+                killer_id = getattr(b, "tether_killer_id", None)
+
+                # Check if tether target is dead
+                if killer_id not in living_killers:
+                    b.is_ghost = False
+                    b.hp = getattr(b, "max_hp", 100.0)
+                    b.damage = getattr(b, "base_damage", 10.0)
+                    if hasattr(world, "add_event"):
+                        world.add_event("ghost_revived", {"ball_id": b.id, "reason": "killer_died"})
+                    continue
+
+                # Check if damage threshold is met
+                dmg_dealt = getattr(b, "ghost_damage_dealt", 0.0)
+                if dmg_dealt >= 50.0:
+                    b.is_ghost = False
+                    b.hp = getattr(b, "max_hp", 100.0)
+                    b.damage = getattr(b, "base_damage", 10.0)
+                    b.ghost_damage_dealt = 0.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("ghost_revived", {"ball_id": b.id, "reason": "damage_threshold"})
+                    continue
+
+                # Find killer to enforce tether
+                killer_ball = None
+                for kb in balls:
+                    if getattr(kb, "id", None) == killer_id:
+                        killer_ball = kb
+                        break
+
+                if killer_ball:
+                    dx = killer_ball.x - b.x
+                    dy = killer_ball.y - b.y
+                    dist = math.hypot(dx, dy)
+                    if dist > self.tether_range:
+                        # Pull them in
+                        pull_speed = 150.0
+                        nx = dx / dist
+                        ny = dy / dist
+                        b.x += nx * pull_speed * delta
+                        b.y += ny * pull_speed * delta
+
+    def on_ball_died(self, world, ball, killer=None):
+        if hasattr(super(), 'on_ball_died'):
+            super().on_ball_died(world, ball, killer)
+
+        # Revive any ghosts attached to the killer
+        if killer and getattr(killer, "alive", False):
+            if hasattr(world, "balls"):
+                balls_to_check = world.balls
+            elif hasattr(world, "entities"):
+                balls_to_check = world.entities
+            else:
+                balls_to_check = getattr(self, "_last_balls", []) # Assuming tick saves this, we'll try to find them
+
+            # Let's just find them via world.balls if available
+            if hasattr(world, "balls"):
+                for gb in world.balls:
+                    if getattr(gb, "is_ghost", False) and getattr(gb, "tether_killer_id", None) == getattr(killer, "id", None):
+                        gb.is_ghost = False
+                        gb.hp = getattr(gb, "max_hp", 100.0)
+                        gb.damage = getattr(gb, "base_damage", 10.0)
+                        if hasattr(world, "add_event"):
+                            world.add_event("ghost_revived", {"ball_id": gb.id, "reason": "assist"})
+
+        if not getattr(ball, "is_ghost", False) and killer and getattr(killer, "alive", False) and not getattr(killer, "is_ghost", False):
+            # Intercept death
+            ball.alive = True
+            ball.is_ghost = True
+            ball.tether_killer_id = getattr(killer, "id", None)
+            ball.ghost_damage_dealt = 0.0
+
+            ball.max_hp = 50.0
+            ball.hp = 50.0
+            ball.base_damage = getattr(ball, "damage", 10.0) * 0.5
+            ball.damage = ball.base_damage
+
+            if hasattr(world, "add_event"):
+                world.add_event("ball_turned_ghost", {"ball_id": ball.id, "killer_id": ball.tether_killer_id})
+
+GAME_MODES['ghost_tether'] = GhostTetherMode()
