@@ -86,3 +86,44 @@ def test_elemental_auras_mode_fire_stack():
 
     assert b2.hp < 100.0
     assert b2.burn_timer > 0.0
+
+def test_elemental_auras_mode_crafting_station():
+    try:
+        from ai.game_modes import ElementalAurasMode
+        mode = ElementalAurasMode()
+    except ImportError:
+        return
+
+    world = MockWorld()
+    b1 = MockBall("1")
+    b2 = MockBall("2", "B")
+    b1.x, b1.y = 500.0, 500.0
+    b2.x, b2.y = 800.0, 800.0
+    balls = [b1, b2]
+
+    mode.setup(world, balls)
+
+    # Give b1 hybrid auras
+    b1.elemental_auras["fire"] = 1
+    b1.elemental_auras["water"] = 1
+    b1.hp = 50.0
+
+    # Spawn crafting station directly on b1
+    class Hazard:
+        def __init__(self):
+            self.id = "crafting_station_1"
+            self.x = 500.0
+            self.y = 500.0
+            self.radius = 40.0
+            self.kind = "crafting_station"
+            self.damage = 0.0
+            self.active = True
+    world.arena.hazards = [Hazard()]
+
+    mode.tick(world, balls, 0.016)
+
+    # Fire + Water should heal by 50 and consume the station
+    assert b1.hp == 100.0
+    assert b1.elemental_auras["fire"] == 0
+    assert b1.elemental_auras["water"] == 0
+    assert len(world.arena.hazards) == 0
