@@ -85,3 +85,27 @@ def test_nemesis_drone():
 
     assert nemesis_enemy.hp < 100.0
     assert drone not in world.arena.hazards
+
+def test_nemesis_drone_ping():
+    world = MockWorld()
+    world.events = []
+    world.add_event = lambda e_type, e_data: world.events.append({"type": e_type, "data": e_data})
+
+    ball = MockEntity(id=1, x=100.0, y=100.0, ball_type="basic", team="Red")
+    nemesis_enemy = MockEntity(id=2, x=200.0, y=100.0, ball_type="nemesis", team="Blue")
+    world.balls = [ball, nemesis_enemy]
+
+    drone = MockEntity(id=99, x=105.0, y=100.0, kind="nemesis_drone")
+    drone.owner_id = 1
+    world.arena.hazards = [drone]
+
+    mode = GameMode()
+    mode.tick(world, world.balls, 0.5)
+
+    assert len(world.events) == 0
+
+    mode.tick(world, world.balls, 1.6)
+
+    assert len(world.events) == 2
+    assert world.events[0]["type"] == "nemesis_compass"
+    assert world.events[1]["type"] == "visual_effect"

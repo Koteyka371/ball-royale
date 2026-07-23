@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from src.ai.game_modes import SnakeSafeZoneMode, GAME_MODES
+from ai.game_modes import SnakeSafeZoneMode, GAME_MODES
 
 def test_snake_safe_zone_mode_initialization():
     mode = SnakeSafeZoneMode()

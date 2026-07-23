@@ -14179,10 +14179,10 @@ class Action:
                             import random
                             d = Hazard(id=999000 + len(self.world.arena.hazards) + random.randint(0,10000), x=self.ball.x, y=self.ball.y, radius=8.0, kind="nemesis_drone", damage=15.0)
                             d.owner_id = self.ball.id
-                            d.duration = 9999.0
+                            d.duration = 30.0
                             self.world.arena.hazards.append(d)
                         except:
-                            self.world.arena.hazards.append({"id":999000 + len(self.world.arena.hazards), "x":self.ball.x, "y":self.ball.y, "radius":8.0, "kind":"nemesis_drone", "damage":15.0, "owner_id":self.ball.id, "duration":9999.0})
+                            self.world.arena.hazards.append({"id":999000 + len(self.world.arena.hazards), "x":self.ball.x, "y":self.ball.y, "radius":8.0, "kind":"nemesis_drone", "damage":15.0, "owner_id":self.ball.id, "duration":30.0})
                         if nearest in self.world.arena.hazards: self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters: self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "homing_missile_booster":

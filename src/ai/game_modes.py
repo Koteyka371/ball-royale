@@ -966,8 +966,22 @@ class GameMode:
                                 if isinstance(d, dict):
                                     d["x"] = d.get("x", 0) + (dx / dist) * speed
                                     d["y"] = d.get("y", 0) + (dy / dist) * speed
+                                    if "ping_timer" not in d: d["ping_timer"] = 0.0
+                                    d["ping_timer"] += delta
+                                    if d["ping_timer"] >= 2.0:
+                                        d["ping_timer"] = 0.0
+                                        if hasattr(world, "events"):
+                                            world.events.append({"type": "nemesis_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
+                                            world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d["x"]), "y": float(d["y"]), "tx": float(nx), "ty": float(ny), "color": "red"}})
                                 else:
                                     d.x, d.y = getattr(d, "x", 0) + (dx / dist) * speed, getattr(d, "y", 0) + (dy / dist) * speed
+                                    if not hasattr(d, "ping_timer"): d.ping_timer = 0.0
+                                    d.ping_timer += delta
+                                    if d.ping_timer >= 2.0:
+                                        d.ping_timer = 0.0
+                                        if hasattr(world, "events"):
+                                            world.events.append({"type": "nemesis_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
+                                            world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d.x), "y": float(d.y), "tx": float(nx), "ty": float(ny), "color": "red"}})
                                 if dist < getattr(nemesis, "radius", 10.0) + getattr(d, "radius", 8.0):
                                     if hasattr(nemesis, "take_damage"): nemesis.take_damage(getattr(d, "damage", 15.0))
                                     else: nemesis.hp = getattr(nemesis, "hp", 100) - getattr(d, "damage", 15.0)
