@@ -10895,6 +10895,102 @@ class ModifierZonesSafeZoneMode(GameMode):
 
         return None
 
+class SnakeSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Snake Safe Zone"
+        self.description = "The safe zone is a winding, snake-like path that continuously moves across the arena and shrinks in width over time, forcing players into narrow corridors."
+        self.path_points = []
+        self.path_thickness = 150.0
+        self.min_thickness = 30.0
+        self.shrink_rate = 2.0
+        self.time = 0.0
+        self.outside_damage_per_second = 15.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.path_thickness = 150.0
+        self.time = 0.0
+
+        self.path_points = []
+        import math
+        for i in range(10):
+            t = i / 9.0
+            x = arena_width * 0.1 + t * arena_width * 0.8
+            y = arena_height / 2.0 + math.sin(t * math.pi * 2) * arena_height * 0.3
+            self.path_points.append({"x": x, "y": y})
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        self.time += delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if self.path_thickness > self.min_thickness:
+            self.path_thickness -= self.shrink_rate * delta
+            if self.path_thickness < self.min_thickness:
+                self.path_thickness = self.min_thickness
+
+        for i, pt in enumerate(self.path_points):
+            t = i / 9.0
+            phase = self.time * 0.5
+            pt["x"] = arena_width * 0.1 + t * arena_width * 0.8 + math.cos(phase + t * math.pi) * 100.0
+            pt["y"] = arena_height / 2.0 + math.sin(phase * 2.0 + t * math.pi * 2) * arena_height * 0.3
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    world.dead_balls.append(b)
+                continue
+
+            min_dist = 999999.0
+            for i in range(len(self.path_points) - 1):
+                p1 = self.path_points[i]
+                p2 = self.path_points[i+1]
+
+                px = p2["x"] - p1["x"]
+                py = p2["y"] - p1["y"]
+                norm = px*px + py*py
+
+                u = 0.0
+                if norm > 0.0:
+                    u = ((b.x - p1["x"]) * px + (b.y - p1["y"]) * py) / norm
+                    u = max(0.0, min(1.0, u))
+
+                proj_x = p1["x"] + u * px
+                proj_y = p1["y"] + u * py
+
+                dx = b.x - proj_x
+                dy = b.y - proj_y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist < min_dist:
+                    min_dist = dist
+
+            if min_dist > self.path_thickness:
+                w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                if not is_immune:
+                    damage = self.outside_damage_per_second * delta
+                    if hasattr(b, 'take_damage'):
+                        b.take_damage(damage, None, 'zone')
+                    else:
+                        b.hp -= damage
+
+                    world.add_event('damage', {'x': b.x, 'y': b.y, 'amount': damage, 'color': 'purple'})
+
+        world.add_event('snake_zone_update', {
+            'points': self.path_points,
+            'thickness': self.path_thickness
+        })
+
 class SafeZoneMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -28112,6 +28208,7 @@ class SpawningSafeZonesMode(GameMode):
                         world.add_event("ball_died", {"id": b.id, "reason": "outside_safe_zone", "killer_id": -1})
 
 GAME_MODES = {
+    "snake_safe_zone": SnakeSafeZoneMode(),
     'lava_eruption_event': LavaEruptionEventMode(),
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
