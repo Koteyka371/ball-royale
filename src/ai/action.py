@@ -6438,6 +6438,24 @@ class Action:
                                     beam.hit_ids = []
                                     self.world.arena.hazards.append(beam)
 
+                    elif hazard.kind == "teleport_relay":
+                        dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                        if dist <= getattr(hazard, "radius", 25.0):
+                            linked_id = getattr(hazard, "linked_relay_id", None)
+                            if linked_id is not None:
+                                last_teleport = getattr(self.ball, "last_teleport_tick", -100)
+                                current_tick = getattr(self.world, "tick", 0)
+                                if current_tick - last_teleport > 20:  # 20 tick cooldown
+                                    # Find linked relay
+                                    for h in self.world.arena.hazards:
+                                        if getattr(h, "id", None) == linked_id:
+                                            self.ball.x = h.x
+                                            self.ball.y = h.y
+                                            self.ball.last_teleport_tick = current_tick
+                                            if hasattr(self.ball, "_teleported_this_tick"):
+                                                self.ball._teleported_this_tick = True
+                                            self.world.events.append({"type": "visual_effect", "data": {"x": self.ball.x, "y": self.ball.y, "kind": "teleport"}})
+                                            break
                     elif hazard.kind == "deployable_lightning_rod":
                         # Only update once per tick
                         current_tick = getattr(self.world, "tick", 0)
@@ -12642,7 +12660,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -17278,6 +17296,25 @@ class Action:
                     except ImportError:
                         pass
 
+            elif skill_name == "deploy_teleport_relay":
+                from arena.procedural_arena import Hazard
+                import random
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    relay_id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999)
+                    relay = Hazard(relay_id, self.ball.x, self.ball.y, 25.0, "teleport_relay", 0.0)
+                    active_relay = getattr(self.ball, "active_relay_id", None)
+                    if active_relay is not None:
+                        # Find the first relay and link them
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "id", None) == active_relay:
+                                h.linked_relay_id = relay_id
+                                relay.linked_relay_id = active_relay
+                                break
+                        self.ball.active_relay_id = None
+                    else:
+                        self.ball.active_relay_id = relay_id
+                        relay.linked_relay_id = None
+                    self.world.arena.hazards.append(relay)
             elif skill_name == "deploy_lightning_rod":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class LightningRodNode:
