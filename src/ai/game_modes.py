@@ -28632,7 +28632,50 @@ class RicochetArenaMode(GameMode):
         super().tick(world, balls, delta)
         # Bouncing logic is handled in action.py _clamp_position for this mode
 
+class PetRescueMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pet Rescue"
+        self.description = "Wild pets spawn across the arena. Tame them by getting close. They provide buffs like auto-loot, healing, or speed boosts."
+        self.spawn_timer = 5.0
+        self.spawn_interval = 5.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        super().tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0.0:
+            self.spawn_timer = self.spawn_interval
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world.arena, "width") else 1000.0
+                arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world.arena, "height") else 1000.0
+
+                pet_types = ["auto_loot", "healer", "speed_boost"]
+                pt = random.choice(pet_types)
+                px = random.uniform(50, arena_width - 50)
+                py = random.uniform(50, arena_height - 50)
+
+                class WildPet:
+                    def __init__(self, t, x, y):
+                        self.kind = "wild_pet"
+                        self.pet_type = t
+                        self.x = x
+                        self.y = y
+                        self.radius = 20.0
+                        self.active = True
+                        self.duration = 60.0
+
+                world.arena.hazards.append(WildPet(pt, px, py))
+
+
 GAME_MODES = {
+    "pet_rescue": PetRescueMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
     "snake_safe_zone": SnakeSafeZoneMode(),

@@ -1592,6 +1592,92 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        # --- Pet System Logic ---
+        # Tame wild pets
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "wild_pet" and getattr(hazard, "active", True):
+                    hz_x = getattr(hazard, "x", 0.0)
+                    hz_y = getattr(hazard, "y", 0.0)
+                    hz_r = getattr(hazard, "radius", 20.0)
+                    dist_sq = (hz_x - self.ball.x)**2 + (hz_y - self.ball.y)**2
+                    if dist_sq < (hz_r + 30.0)**2:  # slightly larger radius for easy pickup
+                        self.ball.pet = getattr(hazard, "pet_type", "auto_loot")
+                        hazard.active = False
+                        if hasattr(hazard, "duration"):
+                            hazard.duration = 0.0
+
+        # Pet effects
+        pet = getattr(self.ball, "pet", None)
+        if pet:
+            # Pet following visual/physical entity
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                if not hasattr(self.ball, "pet_entity_id"):
+                    # Spawn pet entity
+                    import random
+                    self.ball.pet_entity_id = getattr(self.ball, "id", random.randint(1000, 9000)) * 100
+
+                    class PetEntity:
+                        def __init__(self, owner_id, pt, ox, oy):
+                            self.kind = "pet"
+                            self.owner_id = owner_id
+                            self.pet_type = pt
+                            self.x = ox
+                            self.y = oy
+                            self.radius = 10.0
+                            self.active = True
+                            self.duration = 9999.0
+
+                    self.world.arena.hazards.append(PetEntity(getattr(self.ball, "id", 0), pet, self.ball.x, self.ball.y))
+                else:
+                    # Update pet position to follow player
+                    for h in self.world.arena.hazards:
+                        if getattr(h, "kind", "") == "pet" and getattr(h, "owner_id", None) == getattr(self.ball, "id", None):
+                            # Orbit or trail slightly behind
+                            import math
+                            angle = getattr(self.ball, "velocity_angle", 0.0)
+                            target_x = self.ball.x - math.cos(angle) * 40.0
+                            target_y = self.ball.y - math.sin(angle) * 40.0
+                            # Lerp position for smooth following
+                            h.x += (target_x - h.x) * 5.0 * delta
+                            h.y += (target_y - h.y) * 5.0 * delta
+
+            if pet == "auto_loot":
+                # Magnetize nearby items
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                    for item in self.world.arena.items:
+                        item_kind = getattr(item, "kind", item.get("kind", "") if isinstance(item, dict) else "")
+                        if item_kind in ["material", "coin", "health_pack", "energy_cell"]:
+                            ix = getattr(item, "x", item.get("x", 0.0) if isinstance(item, dict) else 0.0)
+                            iy = getattr(item, "y", item.get("y", 0.0) if isinstance(item, dict) else 0.0)
+                            dist_sq = (ix - self.ball.x)**2 + (iy - self.ball.y)**2
+                            if dist_sq < 90000:  # 300 range
+                                import math
+                                dist = math.sqrt(dist_sq)
+                                if dist > 0.0001:
+                                    nx, ny = (self.ball.x - ix) / dist, (self.ball.y - iy) / dist
+                                    pull = 200.0 * delta
+                                    if isinstance(item, dict):
+                                        item["x"] = ix + nx * pull
+                                        item["y"] = iy + ny * pull
+                                    else:
+                                        if hasattr(item, "x"): item.x += nx * pull
+                                        if hasattr(item, "y"): item.y += ny * pull
+            elif pet == "healer":
+                if not hasattr(self.ball, "pet_heal_timer"):
+                    self.ball.pet_heal_timer = 5.0
+                self.ball.pet_heal_timer -= delta
+                if self.ball.pet_heal_timer <= 0:
+                    max_hp = getattr(self.ball, "max_hp", 100.0)
+                    self.ball.hp = min(max_hp, getattr(self.ball, "hp", max_hp) + 5.0)
+                    self.ball.pet_heal_timer = 5.0
+            elif pet == "speed_boost":
+                # Provide a passive 10% speed boost
+                if not hasattr(self.ball, "pet_speed_buff_applied"):
+                    self.ball.base_speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0)) * 1.10
+                    self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.10
+                    self.ball.pet_speed_buff_applied = True
+
         if getattr(self.ball, "is_decoy", False) or getattr(self.ball, "is_decoy_clone", False):
             if not hasattr(self.ball, "decoy_mimic_cast_timer"):
                 import random

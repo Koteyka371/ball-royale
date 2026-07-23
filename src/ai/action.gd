@@ -2902,6 +2902,133 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    # --- Pet System Logic ---
+    if "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            var h_kind = _get_prop(hazard, "kind", "")
+            var h_active = _get_prop(hazard, "active", true)
+            if h_kind == "wild_pet" and h_active:
+                var hz_x = _get_prop(hazard, "x", 0.0)
+                var hz_y = _get_prop(hazard, "y", 0.0)
+                var hz_r = _get_prop(hazard, "radius", 20.0)
+                var dist_sq = pow(hz_x - self.ball.x, 2) + pow(hz_y - self.ball.y, 2)
+                if dist_sq < pow(hz_r + 30.0, 2):
+                    var p_type = _get_prop(hazard, "pet_type", "auto_loot")
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("pet", p_type)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["pet"] = p_type
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                        hazard.set_meta("active", false)
+                        hazard.set_meta("duration", 0.0)
+                    elif typeof(hazard) == TYPE_DICTIONARY:
+                        hazard["active"] = false
+                        hazard["duration"] = 0.0
+
+    var pet = _get_prop(self.ball, "pet", "")
+    if pet != null and pet != "":
+        # Pet following entity logic
+        # Pet following entity logic
+        if "arena" in self.world and "hazards" in self.world.arena:
+            var has_pet_entity = false
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("pet_entity_id"):
+                has_pet_entity = true
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("pet_entity_id"):
+                has_pet_entity = true
+
+            var b_id = _get_prop(self.ball, "id", 0)
+
+            if not has_pet_entity:
+                var pet_eid = b_id * 100 + randi() % 100
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("pet_entity_id", pet_eid)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["pet_entity_id"] = pet_eid
+
+                var pet_entity = {
+                    "kind": "pet",
+                    "owner_id": b_id,
+                    "pet_type": pet,
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "radius": 10.0,
+                    "active": true,
+                    "duration": 9999.0
+                }
+                self.world.arena.hazards.append(pet_entity)
+            else:
+                for h in self.world.arena.hazards:
+                    var h_kind = _get_prop(h, "kind", "")
+                    var h_owner = _get_prop(h, "owner_id", -1)
+                    if h_kind == "pet" and h_owner == b_id:
+                        var angle = _get_prop(self.ball, "velocity_angle", 0.0)
+                        var target_x = self.ball.x - cos(angle) * 40.0
+                        var target_y = self.ball.y - sin(angle) * 40.0
+                        var cur_hx = _get_prop(h, "x", target_x)
+                        var cur_hy = _get_prop(h, "y", target_y)
+
+                        var new_x = cur_hx + (target_x - cur_hx) * 5.0 * delta
+                        var new_y = cur_hy + (target_y - cur_hy) * 5.0 * delta
+
+                        if typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+                            h.set_meta("x", new_x)
+                            h.set_meta("y", new_y)
+                        elif typeof(h) == TYPE_DICTIONARY:
+                            h["x"] = new_x
+                            h["y"] = new_y
+
+        if pet == "auto_loot":
+            if "arena" in self.world and "items" in self.world.arena:
+                for item in self.world.arena.items:
+                    var item_kind = _get_prop(item, "kind", "")
+                    if item_kind in ["material", "coin", "health_pack", "energy_cell"]:
+                        var ix = _get_prop(item, "x", 0.0)
+                        var iy = _get_prop(item, "y", 0.0)
+                        var dist_sq = pow(ix - self.ball.x, 2) + pow(iy - self.ball.y, 2)
+                        if dist_sq < 90000:
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                var nx = (self.ball.x - ix) / dist
+                                var ny = (self.ball.y - iy) / dist
+                                var pull = 200.0 * delta
+                                if typeof(item) == TYPE_OBJECT and item.has_method("set_meta"):
+                                    item.set_meta("x", ix + nx * pull)
+                                    item.set_meta("y", iy + ny * pull)
+                                elif typeof(item) == TYPE_DICTIONARY:
+                                    item["x"] = ix + nx * pull
+                                    item["y"] = iy + ny * pull
+        elif pet == "healer":
+            var pet_heal_timer = _get_prop(self.ball, "pet_heal_timer", 5.0)
+            pet_heal_timer -= delta
+            if pet_heal_timer <= 0:
+                var max_hp = _get_prop(self.ball, "max_hp", 100.0)
+                var current_hp = _get_prop(self.ball, "hp", max_hp)
+                var new_hp = min(max_hp, current_hp + 5.0)
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("hp", new_hp)
+                    self.ball.set_meta("pet_heal_timer", 5.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["hp"] = new_hp
+                    self.ball["pet_heal_timer"] = 5.0
+            else:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("pet_heal_timer", pet_heal_timer)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["pet_heal_timer"] = pet_heal_timer
+        elif pet == "speed_boost":
+            var buff_applied = _get_prop(self.ball, "pet_speed_buff_applied", false)
+            if not buff_applied:
+                var b_speed = _get_prop(self.ball, "base_speed", _get_prop(self.ball, "speed", 100.0))
+                var cur_speed = _get_prop(self.ball, "speed", 100.0)
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("base_speed", b_speed * 1.10)
+                    self.ball.set_meta("speed", cur_speed * 1.10)
+                    self.ball.set_meta("pet_speed_buff_applied", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["base_speed"] = b_speed * 1.10
+                    self.ball["speed"] = cur_speed * 1.10
+                    self.ball["pet_speed_buff_applied"] = true
+
     var is_decoy = false
     if "is_decoy" in self.ball and self.ball.is_decoy: is_decoy = true
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("is_decoy") and self.ball.get_meta("is_decoy"): is_decoy = true

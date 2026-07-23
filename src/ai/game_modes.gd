@@ -45759,7 +45759,53 @@ class RicochetArenaMode extends GameMode:
 		self.description = "Arena walls apply a massive velocity multiplier on bounce."
 		self.velocity_multiplier = 3.0
 
+class PetRescueMode extends GameMode:
+    var spawn_timer = 5.0
+    var spawn_interval = 5.0
+
+    func _init():
+        super._init()
+        self.name = "Pet Rescue"
+        self.description = "Wild pets spawn across the arena. Tame them by getting close. They provide buffs like auto-loot, healing, or speed boosts."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        self.spawn_timer = 5.0
+
+    func tick(world, balls, delta=0.016):
+        super.tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0.0:
+            self.spawn_timer = self.spawn_interval
+
+            if "arena" in world and "hazards" in world.arena:
+                var arena_width = 1000.0
+                if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"): arena_width = world.arena.width
+                elif typeof(world.arena) == TYPE_OBJECT and "width" in world.arena: arena_width = world.arena.width
+
+                var arena_height = 1000.0
+                if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"): arena_height = world.arena.height
+                elif typeof(world.arena) == TYPE_OBJECT and "height" in world.arena: arena_height = world.arena.height
+
+                var pet_types = ["auto_loot", "healer", "speed_boost"]
+                var pt = pet_types[randi() % pet_types.size()]
+                var px = randf_range(50.0, arena_width - 50.0)
+                var py = randf_range(50.0, arena_height - 50.0)
+
+                var wild_pet = {
+                    "kind": "wild_pet",
+                    "pet_type": pt,
+                    "x": px,
+                    "y": py,
+                    "radius": 20.0,
+                    "active": true,
+                    "duration": 60.0
+                }
+                world.arena.hazards.append(wild_pet)
+
 GAME_MODES = {
+    "pet_rescue": PetRescueMode.new(),
     "ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
