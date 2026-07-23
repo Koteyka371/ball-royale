@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1397] Emote Combinations Synergy — *2026-07-23 06:49:25 UTC*
+
+When multiple spectators drop the same emote (e.g. 'cheer:firework') near each other simultaneously, the effects combine to form a massive graphical event on the arena to hype up the remaining players, granting small visual aura buffs to nearby survivors.
+
+---
+
 ## [idea-1344] Necromancer Lich Evolution — *2026-07-23 06:49:20 UTC*
 
 If a Necromancer survives for 60 seconds without taking any damage, it evolves into a Lich. A Lich's minions are permanently enraged and it can summon 2 skeletal dragons that have a ranged breath attack.
