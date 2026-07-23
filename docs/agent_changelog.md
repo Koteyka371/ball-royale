@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1422] Chain Lightning Mutator — *2026-07-23 22:52:19 UTC*
+
+A game mode mutator where all energy weapons and traps have a chance to chain to nearby secondary targets, causing chaotic team fights.
+
+---
+
 ## [idea-1389] Vampiric Aura Hazard — *2026-07-23 22:32:46 UTC*
 
 A new stationary hazard that slowly drains the HP of any player within its radius, but instead of just disappearing, it heals the closest player on the opposite team proportional to the damage dealt.
