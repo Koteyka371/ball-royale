@@ -36364,3 +36364,122 @@ class WindingSnakePathMode(GameMode):
 GAME_MODES['winding_snake_path'] = WindingSnakePathMode()
 
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode()
+
+
+class WeatherTrapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Weather Traps"
+        self.description = "Traps disguised as capture altars that, when fully captured, trigger an opposite detrimental weather effect solely on the capturing team."
+        self.altars = []
+        self.active_traps = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.altars = [
+            {"x": arena_w * 0.25, "y": arena_h * 0.25, "radius": 150.0, "capture_progress": 0.0, "owner": None, "weather": "sandstorm"},
+            {"x": arena_w * 0.75, "y": arena_h * 0.75, "radius": 150.0, "capture_progress": 0.0, "owner": None, "weather": "blizzard"},
+            {"x": arena_w * 0.25, "y": arena_h * 0.75, "radius": 150.0, "capture_progress": 0.0, "owner": None, "weather": "heatwave"},
+            {"x": arena_w * 0.75, "y": arena_h * 0.25, "radius": 150.0, "capture_progress": 0.0, "owner": None, "weather": "rain"}
+        ]
+        self.active_traps = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        for b in valid_balls:
+            if not hasattr(b, "team"):
+                b.team = getattr(b, "ball_type", "unknown")
+            b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+            b.base_perception_radius = getattr(b, "base_perception_radius", getattr(b, "perception_radius", 200.0))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(self, "altars"):
+            return
+
+        to_remove_altar = []
+
+        for altar in self.altars:
+            teams_present = {}
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    dist_sq = (bx - altar["x"])**2 + (by - altar["y"])**2
+                    if dist_sq <= altar["radius"]**2:
+                        team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                        teams_present[team] = teams_present.get(team, 0) + 1
+
+            if teams_present:
+                max_team = max(teams_present, key=teams_present.get)
+                # Check if it is a clear majority
+                is_tie = sum(1 for t, v in teams_present.items() if v == teams_present[max_team]) > 1
+                if not is_tie:
+                    if altar["owner"] == max_team:
+                        if altar["capture_progress"] < 100.0:
+                            altar["capture_progress"] = min(100.0, altar["capture_progress"] + 20.0 * delta)
+                            if altar["capture_progress"] == 100.0:
+                                # Trigger trap effect
+                                self.active_traps.append({"team": altar["owner"], "weather": altar["weather"], "timer": 15.0})
+                                to_remove_altar.append(altar)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("weather_trap_triggered", {"weather": altar["weather"], "team": altar["owner"]})
+                    else:
+                        altar["capture_progress"] -= 20.0 * delta
+                        if altar["capture_progress"] <= 0:
+                            altar["owner"] = max_team
+                            altar["capture_progress"] = 0.0
+
+            else:
+                # Decay
+                altar["capture_progress"] = max(0.0, altar["capture_progress"] - 10.0 * delta)
+                if altar["capture_progress"] == 0.0:
+                    altar["owner"] = None
+
+        for a in to_remove_altar:
+            if a in self.altars:
+                self.altars.remove(a)
+
+        to_remove_traps = []
+        for trap in self.active_traps:
+            trap["timer"] -= delta
+            if trap["timer"] <= 0:
+                to_remove_traps.append(trap)
+
+        for t in to_remove_traps:
+            self.active_traps.remove(t)
+
+        # Base reset and apply trap effects
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            base_speed = getattr(b, "base_speed", 100.0)
+            base_damage = getattr(b, "base_damage", 10.0)
+            base_perception = getattr(b, "base_perception_radius", 200.0)
+
+            b.speed = base_speed
+            b.damage = base_damage
+            b.perception_radius = base_perception
+
+            team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+
+            for trap in self.active_traps:
+                if trap["team"] == team:
+                    # Apply detrimental effect
+                    if trap["weather"] == "sandstorm":
+                        b.speed = base_speed * 0.7
+                        b.hp = max(0.0, getattr(b, "hp", 100.0) - 2.0 * delta)
+                    elif trap["weather"] == "blizzard":
+                        b.speed = base_speed * 0.5
+                    elif trap["weather"] == "heatwave":
+                        b.speed = base_speed * 0.8
+                        b.damage = base_damage * 0.8
+                    elif trap["weather"] == "rain":
+                        b.perception_radius = base_perception * 0.5
+
+GAME_MODES['weather_traps'] = WeatherTrapMode()
