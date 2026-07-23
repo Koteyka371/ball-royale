@@ -38734,6 +38734,102 @@ class TickingBombMode extends GameMode:
 					world.arena.hazards.append(exp)
 
 
+class ReverseBlackHoleMode extends GameMode:
+	var active = false
+	var timer = 0.0
+	var push_strength = 300.0
+	var zone_x = 0.0
+	var zone_y = 0.0
+	var radius = 200.0
+
+	func _init():
+		name = "Reverse Black Hole Event"
+		description = "A random event where a reverse black hole spawns in the arena, pushing balls away from its center. The closer you are, the stronger the push."
+
+	func tick(world, balls, delta = 0.016):
+		.tick(world, balls, delta)
+
+		if not active:
+			if randf() < 0.02 * delta:
+				active = true
+				timer = 15.0
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				if world != null and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if world.arena.has("width"): arena_width = world.arena.width
+						if world.arena.has("height"): arena_height = world.arena.height
+					elif typeof(world.arena) == TYPE_OBJECT:
+						if "width" in world.arena: arena_width = world.arena.width
+						if "height" in world.arena: arena_height = world.arena.height
+				zone_x = rand_range(100.0, arena_width - 100.0)
+				zone_y = rand_range(100.0, arena_height - 100.0)
+				if world != null and world.has_method("add_event"):
+					world.add_event("reverse_black_hole", {"message": "A reverse black hole has appeared, pushing everyone away!"})
+		else:
+			timer -= delta
+			if timer <= 0:
+				active = false
+				if world != null and world.has_method("add_event"):
+					world.add_event("reverse_black_hole_end", {"message": "The reverse black hole has vanished."})
+				return
+
+			for b in balls:
+				var w_timer = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("weather_immunity_timer"): w_timer = b.weather_immunity_timer
+				elif typeof(b) == TYPE_OBJECT:
+					if "weather_immunity_timer" in b: w_timer = b.weather_immunity_timer
+
+				var is_immune = w_timer > 0.0
+				var alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("alive"): alive = b.alive
+				elif typeof(b) == TYPE_OBJECT:
+					if "alive" in b: alive = b.alive
+
+				if not alive: continue
+
+				var ball_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("ball_type"): ball_type = b.ball_type
+				elif typeof(b) == TYPE_OBJECT:
+					if "ball_type" in b: ball_type = b.ball_type
+
+				if ball_type == "spectator": continue
+				if is_immune: continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b.x
+					if b.has("y"): by = b.y
+				elif typeof(b) == TYPE_OBJECT:
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+
+				var dx = bx - zone_x
+				var dy = by - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0 and dist < radius:
+					var push_factor = 1.0 - (dist / radius)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("vx") and b.has("vy"):
+							b.vx += (dx / dist) * push_strength * push_factor * delta
+							b.vy += (dy / dist) * push_strength * push_factor * delta
+						else:
+							b.x += (dx / dist) * push_strength * push_factor * delta
+							b.y += (dy / dist) * push_strength * push_factor * delta
+					elif typeof(b) == TYPE_OBJECT:
+						if "vx" in b and "vy" in b:
+							b.vx += (dx / dist) * push_strength * push_factor * delta
+							b.vy += (dy / dist) * push_strength * push_factor * delta
+						else:
+							b.x += (dx / dist) * push_strength * push_factor * delta
+							b.y += (dy / dist) * push_strength * push_factor * delta
+
 class MassiveBlackHoleEventMode extends GameMode:
 	var active = false
 	var timer = 0.0
@@ -44943,6 +45039,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"crossfire": CrossfireMode.new(),
 	"reverse_friction": preload("res://src/ai/reverse_friction.gd").ReverseFrictionMode.new(),
 	"underground_tunnels": UndergroundTunnelMode.new(),
+	"reverse_black_hole_event": ReverseBlackHoleMode.new(),
 	"massive_black_hole_event": MassiveBlackHoleEventMode.new(),
 	"ticking_bomb": TickingBombMode.new(),
 	"orbital_mines": OrbitalMinesMode.new(),

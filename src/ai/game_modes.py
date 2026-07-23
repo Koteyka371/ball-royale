@@ -23936,6 +23936,62 @@ class SacrificeAltarMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("sacrifice_altar_used", {"ball": b, "altar": altar})
 
+class ReverseBlackHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Black Hole Event"
+        self.description = "A random event where a reverse black hole spawns in the arena, pushing balls away from its center. The closer you are, the stronger the push."
+        self.active = False
+        self.timer = 0.0
+        self.push_strength = 300.0
+        self.zone_x = 0.0
+        self.zone_y = 0.0
+        self.radius = 200.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not self.active:
+            if random.random() < 0.02 * delta:
+                self.active = True
+                self.timer = 15.0
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                self.zone_x = random.uniform(100, arena_width - 100)
+                self.zone_y = random.uniform(100, arena_height - 100)
+                if hasattr(world, "add_event"):
+                    world.add_event("reverse_black_hole", {"message": "A reverse black hole has appeared, pushing everyone away!"})
+        else:
+            self.timer -= delta
+            if self.timer <= 0:
+                self.active = False
+                if hasattr(world, "add_event"):
+                    world.add_event("reverse_black_hole_end", {"message": "The reverse black hole has vanished."})
+                return
+
+            for b in balls:
+                w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                if not getattr(b, "alive", False): continue
+                if getattr(b, "ball_type", "") == "spectator": continue
+                if is_immune: continue
+
+                dx = getattr(b, "x", 0) - self.zone_x
+                dy = getattr(b, "y", 0) - self.zone_y
+                dist = math.hypot(dx, dy)
+
+                if 0 < dist < self.radius:
+                    push_factor = 1.0 - (dist / self.radius)
+
+                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                        b.vx += (dx / dist) * self.push_strength * push_factor * delta
+                        b.vy += (dy / dist) * self.push_strength * push_factor * delta
+                    else:
+                        b.x += (dx / dist) * self.push_strength * push_factor * delta
+                        b.y += (dy / dist) * self.push_strength * push_factor * delta
+
 class MassiveBlackHoleEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -31619,6 +31675,7 @@ class PaintSplatterMode(GameMode):
             b._prev_x_paint = b.x
             b._prev_y_paint = b.y
 
+GAME_MODES['reverse_black_hole_event'] = ReverseBlackHoleMode()
 GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
 GAME_MODES['paint_splatter'] = PaintSplatterMode()
 GAME_MODES['ticking_bomb'] = TickingBombMode()
