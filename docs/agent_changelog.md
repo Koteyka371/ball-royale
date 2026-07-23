@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1381] Shrinking Danger Zones Mode — *2026-07-23 05:05:30 UTC*
+
+A game mode where safe zones periodically spawn and shrink. Players outside the safe zone take increasing damage over time.
+
+---
+
 ## [idea-1371] Lava Eruption Event — *2026-07-23 05:00:47 UTC*
 
 A random event that periodically erupts lava fountains from the ground, leaving damaging puddles that players must navigate around during combat.
