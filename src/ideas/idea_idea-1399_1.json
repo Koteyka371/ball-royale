@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Rebound Hazard",
+  "description": "A hazard zone that doesn't deal direct damage but multiplies any incoming knockback force on balls inside it by 300%. When a ball gets hit inside this zone, they are sent flying out at incredibly high speeds, potentially into walls or other hazards for massive combo damage."
+}

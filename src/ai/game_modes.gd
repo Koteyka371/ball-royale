@@ -35347,6 +35347,137 @@ class EntangledArenaMode extends GameMode:
 
 
 
+class EntangledSwapHazardMode extends GameMode:
+	var prev_state = {}
+	var damage_threshold = 30.0
+
+	func _init():
+		name = "Entangled Swap Hazard"
+		description = "Randomly swaps the positions and momentum of two entangled balls when one takes massive damage."
+
+	func _init_prev_state(b) -> void:
+		var hp = 100.0
+		if "hp" in b: hp = b.hp
+		elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+		var b_id = b.id if "id" in b else null
+		if b_id != null:
+			prev_state[b_id] = hp
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		var alive_balls = []
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if b_type != "spectator":
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+		var i = 0
+		while i < alive_balls.size() - 1:
+			var b1 = alive_balls[i]
+			var b2 = alive_balls[i+1]
+
+			if typeof(b1) == TYPE_OBJECT and b1.has_method("set_meta"):
+				b1.set_meta("random_entangled_with", b2)
+			else:
+				b1["random_entangled_with"] = b2
+
+			if typeof(b2) == TYPE_OBJECT and b2.has_method("set_meta"):
+				b2.set_meta("random_entangled_with", b1)
+			else:
+				b2["random_entangled_with"] = b1
+			i += 2
+
+		if alive_balls.size() % 2 != 0:
+			var last_ball = alive_balls[alive_balls.size() - 1]
+			if typeof(last_ball) == TYPE_OBJECT and last_ball.has_method("set_meta"):
+				last_ball.set_meta("random_entangled_with", null)
+			else:
+				last_ball["random_entangled_with"] = null
+
+		prev_state.clear()
+		for b in balls:
+			_init_prev_state(b)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var pending_swaps = []
+		for b in balls:
+			var is_alive = b.alive if "alive" in b else false
+			if not is_alive:
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
+			if not prev_state.has(b_id):
+				_init_prev_state(b)
+
+			var prev_hp = prev_state[b_id]
+			var curr_hp = b.hp if "hp" in b else 100.0
+
+			if curr_hp < prev_hp:
+				var damage_taken = prev_hp - curr_hp
+				if damage_taken >= damage_threshold:
+					var target = null
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("random_entangled_with"):
+						target = b.get_meta("random_entangled_with")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("random_entangled_with"):
+						target = b["random_entangled_with"]
+
+					var target_alive = target.alive if (target != null and "alive" in target) else false
+					if target != null and target_alive:
+						var t_id = target.id if "id" in target else null
+						if t_id != null and prev_state.has(t_id):
+							pending_swaps.append([b, target])
+
+			_init_prev_state(b)
+
+		var already_swapped = {}
+		for swap_pair in pending_swaps:
+			var b1 = swap_pair[0]
+			var b2 = swap_pair[1]
+			var id1 = b1.id if "id" in b1 else null
+			var id2 = b2.id if "id" in b2 else null
+
+			if id1 == null or id2 == null:
+				continue
+
+			if already_swapped.has(id1) or already_swapped.has(id2):
+				continue
+
+			var temp_x = b1.x if "x" in b1 else 0.0
+			var temp_y = b1.y if "y" in b1 else 0.0
+			if "x" in b1: b1.x = b2.x if "x" in b2 else 0.0
+			if "y" in b1: b1.y = b2.y if "y" in b2 else 0.0
+			if "x" in b2: b2.x = temp_x
+			if "y" in b2: b2.y = temp_y
+
+			var temp_vx = b1.vx if "vx" in b1 else 0.0
+			var temp_vy = b1.vy if "vy" in b1 else 0.0
+			if "vx" in b1: b1.vx = b2.vx if "vx" in b2 else 0.0
+			if "vy" in b1: b1.vy = b2.vy if "vy" in b2 else 0.0
+			if "vx" in b2: b2.vx = temp_vx
+			if "vy" in b2: b2.vy = temp_vy
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				var b1x = b1.x if "x" in b1 else 0.0
+				var b1y = b1.y if "y" in b1 else 0.0
+				var b2x = b2.x if "x" in b2 else 0.0
+				var b2y = b2.y if "y" in b2 else 0.0
+				world.add_event("position_swapped", {
+					"ball_a": id1,
+					"ball_b": id2,
+					"pos_a": [b1x, b1y],
+					"pos_b": [b2x, b2y]
+				})
+
+			already_swapped[id1] = true
+			already_swapped[id2] = true
+
+
 class EntanglementMutatorMode extends GameMode:
 	var prev_state: Dictionary = {}
 	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
@@ -45407,6 +45538,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
 	"ghost_tether": GhostTetherMode.new(),
 	"entangled_arena": EntangledArenaMode.new(),
+	"entangled_swap_hazard": EntangledSwapHazardMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
 	"thermal_freeze_tag": ThermalFreezeTagMode.new(),
