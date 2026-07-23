@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Accumulator Trait",
+  "description": "A ball trait where bouncing off walls builds up a 'kinetic charge'. Once fully charged, the ball's next direct collision with an enemy unleashes an explosive shockwave that knocks back all nearby entities."
+}

@@ -17896,6 +17896,18 @@ class Action:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = True
 
+        gm = getattr(self.world, "game_mode", None)
+        if bounced and gm and getattr(gm, "name", "") == "Ricochet Arena":
+            mult = getattr(gm, "velocity_multiplier", 3.0)
+
+            # The velocity is already reflected by the main game loop, so we ONLY multiply it.
+            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                self.ball.vx = self.ball.vx * mult
+                self.ball.vy = self.ball.vy * mult
+            if hasattr(self.ball, "velocity_x") and hasattr(self.ball, "velocity_y"):
+                self.ball.velocity_x = self.ball.velocity_x * mult
+                self.ball.velocity_y = self.ball.velocity_y * mult
+
         return bounced
 
     def _resolve_collisions(self) -> bool:
