@@ -24954,7 +24954,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -27958,13 +27958,18 @@ func _collect_booster(delta: float):
         _idle(delta)
 
 func _use_skill():
+    var phantom_active = false
+    if "phantom_stride_active" in self.ball: phantom_active = self.ball.phantom_stride_active
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("phantom_stride_active"): phantom_active = self.ball.get_meta("phantom_stride_active")
+
     var intangible = false
     if "intangible" in self.ball: intangible = self.ball.intangible
     elif self.ball.has_method("has_meta") and self.ball.has_meta("intangible"): intangible = self.ball.get_meta("intangible")
     var timer = 0.0
     if "intangible_timer" in self.ball: timer = self.ball.intangible_timer
     elif self.ball.has_method("has_meta") and self.ball.has_meta("intangible_timer"): timer = self.ball.get_meta("intangible_timer")
-    if intangible or timer > 0.0:
+
+    if (intangible or timer > 0.0) and not phantom_active:
         return
 
     var _silence_timer = 0.0
@@ -28203,7 +28208,7 @@ func _use_skill():
                     elif hazard.has_method("has_meta") and hazard.has_meta("active"): active = hazard.get_meta("active")
 
                     if kind == "sound_mine" and active:
-                        if skill_name in ["dash", "sonar_ping", "forecast_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"]:
+                        if skill_name in ["dash", "sonar_ping", "forecast_ping", "stamina_dash", "phantom_stride", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"]:
                             var h_x = 0.0
                             if "x" in hazard: h_x = hazard.x
                             var h_y = 0.0
@@ -33926,6 +33931,51 @@ func _use_skill():
             dome.set_meta("duration", 10.0)
             arena.hazards.append(dome)
 
+        elif skill_name == "phantom_stride":
+            var phantom_active = false
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phantom_stride_active"):
+                phantom_active = self.ball.get_meta("phantom_stride_active")
+            elif "phantom_stride_active" in self.ball:
+                phantom_active = self.ball.phantom_stride_active
+
+            if not phantom_active:
+                var stamina = 0.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+                    stamina = self.ball.get_meta("stamina")
+                elif "stamina" in self.ball:
+                    stamina = self.ball.stamina
+
+                if stamina >= 20.0:
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("phantom_stride_active", true)
+                    else:
+                        self.ball.phantom_stride_active = true
+
+                    if self.has_method("_spawn_skill_particles"):
+                        self._spawn_skill_particles("phantom_stride")
+
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("skill_timer", 0.5)
+                    else:
+                        self.ball.skill_timer = 0.5
+            else:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("phantom_stride_active", false)
+                    self.ball.set_meta("intangible", false)
+                else:
+                    self.ball.phantom_stride_active = false
+                    self.ball.intangible = false
+
+                var cd = 3.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"):
+                    cd = self.ball.get_meta("SKILL_COOLDOWN")
+                elif "SKILL_COOLDOWN" in self.ball:
+                    cd = self.ball.SKILL_COOLDOWN
+
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", cd)
+                else:
+                    self.ball.skill_timer = cd
         elif skill_name == "phase_through":
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                 self.ball.set_meta("intangible_timer", 3.0)
@@ -36082,6 +36132,53 @@ func _update_skill_timer(delta: float):
     elif "skill" in self.ball:
         cur_skill = self.ball.skill
 
+
+    var phantom_active = false
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phantom_stride_active"):
+        phantom_active = self.ball.get_meta("phantom_stride_active")
+    elif "phantom_stride_active" in self.ball:
+        phantom_active = self.ball.phantom_stride_active
+
+    if phantom_active:
+        var stamina = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+            stamina = self.ball.get_meta("stamina")
+        elif "stamina" in self.ball:
+            stamina = self.ball.stamina
+
+        var drain = 40.0 * delta
+        if stamina > 0:
+            var new_stamina = max(0.0, stamina - drain)
+            var current_im = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hazard_immunity_timer"):
+                current_im = self.ball.get_meta("hazard_immunity_timer")
+            elif "hazard_immunity_timer" in self.ball:
+                current_im = self.ball.hazard_immunity_timer
+            var new_im = max(current_im, 0.2)
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("stamina", new_stamina)
+                self.ball.set_meta("intangible", true)
+                self.ball.set_meta("hazard_immunity_timer", new_im)
+            else:
+                self.ball.stamina = new_stamina
+                self.ball.intangible = true
+                self.ball.hazard_immunity_timer = new_im
+
+            if new_stamina <= 0.0:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("phantom_stride_active", false)
+                    self.ball.set_meta("intangible", false)
+                else:
+                    self.ball.phantom_stride_active = false
+                    self.ball.intangible = false
+        else:
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("phantom_stride_active", false)
+                self.ball.set_meta("intangible", false)
+            else:
+                self.ball.phantom_stride_active = false
+                self.ball.intangible = false
 
     if cur_skill == "kinetic_absorber":
         var current_st = 0.0
