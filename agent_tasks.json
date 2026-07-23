@@ -35049,6 +35049,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2050",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Faction War Event",
+      "description": "Periodically, the game triggers a faction war where players who have pledged to the same Nemesis form an impromptu alliance. They must defend each other or the Nemesis against a horde of enemies or a rival Enforcer group, earning exclusive rewards for their guild.",
+      "allowed_paths": [
+        "src/ai/nemesis_faction_war.py",
+        "src/ai/nemesis_faction_war.gd",
+        "tests/test_nemesis_faction_war.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2051",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Enforcer Vengeance Bounty",
+      "description": "If an Enforcer successfully kills an enemy of their Nemesis, they receive a temporary buff or a unique cosmetic aura indicating their loyalty and prowess, which scales up for each consecutive vengeance kill.",
+      "allowed_paths": [
+        "src/ai/enforcer_vengeance_bounty.py",
+        "src/ai/enforcer_vengeance_bounty.gd",
+        "tests/test_enforcer_vengeance_bounty.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

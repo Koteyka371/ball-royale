@@ -1,4 +1,0 @@
-{
-  "title": "Lightning Rod Deployable",
-  "description": "A new equippable item that drops a temporary lightning rod. When deployed, it attracts all lightning strikes from thunderstorms within a specific radius, dealing massive AoE damage to any enemies near the rod but protecting the player's team."
-}

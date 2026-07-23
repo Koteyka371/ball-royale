@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Tangle Ball Type",
-  "description": "A new ball type that occasionally leaves behind an invisible 'quantum tangle' node when using its dash skill. If enemies trigger the tangle, they and the ball are forcibly teleported to swap positions, disorienting attackers and potentially dropping them into hazards."
-}
