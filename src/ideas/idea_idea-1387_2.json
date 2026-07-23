@@ -1,0 +1,4 @@
+{
+  "title": "Chrono-Rift Anomalies",
+  "description": "Rifts spawn on the arena that slow down local time by 80% for everything inside, including projectiles and movement. However, balls that successfully traverse a rift without dying gain a 'chronos-charge' buff, allowing their next attack to instantly rewind the target's position by 3 seconds."
+}

@@ -45744,7 +45744,176 @@ class RicochetArenaMode extends GameMode:
 		self.description = "Arena walls apply a massive velocity multiplier on bounce."
 		self.velocity_multiplier = 3.0
 
+
+class CorruptionZoneMode extends GameMode:
+	var zones = []
+	var zone_spawn_timer = 0.0
+	var zone_spawn_interval = 12.0
+	var base_zone_radius = 150.0
+
+	func _init() -> void:
+		name = "Corruption Zones"
+		description = "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		zones.clear()
+		zone_spawn_timer = 5.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		zone_spawn_timer -= delta
+
+		if zone_spawn_timer <= 0:
+			zone_spawn_timer = zone_spawn_interval
+
+			var arena_width = world.arena.width if world.get("arena") != null and "width" in world.arena else 1000.0
+			var arena_height = world.arena.height if world.get("arena") != null and "height" in world.arena else 1000.0
+
+			var x = randf_range(base_zone_radius, arena_width - base_zone_radius)
+			var y = randf_range(base_zone_radius, arena_height - base_zone_radius)
+
+			zones.append({
+				"x": x,
+				"y": y,
+				"radius": base_zone_radius,
+				"timer": 3.0, # Warning delay
+				"active": false,
+				"duration": 15.0 # Active duration
+			})
+
+			if world.has_method("add_event"):
+				world.add_event("danger_zone_warning", {"x": x, "y": y, "radius": base_zone_radius, "message": "Corruption zone appearing!"})
+
+		var active_zones = []
+		for zone in zones:
+			zone["timer"] -= delta
+			if not zone["active"]:
+				if zone["timer"] <= 0:
+					zone["active"] = true
+					zone["timer"] = zone["duration"]
+					if world.has_method("add_event"):
+						world.add_event("danger_zone_active", {"x": zone["x"], "y": zone["y"], "radius": zone["radius"], "message": "Corruption zone active!"})
+
+					if world.get("arena") != null and "hazards" in world.arena:
+						var h_id = randi() % 900000 + 100000
+						if "next_id" in world:
+							h_id = world.next_id
+							world.next_id += 1
+
+						var zone_hazard = {
+							"id": h_id,
+							"x": zone["x"],
+							"y": zone["y"],
+							"radius": zone["radius"],
+							"kind": "corruption_zone",
+							"damage": 0.0,
+							"duration": zone["duration"],
+							"active": true
+						}
+						world.arena.hazards.append(zone_hazard)
+						zone["hazard"] = zone_hazard
+
+				active_zones.append(zone)
+			else:
+				if zone["timer"] > 0:
+					active_zones.append(zone)
+				else:
+					if zone.has("hazard") and world.get("arena") != null and "hazards" in world.arena:
+						if world.arena.hazards.has(zone["hazard"]):
+							world.arena.hazards.erase(zone["hazard"])
+
+		zones = active_zones
+
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = str(b.get("ball_type", "")).to_lower()
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				b_type = str(b.get("ball_type", "")).to_lower() if "ball_type" in b else ""
+
+			if is_alive and b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.has("base_damage"):
+						b["base_damage"] = b.get("damage", 10.0)
+					if not b.has("base_speed"):
+						b["base_speed"] = b.get("speed", 100.0)
+				else:
+					if not ("base_damage" in b):
+						b.set("base_damage", b.get("damage") if "damage" in b else 10.0)
+					if not ("base_speed" in b):
+						b.set("base_speed", b.get("speed") if "speed" in b else 100.0)
+
+				var in_any_zone = false
+				var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+				var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+				for zone in zones:
+					if zone.get("active", false):
+						var dist = sqrt(pow(bx - zone["x"], 2) + pow(by - zone["y"], 2))
+						if dist <= zone["radius"]:
+							in_any_zone = true
+							break
+
+				var was_in_zone = false
+				if typeof(b) == TYPE_DICTIONARY:
+					was_in_zone = b.get("in_corruption_zone", false)
+				elif b is Object and b.has_method("has_meta") and b.has_meta("in_corruption_zone"):
+					was_in_zone = b.get_meta("in_corruption_zone")
+				elif "in_corruption_zone" in b:
+					was_in_zone = b.in_corruption_zone
+
+				if in_any_zone:
+					if not was_in_zone:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["in_corruption_zone"] = true
+							b["damage"] = b.get("base_damage", 10.0) * 2.5
+							b["speed"] = b.get("base_speed", 100.0) * 3.0
+						else:
+							if b.has_method("set_meta"):
+								b.set_meta("in_corruption_zone", true)
+							if "in_corruption_zone" in b:
+								b.in_corruption_zone = true
+							var bd = b.get("base_damage") if typeof(b.get("base_damage")) in [TYPE_INT, TYPE_FLOAT] else 10.0
+							b.set("damage", bd * 2.5)
+							var bs = b.get("base_speed") if typeof(b.get("base_speed")) in [TYPE_INT, TYPE_FLOAT] else 100.0
+							b.set("speed", bs * 3.0)
+
+					var damage_per_tick = 20.0 * delta
+					if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"):
+						b.take_damage(damage_per_tick, "corruption_zone")
+					else:
+						var hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100)
+						hp -= damage_per_tick
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+							if hp <= 0:
+								b["alive"] = false
+						else:
+							b.set("hp", hp)
+							if hp <= 0:
+								b.set("alive", false)
+				else:
+					if was_in_zone:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["in_corruption_zone"] = false
+							b["damage"] = b.get("base_damage", 10.0)
+							b["speed"] = b.get("base_speed", 100.0)
+						else:
+							if b.has_method("set_meta"):
+								b.set_meta("in_corruption_zone", false)
+							if "in_corruption_zone" in b:
+								b.in_corruption_zone = false
+							var bd = b.get("base_damage") if typeof(b.get("base_damage")) in [TYPE_INT, TYPE_FLOAT] else 10.0
+							b.set("damage", bd)
+							var bs = b.get("base_speed") if typeof(b.get("base_speed")) in [TYPE_INT, TYPE_FLOAT] else 100.0
+							b.set("speed", bs)
+
 GAME_MODES = {
+	"corruption_zone": CorruptionZoneMode.new(),
     "ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),

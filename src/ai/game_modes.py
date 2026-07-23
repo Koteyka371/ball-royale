@@ -28610,7 +28610,139 @@ class RicochetArenaMode(GameMode):
         super().tick(world, balls, delta)
         # Bouncing logic is handled in action.py _clamp_position for this mode
 
+
+class CorruptionZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Corruption Zones"
+        self.description = "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element."
+        self.zones = []
+        self.zone_spawn_timer = 0.0
+        self.zone_spawn_interval = 12.0
+        self.base_zone_radius = 150.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.zones = []
+        self.zone_spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+        self.zone_spawn_timer -= delta
+
+        if self.zone_spawn_timer <= 0:
+            self.zone_spawn_timer = self.zone_spawn_interval
+
+            arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+            arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+            x = random.uniform(self.base_zone_radius, arena_width - self.base_zone_radius)
+            y = random.uniform(self.base_zone_radius, arena_height - self.base_zone_radius)
+
+            self.zones.append({
+                "x": x,
+                "y": y,
+                "radius": self.base_zone_radius,
+                "timer": 3.0, # Warning delay
+                "active": False,
+                "duration": 15.0 # Active duration
+            })
+
+            if hasattr(world, "add_event"):
+                if hasattr(world, "events") and isinstance(world.events, list):
+                    world.events.append(["danger_zone_warning", {"x": x, "y": y, "radius": self.base_zone_radius, "message": "Corruption zone appearing!"}])
+                else:
+                    world.add_event("danger_zone_warning", {"x": x, "y": y, "radius": self.base_zone_radius, "message": "Corruption zone appearing!"})
+
+        active_zones = []
+        for zone in self.zones:
+            zone["timer"] -= delta
+            if not zone["active"]:
+                if zone["timer"] <= 0 and not zone["active"]:
+                    zone["active"] = True
+                    zone["timer"] = zone["duration"]
+                    if hasattr(world, "add_event"):
+                        if hasattr(world, "events") and isinstance(world.events, list):
+                            world.events.append(["danger_zone_active", {"x": zone["x"], "y": zone["y"], "radius": zone["radius"], "message": "Corruption zone active!"}])
+                        else:
+                            world.add_event("danger_zone_active", {"x": zone["x"], "y": zone["y"], "radius": zone["radius"], "message": "Corruption zone active!"})
+
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            HazardClass = Hazard
+                        except ImportError:
+                            class FallbackHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                    self.active = True
+                            HazardClass = FallbackHazard
+
+                        h_id = getattr(world, "next_id", random.randint(100000, 999999))
+                        zone_hazard = HazardClass(
+                            id=h_id,
+                            x=zone["x"],
+                            y=zone["y"],
+                            radius=zone["radius"],
+                            kind="corruption_zone",
+                            damage=0.0
+                        )
+                        setattr(zone_hazard, "duration", zone["duration"])
+                        world.arena.hazards.append(zone_hazard)
+                        zone["hazard"] = zone_hazard
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+                active_zones.append(zone)
+            else:
+                if zone["timer"] > 0:
+                    active_zones.append(zone)
+                else:
+                    if "hazard" in zone and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        if zone["hazard"] in world.arena.hazards:
+                            world.arena.hazards.remove(zone["hazard"])
+
+        self.zones = active_zones
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "base_damage"):
+                    setattr(b, "base_damage", getattr(b, "damage", 10.0))
+                if not hasattr(b, "base_speed"):
+                    setattr(b, "base_speed", getattr(b, "speed", 100.0))
+
+                in_any_zone = False
+                for zone in self.zones:
+                    if zone.get("active"):
+                        dist = math.hypot(b.x - zone["x"], b.y - zone["y"])
+                        if dist <= zone["radius"]:
+                            in_any_zone = True
+                            break
+
+                was_in_zone = getattr(b, "in_corruption_zone", False)
+
+                if in_any_zone:
+                    if not was_in_zone:
+                        b.in_corruption_zone = True
+                        b.damage = b.base_damage * 2.5
+                        b.speed = b.base_speed * 3.0
+
+                    damage_per_tick = 20.0 * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(damage_per_tick, source="corruption_zone")
+                    else:
+                        b.hp = getattr(b, "hp", 100) - damage_per_tick
+                        if b.hp <= 0:
+                            b.alive = False
+                else:
+                    if was_in_zone:
+                        b.in_corruption_zone = False
+                        b.damage = b.base_damage
+                        b.speed = b.base_speed
+
 GAME_MODES = {
+    "corruption_zone": CorruptionZoneMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
     "snake_safe_zone": SnakeSafeZoneMode(),
