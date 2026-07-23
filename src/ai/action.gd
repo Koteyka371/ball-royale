@@ -33841,7 +33841,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "crafting_station", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -35278,156 +35278,87 @@ func _resolve_collisions() -> bool:
                         if typeof(other) == TYPE_DICTIONARY: other["_aura_explosion_cd"] = 1.0
                         elif typeof(other) == TYPE_OBJECT and "hp" in other: other.set("_aura_explosion_cd", 1.0)
                         elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("_aura_explosion_cd", 1.0)
-                        var is_hybrid = false
-                        if c1 != c2 and randf() < 0.1:
-				is_hybrid = true
-				var hybrid_color
-				if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
-					hybrid_color = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0]
-					if c1.size() == 4 and c2.size() == 4:
-						hybrid_color.append((c1[3]+c2[3])/2.0)
-				elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
-					hybrid_color = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, (c1.a+c2.a)/2.0)
-				else:
-					hybrid_color = c1
-				if typeof(self.ball) == TYPE_OBJECT and "cosmetic_aura_color" in self.ball:
-					self.ball.cosmetic_aura_color = hybrid_color
-					self.ball.set("_hybrid_aura_timer", 5.0)
-					if "base_speed" in self.ball and "speed" in self.ball:
-						self.ball.speed = self.ball.base_speed * 1.5
-					if "base_damage" in self.ball and "damage" in self.ball:
-						self.ball.damage = self.ball.base_damage * 1.5
-					var b1_sbt = self.ball.get("speed_boost_timer") if self.ball.get("speed_boost_timer") != null else 0.0
-					self.ball.set("speed_boost_timer", max(b1_sbt, 5.0))
-				if typeof(other) == TYPE_OBJECT and "cosmetic_aura_color" in other:
-					other.cosmetic_aura_color = hybrid_color
-					other.set("_hybrid_aura_timer", 5.0)
-					if "base_speed" in other and "speed" in other:
-						other.speed = other.base_speed * 1.5
-					if "base_damage" in other and "damage" in other:
-						other.damage = other.base_damage * 1.5
-					var b2_sbt = other.get("speed_boost_timer") if other.get("speed_boost_timer") != null else 0.0
-					other.set("speed_boost_timer", max(b2_sbt, 5.0))
-				if self.world != null and self.world.has_method("add_event"):
-					var b1_id = self.ball.get("id") if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball else null
-					var b2_id = other.get("id") if typeof(other) == TYPE_OBJECT and "id" in other else null
-					self.world.add_event("hybrid_aura", {"ball1": b1_id, "ball2": b2_id, "duration": 5.0})
-                        if not is_hybrid:
-                        var is_hybrid = false
-                        if c1 != c2 and randf() < 0.1:
-				is_hybrid = true
-				var hybrid_color
-				if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
-					hybrid_color = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0]
-					if c1.size() == 4 and c2.size() == 4:
-						hybrid_color.append((c1[3]+c2[3])/2.0)
-				elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
-					hybrid_color = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, (c1.a+c2.a)/2.0)
-				else:
-					hybrid_color = c1
-				if typeof(self.ball) == TYPE_OBJECT and "cosmetic_aura_color" in self.ball:
-					self.ball.cosmetic_aura_color = hybrid_color
-					self.ball.set("_hybrid_aura_timer", 5.0)
-					if "base_speed" in self.ball and "speed" in self.ball:
-						self.ball.speed = self.ball.base_speed * 1.5
-					if "base_damage" in self.ball and "damage" in self.ball:
-						self.ball.damage = self.ball.base_damage * 1.5
-					var b1_sbt = self.ball.get("speed_boost_timer") if self.ball.get("speed_boost_timer") != null else 0.0
-					self.ball.set("speed_boost_timer", max(b1_sbt, 5.0))
-				if typeof(other) == TYPE_OBJECT and "cosmetic_aura_color" in other:
-					other.cosmetic_aura_color = hybrid_color
-					other.set("_hybrid_aura_timer", 5.0)
-					if "base_speed" in other and "speed" in other:
-						other.speed = other.base_speed * 1.5
-					if "base_damage" in other and "damage" in other:
-						other.damage = other.base_damage * 1.5
-					var b2_sbt = other.get("speed_boost_timer") if other.get("speed_boost_timer") != null else 0.0
-					other.set("speed_boost_timer", max(b2_sbt, 5.0))
-				if self.world != null and self.world.has_method("add_event"):
-					var b1_id = self.ball.get("id") if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball else null
-					var b2_id = other.get("id") if typeof(other) == TYPE_OBJECT and "id" in other else null
-					self.world.add_event("hybrid_aura", {"ball1": b1_id, "ball2": b2_id, "duration": 5.0})
-                        if not is_hybrid:
+                        var b1_x = 0.0
+                        var b1_y = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            if self.ball.has("x"): b1_x = self.ball["x"]
+                            if self.ball.has("y"): b1_y = self.ball["y"]
+                        else:
+                            if "x" in self.ball: b1_x = self.ball.x
+                            if "y" in self.ball: b1_y = self.ball.y
 
-					var b1_x = 0.0
-		                        var b1_y = 0.0
-		                        if typeof(self.ball) == TYPE_DICTIONARY:
-		                            if self.ball.has("x"): b1_x = self.ball["x"]
-		                            if self.ball.has("y"): b1_y = self.ball["y"]
-		                        else:
-		                            if "x" in self.ball: b1_x = self.ball.x
-		                            if "y" in self.ball: b1_y = self.ball.y
+                        var b2_x = 0.0
+                        var b2_y = 0.0
+                        if typeof(other) == TYPE_DICTIONARY:
+                            if other.has("x"): b2_x = other["x"]
+                            if other.has("y"): b2_y = other["y"]
+                        else:
+                            if "x" in other: b2_x = other.x
+                            if "y" in other: b2_y = other.y
 
-		                        var b2_x = 0.0
-		                        var b2_y = 0.0
-		                        if typeof(other) == TYPE_DICTIONARY:
-		                            if other.has("x"): b2_x = other["x"]
-		                            if other.has("y"): b2_y = other["y"]
-		                        else:
-		                            if "x" in other: b2_x = other.x
-		                            if "y" in other: b2_y = other.y
+                        var exp_x = (b1_x + b2_x) / 2.0
+                        var exp_y = (b1_y + b2_y) / 2.0
 
-		                        var exp_x = (b1_x + b2_x) / 2.0
-		                        var exp_y = (b1_y + b2_y) / 2.0
+                        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                            var b1_id = 0
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b1_id = self.ball["id"]
+                            elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b1_id = self.ball.id
 
-		                        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
-		                            var b1_id = 0
-		                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b1_id = self.ball["id"]
-		                            elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b1_id = self.ball.id
+                            var b2_id = 0
+                            if typeof(other) == TYPE_DICTIONARY and other.has("id"): b2_id = other["id"]
+                            elif typeof(other) == TYPE_OBJECT and "id" in other: b2_id = other.id
 
-		                            var b2_id = 0
-		                            if typeof(other) == TYPE_DICTIONARY and other.has("id"): b2_id = other["id"]
-		                            elif typeof(other) == TYPE_OBJECT and "id" in other: b2_id = other.id
+                            var h = {}
+                            h["id"] = "aura_exp_" + str(b1_id) + "_" + str(b2_id)
+                            h["x"] = exp_x
+                            h["y"] = exp_y
+                            h["radius"] = 80.0
+                            h["kind"] = "aura_explosion"
+                            h["damage"] = 20.0
+                            h["active"] = true
+                            h["duration"] = 1.0
+                            if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
+                                h["color"] = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0, 0.8]
+                            elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
+                                h["color"] = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, 0.8)
+                            self.world.arena.hazards.append(h)
 
-		                            var h = {}
-		                            h["id"] = "aura_exp_" + str(b1_id) + "_" + str(b2_id)
-		                            h["x"] = exp_x
-		                            h["y"] = exp_y
-		                            h["radius"] = 80.0
-		                            h["kind"] = "aura_explosion"
-		                            h["damage"] = 20.0
-		                            h["active"] = true
-		                            h["duration"] = 1.0
-		                            if typeof(c1) == TYPE_ARRAY and typeof(c2) == TYPE_ARRAY and c1.size() >= 3 and c2.size() >= 3:
-		                                h["color"] = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0, 0.8]
-		                            elif typeof(c1) == TYPE_COLOR and typeof(c2) == TYPE_COLOR:
-		                                h["color"] = Color((c1.r+c2.r)/2.0, (c1.g+c2.g)/2.0, (c1.b+c2.b)/2.0, 0.8)
-		                            self.world.arena.hazards.append(h)
+                        var nearby_exp = []
+                        if self.world != null and self.world.has_method("get_nearby_entities"):
+                            var dp = {"x": exp_x, "y": exp_y}
+                            var data_exp = self.world.get_nearby_entities(dp, 80.0)
+                            if typeof(data_exp) == TYPE_DICTIONARY:
+                                if data_exp.has("enemies"): nearby_exp += data_exp["enemies"]
+                                if data_exp.has("allies"): nearby_exp += data_exp["allies"]
+                            elif typeof(data_exp) == TYPE_ARRAY:
+                                nearby_exp = data_exp
 
-		                        var nearby_exp = []
-		                        if self.world != null and self.world.has_method("get_nearby_entities"):
-		                            var dp = {"x": exp_x, "y": exp_y}
-		                            var data_exp = self.world.get_nearby_entities(dp, 80.0)
-		                            if typeof(data_exp) == TYPE_DICTIONARY:
-		                                if data_exp.has("enemies"): nearby_exp += data_exp["enemies"]
-		                                if data_exp.has("allies"): nearby_exp += data_exp["allies"]
-		                            elif typeof(data_exp) == TYPE_ARRAY:
-		                                nearby_exp = data_exp
-
-		                        for t in nearby_exp:
-		                            var t_x = 0.0
-		                            var t_y = 0.0
-		                            if typeof(t) == TYPE_DICTIONARY:
-		                                if t.has("x"): t_x = t["x"]
-		                                if t.has("y"): t_y = t["y"]
-		                            else:
-		                                if "x" in t: t_x = t.x
-		                                if "y" in t: t_y = t.y
-		                            var dx_e = t_x - exp_x
-		                            var dy_e = t_y - exp_y
-		                            if dx_e*dx_e + dy_e*dy_e <= 80.0*80.0:
-		                                if typeof(t) == TYPE_OBJECT and t.has_method("take_damage"):
-		                                    t.take_damage(20.0)
-		                                elif typeof(t) == TYPE_OBJECT and "hp" in t:
-		                                    t.hp -= 20.0
-		                                    if t.hp <= 0:
-		                                        t.hp = 0
-		                                        t.alive = false
+                        for t in nearby_exp:
+                            var t_x = 0.0
+                            var t_y = 0.0
+                            if typeof(t) == TYPE_DICTIONARY:
+                                if t.has("x"): t_x = t["x"]
+                                if t.has("y"): t_y = t["y"]
+                            else:
+                                if "x" in t: t_x = t.x
+                                if "y" in t: t_y = t.y
+                            var dx_e = t_x - exp_x
+                            var dy_e = t_y - exp_y
+                            if dx_e*dx_e + dy_e*dy_e <= 80.0*80.0:
+                                if typeof(t) == TYPE_OBJECT and t.has_method("take_damage"):
+                                    t.take_damage(20.0)
+                                elif typeof(t) == TYPE_OBJECT and "hp" in t:
+                                    t.hp -= 20.0
+                                    if t.hp <= 0:
+                                        t.hp = 0
+                                        t.alive = false
                                 elif typeof(t) == TYPE_DICTIONARY and t.has("hp"):
                                     t["hp"] -= 20.0
                                     if t["hp"] <= 0:
                                         t["hp"] = 0
                                         t["alive"] = false
+
+
 
 
             var self_team = self.ball.team if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team") else (self.ball.team if "team" in self.ball else null)
@@ -37594,7 +37525,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "crafting_station", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -37947,6 +37878,59 @@ func _update_skill_timer(delta: float):
                                     if typeof(hazard) == TYPE_DICTIONARY: hazard["attached_id"] = null
                                     elif hazard.has_method("set_meta"): hazard.set_meta("attached_id", null)
                                     elif "attached_id" in hazard: hazard.attached_id = null
+
+				if h_kind == "crafting_station" and (hazard.active if "active" in hazard else (hazard.get_meta("active") if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("active") else true)):
+					var dist = sqrt(pow(self.ball.x - hazard.x, 2) + pow(self.ball.y - hazard.y, 2))
+					var h_rad = hazard.radius if "radius" in hazard else hazard.get_meta("radius") if hazard.has_method("has_meta") and hazard.has_meta("radius") else 50.0
+					var b_rad = self.ball.radius if "radius" in self.ball else self.ball.get_meta("radius") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("radius") else 15.0
+					if dist <= h_rad + b_rad:
+						var ball_aura = self.ball.cosmetic_aura_color if "cosmetic_aura_color" in self.ball else null
+						if typeof(ball_aura) == TYPE_ARRAY and ball_aura.size() >= 3:
+							var stored_aura = hazard.stored_aura if "stored_aura" in hazard else hazard.get_meta("stored_aura") if hazard.has_method("has_meta") and hazard.has_meta("stored_aura") else null
+							var ball_id = self.ball.id if "id" in self.ball else self.ball.get_meta("id") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id") else null
+							var stored_aura_id = hazard.stored_aura_id if "stored_aura_id" in hazard else hazard.get_meta("stored_aura_id") if hazard.has_method("has_meta") and hazard.has_meta("stored_aura_id") else null
+							if stored_aura == null:
+								if typeof(hazard) == TYPE_DICTIONARY:
+									hazard["stored_aura"] = ball_aura
+									hazard["stored_aura_id"] = ball_id
+								elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+									hazard.set_meta("stored_aura", ball_aura)
+									hazard.set_meta("stored_aura_id", ball_id)
+								elif typeof(hazard) == TYPE_OBJECT:
+									hazard.set("stored_aura", ball_aura)
+									hazard.set("stored_aura_id", ball_id)
+								if self.world != null and self.world.has_method("add_event"):
+									var h_id = hazard.id if "id" in hazard else hazard.get_meta("id") if hazard.has_method("get_meta") and hazard.has_meta("id") else 0
+									self.world.add_event("crafting_station_deposit", {"hazard_id": h_id, "color": ball_aura})
+							elif stored_aura != ball_aura and stored_aura_id != ball_id:
+								var c1 = stored_aura
+								var c2 = ball_aura
+								var hybrid_color = [(c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0]
+								if c1.size() == 4 and c2.size() == 4:
+									hybrid_color.append((c1[3]+c2[3])/2.0)
+								if typeof(self.ball) == TYPE_OBJECT and "cosmetic_aura_color" in self.ball:
+									self.ball.cosmetic_aura_color = hybrid_color
+									self.ball.set("_hybrid_aura_timer", 5.0)
+									if "base_speed" in self.ball and "speed" in self.ball:
+										self.ball.speed = self.ball.base_speed * 1.5
+									if "base_damage" in self.ball and "damage" in self.ball:
+										self.ball.damage = self.ball.base_damage * 1.5
+									var b_sbt = self.ball.get("speed_boost_timer") if self.ball.get("speed_boost_timer") != null else 0.0
+									self.ball.set("speed_boost_timer", max(b_sbt, 5.0))
+
+								if typeof(hazard) == TYPE_DICTIONARY:
+									hazard["active"] = false
+									hazard["duration"] = 0.0
+								elif typeof(hazard) == TYPE_OBJECT and "active" in hazard:
+									hazard.active = false
+									hazard.duration = 0.0
+								elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+									hazard.set_meta("active", false)
+									hazard.set_meta("duration", 0.0)
+
+								if self.world != null and self.world.has_method("add_event"):
+									var h_id = hazard.id if "id" in hazard else hazard.get_meta("id") if hazard.has_method("get_meta") and hazard.has_meta("id") else 0
+									self.world.add_event("crafting_station_success", {"hazard_id": h_id, "ball_id": ball_id})
 
                 if h_kind == "siphon_latch" and (hazard.target_id if "target_id" in hazard else (hazard.get_meta("target_id") if hazard.has_method("get_meta") and hazard.has_meta("target_id") else -1)) == (self.ball.id if "id" in self.ball else self.ball.get_meta("id")):
                     var h_owner_id = hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)

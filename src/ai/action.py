@@ -16312,7 +16312,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "crafting_station", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -18196,27 +18196,7 @@ class Action:
                         setattr(other, "_aura_explosion_cd", 1.0)
 
                         import random
-                        if c1 != c2 and random.random() < 0.1 and isinstance(c1, (list, tuple)) and isinstance(c2, (list, tuple)) and len(c1) >= 3 and len(c2) >= 3:
-                            hybrid_color = ((c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0)
-                            if len(c1) == 4 and len(c2) == 4:
-                                hybrid_color = (hybrid_color[0], hybrid_color[1], hybrid_color[2], (c1[3]+c2[3])/2.0)
-                            self.ball.cosmetic_aura_color = hybrid_color
-                            other.cosmetic_aura_color = hybrid_color
-                            self.ball._hybrid_aura_timer = 5.0
-                            setattr(other, "_hybrid_aura_timer", 5.0)
-                            if hasattr(self.ball, "base_speed"):
-                                self.ball.speed = getattr(self.ball, "base_speed", 100) * 1.5
-                            if hasattr(other, "base_speed"):
-                                other.speed = getattr(other, "base_speed", 100) * 1.5
-                            if hasattr(self.ball, "base_damage"):
-                                self.ball.damage = getattr(self.ball, "base_damage", 10) * 1.5
-                            if hasattr(other, "base_damage"):
-                                other.damage = getattr(other, "base_damage", 10) * 1.5
-                            self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 5.0)
-                            setattr(other, "speed_boost_timer", max(getattr(other, "speed_boost_timer", 0.0), 5.0))
-                            if hasattr(self.world, "add_event"):
-                                self.world.add_event("hybrid_aura", {"ball1": getattr(self.ball, "id", None), "ball2": getattr(other, "id", None), "duration": 5.0})
-                        else:
+                        if True:
                             explosion_x = (self.ball.x + other.x) / 2
                             explosion_y = (self.ball.y + other.y) / 2
 
@@ -19263,7 +19243,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "crafting_station", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -19333,6 +19313,36 @@ class Action:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
+
+                if getattr(hazard, "kind", "") == "crafting_station" and getattr(hazard, "active", True):
+                    import math
+                    dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                    if dist <= getattr(hazard, "radius", 50.0) + getattr(self.ball, "radius", 15.0):
+                        ball_aura = getattr(self.ball, "cosmetic_aura_color", None)
+                        if isinstance(ball_aura, (list, tuple)) and len(ball_aura) >= 3:
+                            stored_aura = getattr(hazard, "stored_aura", None)
+                            if not stored_aura:
+                                hazard.stored_aura = ball_aura
+                                hazard.stored_aura_id = getattr(self.ball, "id", None)
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("crafting_station_deposit", {"hazard_id": getattr(hazard, "id", 0), "color": ball_aura})
+                            elif stored_aura != ball_aura and getattr(hazard, "stored_aura_id", None) != getattr(self.ball, "id", None):
+                                c1 = stored_aura
+                                c2 = ball_aura
+                                hybrid_color = ((c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0)
+                                if len(c1) == 4 and len(c2) == 4:
+                                    hybrid_color = (hybrid_color[0], hybrid_color[1], hybrid_color[2], (c1[3]+c2[3])/2.0)
+                                self.ball.cosmetic_aura_color = hybrid_color
+                                self.ball._hybrid_aura_timer = 5.0
+                                if hasattr(self.ball, "base_speed"):
+                                    self.ball.speed = getattr(self.ball, "base_speed", 100) * 1.5
+                                if hasattr(self.ball, "base_damage"):
+                                    self.ball.damage = getattr(self.ball, "base_damage", 10) * 1.5
+                                self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 5.0)
+                                hazard.active = False
+                                hazard.duration = 0.0
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("crafting_station_success", {"hazard_id": getattr(hazard, "id", 0), "ball_id": getattr(self.ball, "id", None)})
 
                 if getattr(hazard, "kind", "") == "siphon_latch" and getattr(hazard, "target_id", None) == getattr(self.ball, "id", None):
                     # It's latched onto us
