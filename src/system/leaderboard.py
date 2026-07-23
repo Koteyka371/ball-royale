@@ -115,6 +115,53 @@ class LeaderboardManager:
         return [{"rivalry": k, "defeats": v} for k, v in sorted_rivalries[:limit]]
 
 
+
+
+
+    def get_top_n_players(self, n=10):
+        if "players" not in self.data:
+            return []
+        sorted_players = sorted(self.data["players"].items(), key=lambda x: x[1], reverse=True)
+        return [pid for pid, _ in sorted_players[:n]]
+
+    def record_match_replay(self, player_id: str, replay_system):
+        # Store full game replays of the final matches of the top 10 players
+        top_10 = self.get_top_n_players(10)
+        if player_id in top_10:
+            self.store_top_player_replay(player_id, replay_system.to_dict())
+
+    def get_available_replays(self) -> list:
+        if "top_replays" not in self.data:
+            return []
+
+        return list(self.data["top_replays"].keys())
+
+    def store_top_player_replay(self, player_id: str, replay_data: dict):
+        if "top_replays" not in self.data:
+            self.data["top_replays"] = {}
+
+        # In a real game, this would save to a dedicated storage or a larger file.
+        # We will save it in a specific file.
+        import json
+        replay_filename = f"replay_{player_id}.json"
+        with open(replay_filename, 'w') as f:
+            json.dump(replay_data, f)
+
+        self.data["top_replays"][player_id] = replay_filename
+        self.save()
+
+    def get_top_player_replay(self, player_id: str):
+        if "top_replays" not in self.data or player_id not in self.data["top_replays"]:
+            return None
+
+        replay_filename = self.data["top_replays"][player_id]
+        import json
+        try:
+            with open(replay_filename, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return None
+
     def generate_season_summary_video(self, top_players: list, season_num: int):
         video_data = {
             "title": f"Season {season_num} Highlight Reel",

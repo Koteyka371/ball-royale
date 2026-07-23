@@ -140,6 +140,14 @@ class TestLeaderboard(unittest.TestCase):
 
 
 
+
+
+
+
+
+
+
+
     def test_viewer_loyalty(self):
         self.lm.record_viewer_loyalty("viewer_1", 10)
         self.assertEqual(self.lm.get_viewer_badge("viewer_1"), "")
@@ -151,6 +159,52 @@ class TestLeaderboard(unittest.TestCase):
         self.assertEqual(self.lm.get_viewer_badge("viewer_1"), "👑")
 
         self.assertEqual(self.lm.get_viewer_badge("unknown_viewer"), "")
+
+    def test_store_and_get_top_player_replay(self):
+        replay_data = {"frames": [{"tick": 1, "entities": []}], "version": "1.0"}
+
+        self.lm.store_top_player_replay("player_1", replay_data)
+
+        self.assertIn("top_replays", self.lm.data)
+        self.assertIn("player_1", self.lm.data["top_replays"])
+
+        fetched_replay = self.lm.get_top_player_replay("player_1")
+        self.assertIsNotNone(fetched_replay)
+        self.assertEqual(fetched_replay["version"], "1.0")
+        self.assertEqual(len(fetched_replay["frames"]), 1)
+
+        # Check non-existent player
+        self.assertIsNone(self.lm.get_top_player_replay("player_2"))
+
+    def test_record_match_replay_top_10(self):
+        from system.replay import ReplaySystem
+        # Give player_1 enough prestige
+        self.lm.update_prestige("player_1", 100)
+        self.lm.update_prestige("player_2", 10)
+
+        replay = ReplaySystem()
+        replay.start_recording()
+        replay.record_frame(1, [{"id": 1}], [])
+        replay.stop_recording()
+
+        self.lm.record_match_replay("player_1", replay)
+
+        replays = self.lm.get_available_replays()
+        self.assertIn("player_1", replays)
+
+        fetched = self.lm.get_top_player_replay("player_1")
+        self.assertIsNotNone(fetched)
+        self.assertEqual(len(fetched["frames"]), 1)
+
+        # player_2 not in top 1 (wait, they are top 2 since there are only 2 players)
+        # Let's add 10 more players with higher prestige
+        for i in range(3, 13):
+            self.lm.update_prestige(f"player_{i}", 50)
+
+        # player_2 is now not in top 10
+        self.lm.record_match_replay("player_2", replay)
+        replays = self.lm.get_available_replays()
+        self.assertNotIn("player_2", replays)
 
 if __name__ == '__main__':
     unittest.main()

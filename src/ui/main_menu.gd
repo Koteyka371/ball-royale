@@ -81,6 +81,33 @@ func _get_theme_color(theme: String) -> Color:
             return Color(0, 0, 0)
 
 
+
+func open_replay_screen() -> Array:
+    active_screen = "replay_screen"
+    if leaderboard_manager != null and leaderboard_manager.has_method("get_available_replays"):
+        return leaderboard_manager.call("get_available_replays")
+    return []
+
+func process_replay_input(action: String, args: Array = []):
+    if action == "watch" and args.size() > 0:
+        var player_id = args[0]
+        if leaderboard_manager != null and leaderboard_manager.has_method("get_top_player_replay"):
+            var replay = leaderboard_manager.call("get_top_player_replay", player_id)
+            if replay != null:
+                return "watching " + player_id
+        return "not found"
+    elif action == "download" and args.size() > 0:
+        var player_id = args[0]
+        if leaderboard_manager != null and leaderboard_manager.has_method("get_top_player_replay"):
+            var replay = leaderboard_manager.call("get_top_player_replay", player_id)
+            if replay != null:
+                return "downloaded " + player_id
+        return "not found"
+    elif action == "back":
+        active_screen = "main"
+        return true
+    return false
+
 func _on_open_nemesis_pressed():
     active_screen = "nemesis"
     prestige_shop_ui.visible = false

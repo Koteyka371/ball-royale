@@ -41,6 +41,33 @@ class MainMenu:
         }
         return colors.get(theme, (0, 0, 0))
 
+
+
+
+    def open_replay_screen(self):
+        self.active_screen = "replay_screen"
+        return self.leaderboard_manager.get_available_replays()
+
+    def process_replay_input(self, action, *args):
+        if action == "watch" and args:
+            player_id = args[0]
+            replay = self.leaderboard_manager.get_top_player_replay(player_id)
+            if replay:
+                # Mock opening replay
+                return f"watching {player_id}"
+            return "not found"
+        elif action == "download" and args:
+            player_id = args[0]
+            replay = self.leaderboard_manager.get_top_player_replay(player_id)
+            if replay:
+                # Mock download
+                return f"downloaded {player_id}"
+            return "not found"
+        elif action == "back":
+            self.active_screen = "main"
+            return True
+        return False
+
     def open_nemesis_screen(self):
         self.active_screen = "nemesis"
         return self.nemesis_screen.render_ui()
@@ -66,6 +93,12 @@ class MainMenu:
             elif action == "back":
                 self.active_screen = "main"
                 return True
+
+
+
+        if self.active_screen == "replay_screen":
+            return self.process_replay_input(action, *args)
+
         if self.active_screen == "nemesis":
 
             if action == "back":
