@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1369] Reverse Tether Hook — *2026-07-23 06:56:24 UTC*
+
+A new booster that when activated, instead of pulling you to the target, it pulls the target to you.
+
+---
+
 ## [idea-1397] Emote Combinations Synergy — *2026-07-23 06:49:25 UTC*
 
 When multiple spectators drop the same emote (e.g. 'cheer:firework') near each other simultaneously, the effects combine to form a massive graphical event on the arena to hype up the remaining players, granting small visual aura buffs to nearby survivors.
