@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1368] Black Hole Slingshot Mutator — *2026-07-23 04:41:37 UTC*
+
+Black holes periodically appear and pull players in, but if a player uses a dash skill when near the event horizon, they gain a massive speed boost in the direction of their dash.
+
+---
+
 ## [idea-1379] Aura Vacuum Mode — *2026-07-23 01:10:46 UTC*
 
 A gamemode where friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves.
