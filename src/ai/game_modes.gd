@@ -5422,29 +5422,7 @@ class BattleRoyaleMode extends GameMode:
 							world.entities.append(new_boss)
 
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-						world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena! All players are now allied!"})
-
-					for b in balls:
-						var b_alive = false
-						if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
-						elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
-
-						var b_type = ""
-						if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
-						elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
-
-						if b_alive and b_type != "spectator":
-							var old_team = null
-							if typeof(b) == TYPE_DICTIONARY and b.has("team"): old_team = b.team
-							elif typeof(b) == TYPE_OBJECT and "team" in b: old_team = b.team
-
-							if typeof(b) == TYPE_DICTIONARY:
-								b["pre_boss_team"] = old_team
-								b["team"] = "Hunters"
-							elif typeof(b) == TYPE_OBJECT:
-								b.set_meta("pre_boss_team", old_team)
-								if "team" in b: b.team = "Hunters"
-								elif b.has_method("set"): b.set("team", "Hunters")
+						world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena!"})
 
 		var weekend_boss_spawned = false
 		if self.has_meta("_weekend_boss_spawned"):
@@ -5475,16 +5453,6 @@ class BattleRoyaleMode extends GameMode:
 
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
-
-						for ob in balls:
-							if typeof(ob) == TYPE_DICTIONARY and ob.has("pre_boss_team"):
-								ob["team"] = ob["pre_boss_team"]
-								ob.erase("pre_boss_team")
-							elif typeof(ob) == TYPE_OBJECT and ob.has_meta("pre_boss_team"):
-								var old_team = ob.get_meta("pre_boss_team")
-								if "team" in ob: ob.team = old_team
-								elif ob.has_method("set"): ob.set("team", old_team)
-								ob.remove_meta("pre_boss_team")
 
 		match_time += delta
 

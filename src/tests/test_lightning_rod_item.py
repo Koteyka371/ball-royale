@@ -21,7 +21,11 @@ class MockWorld:
     def get_nearby_entities(self, ball, radius):
         return {"enemies": [], "allies": [], "hazards": self.arena.hazards, "boosters": self.boosters}
     def _collect_booster(self, ball, booster):
-        pass
+        if booster in self.boosters:
+            self.boosters.remove(booster)
+            if not hasattr(ball, 'inventory'):
+                ball.inventory = []
+            ball.inventory.append(booster.kind)
 
 class MockEntity:
     def __init__(self, kind):
@@ -44,6 +48,10 @@ class MockBall:
         self.inventory = []
         self.intangible = False
         self.intangible_timer = 0.0
+        self.base_speed = 100.0
+        self.base_damage = 10.0
+        self.speed_multiplier = 1.0
+        self.damage_multiplier = 1.0
 
 def test_lightning_rod_item():
     world = MockWorld()
