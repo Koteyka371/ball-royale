@@ -31222,6 +31222,124 @@ func _use_skill():
                         if arena.has_method("queue_redraw"):
                             arena.call("queue_redraw")
 
+        elif skill_name == "blank_burst":
+            if "skill_cooldown" in self.ball:
+                self.ball.skill_timer = self.ball.skill_cooldown
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("skill_cooldown"):
+                self.ball.skill_timer = self.ball.get_meta("skill_cooldown")
+            else:
+                self.ball.skill_timer = 5.0
+
+            _spawn_skill_particles("blank_burst")
+
+            var target = null
+            var enemies = _get_enemies()
+            var alive_enemies = []
+            for e in enemies:
+                var hp = 1.0
+                if typeof(e) == TYPE_DICTIONARY and e.has("hp"):
+                    hp = e.hp
+                elif e.has_method("get_meta") and e.has_meta("hp"):
+                    hp = e.get_meta("hp")
+                elif "hp" in e:
+                    hp = e.hp
+                if hp > 0:
+                    alive_enemies.append(e)
+
+            if alive_enemies.size() > 0:
+                var min_dist_sq = 9999999.0
+                for e in alive_enemies:
+                    var dx = e.x - self.ball.x
+                    var dy = e.y - self.ball.y
+                    var d_sq = dx * dx + dy * dy
+                    if d_sq < min_dist_sq:
+                        min_dist_sq = d_sq
+                        target = e
+
+            var nx = 0.0
+            var ny = -1.0
+            if target != null:
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(dx * dx + dy * dy)
+                if dist > 0:
+                    nx = dx / dist
+                    ny = dy / dist
+            else:
+                var vx = 0.0
+                var vy = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("vx"): vx = self.ball.vx
+                    if self.ball.has("vy"): vy = self.ball.vy
+                elif self.ball.has_method("get_meta"):
+                    if self.ball.has_meta("vx"): vx = self.ball.get_meta("vx")
+                    if self.ball.has_meta("vy"): vy = self.ball.get_meta("vy")
+                elif "vx" in self.ball:
+                    vx = self.ball.vx
+                    vy = self.ball.vy
+
+                var speed = sqrt(vx * vx + vy * vy)
+                if speed > 0:
+                    nx = vx / speed
+                    ny = vy / speed
+
+            # Spawn blanks (hazard objects)
+            if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                var num_blanks = 5
+                for i in range(num_blanks):
+                    var spread = randf_range(-0.3, 0.3)
+                    var cos_s = cos(spread)
+                    var sin_s = sin(spread)
+                    var fnx = nx * cos_s - ny * sin_s
+                    var fny = nx * sin_s + ny * cos_s
+
+                    var b_id = "blank_" + str(self.ball.id) + "_" + str(randi() % 99999)
+                    var blank = {
+                        "id": b_id,
+                        "x": self.ball.x + fnx * 20.0,
+                        "y": self.ball.y + fny * 20.0,
+                        "radius": 15.0,
+                        "kind": "blank_projectile",
+                        "duration": 0.5,
+                        "damage": 0.0,
+                        "owner_id": self.ball.id,
+                        "vx": fnx * 1200.0,
+                        "vy": fny * 1200.0,
+                        "active": true
+                    }
+                    self.world.arena.hazards.append(blank)
+
+            # High reverse thrust (recoil)
+            var thrust_force = 800.0
+
+            var current_vx = 0.0
+            var current_vy = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("vx"): current_vx = self.ball.vx
+                if self.ball.has("vy"): current_vy = self.ball.vy
+            elif self.ball.has_method("get_meta"):
+                if self.ball.has_meta("vx"): current_vx = self.ball.get_meta("vx")
+                if self.ball.has_meta("vy"): current_vy = self.ball.get_meta("vy")
+            elif "vx" in self.ball:
+                current_vx = self.ball.vx
+                current_vy = self.ball.vy
+
+            var new_vx = current_vx - nx * thrust_force
+            var new_vy = current_vy - ny * thrust_force
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["vx"] = new_vx
+                self.ball["vy"] = new_vy
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("vx", new_vx)
+                self.ball.set_meta("vy", new_vy)
+                if "vx" in self.ball:
+                    self.ball.vx = new_vx
+                    self.ball.vy = new_vy
+            elif "vx" in self.ball:
+                self.ball.vx = new_vx
+                self.ball.vy = new_vy
+
         elif skill_name == "repel_burst":
             if "skill_cooldown" in self.ball:
                 self.ball.skill_timer = self.ball.skill_cooldown
@@ -34395,6 +34513,11 @@ func _spawn_skill_particles(skill_name: String = ""):
             particles.lifetime = 0.3 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.5
             # Could orient opposite to velocity if we had it, but spread and low life is fine
+        elif skill_name == "blank_burst":
+            particles["color"] = "white"
+            particles["speed"] = 800.0
+            particles["lifetime"] = 0.3
+
         elif skill_name == "repel_burst":
             particles["color"] = "purple"
             particles["speed"] = 400.0

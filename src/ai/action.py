@@ -16377,6 +16377,62 @@ class Action:
                         setattr(target_hazard, "duration", 10.0)
                         setattr(target_hazard, "owner_id", getattr(self.ball, "id", None))
                         self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+            elif skill_name == "blank_burst":
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("blank_burst")
+
+                # Find nearest enemy to aim at
+                target = None
+                enemies = self._get_enemies()
+                alive_enemies = [e for e in enemies if getattr(e, "hp", 1.0) > 0]
+                if alive_enemies:
+                    target = min(alive_enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+                nx = 0.0
+                ny = -1.0
+                if target:
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0:
+                        nx = dx / dist
+                        ny = dy / dist
+                else:
+                    speed = math.hypot(getattr(self.ball, "vx", 0.0), getattr(self.ball, "vy", 0.0))
+                    if speed > 0:
+                        nx = self.ball.vx / speed
+                        ny = self.ball.vy / speed
+
+                # Spawn blanks (hazard objects)
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        Hazard = type('Hazard', (), {}) # dummy
+
+                    num_blanks = 5
+                    for i in range(num_blanks):
+                        spread = random.uniform(-0.3, 0.3)
+                        cos_s = math.cos(spread)
+                        sin_s = math.sin(spread)
+                        fnx = nx * cos_s - ny * sin_s
+                        fny = nx * sin_s + ny * cos_s
+
+                        b_id = f"blank_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
+                        blank = Hazard(b_id, self.ball.x + fnx * 20.0, self.ball.y + fny * 20.0, 15.0, "blank_projectile", 0.5)
+                        blank.damage = 0.0
+                        blank.owner_id = getattr(self.ball, "id", None)
+                        blank.vx = fnx * 1200.0
+                        blank.vy = fny * 1200.0
+                        blank.active = True
+                        self.world.arena.hazards.append(blank)
+
+                # High reverse thrust (recoil)
+                thrust_force = 800.0
+                self.ball.vx = getattr(self.ball, "vx", 0.0) - nx * thrust_force
+                self.ball.vy = getattr(self.ball, "vy", 0.0) - ny * thrust_force
+
             elif skill_name == "repel_burst":
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
                 push_radius = 200.0
