@@ -37311,11 +37311,11 @@ class ElementalAurasMode extends GameMode:
 				var element = elements[rng.randi() % elements.size()]
 
 				var hz = {
-					"id": "aura_" + element + "_" + str(rng.randi() % 10000),
+					"id": "crafting_station_" + element + "_" + str(rng.randi() % 10000),
 					"x": rng.randf_range(100.0, aw - 100.0),
 					"y": rng.randf_range(100.0, ah - 100.0),
-					"radius": 20.0,
-					"kind": "aura_pickup_" + element,
+					"radius": 40.0,
+					"kind": "crafting_station_" + element,
 					"damage": 0.0,
 					"active": true
 				}
@@ -37334,12 +37334,14 @@ class ElementalAurasMode extends GameMode:
 				elif "kind" in h:
 					kind = h.kind
 
-				if kind.begins_with("aura_pickup_"):
-					var element = kind.split("_")[2]
+				if kind.begins_with("aura_pickup_") or kind.begins_with("crafting_station_"):
+					var parts = kind.split("_")
+					var element = parts[parts.size()-1]
+					var is_station = kind.begins_with("crafting_station_")
 					var picked_up = false
 					var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
 					var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
-					var hr = h.get("radius", 20.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+					var hr = h.get("radius", 40.0 if is_station else 20.0) if typeof(h) == TYPE_DICTIONARY else h.radius
 
 					for b in balls:
 						var b_alive = false
@@ -37357,16 +37359,150 @@ class ElementalAurasMode extends GameMode:
 							var dy = by - hy
 							if sqrt(dx*dx + dy*dy) < br + hr:
 								var auras = {}
-								if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"):
-									if b.has_meta("elemental_auras"):
-										auras = b.get_meta("elemental_auras")
-									auras[element] = auras.get(element, 0) + 1
-									b.set_meta("elemental_auras", auras)
-								elif "elemental_auras" in b:
+								if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("elemental_auras"):
+									auras = b.get_meta("elemental_auras")
+								elif typeof(b) == TYPE_DICTIONARY and "elemental_auras" in b:
 									auras = b.elemental_auras
-									auras[element] = auras.get(element, 0) + 1
-									b.elemental_auras = auras
-								picked_up = true
+								elif typeof(b) != TYPE_DICTIONARY and "elemental_auras" in b:
+									auras = b.elemental_auras
+								else:
+									auras = {"fire": 0, "water": 0, "earth": 0, "lightning": 0}
+
+								var has_other = false
+								var other_element = ""
+								if is_station:
+									for k in auras.keys():
+										if k != element and auras[k] > 0:
+											has_other = true
+											other_element = k
+											break
+
+								if is_station and has_other:
+									auras[other_element] -= 1
+									picked_up = true
+									var combo = [element, other_element]
+									combo.sort()
+									var combo_str = combo[0] + "_" + combo[1]
+
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"):
+										b.set_meta("elemental_auras", auras)
+									elif "elemental_auras" in b:
+										b.elemental_auras = auras
+
+									var bid = b.get("id", "") if typeof(b) == TYPE_DICTIONARY else b.id
+									var bteam = b.get("team", "A") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else b.team)
+
+									if combo_str == "fire_water":
+										var bs = 100.0
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("base_speed"): bs = b.get_meta("base_speed")
+										elif "base_speed" in b: bs = b.base_speed
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"): b.set_meta("speed", bs * 2.0)
+										elif "speed" in b: b.speed = bs * 2.0
+										var maxhp = 100.0
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("max_hp"): maxhp = b.get_meta("max_hp")
+										elif "max_hp" in b: maxhp = b.max_hp
+										var hp = 100.0
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+										elif "hp" in b: hp = b.hp
+										if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"): b.set_meta("hp", min(maxhp, hp + 50.0))
+										elif "hp" in b: b.hp = min(maxhp, hp + 50.0)
+									elif combo_str == "earth_fire":
+										var hz2 = {
+											"id": "magma_" + str(bid) + "_" + str(randi() % 1000),
+											"x": hx, "y": hy, "radius": 80.0, "kind": "fire", "damage": 20.0, "active": true
+										}
+										world.arena.hazards.append(hz2)
+									elif combo_str == "fire_lightning":
+										for other in balls:
+											var o_alive = false
+											if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
+											elif "alive" in other: o_alive = other.alive
+											var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
+											var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
+											if o_alive and oid != bid and o_team != bteam:
+												var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
+												var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
+												if sqrt((hx-ox)*(hx-ox) + (hy-oy)*(hy-oy)) < 250:
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("take_damage"): other.take_damage(50.0)
+													elif "hp" in other: other.hp -= 50.0
+									elif combo_str == "earth_water":
+										for other in balls:
+											var o_alive = false
+											if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
+											elif "alive" in other: o_alive = other.alive
+											var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
+											var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
+											if o_alive and oid != bid and o_team != bteam:
+												var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
+												var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
+												if sqrt((hx-ox)*(hx-ox) + (hy-oy)*(hy-oy)) < 300:
+													var obs = 100.0
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("base_speed"): obs = other.get_meta("base_speed")
+													elif "base_speed" in other: obs = other.base_speed
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): other.set_meta("speed", obs * 0.4)
+													elif "speed" in other: other.speed = obs * 0.4
+									elif combo_str == "lightning_water":
+										for other in balls:
+											var o_alive = false
+											if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
+											elif "alive" in other: o_alive = other.alive
+											var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
+											var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
+											if o_alive and oid != bid and o_team != bteam:
+												var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
+												var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
+												if sqrt((hx-ox)*(hx-ox) + (hy-oy)*(hy-oy)) < 250:
+													var st = 0.0
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("stun_timer"): st = other.get_meta("stun_timer")
+													elif "stun_timer" in other: st = other.stun_timer
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): other.set_meta("stun_timer", max(st, 1.5))
+													elif "stun_timer" in other: other.stun_timer = max(st, 1.5)
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("take_damage"): other.take_damage(25.0)
+													elif "hp" in other: other.hp -= 25.0
+									elif combo_str == "earth_lightning":
+										for other in balls:
+											var o_alive = false
+											if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
+											elif "alive" in other: o_alive = other.alive
+											var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
+											var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
+											if o_alive and oid != bid and o_team != bteam:
+												var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
+												var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
+												var d_x = hx - ox
+												var d_y = hy - oy
+												var d = sqrt(d_x*d_x + d_y*d_y)
+												if d > 0 and d < 400:
+													var pull = 1000.0 / d
+													var vx = 0.0
+													var vy = 0.0
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("vx"): vx = other.get_meta("vx")
+													elif "vx" in other: vx = other.vx
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("vy"): vy = other.get_meta("vy")
+													elif "vy" in other: vy = other.vy
+
+													vx += (d_x / d) * pull
+													vy += (d_y / d) * pull
+
+													if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"):
+														other.set_meta("vx", vx)
+														other.set_meta("vy", vy)
+													elif "vx" in other:
+														other.vx = vx
+														other.vy = vy
+
+									if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("hybrid_crafted", {"id": bid, "elements": combo, "x": hx, "y": hy})
+								else:
+									if not auras.has(element): auras[element] = 0
+									auras[element] += 1
+
+									if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"):
+										b.set_meta("elemental_auras", auras)
+									elif "elemental_auras" in b:
+										b.elemental_auras = auras
+
+									picked_up = true
 
 								var b_team = "A"
 								if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("team"):
@@ -37375,51 +37511,52 @@ class ElementalAurasMode extends GameMode:
 									b_team = b.team
 								var bid = b.get("id", "") if typeof(b) == TYPE_DICTIONARY else b.id
 
-								var enemies_with_auras = []
-								for eb in balls:
-									var eb_alive = false
-									if typeof(eb) != TYPE_DICTIONARY and eb.has_method("has_meta"):
-										eb_alive = eb.get_meta("alive", true) if eb.has_meta("alive") else eb.alive
-									elif "alive" in eb:
-										eb_alive = eb.alive
-									var ebid = eb.get("id", "") if typeof(eb) == TYPE_DICTIONARY else eb.id
-									var eb_team = eb.get("team", "B") if typeof(eb) == TYPE_DICTIONARY else (eb.get_meta("team") if eb.has_method("has_meta") and eb.has_meta("team") else eb.team)
-									if eb_alive and ebid != bid and eb_team != b_team:
-										var e_auras = {}
-										if typeof(eb) != TYPE_DICTIONARY and eb.has_method("has_meta") and eb.has_meta("elemental_auras"):
-											e_auras = eb.get_meta("elemental_auras")
-										elif "elemental_auras" in eb:
-											e_auras = eb.elemental_auras
-										var has_auras = []
-										for k in e_auras.keys():
-											if e_auras[k] > 0:
-												has_auras.append(k)
-										if has_auras.size() > 0:
-											enemies_with_auras.append({"ball": eb, "has_auras": has_auras})
+								if not is_station:
+									var enemies_with_auras = []
+									for eb in balls:
+										var eb_alive = false
+										if typeof(eb) != TYPE_DICTIONARY and eb.has_method("has_meta"):
+											eb_alive = eb.get_meta("alive", true) if eb.has_meta("alive") else eb.alive
+										elif "alive" in eb:
+											eb_alive = eb.alive
+										var ebid = eb.get("id", "") if typeof(eb) == TYPE_DICTIONARY else eb.id
+										var eb_team = eb.get("team", "B") if typeof(eb) == TYPE_DICTIONARY else (eb.get_meta("team") if eb.has_method("has_meta") and eb.has_meta("team") else eb.team)
+										if eb_alive and ebid != bid and eb_team != b_team:
+											var e_auras = {}
+											if typeof(eb) != TYPE_DICTIONARY and eb.has_method("has_meta") and eb.has_meta("elemental_auras"):
+												e_auras = eb.get_meta("elemental_auras")
+											elif "elemental_auras" in eb:
+												e_auras = eb.elemental_auras
+											var has_auras = []
+											for k in e_auras.keys():
+												if e_auras[k] > 0:
+													has_auras.append(k)
+											if has_auras.size() > 0:
+												enemies_with_auras.append({"ball": eb, "has_auras": has_auras})
 
-								if enemies_with_auras.size() > 0:
-									var rng2 = RandomNumberGenerator.new()
-									rng2.randomize()
-									var target = enemies_with_auras[rng2.randi() % enemies_with_auras.size()]
-									var e_ball = target["ball"]
-									var disrupted_element = target["has_auras"][rng2.randi() % target["has_auras"].size()]
+									if enemies_with_auras.size() > 0:
+										var rng2 = RandomNumberGenerator.new()
+										rng2.randomize()
+										var target = enemies_with_auras[rng2.randi() % enemies_with_auras.size()]
+										var e_ball = target["ball"]
+										var disrupted_element = target["has_auras"][rng2.randi() % target["has_auras"].size()]
 
-									var target_auras = {}
-									if typeof(e_ball) != TYPE_DICTIONARY and e_ball.has_method("has_meta") and e_ball.has_meta("elemental_auras"):
-										target_auras = e_ball.get_meta("elemental_auras")
-									elif "elemental_auras" in e_ball:
-										target_auras = e_ball.elemental_auras
+										var target_auras = {}
+										if typeof(e_ball) != TYPE_DICTIONARY and e_ball.has_method("has_meta") and e_ball.has_meta("elemental_auras"):
+											target_auras = e_ball.get_meta("elemental_auras")
+										elif "elemental_auras" in e_ball:
+											target_auras = e_ball.elemental_auras
 
-									target_auras[disrupted_element] -= 1
+										target_auras[disrupted_element] -= 1
 
-									if typeof(e_ball) != TYPE_DICTIONARY and e_ball.has_method("has_meta"):
-										e_ball.set_meta("elemental_auras", target_auras)
-									elif "elemental_auras" in e_ball:
-										e_ball.elemental_auras = target_auras
+										if typeof(e_ball) != TYPE_DICTIONARY and e_ball.has_method("has_meta"):
+											e_ball.set_meta("elemental_auras", target_auras)
+										elif "elemental_auras" in e_ball:
+											e_ball.elemental_auras = target_auras
 
-									if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
-										var tid = e_ball.get("id", "") if typeof(e_ball) == TYPE_DICTIONARY else e_ball.id
-										world.add_event("aura_disrupted", {"id": tid, "element": disrupted_element})
+										if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+											var tid = e_ball.get("id", "") if typeof(e_ball) == TYPE_DICTIONARY else e_ball.id
+											world.add_event("aura_disrupted", {"id": tid, "element": disrupted_element})
 
 								break
 					if not picked_up:
@@ -37541,126 +37678,7 @@ class ElementalAurasMode extends GameMode:
 				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"): b.set_meta("lightning_cd", lcd)
 				elif "lightning_cd" in b: b.lightning_cd = lcd
 
-			if f_stacks >= 1 and w_stacks >= 1:
-				var bs = 100.0
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("base_speed"): bs = b.get_meta("base_speed")
-				elif "base_speed" in b: bs = b.base_speed
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"): b.set_meta("speed", bs * 1.5)
-				elif "speed" in b: b.speed = bs * 1.5
 
-			if f_stacks >= 1 and e_stacks >= 1:
-				var mcd = 0.0
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("magma_cd"): mcd = b.get_meta("magma_cd")
-				elif "magma_cd" in b: mcd = b.magma_cd
-				mcd -= delta
-				if mcd <= 0:
-					mcd = 1.0
-					if "arena" in world and world.arena != null and "hazards" in world.arena:
-						var hz = {
-							"id": "magma_" + str(bid) + "_" + str(randi() % 1000),
-							"x": bx, "y": by, "radius": 30.0, "kind": "fire", "damage": 10.0, "active": true
-						}
-						world.arena.hazards.append(hz)
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"): b.set_meta("magma_cd", mcd)
-				elif "magma_cd" in b: b.magma_cd = mcd
-
-			if f_stacks >= 1 and l_stacks >= 1:
-				var pcd = 0.0
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("plasma_cd"): pcd = b.get_meta("plasma_cd")
-				elif "plasma_cd" in b: pcd = b.plasma_cd
-				pcd -= delta
-				if pcd <= 0:
-					pcd = 3.0
-					for other in balls:
-						var o_alive = false
-						if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
-						elif "alive" in other: o_alive = other.alive
-						var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
-						var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
-						if o_alive and oid != bid and o_team != b_team:
-							var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
-							var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
-							if sqrt((bx-ox)*(bx-ox) + (by-oy)*(by-oy)) < 150:
-								if typeof(other) != TYPE_DICTIONARY and other.has_method("take_damage"): other.take_damage(30.0)
-								elif "hp" in other: other.hp -= 30.0
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"): b.set_meta("plasma_cd", pcd)
-				elif "plasma_cd" in b: b.plasma_cd = pcd
-
-			if w_stacks >= 1 and e_stacks >= 1:
-				for other in balls:
-					var o_alive = false
-					if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
-					elif "alive" in other: o_alive = other.alive
-					var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
-					var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
-					if o_alive and oid != bid and o_team != b_team:
-						var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
-						var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
-						if sqrt((bx-ox)*(bx-ox) + (by-oy)*(by-oy)) < 200:
-							var obs = 100.0
-							if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("base_speed"): obs = other.get_meta("base_speed")
-							elif "base_speed" in other: obs = other.base_speed
-							if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): other.set_meta("speed", obs * 0.6)
-							elif "speed" in other: other.speed = obs * 0.6
-
-			if w_stacks >= 1 and l_stacks >= 1:
-				var ecd = 0.0
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("electric_water_cd"): ecd = b.get_meta("electric_water_cd")
-				elif "electric_water_cd" in b: ecd = b.electric_water_cd
-				ecd -= delta
-				if ecd <= 0:
-					ecd = 2.0
-					for other in balls:
-						var o_alive = false
-						if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
-						elif "alive" in other: o_alive = other.alive
-						var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
-						var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
-						if o_alive and oid != bid and o_team != b_team:
-							var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
-							var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
-							if sqrt((bx-ox)*(bx-ox) + (by-oy)*(by-oy)) < 200:
-								var st = 0.0
-								if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("stun_timer"): st = other.get_meta("stun_timer")
-								elif "stun_timer" in other: st = other.stun_timer
-								if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): other.set_meta("stun_timer", max(st, 0.5))
-								elif "stun_timer" in other: other.stun_timer = max(st, 0.5)
-								if typeof(other) != TYPE_DICTIONARY and other.has_method("take_damage"): other.take_damage(10.0)
-								elif "hp" in other: other.hp -= 10.0
-				if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta"): b.set_meta("electric_water_cd", ecd)
-				elif "electric_water_cd" in b: b.electric_water_cd = ecd
-
-			if e_stacks >= 1 and l_stacks >= 1:
-				for other in balls:
-					var o_alive = false
-					if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"): o_alive = other.get_meta("alive", true) if other.has_meta("alive") else other.alive
-					elif "alive" in other: o_alive = other.alive
-					var oid = other.get("id", "") if typeof(other) == TYPE_DICTIONARY else other.id
-					var o_team = other.get("team", "B") if typeof(other) == TYPE_DICTIONARY else (other.get_meta("team") if other.has_method("has_meta") and other.has_meta("team") else other.team)
-					if o_alive and oid != bid and o_team != b_team:
-						var ox = other.get("x", 0.0) if typeof(other) == TYPE_DICTIONARY else other.x
-						var oy = other.get("y", 0.0) if typeof(other) == TYPE_DICTIONARY else other.y
-						var dx = bx - ox
-						var dy = by - oy
-						var d = sqrt(dx*dx + dy*dy)
-						if d > 0 and d < 300:
-							var pull = 200.0 * delta / d
-							var vx = 0.0
-							var vy = 0.0
-							if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("vx"): vx = other.get_meta("vx")
-							elif "vx" in other: vx = other.vx
-							if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("vy"): vy = other.get_meta("vy")
-							elif "vy" in other: vy = other.vy
-
-							vx += (dx / d) * pull * 100.0
-							vy += (dy / d) * pull * 100.0
-
-							if typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta"):
-								other.set_meta("vx", vx)
-								other.set_meta("vy", vy)
-							elif "vx" in other:
-								other.vx = vx
-								other.vy = vy
 
 
 class AerialArenaMode extends GameMode:

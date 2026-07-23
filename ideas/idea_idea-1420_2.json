@@ -1,0 +1,4 @@
+{
+  "title": "Bounty Hunter Tracking Contracts",
+  "description": "Players can find 'Contract' items on the map. Activating them assigns a specific enemy player as their Bounty for 60 seconds, giving them a slight movement speed bonus when moving toward the target and dropping massive rewards upon a successful takedown."
+}
