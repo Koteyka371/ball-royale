@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1393] Reverse Time Field Trap — *2026-07-23 22:52:25 UTC*
+
+A deployable hazard or trap that creates a localized field. When a ball enters the field, their movements, health changes, and stamina depletion are continuously reverted by a few seconds, confusing their targeting logic and undoing their progress or damage taken.
+
+---
+
 ## [idea-1422] Chain Lightning Mutator — *2026-07-23 22:52:19 UTC*
 
 A game mode mutator where all energy weapons and traps have a chance to chain to nearby secondary targets, causing chaotic team fights.
