@@ -20249,6 +20249,79 @@ func execute(strategy: String, delta: float):
         self._clamp_position()
         return
 
+    elif strategy == "use_artifact" or strategy == "action_artifact":
+        var artifacts = []
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            artifacts = self.ball.get("completed_artifacts", [])
+        else:
+            artifacts = self.ball.get("completed_artifacts") if "completed_artifacts" in self.ball else (self.ball.get_meta("completed_artifacts") if self.ball.has_method("has_meta") and self.ball.has_meta("completed_artifacts") else [])
+
+        for art in artifacts:
+            if art == "aegis_shield":
+                var cd = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    cd = self.ball.get("artifact_aegis_cd", 0.0)
+                else:
+                    cd = self.ball.get("artifact_aegis_cd") if "artifact_aegis_cd" in self.ball else (self.ball.get_meta("artifact_aegis_cd") if self.ball.has_method("has_meta") and self.ball.has_meta("artifact_aegis_cd") else 0.0)
+
+                if cd <= 0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["artifact_aegis_cd"] = 15.0
+                        self.ball["invulnerable_timer"] = max(self.ball.get("invulnerable_timer", 0.0), 3.0)
+                    else:
+                        if "artifact_aegis_cd" in self.ball:
+                            self.ball.artifact_aegis_cd = 15.0
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("artifact_aegis_cd", 15.0)
+
+                        var inv = self.ball.get("invulnerable_timer") if "invulnerable_timer" in self.ball else (self.ball.get_meta("invulnerable_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("invulnerable_timer") else 0.0)
+                        if "invulnerable_timer" in self.ball:
+                            self.ball.invulnerable_timer = max(inv, 3.0)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("invulnerable_timer", max(inv, 3.0))
+
+                    var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get("id") if "id" in self.ball else null)
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("add_event"):
+                        self.world["add_event"].call("artifact_ability_used", {"ball_id": b_id, "artifact_name": "Aegis Shield"})
+                    elif typeof(self.world) != TYPE_DICTIONARY and self.world.has_method("add_event"):
+                        self.world.add_event("artifact_ability_used", {"ball_id": b_id, "artifact_name": "Aegis Shield"})
+
+            elif art == "hermes_boots":
+                var cd = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    cd = self.ball.get("artifact_hermes_cd", 0.0)
+                else:
+                    cd = self.ball.get("artifact_hermes_cd") if "artifact_hermes_cd" in self.ball else (self.ball.get_meta("artifact_hermes_cd") if self.ball.has_method("has_meta") and self.ball.has_meta("artifact_hermes_cd") else 0.0)
+
+                if cd <= 0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["artifact_hermes_cd"] = 10.0
+                        self.ball["speed_multiplier"] = self.ball.get("speed_multiplier", 1.0) * 2.0
+                        self.ball["speed_boost_timer"] = max(self.ball.get("speed_boost_timer", 0.0), 2.0)
+                    else:
+                        if "artifact_hermes_cd" in self.ball:
+                            self.ball.artifact_hermes_cd = 10.0
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("artifact_hermes_cd", 10.0)
+
+                        var sm = self.ball.get("speed_multiplier") if "speed_multiplier" in self.ball else (self.ball.get_meta("speed_multiplier") if self.ball.has_method("has_meta") and self.ball.has_meta("speed_multiplier") else 1.0)
+                        if "speed_multiplier" in self.ball:
+                            self.ball.speed_multiplier = sm * 2.0
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("speed_multiplier", sm * 2.0)
+
+                        var sb = self.ball.get("speed_boost_timer") if "speed_boost_timer" in self.ball else (self.ball.get_meta("speed_boost_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer") else 0.0)
+                        if "speed_boost_timer" in self.ball:
+                            self.ball.speed_boost_timer = max(sb, 2.0)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("speed_boost_timer", max(sb, 2.0))
+
+                    var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get("id") if "id" in self.ball else null)
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("add_event"):
+                        self.world["add_event"].call("artifact_ability_used", {"ball_id": b_id, "artifact_name": "Hermes Boots"})
+                    elif typeof(self.world) != TYPE_DICTIONARY and self.world.has_method("add_event"):
+                        self.world.add_event("artifact_ability_used", {"ball_id": b_id, "artifact_name": "Hermes Boots"})
+
     elif strategy == "use skill" or strategy == "use_skill" or strategy == "action_skill" or strategy == "Действие":
         var skill_name = ""
         if "skill" in self.ball:

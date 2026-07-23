@@ -54657,3 +54657,294 @@ class ItemJammerEventMode extends GameMode:
 							b.silence_timer = max(sil, 0.5)
 
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode.new()
+
+class ArtifactFragmentsMode extends GameMode:
+	var fragment_spawn_timer: float = 5.0
+	var spawn_interval: float = 10.0
+	var fragments: Array = []
+	var artifacts: Array = [
+		{"type": "aegis_shield", "fragments": 3, "name": "Aegis Shield", "color": "#00FFFF"},
+		{"type": "hermes_boots", "fragments": 3, "name": "Hermes Boots", "color": "#FFD700"}
+	]
+
+	func _init():
+		name = "Artifact Fragments"
+		description = "Collect artifact fragments during battle. Gathering three matching fragments combines them into a powerful artifact (Aegis Shield or Hermes Boots)."
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		fragment_spawn_timer -= delta
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+				arena_width = world["arena"].get("width", 1000.0)
+				arena_height = world["arena"].get("height", 1000.0)
+			elif world.has("arena") and world["arena"] != null:
+				arena_width = world["arena"].get("width") if "width" in world["arena"] else 1000.0
+				arena_height = world["arena"].get("height") if "height" in world["arena"] else 1000.0
+		else:
+			if "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					arena_width = world.arena.get("width", 1000.0)
+					arena_height = world.arena.get("height", 1000.0)
+				else:
+					arena_width = world.arena.width if "width" in world.arena else 1000.0
+					arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		if fragment_spawn_timer <= 0.0:
+			fragment_spawn_timer = spawn_interval
+			var artifact_type = "aegis_shield"
+			if randf() > 0.5:
+				artifact_type = "hermes_boots"
+
+			var color = "#00FFFF"
+			if artifact_type == "hermes_boots":
+				color = "#FFD700"
+
+			var frag = {
+				"id": randi() % 90000 + 10000,
+				"x": 50.0 + randf() * (arena_width - 100.0),
+				"y": 50.0 + randf() * (arena_height - 100.0),
+				"radius": 15.0,
+				"artifact_type": artifact_type,
+				"color": color,
+				"kind": "artifact_fragment",
+				"active": true
+			}
+
+			var arena = null
+			if typeof(world) == TYPE_DICTIONARY:
+				arena = world.get("arena")
+			else:
+				if "arena" in world:
+					arena = world.arena
+
+			if arena != null:
+				if typeof(arena) == TYPE_DICTIONARY:
+					if not arena.has("items"):
+						arena["items"] = []
+					arena["items"].append(frag)
+				else:
+					if not "items" in arena:
+						if arena.has_method("set_meta"):
+							arena.set_meta("items", [])
+					var items_arr = arena.get("items") if "items" in arena else (arena.get_meta("items") if arena.has_method("has_meta") and arena.has_meta("items") else [])
+					items_arr.append(frag)
+					if "items" in arena:
+						arena.items = items_arr
+					elif arena.has_method("set_meta"):
+						arena.set_meta("items", items_arr)
+
+			fragments.append(frag)
+
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY:
+			arena = world.get("arena")
+		else:
+			if "arena" in world:
+				arena = world.arena
+
+		var items_arr = []
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				items_arr = arena.get("items", [])
+			else:
+				items_arr = arena.get("items") if "items" in arena else (arena.get_meta("items") if arena.has_method("has_meta") and arena.has_meta("items") else [])
+
+		var to_remove_items = []
+		for item in items_arr:
+			if typeof(item) == TYPE_DICTIONARY and item.get("kind", "") == "artifact_fragment" and item.get("active", true):
+				for b in balls:
+					var is_alive = false
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+						b_type = b.get("ball_type", "")
+					else:
+						is_alive = b.get("alive") if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else false)
+						b_type = b.get("ball_type") if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
+
+					if not is_alive or b_type == "spectator":
+						continue
+
+					var bx = 0.0
+					var by = 0.0
+					var br = 15.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						br = b.get("radius", 15.0)
+					else:
+						bx = b.get("x") if "x" in b else 0.0
+						by = b.get("y") if "y" in b else 0.0
+						br = b.get("radius") if "radius" in b else 15.0
+
+					var ix = item.get("x", 0.0)
+					var iy = item.get("y", 0.0)
+					var ir = item.get("radius", 15.0)
+
+					var dx = bx - ix
+					var dy = by - iy
+					var dist_sq = dx*dx + dy*dy
+
+					if dist_sq < (br + ir) * (br + ir):
+						item["active"] = false
+						to_remove_items.append(item)
+
+						if item in fragments:
+							fragments.erase(item)
+
+						var a_type = item.get("artifact_type", "")
+						var b_id = null
+						if typeof(b) == TYPE_DICTIONARY:
+							b_id = b.get("id")
+							if not b.has("artifact_fragments"):
+								b["artifact_fragments"] = {}
+							var current_count = b["artifact_fragments"].get(a_type, 0)
+							b["artifact_fragments"][a_type] = current_count + 1
+
+							var world_has_event = false
+							if typeof(world) == TYPE_DICTIONARY:
+								if world.has("add_event"):
+									world["add_event"].call("fragment_collected", {"ball_id": b_id, "artifact_type": a_type, "count": b["artifact_fragments"][a_type]})
+							else:
+								if world.has_method("add_event"):
+									world.add_event("fragment_collected", {"ball_id": b_id, "artifact_type": a_type, "count": b["artifact_fragments"][a_type]})
+
+							if b["artifact_fragments"][a_type] >= 3:
+								b["artifact_fragments"][a_type] -= 3
+								if not b.has("completed_artifacts"):
+									b["completed_artifacts"] = []
+								b["completed_artifacts"].append(a_type)
+
+								if a_type == "aegis_shield":
+									b["max_hp"] = b.get("max_hp", 100.0) + 50.0
+									b["hp"] = b.get("hp", 100.0) + 50.0
+									b["shield_reduction"] = max(b.get("shield_reduction", 0.0), 0.25)
+									b["artifact_aegis_cd"] = 0.0
+									if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+										world["add_event"].call("artifact_completed", {"ball_id": b_id, "artifact_name": "Aegis Shield"})
+									elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("artifact_completed", {"ball_id": b_id, "artifact_name": "Aegis Shield"})
+								elif a_type == "hermes_boots":
+									b["base_speed"] = b.get("base_speed", 100.0) + 30.0
+									b["speed"] = b.get("speed", 100.0) + 30.0
+									b["dash_cooldown_multiplier"] = min(b.get("dash_cooldown_multiplier", 1.0), 0.5)
+									b["artifact_hermes_cd"] = 0.0
+									if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+										world["add_event"].call("artifact_completed", {"ball_id": b_id, "artifact_name": "Hermes Boots"})
+									elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("artifact_completed", {"ball_id": b_id, "artifact_name": "Hermes Boots"})
+						else:
+							b_id = b.get("id") if "id" in b else null
+							var frags = b.get("artifact_fragments") if "artifact_fragments" in b else (b.get_meta("artifact_fragments") if b.has_method("has_meta") and b.has_meta("artifact_fragments") else {})
+							var current_count = 0
+							if frags.has(a_type):
+								current_count = frags[a_type]
+							frags[a_type] = current_count + 1
+
+							if "artifact_fragments" in b:
+								b.artifact_fragments = frags
+							elif b.has_method("set_meta"):
+								b.set_meta("artifact_fragments", frags)
+
+							if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+								world["add_event"].call("fragment_collected", {"ball_id": b_id, "artifact_type": a_type, "count": frags[a_type]})
+							elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+								world.add_event("fragment_collected", {"ball_id": b_id, "artifact_type": a_type, "count": frags[a_type]})
+
+							if frags[a_type] >= 3:
+								frags[a_type] -= 3
+								var comp = b.get("completed_artifacts") if "completed_artifacts" in b else (b.get_meta("completed_artifacts") if b.has_method("has_meta") and b.has_meta("completed_artifacts") else [])
+								comp.append(a_type)
+								if "completed_artifacts" in b:
+									b.completed_artifacts = comp
+								elif b.has_method("set_meta"):
+									b.set_meta("completed_artifacts", comp)
+
+								if a_type == "aegis_shield":
+									var cur_m = b.get("max_hp") if "max_hp" in b else 100.0
+									var cur_h = b.get("hp") if "hp" in b else 100.0
+									var cur_s = b.get("shield_reduction") if "shield_reduction" in b else 0.0
+									if "max_hp" in b:
+										b.max_hp = cur_m + 50.0
+									if "hp" in b:
+										b.hp = cur_h + 50.0
+									if "shield_reduction" in b:
+										b.shield_reduction = max(cur_s, 0.25)
+									if "artifact_aegis_cd" in b:
+										b.artifact_aegis_cd = 0.0
+									elif b.has_method("set_meta"):
+										b.set_meta("artifact_aegis_cd", 0.0)
+									if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+										world["add_event"].call("artifact_completed", {"ball_id": b_id, "artifact_name": "Aegis Shield"})
+									elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("artifact_completed", {"ball_id": b_id, "artifact_name": "Aegis Shield"})
+								elif a_type == "hermes_boots":
+									var cur_bs = b.get("base_speed") if "base_speed" in b else 100.0
+									var cur_sp = b.get("speed") if "speed" in b else 100.0
+									var cur_dc = b.get("dash_cooldown_multiplier") if "dash_cooldown_multiplier" in b else 1.0
+									if "base_speed" in b:
+										b.base_speed = cur_bs + 30.0
+									if "speed" in b:
+										b.speed = cur_sp + 30.0
+									if "dash_cooldown_multiplier" in b:
+										b.dash_cooldown_multiplier = min(cur_dc, 0.5)
+									if "artifact_hermes_cd" in b:
+										b.artifact_hermes_cd = 0.0
+									elif b.has_method("set_meta"):
+										b.set_meta("artifact_hermes_cd", 0.0)
+									if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+										world["add_event"].call("artifact_completed", {"ball_id": b_id, "artifact_name": "Hermes Boots"})
+									elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("artifact_completed", {"ball_id": b_id, "artifact_name": "Hermes Boots"})
+						break
+
+		for it in to_remove_items:
+			if it in items_arr:
+				items_arr.erase(it)
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena["items"] = items_arr
+			else:
+				if "items" in arena:
+					arena.items = items_arr
+				elif arena.has_method("set_meta"):
+					arena.set_meta("items", items_arr)
+
+		# Update cooldowns
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			else:
+				is_alive = b.get("alive") if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else false)
+				b_type = b.get("ball_type") if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
+
+			if is_alive and b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.get("artifact_aegis_cd", 0.0) > 0:
+						b["artifact_aegis_cd"] -= delta
+					if b.get("artifact_hermes_cd", 0.0) > 0:
+						b["artifact_hermes_cd"] -= delta
+				else:
+					var aegis_cd = b.get("artifact_aegis_cd") if "artifact_aegis_cd" in b else (b.get_meta("artifact_aegis_cd") if b.has_method("has_meta") and b.has_meta("artifact_aegis_cd") else 0.0)
+					if aegis_cd > 0:
+						if "artifact_aegis_cd" in b:
+							b.artifact_aegis_cd = aegis_cd - delta
+						elif b.has_method("set_meta"):
+							b.set_meta("artifact_aegis_cd", aegis_cd - delta)
+
+					var hermes_cd = b.get("artifact_hermes_cd") if "artifact_hermes_cd" in b else (b.get_meta("artifact_hermes_cd") if b.has_method("has_meta") and b.has_meta("artifact_hermes_cd") else 0.0)
+					if hermes_cd > 0:
+						if "artifact_hermes_cd" in b:
+							b.artifact_hermes_cd = hermes_cd - delta
+						elif b.has_method("set_meta"):
+							b.set_meta("artifact_hermes_cd", hermes_cd - delta)
+
+GAME_MODES['artifact_fragments'] = ArtifactFragmentsMode.new()

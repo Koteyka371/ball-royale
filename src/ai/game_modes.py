@@ -2486,7 +2486,7 @@ class BattleRoyaleMode(GameMode):
                         b.mutation_timer = 0.0
 
                     # Evolve when zone shrinks by 50 units
-                    if b.last_zone_radius - self.zone_radius >= 50.0:
+                    if isinstance(self.zone_radius, (int, float)) and isinstance(b.last_zone_radius, (int, float)) and b.last_zone_radius - self.zone_radius >= 50.0:
                         b.last_zone_radius = self.zone_radius
                         mutators = ["explosive_aura", "increased_speed", "pulling_gravity", "acid_trail", "shield_regen"]
                         available = [m for m in mutators if m not in b.mutations]
@@ -35437,3 +35437,121 @@ class ItemJammerEventMode(GameMode):
                     b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
 
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode()
+
+class ArtifactFragmentsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Artifact Fragments"
+        self.description = "Collect artifact fragments during battle. Gathering three matching fragments combines them into a powerful artifact (Aegis Shield or Hermes Boots)."
+        self.fragment_spawn_timer = 5.0
+        self.spawn_interval = 10.0
+        self.fragments = []
+        self.artifacts = [
+            {"type": "aegis_shield", "fragments": 3, "name": "Aegis Shield", "color": "#00FFFF"},
+            {"type": "hermes_boots", "fragments": 3, "name": "Hermes Boots", "color": "#FFD700"}
+        ]
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.fragment_spawn_timer -= delta
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        if self.fragment_spawn_timer <= 0.0:
+            self.fragment_spawn_timer = self.spawn_interval
+            artifact_type = random.choice(["aegis_shield", "hermes_boots"])
+            if artifact_type == "aegis_shield":
+                color = "#00FFFF"
+            else:
+                color = "#FFD700"
+
+            frag = {
+                "id": random.randint(10000, 99999),
+                "x": random.uniform(50.0, arena_width - 50.0),
+                "y": random.uniform(50.0, arena_height - 50.0),
+                "radius": 15.0,
+                "artifact_type": artifact_type,
+                "color": color,
+                "kind": "artifact_fragment",
+                "active": True
+            }
+            if not hasattr(world.arena, "items"):
+                world.arena.items = []
+            world.arena.items.append(frag)
+            self.fragments.append(frag)
+
+        # Process fragment collection
+        if hasattr(world.arena, "items"):
+            to_remove_items = []
+            for item in world.arena.items:
+                if item.get("kind") == "artifact_fragment" and item.get("active", True):
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                            continue
+
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        br = getattr(b, "radius", 15.0)
+                        ix = item.get("x", 0.0)
+                        iy = item.get("y", 0.0)
+                        ir = item.get("radius", 15.0)
+
+                        dx = bx - ix
+                        dy = by - iy
+                        dist_sq = dx*dx + dy*dy
+                        if dist_sq < (br + ir) * (br + ir):
+                            item["active"] = False
+                            to_remove_items.append(item)
+                            if item in self.fragments:
+                                self.fragments.remove(item)
+
+                            artifact_type = item.get("artifact_type")
+                            if not hasattr(b, "artifact_fragments"):
+                                b.artifact_fragments = {}
+
+                            current_count = b.artifact_fragments.get(artifact_type, 0)
+                            b.artifact_fragments[artifact_type] = current_count + 1
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("fragment_collected", {"ball_id": getattr(b, "id", None), "artifact_type": artifact_type, "count": b.artifact_fragments[artifact_type]})
+
+                            if b.artifact_fragments[artifact_type] >= 3:
+                                b.artifact_fragments[artifact_type] -= 3
+                                if not hasattr(b, "completed_artifacts"):
+                                    b.completed_artifacts = []
+                                b.completed_artifacts.append(artifact_type)
+
+                                if artifact_type == "aegis_shield":
+                                    b.max_hp = getattr(b, "max_hp", 100.0) + 50.0
+                                    b.hp = getattr(b, "hp", 100.0) + 50.0
+                                    b.shield_reduction = max(getattr(b, "shield_reduction", 0.0), 0.25)
+                                    b.artifact_aegis_cd = 0.0
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("artifact_completed", {"ball_id": getattr(b, "id", None), "artifact_name": "Aegis Shield"})
+
+                                elif artifact_type == "hermes_boots":
+                                    b.base_speed = getattr(b, "base_speed", 100.0) + 30.0
+                                    b.speed = getattr(b, "speed", 100.0) + 30.0
+                                    b.dash_cooldown_multiplier = min(getattr(b, "dash_cooldown_multiplier", 1.0), 0.5)
+                                    b.artifact_hermes_cd = 0.0
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("artifact_completed", {"ball_id": getattr(b, "id", None), "artifact_name": "Hermes Boots"})
+                            break
+
+            for item in to_remove_items:
+                if item in world.arena.items:
+                    world.arena.items.remove(item)
+
+        # Update cooldowns
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                if hasattr(b, "artifact_aegis_cd") and b.artifact_aegis_cd > 0:
+                    b.artifact_aegis_cd -= delta
+                if hasattr(b, "artifact_hermes_cd") and b.artifact_hermes_cd > 0:
+                    b.artifact_hermes_cd -= delta
+
+GAME_MODES['artifact_fragments'] = ArtifactFragmentsMode()

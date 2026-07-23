@@ -10238,6 +10238,26 @@ class Action:
             self._clamp_position()
             return
 
+        elif strategy in ("use_artifact", "action_artifact"):
+            artifacts = getattr(self.ball, "completed_artifacts", [])
+
+            for art in artifacts:
+                if art == "aegis_shield":
+                    cd = getattr(self.ball, "artifact_aegis_cd", 0.0)
+                    if cd <= 0:
+                        self.ball.artifact_aegis_cd = 15.0
+                        self.ball.invulnerable_timer = max(getattr(self.ball, "invulnerable_timer", 0.0), 3.0)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("artifact_ability_used", {"ball_id": getattr(self.ball, "id", None), "artifact_name": "Aegis Shield"})
+                elif art == "hermes_boots":
+                    cd = getattr(self.ball, "artifact_hermes_cd", 0.0)
+                    if cd <= 0:
+                        self.ball.artifact_hermes_cd = 10.0
+                        self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.0) * 2.0
+                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 2.0)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("artifact_ability_used", {"ball_id": getattr(self.ball, "id", None), "artifact_name": "Hermes Boots"})
+
         elif strategy in ("use_skill", "use skill", "action_skill", "Действие"):
             if getattr(self.ball, "skill", "") == "flank":
                 self.ball.current_action = "flank"
