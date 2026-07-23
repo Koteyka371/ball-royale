@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1382] Shrinking Safe Path — *2026-07-23 07:37:06 UTC*
+
+A game mode where the safe zone isn't a circle, but rather a winding path (like a snake) that continuously moves and shrinks, forcing players to navigate narrow corridors.
+
+---
+
 ## [idea-1400] Season Highlight Replays integration — *2026-07-23 07:24:31 UTC*
 
 Store full game replays of the final matches of the top 10 players and allow them to be downloaded or watched in-game.

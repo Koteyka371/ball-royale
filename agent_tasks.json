@@ -23675,7 +23675,7 @@
     },
     {
       "id": "idea-1382",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Path",
@@ -35384,6 +35384,40 @@
         "src/arena/quantum_relay_trap.py",
         "src/arena/quantum_relay_trap.gd",
         "tests/test_quantum_relay_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2070",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Match Replay Fast Forward and Rewind",
+      "description": "Add UI controls in the replay screen to fast forward or rewind the match at various speeds (e.g., 0.5x, 1x, 2x, 4x).",
+      "allowed_paths": [
+        "src/ai/match_replay_fast_forward_and_rewind.py",
+        "src/ai/match_replay_fast_forward_and_rewind.gd",
+        "tests/test_match_replay_fast_forward_and_rewind.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2071",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Replay Highlight Reels",
+      "description": "Automatically detect 'hype' moments in a replay (like a multi-kill or an extremely close call) and allow players to view an auto-generated highlight reel of their saved matches.",
+      "allowed_paths": [
+        "src/ai/replay_highlight_reels.py",
+        "src/ai/replay_highlight_reels.gd",
+        "tests/test_replay_highlight_reels.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
