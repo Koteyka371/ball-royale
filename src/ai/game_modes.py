@@ -36681,3 +36681,71 @@ class WeatherTrapMode(GameMode):
                         b.perception_radius = base_perception * 0.5
 
 GAME_MODES['weather_traps'] = WeatherTrapMode()
+
+class VampiricZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vampiric Zone"
+        self.description = "A stationary hazard that slowly drains the HP of any player within its radius, and heals the closest player on the opposite team proportional to the damage dealt."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 150.0
+        self.drain_rate = 15.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from .action import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, r, kind, dur):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = r
+                        self.kind = kind
+                        self.duration = dur
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            self.hazard_obj = hazard_class("vampiric_zone", self.zone_x, self.zone_y, self.zone_radius, "vampiric_zone", 0.0)
+            if not hasattr(self.hazard_obj, "active"):
+                self.hazard_obj.active = True
+            world.arena.hazards.append(self.hazard_obj)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if getattr(b, "hp", 0) > 0 and getattr(b, "ball_type", None) != "spectator":
+                dist_to_center = math.sqrt((b.x - self.zone_x)**2 + (b.y - self.zone_y)**2)
+                if dist_to_center <= self.zone_radius:
+                    damage = self.drain_rate * delta
+                    b.hp -= damage
+                    if b.hp <= 0:
+                        b.hp = 0
+
+                    # Find closest enemy to heal
+                    closest_enemy = None
+                    min_dist = float('inf')
+                    for other in balls:
+                        if other != b and getattr(other, "hp", 0) > 0 and getattr(other, "ball_type", None) != "spectator":
+                            if getattr(other, "team", -1) != getattr(b, "team", -1):
+                                dist = math.sqrt((other.x - b.x)**2 + (other.y - b.y)**2)
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    closest_enemy = other
+
+                    if closest_enemy is not None:
+                        max_hp = getattr(closest_enemy, "max_hp", 100.0)
+                        closest_enemy.hp = min(closest_enemy.hp + damage, max_hp)
+
+GAME_MODES['vampiric_zone'] = VampiricZoneMode()

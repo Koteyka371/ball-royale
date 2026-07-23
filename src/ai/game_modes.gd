@@ -56529,3 +56529,139 @@ class WindingSnakePathMode extends GameMode:
 GAME_MODES['winding_snake_path'] = WindingSnakePathMode.new()
 
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode.new()
+
+class VampiricZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 150.0
+	var drain_rate: float = 15.0
+	var hazard_obj = null
+
+	func _init() -> void:
+		super._init()
+		name = "Vampiric Zone"
+		description = "A stationary hazard that slowly drains the HP of any player within its radius, and heals the closest player on the opposite team proportional to the damage dealt."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = float(arena.get("width", 1000.0))
+				arena_height = float(arena.get("height", 1000.0))
+			elif typeof(arena) == TYPE_OBJECT:
+				arena_width = float(arena.get("width") if "width" in arena else 1000.0)
+				arena_height = float(arena.get("height") if "height" in arena else 1000.0)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			else:
+				arena_width = float(world.arena.get("width") if "width" in world.arena else 1000.0)
+				arena_height = float(world.arena.get("height") if "height" in world.arena else 1000.0)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+
+		hazard_obj = {
+			"id": "vampiric_zone",
+			"x": zone_x,
+			"y": zone_y,
+			"radius": zone_radius,
+			"kind": "vampiric_zone",
+			"duration": 0.0,
+			"active": true
+		}
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY and ("hazards" in arena):
+				arena.get("hazards").append(hazard_obj)
+			elif typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+				arena.hazards.append(hazard_obj)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and ("hazards" in world.arena):
+				world.arena.get("hazards").append(hazard_obj)
+			elif "hazards" in world.arena:
+				world.arena.hazards.append(hazard_obj)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var hp = 0.0
+			var ball_type = ""
+			var is_alive = false
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_team = -1
+
+			if typeof(b) == TYPE_OBJECT:
+				hp = float(b.get("hp"))
+				ball_type = b.get("ball_type")
+				is_alive = hp > 0
+				b_x = float(b.get("x"))
+				b_y = float(b.get("y"))
+				b_team = b.get("team")
+			elif typeof(b) == TYPE_DICTIONARY:
+				hp = float(b.get("hp", 0.0))
+				ball_type = b.get("ball_type", "")
+				is_alive = hp > 0
+				b_x = float(b.get("x", 0.0))
+				b_y = float(b.get("y", 0.0))
+				b_team = b.get("team", -1)
+
+			if is_alive and ball_type != "spectator":
+				var dist_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
+				if dist_to_center <= zone_radius:
+					var damage = drain_rate * delta
+					var new_hp = max(0.0, hp - damage)
+					if typeof(b) == TYPE_OBJECT:
+						b.hp = new_hp
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = new_hp
+
+					# Find closest enemy to heal
+					var closest_enemy = null
+					var min_dist = INF
+
+					for other in balls:
+						var other_hp = 0.0
+						var other_type = ""
+						var other_is_alive = false
+						var other_team = -1
+						var other_x = 0.0
+						var other_y = 0.0
+
+						if typeof(other) == TYPE_OBJECT:
+							other_hp = float(other.get("hp"))
+							other_type = other.get("ball_type")
+							other_is_alive = other_hp > 0
+							other_team = other.get("team")
+							other_x = float(other.get("x"))
+							other_y = float(other.get("y"))
+						elif typeof(other) == TYPE_DICTIONARY:
+							other_hp = float(other.get("hp", 0.0))
+							other_type = other.get("ball_type", "")
+							other_is_alive = other_hp > 0
+							other_team = other.get("team", -1)
+							other_x = float(other.get("x", 0.0))
+							other_y = float(other.get("y", 0.0))
+
+						# Must not be same object/dict, must be alive, not spectator, different team
+						if typeof(other) == typeof(b) and other != b and other_is_alive and other_type != "spectator" and other_team != b_team:
+							var dist = sqrt(pow(other_x - b_x, 2) + pow(other_y - b_y, 2))
+							if dist < min_dist:
+								min_dist = dist
+								closest_enemy = other
+
+					if closest_enemy != null:
+						var max_hp = 100.0
+						if typeof(closest_enemy) == TYPE_OBJECT:
+							max_hp = float(closest_enemy.get("max_hp", 100.0))
+							closest_enemy.hp = min(float(closest_enemy.get("hp")) + damage, max_hp)
+						elif typeof(closest_enemy) == TYPE_DICTIONARY:
+							max_hp = float(closest_enemy.get("max_hp", 100.0))
+							closest_enemy["hp"] = min(float(closest_enemy.get("hp", 0.0)) + damage, max_hp)
+
+GAME_MODES["vampiric_zone"] = VampiricZoneMode.new()
