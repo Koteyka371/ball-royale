@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1392] Guild Emblem Editor UI — *2026-07-23 10:11:58 UTC*
+
+Add a user interface in the main menu for players to easily edit their guild emblem visually.
+
+---
+
 ## [idea-1388] Quantum Leap Boots — *2026-07-23 07:55:53 UTC*
 
 A new booster that allows players to instantly teleport a short distance forward, bypassing hazards, walls, and other players, but with a high stamina cost per use.
