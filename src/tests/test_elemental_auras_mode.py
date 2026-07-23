@@ -10,6 +10,11 @@ class MockBall:
         self.team = team
         self.alive = True
         self.ball_type = "player"
+        self.base_speed = 100.0
+        self.speed = 100.0
+        self.max_hp = 100.0
+        self.hp = 100.0
+        self.elemental_auras = {"fire": 0, "water": 0, "earth": 0, "lightning": 0}
 
 class MockArena:
     def __init__(self):
@@ -25,7 +30,7 @@ class MockWorld:
     def add_event(self, name, data):
         self.events.append([name, data])
 
-def test_elemental_auras_mode_disruption():
+def test_elemental_auras_mode_crafting_station():
     mode = ElementalAurasMode()
     world = MockWorld()
 
@@ -34,23 +39,32 @@ def test_elemental_auras_mode_disruption():
 
     mode.setup(world, [b1, b2])
 
-    b2.elemental_auras["fire"] = 1
-
     class MockHazard:
         def __init__(self, kind, x, y):
             self.kind = kind
             self.x = x
             self.y = y
-            self.radius = 20.0
+            self.radius = 40.0
             self.active = True
 
-    world.arena.hazards.append(MockHazard("aura_pickup_water", 500, 500))
-
+    # Test collecting an aura from a crafting station
+    world.arena.hazards.append(MockHazard("crafting_station_water", 500, 500))
     mode.tick(world, [b1, b2], 0.016)
 
     assert b1.elemental_auras.get("water", 0) == 1
-    assert b2.elemental_auras.get("fire", 0) == 0
+    assert len(world.arena.hazards) == 0  # Consumed
+
+    # Test depositing an aura for a hybrid effect (Fire + Water)
+    b1.elemental_auras["fire"] = 1
+    world.arena.hazards.append(MockHazard("crafting_station_water", 500, 500))
+
+    # Fast forward so crafting station can be interacted with
+    mode.tick(world, [b1, b2], 0.016)
+
+    assert b1.elemental_auras.get("fire", 0) == 0  # Deposited
+    assert b1.speed > 100.0  # Speed boost triggered
+    assert len(world.arena.hazards) == 0
     assert len(world.events) == 1
-    assert world.events[0][0] == "aura_disrupted"
-    assert world.events[0][1]["id"] == 2
-    assert world.events[0][1]["element"] == "fire"
+    assert world.events[0][0] == "hybrid_crafted"
+    assert "fire" in world.events[0][1]["elements"]
+    assert "water" in world.events[0][1]["elements"]

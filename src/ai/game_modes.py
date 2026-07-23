@@ -23589,7 +23589,7 @@ class ElementalAurasMode(GameMode):
 
                 try:
                     from arena.procedural_arena import Hazard
-                    h = Hazard(f"aura_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 20.0, f"aura_pickup_{element}", 0.0)
+                    h = Hazard(f"crafting_station_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 40.0, f"crafting_station_{element}", 0.0)
                 except ImportError:
                     class FallbackHazard:
                         def __init__(self, hid, hx, hy, r, k, d):
@@ -23600,7 +23600,7 @@ class ElementalAurasMode(GameMode):
                             self.kind = k
                             self.damage = d
                             self.active = True
-                    h = FallbackHazard(f"aura_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 20.0, f"aura_pickup_{element}", 0.0)
+                    h = FallbackHazard(f"crafting_station_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 40.0, f"crafting_station_{element}", 0.0)
 
                 if not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
@@ -23609,30 +23609,90 @@ class ElementalAurasMode(GameMode):
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             still_hazards = []
             for h in world.arena.hazards:
-                if getattr(h, "kind", "").startswith("aura_pickup_"):
+                if getattr(h, "kind", "").startswith("aura_pickup_") or getattr(h, "kind", "").startswith("crafting_station_"):
                     element = h.kind.split("_")[-1]
+                    is_station = getattr(h, "kind", "").startswith("crafting_station_")
                     picked_up = False
                     for b in balls:
                         if getattr(b, "alive", False):
                             if math.hypot(b.x - h.x, b.y - h.y) < b.radius + h.radius:
                                 if not hasattr(b, "elemental_auras"):
                                     b.elemental_auras = {"fire": 0, "water": 0, "earth": 0, "lightning": 0}
-                                b.elemental_auras[element] = b.elemental_auras.get(element, 0) + 1
-                                picked_up = True
 
-                                # Disrupt random enemy aura
-                                enemies = [eb for eb in balls if getattr(eb, "alive", False) and getattr(eb, "id", None) != getattr(b, "id", None) and getattr(eb, "team", "B") != getattr(b, "team", "A")]
-                                random.shuffle(enemies)
-                                for enemy in enemies:
-                                    if hasattr(enemy, "elemental_auras"):
-                                        has_auras = [k for k, v in enemy.elemental_auras.items() if v > 0]
-                                        if has_auras:
-                                            disrupted_element = random.choice(has_auras)
-                                            enemy.elemental_auras[disrupted_element] -= 1
-                                            if hasattr(world, "add_event"):
-                                                world.add_event("aura_disrupted", {"id": enemy.id, "element": disrupted_element})
+                                has_other = False
+                                other_element = None
+                                if is_station:
+                                    for k, v in b.elemental_auras.items():
+                                        if k != element and v > 0:
+                                            has_other = True
+                                            other_element = k
                                             break
-                                break
+
+                                if is_station and has_other:
+                                    # Deposit! Trigger hybrid effect
+                                    b.elemental_auras[other_element] -= 1
+                                    picked_up = True
+                                    combo = set([element, other_element])
+                                    if combo == {"fire", "water"}:
+                                        b.speed = getattr(b, "base_speed", 100) * 2.0
+                                        if hasattr(b, "take_damage"): b.hp = min(getattr(b, "max_hp", 100), b.hp + 50)
+                                        else: b.hp = min(getattr(b, "max_hp", 100), b.hp + 50)
+                                    elif combo == {"fire", "earth"}:
+                                        try:
+                                            from arena.procedural_arena import Hazard
+                                            world.arena.hazards.append(Hazard(f"magma_{b.id}_{random.randint(0,1000)}", h.x, h.y, 80.0, "fire", 20.0))
+                                        except ImportError:
+                                            class FallbackHazard2:
+                                                def __init__(self, hid, hx, hy, r, k, d):
+                                                    self.id, self.x, self.y, self.radius, self.kind, self.damage, self.active = hid, hx, hy, r, k, d, True
+                                            world.arena.hazards.append(FallbackHazard2(f"magma_{b.id}_{random.randint(0,1000)}", h.x, h.y, 80.0, "fire", 20.0))
+                                    elif combo == {"fire", "lightning"}:
+                                        for other in balls:
+                                            if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != getattr(b, "team", "A"):
+                                                if math.hypot(h.x - other.x, h.y - other.y) < 250:
+                                                    if hasattr(other, "take_damage"): other.take_damage(50.0)
+                                                    else: other.hp -= 50.0
+                                    elif combo == {"water", "earth"}:
+                                        for other in balls:
+                                            if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != getattr(b, "team", "A"):
+                                                if math.hypot(h.x - other.x, h.y - other.y) < 300:
+                                                    other.speed = getattr(other, "base_speed", 100) * 0.4
+                                    elif combo == {"water", "lightning"}:
+                                        for other in balls:
+                                            if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != getattr(b, "team", "A"):
+                                                if math.hypot(h.x - other.x, h.y - other.y) < 250:
+                                                    other.stun_timer = max(getattr(other, "stun_timer", 0.0), 1.5)
+                                                    if hasattr(other, "take_damage"): other.take_damage(25.0)
+                                                    else: other.hp -= 25.0
+                                    elif combo == {"earth", "lightning"}:
+                                        for other in balls:
+                                            if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != getattr(b, "team", "A"):
+                                                dx, dy = h.x - other.x, h.y - other.y
+                                                d = math.hypot(dx, dy)
+                                                if 0 < d < 400:
+                                                    pull = 1000.0 / d
+                                                    other.vx = getattr(other, "vx", 0.0) + (dx / d) * pull
+                                                    other.vy = getattr(other, "vy", 0.0) + (dy / d) * pull
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("hybrid_crafted", {"id": b.id, "elements": list(combo), "x": h.x, "y": h.y})
+                                    break
+                                else:
+                                    b.elemental_auras[element] = b.elemental_auras.get(element, 0) + 1
+                                    picked_up = True
+                                    if not is_station:
+                                        # Disrupt random enemy aura only on old aura pickups if kept for tests
+                                        enemies = [eb for eb in balls if getattr(eb, "alive", False) and getattr(eb, "id", None) != getattr(b, "id", None) and getattr(eb, "team", "B") != getattr(b, "team", "A")]
+                                        random.shuffle(enemies)
+                                        for enemy in enemies:
+                                            if hasattr(enemy, "elemental_auras"):
+                                                has_auras = [k for k, v in enemy.elemental_auras.items() if v > 0]
+                                                if has_auras:
+                                                    disrupted_element = random.choice(has_auras)
+                                                    enemy.elemental_auras[disrupted_element] -= 1
+                                                    if hasattr(world, "add_event"):
+                                                        world.add_event("aura_disrupted", {"id": enemy.id, "element": disrupted_element})
+                                                    break
+                                    break
                     if not picked_up:
                         still_hazards.append(h)
                 else:
@@ -23685,65 +23745,7 @@ class ElementalAurasMode(GameMode):
                         if hasattr(best_enemy, "take_damage"): best_enemy.take_damage(20.0 * l_stacks)
                         else: best_enemy.hp -= 20.0 * l_stacks
 
-            # Hybrid: Fire + Water
-            if f_stacks >= 1 and w_stacks >= 1:
-                b.speed = getattr(b, "base_speed", 100) * 1.5
 
-            # Hybrid: Fire + Earth
-            if f_stacks >= 1 and e_stacks >= 1:
-                b.magma_cd = getattr(b, "magma_cd", 0.0) - delta
-                if b.magma_cd <= 0:
-                    b.magma_cd = 1.0
-                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
-                        try:
-                            from arena.procedural_arena import Hazard
-                            world.arena.hazards.append(Hazard(f"magma_{b.id}_{random.randint(0,1000)}", b.x, b.y, 30.0, "fire", 10.0))
-                        except ImportError:
-                            class FallbackHazard:
-                                def __init__(self, hid, hx, hy, r, k, d):
-                                    self.id, self.x, self.y, self.radius, self.kind, self.damage, self.active = hid, hx, hy, r, k, d, True
-                            world.arena.hazards.append(FallbackHazard(f"magma_{b.id}_{random.randint(0,1000)}", b.x, b.y, 30.0, "fire", 10.0))
-
-            # Hybrid: Fire + Lightning
-            if f_stacks >= 1 and l_stacks >= 1:
-                b.plasma_cd = getattr(b, "plasma_cd", 0.0) - delta
-                if b.plasma_cd <= 0:
-                    b.plasma_cd = 3.0
-                    for other in balls:
-                        if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != b_team:
-                            if math.hypot(b.x - other.x, b.y - other.y) < 150:
-                                if hasattr(other, "take_damage"): other.take_damage(30.0)
-                                else: other.hp -= 30.0
-
-            # Hybrid: Water + Earth
-            if w_stacks >= 1 and e_stacks >= 1:
-                for other in balls:
-                    if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != b_team:
-                        if math.hypot(b.x - other.x, b.y - other.y) < 200:
-                            other.speed = getattr(other, "base_speed", 100) * 0.6
-
-            # Hybrid: Water + Lightning
-            if w_stacks >= 1 and l_stacks >= 1:
-                b.electric_water_cd = getattr(b, "electric_water_cd", 0.0) - delta
-                if b.electric_water_cd <= 0:
-                    b.electric_water_cd = 2.0
-                    for other in balls:
-                        if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != b_team:
-                            if math.hypot(b.x - other.x, b.y - other.y) < 200:
-                                other.stun_timer = max(getattr(other, "stun_timer", 0.0), 0.5)
-                                if hasattr(other, "take_damage"): other.take_damage(10.0)
-                                else: other.hp -= 10.0
-
-            # Hybrid: Earth + Lightning
-            if e_stacks >= 1 and l_stacks >= 1:
-                for other in balls:
-                    if getattr(other, "alive", False) and other.id != b.id and getattr(other, "team", "B") != b_team:
-                        dx, dy = b.x - other.x, b.y - other.y
-                        d = math.hypot(dx, dy)
-                        if 0 < d < 300:
-                            pull = 200.0 * delta / d
-                            other.vx = getattr(other, "vx", 0.0) + (dx / d) * pull * 100
-                            other.vy = getattr(other, "vy", 0.0) + (dy / d) * pull * 100
 
 class HeavyRainMode(GameMode):
     def __init__(self):
