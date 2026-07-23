@@ -1,0 +1,4 @@
+{
+  "title": "Blackout Hazard",
+  "description": "A new hazard that temporarily disables all vision and tracking capabilities for entities that enter it, enforcing a pseudo-blindness debuff for a brief duration."
+}

@@ -8644,11 +8644,33 @@ func execute(strategy: String, delta: float):
 			self.ball.set_meta("confusion_timer", conf_timer)
 		else:
 			self.ball.confusion_timer = conf_timer
+
+		var flip_timer = self.ball.get_meta("confusion_flip_timer") if self.ball.has_method("has_meta") and self.ball.has_meta("confusion_flip_timer") else (self.ball.confusion_flip_timer if "confusion_flip_timer" in self.ball else 0.0)
+		flip_timer -= delta
+		if flip_timer <= 0:
+			flip_timer = 0.5
+			var flipped = randf() < 0.5
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("_confusion_flipped", flipped)
+			elif "_confusion_flipped" in self.ball:
+				self.ball._confusion_flipped = flipped
+			else:
+				self.ball["_confusion_flipped"] = flipped
+		if self.ball.has_method("set_meta"):
+			self.ball.set_meta("confusion_flip_timer", flip_timer)
+		elif "confusion_flip_timer" in self.ball:
+			self.ball.confusion_flip_timer = flip_timer
+		else:
+			self.ball["confusion_flip_timer"] = flip_timer
+
 		if conf_timer <= 0.0:
 			if self.ball.has_method("set_meta"):
 				self.ball.set_meta("is_confused", false)
+				self.ball.set_meta("_confusion_flipped", false)
 			else:
 				self.ball.is_confused = false
+				if "_confusion_flipped" in self.ball:
+					self.ball._confusion_flipped = false
 
 	# Mind control timer logic
 	var mc_timer = 0.0
@@ -22662,7 +22684,7 @@ func _group_attack(delta: float):
                 var inv_t = 0.0
                 if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
-                if inv_t > 0.0:
+                if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
                     step = -step
 
                 self.ball.x += nx * min(step, dist)
@@ -22907,7 +22929,7 @@ func _flank(delta: float):
                 var inv_t = 0.0
                 if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
-                if inv_t > 0.0:
+                if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
                     step = -step
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
@@ -23081,7 +23103,7 @@ func _chase_target(target, delta: float):
                 var inv_t = 0.0
                 if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
-                if inv_t > 0.0:
+                if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
                     step = -step
 
         ball.x += nx * step
@@ -23274,7 +23296,7 @@ func _chase(delta: float):
                 var inv_t = 0.0
                 if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
-                if inv_t > 0.0:
+                if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
                     step = -step
 
     self.ball.x += comb_nx * step
@@ -23857,7 +23879,7 @@ func _defend(delta: float):
                 var inv_t = 0.0
                 if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
-                if inv_t > 0.0:
+                if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
                     step = -step
                 self.ball.x += nx * min(step, dist)
                 self.ball.y += ny * min(step, dist)
@@ -25154,7 +25176,17 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
-            elif "kind" in nearest and nearest.kind == "cursed_booster":
+            elif "kind" in nearest and nearest.kind == "confusion_trap":
+                self.ball.confusion_timer = 5.0
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("confusion_timer", 5.0)
+                    self.ball.set_meta("is_confused", true)
+                else:
+                    self.ball["is_confused"] = true
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "cursed_booster", "confusion_trap":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("slow_timer", 5.0)
                     self.ball.set_meta("poison_timer", 5.0)
@@ -33638,7 +33670,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "confusion_trap", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
                         var hx = 0.0
                         var hy = 0.0
                         if "x" in h: hx = h.x
@@ -37268,7 +37300,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "confusion_trap", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -40061,7 +40093,7 @@ func _kite(delta: float):
                 var inv_t = 0.0
                 if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
-                if inv_t > 0.0:
+                if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
                     step = -step
                 if actual_dist < b_attack_range * kite_ratio:
                     self.ball.x += nx * step
@@ -40254,7 +40286,7 @@ func _escort(delta: float) -> void:
         var inv_t = 0.0
         if "invert_timer" in ball: inv_t = float(ball.invert_timer)
         elif ball.has_method("get_meta") and ball.has_meta("invert_timer"): inv_t = float(ball.get_meta("invert_timer"))
-        if inv_t > 0.0:
+        if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
             step = -step
 
         ball.x += nx * min(step, dist - 40.0)
@@ -40380,7 +40412,7 @@ func _intercept(delta: float) -> void:
         var inv_t = 0.0
         if "invert_timer" in ball: inv_t = float(ball.invert_timer)
         elif ball.has_method("get_meta") and ball.has_meta("invert_timer"): inv_t = float(ball.get_meta("invert_timer"))
-        if inv_t > 0.0:
+        if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
             step = -step
 
         ball.x += nx * step
@@ -40508,7 +40540,7 @@ func _hide_behind(delta: float):
                 var inv_t = 0.0
                 if "invert_timer" in self.ball: inv_t = float(self.ball.invert_timer)
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("invert_timer"): inv_t = float(self.ball.get_meta("invert_timer"))
-                if inv_t > 0.0:
+                if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
                     step = -step
 
         ball.x += nx_m * min(step, dist_m)
@@ -40554,7 +40586,7 @@ func _ricochet_attack(delta: float):
         var inv_t = 0.0
         if "invert_timer" in ball: inv_t = float(ball.invert_timer)
         elif ball.has_method("get_meta") and ball.has_meta("invert_timer"): inv_t = float(ball.get_meta("invert_timer"))
-        if inv_t > 0.0:
+        if inv_t > 0.0 or (self.ball.get("_confusion_flipped", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("_confusion_flipped") if self.ball.has_method("has_meta") and self.ball.has_meta("_confusion_flipped") else false)):
             step = -step
 			self.ball.x += nx * min(step, b_dist)
 			self.ball.y += ny * min(step, b_dist)
