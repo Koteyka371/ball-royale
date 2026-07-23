@@ -44,7 +44,7 @@ def test_blink_booster_collection():
     world = MockWorld([ball], MockArena([booster]), [booster])
     action = Action(ball, world)
 
-    # Hack to make the AI see the booster and move
+    # Workaround to make the AI see the booster and move
     action._get_boosters = lambda: [booster]
     action._get_enemies = lambda: []
 
