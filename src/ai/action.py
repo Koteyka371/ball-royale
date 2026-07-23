@@ -1522,6 +1522,36 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Burning Trail Trap Logic
+        if getattr(self.ball, "burning_trail_timer", 0.0) > 0.0:
+            self.ball.burning_trail_timer -= delta
+            if getattr(self.ball, "burning_trail_spawn_timer", 0.0) > 0:
+                self.ball.burning_trail_spawn_timer -= delta
+
+            if self.ball.burning_trail_timer < 0.0:
+                self.ball.burning_trail_timer = 0.0
+
+            if getattr(self.ball, "burning_trail_spawn_timer", 0.0) <= 0.0 and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and (abs(self.ball.vx) > 0.1 or abs(self.ball.vy) > 0.1):
+                self.ball.burning_trail_spawn_timer = 0.1  # spawn every 0.1s
+                trail_id = len(self.world.arena.hazards) + 9000
+                class MockTrail:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                try:
+                    from arena.procedural_arena import Hazard
+                    trail = Hazard(trail_id, self.ball.x, self.ball.y, getattr(self.ball, "radius", 15.0) + 5.0, "burning_trail_puddle", 0.0)
+                except ImportError:
+                    trail = MockTrail(trail_id, self.ball.x, self.ball.y, getattr(self.ball, "radius", 15.0) + 5.0, "burning_trail_puddle", 0.0)
+
+                trail.duration = 2.0
+                trail.owner_id = getattr(self.ball, "burning_trail_owner_id", -1)
+                self.world.arena.hazards.append(trail)
         cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
         if cosmetic == "wall_grappler" and strategy in ("flee", "attack", "chase"):
             import math
@@ -8176,6 +8206,11 @@ class Action:
                                         enemy.trap_link_target = self.ball
                                         enemy.trap_link_timer = 10.0
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "burning_trail":
+                                    # Burning Trail trap: leaves a burning trail on the ground where the ball moves for the next 10 seconds
+                                    self.ball.burning_trail_timer = max(getattr(self.ball, "burning_trail_timer", 0.0), 10.0)
+                                    self.ball.burning_trail_owner_id = getattr(hazard, "owner_id", -1)
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "tar":
                                     # Tar trap: heavily slow down the ball and create a tar puddle
                                     if hasattr(self.ball, "speed_multiplier"):
@@ -9647,6 +9682,12 @@ class Action:
                                 if self.ball.defense_multiplier < 1.0:
                                     self.ball.defense_multiplier = min(1.0, self.ball.defense_multiplier + 0.5 * delta)
                             continue
+                        elif hazard.kind == "burning_trail_puddle":
+                            if getattr(hazard, "owner_id", None) != self.ball.id:
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(20.0 * delta)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= 20.0 * delta
                         elif hazard.kind == "tar_puddle":
                             if hasattr(self.ball, "slow_timer"):
                                 self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)
