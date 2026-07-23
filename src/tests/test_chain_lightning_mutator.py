@@ -30,7 +30,7 @@ def test_chain_lightning_mutator():
     import random
     random.seed(42) # Should give predictable results
 
-    # Hack the chance to 1.0 for testing
+    # Set the chance to 1.0 for testing
     mode.chain_chance = 1.0
 
     world = MockWorld()

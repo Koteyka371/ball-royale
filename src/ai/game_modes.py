@@ -36278,6 +36278,51 @@ class VolcanicEruptionEventMode(GameMode):
                 world.arena.hazards.append(h)
 
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
+class EarthquakeEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Earthquake Event"
+        self.description = "A periodic random event where the entire arena shakes. Balls without the 'grounded' status take minor continuous damage and suffer a severe speed penalty, forcing players to find safe zones or use specific defensive skills."
+        self.event_timer = 20.0
+        self.is_shaking = False
+        self.shake_duration = 5.0
+        self.shake_timer = 0.0
+
+    def apply_dynamic_traits(self, world, balls, delta=0.016):
+        super().apply_dynamic_traits(world, balls, delta)
+
+        if not self.is_shaking:
+            self.event_timer -= delta
+            if self.event_timer <= 0.0:
+                self.is_shaking = True
+                self.shake_timer = self.shake_duration
+                if hasattr(world, "add_event"):
+                    world.add_event("camera_shake", {"duration": self.shake_duration, "intensity": 5.0})
+        else:
+            self.shake_timer -= delta
+            if self.shake_timer <= 0.0:
+                self.is_shaking = False
+                self.event_timer = 20.0
+                return
+
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+
+                if not getattr(b, "grounded", False):
+                    # Minor continuous damage
+                    b.hp = getattr(b, "hp", 100.0) - 10.0 * delta
+
+                    # Severe speed penalty
+                    b.vx = getattr(b, "vx", 0.0) * (0.2 ** delta)
+                    b.vy = getattr(b, "vy", 0.0) * (0.2 ** delta)
+
+                    if b.hp <= 0.0:
+                        b.alive = False
+                        if hasattr(world, "add_event"):
+                            world.add_event("ball_died", {"id": getattr(b, "id", None), "reason": "earthquake"})
+
+GAME_MODES['earthquake_event'] = EarthquakeEventMode()
 
 
 class ItemJammerEventMode(GameMode):

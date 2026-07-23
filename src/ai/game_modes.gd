@@ -55722,6 +55722,7 @@ class VolcanicEruptionEventMode extends GameMode:
 					world.arena.hazards.append(h)
 
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode.new()
+GAME_MODES['earthquake_event'] = EarthquakeEventMode.new()
 
 GAME_MODES['gravity_shift'] = GravityShiftMode.new()
 
@@ -56116,6 +56117,71 @@ class TricksterEventMode extends GameMode:
 
 GAME_MODES['trickster_event'] = TricksterEventMode.new()
 
+
+
+class EarthquakeEventMode extends GameMode:
+	var event_timer = 20.0
+	var is_shaking = false
+	var shake_duration = 5.0
+	var shake_timer = 0.0
+
+	func _init():
+		super._init()
+		self.name = "Earthquake Event"
+		self.description = "A periodic random event where the entire arena shakes. Balls without the 'grounded' status take minor continuous damage and suffer a severe speed penalty, forcing players to find safe zones or use specific defensive skills."
+
+	func apply_dynamic_traits(world, balls, delta=0.016):
+		super.apply_dynamic_traits(world, balls, delta)
+
+		if not is_shaking:
+			event_timer -= delta
+			if event_timer <= 0.0:
+				is_shaking = true
+				shake_timer = shake_duration
+				if _has_prop(world, "add_event"):
+					world.add_event("camera_shake", {"duration": shake_duration, "intensity": 5.0})
+		else:
+			shake_timer -= delta
+			if shake_timer <= 0.0:
+				is_shaking = false
+				event_timer = 20.0
+				return
+
+			for b in balls:
+				if not _get_prop(b, "alive", true):
+					continue
+
+				if not _get_prop(b, "grounded", false):
+					# Minor continuous damage
+					var current_hp = _get_prop(b, "hp", 100.0)
+					var new_hp = current_hp - 10.0 * delta
+					if "hp" in b:
+						b.hp = new_hp
+					elif b is Object and b.has_method("set_meta"):
+						b.set_meta("hp", new_hp)
+
+					# Severe speed penalty (slowed down rather than immediate root)
+					var vx = _get_prop(b, "vx", 0.0) * pow(0.2, delta)
+					var vy = _get_prop(b, "vy", 0.0) * pow(0.2, delta)
+
+					if "vx" in b:
+						b.vx = vx
+					elif b is Object and b.has_method("set_meta"):
+						b.set_meta("vx", vx)
+
+					if "vy" in b:
+						b.vy = vy
+					elif b is Object and b.has_method("set_meta"):
+						b.set_meta("vy", vy)
+
+					if new_hp <= 0.0:
+						if "alive" in b:
+							b.alive = false
+						elif b is Object and b.has_method("set_meta"):
+							b.set_meta("alive", false)
+						if _has_prop(world, "add_event"):
+							var b_id = _get_prop(b, "id", null)
+							world.add_event("ball_died", {"id": b_id, "reason": "earthquake"})
 
 class ItemJammerEventMode extends GameMode:
 	var jammer_timer = 20.0
