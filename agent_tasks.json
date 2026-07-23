@@ -24307,7 +24307,7 @@
     },
     {
       "id": "idea-1419",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Disruption Mode",
@@ -35622,6 +35622,40 @@
         "src/ai/aegis_reflection_dome.py",
         "src/ai/aegis_reflection_dome.gd",
         "tests/test_aegis_reflection_dome.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2084",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Voice Assistant Commentator",
+      "description": "Integrate an AI-based voice assistant that generates context-aware conversational commentary throughout a match, analyzing strategies, reacting to surprising clutch plays in real-time, and personalizing the experience by addressing the player's specific build or class.",
+      "allowed_paths": [
+        "src/ai/voice_assistant_commentator.py",
+        "src/ai/voice_assistant_commentator.gd",
+        "tests/test_voice_assistant_commentator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2085",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shareable Interactive Highlights",
+      "description": "A feature to export highlight clips not just as videos, but as lightweight interactive 'moments' where other players can take control at the critical juncture (the clutch or epic kill) to see if they could perform the same feat or do even better.",
+      "allowed_paths": [
+        "src/ai/shareable_interactive_highlights.py",
+        "src/ai/shareable_interactive_highlights.gd",
+        "tests/test_shareable_interactive_highlights.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

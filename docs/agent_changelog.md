@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1419] Aura Disruption Mode — *2026-07-23 20:20:34 UTC*
+
+A mode where collecting an aura pickup grants you an aura, but randomly disrupts (removes/disables) one of the enemies' auras, causing chaotic shifting of elemental advantages.
+
+---
+
 ## [idea-1404] AI Highlight Commentary — *2026-07-23 20:07:55 UTC*
 
 Add text-to-speech commentary during highlight playback, analyzing the player's performance.
