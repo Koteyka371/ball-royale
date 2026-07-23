@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Mimic Ball",
+  "description": "A new AI ball type that starts with zero abilities. Upon being struck by any ability or attack from an enemy, it temporarily steals their primary skill or buff for 5 seconds and becomes immune to that specific type of attack during the duration."
+}

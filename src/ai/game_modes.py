@@ -22432,6 +22432,96 @@ class EntangledArenaMode(GameMode):
 
             self._init_prev_state(b)
 
+class EntangledSwapHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Entangled Swap Hazard"
+        self.description = "Randomly swaps the positions and momentum of two entangled balls when one takes massive damage."
+        self.prev_state = {}
+        self.damage_threshold = 30.0
+
+    class BallState:
+        def __init__(self, hp):
+            self.hp = hp
+
+    def _init_prev_state(self, b):
+        self.prev_state[b.id] = self.BallState(getattr(b, "hp", 100.0))
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+            b1.random_entangled_with = b2
+            b2.random_entangled_with = b1
+
+        if len(alive_balls) % 2 != 0:
+            alive_balls[-1].random_entangled_with = None
+
+        self.prev_state = {}
+        for b in balls:
+            self._init_prev_state(b)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Track massive damage events
+        pending_swaps = []
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+            curr_hp = getattr(b, "hp", 100.0)
+
+            if curr_hp < state.hp:
+                damage_taken = state.hp - curr_hp
+                if damage_taken >= self.damage_threshold:
+                    target = getattr(b, "random_entangled_with", None)
+                    if target and getattr(target, "alive", False) and getattr(target, "id", None) in self.prev_state:
+                        # Register swap
+                        pending_swaps.append((b, target))
+
+            self._init_prev_state(b)
+
+        already_swapped = set()
+        for b1, b2 in pending_swaps:
+            if b1.id in already_swapped or b2.id in already_swapped:
+                continue
+
+            # Perform swap
+            temp_x, temp_y = b1.x, b1.y
+            b1.x, b1.y = b2.x, b2.y
+            b2.x, b2.y = temp_x, temp_y
+
+            temp_vx, temp_vy = getattr(b1, "vx", 0.0), getattr(b1, "vy", 0.0)
+            b1.vx, b1.vy = getattr(b2, "vx", 0.0), getattr(b2, "vy", 0.0)
+            b2.vx, b2.vy = temp_vx, temp_vy
+
+            if hasattr(world, "events") or hasattr(world, "add_event"):
+                event_data = {
+                    "ball_a": b1.id,
+                    "ball_b": b2.id,
+                    "pos_a": [b1.x, b1.y],
+                    "pos_b": [b2.x, b2.y]
+                }
+                if hasattr(world, "events") and isinstance(world.events, list):
+                    world.events.append(["position_swapped", event_data])
+                elif hasattr(world, "add_event"):
+                    world.add_event("position_swapped", event_data)
+
+            already_swapped.add(b1.id)
+            already_swapped.add(b2.id)
+
+
 class EntanglementMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -28363,6 +28453,7 @@ GAME_MODES = {
     "decreasing_safe_zones": DecreasingSafeZonesMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entangled_arena": EntangledArenaMode(),
+    "entangled_swap_hazard": EntangledSwapHazardMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),
     "center_vortex": CenterVortexMode(),
