@@ -24018,7 +24018,7 @@
     },
     {
       "id": "idea-1402",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Bounties",
@@ -35588,6 +35588,40 @@
         "src/ai/cosmic_swap.py",
         "src/ai/cosmic_swap.gd",
         "tests/test_cosmic_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2082",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crowd Directed Meteors",
+      "description": "Instead of randomly spawning hazards, highly favored spectators with enough loyalty points can directly control the trajectory of a meteor strike via chat commands, causing a delayed massive area damage explosion where they aim.",
+      "allowed_paths": [
+        "src/ai/crowd_directed_meteors.py",
+        "src/ai/crowd_directed_meteors.gd",
+        "tests/test_crowd_directed_meteors.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2083",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aegis Reflection Dome",
+      "description": "An active ability that creates a temporary dome around the user. Any status effect (like slow, burn, or freeze) applied to an ally inside the dome is reflected back to the caster, but direct damage is doubled.",
+      "allowed_paths": [
+        "src/ai/aegis_reflection_dome.py",
+        "src/ai/aegis_reflection_dome.gd",
+        "tests/test_aegis_reflection_dome.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

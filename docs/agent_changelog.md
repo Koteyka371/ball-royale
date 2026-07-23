@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1402] Decoy Bounties — *2026-07-23 19:55:00 UTC*
+
+A new hazard or mutator where fake bounty targets randomly spawn in the arena. They have the same visual indicator as a real bounty but explode into a cloud of smoke or poison when destroyed, punishing players who don't confirm their targets.
+
+---
+
 ## [idea-1398] Interactive VIP Spectator Drops — *2026-07-23 19:40:51 UTC*
 
 Spectators with enough cheer points can vote on placing specific global hazard zones (e.g. low gravity) in the arena during downtime or specific phases of the battle, making them active participants in the game pacing.
