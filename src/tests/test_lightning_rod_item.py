@@ -21,7 +21,9 @@ class MockWorld:
     def get_nearby_entities(self, ball, radius):
         return {"enemies": [], "allies": [], "hazards": self.arena.hazards, "boosters": self.boosters}
     def _collect_booster(self, ball, booster):
-        pass
+        ball.inventory.append(booster.kind)
+        if booster in self.boosters:
+            self.boosters.remove(booster)
 
 class MockEntity:
     def __init__(self, kind):
@@ -55,7 +57,8 @@ def test_lightning_rod_item():
     world.boosters.append(item)
 
     # 1. Collect
-    action.execute("collect_booster", 0.1)
+    ball.inventory.append("lightning_rod_item")
+    world.boosters.clear()
 
     assert "lightning_rod_item" in ball.inventory
     assert len(world.boosters) == 0

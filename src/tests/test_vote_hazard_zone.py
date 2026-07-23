@@ -19,7 +19,7 @@ class MockWorld:
 
 
 def test_global_hazard_vote():
-    from system.crowd_system import CrowdSystem
+    import sys; import os; sys.path.append(os.path.join(os.path.dirname(__file__), "..")); import importlib; import sys; import os; sys.path.insert(0, os.path.abspath("src")); CrowdSystem = importlib.import_module("system.crowd_system").CrowdSystem
 
     world = MockWorld()
     system = CrowdSystem(world)
