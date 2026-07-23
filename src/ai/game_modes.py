@@ -18343,9 +18343,16 @@ class MeteorShowerMode(GameMode):
                 import math
                 for b in balls:
                     if getattr(b, "alive", False):
-                        if math.hypot(b.x - m["x"], b.y - m["y"]) <= m["radius"]:
+                        dx = b.x - m["x"]
+                        dy = b.y - m["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist <= m["radius"]:
                             if hasattr(b, "take_damage"): b.take_damage(200.0)
                             else: b.hp = getattr(b, "hp", 100) - 200.0
+                            if dist > 0.0001:
+                                push_force = 1000.0
+                                b.vx = getattr(b, "vx", 0.0) + (dx / dist) * push_force
+                                b.vy = getattr(b, "vy", 0.0) + (dy / dist) * push_force
             else:
                 still_active.append(m)
         self.active_meteors = still_active
@@ -25381,11 +25388,20 @@ class MeteorBombardmentMode(GameMode):
 
                 for b in balls:
                     if getattr(b, "alive", False):
-                        if math.hypot(getattr(b, "x", 0.0) - m["x"], getattr(b, "y", 0.0) - m["y"]) <= m["radius"]:
+                        b_x = getattr(b, "x", 0.0)
+                        b_y = getattr(b, "y", 0.0)
+                        dx = b_x - m["x"]
+                        dy = b_y - m["y"]
+                        dist = math.hypot(dx, dy)
+                        if dist <= m["radius"]:
                             if hasattr(b, "take_damage"):
                                 b.take_damage(50.0)
                             else:
                                 b.hp = getattr(b, "hp", 100) - 50.0
+                            if dist > 0.0001:
+                                push_force = 1000.0
+                                b.vx = getattr(b, "vx", 0.0) + (dx / dist) * push_force
+                                b.vy = getattr(b, "vy", 0.0) + (dy / dist) * push_force
             else:
                 still_active.append(m)
 
@@ -26396,12 +26412,18 @@ class ExplosiveMeteorsMode(GameMode):
             if m["delay"] <= 0:
                 for b in balls:
                     if getattr(b, "alive", False):
-                        dist = math.hypot(getattr(b, "x", 0.0) - m["x"], getattr(b, "y", 0.0) - m["y"])
+                        dx = getattr(b, "x", 0.0) - m["x"]
+                        dy = getattr(b, "y", 0.0) - m["y"]
+                        dist = math.hypot(dx, dy)
                         if dist <= m["radius"]:
                             if hasattr(b, "take_damage"):
                                 b.take_damage(50.0)
                             else:
                                 b.hp = getattr(b, "hp", 100) - 50.0
+                            if dist > 0.0001:
+                                push_force = 1000.0
+                                b.vx = getattr(b, "vx", 0.0) + (dx / dist) * push_force
+                                b.vy = getattr(b, "vy", 0.0) + (dy / dist) * push_force
             else:
                 still_active.append(m)
 

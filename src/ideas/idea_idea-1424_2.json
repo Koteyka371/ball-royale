@@ -1,0 +1,4 @@
+{
+  "title": "Dynamic Crater Terrain",
+  "description": "Make meteor craters dynamically interact with the arena's physics. Balls rolling through a crater should experience reduced speed and modified friction, making movement more challenging in the aftermath of a meteor strike. Craters could slowly fill up and return to normal terrain over time."
+}
