@@ -2254,3 +2254,54 @@ def test_spawning_safe_zones_shrinking_and_damage():
     mode.tick(world, [b_in, b_out], 1.0)
     damage_taken_2 = (initial_out_hp - damage_taken) - b_out.hp
     assert damage_taken_2 > damage_taken # Because outside_damage increases
+
+def test_winding_snake_path_logic():
+    from ai.game_modes import WindingSnakePathMode
+    mode = WindingSnakePathMode()
+    world = DummyWorld()
+    world.season = 1
+
+    class MockLeaderboardManager:
+        def __init__(self):
+            self.data = {'current_season': 1}
+
+    class MockProfileManager:
+        def __init__(self):
+            pass
+
+    world.leaderboard_manager = MockLeaderboardManager()
+    world.profile_manager = MockProfileManager()
+
+    class Arena:
+        width = 1000
+        height = 1000
+    world.arena = Arena()
+
+    b_in = DummyBall("in", 500, 500)
+    b_in._base_speed_set = True
+    b_in.base_speed = 100.0
+    b_in.base_damage = 10.0
+    b_in.speed_multiplier = 1.0
+    b_in.damage_multiplier = 1.0
+
+    b_out = DummyBall("out", 10, 10)
+    b_out._base_speed_set = True
+    b_out.base_speed = 100.0
+    b_out.base_damage = 10.0
+    b_out.speed_multiplier = 1.0
+    b_out.damage_multiplier = 1.0
+
+    mode.setup(world, [b_in, b_out])
+
+    # Overwrite points so it's predictable
+    mode.path_points = [{"x": 500, "y": 500}, {"x": 500, "y": 600}]
+    mode.path_width = 100.0
+    mode.shrink_rate = 0.0 # Don't shrink for this test
+
+    initial_out_hp = b_out.hp
+    initial_in_hp = b_in.hp
+
+    mode.tick(world, [b_in, b_out], 1.0)
+
+    assert b_in.hp == initial_in_hp # Inside, so no damage
+    assert b_out.hp < initial_out_hp # Outside, so damage taken
