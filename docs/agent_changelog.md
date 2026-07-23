@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1359] Sticky Tar Traps — *2026-07-23 06:31:31 UTC*
+
+A new deployable hazard that acts similarly to mud puddles but is triggered by proximity. Once a player steps on it, their speed is drastically reduced and they take a small amount of continuous damage. This makes map control highly dynamic as players can strategically place these traps to counter fast-moving builds.
+
+---
+
 ## [idea-1298] Kinetic Deflector Arena Hazard — *2026-07-23 06:08:43 UTC*
 
 An arena hazard that absorbs all kinetic energy from high-speed collisions and charges up. Once fully charged, it unleashes a massive shockwave that pushes all entities away and damages shields.

@@ -23284,7 +23284,7 @@
     },
     {
       "id": "idea-1359",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Tar Traps",
@@ -35231,6 +35231,74 @@
         "src/ai/hive_defense_structure.py",
         "src/ai/hive_defense_structure.gd",
         "tests/test_hive_defense_structure.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2061",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Weather System",
+      "description": "Introduce dynamic weather that changes during a match based on the current season, such as snowstorms in Winter or heatwaves in Summer, affecting visibility and movement.",
+      "allowed_paths": [
+        "src/ai/seasonal.py",
+        "src/ai/seasonal.gd",
+        "tests/test_seasonal.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2062",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Abyssal Boss Fights",
+      "description": "Spawn a special Abyssal Boss in the center of the arena during the Abyssal season, which pulls players in with whirlpool attacks and drops legendary loot when defeated.",
+      "allowed_paths": [
+        "src/ai/abyssal_boss_fights.py",
+        "src/ai/abyssal_boss_fights.gd",
+        "tests/test_abyssal_boss_fights.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2063",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aether Relay Booster",
+      "description": "A booster that links multiple balls together with ethereal tethers. Tethers share healing and damage evenly among all linked balls, but also allow them to teleport to each other's location once per charge.",
+      "allowed_paths": [
+        "src/ai/aether_relay_booster.py",
+        "src/ai/aether_relay_booster.gd",
+        "tests/test_aether_relay_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2064",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Black Hole",
+      "description": "A black hole that, instead of dealing damage when it sucks you in, teleports you to a random location on the edge of the arena with a temporary debuff to speed.",
+      "allowed_paths": [
+        "src/ai/portal_black_hole.py",
+        "src/ai/portal_black_hole.gd",
+        "tests/test_portal_black_hole.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
