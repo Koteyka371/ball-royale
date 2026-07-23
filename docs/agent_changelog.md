@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1298] Kinetic Deflector Arena Hazard — *2026-07-23 06:08:43 UTC*
+
+An arena hazard that absorbs all kinetic energy from high-speed collisions and charges up. Once fully charged, it unleashes a massive shockwave that pushes all entities away and damages shields.
+
+---
+
 ## [idea-1384] Reverse Gravity Zone — *2026-07-23 06:08:39 UTC*
 
 A game mutator where randomly a zone appears in the arena that pushes balls away from its center instead of pulling them, acting like a reverse black hole.
