@@ -3572,7 +3572,12 @@ class BattleRoyaleMode(GameMode):
                             world.entities.append(new_boss)
 
                     if hasattr(world, "add_event"):
-                        world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena!"})
+                        world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena! All players are now allied!"})
+
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            b.pre_boss_team = getattr(b, "team", None)
+                            b.team = "Hunters"
 
         if getattr(self, "_weekend_boss_spawned", False):
             for b in balls:
@@ -3582,6 +3587,11 @@ class BattleRoyaleMode(GameMode):
                         killer_id = getattr(b, "killer_id", None)
                         if hasattr(world, "add_event"):
                             world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
+
+                        for ob in balls:
+                            if hasattr(ob, "pre_boss_team"):
+                                ob.team = ob.pre_boss_team
+                                delattr(ob, "pre_boss_team")
 
         # Weekend Juggernaut Boss logic
         if not getattr(self, "_weekend_boss_checked", False):
@@ -3606,7 +3616,12 @@ class BattleRoyaleMode(GameMode):
                             world.entities.append(new_boss)
 
                     if hasattr(world, "add_event"):
-                        world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena!"})
+                        world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena! All players are now allied!"})
+
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            b.pre_boss_team = getattr(b, "team", None)
+                            b.team = "Hunters"
 
         if getattr(self, "_weekend_boss_spawned", False):
             for b in balls:
@@ -3616,6 +3631,11 @@ class BattleRoyaleMode(GameMode):
                         killer_id = getattr(b, "killer_id", None)
                         if hasattr(world, "add_event"):
                             world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
+
+                        for ob in balls:
+                            if hasattr(ob, "pre_boss_team"):
+                                ob.team = ob.pre_boss_team
+                                delattr(ob, "pre_boss_team")
 
         self.match_time += delta
 
