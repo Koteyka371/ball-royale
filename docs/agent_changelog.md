@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1425] New loadout item 'Phase Boots' — *2026-07-23 20:58:40 UTC*
+
+Allows the ball to briefly ignore obstacles and hazards, moving through them without taking damage or being slowed down, but consumes stamina while active.
+
+---
+
 ## [idea-1409] Projectile Recoil Trajectory Modification Booster — *2026-07-23 20:58:35 UTC*
 
 A new booster that amplifies or dampens the recoil from ranged attacks, allowing players to fine-tune their evasion mechanics or minimize recoil for stable firing lines.
