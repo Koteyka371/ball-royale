@@ -54659,3 +54659,109 @@ class ItemJammerEventMode extends GameMode:
 							b.silence_timer = max(sil, 0.5)
 
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode.new()
+
+
+class CorruptionZonesEventMode extends GameMode:
+    var zone_spawn_timer = 15.0
+    var zone_duration = 10.0
+
+    func _init():
+        name = "Corruption Zones Event"
+        description = "Periodically, zones of corruption appear in the arena. Balls that stay inside have their health drained, but gain a temporary massive boost to attack damage and movement speed."
+
+    func tick(world, balls, delta=0.016):
+        .tick(world, balls, delta)
+
+        # Manage zone spawning
+        zone_spawn_timer -= delta
+        if zone_spawn_timer <= 0.0:
+            zone_spawn_timer = 25.0
+
+            var arena_width = 2000.0
+            if world.get("arena") != null and world.arena.get("width") != null:
+                arena_width = world.arena.width
+            var arena_height = 2000.0
+            if world.get("arena") != null and world.arena.get("height") != null:
+                arena_height = world.arena.height
+
+            var target_x = 200.0 + randf() * (arena_width - 400.0)
+            var target_y = 200.0 + randf() * (arena_height - 400.0)
+
+            if world.get("arena") != null and world.arena.get("hazards") != null:
+                var t_id = world.arena.hazards.size() + int(randf() * 90000.0) + 10000
+                var corruption_zone = {}
+                corruption_zone["id"] = t_id
+                corruption_zone["x"] = target_x
+                corruption_zone["y"] = target_y
+                corruption_zone["radius"] = 150.0
+                corruption_zone["kind"] = "corruption_zone"
+                corruption_zone["damage"] = 50.0
+                corruption_zone["duration"] = zone_duration
+                world.arena.hazards.append(corruption_zone)
+
+                if world.has_method("add_event"):
+                    world.add_event("corruption_zone_spawned", {"x": target_x, "y": target_y})
+
+        # Manage existing zones and apply effects
+        if world.get("arena") != null and world.arena.get("hazards") != null:
+            var to_remove = []
+
+            for i in range(world.arena.hazards.size()):
+                var h = world.arena.hazards[i]
+                var kind = ""
+                if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+                    kind = h.kind
+                elif typeof(h) == TYPE_OBJECT and h.get("kind") != null:
+                    kind = h.kind
+
+                if kind == "corruption_zone":
+                    var h_duration = 0.0
+                    if typeof(h) == TYPE_DICTIONARY and h.has("duration"):
+                        h.duration -= delta
+                        h_duration = h.duration
+                    elif typeof(h) == TYPE_OBJECT and h.get("duration") != null:
+                        h.set("duration", h.get("duration") - delta)
+                        h_duration = h.get("duration")
+
+                    if h_duration <= 0.0:
+                        to_remove.append(h)
+                        continue
+
+                    var h_x = 0.0
+                    var h_y = 0.0
+                    var h_radius = 0.0
+                    var h_damage = 0.0
+                    if typeof(h) == TYPE_DICTIONARY:
+                        h_x = h.get("x", 0.0)
+                        h_y = h.get("y", 0.0)
+                        h_radius = h.get("radius", 0.0)
+                        h_damage = h.get("damage", 0.0)
+                    elif typeof(h) == TYPE_OBJECT:
+                        h_x = h.get("x") if h.get("x") != null else 0.0
+                        h_y = h.get("y") if h.get("y") != null else 0.0
+                        h_radius = h.get("radius") if h.get("radius") != null else 0.0
+                        h_damage = h.get("damage") if h.get("damage") != null else 0.0
+
+                    for b in balls:
+                        if not b.get("alive") or b.get("ball_type") == "spectator":
+                            continue
+
+                        var dx = b.x - h_x
+                        var dy = b.y - h_y
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= h_radius:
+                            if b.get("hp") != null:
+                                b.hp -= h_damage * delta
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = false
+                                    if world.has_method("add_event"):
+                                        world.add_event("ball_died", {"id": b.id, "reason": "corruption_zone"})
+
+                            b.damage_multiplier = max(b.get("damage_multiplier") if b.get("damage_multiplier") != null else 1.0, 2.5)
+                            b.speed_multiplier = max(b.get("speed_multiplier") if b.get("speed_multiplier") != null else 1.0, 1.8)
+
+            for h in to_remove:
+                world.arena.hazards.erase(h)
+
+GAME_MODES['corruption_zones_event'] = CorruptionZonesEventMode.new()

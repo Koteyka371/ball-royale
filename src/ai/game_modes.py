@@ -2486,7 +2486,7 @@ class BattleRoyaleMode(GameMode):
                         b.mutation_timer = 0.0
 
                     # Evolve when zone shrinks by 50 units
-                    if b.last_zone_radius - self.zone_radius >= 50.0:
+                    if isinstance(b.last_zone_radius, (int, float)) and isinstance(self.zone_radius, (int, float)) and b.last_zone_radius - self.zone_radius >= 50.0:
                         b.last_zone_radius = self.zone_radius
                         mutators = ["explosive_aura", "increased_speed", "pulling_gravity", "acid_trail", "shield_regen"]
                         available = [m for m in mutators if m not in b.mutations]
@@ -35439,3 +35439,91 @@ class ItemJammerEventMode(GameMode):
                     b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
 
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode()
+
+
+class CorruptionZonesEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Corruption Zones Event"
+        self.description = "Periodically, zones of corruption appear in the arena. Balls that stay inside have their health drained, but gain a temporary massive boost to attack damage and movement speed."
+        self.zone_spawn_timer = 15.0
+        self.zone_duration = 10.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Manage zone spawning
+        self.zone_spawn_timer -= delta
+        if self.zone_spawn_timer <= 0.0:
+            self.zone_spawn_timer = 25.0
+
+            import random
+            arena_width = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
+            arena_height = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
+
+            target_x = random.uniform(200.0, arena_width - 200.0)
+            target_y = random.uniform(200.0, arena_height - 200.0)
+
+            try:
+                from arena.procedural_arena import Hazard
+                HazardClass = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                HazardClass = FallbackHazard
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                t_id = len(world.arena.hazards) + random.randint(10000, 99999)
+                corruption_zone = HazardClass(id=t_id, x=target_x, y=target_y, radius=150.0, kind="corruption_zone", damage=50.0)
+                setattr(corruption_zone, "duration", self.zone_duration)
+                world.arena.hazards.append(corruption_zone)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("corruption_zone_spawned", {"x": target_x, "y": target_y})
+
+        # Manage existing zones and apply effects
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            to_remove = []
+            import math
+
+            for h in list(world.arena.hazards):
+                kind = getattr(h, "kind", "")
+                if kind == "corruption_zone":
+                    if hasattr(h, "duration"):
+                        h.duration -= delta
+                        if h.duration <= 0.0:
+                            to_remove.append(h)
+
+                    # Apply effects to balls inside
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                            continue
+
+                        dist = math.hypot(b.x - h.x, b.y - h.y)
+                        if dist <= h.radius:
+                            # Drain health
+                            if hasattr(b, "hp"):
+                                damage_taken = h.damage * delta
+                                b.hp -= damage_taken
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = False
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("ball_died", {"id": b.id, "reason": "corruption_zone"})
+
+                            # Apply buffs
+                            b.damage_multiplier = max(getattr(b, "damage_multiplier", 1.0), 2.5) # Massive damage boost
+                            b.speed_multiplier = max(getattr(b, "speed_multiplier", 1.0), 1.8)   # Massive speed boost
+
+            for h in to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+GAME_MODES['corruption_zones_event'] = CorruptionZonesEventMode()
