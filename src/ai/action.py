@@ -7672,14 +7672,28 @@ class Action:
                                                     import math as _math
                                                     speed = _math.hypot(b.vx, b.vy)
                                                     if speed > 20.0:
-                                                        slingshot_strength = pull_strength * 2.0 / delta
-                                                        dot = bnx * b.vx + bny * b.vy
-                                                        if dot > -speed * 0.8: # If not flying directly into it
+                                                        # Massive speed boost if dashing
+                                                        is_dashing = getattr(b, "is_dashing", False)
+                                                        effect_nx = bnx
+                                                        effect_ny = bny
+                                                        if is_dashing:
+                                                            slingshot_strength = pull_strength * 20.0 / delta
+                                                            effect_nx = b.vx / speed
+                                                            effect_ny = b.vy / speed
                                                             if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                                 c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
                                                                 mod = 0.1 if c == "grounded_boots" else 1.0
-                                                                b.vx += bnx * slingshot_strength * delta * mod
-                                                                b.vy += bny * slingshot_strength * delta * mod
+                                                                b.vx += effect_nx * slingshot_strength * delta * mod
+                                                                b.vy += effect_ny * slingshot_strength * delta * mod
+                                                        else:
+                                                            slingshot_strength = pull_strength * 2.0 / delta
+                                                            dot = bnx * b.vx + bny * b.vy
+                                                            if dot > -speed * 0.8: # If not flying directly into it
+                                                                if getattr(b, "anchor_booster_timer", 0.0) <= 0:
+                                                                    c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
+                                                                    mod = 0.1 if c == "grounded_boots" else 1.0
+                                                                    b.vx += effect_nx * slingshot_strength * delta * mod
+                                                                    b.vy += effect_ny * slingshot_strength * delta * mod
                                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                                     # Wind physics: tangential orbital pull
                                                     tx, ty = -bny, bnx
@@ -7767,14 +7781,28 @@ class Action:
                                     import math as _math
                                     speed = _math.hypot(self.ball.vx, self.ball.vy)
                                     if speed > 20.0:
-                                        slingshot_strength = pull_strength * 2.0 / delta
-                                        dot = nx * self.ball.vx + ny * self.ball.vy
-                                        if dot > -speed * 0.8: # If not flying directly into it
+                                        # Massive speed boost if dashing
+                                        is_dashing_self = getattr(self.ball, "is_dashing", False)
+                                        effect_nx = nx
+                                        effect_ny = ny
+                                        if is_dashing_self:
+                                            slingshot_strength = pull_strength * 20.0 / delta
+                                            effect_nx = self.ball.vx / speed
+                                            effect_ny = self.ball.vy / speed
                                             if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                                 c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                                                 mod = 0.1 if c == "grounded_boots" else 1.0
-                                                self.ball.vx += nx * slingshot_strength * delta * mod
-                                                self.ball.vy += ny * slingshot_strength * delta * mod
+                                                self.ball.vx += effect_nx * slingshot_strength * delta * mod
+                                                self.ball.vy += effect_ny * slingshot_strength * delta * mod
+                                        else:
+                                            slingshot_strength = pull_strength * 2.0 / delta
+                                            dot = nx * self.ball.vx + ny * self.ball.vy
+                                            if dot > -speed * 0.8: # If not flying directly into it
+                                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                                    c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                                                    mod = 0.1 if c == "grounded_boots" else 1.0
+                                                    self.ball.vx += effect_nx * slingshot_strength * delta * mod
+                                                    self.ball.vy += effect_ny * slingshot_strength * delta * mod
                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                     # Wind physics: tangential orbital pull
                                     tx, ty = -ny, nx

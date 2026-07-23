@@ -14978,18 +14978,36 @@ func execute(strategy: String, delta: float):
 
                                             var speed = sqrt(b_vx * b_vx + b_vy * b_vy)
                                             if speed > 20.0:
-                                                var slingshot_strength = bpull_strength * 2.0 / delta
-                                                var dot = bnx * b_vx + bny * b_vy
-                                                if dot > -speed * 0.8:
+                                                var is_d_b = false
+                                                if "is_dashing" in b and b.is_dashing: is_d_b = true
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_dashing") and b.get_meta("is_dashing"): is_d_b = true
+
+                                                if is_d_b:
+                                                    var slingshot_strength = bpull_strength * 20.0 / delta
+                                                    var effect_nx = b_vx / speed
+                                                    var effect_ny = b_vy / speed
                                                     var b_anchor_timer2 = 0.0
                                                     if "anchor_booster_timer" in b: b_anchor_timer2 = float(b.anchor_booster_timer)
                                                     elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("anchor_booster_timer"): b_anchor_timer2 = float(b.get_meta("anchor_booster_timer"))
                                                     elif typeof(b) == TYPE_DICTIONARY and b.has("anchor_booster_timer"): b_anchor_timer2 = float(b["anchor_booster_timer"])
                                                     if b_anchor_timer2 <= 0:
-                                                        if "vx" in b: b.vx += bnx * slingshot_strength * delta
-                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", b_vx + bnx * slingshot_strength * delta)
-                                                        if "vy" in b: b.vy += bny * slingshot_strength * delta
-                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", b_vy + bny * slingshot_strength * delta)
+                                                        if "vx" in b: b.vx += effect_nx * slingshot_strength * delta
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", b_vx + effect_nx * slingshot_strength * delta)
+                                                        if "vy" in b: b.vy += effect_ny * slingshot_strength * delta
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", b_vy + effect_ny * slingshot_strength * delta)
+                                                else:
+                                                    var slingshot_strength = bpull_strength * 2.0 / delta
+                                                    var dot = bnx * b_vx + bny * b_vy
+                                                    if dot > -speed * 0.8:
+                                                        var b_anchor_timer2 = 0.0
+                                                        if "anchor_booster_timer" in b: b_anchor_timer2 = float(b.anchor_booster_timer)
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("anchor_booster_timer"): b_anchor_timer2 = float(b.get_meta("anchor_booster_timer"))
+                                                        elif typeof(b) == TYPE_DICTIONARY and b.has("anchor_booster_timer"): b_anchor_timer2 = float(b["anchor_booster_timer"])
+                                                        if b_anchor_timer2 <= 0:
+                                                            if "vx" in b: b.vx += bnx * slingshot_strength * delta
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vx", b_vx + bnx * slingshot_strength * delta)
+                                                            if "vy" in b: b.vy += bny * slingshot_strength * delta
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("vy", b_vy + bny * slingshot_strength * delta)
                                     if hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
                                         var tx = -bny
                                         var ty = bnx
@@ -15061,18 +15079,36 @@ func execute(strategy: String, delta: float):
 
                                     var speed = sqrt(b_vx * b_vx + b_vy * b_vy)
                                     if speed > 20.0:
-                                        var slingshot_strength = pull_strength * 2.0 / delta
-                                        var dot = nx * b_vx + ny * b_vy
-                                        if dot > -speed * 0.8:
+                                        var is_d_self = false
+                                        if "is_dashing" in self.ball and self.ball.is_dashing: is_d_self = true
+                                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_dashing") and self.ball.get_meta("is_dashing"): is_d_self = true
+
+                                        if is_d_self:
+                                            var slingshot_strength = pull_strength * 20.0 / delta
+                                            var effect_nx = b_vx / speed
+                                            var effect_ny = b_vy / speed
                                             var anchor_timer2 = 0.0
                                             if "anchor_booster_timer" in self.ball: anchor_timer2 = float(self.ball.anchor_booster_timer)
                                             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer2 = float(self.ball.get_meta("anchor_booster_timer"))
                                             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer2 = float(self.ball["anchor_booster_timer"])
                                             if anchor_timer2 <= 0:
-                                                if "vx" in self.ball: self.ball.vx += nx * slingshot_strength * delta
-                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vx", b_vx + nx * slingshot_strength * delta)
-                                                if "vy" in self.ball: self.ball.vy += ny * slingshot_strength * delta
-                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", b_vy + ny * slingshot_strength * delta)
+                                                if "vx" in self.ball: self.ball.vx += effect_nx * slingshot_strength * delta
+                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vx", b_vx + effect_nx * slingshot_strength * delta)
+                                                if "vy" in self.ball: self.ball.vy += effect_ny * slingshot_strength * delta
+                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", b_vy + effect_ny * slingshot_strength * delta)
+                                        else:
+                                            var slingshot_strength = pull_strength * 2.0 / delta
+                                            var dot = nx * b_vx + ny * b_vy
+                                            if dot > -speed * 0.8:
+                                                var anchor_timer2 = 0.0
+                                                if "anchor_booster_timer" in self.ball: anchor_timer2 = float(self.ball.anchor_booster_timer)
+                                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_timer2 = float(self.ball.get_meta("anchor_booster_timer"))
+                                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): anchor_timer2 = float(self.ball["anchor_booster_timer"])
+                                                if anchor_timer2 <= 0:
+                                                    if "vx" in self.ball: self.ball.vx += nx * slingshot_strength * delta
+                                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vx", b_vx + nx * slingshot_strength * delta)
+                                                    if "vy" in self.ball: self.ball.vy += ny * slingshot_strength * delta
+                                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", b_vy + ny * slingshot_strength * delta)
                             if hazard.kind in ["tornado", "local_tornado"]:
                                 var tx = -ny
                                 var ty = nx
