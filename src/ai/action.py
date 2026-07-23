@@ -3108,6 +3108,7 @@ class Action:
             "x": self.ball.x,
             "y": self.ball.y,
             "hp": getattr(self.ball, "hp", 100.0),
+            "stamina": getattr(self.ball, "stamina", 100.0),
             "attack_timer": getattr(self.ball, "attack_timer", 0.0),
             "skill_timer": getattr(self.ball, "skill_timer", 0.0)
         }
@@ -3394,6 +3395,22 @@ class Action:
                             bomb.duration = 10.0
                             setattr(bomb, 'owner_id', getattr(self.ball, 'id', None))
                             self.world.arena.hazards.append(bomb)
+                        except ImportError:
+                            pass
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_time_anomaly" in self.ball.inventory:
+            nearest = self._get_nearest_enemy()
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_time_anomaly")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            anomaly_id = len(self.world.arena.hazards) + 6000
+                            anomaly = Hazard(anomaly_id, self.ball.x, self.ball.y, 80.0, "deployable_time_anomaly", 0.0)
+                            anomaly.duration = 8.0
+                            self.world.arena.hazards.append(anomaly)
                         except ImportError:
                             pass
 
@@ -6670,6 +6687,33 @@ class Action:
                                                 "color": random.choice(["pink", "purple", "yellow", "cyan", "red", "green", "blue"])
                                             }
                                         })
+
+                    elif hazard.kind == "deployable_time_anomaly":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 8.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                continue
+
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True):
+                                    hx = getattr(hazard, "x", 0)
+                                    hy = getattr(hazard, "y", 0)
+                                    hr = getattr(hazard, "radius", 80.0)
+                                    dist = math.hypot(b.x - hx, b.y - hy)
+                                    if dist <= hr:
+                                        history = getattr(b, "state_history", [])
+                                        if history:
+                                            past_state = history[0]
+                                            b.x = past_state["x"]
+                                            b.y = past_state["y"]
+                                            if "hp" in past_state:
+                                                b.hp = past_state["hp"]
+                                            if "stamina" in past_state and hasattr(b, "stamina"):
+                                                b.stamina = past_state["stamina"]
 
                     elif hazard.kind == "deployable_acid_puddle":
                         current_tick = getattr(self.world, "tick", 0)
