@@ -16400,6 +16400,36 @@ class Action:
 
                     if my_stamina + 30.0 > my_max:
                         self.ball.stamina_speed_burst_timer = 2.0
+
+            elif skill_name == "buff_drain":
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
+                closest_enemy = None
+                closest_dist = 250.0 ** 2
+                for b in self._get_enemies():
+                    d2 = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                    if d2 < closest_dist:
+                        closest_dist = d2
+                        closest_enemy = b
+
+                if closest_enemy:
+                    buffs_to_check = [
+                        "insulator_timer", "kinetic_shield_timer", "speed_boost_timer",
+                        "energy_shield_timer", "reflect_shield_timer", "aegis_shield_active_timer",
+                        "hermes_boots_active_timer", "damage_buff_timer", "speed_buff_timer"
+                    ]
+                    drained_any = False
+                    for buff in buffs_to_check:
+                        duration = getattr(closest_enemy, buff, 0.0)
+                        if duration > 0:
+                            setattr(closest_enemy, buff, 0.0)
+                            setattr(self.ball, buff, max(getattr(self.ball, buff, 0.0), duration))
+                            drained_any = True
+
+                    if not drained_any:
+                        closest_enemy.hp -= 30.0
+                        if hasattr(self.world, "events"):
+                            self.world.events.append(("damage_text", {"x": closest_enemy.x, "y": closest_enemy.y, "amount": 30.0, "color": "red"}))
+
             elif skill_name == "stamina_dash":
                 self._spawn_skill_particles("dash")
                 stamina = getattr(self.ball, "stamina", 0.0)
