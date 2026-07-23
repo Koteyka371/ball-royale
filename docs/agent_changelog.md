@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1356] Nemesis Revival Mode — *2026-07-23 06:59:22 UTC*
+
+A game mode where dying doesn't instantly eliminate you, but spawns you as a weaker 'Ghost Ball' connected to your killer. To revive fully, you must assist your killer in defeating another player or deal enough chip damage to break your ghostly tether.
+
+---
+
 ## [idea-1369] Reverse Tether Hook — *2026-07-23 06:56:24 UTC*
 
 A new booster that when activated, instead of pulling you to the target, it pulls the target to you.

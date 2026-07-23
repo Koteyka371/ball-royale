@@ -23233,7 +23233,7 @@
     },
     {
       "id": "idea-1356",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Revival Mode",
@@ -35333,6 +35333,23 @@
         "src/ai/midas_touch_artifact.py",
         "src/ai/midas_touch_artifact.gd",
         "tests/test_midas_touch_artifact.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2067",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Core Item",
+      "description": "An item that, when thrown, activates after 2 seconds and intensely pulls all nearby balls, hazards, and projectiles towards its center for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/black_hole_core_item.py",
+        "src/ai/black_hole_core_item.gd",
+        "tests/test_black_hole_core_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
