@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1409] Projectile Recoil Trajectory Modification Booster — *2026-07-23 20:58:35 UTC*
+
+A new booster that amplifies or dampens the recoil from ranged attacks, allowing players to fine-tune their evasion mechanics or minimize recoil for stable firing lines.
+
+---
+
 ## [idea-1415] Nemesis Tracking Drone — *2026-07-23 20:20:40 UTC*
 
 A consumable item that spawns a drone that automatically flies towards your nemesis and periodically pings their location on the map with a sonar-like effect for 30 seconds.

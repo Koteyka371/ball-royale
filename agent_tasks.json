@@ -24137,7 +24137,7 @@
     },
     {
       "id": "idea-1409",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Projectile Recoil Trajectory Modification Booster",
@@ -35656,6 +35656,40 @@
         "src/ai/shareable_interactive_highlights.py",
         "src/ai/shareable_interactive_highlights.gd",
         "tests/test_shareable_interactive_highlights.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2086",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Bumper Trap",
+      "description": "A deployable trap that, when triggered, teleports the victim to a random location in the arena while retaining their current velocity, but multiplied by a small factor. This forces them to abruptly navigate a new environment with high speed.",
+      "allowed_paths": [
+        "src/arena/quantum_bumper_trap.py",
+        "src/arena/quantum_bumper_trap.gd",
+        "tests/test_quantum_bumper_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2087",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Accumulator Trait",
+      "description": "A ball trait where bouncing off walls builds up a 'kinetic charge'. Once fully charged, the ball's next direct collision with an enemy unleashes an explosive shockwave that knocks back all nearby entities.",
+      "allowed_paths": [
+        "src/ai/kinetic_accumulator_trait.py",
+        "src/ai/kinetic_accumulator_trait.gd",
+        "tests/test_kinetic_accumulator_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
