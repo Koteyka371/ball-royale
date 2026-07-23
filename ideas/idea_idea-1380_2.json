@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zones",
+  "description": "Multiple small safe zones appear across the map. The rest of the map deals tick damage. Over time, the safe zones shrink and merge, forcing players into close combat."
+}

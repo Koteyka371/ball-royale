@@ -35400,3 +35400,82 @@ class VolcanicEruptionEventMode(GameMode):
                 world.arena.hazards.append(h)
 
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
+
+
+class AuraBombEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Bomb Event"
+        self.description = "Random players are given a ticking 'Aura Bomb'. They must rush away from teammates to avoid wiping them out in an aura explosion, but rushing towards enemies will damage them."
+        self.event_timer = 0.0
+        self.event_cooldown = 15.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import random
+        import math
+        self.event_timer += delta
+
+        if self.event_timer >= self.event_cooldown:
+            self.event_timer = 0.0
+
+            alive_balls = [b for b in balls if getattr(b, "alive", False)]
+            if alive_balls:
+                num_bombs = max(1, min(3, len(alive_balls) // 5))
+                targets = random.sample(alive_balls, num_bombs)
+                for b in targets:
+                    setattr(b, "has_aura_bomb", True)
+                    setattr(b, "aura_bomb_timer", 5.0)
+                    if hasattr(world, "add_event"):
+                        world.add_event("aura_bomb_attached", {"id": getattr(b, "id", -1)})
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if getattr(b, "has_aura_bomb", False):
+                    setattr(b, "has_aura_bomb", False)
+                continue
+
+            if getattr(b, "has_aura_bomb", False):
+                timer = getattr(b, "aura_bomb_timer", 0.0)
+                timer -= delta
+                if timer <= 0:
+                    setattr(b, "has_aura_bomb", False)
+                    explosion_radius = 200.0
+                    explosion_damage = 75.0
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("aura_bomb_exploded", {"id": getattr(b, "id", -1)})
+
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        class _AuraBombExplosion:
+                            def __init__(self, x, y):
+                                self.id = random.randint(100000, 999999)
+                                self.x = x
+                                self.y = y
+                                self.radius = explosion_radius
+                                self.kind = "explosion"
+                                self.duration = 0.5
+                                self.damage = 0.0
+                                self.active = True
+                        world.arena.hazards.append(_AuraBombExplosion(b.x, b.y))
+
+                    for other in balls:
+                        if other != b and getattr(other, "alive", False):
+                            dx = other.x - b.x
+                            dy = other.y - b.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist <= explosion_radius:
+                                if hasattr(other, "take_damage"):
+                                    other.take_damage(explosion_damage)
+                                else:
+                                    other.hp -= explosion_damage
+                                    if other.hp <= 0:
+                                        other.hp = 0
+                                        other.alive = False
+                                        if hasattr(world, "add_event"):
+                                            world.add_event("ball_died", {"id": getattr(other, "id", -1), "killer_id": getattr(b, "id", -1), "reason": "aura_bomb"})
+                                        if hasattr(other, "id") and hasattr(world, "dead_balls") and getattr(other, "id", -1) not in world.dead_balls:
+                                            world.dead_balls.append(getattr(other, "id", -1))
+                else:
+                    setattr(b, "aura_bomb_timer", timer)
+
+GAME_MODES['aura_bomb_event'] = AuraBombEventMode()
