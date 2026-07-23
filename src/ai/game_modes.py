@@ -5754,7 +5754,7 @@ class EscortMode(GameMode):
                             b.vx = getattr(b, "vx", 0.0) + (dxx / bdist) * 400.0
                             b.vy = getattr(b, "vy", 0.0) + (dyy / bdist) * 400.0
 
-        # Hack points logic
+        # Update points logic
         if not hasattr(self, "hack_points"):
             self.hack_points = []
 
