@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1420] Aura Crafting Station — *2026-07-23 23:19:14 UTC*
+
+Instead of global random drops, specific hazard zones occasionally act as 'Crafting Stations' where you can deposit collected auras to purposefully trigger hybrid effects on demand.
+
+---
+
 ## [idea-1429] Prestige Roulette Minigame — *2026-07-23 23:19:09 UTC*
 
 A higher-stakes version of the spin wheel where players bet an amount of prestige tokens on colors or sections for a chance to win massive multipliers or exclusive 'Roulette Master' cosmetics.
