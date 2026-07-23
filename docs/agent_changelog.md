@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1416] Slingshot Arena Mode — *2026-07-23 22:59:18 UTC*
+
+An arena mode where walls apply a massive multiplying force to balls when they bounce off them, making the edges of the arena extremely dangerous due to high velocity ricochets.
+
+---
+
 ## [idea-1393] Reverse Time Field Trap — *2026-07-23 22:52:25 UTC*
 
 A deployable hazard or trap that creates a localized field. When a ball enters the field, their movements, health changes, and stamina depletion are continuously reverted by a few seconds, confusing their targeting logic and undoing their progress or damage taken.

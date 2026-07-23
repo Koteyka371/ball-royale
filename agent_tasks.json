@@ -24256,7 +24256,7 @@
     },
     {
       "id": "idea-1416",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slingshot Arena Mode",
@@ -35707,6 +35707,23 @@
         "src/ai/stamina_siphon_aura.py",
         "src/ai/stamina_siphon_aura.gd",
         "tests/test_stamina_siphon_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2089",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Strike Trap",
+      "description": "A deployable trap that, when triggered, records the next 3 seconds of the player's movement and attacks. After a delay, an ethereal clone replays those actions exactly before dissipating.",
+      "allowed_paths": [
+        "src/arena/echo_strike_trap.py",
+        "src/arena/echo_strike_trap.gd",
+        "tests/test_echo_strike_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
