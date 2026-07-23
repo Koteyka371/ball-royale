@@ -148,7 +148,7 @@ class ProceduralArena:
         # Generate hazards
         num_hazards = self.num_rooms * 2
         for i in range(num_hazards):
-            kind = random.choice(["deployable_proximity_mud_puddle", "deployable_mud_puddle", "deployable_acid_puddle", "spikes", "lava", "whirlpool", "fake_booster", "swap_trap", "shuffle_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "temporal_bubble", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "flashbang_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper", "mirage_booster", "position_swap_booster", "phase_booster"])
+            kind = random.choice(["deployable_proximity_mud_puddle", "deployable_mud_puddle", "deployable_acid_puddle", "spikes", "lava", "whirlpool", "fake_booster", "swap_trap", "shuffle_trap", "slow_motion_trap", "decoy_item", "link_booster", "stamina_booster", "weather_booster", "poison_cloud", "proximity_trap", "spinning_laser", "healing_spring", "temporal_rift", "temporal_bubble", "bumper", "tornado", "lightning_storm", "hidden_trap", "hidden_mine", "silence_booster", "freeze_booster", "switch", "magnet", "quicksand", "magnet_booster", "material_magnet_booster", "breakable_wall", "portal_gun_item", "wormhole", "clone_booster", "flashbang_booster", "stealth_zone", "invert_booster", "reverse_gravity_booster", "stamina_drain_zone", "tether_trap", "slip_zone", "tall_grass", "mud_puddle", "vortex", "frictionless_zone", "molten_rock", "singularity", "ice_patches", "shuffle_booster", "forecast_booster", "exploding_booster", "debuff_booster", "cursed_booster", "half_reflect_shield_booster", "hookshot_booster", "chain_lightning_strike", "clone_spawner", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "chain_reaction_bumper", "mirage_booster", "position_swap_booster", "phase_booster"])
             if kind == "switch":
                 radius = 20.0
                 damage = 0.0
@@ -580,7 +580,7 @@ class ProceduralArena:
                 if getattr(h, "kind", "") == "avalanche":
                     h.y += getattr(h, "vy", 60.0) * delta
                     for other in self.hazards:
-                        if getattr(other, "kind", "") in ["trap", "explosive_barrel", "sticky_mine", "puddle", "ice_patch", "spikes", "swap_trap", "shuffle_trap", "proximity_trap"]:
+                        if getattr(other, "kind", "") in ["trap", "explosive_barrel", "sticky_mine", "puddle", "ice_patch", "spikes", "swap_trap", "shuffle_trap", "slow_motion_trap", "proximity_trap"]:
                             dist_sq = (h.x - other.x)**2 + (h.y - other.y)**2
                             if dist_sq < h.radius**2:
                                 other.is_hidden = True

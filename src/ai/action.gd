@@ -1016,7 +1016,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 							if new_hp <= 0:
 								h.set_meta("active", false)
 					return
-			elif h_kind == "slow_motion_zone" or h_kind == "time_bubble":
+			elif h_kind == "slow_motion_zone" or h_kind == "time_bubble" or h_kind == "slow_motion_trap":
 				var hx = float(h.x if "x" in h else h.get_meta("x"))
 				var hy = float(h.y if "y" in h else h.get_meta("y"))
 				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 50.0))
@@ -5354,6 +5354,88 @@ func execute(strategy: String, delta: float):
 							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = false
 
 
+
+				if kind == "slow_motion_trap":
+					var hx = 0.0
+					var hy = 0.0
+					var rad = 50.0
+					var h_active = true
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hx = hazard.get("x", 0.0)
+						hy = hazard.get("y", 0.0)
+						rad = hazard.get("radius", 50.0)
+						h_active = hazard.get("active", true)
+					elif typeof(hazard) == TYPE_OBJECT:
+						hx = hazard.x if "x" in hazard else hazard.get_meta("x") if hazard.has_method("has_meta") and hazard.has_meta("x") else 0.0
+						hy = hazard.y if "y" in hazard else hazard.get_meta("y") if hazard.has_method("has_meta") and hazard.has_meta("y") else 0.0
+						rad = hazard.radius if "radius" in hazard else hazard.get_meta("radius") if hazard.has_method("has_meta") and hazard.has_meta("radius") else 50.0
+						h_active = hazard.active if "active" in hazard else hazard.get_meta("active") if hazard.has_method("has_meta") and hazard.has_meta("active") else true
+
+					var bx = 0.0
+					var by = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						bx = self.ball.get("x", 0.0)
+						by = self.ball.get("y", 0.0)
+					elif typeof(self.ball) == TYPE_OBJECT:
+						bx = self.ball.x if "x" in self.ball else self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else 0.0
+						by = self.ball.y if "y" in self.ball else self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else 0.0
+
+					var dx = hx - bx
+					var dy = hy - by
+					if sqrt(dx*dx + dy*dy) <= rad and h_active:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["slow_motion_zone_active"] = true
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("slow_motion_zone_active", true)
+							else:
+								self.ball.slow_motion_zone_active = true
+
+						var cur_base_speed = 100.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): cur_base_speed = self.ball["base_speed"]
+						elif typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball: cur_base_speed = self.ball.base_speed
+
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["speed"] = cur_base_speed * 0.2
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("speed", cur_base_speed * 0.2)
+							else:
+								self.ball.speed = cur_base_speed * 0.2
+
+						var h_duration = -1.0
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_duration = hazard["duration"]
+						elif typeof(hazard) == TYPE_OBJECT and "duration" in hazard: h_duration = hazard.duration
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("duration"): h_duration = hazard.get_meta("duration")
+
+						if h_duration != -1.0:
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hazard["duration"] = 0.0
+								hazard["active"] = false
+							else:
+								if hazard.has_method("set_meta"):
+									hazard.set_meta("duration", 0.0)
+									hazard.set_meta("active", false)
+								else:
+									if "duration" in hazard: hazard.duration = 0.0
+									if "active" in hazard: hazard.active = false
+						else:
+							var max_stamina = 100.0
+							var stamina = 100.0
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								if self.ball.has("max_stamina"): max_stamina = self.ball["max_stamina"]
+								if self.ball.has("stamina"): stamina = self.ball["stamina"]
+								self.ball["stamina"] = min(max_stamina, stamina + 60.0 * delta)
+							else:
+								if "max_stamina" in self.ball: max_stamina = self.ball.max_stamina
+								elif self.ball.has_method("has_meta") and self.ball.has_meta("max_stamina"): max_stamina = self.ball.get_meta("max_stamina")
+								if "stamina" in self.ball: stamina = self.ball.stamina
+								elif self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): stamina = self.ball.get_meta("stamina")
+
+								if self.ball.has_method("set_meta"):
+									self.ball.set_meta("stamina", min(max_stamina, stamina + 60.0 * delta))
+								else:
+									if "stamina" in self.ball: self.ball.stamina = min(max_stamina, stamina + 60.0 * delta)
 
 				if kind == "time_bubble":
 					if typeof(hazard) == TYPE_DICTIONARY:

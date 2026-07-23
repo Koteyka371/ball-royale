@@ -546,7 +546,7 @@ class Action:
                                 if h.hp <= 0:
                                     h.active = False
                             return
-                    elif getattr(h, "kind", "") in ["slow_motion_zone", "time_bubble"]:
+                    elif getattr(h, "kind", "") in ["slow_motion_zone", "time_bubble", "slow_motion_trap"]:
                         hx = h.x
                         hy = h.y
                         hr = getattr(h, "radius", 50.0)
@@ -2530,6 +2530,21 @@ class Action:
                         # Restore stamina rapidly
                         if hasattr(self.ball, "stamina"):
                             self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 60.0 * delta)
+                elif getattr(hazard, "kind", "") == "slow_motion_trap":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                        if getattr(hazard, "active", True):
+                            self.ball.slow_motion_zone_active = True
+                            if hasattr(self.ball, "speed"):
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.2
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier *= 0.2
+                            if hasattr(hazard, "duration") and getattr(hazard, "duration", -1.0) != -1.0:
+                                hazard.duration = 0.0
+                                hazard.active = False
+                            elif hasattr(self.ball, "stamina"):
+                                self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 60.0 * delta)
                 elif getattr(hazard, "kind", "") == "time_bubble":
                     if getattr(hazard, "last_updated_tick", -1) != getattr(self.world, "tick", 0):
                         hazard.radius = min(200.0, getattr(hazard, "radius", 50.0) + (10.0 * delta))
