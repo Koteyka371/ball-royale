@@ -45736,7 +45736,16 @@ class FakeBountyMutatorMode extends GameMode:
                 world.add_event("explosion", {"x": b_x, "y": b_y, "radius": 100.0, "damage": 10.0})
 
 
+class RicochetArenaMode extends GameMode:
+	var velocity_multiplier = 3.0
+	func _init():
+		super._init()
+		self.name = "Ricochet Arena"
+		self.description = "Arena walls apply a massive velocity multiplier on bounce."
+		self.velocity_multiplier = 3.0
+
 GAME_MODES = {
+    "ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),

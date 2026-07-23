@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Bumper Trap",
+  "description": "A deployable trap that, when triggered, teleports the victim to a random location in the arena while retaining their current velocity, but multiplied by a small factor. This forces them to abruptly navigate a new environment with high speed."
+}

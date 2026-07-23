@@ -28595,7 +28595,23 @@ class FakeBountyMutatorMode(GameMode):
                     world.add_event("explosion", {"x": float(b.x), "y": float(b.y), "radius": 100.0, "damage": 10.0})
 
 
+class RicochetArenaMode(GameMode):
+    """
+    An arena mode where walls apply a massive multiplying force to balls when they bounce off them,
+    making the edges of the arena extremely dangerous due to high velocity ricochets.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Ricochet Arena"
+        self.description = "Arena walls apply a massive velocity multiplier on bounce."
+        self.velocity_multiplier = 3.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        # Bouncing logic is handled in action.py _clamp_position for this mode
+
 GAME_MODES = {
+    "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
     "snake_safe_zone": SnakeSafeZoneMode(),
     'lava_eruption_event': LavaEruptionEventMode(),

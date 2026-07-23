@@ -34569,6 +34569,19 @@ func _clamp_position() -> bool:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = true
 
+        if bounced and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Ricochet Arena":
+            var mult = 3.0
+            if "velocity_multiplier" in self.world.game_mode:
+                mult = self.world.game_mode.velocity_multiplier
+
+            if "vx" in self.ball and "vy" in self.ball:
+                self.ball.vx = self.ball.vx * mult
+                self.ball.vy = self.ball.vy * mult
+
+            if "velocity_x" in self.ball and "velocity_y" in self.ball:
+                self.ball.velocity_x = self.ball.velocity_x * mult
+                self.ball.velocity_y = self.ball.velocity_y * mult
+
     return bounced
 
 func _resolve_collisions() -> bool:
