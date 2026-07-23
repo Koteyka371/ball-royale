@@ -667,6 +667,139 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 
+		if not ("dead_balls" in world):
+			world.dead_balls = []
+
+		# Quantum Entanglement Trait Logic
+		var entangled_balls = []
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if b.get("is_quantum_entangled") == true:
+					entangled_balls.append(b)
+			elif typeof(b) == TYPE_DICTIONARY:
+				if b.get("is_quantum_entangled", false) == true:
+					entangled_balls.append(b)
+
+		if entangled_balls.size() == 2:
+			var b1 = entangled_balls[0]
+			var b2 = entangled_balls[1]
+
+			var b1_is_dict = typeof(b1) == TYPE_DICTIONARY
+			var b2_is_dict = typeof(b2) == TYPE_DICTIONARY
+
+			var b1_hp = b1.get("hp", b1.get("max_hp", 100.0))
+			var b2_hp = b2.get("hp", b2.get("max_hp", 100.0))
+
+			var b1_last_hp = 100.0
+			if b1_is_dict and b1.has("last_entangled_hp"): b1_last_hp = b1["last_entangled_hp"]
+			elif not b1_is_dict and b1.get("last_entangled_hp") != null: b1_last_hp = b1.get("last_entangled_hp")
+			else:
+				if b1_is_dict: b1["last_entangled_hp"] = b1_hp
+				else: b1.set("last_entangled_hp", b1_hp)
+				b1_last_hp = b1_hp
+
+			var b2_last_hp = 100.0
+			if b2_is_dict and b2.has("last_entangled_hp"): b2_last_hp = b2["last_entangled_hp"]
+			elif not b2_is_dict and b2.get("last_entangled_hp") != null: b2_last_hp = b2.get("last_entangled_hp")
+			else:
+				if b2_is_dict: b2["last_entangled_hp"] = b2_hp
+				else: b2.set("last_entangled_hp", b2_hp)
+				b2_last_hp = b2_hp
+
+			var b1_alive = b1.get("alive", true)
+			var b2_alive = b2.get("alive", true)
+
+			if b1_alive and not b2_alive:
+				if not b1.get("quantum_enraged", false):
+					if b1_is_dict: b1["quantum_enraged"] = true
+					else: b1.set("quantum_enraged", true)
+
+					var b1_speed = b1.get("speed", 100.0) * 2.0
+					if b1_is_dict: b1["speed"] = b1_speed
+					else: b1.set("speed", b1_speed)
+
+					if b1.has("base_speed"):
+						var val = b1.get("base_speed", 100.0) * 2.0
+						if b1_is_dict: b1["base_speed"] = val
+						else: b1.set("base_speed", val)
+
+					var b1_damage = b1.get("damage", 10.0) * 2.0
+					if b1_is_dict: b1["damage"] = b1_damage
+					else: b1.set("damage", b1_damage)
+
+					if b1.has("base_damage"):
+						var val = b1.get("base_damage", 10.0) * 2.0
+						if b1_is_dict: b1["base_damage"] = val
+						else: b1.set("base_damage", val)
+
+			elif b2_alive and not b1_alive:
+				if not b2.get("quantum_enraged", false):
+					if b2_is_dict: b2["quantum_enraged"] = true
+					else: b2.set("quantum_enraged", true)
+
+					var b2_speed = b2.get("speed", 100.0) * 2.0
+					if b2_is_dict: b2["speed"] = b2_speed
+					else: b2.set("speed", b2_speed)
+
+					if b2.has("base_speed"):
+						var val = b2.get("base_speed", 100.0) * 2.0
+						if b2_is_dict: b2["base_speed"] = val
+						else: b2.set("base_speed", val)
+
+					var b2_damage = b2.get("damage", 10.0) * 2.0
+					if b2_is_dict: b2["damage"] = b2_damage
+					else: b2.set("damage", b2_damage)
+
+					if b2.has("base_damage"):
+						var val = b2.get("base_damage", 10.0) * 2.0
+						if b2_is_dict: b2["base_damage"] = val
+						else: b2.set("base_damage", val)
+
+			if b1_alive and b2_alive:
+				var b1_diff = b1_hp - b1_last_hp
+				var b2_diff = b2_hp - b2_last_hp
+
+				var b1_receiving = b1.get("is_receiving_shared_damage", false)
+				var b2_receiving = b2.get("is_receiving_shared_damage", false)
+
+				if b1_diff != 0 and not b1_receiving:
+					if typeof(b1_diff) == TYPE_INT or typeof(b1_diff) == TYPE_FLOAT:
+						if b2_is_dict: b2["is_receiving_shared_damage"] = true
+						else: b2.set("is_receiving_shared_damage", true)
+
+						var new_hp = b2_hp + (b1_diff * 0.5)
+						var max_hp2 = b2.get("max_hp", 100.0)
+						new_hp = max(0.0, min(new_hp, max_hp2))
+						if b2_is_dict: b2["hp"] = new_hp
+						else: b2.set("hp", new_hp)
+						b2_hp = new_hp
+
+				if b2_diff != 0 and not b2_receiving:
+					if typeof(b2_diff) == TYPE_INT or typeof(b2_diff) == TYPE_FLOAT:
+						if b1_is_dict: b1["is_receiving_shared_damage"] = true
+						else: b1.set("is_receiving_shared_damage", true)
+
+						var new_hp = b1_hp + (b2_diff * 0.5)
+						var max_hp1 = b1.get("max_hp", 100.0)
+						new_hp = max(0.0, min(new_hp, max_hp1))
+						if b1_is_dict: b1["hp"] = new_hp
+						else: b1.set("hp", new_hp)
+						b1_hp = new_hp
+
+				if b1_is_dict:
+					b1["last_entangled_hp"] = b1_hp
+					b1["is_receiving_shared_damage"] = false
+				else:
+					b1.set("last_entangled_hp", b1_hp)
+					b1.set("is_receiving_shared_damage", false)
+
+				if b2_is_dict:
+					b2["last_entangled_hp"] = b2_hp
+					b2["is_receiving_shared_damage"] = false
+				else:
+					b2.set("last_entangled_hp", b2_hp)
+					b2.set("is_receiving_shared_damage", false)
+
 		# Cosmetic Synergy Logic
 		var team_cosmetics = {}
 		for b in balls:
