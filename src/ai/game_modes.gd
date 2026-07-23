@@ -27971,9 +27971,18 @@ class MeteorShowerMode extends GameMode:
 					if b.alive:
 						var dx = b.x - m["x"]
 						var dy = b.y - m["y"]
-						if sqrt(dx*dx + dy*dy) <= m["radius"]:
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= m["radius"]:
 							if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
 							else: b.hp -= 200.0
+							if dist > 0.0001:
+								var push_force = 1000.0
+								if typeof(b) != TYPE_DICTIONARY:
+									b.vx = (b.get("vx") if b.get("vx") != null else 0.0) + (dx / dist) * push_force
+									b.vy = (b.get("vy") if b.get("vy") != null else 0.0) + (dy / dist) * push_force
+								else:
+									b["vx"] = b.get("vx", 0.0) + (dx / dist) * push_force
+									b["vy"] = b.get("vy", 0.0) + (dy / dist) * push_force
 			else:
 				still_active.append(m)
 		active_meteors = still_active
@@ -42431,13 +42440,19 @@ class ExplosiveMeteorsMode extends GameMode:
 					if _get_prop(b, "alive", false):
 						var bx = _get_prop(b, "x", 0.0)
 						var by = _get_prop(b, "y", 0.0)
-						var dist = sqrt(pow(bx - m["x"], 2) + pow(by - m["y"], 2))
+						var dx = bx - m["x"]
+						var dy = by - m["y"]
+						var dist = sqrt(pow(dx, 2) + pow(dy, 2))
 						if dist <= m["radius"]:
 							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 								b.take_damage(50.0)
 							else:
 								var cur_hp = _get_prop(b, "hp", 100.0)
 								_set_prop(b, "hp", cur_hp - 50.0)
+							if dist > 0.0001:
+								var push_force = 1000.0
+								_set_prop(b, "vx", _get_prop(b, "vx", 0.0) + (dx / dist) * push_force)
+								_set_prop(b, "vy", _get_prop(b, "vy", 0.0) + (dy / dist) * push_force)
 			else:
 				still_active.append(m)
 
@@ -49590,13 +49605,19 @@ class MeteorBombardmentMode extends GameMode:
 					if _get_prop(b, "alive", false):
 						var bx = _get_prop(b, "x", 0.0)
 						var by = _get_prop(b, "y", 0.0)
-						var dist = sqrt(pow(bx - m["x"], 2) + pow(by - m["y"], 2))
+						var dx = bx - m["x"]
+						var dy = by - m["y"]
+						var dist = sqrt(pow(dx, 2) + pow(dy, 2))
 						if dist <= m["radius"]:
 							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 								b.take_damage(50.0)
 							else:
 								var cur_hp = _get_prop(b, "hp", 100.0)
 								_set_prop(b, "hp", cur_hp - 50.0)
+							if dist > 0.0001:
+								var push_force = 1000.0
+								_set_prop(b, "vx", _get_prop(b, "vx", 0.0) + (dx / dist) * push_force)
+								_set_prop(b, "vy", _get_prop(b, "vy", 0.0) + (dy / dist) * push_force)
 			else:
 				still_active.append(m)
 
