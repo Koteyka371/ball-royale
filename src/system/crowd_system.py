@@ -735,7 +735,8 @@ class CrowdSystem:
         vote_types = [
             {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
             {"type": "player_buff", "options": ["speed", "damage", "shield"]},
-            {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]}
+            {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
+            {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
         ]
         chosen_vote = random.choice(vote_types)
 
@@ -806,6 +807,24 @@ class CrowdSystem:
                 self.global_modifier_timer = 1800  # 30 seconds at 60 ticks/sec
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"The crowd activated a {winning_option} for 30 seconds!", "volume": 1.2})
+            elif vote_type == "global_hazard_zone":
+                # spawn a massive hazard covering the arena
+                if hasattr(self.world, 'add_event'):
+                    # Default center
+                    cx, cy = 500, 500
+                    radius = 2000
+                    if hasattr(self.world, 'arena'):
+                        cx = getattr(self.world.arena, 'width', 1000) / 2
+                        cy = getattr(self.world.arena, 'height', 1000) / 2
+                        radius = max(getattr(self.world.arena, 'width', 1000), getattr(self.world.arena, 'height', 1000))
+
+                    self.world.add_event("spawn_hazard", {
+                        "x": cx,
+                        "y": cy,
+                        "kind": winning_option,
+                        "radius": radius
+                    })
+                    self.world.add_event("crowd_cheer", {"message": f"The crowd enveloped the arena in {winning_option}!", "volume": 1.5})
 
         for u, v in getattr(self, 'user_votes', {}).items():
             if v == winning_option:

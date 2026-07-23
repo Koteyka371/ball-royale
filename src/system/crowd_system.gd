@@ -1146,7 +1146,8 @@ func _start_vote(balls: Array):
     var vote_types = [
         {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
         {"type": "player_buff", "options": ["speed", "damage", "shield"]},
-        {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]}
+        {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
+        {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
     ]
     var chosen_vote = vote_types[randi() % vote_types.size()]
 
@@ -1242,6 +1243,32 @@ func _resolve_vote(balls: Array):
             global_modifier_timer = 1800
             if world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "The crowd activated a " + winning_option + " for 30 seconds!", "volume": 1.2})
+        elif vote_type == "global_hazard_zone":
+            if world != null and world.has_method("add_event"):
+                var cx = 500.0
+                var cy = 500.0
+                var r = 2000.0
+                if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+                    var arena = world.get("arena")
+                    var w = arena.get("width") if arena.get("width") != null else 1000.0
+                    var h = arena.get("height") if arena.get("height") != null else 1000.0
+                    cx = w / 2.0
+                    cy = h / 2.0
+                    r = max(w, h)
+                elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+                    var arena = world["arena"]
+                    var w = arena.get("width", 1000.0)
+                    var h = arena.get("height", 1000.0)
+                    cx = w / 2.0
+                    cy = h / 2.0
+                    r = max(w, h)
+                world.add_event("spawn_hazard", {
+                    "x": cx,
+                    "y": cy,
+                    "kind": winning_option,
+                    "radius": r
+                })
+                world.add_event("crowd_cheer", {"message": "The crowd enveloped the arena in " + winning_option + "!", "volume": 1.5})
 
 
     for u in user_votes.keys():
