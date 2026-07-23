@@ -38764,8 +38764,14 @@ func _update_skill_timer(delta: float):
                             self.ball.x += nx * pull_str
                             self.ball.y += ny * pull_str
 
-                        self.ball.vx *= (1.0 - 0.5 * delta)
-                        self.ball.vy *= (1.0 - 0.5 * delta)
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            if self.ball.has("vx"): self.ball["vx"] *= (1.0 - 0.5 * delta)
+                            if self.ball.has("vy"): self.ball["vy"] *= (1.0 - 0.5 * delta)
+                        else:
+                            if "vx" in self.ball: self.ball.vx *= (1.0 - 0.5 * delta)
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") * (1.0 - 0.5 * delta))
+                            if "vy" in self.ball: self.ball.vy *= (1.0 - 0.5 * delta)
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") * (1.0 - 0.5 * delta))
 
                         if dist < 15.0:
                             var is_sub = self.ball.get("is_submerged", false) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.is_submerged if "is_submerged" in self.ball else false)

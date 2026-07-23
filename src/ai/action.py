@@ -19736,8 +19736,10 @@ class Action:
                             self.ball.y += ny * pull_str
 
                         # Reduce movement speed
-                        self.ball.vx *= (1.0 - 0.5 * delta)
-                        self.ball.vy *= (1.0 - 0.5 * delta)
+                        if hasattr(self.ball, "vx"):
+                            self.ball.vx *= (1.0 - 0.5 * delta)
+                        if hasattr(self.ball, "vy"):
+                            self.ball.vy *= (1.0 - 0.5 * delta)
 
                         # At the center
                         if dist < 15.0:
