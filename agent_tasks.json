@@ -23488,7 +23488,7 @@
     },
     {
       "id": "idea-1371",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lava Eruption Event",
@@ -35197,6 +35197,23 @@
         "src/ai/bounty_contract_streak.py",
         "src/ai/bounty_contract_streak.gd",
         "tests/test_bounty_contract_streak.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2059",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Enraged Minion Speed Boost",
+      "description": "When minions become enraged (e.g., when the Necromancer dies), they should gain a significant temporary movement speed boost to close the gap before their rapid decay kills them, making their death explosion more of a threat.",
+      "allowed_paths": [
+        "src/ai/enraged_minion_speed_boost.py",
+        "src/ai/enraged_minion_speed_boost.gd",
+        "tests/test_enraged_minion_speed_boost.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1371] Lava Eruption Event — *2026-07-23 05:00:47 UTC*
+
+A random event that periodically erupts lava fountains from the ground, leaving damaging puddles that players must navigate around during combat.
+
+---
+
 ## [idea-1345] Minion Explosive Demise — *2026-07-23 04:53:09 UTC*
 
 When an enraged minion's HP drops to 0 due to rapid decay, it explodes in a small area of effect, dealing damage based on its maximum health to any enemies nearby.
