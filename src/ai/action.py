@@ -8374,6 +8374,10 @@ class Action:
                                         self.world.arena.hazards.append(tar_puddle)
 
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "time_dilation":
+                                    # Time Dilation trap: slows down time for the ball (movement and attacks)
+                                    self.ball.time_warp_slow_timer = max(getattr(self.ball, "time_warp_slow_timer", 0.0), 5.0)
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "anchor":
                                     # Anchor Trap: Disables movement abilities (dash/teleport) for 5 seconds
                                     self.ball.anchor_trap_timer = max(getattr(self.ball, "anchor_trap_timer", 0.0), 5.0)
@@ -20271,8 +20275,8 @@ class Action:
         if getattr(self.ball, "time_warp_slow_timer", 0.0) > 0:
             self.ball.time_warp_slow_timer -= delta
             self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.4
-            self.ball.attack_timer += delta * 0.5 # Cooldown slower
-            self.ball.skill_timer += delta * 0.5
+            self.ball.attack_timer = getattr(self.ball, "attack_timer", 0.0) + delta * 0.5
+            self.ball.skill_timer = getattr(self.ball, "skill_timer", 0.0) + delta * 0.5
             if self.ball.time_warp_slow_timer <= 0:
                 self.ball.time_warp_slow_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)

@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Time Mutator",
+  "description": "A mutator where damage taken and movement slowly re-winds for 5 seconds upon taking fatal damage, allowing players a second chance to avoid death."
+}

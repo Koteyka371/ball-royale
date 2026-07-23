@@ -16305,6 +16305,16 @@ func execute(strategy: String, delta: float):
 
                                 if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
+                            elif trap_variant == "time_dilation":
+                                if "time_warp_slow_timer" in self.ball:
+                                    self.ball.time_warp_slow_timer = max(self.ball.time_warp_slow_timer, 5.0)
+                                elif self.ball.has_method("set_meta"):
+                                    var current_time_warp = 0.0
+                                    if self.ball.has_meta("time_warp_slow_timer"): current_time_warp = self.ball.get_meta("time_warp_slow_timer")
+                                    self.ball.set_meta("time_warp_slow_timer", max(current_time_warp, 5.0))
+
+                                if "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "anchor":
                                 var current_anchor = 0.0
                                 if "anchor_trap_timer" in self.ball: current_anchor = self.ball.anchor_trap_timer
