@@ -237,6 +237,10 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+        if getattr(target, "has_aegis_shield", False):
+            if getattr(target, "aegis_shield_active_timer", 0.0) > 0:
+                return # Take no damage
+
 
         # Elemental Chain Reactions mode logic
         mode = getattr(self.world, 'mode', None)
@@ -1522,6 +1526,22 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Tick artifact timers
+        if getattr(self.ball, "has_aegis_shield", False):
+            if getattr(self.ball, "aegis_shield_cooldown", 0.0) > 0:
+                self.ball.aegis_shield_cooldown -= delta
+            if getattr(self.ball, "aegis_shield_active_timer", 0.0) > 0:
+                self.ball.aegis_shield_active_timer -= delta
+                if self.ball.aegis_shield_active_timer <= 0:
+                    pass
+        if getattr(self.ball, "has_hermes_boots", False):
+            if getattr(self.ball, "hermes_boots_cooldown", 0.0) > 0:
+                self.ball.hermes_boots_cooldown -= delta
+            if getattr(self.ball, "hermes_boots_active_timer", 0.0) > 0:
+                self.ball.hermes_boots_active_timer -= delta
+                if self.ball.hermes_boots_active_timer <= 0:
+                    pass
+
         # Burning Trail Trap Logic
         if getattr(self.ball, "burning_trail_timer", 0.0) > 0.0:
             self.ball.burning_trail_timer -= delta
@@ -14128,6 +14148,30 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) in ("fragment_of_aegis", "fragment_of_hermes"):
+                    frag_kind = getattr(nearest, "kind")
+                    current_count = getattr(self.ball, frag_kind, 0)
+                    setattr(self.ball, frag_kind, current_count + 1)
+
+                    if getattr(self.ball, frag_kind) >= 3:
+                        setattr(self.ball, frag_kind, 0)
+                        if frag_kind == "fragment_of_aegis":
+                            self.ball.has_aegis_shield = True
+                            self.ball.aegis_shield_cooldown = 0.0
+                            self.ball.aegis_shield_active_timer = 0.0
+                            if hasattr(self.world, "events"):
+                                self.world.events.append(("artifact_completed", {"artifact": "aegis_shield", "ball_id": self.ball.id}))
+                        elif frag_kind == "fragment_of_hermes":
+                            self.ball.has_hermes_boots = True
+                            self.ball.hermes_boots_cooldown = 0.0
+                            self.ball.hermes_boots_active_timer = 0.0
+                            if hasattr(self.world, "events"):
+                                self.world.events.append(("artifact_completed", {"artifact": "hermes_boots", "ball_id": self.ball.id}))
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "link_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -14218,6 +14262,20 @@ class Action:
         import math
         if getattr(self.ball, "silence_timer", 0.0) > 0:
             return
+
+        if getattr(self.ball, "has_aegis_shield", False):
+            if getattr(self.ball, "aegis_shield_cooldown", 0.0) <= 0:
+                self.ball.aegis_shield_active_timer = 3.0
+                self.ball.aegis_shield_cooldown = 15.0
+                if hasattr(self.world, "events"):
+                    self.world.events.append(("aegis_shield_activated", {"ball_id": self.ball.id}))
+
+        if getattr(self.ball, "has_hermes_boots", False):
+            if getattr(self.ball, "hermes_boots_cooldown", 0.0) <= 0:
+                self.ball.hermes_boots_active_timer = 3.0
+                self.ball.hermes_boots_cooldown = 15.0
+                if hasattr(self.world, "events"):
+                    self.world.events.append(("hermes_boots_activated", {"ball_id": self.ball.id}))
         skill_timer = getattr(self.ball, "skill_timer", 0.0)
         skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
         if hasattr(self.ball, "active_skill"):
