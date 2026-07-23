@@ -1592,6 +1592,26 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_decoy", False) or getattr(self.ball, "is_decoy_clone", False):
+            if not hasattr(self.ball, "decoy_mimic_cast_timer"):
+                import random
+                self.ball.decoy_mimic_cast_timer = random.uniform(3.0, 6.0)
+            self.ball.decoy_mimic_cast_timer -= delta
+            if self.ball.decoy_mimic_cast_timer <= 0:
+                import random
+                self.ball.decoy_mimic_cast_timer = random.uniform(3.0, 6.0)
+                owner_id = getattr(self.ball, "owner_id", getattr(self.ball, "mimic_owner", None))
+                if owner_id is not None and hasattr(self.world, "balls"):
+                    owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
+                    if owner:
+                        traits = getattr(owner, "traits", [])
+                        if getattr(owner, "has_decoy_mimic_cast", False) or "decoy_mimic_cast" in traits:
+                            skill = getattr(owner, "active_skill", getattr(owner, "skill", getattr(owner, "SKILL", None)))
+                            if skill:
+                                if not hasattr(self.world, "events"):
+                                    self.world.events = []
+                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'skill_cast_mimic', 'skill': skill, 'x': self.ball.x, 'y': self.ball.y}})
+
         # Tick artifact timers
         if getattr(self.ball, "has_aegis_shield", False):
             if getattr(self.ball, "aegis_shield_cooldown", 0.0) > 0:
@@ -19716,8 +19736,8 @@ class Action:
                             self.ball.y += ny * pull_str
 
                         # Reduce movement speed
-                        self.ball.vx *= (1.0 - 0.5 * delta)
-                        self.ball.vy *= (1.0 - 0.5 * delta)
+                        if hasattr(self.ball, "vx"): self.ball.vx *= (1.0 - 0.5 * delta)
+                        if hasattr(self.ball, "vy"): self.ball.vy *= (1.0 - 0.5 * delta)
 
                         # At the center
                         if dist < 15.0:

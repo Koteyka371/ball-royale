@@ -2902,6 +2902,74 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    var is_decoy = false
+    if "is_decoy" in self.ball and self.ball.is_decoy: is_decoy = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("is_decoy") and self.ball.get_meta("is_decoy"): is_decoy = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_decoy") and self.ball["is_decoy"]: is_decoy = true
+    var is_decoy_clone = false
+    if "is_decoy_clone" in self.ball and self.ball.is_decoy_clone: is_decoy_clone = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("is_decoy_clone") and self.ball.get_meta("is_decoy_clone"): is_decoy_clone = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_decoy_clone") and self.ball["is_decoy_clone"]: is_decoy_clone = true
+
+    if is_decoy or is_decoy_clone:
+        var mimic_timer = 0.0
+        if "decoy_mimic_cast_timer" in self.ball: mimic_timer = self.ball.decoy_mimic_cast_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("decoy_mimic_cast_timer"): mimic_timer = self.ball.get_meta("decoy_mimic_cast_timer")
+        else: mimic_timer = randf_range(3.0, 6.0)
+
+        mimic_timer -= delta
+        if mimic_timer <= 0:
+            mimic_timer = randf_range(3.0, 6.0)
+            var owner_id = null
+            if "owner_id" in self.ball: owner_id = self.ball.owner_id
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("owner_id"): owner_id = self.ball.get_meta("owner_id")
+            elif "mimic_owner" in self.ball: owner_id = self.ball.mimic_owner
+
+            if owner_id != null and self.world != null and "balls" in self.world:
+                var owner_b = null
+                for b in self.world.balls:
+                    var b_id = null
+                    if "id" in b: b_id = b.id
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                    var alive = true
+                    if "alive" in b: alive = b.alive
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+
+                    if b_id == owner_id and alive:
+                        owner_b = b
+                        break
+
+                if owner_b != null:
+                    var has_mimic = false
+                    if "has_decoy_mimic_cast" in owner_b and owner_b.has_decoy_mimic_cast: has_mimic = true
+                    elif typeof(owner_b) == TYPE_OBJECT and owner_b.has_method("get_meta") and owner_b.has_meta("has_decoy_mimic_cast") and owner_b.get_meta("has_decoy_mimic_cast"): has_mimic = true
+
+                    if not has_mimic:
+                        var traits = []
+                        if "traits" in owner_b: traits = owner_b.traits
+                        elif typeof(owner_b) == TYPE_OBJECT and owner_b.has_method("get_meta") and owner_b.has_meta("traits"): traits = owner_b.get_meta("traits")
+                        if "decoy_mimic_cast" in traits: has_mimic = true
+
+                    if has_mimic:
+                        var skill = null
+                        if "active_skill" in owner_b: skill = owner_b.active_skill
+                        elif "skill" in owner_b: skill = owner_b.skill
+                        elif "SKILL" in owner_b: skill = owner_b.SKILL
+                        elif typeof(owner_b) == TYPE_OBJECT and owner_b.has_method("get_meta"):
+                            if owner_b.has_meta("active_skill"): skill = owner_b.get_meta("active_skill")
+                            elif owner_b.has_meta("skill"): skill = owner_b.get_meta("skill")
+                            elif owner_b.has_meta("SKILL"): skill = owner_b.get_meta("SKILL")
+
+                        if skill != null:
+                            if not ("events" in self.world): self.world.events = []
+                            self.world.events.append({"type": "visual_effect", "data": {"type": "skill_cast_mimic", "skill": skill, "x": self.ball.x, "y": self.ball.y}})
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "decoy_mimic_cast_timer" in self.ball: self.ball.decoy_mimic_cast_timer = mimic_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("decoy_mimic_cast_timer", mimic_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["decoy_mimic_cast_timer"] = mimic_timer
+
     # Tick artifact timers
     if "has_aegis_shield" in self.ball and self.ball.has_aegis_shield:
         if "aegis_shield_cooldown" in self.ball and self.ball.aegis_shield_cooldown > 0:
