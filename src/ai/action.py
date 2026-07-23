@@ -12789,7 +12789,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -14462,7 +14462,7 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
-        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0:
+        if (getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0) and not getattr(self.ball, "phantom_stride_active", False):
             return
         import random
         import math
@@ -14487,7 +14487,7 @@ class Action:
         if hasattr(self.ball, "active_skill"):
             skill_name = self.ball.active_skill
 
-        if getattr(self.ball, "anchor_trap_timer", 0.0) > 0.0 and skill_name in ["dash", "stamina_dash", "glitch_teleport", "glitch_teleport_v2", "teleport"]:
+        if getattr(self.ball, "anchor_trap_timer", 0.0) > 0.0 and skill_name in ["dash", "stamina_dash", "phantom_stride", "glitch_teleport", "glitch_teleport_v2", "teleport"]:
             return
 
         can_recast = False
@@ -14556,7 +14556,7 @@ class Action:
                         if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
                             hazard.is_exploded = True
                     if getattr(hazard, "kind", "") == "sound_mine" and getattr(hazard, "active", True):
-                        if skill_name in ("dash", "sonar_ping", "forecast_ping", "stamina_dash", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"):
+                        if skill_name in ("dash", "sonar_ping", "forecast_ping", "stamina_dash", "phantom_stride", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"):
                             dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                             r = getattr(hazard, "radius", 100.0)
                             if dist_sq <= r * r:
@@ -17781,6 +17781,18 @@ class Action:
                     setattr(dome, 'duration', 10.0)
                     self.world.arena.hazards.append(dome)
 
+            elif skill_name == "phantom_stride":
+                if not getattr(self.ball, "phantom_stride_active", False):
+                    stamina = getattr(self.ball, "stamina", 0.0)
+                    if stamina >= 20.0:
+                        self.ball.phantom_stride_active = True
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("phantom_stride")
+                        self.ball.skill_timer = 0.5
+                else:
+                    self.ball.phantom_stride_active = False
+                    self.ball.intangible = False
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
             elif skill_name == "phase_through":
                 self.ball.intangible_timer = 3.0
                 self.ball.intangible = True
@@ -18705,6 +18717,21 @@ class Action:
                                 self.ball.speed = getattr(self.ball, "speed", 0.0) * 0.7
 
     def _update_skill_timer(self, delta: float) -> None:
+
+        if getattr(self.ball, "phantom_stride_active", False):
+            stamina = getattr(self.ball, "stamina", 0.0)
+            drain = 40.0 * delta
+            if stamina > 0:
+                self.ball.stamina = max(0.0, stamina - drain)
+                self.ball.intangible = True
+                if hasattr(self.ball, "hazard_immunity_timer"):
+                    self.ball.hazard_immunity_timer = max(self.ball.hazard_immunity_timer, 0.2)
+                else:
+                    self.ball.hazard_immunity_timer = 0.2
+
+            if self.ball.stamina <= 0.0:
+                self.ball.phantom_stride_active = False
+                self.ball.intangible = False
 
         if getattr(self.ball, "skill", "") == "kinetic_absorber":
             current_st = getattr(self.ball, "skill_timer", 0.0)
