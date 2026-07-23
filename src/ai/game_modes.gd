@@ -15932,6 +15932,106 @@ class MutantSafeZoneMode extends SafeZoneMode:
 							b.set("base_perception_radius", cur_base_perc * mut_val)
 
 
+class SnakeSafeZoneMode extends GameMode:
+	var path_points: Array = []
+	var path_thickness: float = 150.0
+	var min_thickness: float = 30.0
+	var shrink_rate: float = 2.0
+	var time_elapsed: float = 0.0
+	var outside_damage_per_second: float = 15.0
+
+	func _init():
+		super._init()
+		name = "Snake Safe Zone"
+		description = "The safe zone is a winding, snake-like path that continuously moves across the arena and shrinks in width over time, forcing players into narrow corridors."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+		path_thickness = 150.0
+		time_elapsed = 0.0
+
+		path_points.clear()
+		for i in range(10):
+			var t = i / 9.0
+			var x = arena_width * 0.1 + t * arena_width * 0.8
+			var y = arena_height / 2.0 + sin(t * PI * 2) * arena_height * 0.3
+			path_points.append({"x": x, "y": y})
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		time_elapsed += delta
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		if path_thickness > min_thickness:
+			path_thickness -= shrink_rate * delta
+			if path_thickness < min_thickness:
+				path_thickness = min_thickness
+
+		for i in range(path_points.size()):
+			var pt = path_points[i]
+			var t = i / 9.0
+			var phase = time_elapsed * 0.5
+			pt["x"] = arena_width * 0.1 + t * arena_width * 0.8 + cos(phase + t * PI) * 100.0
+			pt["y"] = arena_height / 2.0 + sin(phase * 2.0 + t * PI * 2) * arena_height * 0.3
+
+		for b in balls:
+			if not b.get("alive", false):
+				continue
+
+			var min_dist = 999999.0
+			for i in range(path_points.size() - 1):
+				var p1 = path_points[i]
+				var p2 = path_points[i+1]
+
+				var px = p2["x"] - p1["x"]
+				var py = p2["y"] - p1["y"]
+				var norm = px*px + py*py
+
+				var u = 0.0
+				if norm > 0.0:
+					u = ((b.x - p1["x"]) * px + (b.y - p1["y"]) * py) / norm
+					u = max(0.0, min(1.0, u))
+
+				var proj_x = p1["x"] + u * px
+				var proj_y = p1["y"] + u * py
+
+				var dx = b.x - proj_x
+				var dy = b.y - proj_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < min_dist:
+					min_dist = dist
+
+			if min_dist > path_thickness:
+				var w_timer = b.get("weather_immunity_timer", 0.0)
+				var is_immune = false
+				if typeof(w_timer) == TYPE_INT or typeof(w_timer) == TYPE_FLOAT:
+					is_immune = w_timer > 0.0
+				if not is_immune:
+					var damage = outside_damage_per_second * delta
+					if b.has_method("take_damage"):
+						b.take_damage(damage, null, "zone")
+					elif "hp" in b:
+						b.hp -= damage
+
+					if world.has_method("add_event"):
+						world.add_event("damage", {"x": b.x, "y": b.y, "amount": damage, "color": "purple"})
+
+		if world.has_method("add_event"):
+			world.add_event("snake_zone_update", {
+				"points": path_points,
+				"thickness": path_thickness
+			})
+
 class SafeZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var shrink_pause_timer: float = 0.0
@@ -44681,6 +44781,7 @@ class SpawningSafeZonesMode extends GameMode:
 						world.add_event("ball_died", {"id": bid, "reason": "outside_safe_zone", "killer_id": -1})
 
 GAME_MODES = {
+	"snake_safe_zone": SnakeSafeZoneMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
