@@ -24,6 +24,7 @@ class WeekendBoss:
 from arena import arena_types as ArenaTypes
 from typing import List, Optional, Any
 
+
 class GameMode:
     """Base class for all game modes."""
     def __init__(self):
@@ -27931,7 +27932,15 @@ class ExpandingLavaRoyaleMode(GameMode):
         return None
 
 
+
+class AuraSiphonMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Siphon"
+        self.description = "Friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves."
+
 GAME_MODES = {
+    "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
     'massive_pinball_arena': MassivePinballArenaMode(),
     "aura_pulse_event": AuraPulseEventMode(),
