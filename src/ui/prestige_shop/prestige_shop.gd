@@ -91,6 +91,75 @@ func spin_wheel(cost: int = 1) -> Array:
 
 	return [true, msg]
 
+func get_roulette_color(number: int) -> String:
+	if number == 0:
+		return "green"
+	return "red" if number % 2 != 0 else "black"
+
+func get_roulette_section(number: int) -> String:
+	if number == 0:
+		return "none"
+	if number >= 1 and number <= 12:
+		return "1st12"
+	elif number >= 13 and number <= 24:
+		return "2nd12"
+	else:
+		return "3rd12"
+
+func play_roulette(bet_amount: int, bet_type: String, bet_value: String) -> Array:
+	var current_tokens = 0
+	if profile_manager != null and "data" in profile_manager:
+		current_tokens = profile_manager.data.get("prestige_tokens", 0)
+	else:
+		return [false, "Profile manager error"]
+
+	if current_tokens < bet_amount:
+		return [false, "Not enough tokens"]
+
+	profile_manager.data["prestige_tokens"] = current_tokens - bet_amount
+	if profile_manager.has_method("save_profile"):
+		profile_manager.save_profile()
+
+	var winning_number = randi() % 37
+	var winning_color = get_roulette_color(winning_number)
+	var winning_section = get_roulette_section(winning_number)
+
+	var payout = 0
+	if bet_type == "color":
+		if bet_value == winning_color:
+			payout = bet_amount * (35 if bet_value == "green" else 2)
+	elif bet_type == "section":
+		if bet_value == winning_section:
+			payout = bet_amount * 3
+	elif bet_type == "number":
+		if bet_value.is_valid_int() and bet_value.to_int() == winning_number:
+			payout = bet_amount * 35
+
+	var msg = "Roulette spun " + str(winning_number) + " (" + winning_color + "). "
+	if payout > 0:
+		profile_manager.data["prestige_tokens"] = profile_manager.data.get("prestige_tokens", 0) + payout
+		msg += "You won " + str(payout) + " tokens!"
+
+		if payout >= 50 and randf() < 0.1:
+			if profile_manager.has_method("add_cosmetic"):
+				profile_manager.add_cosmetic("roulette_master")
+			msg += " Also won exclusive cosmetic: roulette_master!"
+
+		if profile_manager.has_method("save_profile"):
+			profile_manager.save_profile()
+		return [true, msg]
+	else:
+		msg += "You lost your bet."
+		return [true, msg]
+
+func _on_roulette_pressed():
+	var result = play_roulette(10, "color", "red")
+	var success = result[0]
+	var msg = result[1]
+	print(msg)
+	if success:
+		_refresh_ui()
+
 func _on_spin_pressed():
 	var result = spin_wheel()
 	var success = result[0]
@@ -130,6 +199,10 @@ func _refresh_ui():
 	spin_btn.pressed.connect(self._on_spin_pressed)
 	container.add_child(spin_btn)
 
+	var roulette_btn = Button.new()
+	roulette_btn.text = "Play Roulette (10 Tokens on Red)"
+	roulette_btn.pressed.connect(self._on_roulette_pressed)
+	container.add_child(roulette_btn)
 
 	var upgrades = get_available_upgrades()
 	for upgrade_name in upgrades.keys():

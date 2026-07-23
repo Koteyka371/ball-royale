@@ -32,6 +32,61 @@ def test_prestige_shop_buy_upgrade():
     if os.path.exists(test_file):
         os.remove(test_file)
 
+def test_prestige_shop_play_roulette():
+    test_file = "test_profile_shop_roulette.json"
+    with open(test_file, 'w') as f:
+        json.dump({"prestige_tokens": 100, "skill_points": 0, "cosmetics": []}, f)
+
+    pm = ProfileManager(test_file)
+    shop = PrestigeShop(pm)
+
+    # Mock random to return 1 (which should be "red" since 1%2 != 0)
+    import random
+    original_randint = random.randint
+    random.randint = lambda a, b: 1
+
+    try:
+        # Test winning bet
+        success, msg = shop.play_roulette(10, "color", "red")
+        assert success is True
+        assert "You won 20 tokens!" in msg
+        assert pm.data["prestige_tokens"] == 110 # 100 - 10 + 20
+
+        # Test losing bet
+        success, msg = shop.play_roulette(10, "color", "black")
+        assert success is True
+        assert "You lost your bet." in msg
+        assert pm.data["prestige_tokens"] == 100 # 110 - 10
+
+        # Test not enough tokens
+        success, msg = shop.play_roulette(200, "color", "red")
+        assert success is False
+        assert "Not enough tokens" in msg
+        assert pm.data["prestige_tokens"] == 100
+
+        # Test cosmetic unlock on large win
+        # Force a large win
+        random.randint = lambda a, b: 0 # green
+
+        # Mock random.random to return 0.0 (guarantees < 0.1)
+        original_random = random.random
+        random.random = lambda: 0.0
+
+        success, msg = shop.play_roulette(10, "color", "green")
+        assert success is True
+        assert "You won 350 tokens!" in msg
+        assert "Also won exclusive cosmetic: roulette_master!" in msg
+        assert pm.data["prestige_tokens"] == 440 # 100 - 10 + 350
+        assert "roulette_master" in pm.data["cosmetics"]
+
+        random.random = original_random
+
+    finally:
+        random.randint = original_randint
+
+    if os.path.exists(test_file):
+        os.remove(test_file)
+
 
 def test_prestige_shop_spin_wheel():
     test_file = "test_profile_shop_wheel.json"
