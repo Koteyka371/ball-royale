@@ -3257,6 +3257,23 @@ class Action:
                         except ImportError:
                             pass
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_confetti_bomb" in self.ball.inventory:
+            nearest = self._get_nearest_enemy()
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_confetti_bomb")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            c_id = f"{len(self.world.arena.hazards)}_{getattr(self.world, 'tick', 0)}_confetti"
+                            bomb = Hazard(c_id, self.ball.x, self.ball.y, 60.0, "deployable_confetti_bomb", 0.0)
+                            bomb.duration = 10.0
+                            setattr(bomb, 'owner_id', getattr(self.ball, 'id', None))
+                            self.world.arena.hazards.append(bomb)
+                        except ImportError:
+                            pass
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_acid_puddle" in self.ball.inventory:
             nearest = self._get_nearest_enemy()
             if nearest:
@@ -6430,6 +6447,53 @@ class Action:
                                             b.mud_stack_cooldown = 0.5
                                         else:
                                             b.mud_stack_cooldown -= delta
+
+                    elif hazard.kind == "deployable_confetti_bomb":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 10.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                continue
+
+                            # Trigger if any enemy enters radius
+                            triggered = False
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                    hx = getattr(hazard, "x", 0)
+                                    hy = getattr(hazard, "y", 0)
+                                    bx = getattr(b, "x", 0)
+                                    by = getattr(b, "y", 0)
+                                    dist_sq = (hx - bx)**2 + (hy - by)**2
+                                    rad_sum = getattr(hazard, "radius", 60.0) + getattr(b, "radius", 20.0)
+                                    if dist_sq < rad_sum * rad_sum:
+                                        triggered = True
+                                        break
+
+                            if triggered:
+                                hazard.active = False
+                                hazard.duration = 0.0 # Destroy
+                                if hasattr(self.world, "events"):
+                                    import random
+                                    import math
+                                    for i in range(50):
+                                        angle = random.uniform(0, 2 * math.pi)
+                                        tx = hazard.x + math.cos(angle) * 300
+                                        ty = hazard.y + math.sin(angle) * 300
+                                        self.world.events.append({
+                                            "type": "visual_effect",
+                                            "data": {
+                                                "type": "confetti",
+                                                "x": hazard.x,
+                                                "y": hazard.y,
+                                                "tx": tx,
+                                                "ty": ty,
+                                                "bounce": True,
+                                                "color": random.choice(["pink", "purple", "yellow", "cyan", "red", "green", "blue"])
+                                            }
+                                        })
 
                     elif hazard.kind == "deployable_acid_puddle":
                         current_tick = getattr(self.world, "tick", 0)
@@ -13634,6 +13698,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("deployable_mud_puddle")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_confetti_bomb":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_confetti_bomb")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

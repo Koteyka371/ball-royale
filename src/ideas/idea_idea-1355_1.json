@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Projection Trap",
+  "description": "A deployable trap that, when triggered, creates an illusionary clone of the victim that runs in the opposite direction. It deals zero damage but confuses enemies and their AI logic, tricking them into attacking the fake clone while the real player escapes or sets up another attack."
+}

@@ -7590,6 +7590,25 @@ func execute(strategy: String, delta: float):
 					inv.erase("lightning_rod_item")
 					if self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
 					elif "inventory" in self.ball: self.ball.inventory = inv
+		if inv.has("deployable_confetti_bomb"):
+			var nearest = _get_nearest_enemy()
+			if nearest != null:
+				var dist = sqrt(pow(self.ball.x - nearest.x, 2) + pow(self.ball.y - nearest.y, 2))
+				if dist < 300:
+					inv.erase("deployable_confetti_bomb")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+					elif "inventory" in self.ball: self.ball.inventory = inv
+					if world != null and "arena" in world and "hazards" in world.arena:
+						var arena = world.arena
+						var c_id = str(arena.hazards.size()) + "_" + str(world.tick if "tick" in world else 0) + "_confetti"
+						var p_bomb = null
+						if load("res://src/arena/procedural_arena.gd") != null:
+							p_bomb = load("res://src/arena/procedural_arena.gd").Hazard.new(c_id, self.ball.x, self.ball.y, 60.0, "deployable_confetti_bomb", 0.0)
+							p_bomb.set_meta("duration", 10.0)
+							if "id" in self.ball: p_bomb.set_meta("owner_id", self.ball.id)
+							arena.hazards.append(p_bomb)
+
+
 		if inv.has("deployable_acid_puddle"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -12139,6 +12158,86 @@ func execute(strategy: String, delta: float):
                                             b.mud_stack_cooldown = 0.5
                                         else:
                                             b.mud_stack_cooldown = stack_cd - delta
+
+                elif hazard.kind == "deployable_confetti_bomb":
+                    var current_tick = world.tick if "tick" in world else 0
+                    var last_updated = -1
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("last_updated_tick"): last_updated = hazard.get_meta("last_updated_tick")
+                    elif "last_updated_tick" in hazard: last_updated = hazard.last_updated_tick
+
+                    if last_updated != current_tick:
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("last_updated_tick", current_tick)
+                        elif "last_updated_tick" in hazard: hazard.last_updated_tick = current_tick
+
+                        var h_dur = 10.0
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
+                        elif "duration" in hazard: h_dur = hazard.duration
+                        h_dur -= delta
+
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", h_dur)
+                        elif "duration" in hazard: hazard.duration = h_dur
+
+                        if h_dur <= 0:
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            elif "active" in hazard: hazard.active = false
+                            continue
+
+                        var triggered = false
+                        var h_owner_id = null
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("owner_id"): h_owner_id = hazard.get_meta("owner_id")
+                        elif "owner_id" in hazard: h_owner_id = hazard.owner_id
+
+                        var hz_rad = 60.0
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("radius"): hz_rad = hazard.get_meta("radius")
+                        elif "radius" in hazard: hz_rad = hazard.radius
+
+                        for b in world.balls:
+                            var is_alive = true
+                            if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+                            elif "alive" in b: is_alive = b.alive
+
+                            var b_id = null
+                            if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                            elif "id" in b: b_id = b.id
+
+                            if is_alive and b_id != h_owner_id:
+                                var hx = hazard.x if "x" in hazard else 0
+                                var hy = hazard.y if "y" in hazard else 0
+                                var bx = b.x if "x" in b else 0
+                                var by = b.y if "y" in b else 0
+                                var dist_sq = pow(hx - bx, 2) + pow(hy - by, 2)
+                                var b_rad = 20.0
+                                if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("radius"): b_rad = b.get_meta("radius")
+                                elif "radius" in b: b_rad = b.radius
+                                var rad_sum = hz_rad + b_rad
+                                if dist_sq < rad_sum * rad_sum:
+                                    triggered = true
+                                    break
+
+                        if triggered:
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            elif "active" in hazard: hazard.active = false
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif "duration" in hazard: hazard.duration = 0.0
+
+                            if world != null and "events" in world:
+                                var colors = ["pink", "purple", "yellow", "cyan", "red", "green", "blue"]
+                                for i in range(50):
+                                    var angle = randf() * 2 * PI
+                                    var tx = (hazard.x if "x" in hazard else 0) + cos(angle) * 300
+                                    var ty = (hazard.y if "y" in hazard else 0) + sin(angle) * 300
+                                    world.events.append({
+                                        "type": "visual_effect",
+                                        "data": {
+                                            "type": "confetti",
+                                            "x": hazard.x if "x" in hazard else 0,
+                                            "y": hazard.y if "y" in hazard else 0,
+                                            "tx": tx,
+                                            "ty": ty,
+                                            "bounce": true,
+                                            "color": colors[randi() % colors.size()]
+                                        }
+                                    })
 
                 elif hazard.kind == "deployable_acid_puddle":
                     var current_tick = world.tick if "tick" in world else 0
