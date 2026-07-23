@@ -1,0 +1,4 @@
+{
+  "title": "Supernova Trap",
+  "description": "A new hazard that acts as a delayed explosive trap. Once triggered, it starts pulling nearby players slowly, increasing its pull strength over 3 seconds, before exploding in a massive area-of-effect blast, damaging and knocking back anyone caught inside."
+}
