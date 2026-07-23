@@ -812,6 +812,10 @@ class Action:
         if is_ranged:
             # Apply slight knockback/recoil to the attacker for evasive movement
             recoil_force = original_damage * 10.0
+            if getattr(attacker, "recoil_amplifier_timer", 0.0) > 0.0:
+                recoil_force *= 2.0
+            if getattr(attacker, "recoil_dampener_timer", 0.0) > 0.0:
+                recoil_force *= 0.2
             import math
             dx = getattr(target, 'x', 0.0) - getattr(attacker, 'x', 0.0)
             dy = getattr(target, 'y', 0.0) - getattr(attacker, 'y', 0.0)
@@ -1596,6 +1600,11 @@ class Action:
                 self.ball.hermes_boots_active_timer -= delta
                 if self.ball.hermes_boots_active_timer <= 0:
                     pass
+
+        if getattr(self.ball, "recoil_amplifier_timer", 0.0) > 0.0:
+            self.ball.recoil_amplifier_timer -= delta
+        if getattr(self.ball, "recoil_dampener_timer", 0.0) > 0.0:
+            self.ball.recoil_dampener_timer -= delta
 
         # Burning Trail Trap Logic
         if getattr(self.ball, "burning_trail_timer", 0.0) > 0.0:
@@ -14344,6 +14353,20 @@ class Action:
                             if hasattr(self.world, "events"):
                                 self.world.events.append(("artifact_completed", {"artifact": "hermes_boots", "ball_id": self.ball.id}))
 
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "recoil_amplifier_booster":
+                    self.ball.recoil_amplifier_timer = 10.0
+                    self.ball.recoil_dampener_timer = 0.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "recoil_dampener_booster":
+                    self.ball.recoil_dampener_timer = 10.0
+                    self.ball.recoil_amplifier_timer = 0.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
