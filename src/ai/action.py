@@ -13674,6 +13674,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "reverse_grapple_booster":
+                    self.ball.reverse_grapple_booster_timer = 5.0
+                    enemies = self._get_enemies()
+                    if enemies:
+                        self.ball.reverse_grapple_target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "magnet_booster":
                     self.ball.pull_booster_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -18881,6 +18891,22 @@ class Action:
                 if hasattr(self.ball, "hp"):
                     self.ball.hp = min(self.ball.hp, self.ball.max_hp)
                 self.ball.speed = getattr(self.ball, "base_speed", 100.0)
+
+        if hasattr(self.ball, "reverse_grapple_booster_timer") and self.ball.reverse_grapple_booster_timer > 0:
+            self.ball.reverse_grapple_booster_timer -= delta
+            target = getattr(self.ball, "reverse_grapple_target", None)
+            if target and getattr(target, "alive", True):
+                import math
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq > 0.0001:
+                    dist = math.sqrt(dist_sq)
+                    nx = (self.ball.x - target.x) / dist
+                    ny = (self.ball.y - target.y) / dist
+                    pull_strength = 250.0 * delta
+                    if hasattr(target, "x"): target.x += nx * pull_strength
+                    if hasattr(target, "y"): target.y += ny * pull_strength
+            else:
+                self.ball.reverse_grapple_booster_timer = 0.0
 
         if hasattr(self.ball, "pull_booster_timer") and self.ball.pull_booster_timer > 0:
             self.ball.pull_booster_timer -= delta
