@@ -22643,6 +22643,68 @@ class ZeroGravityMode extends GameMode:
 		description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
 
 
+
+class ChainLightningMutatorMode extends GameMode:
+	func _init() -> void:
+		name = "Chain Lightning Mutator"
+		description = "A mutator where energy weapons and traps have a chance to chain to nearby secondary targets, causing chaotic team fights."
+
+	func on_damage_dealt(world, attacker, target, damage: float) -> void:
+		var is_energy = false
+		if typeof(attacker) == TYPE_DICTIONARY:
+			if "weapon_type" in attacker and attacker["weapon_type"] == "energy":
+				is_energy = true
+			elif "kind" in attacker and str(attacker["kind"]).find("trap") != -1:
+				is_energy = true
+		else:
+			if "weapon_type" in attacker and attacker.weapon_type == "energy":
+				is_energy = true
+			elif "kind" in attacker and str(attacker.kind).find("trap") != -1:
+				is_energy = true
+
+		if is_energy and randf() < 0.25:
+			if not "balls" in world:
+				return
+
+			var potential_targets = []
+			for b in world.balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					var b_alive = b.get("alive", true)
+					if b != target and b != attacker and b_alive:
+						var b_team = b.get("team", "")
+						var a_team = attacker.get("team", "") if typeof(attacker) == TYPE_DICTIONARY else attacker.get("team")
+						if b_team != a_team:
+							var target_x = target.get("x", 0) if typeof(target) == TYPE_DICTIONARY else target.get("x")
+							var target_y = target.get("y", 0) if typeof(target) == TYPE_DICTIONARY else target.get("y")
+							var dx = b.get("x", 0) - target_x
+							var dy = b.get("y", 0) - target_y
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist <= 150.0:
+								potential_targets.append(b)
+				else:
+					var b_alive = b.get("alive") if "alive" in b else true
+					if b != target and b != attacker and b_alive:
+						var b_team = b.get("team") if "team" in b else ""
+						var a_team = attacker.get("team", "") if typeof(attacker) == TYPE_DICTIONARY else (attacker.get("team") if "team" in attacker else "")
+						if b_team != a_team:
+							var target_x = target.get("x", 0) if typeof(target) == TYPE_DICTIONARY else (target.get("x") if "x" in target else 0)
+							var target_y = target.get("y", 0) if typeof(target) == TYPE_DICTIONARY else (target.get("y") if "y" in target else 0)
+							var dx = (b.get("x") if "x" in b else 0) - target_x
+							var dy = (b.get("y") if "y" in b else 0) - target_y
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist <= 150.0:
+								potential_targets.append(b)
+
+			if potential_targets.size() > 0:
+				var next_target = potential_targets[randi() % potential_targets.size()]
+				if world.has_method("_deal_damage"):
+					var chain_damage = damage * 0.5
+					world._deal_damage(attacker, next_target, chain_damage)
+					if world.has_method("add_event"):
+						var target_id = target.get("id", 0) if typeof(target) == TYPE_DICTIONARY else (target.get("id") if "id" in target else 0)
+						var next_target_id = next_target.get("id", 0) if typeof(next_target) == TYPE_DICTIONARY else (next_target.get("id") if "id" in next_target else 0)
+						world.add_event("chain_lightning", {"source": target_id, "target": next_target_id, "damage": chain_damage})
+
 class QuantumTunnelMutatorMode extends GameMode:
 	func _init() -> void:
 		name = "Quantum Tunnel Mutator"
@@ -45745,6 +45807,7 @@ class RicochetArenaMode extends GameMode:
 		self.velocity_multiplier = 3.0
 
 GAME_MODES = {
+	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
     "ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),

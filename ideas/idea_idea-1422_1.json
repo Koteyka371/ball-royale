@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Mutator",
+  "description": "Every time a player takes damage, there is a chance they instantly swap places with the attacker, throwing off positioning and momentum."
+}

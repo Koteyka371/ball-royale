@@ -14897,6 +14897,51 @@ class ZeroGravityMode(GameMode):
         self.name = "Zero Gravity"
         self.description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
 
+
+class ChainLightningMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chain Lightning Mutator"
+        self.description = "A mutator where energy weapons and traps have a chance to chain to nearby secondary targets, causing chaotic team fights."
+        self.chain_chance = 0.25
+        self.chain_radius = 150.0
+
+    def on_damage_dealt(self, world, attacker, target, damage):
+        import random
+        import math
+
+        # Check if the damage is from a trap or an energy weapon
+        if hasattr(attacker, "weapon_type") and attacker.weapon_type == "energy":
+            is_energy = True
+        elif hasattr(attacker, "kind") and "trap" in attacker.kind.lower():
+            is_energy = True
+        else:
+            is_energy = False
+
+        if is_energy and random.random() < self.chain_chance:
+            if not hasattr(world, "balls"):
+                return
+
+            # Find nearby enemies
+            potential_targets = []
+            for b in world.balls:
+                if b != target and b != attacker and getattr(b, "alive", True):
+                    # Check team
+                    if getattr(b, "team", "") != getattr(attacker, "team", ""):
+                        dx = b.x - target.x
+                        dy = b.y - target.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist <= self.chain_radius:
+                            potential_targets.append(b)
+
+            if potential_targets:
+                next_target = random.choice(potential_targets)
+                if hasattr(world, "_deal_damage"):
+                    chain_damage = damage * 0.5
+                    world._deal_damage(attacker, next_target, chain_damage)
+                    if hasattr(world, "add_event"):
+                        world.add_event("chain_lightning", {"source": target.id, "target": next_target.id, "damage": chain_damage})
+
 class QuantumTunnelMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -36680,4 +36725,5 @@ class WeatherTrapMode(GameMode):
                     elif trap["weather"] == "rain":
                         b.perception_radius = base_perception * 0.5
 
+GAME_MODES['chain_lightning_mutator'] = ChainLightningMutatorMode()
 GAME_MODES['weather_traps'] = WeatherTrapMode()
