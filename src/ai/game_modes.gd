@@ -44324,7 +44324,100 @@ class ExpandingLavaRoyaleMode extends GameMode:
 
 var LavaEruptionEventMode = preload("res://src/ai/lava_eruption.gd")
 
+
+class VampiricHazardMode extends GameMode:
+	var hazard_timer = 0.0
+	var spawn_interval = 10.0
+	var rng = RandomNumberGenerator.new()
+	var arena_mod = null
+
+	func _init():
+		name = "Vampiric Hazard"
+		description = "A stationary hazard slowly drains the HP of any player within its radius, but instead of just disappearing, it heals the closest player on the opposite team proportional to the damage dealt."
+		rng.randomize()
+
+	func setup(world, balls):
+		.setup(world, balls)
+
+	func tick(world, balls, delta):
+		.tick(world, balls, delta)
+		hazard_timer -= delta
+		if hazard_timer <= 0.0:
+			hazard_timer = spawn_interval
+			if world.get("arena") != null and world.arena.get("hazards") != null:
+				var new_hazard = {}
+				new_hazard["id"] = world.arena.hazards.size() + rng.randi_range(1000, 9999)
+				new_hazard["x"] = world.arena.width / 2.0 + rng.randf_range(-200.0, 200.0)
+				new_hazard["y"] = world.arena.height / 2.0 + rng.randf_range(-200.0, 200.0)
+				new_hazard["radius"] = 80.0
+				new_hazard["kind"] = "vampiric_hazard"
+				new_hazard["damage"] = 0.0
+				world.arena.hazards.append(new_hazard)
+				world.add_event("visual_effect", {"type": "vampiric_hazard_spawned", "x": new_hazard["x"], "y": new_hazard["y"]})
+
+		if world.get("arena") != null and world.arena.get("hazards") != null:
+			for hazard in world.arena.hazards:
+				var h_kind = ""
+				if typeof(hazard) == TYPE_DICTIONARY:
+					h_kind = hazard.get("kind", "")
+				elif typeof(hazard) == TYPE_OBJECT:
+					h_kind = hazard.get("kind")
+					if h_kind == null:
+						h_kind = ""
+
+				if h_kind == "vampiric_hazard":
+					var h_x = 0.0
+					var h_y = 0.0
+					var h_r = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY:
+						h_x = hazard.get("x", 0.0)
+						h_y = hazard.get("y", 0.0)
+						h_r = hazard.get("radius", 80.0)
+					else:
+						h_x = hazard.get("x")
+						h_y = hazard.get("y")
+						h_r = hazard.get("radius")
+
+					for ball in balls:
+						if ball.hp <= 0:
+							continue
+
+						var dx = ball.x - h_x
+						var dy = ball.y - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= h_r:
+							var drain_amount = 10.0 * delta
+							ball.hp -= drain_amount
+							world.add_event("damage", {"target": ball.id, "amount": drain_amount, "source": "vampiric_hazard"})
+
+							var closest_enemy = null
+							var closest_dist = 999999.0
+
+							for other in balls:
+								if other.hp <= 0 or other.id == ball.id:
+									continue
+								var is_enemy = true
+								if ball.get("team") != null and other.get("team") != null:
+									is_enemy = (ball.team != other.team)
+
+								if is_enemy:
+									var edx = other.x - h_x
+									var edy = other.y - h_y
+									var ed = sqrt(edx*edx + edy*edy)
+									if ed < closest_dist:
+										closest_dist = ed
+										closest_enemy = other
+
+							if closest_enemy != null:
+								var heal_amount = drain_amount
+								var mhp = 100.0
+								if closest_enemy.get("max_hp") != null:
+									mhp = closest_enemy.max_hp
+								closest_enemy.hp = min(mhp, closest_enemy.hp + heal_amount)
+								world.add_event("heal", {"target": closest_enemy.id, "amount": heal_amount, "source": "vampiric_hazard"})
+
 GAME_MODES = {
+    'vampiric_hazard': VampiricHazardMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),

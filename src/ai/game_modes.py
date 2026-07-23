@@ -27940,7 +27940,83 @@ class AuraSiphonMode(GameMode):
         self.description = "Friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves."
 from ai.lava_eruption import LavaEruptionEventMode
 
+
+class VampiricHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vampiric Hazard"
+        self.description = "A stationary hazard slowly drains the HP of any player within its radius, but instead of just disappearing, it heals the closest player on the opposite team proportional to the damage dealt."
+        self.hazard_timer = 0.0
+        self.spawn_interval = 10.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            # Ensure hazards list exists
+            pass
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        self.hazard_timer -= delta
+
+        if self.hazard_timer <= 0.0:
+            self.hazard_timer = self.spawn_interval
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                # spawn one in center or random
+                new_hazard = Hazard(
+                    id=len(world.arena.hazards) + getattr(self, "random", __import__("random")).randint(1000,9999),
+                    x=world.arena.width / 2.0 + getattr(self, "random", __import__("random")).uniform(-200, 200),
+                    y=world.arena.height / 2.0 + getattr(self, "random", __import__("random")).uniform(-200, 200),
+                    radius=80.0,
+                    kind="vampiric_hazard",
+                    damage=0.0
+                )
+                world.arena.hazards.append(new_hazard)
+                world.add_event("visual_effect", {"type": "vampiric_hazard_spawned", "x": new_hazard.x, "y": new_hazard.y})
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            # Process our custom hazards
+            for hazard in world.arena.hazards:
+                if getattr(hazard, "kind", "") == "vampiric_hazard":
+                    for ball in balls:
+                        if ball.hp <= 0:
+                            continue
+
+                        import math
+                        dist = math.hypot(ball.x - hazard.x, ball.y - hazard.y)
+                        if dist <= hazard.radius:
+                            # Drain hp
+                            drain_amount = 10.0 * delta
+                            ball.hp -= drain_amount
+                            world.add_event("damage", {"target": ball.id, "amount": drain_amount, "source": "vampiric_hazard"})
+
+                            # Heal closest opposite team
+                            closest_enemy = None
+                            closest_dist = float('inf')
+
+                            for other in balls:
+                                if other.hp <= 0 or other.id == ball.id:
+                                    continue
+                                # Check teams if team mode, else just different player
+                                is_enemy = True
+                                if hasattr(ball, 'team') and hasattr(other, 'team'):
+                                    is_enemy = (ball.team != other.team)
+
+                                if is_enemy:
+                                    d = math.hypot(other.x - hazard.x, other.y - hazard.y)
+                                    if d < closest_dist:
+                                        closest_dist = d
+                                        closest_enemy = other
+
+                            if closest_enemy:
+                                heal_amount = drain_amount # proportional to damage dealt
+                                closest_enemy.hp = min(getattr(closest_enemy, 'max_hp', 100.0), closest_enemy.hp + heal_amount)
+                                world.add_event("heal", {"target": closest_enemy.id, "amount": heal_amount, "source": "vampiric_hazard"})
+
+
 GAME_MODES = {
+    'vampiric_hazard': VampiricHazardMode(),
     'lava_eruption_event': LavaEruptionEventMode(),
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
