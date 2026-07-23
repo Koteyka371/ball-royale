@@ -37331,6 +37331,60 @@ class ElementalAurasMode extends GameMode:
 									auras[element] = auras.get(element, 0) + 1
 									b.elemental_auras = auras
 								picked_up = true
+
+								var b_team = "A"
+								if typeof(b) != TYPE_DICTIONARY and b.has_method("has_meta") and b.has_meta("team"):
+									b_team = b.get_meta("team")
+								elif "team" in b:
+									b_team = b.team
+								var bid = b.get("id", "") if typeof(b) == TYPE_DICTIONARY else b.id
+
+								var enemies_with_auras = []
+								for eb in balls:
+									var eb_alive = false
+									if typeof(eb) != TYPE_DICTIONARY and eb.has_method("has_meta"):
+										eb_alive = eb.get_meta("alive", true) if eb.has_meta("alive") else eb.alive
+									elif "alive" in eb:
+										eb_alive = eb.alive
+									var ebid = eb.get("id", "") if typeof(eb) == TYPE_DICTIONARY else eb.id
+									var eb_team = eb.get("team", "B") if typeof(eb) == TYPE_DICTIONARY else (eb.get_meta("team") if eb.has_method("has_meta") and eb.has_meta("team") else eb.team)
+									if eb_alive and ebid != bid and eb_team != b_team:
+										var e_auras = {}
+										if typeof(eb) != TYPE_DICTIONARY and eb.has_method("has_meta") and eb.has_meta("elemental_auras"):
+											e_auras = eb.get_meta("elemental_auras")
+										elif "elemental_auras" in eb:
+											e_auras = eb.elemental_auras
+										var has_auras = []
+										for k in e_auras.keys():
+											if e_auras[k] > 0:
+												has_auras.append(k)
+										if has_auras.size() > 0:
+											enemies_with_auras.append({"ball": eb, "has_auras": has_auras})
+
+								if enemies_with_auras.size() > 0:
+									var rng2 = RandomNumberGenerator.new()
+									rng2.randomize()
+									var target = enemies_with_auras[rng2.randi() % enemies_with_auras.size()]
+									var e_ball = target["ball"]
+									var disrupted_element = target["has_auras"][rng2.randi() % target["has_auras"].size()]
+
+									var target_auras = {}
+									if typeof(e_ball) != TYPE_DICTIONARY and e_ball.has_method("has_meta") and e_ball.has_meta("elemental_auras"):
+										target_auras = e_ball.get_meta("elemental_auras")
+									elif "elemental_auras" in e_ball:
+										target_auras = e_ball.elemental_auras
+
+									target_auras[disrupted_element] -= 1
+
+									if typeof(e_ball) != TYPE_DICTIONARY and e_ball.has_method("has_meta"):
+										e_ball.set_meta("elemental_auras", target_auras)
+									elif "elemental_auras" in e_ball:
+										e_ball.elemental_auras = target_auras
+
+									if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										var tid = e_ball.get("id", "") if typeof(e_ball) == TYPE_DICTIONARY else e_ball.id
+										world.add_event("aura_disrupted", {"id": tid, "element": disrupted_element})
+
 								break
 					if not picked_up:
 						still_hazards.append(h)
