@@ -14231,6 +14231,35 @@ class DayNightMode(GameMode):
                             if hasattr(world, "add_event"):
                                 world.add_event("visual_effect", {"type": "solar_flare_supercharge", "ball_id": getattr(b, "id", 0)})
 
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        if not hasattr(world, "arena"):
+            return
+
+        is_night = getattr(world.arena, "is_night", False)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            traits = getattr(b, "traits", [])
+
+            # Apply Light trait during the day
+            if not is_night and "light" in traits:
+                b.speed = getattr(b, "base_speed", 100.0) * 1.3
+                b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 1.5
+            elif "light" in traits:
+                b.speed = getattr(b, "base_speed", 100.0)
+                b.perception_radius = getattr(b, "base_perception_radius", 150.0)
+
+            # Apply Shadow trait during the night
+            if is_night and "shadow" in traits:
+                b.stealth = True
+                b.crit_chance = getattr(b, "base_crit_chance", 0.0) + 0.25
+            elif "shadow" in traits:
+                b.stealth = False
+                b.crit_chance = getattr(b, "base_crit_chance", 0.0)
+
 class GuildVsGuildMode(GameMode):
     """Guild vs Guild mode where players capture territory on a persistent world map."""
     def __init__(self):
