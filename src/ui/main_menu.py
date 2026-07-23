@@ -1,5 +1,6 @@
 from ui.prestige_shop.prestige_shop import PrestigeShop
 from ui.nemesis_screen.nemesis_screen import NemesisScreen
+from ui.guild_emblem_editor.guild_emblem_editor import GuildEmblemEditor
 from system.profile import ProfileManager
 from system.leaderboard import LeaderboardManager
 
@@ -16,6 +17,7 @@ class MainMenu:
 
 
         self.nemesis_screen = NemesisScreen(self.profile_manager, self.background_theme)
+        self.guild_emblem_editor = GuildEmblemEditor(self.profile_manager)
 
         self.weekend_options = ["10x_speed", "invisible_enemies", "lava_floor"]
         self.weekend_votes = {opt: 0 for opt in self.weekend_options}
@@ -72,6 +74,11 @@ class MainMenu:
         self.active_screen = "nemesis"
         return self.nemesis_screen.render_ui()
 
+
+    def open_guild_emblem_editor(self):
+        self.active_screen = "guild_emblem_editor"
+        return self.guild_emblem_editor.refresh_ui()
+
     def open_prestige_shop(self):
         self.active_screen = "prestige_shop"
         return self.prestige_shop.render_ui()
@@ -98,6 +105,27 @@ class MainMenu:
 
         if self.active_screen == "replay_screen":
             return self.process_replay_input(action, *args)
+
+
+        if self.active_screen == "guild_emblem_editor":
+            if action == "save":
+                return self.guild_emblem_editor.save_emblem()
+            elif action == "next_shape":
+                idx = self.guild_emblem_editor.available_shapes.index(self.guild_emblem_editor.current_shape)
+                self.guild_emblem_editor.current_shape = self.guild_emblem_editor.available_shapes[(idx + 1) % len(self.guild_emblem_editor.available_shapes)]
+                return True
+            elif action == "next_color":
+                idx = self.guild_emblem_editor.available_colors.index(self.guild_emblem_editor.current_color)
+                self.guild_emblem_editor.current_color = self.guild_emblem_editor.available_colors[(idx + 1) % len(self.guild_emblem_editor.available_colors)]
+                return True
+            elif action == "next_symbol":
+                idx = self.guild_emblem_editor.available_symbols.index(self.guild_emblem_editor.current_symbol)
+                self.guild_emblem_editor.current_symbol = self.guild_emblem_editor.available_symbols[(idx + 1) % len(self.guild_emblem_editor.available_symbols)]
+                return True
+            elif action == "back":
+                self.active_screen = "main"
+                return True
+            return False
 
         if self.active_screen == "nemesis":
 

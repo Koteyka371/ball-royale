@@ -5,6 +5,7 @@ var profile_manager: ProfileManager
 var leaderboard_manager: LeaderboardManager
 var prestige_shop_ui: PrestigeShop
 var nemesis_screen_ui: NemesisScreen
+var guild_emblem_editor_ui: GuildEmblemEditor
 
 var active_screen: String = "main"
 var weekend_options: Array = ["10x_speed", "invisible_enemies", "lava_floor"]
@@ -37,6 +38,16 @@ func _ready():
     nemesis_screen_ui = NemesisScreen.new(profile_manager, background_theme)
     add_child(nemesis_screen_ui)
     nemesis_screen_ui.visible = false
+
+    guild_emblem_editor_ui = GuildEmblemEditor.new(profile_manager)
+    add_child(guild_emblem_editor_ui)
+    guild_emblem_editor_ui.visible = false
+
+    var open_emblem_btn = Button.new()
+    open_emblem_btn.text = "Open Emblem Editor"
+    open_emblem_btn.pressed.connect(self._on_open_emblem_pressed)
+    add_child(open_emblem_btn)
+
 
     var open_shop_btn = Button.new()
     open_shop_btn.text = "Open Prestige Shop"
@@ -108,10 +119,22 @@ func process_replay_input(action: String, args: Array = []):
         return true
     return false
 
+
+func _on_open_emblem_pressed():
+    active_screen = "guild_emblem_editor"
+    prestige_shop_ui.visible = false
+    if nemesis_screen_ui != null:
+        nemesis_screen_ui.visible = false
+    if guild_emblem_editor_ui != null:
+        guild_emblem_editor_ui.visible = true
+        guild_emblem_editor_ui._refresh_ui()
+
 func _on_open_nemesis_pressed():
     active_screen = "nemesis"
     prestige_shop_ui.visible = false
     nemesis_screen_ui.visible = true
+    if guild_emblem_editor_ui != null:
+        guild_emblem_editor_ui.visible = false
     nemesis_screen_ui._refresh_ui()
 
 func _on_open_vote_pressed():
@@ -119,6 +142,8 @@ func _on_open_vote_pressed():
     prestige_shop_ui.visible = false
     if nemesis_screen_ui != null:
         nemesis_screen_ui.visible = false
+    if guild_emblem_editor_ui != null:
+        guild_emblem_editor_ui.visible = false
 
 func cast_weekend_vote(mode: String) -> bool:
     if weekend_options.has(mode):
@@ -145,6 +170,8 @@ func cast_weekend_vote(mode: String) -> bool:
 func _on_open_shop_pressed():
     active_screen = "prestige_shop"
     nemesis_screen_ui.visible = false
+    if guild_emblem_editor_ui != null:
+        guild_emblem_editor_ui.visible = false
     prestige_shop_ui.visible = true
     prestige_shop_ui._refresh_ui()
 
@@ -153,3 +180,5 @@ func close_shop():
     prestige_shop_ui.visible = false
     if nemesis_screen_ui != null:
         nemesis_screen_ui.visible = false
+    if guild_emblem_editor_ui != null:
+        guild_emblem_editor_ui.visible = false

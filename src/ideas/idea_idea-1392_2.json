@@ -1,0 +1,4 @@
+{
+  "title": "Guild Emblem Editor Animations",
+  "description": "Add UI animations and sound effects to the guild emblem editor when successfully saving or failing to save due to locked parts, making the interface more juicy."
+}
