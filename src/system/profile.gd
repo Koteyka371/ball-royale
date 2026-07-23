@@ -326,6 +326,11 @@ func claim_player_bounty(target_player_id: String, claiming_player_id: String) -
                 else:
                     data[currency] += int(reward * 0.5)
 
+            if claiming_player_id != placer and placer == "local_player":
+                if not data.has(currency):
+                    data[currency] = 0
+                data[currency] += int(reward * 0.5)
+
             save_profile()
             return [reward, placer]
     return [0, ""]

@@ -305,12 +305,16 @@ class ProfileManager:
             # If the player who placed the bounty claims it, they get triple the investment
             if claiming_player_id == placer and claiming_player_id == "local_player":
                 self.data[currency] = self.data.get(currency, 0) + (reward * 3)
-            # If a different player claims it, they get a portion (e.g., half), and the placer might get something if we want, but for now just the claimer gets it.
+            # If a different player claims it, they get a portion (e.g., half)
             elif claiming_player_id == "local_player":
                 self.data[currency] = self.data.get(currency, 0) + int(reward * 0.5)
             else:
                 # Give portion to AI
                 pass
+
+            # If the bounty is claimed by someone else, give the placer a portion
+            if claiming_player_id != placer and placer == "local_player":
+                self.data[currency] = self.data.get(currency, 0) + int(reward * 0.5)
             self.save()
             return reward, placer
         return 0, None
