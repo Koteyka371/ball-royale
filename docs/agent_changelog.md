@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1378] Quantum Teleportation Relay — *2026-07-23 07:55:48 UTC*
+
+A deployable structure (similar to a hazard) that allows balls to instantly teleport between two paired relays on the map. This introduces new strategic positioning and ambush opportunities, especially in larger or compartmentalized arenas.
+
+---
+
 ## [idea-1382] Shrinking Safe Path — *2026-07-23 07:37:06 UTC*
 
 A game mode where the safe zone isn't a circle, but rather a winding path (like a snake) that continuously moves and shrinks, forcing players to navigate narrow corridors.
