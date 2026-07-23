@@ -372,6 +372,125 @@ func _attempt_damage(attacker, target) -> void:
 
 func _attempt_damage_internal(attacker, target) -> void:
 
+	var att_btype = ""
+	var att_team = ""
+	var tgt_team = ""
+	var att_traits = []
+	var tgt_traits = []
+	if typeof(attacker) == TYPE_OBJECT:
+		if "ball_type" in attacker: att_btype = attacker.ball_type
+		if "team" in attacker: att_team = attacker.team
+		if "traits" in attacker: att_traits = attacker.traits
+	elif typeof(attacker) == TYPE_DICTIONARY:
+		if attacker.has("ball_type"): att_btype = attacker.ball_type
+		if attacker.has("team"): att_team = attacker.team
+		if attacker.has("traits"): att_traits = attacker.traits
+
+	if typeof(target) == TYPE_OBJECT:
+		if "team" in target: tgt_team = target.team
+		if "traits" in target: tgt_traits = target.traits
+	elif typeof(target) == TYPE_DICTIONARY:
+		if target.has("team"): tgt_team = target.team
+		if target.has("traits"): tgt_traits = target.traits
+
+	if att_btype == "chameleon" and att_team != tgt_team and tgt_traits.size() > 0:
+		var primary_trait = tgt_traits[0]
+		var current_primary = null
+		if att_traits.size() > 0: current_primary = att_traits[0]
+
+		if current_primary != primary_trait:
+			var att_speed = 100.0
+			var att_base_speed = 100.0
+			var att_max_hp = 100.0
+			var att_hp = 100.0
+			var att_damage = 10.0
+			var att_base_damage = 10.0
+			var has_base_speed = false
+			var has_base_damage = false
+			if typeof(attacker) == TYPE_OBJECT:
+				if "speed" in attacker: att_speed = attacker.speed
+				if "base_speed" in attacker:
+					att_base_speed = attacker.base_speed
+					has_base_speed = true
+				if "max_hp" in attacker: att_max_hp = attacker.max_hp
+				if "hp" in attacker: att_hp = attacker.hp
+				if "damage" in attacker: att_damage = attacker.damage
+				if "base_damage" in attacker:
+					att_base_damage = attacker.base_damage
+					has_base_damage = true
+			elif typeof(attacker) == TYPE_DICTIONARY:
+				if attacker.has("speed"): att_speed = attacker.speed
+				if attacker.has("base_speed"):
+					att_base_speed = attacker.base_speed
+					has_base_speed = true
+				if attacker.has("max_hp"): att_max_hp = attacker.max_hp
+				if attacker.has("hp"): att_hp = attacker.hp
+				if attacker.has("damage"): att_damage = attacker.damage
+				if attacker.has("base_damage"):
+					att_base_damage = attacker.base_damage
+					has_base_damage = true
+
+			if current_primary == "swift":
+				att_speed /= 1.05
+				if has_base_speed: att_base_speed /= 1.05
+			elif current_primary == "slow":
+				att_speed /= 0.95
+				if has_base_speed: att_base_speed /= 0.95
+			elif current_primary == "sturdy":
+				att_max_hp /= 1.05
+				att_hp = min(att_hp, att_max_hp)
+			elif current_primary == "fragile":
+				att_max_hp /= 0.95
+				att_hp = min(att_hp, att_max_hp)
+			elif current_primary == "lethal":
+				att_damage /= 1.05
+				if has_base_damage: att_base_damage /= 1.05
+			elif current_primary == "weak":
+				att_damage /= 0.95
+				if has_base_damage: att_base_damage /= 0.95
+
+			if primary_trait == "swift":
+				att_speed *= 1.05
+				if has_base_speed: att_base_speed *= 1.05
+			elif primary_trait == "slow":
+				att_speed *= 0.95
+				if has_base_speed: att_base_speed *= 0.95
+			elif primary_trait == "sturdy":
+				att_max_hp *= 1.05
+				att_hp = min(att_hp * 1.05, att_max_hp)
+			elif primary_trait == "fragile":
+				att_max_hp *= 0.95
+				att_hp = min(att_hp, att_max_hp)
+			elif primary_trait == "lethal":
+				att_damage *= 1.05
+				if has_base_damage: att_base_damage *= 1.05
+			elif primary_trait == "weak":
+				att_damage *= 0.95
+				if has_base_damage: att_base_damage *= 0.95
+
+			if typeof(attacker) == TYPE_OBJECT:
+				if "speed" in attacker: attacker.speed = att_speed
+				if has_base_speed: attacker.base_speed = att_base_speed
+				if "max_hp" in attacker: attacker.max_hp = att_max_hp
+				if "hp" in attacker: attacker.hp = att_hp
+				if "damage" in attacker: attacker.damage = att_damage
+				if has_base_damage: attacker.base_damage = att_base_damage
+				if "traits" in attacker:
+					if attacker.traits.size() > 0: attacker.traits[0] = primary_trait
+					else: attacker.traits.append(primary_trait)
+				else: attacker.traits = [primary_trait]
+			elif typeof(attacker) == TYPE_DICTIONARY:
+				attacker["speed"] = att_speed
+				if has_base_speed: attacker["base_speed"] = att_base_speed
+				attacker["max_hp"] = att_max_hp
+				attacker["hp"] = att_hp
+				attacker["damage"] = att_damage
+				if has_base_damage: attacker["base_damage"] = att_base_damage
+				if attacker.has("traits"):
+					if attacker.traits.size() > 0: attacker.traits[0] = primary_trait
+					else: attacker.traits.append(primary_trait)
+				else: attacker["traits"] = [primary_trait]
+
 	var mode_name = ""
 	if typeof(world) == TYPE_OBJECT and "mode" in world and world.mode != null:
 		mode_name = world.mode.get("name") if typeof(world.mode) == TYPE_DICTIONARY else (world.mode.name if "name" in world.mode else "")

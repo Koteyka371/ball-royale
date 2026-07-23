@@ -238,6 +238,61 @@ class Action:
 
     def _attempt_damage_internal(self, attacker, target) -> None:
 
+        # Chameleon logic
+        if getattr(attacker, "ball_type", "") == "chameleon" and getattr(attacker, "team", "") != getattr(target, "team", ""):
+            target_traits = getattr(target, "traits", [])
+            if target_traits and len(target_traits) > 0:
+                primary_trait = target_traits[0]
+                attacker_traits = getattr(attacker, "traits", [])
+                current_primary = attacker_traits[0] if attacker_traits else None
+
+                if current_primary != primary_trait:
+                    # Reverse old trait
+                    if current_primary == "swift":
+                        attacker.speed = getattr(attacker, "speed", 100.0) / 1.05
+                        if hasattr(attacker, "base_speed"): attacker.base_speed /= 1.05
+                    elif current_primary == "slow":
+                        attacker.speed = getattr(attacker, "speed", 100.0) / 0.95
+                        if hasattr(attacker, "base_speed"): attacker.base_speed /= 0.95
+                    elif current_primary == "sturdy":
+                        attacker.max_hp = getattr(attacker, "max_hp", 100.0) / 1.05
+                        attacker.hp = min(getattr(attacker, "hp", 100.0), attacker.max_hp)
+                    elif current_primary == "fragile":
+                        attacker.max_hp = getattr(attacker, "max_hp", 100.0) / 0.95
+                        attacker.hp = min(getattr(attacker, "hp", 100.0), attacker.max_hp)
+                    elif current_primary == "lethal":
+                        attacker.damage = getattr(attacker, "damage", 10.0) / 1.05
+                        if hasattr(attacker, "base_damage"): attacker.base_damage /= 1.05
+                    elif current_primary == "weak":
+                        attacker.damage = getattr(attacker, "damage", 10.0) / 0.95
+                        if hasattr(attacker, "base_damage"): attacker.base_damage /= 0.95
+
+                    # Apply new trait
+                    if primary_trait == "swift":
+                        attacker.speed = getattr(attacker, "speed", 100.0) * 1.05
+                        if hasattr(attacker, "base_speed"): attacker.base_speed *= 1.05
+                    elif primary_trait == "slow":
+                        attacker.speed = getattr(attacker, "speed", 100.0) * 0.95
+                        if hasattr(attacker, "base_speed"): attacker.base_speed *= 0.95
+                    elif primary_trait == "sturdy":
+                        attacker.max_hp = getattr(attacker, "max_hp", 100.0) * 1.05
+                        attacker.hp = min(getattr(attacker, "hp", 100.0) * 1.05, attacker.max_hp)
+                    elif primary_trait == "fragile":
+                        attacker.max_hp = getattr(attacker, "max_hp", 100.0) * 0.95
+                        attacker.hp = min(getattr(attacker, "hp", 100.0), attacker.max_hp)
+                    elif primary_trait == "lethal":
+                        attacker.damage = getattr(attacker, "damage", 10.0) * 1.05
+                        if hasattr(attacker, "base_damage"): attacker.base_damage *= 1.05
+                    elif primary_trait == "weak":
+                        attacker.damage = getattr(attacker, "damage", 10.0) * 0.95
+                        if hasattr(attacker, "base_damage"): attacker.base_damage *= 0.95
+
+                    # Update traits list
+                    if hasattr(attacker, "traits") and attacker.traits:
+                        attacker.traits[0] = primary_trait
+                    else:
+                        attacker.traits = [primary_trait]
+
         # Elemental Chain Reactions mode logic
         mode = getattr(self.world, 'mode', None)
         mode_name = getattr(mode, 'name', '') if mode else getattr(self.world, 'current_mode_name', '')
