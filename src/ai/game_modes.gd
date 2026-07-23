@@ -2265,6 +2265,142 @@ class GameMode:
 
 
 		if "arena" in world and "hazards" in world.arena:
+			var emotes = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h: kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+				if kind == "emote":
+					emotes.append(h)
+
+			var emote_to_remove = []
+			for i in range(emotes.size()):
+				var h1 = emotes[i]
+				if emote_to_remove.has(h1): continue
+				for j in range(i + 1, emotes.size()):
+					var h2 = emotes[j]
+					if emote_to_remove.has(h2): continue
+
+					var e1 = ""
+					if "emoji" in h1: e1 = h1.emoji
+					elif typeof(h1) == TYPE_OBJECT and h1.has_method("get_meta") and h1.has_meta("emoji"): e1 = h1.get_meta("emoji")
+					elif typeof(h1) == TYPE_DICTIONARY and h1.has("emoji"): e1 = h1["emoji"]
+
+					var e2 = ""
+					if "emoji" in h2: e2 = h2.emoji
+					elif typeof(h2) == TYPE_OBJECT and h2.has_method("get_meta") and h2.has_meta("emoji"): e2 = h2.get_meta("emoji")
+					elif typeof(h2) == TYPE_DICTIONARY and h2.has("emoji"): e2 = h2["emoji"]
+
+					if e1 == e2 and e1 != "":
+						var h1_x = h1.x if "x" in h1 else (h1.get_meta("x") if typeof(h1) == TYPE_OBJECT and h1.has_method("get_meta") and h1.has_meta("x") else h1.get("x", 0.0))
+						var h1_y = h1.y if "y" in h1 else (h1.get_meta("y") if typeof(h1) == TYPE_OBJECT and h1.has_method("get_meta") and h1.has_meta("y") else h1.get("y", 0.0))
+
+						var h2_x = h2.x if "x" in h2 else (h2.get_meta("x") if typeof(h2) == TYPE_OBJECT and h2.has_method("get_meta") and h2.has_meta("x") else h2.get("x", 0.0))
+						var h2_y = h2.y if "y" in h2 else (h2.get_meta("y") if typeof(h2) == TYPE_OBJECT and h2.has_method("get_meta") and h2.has_meta("y") else h2.get("y", 0.0))
+
+						var dx = h1_x - h2_x
+						var dy = h1_y - h2_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < 40.0:
+							emote_to_remove.append(h1)
+							emote_to_remove.append(h2)
+
+							var mid_x = (h1_x + h2_x) / 2.0
+							var mid_y = (h1_y + h2_y) / 2.0
+
+							if world != null and world.has_method("add_event"):
+								world.add_event("massive_emote_event", {
+									"x": mid_x,
+									"y": mid_y,
+									"emoji": e1,
+									"message": "MASSIVE " + e1 + " EVENT!"
+								})
+							elif typeof(world) == TYPE_DICTIONARY and world.has("add_event") and world["add_event"] is Callable:
+								world["add_event"].call("massive_emote_event", {
+									"x": mid_x,
+									"y": mid_y,
+									"emoji": e1,
+									"message": "MASSIVE " + e1 + " EVENT!"
+								})
+
+							for b in balls:
+								var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive") if "alive" in b else false
+								var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else ""
+								if is_alive and b_type != "spectator":
+									var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x") if "x" in b else 0.0
+									var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y") if "y" in b else 0.0
+									var bdx = bx - mid_x
+									var bdy = by - mid_y
+									if sqrt(bdx*bdx + bdy*bdy) < 150.0:
+										if typeof(b) == TYPE_DICTIONARY:
+											b["aura_booster_timer"] = 5.0
+										else:
+											if "aura_booster_timer" in b: b.aura_booster_timer = 5.0
+											elif b.has_method("set_meta"): b.set_meta("aura_booster_timer", 5.0)
+							break
+
+			for h in emotes:
+				if emote_to_remove.has(h):
+					if typeof(world.arena.hazards) == TYPE_ARRAY:
+						world.arena.hazards.erase(h)
+					continue
+
+				var h_x = h.x if "x" in h else (h.get_meta("x") if typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x") else h.get("x", 0.0))
+				var h_y = h.y if "y" in h else (h.get_meta("y") if typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y") else h.get("y", 0.0))
+
+				h_x += randf_range(-20.0, 20.0) * delta
+				h_y += randf_range(-20.0, 20.0) * delta
+
+				var a_w = 1000.0
+				var a_h = 1000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					a_w = world.arena.get("width", 1000.0)
+					a_h = world.arena.get("height", 1000.0)
+				else:
+					if "width" in world.arena: a_w = world.arena.width
+					if "height" in world.arena: a_h = world.arena.height
+
+				h_x = max(50.0, min(a_w - 50.0, h_x))
+				h_y = max(50.0, min(a_h - 50.0, h_y))
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = h_x
+					h["y"] = h_y
+				else:
+					if "x" in h: h.x = h_x
+					elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("x", h_x)
+					if "y" in h: h.y = h_y
+					elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"): h.set_meta("y", h_y)
+
+				var h_r = h.radius if "radius" in h else (h.get_meta("radius") if typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius") else h.get("radius", 20.0))
+
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive") if "alive" in b else false
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else ""
+					if is_alive and b_type != "spectator":
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x") if "x" in b else 0.0
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y") if "y" in b else 0.0
+						var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius") if "radius" in b else 15.0
+
+						var dx = bx - h_x
+						var dy = by - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < h_r + br and dist > 0:
+							var overlap = (h_r + br) - dist
+							bx += (dx / dist) * overlap * 0.5
+							by += (dy / dist) * overlap * 0.5
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] = bx
+								b["y"] = by
+							else:
+								if "x" in b: b.x = bx
+								elif b.has_method("set_meta"): b.set_meta("x", bx)
+								if "y" in b: b.y = by
+								elif b.has_method("set_meta"): b.set_meta("y", by)
+
+		if "arena" in world and "hazards" in world.arena:
 			var drones = []
 			for h in world.arena.hazards:
 				var kind = ""
