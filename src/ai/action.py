@@ -3,7 +3,6 @@ import math
 
 from typing import Any
 
-
 class CheerEffect:
     def __init__(self, x, y, kind, owner_id):
         self.x = x
@@ -26,12 +25,10 @@ class HomingMissileHazard:
         self.owner_id = None
         self.active = True
 
-
 class LaserBeamNode:
     pass
 
 class Action:
-
 
     def _award_xp(self, ball, amount, world=None) -> None:
         if not getattr(ball, "alive", False) or getattr(ball, "ball_type", None) == "spectator":
@@ -148,7 +145,6 @@ class Action:
             if hasattr(world, "add_event"):
                 world.add_event("level_up", {"ball": getattr(ball, "id", None), "level": ball.level, "stat": stat})
 
-
     def _handle_reflect_bounce(self, original_attacker, initial_target, damage: float, bounce_chance: float = 0.5, max_bounces: int = 3, bounce_range: float = 120.0) -> None:
         import random
         import math
@@ -193,7 +189,6 @@ class Action:
                 current_source = next_target
             else:
                 break
-
 
     def _attempt_damage(self, attacker, target) -> None:
         has_orig = False
@@ -240,7 +235,6 @@ class Action:
         if getattr(target, "has_aegis_shield", False):
             if getattr(target, "aegis_shield_active_timer", 0.0) > 0:
                 return # Take no damage
-
 
         # Chameleon logic
         if getattr(attacker, "ball_type", "") == "chameleon" and getattr(attacker, "team", "") != getattr(target, "team", ""):
@@ -359,7 +353,6 @@ class Action:
 
         is_projectile_or_laser = getattr(attacker, "ball_type", getattr(attacker, "kind", "")) in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"] or getattr(attacker, "is_projectile", False) or getattr(attacker, "is_ricochet_laser", False) or getattr(attacker, "is_spell", False)
 
-
         if getattr(target, "has_kinetic_absorber", False):
             # Absorb kinetic energy instead of taking damage
             # We assume a fixed amount of energy per damage attempt or use damage value
@@ -402,7 +395,6 @@ class Action:
 
             return
 
-
         if getattr(attacker, "phase_booster_timer", 0.0) > 0.0:
             return
 
@@ -438,7 +430,6 @@ class Action:
             attacker.in_bush = False # Reveal after attack
             multiplier = 1.5
 
-
         a_team = getattr(attacker, "team", getattr(attacker, "ball_type", ""))
         t_team = getattr(target, "team", getattr(target, "ball_type", ""))
         if a_team == t_team and a_team != -1 and getattr(attacker, "id", None) != getattr(target, "id", None):
@@ -455,7 +446,6 @@ class Action:
             # A weak poison, base damage is handled in game loop, but let's just make it tick damage or something
             target.dot_duration = getattr(target, 'dot_duration', 0.0) + 2.0
             target.dot_damage_per_tick = getattr(target, 'dot_damage_per_tick', 0.0) + 2.0
-
 
         # Intercept damage logic for shield_drone
         if getattr(attacker, "blood_magic_timer", 0.0) > 0.0 and random.random() < 0.2:
@@ -628,7 +618,6 @@ class Action:
         is_nemesis_active = False
         if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
             is_nemesis_active = pm.is_nemesis(attacker.ball_type, target.ball_type)
-
 
         if getattr(target, "projectile_reflect_active", False) and is_ranged:
             if not hasattr(target, "suspended_projectiles"):
@@ -1253,7 +1242,6 @@ class Action:
                 mat = {"id": f"mat_{new_id}", "x": getattr(target, "x", 0), "y": getattr(target, "y", 0), "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": True}
                 self.world.arena.items.append(mat)
 
-
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:
             enemies = self._get_enemies()
@@ -1579,7 +1567,6 @@ class Action:
             pr *= 0.4  # Further reduced perception in fog
         return pr
 
-
     def execute(self, strategy: str, delta: float) -> None:
         # Tick artifact timers
         if getattr(self.ball, "has_aegis_shield", False):
@@ -1675,7 +1662,6 @@ class Action:
                 elif closest_wall == "bottom":
                     self.ball.y = min(float(arena_height), self.ball.y + pull_dist)
 
-
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for h in list(self.world.arena.hazards):
                 if getattr(h, "kind", "") == "mirage_decoy":
@@ -1734,7 +1720,6 @@ class Action:
                 self.ball.overflow_active = False
                 self.ball.max_stamina_timer = 0.0
 
-
         if getattr(self.ball, "bound_phylactery_id", None) is not None:
             # Check phylactery state
             p_id = self.ball.bound_phylactery_id
@@ -1764,7 +1749,6 @@ class Action:
                 self._idle(delta)
                 return
 
-
         if hasattr(self.ball, "orbital_link_timer"):
             if getattr(self.ball, "orbital_link_timer", 0.0) > 0.0:
                 self.ball.orbital_link_timer -= delta
@@ -1778,7 +1762,6 @@ class Action:
             if hasattr(self.ball, "speed"): self.ball.speed = 100.0
             if hasattr(self.ball, "hp"): self.ball.hp = 0.0
             return
-
 
         b_type_initial = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
         if b_type_initial == "linker" and getattr(self.ball, "link_target", None) is None:
@@ -2002,7 +1985,6 @@ class Action:
         if hasattr(self.ball, "polarity_cooldown") and type(self.ball.polarity_cooldown) in (int, float) and self.ball.polarity_cooldown > 0:
             self.ball.polarity_cooldown = max(0, self.ball.polarity_cooldown - delta)
 
-
         if getattr(self.ball, "ball_type", "") == "shuffler" and not getattr(self.ball, "is_shuffler_clone", False) and getattr(self.ball, "alive", True):
             if abs(getattr(self.ball, "vx", 0.0)) + abs(getattr(self.ball, "vy", 0.0)) > 0.5:
                 timer = getattr(self.ball, "shuffler_clone_timer", 2.0)
@@ -2137,7 +2119,6 @@ class Action:
             if bounces_left <= 0:
                 self.ball.alive = False
             return
-
 
         ball_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", ""))
         if ball_type == "trickster":
@@ -2473,10 +2454,8 @@ class Action:
                                 }
                             })
 
-
                     else:
                         self.ball.show_sniper_nest_indicator = False
-
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
@@ -2579,7 +2558,6 @@ class Action:
                             self.world._deal_damage(hazard, self.ball, 10000.0)
                         else:
                             self.ball.hp = -10000.0
-
 
         # Task: Lower-level balls have a chance to get the 'fear' emotion simply by being in the immediate proximity of a ball with a massive, high-level cosmetic aura.
         if not getattr(self.ball, "is_decoy", False) and getattr(self.ball, "cosmetic_aura_scale", 1.0) >= 2.0:
@@ -2768,7 +2746,6 @@ class Action:
                 self.ball.reflect_shield_capacity = 20.0 * nearby_enemies
                 self.ball.reflect_shield_initial_capacity = self.ball.reflect_shield_capacity
 
-
         # Platforms
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "platforms"):
             for p in self.world.arena.platforms:
@@ -2820,7 +2797,6 @@ class Action:
                 self.ball.decoy_aura_timer = 0
                 if hasattr(self.ball, "speed") and hasattr(self.ball, "base_speed"):
                     self.ball.speed = self.ball.base_speed
-
 
         # REPLACED
         # Bounty Hunter target indicator
@@ -2938,7 +2914,6 @@ class Action:
 
         self.ball.is_frictionless = False
 
-
         # Molten burn effect
         if getattr(self.ball, "molten_burn_timer", 0.0) > 0:
             if hasattr(self.ball, "hp"):
@@ -2958,7 +2933,6 @@ class Action:
                 self.ball.hp -= 5.0 * delta
                 if self.ball.hp <= 0:
                     self.ball.alive = False
-
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             hazards_to_remove = []
@@ -3040,8 +3014,6 @@ class Action:
                 self.ball.alive = False
                 return
 
-
-
         if getattr(self.ball, "has_quantum_relay", False):
             self.ball.quantum_relay_timer = getattr(self.ball, "quantum_relay_timer", 0.0) - delta
             if self.ball.quantum_relay_timer <= 0:
@@ -3117,7 +3089,6 @@ class Action:
         if len(self.ball.state_history) > 188:
             self.ball.state_history.pop(0)
 
-
         # Clear hazard state flags each tick before iterating over hazards
         if hasattr(self.ball, "_chrono_slow"):
             delattr(self.ball, "_chrono_slow")
@@ -3125,8 +3096,6 @@ class Action:
         if getattr(self.ball, "mirror_stance_timer", 0.0) > 0:
             self.ball.mirror_stance_timer -= delta
             self.ball._chrono_slow = 0.5
-
-
 
         if getattr(self.ball, "is_orbiting_accelerator", False):
             hazard_x = getattr(self.ball, "orbit_center_x", self.ball.x)
@@ -3256,7 +3225,6 @@ class Action:
             for h in hazards_to_remove:
                 if h in self.world.arena.hazards:
                     self.world.arena.hazards.remove(h)
-
 
         # Magnet passive: pull boosters and smaller entities
         if getattr(self.ball, "BALL_TYPE", "") == "magnet":
@@ -3413,7 +3381,6 @@ class Action:
                         except ImportError:
                             pass
 
-
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_acid_puddle" in self.ball.inventory:
             nearest = self._get_nearest_enemy()
             if nearest:
@@ -3431,7 +3398,6 @@ class Action:
                         except ImportError:
                             pass
 
-
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -3447,7 +3413,6 @@ class Action:
                     setattr(gw, 'owner_id', getattr(self.ball, 'id', None))
                     self.world.arena.hazards.append(gw)
                 self.ball.inventory.remove("deployable_gravity_well")
-
 
         # Check inventory for traps to place if fleeing or defending
         # Check inventory for black_hole_grenade
@@ -3720,7 +3685,6 @@ class Action:
                     else:
                         target.slow_timer = 2.0
 
-
         # Check inventory for hookshot
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "hookshot" in self.ball.inventory:
             # We want to pull towards another ball or wall, similar to grapple hook, but prioritized when in danger like lava or out of bounds
@@ -3962,7 +3926,6 @@ class Action:
                             setattr(bh, 'duration', 5.0)
                             setattr(bh, 'owner_id', getattr(hazard, 'owner_id', None))
                             self.world.arena.hazards.append(bh)
-
 
                 if getattr(hazard, "kind", "") in ["sticky_bomb", "sticky_bomb_trap"]:
                     attached_id = getattr(hazard, "attached_id", None)
@@ -4222,8 +4185,6 @@ class Action:
                             hazard.vx *= (1.0 - 2.0 * delta)
                             hazard.vy *= (1.0 - 2.0 * delta)
 
-
-
                 if getattr(hazard, "kind", "") == "thrown_sticky_mine":
                     attached_id = getattr(hazard, "attached_id", None)
                     if attached_id is None:
@@ -4386,7 +4347,6 @@ class Action:
                     if dist <= getattr(hazard, "radius", 5.0) + getattr(self.ball, "radius", 10.0):
                         if hasattr(self.ball, "take_damage"):
                             self.ball.take_damage(getattr(hazard, "damage", 10.0) * delta)
-
 
                 elif getattr(hazard, "kind", "") == "nemesis_hunter":
                     # Find nearest nemesis to ANYONE in the match
@@ -4702,8 +4662,6 @@ class Action:
 
                         current_target = next_entity
                         jump_count += 1
-
-
 
         # Clone mine logic
         if getattr(self.ball, "is_decoy", False) or getattr(self.ball, "is_decoy_clone", False):
@@ -5049,7 +5007,6 @@ class Action:
                     partner.y += dy * 0.5
                     partner._is_entangle_syncing = False
 
-
         if getattr(self.ball, "trap_link_timer", 0.0) > 0:
             self.ball.trap_link_timer -= delta
             if self.ball.trap_link_timer <= 0:
@@ -5335,7 +5292,6 @@ class Action:
             self.ball.dot_duration = 0.0
             self.ball.dot_damage_per_tick = 0.0
 
-
         if not hasattr(self.ball, "_base_speed_set"):
             self.ball.base_speed = getattr(self.ball, "speed", 2.0)
 
@@ -5527,7 +5483,6 @@ class Action:
             if self.ball.hp <= 0:
                 self.ball.hp = 0
                 self.ball.alive = False
-
 
         if getattr(self.ball, "is_decoy_beacon", False):
             # heal allies
@@ -6076,7 +6031,6 @@ class Action:
                                                     hazard.is_exploded = True
                                                     if hasattr(other_hazard, "is_exploded"): other_hazard.is_exploded = True
 
-
                             if getattr(hazard, "is_exploded", False):
                                 hazard.duration = 0.0
                                 if hazard.kind == "volatile_barrel":
@@ -6240,8 +6194,6 @@ class Action:
                                 holo.alive = True
                                 self.world.balls.append(holo)
 
-
-
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             if not getattr(hazard, "hologram_spawned", False):
@@ -6379,9 +6331,6 @@ class Action:
 
                                 # Slow down the ball using stutter_timer logic
                                 self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 2.0
-
-
-
 
                     elif hazard.kind == "laser_beam":
                         if getattr(hazard, "active", True) and getattr(hazard, "team", "") != getattr(self.ball, "team", ""):
@@ -7181,7 +7130,6 @@ class Action:
                                             if hasattr(self.ball, 'vy'):
                                                 self.ball.vy = vy * scale
 
-
                                         # Weaponize teleporter
                                         b_type = getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower()
                                         if b_type == 'trapper' or getattr(self.ball, 'weaponize_teleporter', False):
@@ -7202,7 +7150,6 @@ class Action:
                                         # Important: After a teleport, we must prevent the rest of the tick from adding `speed * delta` based on random boid rules
                                         return
                                 self.ball.last_teleport_tick = current_tick
-
 
                     elif hazard.kind == "avalanche":
                         dx = hazard.x - self.ball.x
@@ -7376,7 +7323,6 @@ class Action:
                                     self.ball.is_slipping = True
                                 if getattr(self, "random", __import__("random")).random() < 0.2 * delta:
                                     self.ball.stun_timer = 1.0 # Rooted by ice
-
 
                     elif hazard.kind == "wind_current":
                         dx = hazard.x - self.ball.x
@@ -7963,7 +7909,6 @@ class Action:
                                                                 b.alive = False
                                                                 b.killer = "black_hole"
 
-
                             # Pull boosters once per frame
                             if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado") and hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
@@ -8090,7 +8035,6 @@ class Action:
 
                                 if speed > 300.0 or hazard_speed > 300.0 or getattr(self.ball, "active_skill", None) is not None:
                                     hazard.is_exploded = True
-
 
                         elif hazard.kind == "chain_reaction_trap":
                             if getattr(hazard, "owner_id", None) == getattr(self.ball, "id", object()):
@@ -8509,7 +8453,6 @@ class Action:
 
                                     hazard.duration = 0.0 # Destroy trap
 
-
                                 elif trap_variant == "clone" and getattr(self.ball, "ball_type", "") in ("projectile", "spell"):
                                     # Redirect clone towards nearest enemy
                                     owner_id = getattr(hazard, "owner_id", None)
@@ -8555,7 +8498,6 @@ class Action:
                                             clone.team = getattr(owner, "team", "")
                                         else:
                                             clone.team = getattr(self.ball, "team", "") # Fallback
-
 
                                         # But let's actually just aim it at enemy
                                         dx = nearest_enemy.x - clone.x
@@ -8734,7 +8676,6 @@ class Action:
                                     if self.ball.hp <= 0:
                                         self.ball.alive = False
                             continue
-
 
                         elif hazard.kind == "orbital_debris":
                             ol_t = getattr(self.ball, "orbital_link_timer", 0.0)
@@ -9312,7 +9253,6 @@ class Action:
                                 self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 2.0)
                                 self.ball.hazard_immunity_timer = max(getattr(self.ball, "hazard_immunity_timer", 0.0), 2.0)
                             continue
-
 
                         elif hazard.kind == "orbital_accelerator":
                             dx = self.ball.x - hazard.x
@@ -9930,11 +9870,9 @@ class Action:
                             if self.ball.hp <= 0:
                                 self.ball.alive = False
 
-
         if hasattr(self.ball, "_chrono_slow"):
             # Don't completely override the speed logic that was set earlier in this function
             self.ball.speed = self.ball.speed * getattr(self.ball, "_chrono_slow")
-
 
         self.ball.current_action = strategy
         self.ball.team_message = None  # Clear previous message
@@ -9954,7 +9892,6 @@ class Action:
             self.ball.team_message = {"type": "wounded_call", "x": self.ball.x, "y": self.ball.y}
         elif strategy == "defend" and personality == "tank":
             self.ball.team_message = {"type": "hold_position", "x": self.ball.x, "y": self.ball.y}
-
 
         if getattr(self.ball, "is_scrambled", False):
             self.ball.scramble_timer = getattr(self.ball, "scramble_timer", 0.0) - delta
@@ -9989,7 +9926,6 @@ class Action:
         damage_taken = start_hp - current_hp
         stun_taken = current_stun - start_stun
         silence_taken = current_silence - start_silence
-
 
         if damage_taken > 0 and getattr(self.ball, "is_hologram", False):
             self.ball.hp = 0
@@ -10059,7 +9995,6 @@ class Action:
                                     other_ball.hp -= 20.0
                                     if other_ball.hp <= 0:
                                         other_ball.alive = False
-
 
         if start_hp > 0 and current_hp <= 0 and getattr(self.ball, "has_kinetic_echo", False):
             self.ball.hp = 1.0
@@ -10324,7 +10259,6 @@ class Action:
                     link_target.silence_timer = getattr(link_target, "silence_timer", 0.0) + silence_taken * 0.5
                     link_target.damage_link_is_receiving_silence = False
 
-
         if getattr(self.ball, "is_hologram", False):
             import math
             import random
@@ -10467,7 +10401,6 @@ class Action:
                         if b_type == "botanist" and getattr(hazard, "owner_id", None) == getattr(self.ball, "id", None):
                             self.ball.hp = min(getattr(self.ball, "hp", 100.0) + 20.0, getattr(self.ball, "max_hp", 100.0))
                             hazard.duration = 0.0 # Consume fruit
-
 
                 if getattr(hazard, "kind", "") == "gravity_pulse" and getattr(hazard, "active", True):
                     dx = hazard.x - self.ball.x
@@ -10754,7 +10687,6 @@ class Action:
                     # We might already have a combo, just ensure the timer is refreshed
                     # The increment happens either here or during the actual knockback
 
-
         if bounced_wall or bounced_col:
             self._trigger_ripple_effect()
 
@@ -10854,7 +10786,6 @@ class Action:
             self.ball.vx = dx / delta
             self.ball.vy = dy / delta
 
-
             if hasattr(self.ball, "physics_anomaly_speed_mod"):
                 self.ball.vx *= self.ball.physics_anomaly_speed_mod
                 self.ball.vy *= self.ball.physics_anomaly_speed_mod
@@ -10895,8 +10826,6 @@ class Action:
 
             if hasattr(self.ball, "distance_traveled"):
                 self.ball.distance_traveled += math.sqrt(dx*dx + dy*dy)
-
-
 
     def _apply_boid_rules(self, nx: float, ny: float) -> tuple[float, float]:
         b_type = getattr(self.ball, "ball_type", "")
@@ -11034,7 +10963,6 @@ class Action:
                 repulse_nx += (dx / dist) * force
                 repulse_ny += (dy / dist) * force
 
-
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "danger_grid"):
             # Check grid cells ahead for danger
             for step in [20, 50, 80]:
@@ -11065,8 +10993,6 @@ class Action:
             comb_dist = math.sqrt(comb_dist_sq)
             return comb_nx / comb_dist, comb_ny / comb_dist
         return nx, ny
-
-
 
     def _get_enemies(self) -> list:
 
@@ -11291,7 +11217,6 @@ class Action:
 
         return enemies
 
-
     def _get_allies(self) -> list:
         if getattr(self.ball, "is_confused", False):
             res = self._get_enemies_internal()
@@ -11341,8 +11266,6 @@ class Action:
                 dy = cy - self.ball.y
                 if math.sqrt(dx*dx + dy*dy) <= perception_radius:
                     boosters.append(c)
-
-
 
         return boosters
 
@@ -11470,8 +11393,6 @@ class Action:
         if nest_targets:
             return min(nest_targets, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
 
-
-
         # Ball Relationships - Balls remember each other
         # Rivalry skill: attacked me before -> attack on sight
         memory_state = getattr(self.ball, "memory", {})
@@ -11507,7 +11428,6 @@ class Action:
                 return max(enemies, key=lambda e: (count_nearby(e), -((self.ball.x - e.x)**2 + (self.ball.y - e.y)**2)))
             else:
                 return min(enemies, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
-
 
     def _group_attack(self, delta: float) -> None:
         enemies = self._get_enemies()
@@ -11616,7 +11536,6 @@ class Action:
                     self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(cooldown * 0.4, 0.4))
         else:
             self._idle(delta)
-
 
     def _get_flank_target(self, enemies: list) -> Any:
         best_target = None
@@ -11778,7 +11697,6 @@ class Action:
                         self.ball.stutter_timer = max(getattr(self.ball, 'stutter_timer', 0.0), min(cooldown * 0.4, 0.4))
         else:
             self._idle(delta)
-
 
     def _target_weak(self, delta: float) -> None:
         '''
@@ -12111,8 +12029,6 @@ class Action:
         else:
             self._idle(delta)
 
-
-
     def _hold_zone(self, delta: float) -> None:
         arena_width = 1000
         arena_height = 1000
@@ -12157,7 +12073,6 @@ class Action:
                         self.ball.x += (edx / edist) * getattr(self.ball, "speed", 2.0) * delta * 50.0
                         self.ball.y += (edy / edist) * getattr(self.ball, "speed", 2.0) * delta * 50.0
 
-
     def _defend(self, delta: float) -> None:
         import math
         b_type = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
@@ -12175,7 +12090,6 @@ class Action:
                 self.ball.energy_shield_active = True
                 shield_str = near_decoys * 15.0 # Example value
                 self.ball.energy_shield_hp = getattr(self.ball, "energy_shield_hp", 0) + shield_str
-
 
         personality = getattr(self.ball, "personality", "idle")
         if personality in ("tank", "defender", "guardian", "juggernaut"):
@@ -12377,8 +12291,6 @@ class Action:
                         self._flee(delta)
                         return
 
-
-
             def get_bx(b_obj):
                 return b_obj.get("x", 0) if isinstance(b_obj, dict) else getattr(b_obj, "x", 0)
             def get_by(b_obj):
@@ -12494,7 +12406,6 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
-
 
                 elif getattr(nearest, "kind", None) == "orbital_link_booster":
                     self.ball.orbital_link_timer = 10.0
@@ -13891,7 +13802,6 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
-
                 elif getattr(nearest, "kind", None) == "gravity_boots":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -14473,8 +14383,6 @@ class Action:
 
             self.ball.damage = self.ball.base_damage
 
-
-
             if skill_name == "energy_shield":
                 self.ball.energy_shield_active = True
                 self.ball.energy_shield_timer = 3.0
@@ -14689,7 +14597,6 @@ class Action:
                             else:
                                 break
                         self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
-
 
             elif skill_name == "plant_seed":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -15178,7 +15085,6 @@ class Action:
                     beacon.skill = None
                     beacon.active_skill = None
                     self.world.balls.append(beacon)
-
 
             elif skill_name == "decoy_transmutation":
                 import random
@@ -15893,8 +15799,6 @@ class Action:
                     self.world.arena.hazards.append(flare_trap)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
-
-
             elif skill_name == "throw_disruptor_bomb":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     enemies = self._get_enemies()
@@ -15959,7 +15863,6 @@ class Action:
                     thrown_bomb.team = getattr(self.ball, "team", None)
                     self.world.arena.hazards.append(thrown_bomb)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
-
 
             elif skill_name == "throw_decoy":
                 import copy
@@ -16083,7 +15986,6 @@ class Action:
                     thrown_bomb.team = getattr(self.ball, "team", None)
                     self.world.arena.hazards.append(thrown_bomb)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
-
 
             elif skill_name == "throw_sticky_mine":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -16423,7 +16325,6 @@ class Action:
                             self.ball.x = max(0.0, min(arena_width, self.ball.x))
                             self.ball.y = max(0.0, min(arena_height, self.ball.y))
 
-
                         # CHAINING LOGIC: If we hit a target (not a wall), check for a secondary target
                         chain_dist = 250.0 # Range to look for secondary target
                         secondary_target = None
@@ -16484,7 +16385,6 @@ class Action:
                                     self.ball.vx -= speed_boost
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
-
 
             elif skill_name == "wall_jump":
                 self._spawn_skill_particles("wall_jump")
@@ -16620,7 +16520,6 @@ class Action:
 
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", getattr(self.ball, "skill_cooldown", 5.0))
 
-
             elif skill_name == "dash":
                 # Check for mutator
                 is_teleport_dash = False
@@ -16675,7 +16574,6 @@ class Action:
                     return
                 else:
                     self._spawn_skill_particles("dash")
-
 
                 dash_range_mult = getattr(self.ball, "dash_range_mult", 1.0)
                 dash_dist = 100.0 * dash_range_mult
@@ -17550,7 +17448,6 @@ class Action:
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("toggle_polarity")
 
-
             elif skill_name == "reflect_shield":
                 # Activate reflect shield
                 self.ball.reflect_shield_active = True
@@ -17834,10 +17731,57 @@ class Action:
                         self.ball.vx = 0.0
                         self.ball.vy = 0.0
 
-
                 # Secondary stun explosion on collision
                 speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
                 speed_other = math.sqrt(getattr(other, "vx", 0.0)**2 + getattr(other, "vy", 0.0)**2)
+
+                # Magma Creation (Fire + Earth interaction)
+                traits_self = [str(t).lower() for t in getattr(self.ball, "traits", [])]
+                traits_other = [str(t).lower() for t in getattr(other, "traits", [])]
+                type_self = getattr(self.ball, "ball_type", getattr(self.ball, "kind", "")).lower()
+                type_other = getattr(other, "ball_type", getattr(other, "kind", "")).lower()
+                element_self = getattr(self.ball, "element", "").lower()
+                element_other = getattr(other, "element", "").lower()
+
+                is_self_fire = element_self == "fire" or "fire" in type_self or "lava" in type_self or "flare" in type_self or any(t in ["fire", "lava"] for t in traits_self)
+                is_other_fire = element_other == "fire" or "fire" in type_other or "lava" in type_other or "flare" in type_other or any(t in ["fire", "lava"] for t in traits_other)
+
+                is_self_earth = element_self == "earth" or "earth" in type_self or "rock" in type_self or "stone" in type_self or any(t in ["earth", "rock", "stone"] for t in traits_self)
+                is_other_earth = element_other == "earth" or "earth" in type_other or "rock" in type_other or "stone" in type_other or any(t in ["earth", "rock", "stone"] for t in traits_other)
+
+                if (is_self_fire and is_other_earth) or (is_self_earth and is_other_fire):
+                    team_self = getattr(self.ball, "team", None)
+                    team_other = getattr(other, "team", None)
+
+                    if getattr(self.ball, "_magma_cd", 0.0) <= 0.0 and getattr(other, "_magma_cd", 0.0) <= 0.0:
+                        self.ball._magma_cd = 5.0
+                        setattr(other, "_magma_cd", 5.0)
+
+                        magma_x = (self.ball.x + other.x) / 2.0
+                        magma_y = (self.ball.y + other.y) / 2.0
+
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            try:
+                                from arena.procedural_arena import Hazard
+                            except ImportError:
+                                class Hazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+                                        self.active = True
+
+                            h = Hazard(f"magma_{getattr(self.ball, 'id', 0)}_{getattr(other, 'id', 0)}", magma_x, magma_y, 60.0, "magma_puddle", 15.0)
+                            setattr(h, "duration", 8.0)
+                            setattr(h, "slow_factor", 0.5) # Magma slows down entities
+                            setattr(h, "color", (0.8, 0.3, 0.0, 0.7))
+                            self.world.arena.hazards.append(h)
+
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("visual_effect", {"type": "magma_creation", "x": magma_x, "y": magma_y})
 
                 # Aura Clash Check
                 scale_self = getattr(self.ball, "scale", 1.0)
@@ -18052,7 +17996,6 @@ class Action:
                                         if t.hp <= 0:
                                             t.alive = False
 
-
                 if getattr(other, "team", None) != getattr(self.ball, "team", None):
                     if getattr(self.ball, "is_decoy", False) and getattr(self.ball, "decoy_type", "") == "explosive":
                         if hasattr(self.world, "add_event"):
@@ -18151,7 +18094,6 @@ class Action:
                         if hasattr(self.ball, "vy"):
                             self.ball.vy += ny * 100.0
 
-
         return bounced
 
     def _trigger_ripple_effect(self) -> None:
@@ -18211,10 +18153,6 @@ class Action:
                             o_mem = getattr(other, "memory", {})
                             o_mem[self.ball.id] = {"relation": "rival"}
                             other.memory = o_mem
-
-
-
-
 
     def _apply_friendly_aura(self, delta: float) -> None:
         if not hasattr(self.world, "balls"):
@@ -18415,14 +18353,6 @@ class Action:
 
             if getattr(self.ball, "overcharged_timer", 0.0) > 0:
                 self.ball.speed *= 1.3
-
-
-
-
-
-
-
-
 
         # Necromancer minion speed synergy
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
@@ -18712,7 +18642,6 @@ class Action:
             if self.ball.aura_disruption_timer < 0:
                 self.ball.aura_disruption_timer = 0.0
 
-
         if hasattr(self.ball, "projectile_reflect_timer") and self.ball.projectile_reflect_timer > 0:
             self.ball.projectile_reflect_timer -= delta
             if self.ball.projectile_reflect_timer <= 0:
@@ -18742,12 +18671,10 @@ class Action:
             if self.ball.surge_shield_timer <= 0:
                 self.ball.surge_shield_active = False
 
-
         if hasattr(self.ball, "orbital_shield_timer") and self.ball.orbital_shield_timer > 0:
             self.ball.orbital_shield_timer -= delta
             if self.ball.orbital_shield_timer <= 0:
                 self.ball.orbital_shield_active = False
-
 
         if hasattr(self.ball, "storm_booster_timer") and self.ball.storm_booster_timer > 0:
             self.ball.storm_booster_timer -= delta
@@ -18831,9 +18758,6 @@ class Action:
                 self.ball.anchor_booster_timer = 0.0
                 if getattr(self.ball, "speed", 0.0) < getattr(self.ball, "base_speed", 2.0):
                     self.ball.speed = getattr(self.ball, "base_speed", 2.0)
-
-
-
 
         if getattr(self.ball, "safe_zone_booster_timer", 0.0) > 0:
             self.ball.safe_zone_booster_timer -= delta
@@ -19135,10 +19059,6 @@ class Action:
                         hazard.duration = 0.0
                     continue
 
-
-
-
-
                 if getattr(hazard, "kind", "") == "geyser":
                     import math
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
@@ -19421,13 +19341,6 @@ class Action:
                                 trap.duration = 5.0
                             self.world.arena.hazards.append(trap)
 
-
-
-
-
-
-
-
                 if getattr(hazard, "kind", "") == "whirlpool":
                     import math
                     dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
@@ -19643,7 +19556,6 @@ class Action:
                             else:
                                 self.ball.polarity = 1
                             self.ball.polarity_cooldown = 1.0
-
 
         bumper_booster_timer = getattr(self.ball, "bumper_booster_timer", 0.0)
         if bumper_booster_timer > 0:
@@ -19869,7 +19781,6 @@ class Action:
                     self.ball.y += self.ball.vy * delta
             self.ball.magnet_tether_timer = magnet_tether_timer - delta
 
-
         if hasattr(self.ball, "friendly_fire_reflect_timer") and self.ball.friendly_fire_reflect_timer > 0.0:
             self.ball.friendly_fire_reflect_timer -= delta
             if self.ball.friendly_fire_reflect_timer < 0.0:
@@ -20061,8 +19972,6 @@ class Action:
                         if hasattr(target, "hp"):
                             target.hp = min(getattr(target, "max_hp", 100.0), getattr(target, "hp", 100.0) + actual_damage * 1.5)
 
-
-
                     # Stop if timer runs out or HP gets too low
                     if self.ball.health_link_timer <= 0 or getattr(self.ball, "hp", 100.0) <= 10.0:
                         self.ball.health_link_target = None
@@ -20135,7 +20044,6 @@ class Action:
         if getattr(self.ball, "pierce_attachment_timer", 0.0) > 0:
             self.ball.pierce_attachment_timer -= delta
 
-
         if getattr(self.ball, "cursed_relic_timer", 0.0) > 0.0:
             self.ball.cursed_relic_timer -= delta
             if self.ball.cursed_relic_timer <= 0.0:
@@ -20196,8 +20104,6 @@ class Action:
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
 
-
-
         if getattr(self.ball, "geyser_immunity_timer", 0.0) > 0:
             self.ball.geyser_immunity_timer -= delta
         if getattr(self.ball, "time_warp_timer", 0.0) > 0:
@@ -20220,7 +20126,6 @@ class Action:
                 self.ball.time_warp_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
-
         if getattr(self.ball, "mud_debuff_timer", 0.0) > 0:
             self.ball.mud_debuff_timer -= delta
             stacks = getattr(self.ball, "mud_debuff_stacks", 1)
@@ -20235,7 +20140,6 @@ class Action:
                 self.ball.mud_debuff_stacks = 0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
-
         if getattr(self.ball, "acid_debuff_timer", 0.0) > 0:
             self.ball.acid_debuff_timer -= delta
             stacks = getattr(self.ball, "acid_debuff_stacks", 1)
@@ -20250,8 +20154,6 @@ class Action:
                 self.ball.acid_debuff_stacks = 0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
 
-
-
         if getattr(self.ball, "acid_debuff_timer", 0.0) > 0:
             self.ball.acid_debuff_timer -= delta
             stacks = getattr(self.ball, "acid_debuff_stacks", 1)
@@ -20265,8 +20167,6 @@ class Action:
             if self.ball.acid_debuff_timer <= 0:
                 self.ball.acid_debuff_stacks = 0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
-
-
 
         if getattr(self.ball, "time_warp_slow_timer", 0.0) > 0:
             self.ball.time_warp_slow_timer -= delta
@@ -20643,7 +20543,6 @@ class Action:
         if is_snowing and (getattr(self.ball, 'vx', 0) != 0 or getattr(self.ball, 'vy', 0) != 0):
             self.ball.x += getattr(self.ball, 'vx', 0) * delta * 0.5
             self.ball.y += getattr(self.ball, 'vy', 0) * delta * 0.5
-
 
         if getattr(self.ball, "is_mounted", False):
             # Enforce stats

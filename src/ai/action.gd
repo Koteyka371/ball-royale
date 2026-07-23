@@ -1,7 +1,6 @@
 class_name ActionLayer
 extends RefCounted
 
-
 func _award_xp(ball, amount: float, world=null) -> void:
 	var b_type = null
 	if "ball_type" in ball: b_type = str(ball.ball_type)
@@ -249,7 +248,6 @@ func _award_xp(ball, amount: float, world=null) -> void:
 		if world != null and world.has_method("add_event"):
 			world.add_event("level_up", {"ball": ball.get("id"), "level": ball.level, "stat": stat})
 
-
 func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bounce_chance: float = 0.5, max_bounces: int = 3, bounce_range: float = 120.0) -> void:
 	if randf() > bounce_chance:
 		return
@@ -310,7 +308,6 @@ func _handle_reflect_bounce(original_attacker, initial_target, damage: float, bo
 			current_source = next_target
 		else:
 			break
-
 
 func _attempt_damage(attacker, target) -> void:
 	var has_orig = false
@@ -739,8 +736,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 							if "owner_id" in attacker: attacker.owner_id = target_id
 			return
 
-
-
 	var is_shuffler_clone = false
 	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_shuffler_clone") and target.get_meta("is_shuffler_clone"): is_shuffler_clone = true
 	elif typeof(target) == TYPE_DICTIONARY and target.has("is_shuffler_clone") and target["is_shuffler_clone"]: is_shuffler_clone = true
@@ -915,7 +910,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 				target["dot_duration"] = dd + 2.0
 				var dp = target.get("dot_damage_per_tick", 0.0)
 				target["dot_damage_per_tick"] = dp + 2.0
-
 
 	var target_b_type = ""
 	if "ball_type" in target: target_b_type = str(target.ball_type)
@@ -1108,7 +1102,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 
 	if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
 		is_nemesis_active = pm.is_nemesis(attacker_type, target_type)
-
 
 		var has_projectile_reflect = false
 		if "projectile_reflect_active" in target and target.projectile_reflect_active:
@@ -1610,7 +1603,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 		elif target.has_method("get_meta") and target.has_meta("high_threat") and target.get_meta("high_threat"):
 			target_high_threat = true
 
-
 		var target_is_bounty_target = false
 		if typeof(target) == TYPE_DICTIONARY:
 			target_is_bounty_target = target.get("is_bounty_target", false)
@@ -1933,7 +1925,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 				elif typeof(attacker) == TYPE_DICTIONARY:
 					attacker["damage"] = old_dmg_final
 
-
 		var sc_stun = false
 		if typeof(attacker) == TYPE_DICTIONARY:
 			if attacker.has("supercharge_stun_ready") and attacker["supercharge_stun_ready"]:
@@ -1959,7 +1950,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 			if typeof(attacker) == TYPE_DICTIONARY: attacker["supercharge_stun_ready"] = false
 			elif "supercharge_stun_ready" in attacker: attacker.supercharge_stun_ready = false
 			elif attacker.has_method("set_meta"): attacker.set_meta("supercharge_stun_ready", false)
-
 
 		var ls_timer = 0.0
 		if "laser_sight_timer" in attacker: ls_timer = attacker.laser_sight_timer
@@ -2264,7 +2254,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 				elif pm_local.has_method("save"):
 					pm_local.save()
 
-
 		if target_is_bounty_target:
 			var owner_id = null
 			if typeof(target) == TYPE_DICTIONARY:
@@ -2429,7 +2418,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 			var mat = {"id": "mat_" + str(new_id), "x": tx, "y": ty, "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": true}
 			arena.items.append(mat)
 
-
 	var cl_timer = 0.0
 	if "chain_lightning_timer" in attacker:
 		cl_timer = attacker.chain_lightning_timer
@@ -2537,7 +2525,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 								var dist_sq = pow(w["x"] - current_target.x, 2) + pow(w["y"] - current_target.y, 2)
 								if dist_sq < chain_range_sq:
 									nearby.append({"dist": dist_sq, "entity": w, "type": "wall"})
-
 
 				if nearby.size() == 0:
 					break
@@ -2860,7 +2847,6 @@ func _attempt_damage_internal(attacker, target) -> void:
 				elif "damage" in attacker:
 					attacker.damage = orig_dmg
 
-
 var ball = null
 var world = null
 
@@ -3164,7 +3150,6 @@ func execute(strategy: String, delta: float):
 
         return
 
-
     var link_target = null
     if "link_target" in self.ball: link_target = self.ball.link_target
     elif self.ball.has_method("has_meta") and self.ball.has_meta("link_target"): link_target = self.ball.get_meta("link_target")
@@ -3360,7 +3345,6 @@ func execute(strategy: String, delta: float):
                         break
             for r in to_remove:
                 self.world.arena.hazards.erase(r)
-
 
     if self.world != null:
         var gm = self.world.get("game_mode")
@@ -4028,7 +4012,6 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_OBJECT and "is_ricochet_laser" in self.ball and self.ball.is_ricochet_laser:
         is_laser = true
 
-
 	if "ball_type" in self.ball and str(self.ball.ball_type) == "shuffler" and not ("is_shuffler_clone" in self.ball and self.ball.is_shuffler_clone) and ("alive" in self.ball and self.ball.alive):
 		var vx = self.ball.vx if "vx" in self.ball else 0.0
 		var vy = self.ball.vy if "vy" in self.ball else 0.0
@@ -4412,8 +4395,6 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("amnesia_timer"):
         if self.ball["amnesia_timer"] > 0.0:
             self.ball["amnesia_timer"] -= delta
-
-
 
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
 		if self.ball.has_meta("gravity_multiplier_timer"):
@@ -5243,7 +5224,6 @@ func execute(strategy: String, delta: float):
 									}
 								})
 
-
 					else:
 						if typeof(self.ball) == TYPE_DICTIONARY:
 							self.ball["show_sniper_nest_indicator"] = false
@@ -5251,8 +5231,6 @@ func execute(strategy: String, delta: float):
 							if self.ball.has_method("set_meta"):
 								self.ball.set_meta("show_sniper_nest_indicator", false)
 							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = false
-
-
 
 				if kind == "time_bubble":
 					if typeof(hazard) == TYPE_DICTIONARY:
@@ -5590,7 +5568,6 @@ func execute(strategy: String, delta: float):
         if "mini_vortex_timer" in self.ball:
             self.ball.mini_vortex_timer = mini_vortex_timer
 
-
     if so_timer > 0.0:
         if "stun_timer" in self.ball: self.ball.stun_timer = 0.0
         if "is_stunned" in self.ball: self.ball.is_stunned = false
@@ -5775,7 +5752,6 @@ func execute(strategy: String, delta: float):
 				self.ball["reflect_shield_capacity"] = 20.0 * nearby_enemies
 				self.ball["reflect_shield_initial_capacity"] = 20.0 * nearby_enemies
 
-
     # Platforms
     if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null and "platforms" in self.world.arena:
         for p in self.world.arena.platforms:
@@ -5923,7 +5899,6 @@ func execute(strategy: String, delta: float):
             self.ball["decoy_aura_timer"] = d_aura_val
         else:
             self.ball.decoy_aura_timer = d_aura_val
-
 
         # Bounty Hunter target indicator
         var b_type_ind = ""
@@ -6273,7 +6248,6 @@ func execute(strategy: String, delta: float):
 
             self.ball.shuffle_booster_target = null
 
-
 	var is_active_clone = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_active_clone"): is_active_clone = true
 	elif "is_active_clone" in self.ball and self.ball.is_active_clone: is_active_clone = true
@@ -6590,7 +6564,6 @@ func execute(strategy: String, delta: float):
 				if "alive" in self.ball: self.ball.alive = false
 				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
 
-
 	var glitch_time = 0.0
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		if "glitch_timer" in self.ball: glitch_time = self.ball.glitch_timer
@@ -6647,7 +6620,6 @@ func execute(strategy: String, delta: float):
 				history.pop_front()
 			self.ball.set_meta("state_history", history)
 
-
     if self.ball.has_method("remove_meta") and self.ball.has_meta("_chrono_slow"):
         self.ball.remove_meta("_chrono_slow")
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_chrono_slow"):
@@ -6670,7 +6642,6 @@ func execute(strategy: String, delta: float):
             self.ball.set_meta("_chrono_slow", 0.5)
         elif typeof(self.ball) == TYPE_DICTIONARY:
             self.ball["_chrono_slow"] = 0.5
-
 
     var is_orbiting_accelerator = false
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_orbiting_accelerator"):
@@ -6801,8 +6772,6 @@ func execute(strategy: String, delta: float):
             else:
                 self.ball.is_flying = false
         return
-
-
 
 	# Magnet passive: pull boosters and smaller entities
 	var btype = ""
@@ -7221,7 +7190,6 @@ func execute(strategy: String, delta: float):
 		if "hp" in self.ball: m_hp = self.ball.hp
 		elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): m_hp = self.ball.get_meta("hp")
 
-
 		if m_timer <= 0 or m_hp <= 0:
 			if "is_mimic_clone" in self.ball: self.ball.is_mimic_clone = false
 			elif self.ball.has_method("set_meta"): self.ball.set_meta("is_mimic_clone", false)
@@ -7246,7 +7214,6 @@ func execute(strategy: String, delta: float):
 	var is_mimic_charging = false
 	if self.ball.has_method("get_meta") and self.ball.has_meta("is_mimic_charging"): is_mimic_charging = self.ball.get_meta("is_mimic_charging")
 	elif "is_mimic_charging" in self.ball and self.ball.is_mimic_charging: is_mimic_charging = true
-
 
 	var is_alive_mine_charge = true
 	if "alive" in self.ball: is_alive_mine_charge = self.ball.alive
@@ -7387,7 +7354,6 @@ func execute(strategy: String, delta: float):
 					world.add_event("explosion", {"x": mx, "y": my, "radius": 60.0})
 		self._clamp_position()
 		return
-
 
 	var is_clone_mine = false
 	if self.ball.has_method("get_meta") and self.ball.get_meta("is_clone"): is_clone_mine = true
@@ -7789,7 +7755,6 @@ func execute(strategy: String, delta: float):
 							if "id" in self.ball: p_bomb.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_bomb)
 
-
 		if inv.has("deployable_acid_puddle"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -7804,7 +7769,6 @@ func execute(strategy: String, delta: float):
 					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
 					elif "inventory" in self.ball: self.ball.inventory = inv
 
-
 		if inv.has("deployable_gravity_well"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -7818,8 +7782,6 @@ func execute(strategy: String, delta: float):
 					arena.hazards.append(gw)
 					inv.erase("deployable_gravity_well")
 					self.ball.set_meta("inventory", inv)
-
-
 
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
@@ -7859,7 +7821,6 @@ func execute(strategy: String, delta: float):
 							if "id" in self.ball: p_puddle.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_puddle)
 
-
 		if inv.has("deployable_acid_puddle"):
 			var nearest = _get_nearest_enemy()
 			if nearest != null:
@@ -7877,7 +7838,6 @@ func execute(strategy: String, delta: float):
 							p_puddle.set_meta("duration", 10.0)
 							if "id" in self.ball: p_puddle.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_puddle)
-
 
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
@@ -7919,7 +7879,6 @@ func execute(strategy: String, delta: float):
 							p_puddle.set_meta("duration", 10.0)
 							if "id" in self.ball: p_puddle.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_puddle)
-
 
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
@@ -8409,7 +8368,6 @@ func execute(strategy: String, delta: float):
 						elif target.has_method("set_meta"):
 							target.set_meta("slow_timer", curr_slow + 2.0)
 
-
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("tether_hook"):
@@ -8611,7 +8569,6 @@ func execute(strategy: String, delta: float):
 					arena.hazards.append(p2)
 					inv.erase("portal_gun")
 					self.ball.set_meta("inventory", inv)
-
 
 	# Confusion timer logic
 	var conf_timer = 0.0
@@ -9582,7 +9539,6 @@ func execute(strategy: String, delta: float):
         elif typeof(self.ball) == TYPE_DICTIONARY:
             self.ball["_cl_collision_cd"] = cl_col_cd
 
-
         if self.world != null and self.world.has_method("add_event"):
             var enemies = self._get_enemies()
             var hazards = []
@@ -10389,7 +10345,6 @@ func execute(strategy: String, delta: float):
             if "speed" in my_ball:
                 my_ball.speed *= 1.2
 
-
         var burst_timer = 0.0
         if my_ball.has_method("has_meta") and my_ball.has_meta("stamina_speed_burst_timer"):
             burst_timer = my_ball.get_meta("stamina_speed_burst_timer")
@@ -10749,7 +10704,6 @@ func execute(strategy: String, delta: float):
                 my_ball.siren_ping_timer = pt
             elif my_ball.has_method("set_meta"):
                 my_ball.set_meta("siren_ping_timer", pt)
-
 
     if is_decoy:
         if "balls" in self.world:
@@ -11616,7 +11570,6 @@ func execute(strategy: String, delta: float):
         _clamp_position()
         return
 
-
     var old_x = self.ball.x
     var old_y = self.ball.y
 
@@ -11666,7 +11619,6 @@ func execute(strategy: String, delta: float):
                         self.ball.hp -= zone_damage
                         if self.ball.hp <= 0:
                             self.ball.alive = false
-
 
         if "hazards" in self.world.arena:
             for hazard in self.world.arena.hazards:
@@ -12177,7 +12129,6 @@ func execute(strategy: String, delta: float):
                                 self.ball.stutter_timer = current_stutter + 2.0
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
-
 
                 elif hazard.kind == "deployable_lightning_rod":
                     var current_tick = 0
@@ -13364,7 +13315,6 @@ func execute(strategy: String, delta: float):
                                                     if self.world.get("events") != null:
                                                         var eff2 = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": ally.x, "target_y": ally.y, "kind": "quantum_trail"}}
                                                         self.world.events.append(eff2)
-
 
                                     var mode_name = ""
                                     if self.world != null and "game_mode" in self.world and self.world.game_mode != null:
@@ -17587,7 +17537,6 @@ func execute(strategy: String, delta: float):
                                 self.ball.hazard_immunity_timer = max(cur_imm, 2.0)
                         continue
 
-
                     elif hazard.kind == "orbital_accelerator":
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -19315,7 +19264,6 @@ func execute(strategy: String, delta: float):
     var stun_taken = current_stun - start_stun
     var silence_taken = current_silence - start_silence
 
-
     var is_hologram_stat = false
     if typeof(self.ball) == TYPE_DICTIONARY:
         is_hologram_stat = self.ball.get("is_hologram", false)
@@ -19497,7 +19445,6 @@ func execute(strategy: String, delta: float):
                                     other_ball["hp"] -= 20.0
                                     if other_ball["hp"] <= 0:
                                         if other_ball.has("alive"): other_ball["alive"] = false
-
 
     var death_defy_active = false
     if typeof(self.ball) == TYPE_DICTIONARY:
@@ -19923,7 +19870,6 @@ func execute(strategy: String, delta: float):
                 }
                 self.world.arena.hazards.append(phylactery)
 
-
     var phylactery_active = false
     if typeof(self.ball) == TYPE_DICTIONARY: phylactery_active = self.ball.get("phylactery_active", false)
     elif typeof(self.ball) == TYPE_OBJECT and "phylactery_active" in self.ball: phylactery_active = self.ball.phylactery_active
@@ -20177,7 +20123,6 @@ func execute(strategy: String, delta: float):
 
                 if "damage_link_is_receiving_silence" in link_target: link_target.damage_link_is_receiving_silence = false
                 elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving_silence", false)
-
 
     if is_hologram_stat:
         var hx = 1.0
@@ -20580,7 +20525,6 @@ func execute(strategy: String, delta: float):
                     else:
                         self.ball.set("is_ricochet_laser", true)
                         self.ball.set("bounces_left", 5)
-
 
     if bounced_wall:
         if typeof(self.ball) == TYPE_DICTIONARY:
@@ -20986,7 +20930,6 @@ func execute(strategy: String, delta: float):
                     self.ball.set("_wall_knockback_combo_timer", 1.5)
                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                     self.ball.set_meta("_wall_knockback_combo_timer", 1.5)
-
 
     if bounced_wall or bounced_col:
         _trigger_ripple_effect()
@@ -21442,7 +21385,6 @@ func execute(strategy: String, delta: float):
             var current_dist = self.ball.get_meta("distance_traveled") if self.ball.has_meta("distance_traveled") else 0.0
             self.ball.set_meta("distance_traveled", current_dist + sqrt(dx*dx + dy*dy))
 
-
 func _apply_boid_rules(nx: float, ny: float) -> Array:
     var b_type = ""
     if "ball_type" in self.ball:
@@ -21630,7 +21572,6 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
                 force *= danger_coefficient
             repulse_nx += (dx / dist) * force
             repulse_ny += (dy / dist) * force
-
 
     if self.world != null and "arena" in self.world and "danger_grid" in self.world.arena:
         for step in [20, 50, 80]:
@@ -22123,8 +22064,6 @@ func _get_boosters() -> Array:
             if sqrt(dx*dx + dy*dy) <= perception_radius:
                 boosters.append(c)
 
-
-
     return boosters
 
 func _flee(delta: float):
@@ -22401,8 +22340,6 @@ func _get_target(enemies: Array) -> Object:
         if c_nest != null:
             return c_nest
 
-
-
     var ball_memory = {}
     if self.ball.has_method("get_meta") and self.ball.has_meta("memory"):
         ball_memory = self.ball.get_meta("memory")
@@ -22477,7 +22414,6 @@ func _get_target(enemies: Array) -> Object:
                     target = e
 
     return target
-
 
 func _group_attack(delta: float):
     var enemies = _get_enemies()
@@ -22627,7 +22563,6 @@ func _group_attack(delta: float):
 
                     # Ball Relationships - Balls remember each other
 
-
                     # Rivalry skill: attacked me before -> attack on sight
                     target_memory[self.ball.id] = {"relation": "rival"}
                     if target.has_method("set_meta"):
@@ -22648,7 +22583,6 @@ func _group_attack(delta: float):
 
     else:
         _idle(delta)
-
 
 func _get_flank_target(enemies: Array):
     var best_target = null
@@ -22918,8 +22852,6 @@ func _flank(delta: float):
                             self.ball.set_meta("stutter_timer", min(cooldown * 0.4, 0.4))
     else:
         _idle(delta)
-
-
 
 func _target_weak(delta: float):
     # Target Weak — ищет самого слабого врага
@@ -23564,7 +23496,6 @@ func _defend(delta: float):
             if "energy_shield_hp" in self.ball: self.ball.energy_shield_hp = curr_hp + shield_str
             elif self.ball.has_method("set_meta"): self.ball.set_meta("energy_shield_hp", curr_hp + shield_str)
 
-
     var personality = "idle"
     if "personality" in self.ball:
         personality = self.ball.personality
@@ -24017,7 +23948,6 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
-
 
             elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "safe_zone_booster":
                 self.ball.set_meta("safe_zone_booster_timer", 10.0)
@@ -28127,11 +28057,8 @@ func _use_skill():
 
         self.ball.damage = self.ball.base_damage
 
-
-
         self.ball.use_skill()
         _spawn_skill_particles(skill_name)
-
 
         if skill_name == "energy_shield":
             if self.ball.has_method("set_meta"):
@@ -28874,7 +28801,6 @@ func _use_skill():
                 clone.fly_target_x = clone.x + cos(eject_angle) * eject_dist
                 clone.fly_target_y = clone.y + sin(eject_angle) * eject_dist
 
-
             if "balls" in self.world:
                 self.world.balls.append(clone)
 
@@ -29260,7 +29186,6 @@ func _use_skill():
                         beacon["active_skill"] = null
 
                     self.world.balls.append(beacon)
-
 
         elif skill_name == "decoy_transmutation":
             var active_decoys = []
@@ -29801,7 +29726,6 @@ func _use_skill():
                     if "skill_timer" in self.ball: self.ball.skill_timer = cd
                 elif typeof(self.ball) == TYPE_DICTIONARY:
                     if self.ball.has("skill_timer"): self.ball["skill_timer"] = cd
-
 
         elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
             var active_decoys = []
@@ -31508,7 +31432,6 @@ func _use_skill():
             else:
                 self.ball.skill_timer = 5.0
 
-
         elif skill_name == "wall_jump":
             _spawn_skill_particles("wall_jump")
             var arena_width = 1000.0
@@ -31721,7 +31644,6 @@ func _use_skill():
                     self.ball.set_meta("skill_timer", cooldown)
                 else:
                     self.ball.skill_timer = cooldown
-
 
         elif skill_name == "dash":
             var is_teleport_dash = false
@@ -33007,8 +32929,6 @@ func _use_skill():
                         if idx != -1:
                             arena.hazards.remove_at(idx)
 
-
-
         elif skill_name == "throw_disruptor_bomb":
             if "hazards" in self.world.arena:
                 var hazards = self.world.arena.hazards
@@ -33114,7 +33034,6 @@ func _use_skill():
                 var cd = 5.0
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
-
 
         elif skill_name == "throw_decoy":
             var active_decoys = []
@@ -33350,7 +33269,6 @@ func _use_skill():
                 hazards.append(thrown_bomb)
                 if "skill_cooldown" in ball: ball.skill_timer = float(ball.skill_cooldown)
                 else: ball.skill_timer = 5.0
-
 
         elif skill_name == "throw_sticky_mine":
             if "hazards" in self.world.arena:
@@ -33899,7 +33817,6 @@ func _spawn_skill_particles(skill_name: String = ""):
         elif ball_skin == "prestige_grandmaster":
             tier_multiplier = 5.0
 
-
         # Configure particle properties based on skill
         if skill_name == "wave_attack":
             particles.amount = int(50 * tier_multiplier)
@@ -34136,7 +34053,6 @@ func _spawn_skill_particles(skill_name: String = ""):
         self.ball.add_child(particles)
         if particles.has_signal("finished"):
             particles.finished.connect(particles.queue_free)
-
 
 func _idle(delta: float):
     var speed = 2.0
@@ -34423,7 +34339,6 @@ func _resolve_collisions() -> bool:
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
 
-
             # Aura Clash Check
             var scale_self = 1.0
             if "scale" in self.ball: scale_self = float(self.ball.scale)
@@ -34497,6 +34412,125 @@ func _resolve_collisions() -> bool:
                             var new_st = max(current_st, 2.0)
                             if "silence_timer" in entity: entity.silence_timer = new_st
                             elif entity.has_method("set_meta"): entity.set_meta("silence_timer", new_st)
+
+            # Magma Creation (Fire + Earth interaction)
+            # Use distinct variable names to avoid shadowing/re-declaration errors in GDScript loop
+            var tr_self = []
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits"): tr_self = self.ball["traits"]
+            elif typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball: tr_self = self.ball.traits
+            var tr_other = []
+            if typeof(other) == TYPE_DICTIONARY and other.has("traits"): tr_other = other["traits"]
+            elif typeof(other) == TYPE_OBJECT and "traits" in other: tr_other = other.traits
+
+            var t_self = ""
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): t_self = str(self.ball["ball_type"]).to_lower()
+            elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: t_self = str(self.ball.ball_type).to_lower()
+            var t_other = ""
+            if typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): t_other = str(other["ball_type"]).to_lower()
+            elif typeof(other) == TYPE_OBJECT and "ball_type" in other: t_other = str(other.ball_type).to_lower()
+
+            var el_self = ""
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("element"): el_self = str(self.ball["element"]).to_lower()
+            elif typeof(self.ball) == TYPE_OBJECT and "element" in self.ball: el_self = str(self.ball.element).to_lower()
+            var el_other = ""
+            if typeof(other) == TYPE_DICTIONARY and other.has("element"): el_other = str(other["element"]).to_lower()
+            elif typeof(other) == TYPE_OBJECT and "element" in other: el_other = str(other.element).to_lower()
+
+            var is_s_fire = el_self == "fire" or t_self.find("fire") != -1 or t_self.find("lava") != -1 or t_self.find("flare") != -1
+            if not is_s_fire:
+                for t in tr_self:
+                    var ts = str(t).to_lower()
+                    if ts == "fire" or ts == "lava":
+                        is_s_fire = true
+                        break
+
+            var is_o_fire = el_other == "fire" or t_other.find("fire") != -1 or t_other.find("lava") != -1 or t_other.find("flare") != -1
+            if not is_o_fire:
+                for t in tr_other:
+                    var ts = str(t).to_lower()
+                    if ts == "fire" or ts == "lava":
+                        is_o_fire = true
+                        break
+
+            var is_s_earth = el_self == "earth" or t_self.find("earth") != -1 or t_self.find("rock") != -1 or t_self.find("stone") != -1
+            if not is_s_earth:
+                for t in tr_self:
+                    var ts = str(t).to_lower()
+                    if ts == "earth" or ts == "rock" or ts == "stone":
+                        is_s_earth = true
+                        break
+
+            var is_o_earth = el_other == "earth" or t_other.find("earth") != -1 or t_other.find("rock") != -1 or t_other.find("stone") != -1
+            if not is_o_earth:
+                for t in tr_other:
+                    var ts = str(t).to_lower()
+                    if ts == "earth" or ts == "rock" or ts == "stone":
+                        is_o_earth = true
+                        break
+
+            if (is_s_fire and is_o_earth) or (is_s_earth and is_o_fire):
+                var smcd = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("_magma_cd"): smcd = self.ball["_magma_cd"]
+                elif typeof(self.ball) == TYPE_OBJECT and "_magma_cd" in self.ball: smcd = self.ball._magma_cd
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_magma_cd"): smcd = self.ball.get_meta("_magma_cd")
+
+                var omcd = 0.0
+                if typeof(other) == TYPE_DICTIONARY and other.has("_magma_cd"): omcd = other["_magma_cd"]
+                elif typeof(other) == TYPE_OBJECT and "_magma_cd" in other: omcd = other._magma_cd
+                elif typeof(other) == TYPE_OBJECT and other.has_method("has_meta") and other.has_meta("_magma_cd"): omcd = other.get_meta("_magma_cd")
+
+                if smcd <= 0.0 and omcd <= 0.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["_magma_cd"] = 5.0
+                    elif typeof(self.ball) == TYPE_OBJECT and "_magma_cd" in self.ball: self.ball._magma_cd = 5.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("_magma_cd", 5.0)
+
+                    if typeof(other) == TYPE_DICTIONARY: other["_magma_cd"] = 5.0
+                    elif typeof(other) == TYPE_OBJECT and "_magma_cd" in other: other._magma_cd = 5.0
+                    elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("_magma_cd", 5.0)
+
+                    var bsx = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bsx = self.ball["x"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: bsx = self.ball.x
+                    var bsy = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): bsy = self.ball["y"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: bsy = self.ball.y
+
+                    var osx = 0.0
+                    if typeof(other) == TYPE_DICTIONARY and other.has("x"): osx = other["x"]
+                    elif typeof(other) == TYPE_OBJECT and "x" in other: osx = other.x
+                    var osy = 0.0
+                    if typeof(other) == TYPE_DICTIONARY and other.has("y"): osy = other["y"]
+                    elif typeof(other) == TYPE_OBJECT and "y" in other: osy = other.y
+
+                    var m_x = (bsx + osx) / 2.0
+                    var m_y = (bsy + osy) / 2.0
+
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                        var bid = 0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): bid = self.ball["id"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: bid = self.ball.id
+                        var oid = 0
+                        if typeof(other) == TYPE_DICTIONARY and other.has("id"): oid = other["id"]
+                        elif typeof(other) == TYPE_OBJECT and "id" in other: oid = other.id
+
+                        var m_hazard = {
+                            "id": "magma_" + str(bid) + "_" + str(oid),
+                            "x": m_x,
+                            "y": m_y,
+                            "radius": 60.0,
+                            "kind": "magma_puddle",
+                            "damage": 15.0,
+                            "active": true,
+                            "duration": 8.0,
+                            "slow_factor": 0.5,
+                            "color": [0.8, 0.3, 0.0, 0.7],
+                            "vx": 0.0,
+                            "vy": 0.0
+                        }
+                        self.world.arena.hazards.append(m_hazard)
+
+                    if self.world != null and self.world.has_method("add_event"):
+                        self.world.add_event("visual_effect", {"type": "magma_creation", "x": m_x, "y": m_y})
 
             # Secondary stun explosion on collision
 
@@ -34989,7 +35023,6 @@ func _resolve_collisions() -> bool:
                                         t["hp"] = 0
                                         t["alive"] = false
 
-
             var self_team = self.ball.team if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team") else (self.ball.team if "team" in self.ball else null)
             var other_team = other.team if typeof(other) == TYPE_DICTIONARY and other.has("team") else (other.team if "team" in other else null)
             if self_team != null and other_team != null and self_team != other_team:
@@ -35130,9 +35163,6 @@ func _trigger_ripple_effect():
                         else:
                             other.memory = mem
 
-
-
-
 func _apply_friendly_aura(delta: float):
     if world == null or not "balls" in world:
         return
@@ -35166,7 +35196,6 @@ func _apply_friendly_aura(delta: float):
     if ab_timer > 0.0:
         aura_radius = 500.0
         aura_multiplier = 2.0
-
 
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_inversion_timer"):
         var ait = float(self.ball.get_meta("aura_inversion_timer"))
@@ -35511,7 +35540,6 @@ func _apply_friendly_aura(delta: float):
             if "speed" in self.ball:
                 self.ball.speed *= 1.2
 
-
         var over_timer = 0.0
         if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("overcharged_timer"):
             over_timer = float(self.ball.get_meta("overcharged_timer"))
@@ -35702,7 +35730,6 @@ func _update_skill_timer(delta: float):
         cur_skill = self.ball.get_meta("skill")
     elif "skill" in self.ball:
         cur_skill = self.ball.skill
-
 
     if cur_skill == "kinetic_absorber":
         var current_st = 0.0
@@ -36214,7 +36241,6 @@ func _update_skill_timer(delta: float):
                             else:
                                 other["aura_disruption_timer"] = 0.5
 
-
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("aura_inversion_timer"):
         var ait = float(self.ball.get_meta("aura_inversion_timer"))
         if ait > 0:
@@ -36246,8 +36272,6 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("aura_disruption_timer", ad_timer)
         else:
             self.ball["aura_disruption_timer"] = ad_timer
-
-
 
     var projectile_reflect_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("projectile_reflect_timer"):
@@ -36339,7 +36363,6 @@ func _update_skill_timer(delta: float):
     elif "energy_shield_timer" in self.ball:
         es_timer = float(self.ball.energy_shield_timer)
 
-
     if es_timer > 0.0:
         es_timer -= delta
         if es_timer <= 0.0:
@@ -36373,7 +36396,6 @@ func _update_skill_timer(delta: float):
                 self.ball.set_meta("surge_shield_timer", ss_timer)
             else:
                 self.ball.surge_shield_timer = ss_timer
-
 
     var m_tether_timer = 0.0
 
@@ -36435,7 +36457,6 @@ func _update_skill_timer(delta: float):
         tether_hook_timer -= delta
         if "tether_hook_timer" in self.ball: self.ball.tether_hook_timer = tether_hook_timer
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("tether_hook_timer", tether_hook_timer)
-
 
     var lit_tether_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("lightning_tether_timer"):
@@ -37110,7 +37131,6 @@ func _update_skill_timer(delta: float):
                 var h_kind = ""
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
-
 
                 if h_kind == "sticky_bomb" or h_kind == "sticky_bomb_trap":
                     var attached_id = hazard.attached_id if "attached_id" in hazard else (hazard.get_meta("attached_id") if hazard.has_method("get_meta") and hazard.has_meta("attached_id") else null)
@@ -38069,8 +38089,6 @@ func _update_skill_timer(delta: float):
                                 elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") + ny * push_force * delta)
                                 elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): self.ball["vy"] += ny * push_force * delta
 
-
-
                 if h_kind == "whirlpool":
                     var h_x = 0.0
                     var h_y = 0.0
@@ -38484,7 +38502,6 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("weather_control_timer", weather_timer)
 
-
     var ffr_timer = 0.0
     if "friendly_fire_reflect_timer" in self.ball:
         ffr_timer = self.ball.friendly_fire_reflect_timer
@@ -38590,7 +38607,6 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("link_booster_timer", link_timer)
             self.ball.set_meta("link_booster_target", target)
-
 
     var hl_timer = 0.0
     var chaos_link_timer = 0.0
@@ -38820,8 +38836,6 @@ func _update_skill_timer(delta: float):
 
                 if "hp" in target: target.hp = min(target_hp + actual_damage * 1.5, target_mhp)
 
-
-
                 if hl_timer <= 0:
                     target = null
             else:
@@ -38978,7 +38992,6 @@ func _update_skill_timer(delta: float):
         if self.ball.has_method("set_meta"): self.ball.set_meta("pierce_attachment_timer", p_timer)
         else: self.ball.pierce_attachment_timer = p_timer
 
-
     if "skill_timer" in self.ball and self.ball.skill_timer > 0:
         var is_sf = false
         if typeof(self.world) == TYPE_DICTIONARY:
@@ -39064,7 +39077,6 @@ func _update_skill_timer(delta: float):
                                     else:
                                         if b.has_method("take_damage"): b.take_damage(exp_dmg)
                                         elif "hp" in b: b.hp -= exp_dmg
-
 
     var ricochet_barrier_timer = 0.0
     if "ricochet_barrier_timer" in self.ball:
@@ -39259,7 +39271,6 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("stealth_booster_timer", stealth_booster_timer)
 
-
     var has_cr_timer = false
     var cr_timer_val = 0.0
     if "cursed_relic_timer" in self.ball:
@@ -39452,7 +39463,6 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("homing_missile_tick", hmb_tick)
 
-
     var mud_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mud_debuff_timer"):
         mud_timer = float(self.ball.get_meta("mud_debuff_timer"))
@@ -39614,7 +39624,6 @@ func _update_skill_timer(delta: float):
     elif typeof(self.ball) == TYPE_OBJECT and "acid_debuff_timer" in self.ball:
         self.ball.acid_debuff_timer = acid_timer
 
-
     var acid_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("acid_debuff_timer"):
         acid_timer = float(self.ball.get_meta("acid_debuff_timer"))
@@ -39697,7 +39706,6 @@ func _update_skill_timer(delta: float):
         self.ball["acid_debuff_timer"] = acid_timer
     elif typeof(self.ball) == TYPE_OBJECT and "acid_debuff_timer" in self.ball:
         self.ball.acid_debuff_timer = acid_timer
-
 
     var sb_timer = 0.0
     if "speed_boost_timer" in self.ball:
@@ -40030,7 +40038,6 @@ func _kite(delta: float):
     else:
         _idle(delta)
 
-
 func _escort(delta: float) -> void:
     var allies = _get_allies()
     if allies.size() == 0:
@@ -40141,8 +40148,6 @@ func _escort(delta: float) -> void:
                         if is_oc:
                             new_cd *= 0.5
                         ball.attack_timer = new_cd
-
-
 
 func _intercept(delta: float) -> void:
     var enemies = _get_enemies()
