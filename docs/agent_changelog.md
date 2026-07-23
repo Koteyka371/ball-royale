@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1366] Quantum Tunneling Booster — *2026-07-23 20:07:50 UTC*
+
+A booster that allows the ball to phase through solid hazards like walls or rocks for a brief duration, enabling surprise attacks or escapes.
+
+---
+
 ## [idea-1406] Mirror Ball — *2026-07-23 20:07:46 UTC*
 
 A ball type that passively reflects a percentage of damage taken back to the attacker.
