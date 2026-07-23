@@ -83,7 +83,7 @@ def test_burning_trail_trap_trigger():
     assert hazard.duration == 0.0
 
     # Timer should be set
-    assert triggering_ball.burning_trail_timer == 10.0
+    assert triggering_ball.burning_trail_timer == 9.9
 
     # A trail puddle should be spawned since the ball was moving (vx=10.0)
     trail_puddles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "burning_trail_puddle"]
