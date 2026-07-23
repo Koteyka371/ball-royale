@@ -54746,5 +54746,289 @@ class ItemJammerEventMode extends GameMode:
 						if "silence_timer" in b:
 							b.silence_timer = max(sil, 0.5)
 
+
+class HiveDefenseMode extends GameMode:
+	var match_over = false
+	var resource_timer = 0.0
+	var minion_timer = 5.0
+	var red_hive = null
+	var blue_hive = null
+
+	func _init():
+		super._init()
+		name = "Hive Defense"
+		description = "Each team has a central Hive. Gather resources to upgrade defenses and spawn automated minions to assault the enemy Hive."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		if not world.has("arena") or world.arena == null:
+			return
+		if not world.arena.has("hazards"):
+			world.arena.hazards = []
+
+		var valid_balls = []
+		for b in balls:
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if b_type != "spectator":
+				valid_balls.append(b)
+
+		var mid = valid_balls.size() / 2
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			var team = "Red" if i < mid else "Blue"
+			if typeof(b) == TYPE_DICTIONARY:
+				b["team"] = team
+				b["collected_resources"] = 0
+			else:
+				if "team" in b:
+					b.team = team
+				else:
+					b.set_meta("team", team)
+				if "collected_resources" in b:
+					b.collected_resources = 0
+				else:
+					b.set_meta("collected_resources", 0)
+
+		red_hive = {
+			"id": "hive_red",
+			"team": "Red",
+			"x": 150.0,
+			"y": world.arena.height / 2.0,
+			"hp": 1000.0,
+			"max_hp": 1000.0,
+			"radius": 60.0,
+			"level": 1,
+			"resources": 0,
+			"kind": "hive",
+			"active": true
+		}
+		blue_hive = {
+			"id": "hive_blue",
+			"team": "Blue",
+			"x": world.arena.width - 150.0,
+			"y": world.arena.height / 2.0,
+			"hp": 1000.0,
+			"max_hp": 1000.0,
+			"radius": 60.0,
+			"level": 1,
+			"resources": 0,
+			"kind": "hive",
+			"active": true
+		}
+		world.arena.hazards.append(red_hive)
+		world.arena.hazards.append(blue_hive)
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if match_over or not world.has("arena") or world.arena == null:
+			return
+
+		if red_hive != null and red_hive.hp <= 0:
+			match_over = true
+			if world.has("add_event"):
+				var add_evt = world.get("add_event")
+				if add_evt is Callable:
+					add_evt.call("hive_destroyed", {"team": "Red", "message": "Blue Team wins! Red Hive destroyed!"})
+			return
+		if blue_hive != null and blue_hive.hp <= 0:
+			match_over = true
+			if world.has("add_event"):
+				var add_evt = world.get("add_event")
+				if add_evt is Callable:
+					add_evt.call("hive_destroyed", {"team": "Blue", "message": "Red Team wins! Blue Hive destroyed!"})
+			return
+
+		resource_timer -= delta
+		if resource_timer <= 0:
+			resource_timer = 3.0
+			var res_count = 0
+			for h in world.arena.hazards:
+				if h.get("kind", "") == "resource_crystal":
+					res_count += 1
+
+			if res_count < 10:
+				var rx = randf_range(200, world.arena.width - 200)
+				var ry = randf_range(100, world.arena.height - 100)
+				world.arena.hazards.append({
+					"id": "res_" + str(randi() % 10000),
+					"x": rx,
+					"y": ry,
+					"radius": 15.0,
+					"kind": "resource_crystal",
+					"active": true
+				})
+
+		minion_timer -= delta
+		if minion_timer <= 0:
+			var max_level = max(red_hive.level, blue_hive.level) if red_hive != null and blue_hive != null else 1
+			minion_timer = max(1.0, 5.0 - (0.5 * max_level))
+
+			for hive_info in [{"team": "Red", "hive": red_hive}, {"team": "Blue", "hive": blue_hive}]:
+				var hteam = hive_info["team"]
+				var hive = hive_info["hive"]
+				if hive == null:
+					continue
+
+				var count = 1 + (hive.level / 2)
+				for i in range(count):
+					var my = hive.y + randf_range(-30, 30)
+					world.arena.hazards.append({
+						"id": "minion_" + str(randi() % 10000),
+						"team": hteam,
+						"x": hive.x,
+						"y": my,
+						"vx": 0.0,
+						"vy": 0.0,
+						"hp": 50.0,
+						"radius": 15.0,
+						"kind": "minion",
+						"speed": 100.0,
+						"damage": 10.0,
+						"active": true
+					})
+
+		var to_remove = []
+		for h in world.arena.hazards:
+			var kind = h.get("kind", "")
+
+			if kind == "resource_crystal":
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if not is_alive or b_type == "spectator":
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var br = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+
+					var dx = bx - h.x
+					var dy = by - h.y
+					if dx*dx + dy*dy <= (br + h.radius)*(br + h.radius):
+						var collected = b.get("collected_resources", 0) if typeof(b) == TYPE_DICTIONARY else (b.get("collected_resources") if "collected_resources" in b else (b.get_meta("collected_resources") if b.has_method("has_meta") and b.has_meta("collected_resources") else 0))
+						if typeof(b) == TYPE_DICTIONARY:
+							b["collected_resources"] = collected + 1
+						else:
+							if "collected_resources" in b:
+								b.collected_resources = collected + 1
+							else:
+								b.set_meta("collected_resources", collected + 1)
+
+						h.active = false
+						to_remove.append(h)
+						break
+
+			elif kind == "minion":
+				if h.get("hp", 0) <= 0:
+					h.active = false
+					to_remove.append(h)
+					continue
+
+				var target_hive = blue_hive if h.team == "Red" else red_hive
+				if target_hive != null:
+					var dx = target_hive.x - h.x
+					var dy = target_hive.y - h.y
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist > 0:
+						h.vx = (dx / dist) * h.speed
+						h.vy = (dy / dist) * h.speed
+
+					h.x += h.vx * delta
+					h.y += h.vy * delta
+
+					if dist <= (h.radius + target_hive.radius):
+						target_hive.hp -= h.damage
+						h.hp = 0
+						h.active = false
+						to_remove.append(h)
+						continue
+
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else (b.get("team") if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else ""))
+					if not is_alive or b_team == h.team:
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var br = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+
+					var bdx = bx - h.x
+					var bdy = by - h.y
+					if bdx*bdx + bdy*bdy <= (br + h.radius)*(br + h.radius):
+						var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+						var new_hp = max(0, hp - h.damage)
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = new_hp
+							if new_hp <= 0:
+								b["alive"] = false
+								var bid = b.get("id", "")
+								if world.has("dead_balls") and typeof(world.dead_balls) == TYPE_ARRAY:
+									world.dead_balls.append(bid)
+						else:
+							if b.has_method("take_damage"):
+								b.take_damage(h.damage, null)
+							else:
+								b.hp = new_hp
+								if new_hp <= 0:
+									b.alive = false
+									var bid = b.get("id", "")
+									if world.has("dead_balls") and typeof(world.dead_balls) == TYPE_ARRAY:
+										world.dead_balls.append(bid)
+
+						h.hp = 0
+						h.active = false
+						to_remove.append(h)
+						break
+
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var collected = b.get("collected_resources", 0) if typeof(b) == TYPE_DICTIONARY else (b.get("collected_resources") if "collected_resources" in b else (b.get_meta("collected_resources") if b.has_method("has_meta") and b.has_meta("collected_resources") else 0))
+
+			if collected > 0:
+				var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else (b.get("team") if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else ""))
+				var my_hive = red_hive if b_team == "Red" else blue_hive
+
+				if my_hive != null:
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var br = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+
+					var dx = bx - my_hive.x
+					var dy = by - my_hive.y
+					if dx*dx + dy*dy <= (br + my_hive.radius)*(br + my_hive.radius):
+						my_hive.resources += collected
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["collected_resources"] = 0
+						else:
+							if "collected_resources" in b:
+								b.collected_resources = 0
+							else:
+								b.set_meta("collected_resources", 0)
+
+						while my_hive.resources >= my_hive.level * 5:
+							my_hive.resources -= my_hive.level * 5
+							my_hive.level += 1
+							my_hive.max_hp += 200
+							my_hive.hp += 200
+							if world.has("add_event"):
+								var add_evt = world.get("add_event")
+								if add_evt is Callable:
+									add_evt.call("hive_upgrade", {"team": b_team, "level": my_hive.level})
+
+		var new_hazards = []
+		for h in world.arena.hazards:
+			if not to_remove.has(h) and h.get("active", true):
+				new_hazards.append(h)
+		world.arena.hazards = new_hazards
+
+GAME_MODES['hive_defense'] = HiveDefenseMode.new()
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode.new()
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode.new()

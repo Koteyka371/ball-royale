@@ -35516,5 +35516,198 @@ class ItemJammerEventMode(GameMode):
                     b.emp_disabled_timer = max(getattr(b, "emp_disabled_timer", 0.0), 0.5)
                     b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
 
+
+class HiveDefenseMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hive Defense"
+        self.description = "Each team has a central Hive. Gather resources to upgrade defenses and spawn automated minions to assault the enemy Hive."
+        self.resource_timer = 0.0
+        self.minion_timer = 5.0
+        self.red_hive = None
+        self.blue_hive = None
+        self.match_over = False
+
+    class HiveHazard:
+        def __init__(self, id_val, team, x, y):
+            self.id = id_val
+            self.team = team
+            self.x = x
+            self.y = y
+            self.hp = 1000.0
+            self.max_hp = 1000.0
+            self.radius = 60.0
+            self.level = 1
+            self.resources = 0
+            self.kind = "hive"
+            self.active = True
+
+    class ResourceHazard:
+        def __init__(self, id_val, x, y):
+            self.id = id_val
+            self.x = x
+            self.y = y
+            self.radius = 15.0
+            self.kind = "resource_crystal"
+            self.active = True
+
+    class MinionHazard:
+        def __init__(self, id_val, team, x, y):
+            self.id = id_val
+            self.team = team
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.hp = 50.0
+            self.radius = 15.0
+            self.kind = "minion"
+            self.speed = 100.0
+            self.damage = 10.0
+            self.active = True
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or world.arena is None:
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+        for i, b in enumerate(valid_balls):
+            b.team = "Red" if i < mid else "Blue"
+            b.collected_resources = 0
+
+        self.red_hive = self.HiveHazard(f"hive_red", "Red", 150.0, world.arena.height / 2)
+        self.blue_hive = self.HiveHazard(f"hive_blue", "Blue", world.arena.width - 150.0, world.arena.height / 2)
+        world.arena.hazards.extend([self.red_hive, self.blue_hive])
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if self.match_over or not hasattr(world, "arena") or world.arena is None:
+            return
+
+        import math
+        import random
+
+        # Check hive HP
+        if self.red_hive and self.red_hive.hp <= 0:
+            self.match_over = True
+            if hasattr(world, "add_event"):
+                world.add_event("hive_destroyed", {"team": "Red", "message": "Blue Team wins! Red Hive destroyed!"})
+            return
+        if self.blue_hive and self.blue_hive.hp <= 0:
+            self.match_over = True
+            if hasattr(world, "add_event"):
+                world.add_event("hive_destroyed", {"team": "Blue", "message": "Red Team wins! Blue Hive destroyed!"})
+            return
+
+        # Spawn resources
+        self.resource_timer -= delta
+        if self.resource_timer <= 0:
+            self.resource_timer = 3.0
+            if len([h for h in world.arena.hazards if getattr(h, "kind", "") == "resource_crystal"]) < 10:
+                rx = random.uniform(200, world.arena.width - 200)
+                ry = random.uniform(100, world.arena.height - 100)
+                world.arena.hazards.append(self.ResourceHazard(f"res_{random.randint(1000, 9999)}", rx, ry))
+
+        # Spawn minions
+        self.minion_timer -= delta
+        if self.minion_timer <= 0:
+            self.minion_timer = max(1.0, 5.0 - (0.5 * max(self.red_hive.level, self.blue_hive.level)))
+            for team, hive in [("Red", self.red_hive), ("Blue", self.blue_hive)]:
+                count = 1 + (hive.level // 2)
+                for _ in range(count):
+                    my = hive.y + random.uniform(-30, 30)
+                    world.arena.hazards.append(self.MinionHazard(f"minion_{random.randint(1000, 9999)}", team, hive.x, my))
+
+        # Update and interactions
+        to_remove = []
+        for h in world.arena.hazards:
+            kind = getattr(h, "kind", "")
+
+            if kind == "resource_crystal":
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    if dx*dx + dy*dy <= (b.radius + h.radius)**2:
+                        b.collected_resources = getattr(b, "collected_resources", 0) + 1
+                        h.active = False
+                        to_remove.append(h)
+                        break
+
+            elif kind == "minion":
+                if getattr(h, "hp", 0) <= 0:
+                    h.active = False
+                    to_remove.append(h)
+                    continue
+
+                # Move towards enemy hive
+                target_hive = self.blue_hive if h.team == "Red" else self.red_hive
+                dx = target_hive.x - h.x
+                dy = target_hive.y - h.y
+                dist = math.hypot(dx, dy)
+                if dist > 0:
+                    h.vx = (dx / dist) * h.speed
+                    h.vy = (dy / dist) * h.speed
+                h.x += h.vx * delta
+                h.y += h.vy * delta
+
+                # Minion damage to enemy hive
+                if dist <= (h.radius + target_hive.radius):
+                    target_hive.hp -= h.damage
+                    h.hp = 0  # Kamikaze
+                    h.active = False
+                    to_remove.append(h)
+                    continue
+
+                # Minion damage to enemy balls
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "team", "") == h.team:
+                        continue
+                    bdx = b.x - h.x
+                    bdy = b.y - h.y
+                    if bdx*bdx + bdy*bdy <= (b.radius + h.radius)**2:
+                        b.hp -= h.damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if not hasattr(world, "dead_balls"):
+                                world.dead_balls = []
+                            world.dead_balls.append(b.id)
+                        h.hp = 0
+                        h.active = False
+                        to_remove.append(h)
+                        break
+
+        # Resource deposit at hive
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+            collected = getattr(b, "collected_resources", 0)
+            if collected > 0:
+                my_hive = self.red_hive if b.team == "Red" else self.blue_hive
+                if my_hive:
+                    dx = b.x - my_hive.x
+                    dy = b.y - my_hive.y
+                    if dx*dx + dy*dy <= (b.radius + my_hive.radius)**2:
+                        my_hive.resources += collected
+                        b.collected_resources = 0
+                        # Upgrade hive
+                        while my_hive.resources >= my_hive.level * 5:
+                            my_hive.resources -= my_hive.level * 5
+                            my_hive.level += 1
+                            my_hive.max_hp += 200
+                            my_hive.hp += 200
+                            if hasattr(world, "add_event"):
+                                world.add_event("hive_upgrade", {"team": b.team, "level": my_hive.level})
+
+        world.arena.hazards = [h for h in world.arena.hazards if h not in to_remove and getattr(h, "active", True)]
+
+GAME_MODES['hive_defense'] = HiveDefenseMode()
+
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode()
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode()
