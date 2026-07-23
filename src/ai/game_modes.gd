@@ -9,6 +9,178 @@ class GameMode:
 		pass
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		if world != null:
+			var hazards = []
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+				hazards = world.arena.hazards
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+				hazards = world.arena.hazards
+
+			if hazards.size() > 0:
+				var hazards_copy = hazards.duplicate()
+				for hazard in hazards_copy:
+					var h_kind = ""
+					if typeof(hazard) == TYPE_DICTIONARY and "kind" in hazard: h_kind = hazard.kind
+					elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+					if h_kind == "high_risk_nuke_mine":
+						var defusing_timers = {}
+						if typeof(hazard) == TYPE_DICTIONARY and "defusing_timers" in hazard: defusing_timers = hazard.defusing_timers
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("defusing_timers"): defusing_timers = hazard.get_meta("defusing_timers")
+
+						var h_x = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "x" in hazard: h_x = hazard.x
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+
+						var h_y = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "y" in hazard: h_y = hazard.y
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+						var core_radius = 50.0
+						if typeof(hazard) == TYPE_DICTIONARY and "radius" in hazard: core_radius = hazard.radius
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("radius"): core_radius = hazard.get_meta("radius")
+
+						var h_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and "team" in hazard: h_team = hazard.team
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("team"): h_team = hazard.get_meta("team")
+
+						var anyone_defusing = false
+						var defused = false
+
+						for b in balls:
+							var is_alive = false
+							if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+							if is_alive and b_type != "spectator":
+								var b_team = null
+								if typeof(b) == TYPE_DICTIONARY and "team" in b: b_team = b.team
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+								if b_team != h_team:
+									var b_x = 0.0
+									if typeof(b) == TYPE_DICTIONARY and "x" in b: b_x = b.x
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+
+									var b_y = 0.0
+									if typeof(b) == TYPE_DICTIONARY and "y" in b: b_y = b.y
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+									var dist_sq = (h_x - b_x)*(h_x - b_x) + (h_y - b_y)*(h_y - b_y)
+
+									if dist_sq <= core_radius * core_radius:
+										anyone_defusing = true
+										var b_id = null
+										if typeof(b) == TYPE_DICTIONARY and "id" in b: b_id = b.id
+										elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+										if b_id != null:
+											var b_id_str = str(b_id)
+											if not defusing_timers.has(b_id_str):
+												defusing_timers[b_id_str] = 0.0
+											defusing_timers[b_id_str] += delta
+
+											if defusing_timers[b_id_str] >= 2.0:
+												defused = true
+												if hazards.has(hazard):
+													hazards.erase(hazard)
+												if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+													world.add_event("mine_defused", {"x": h_x, "y": h_y, "defuser_id": b_id})
+												break
+
+						if defused or not hazards.has(hazard):
+							continue
+
+						for k in defusing_timers.keys():
+							if not anyone_defusing:
+								defusing_timers[k] = max(0.0, defusing_timers[k] - delta)
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard.defusing_timers = defusing_timers
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+							hazard.set_meta("defusing_timers", defusing_timers)
+
+						var timer = 5.0
+						if typeof(hazard) == TYPE_DICTIONARY and "timer" in hazard: timer = hazard.timer
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("timer"): timer = hazard.get_meta("timer")
+
+						timer -= delta
+
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.timer = timer
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("timer", timer)
+
+						var explosion_radius = core_radius * 10.0
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							if fmod(timer, 0.5) < delta:
+								world.add_event("aura_project", {"x": h_x, "y": h_y, "radius": explosion_radius, "duration": 0.5, "type": "nuke_warning"})
+
+						if timer <= 0.0:
+							if hazards.has(hazard):
+								hazards.erase(hazard)
+
+							var damage = 100.0
+							if typeof(hazard) == TYPE_DICTIONARY and "damage" in hazard: damage = hazard.damage
+							elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("damage"): damage = hazard.get_meta("damage")
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("explosion", {"x": h_x, "y": h_y, "radius": explosion_radius, "damage": damage, "color": "red"})
+								world.add_event("screen_shake", {"duration": 1.0, "intensity": 2.0})
+
+							for b in balls:
+								var is_alive = false
+								if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+								var b_type = ""
+								if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+								if is_alive and b_type != "spectator":
+									var b_x = 0.0
+									if typeof(b) == TYPE_DICTIONARY and "x" in b: b_x = b.x
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+
+									var b_y = 0.0
+									if typeof(b) == TYPE_DICTIONARY and "y" in b: b_y = b.y
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+									var dx = b_x - h_x
+									var dy = b_y - h_y
+									var dist_sq = dx*dx + dy*dy
+
+									if dist_sq <= explosion_radius * explosion_radius:
+										if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+											world._deal_damage(hazard, b, damage)
+
+									var dist = sqrt(dist_sq)
+									if dist > 0.0001:
+										var nx = dx / dist
+										var ny = dy / dist
+										var push_force = 3000.0
+
+										if typeof(b) == TYPE_DICTIONARY and "vx" in b: b.vx += nx * push_force
+										elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("vx"): b.set_meta("vx", b.get_meta("vx") + nx * push_force)
+
+										if typeof(b) == TYPE_DICTIONARY and "vy" in b: b.vy += ny * push_force
+										elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("vy"): b.set_meta("vy", b.get_meta("vy") + ny * push_force)
+
+										var look_nx = 0.0
+										var look_ny = 0.0
+										if typeof(b) == TYPE_DICTIONARY and "looking_x" in b: look_nx = b.looking_x
+										elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("looking_x"): look_nx = b.get_meta("looking_x")
+
+										if typeof(b) == TYPE_DICTIONARY and "looking_y" in b: look_ny = b.looking_y
+										elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("looking_y"): look_ny = b.get_meta("looking_y")
+
+										var dot = look_nx * (-nx) + look_ny * (-ny)
+										if dot > 0.5:
+											if typeof(b) == TYPE_DICTIONARY and "blind_timer" in b: b.blind_timer = 3.0
+											elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("blind_timer", 3.0)
 		var weather_c = ""
 		if "weather" in self:
 			weather_c = self.weather
