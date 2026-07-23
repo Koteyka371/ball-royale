@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1398] Interactive VIP Spectator Drops — *2026-07-23 19:40:51 UTC*
+
+Spectators with enough cheer points can vote on placing specific global hazard zones (e.g. low gravity) in the arena during downtime or specific phases of the battle, making them active participants in the game pacing.
+
+---
+
 ## [idea-1411] Aura Syphoning Skill — *2026-07-23 19:40:46 UTC*
 
 A new active skill that allows a ball to latch onto an enemy's positive buffs (like insulator, kinetic shield, or speed boost) and drain their remaining duration, converting it into health or applying the buff to themselves. If the target has no positive buffs, it deals direct damage instead.
