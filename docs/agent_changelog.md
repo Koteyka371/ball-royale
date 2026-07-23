@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1379] Aura Vacuum Mode — *2026-07-23 01:10:46 UTC*
+
+A gamemode where friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves.
+
+---
+
 ## [idea-1376] Nemesis Faction Alliances — *2026-07-23 00:27:02 UTC*
 
 Players can pledge loyalty to their Nemesis, becoming an 'Enforcer' for them. As an Enforcer, the player gets a buff when fighting their Nemesis's enemies but receives a massive debuff if they accidentally damage the Nemesis themselves.
