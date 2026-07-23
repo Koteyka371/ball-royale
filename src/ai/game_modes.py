@@ -23553,6 +23553,19 @@ class ElementalAurasMode(GameMode):
                                     b.elemental_auras = {"fire": 0, "water": 0, "earth": 0, "lightning": 0}
                                 b.elemental_auras[element] = b.elemental_auras.get(element, 0) + 1
                                 picked_up = True
+
+                                # Disrupt random enemy aura
+                                enemies = [eb for eb in balls if getattr(eb, "alive", False) and getattr(eb, "id", None) != getattr(b, "id", None) and getattr(eb, "team", "B") != getattr(b, "team", "A")]
+                                random.shuffle(enemies)
+                                for enemy in enemies:
+                                    if hasattr(enemy, "elemental_auras"):
+                                        has_auras = [k for k, v in enemy.elemental_auras.items() if v > 0]
+                                        if has_auras:
+                                            disrupted_element = random.choice(has_auras)
+                                            enemy.elemental_auras[disrupted_element] -= 1
+                                            if hasattr(world, "add_event"):
+                                                world.add_event("aura_disrupted", {"id": enemy.id, "element": disrupted_element})
+                                            break
                                 break
                     if not picked_up:
                         still_hazards.append(h)
