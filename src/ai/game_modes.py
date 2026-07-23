@@ -349,6 +349,8 @@ class GameMode:
                     b.damage = getattr(b, "damage", 10.0) * 0.95
                     if hasattr(b, "base_damage"):
                         b.base_damage *= 0.95
+                elif trait == "quantum_entangled":
+                    b.is_quantum_entangled = True
 
         """Called at the start of the battle to initialize mode-specific rules/teams."""
 
@@ -436,6 +438,73 @@ class GameMode:
 
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+
+        # Quantum Entanglement Trait Logic
+        entangled_balls = [b for b in balls if getattr(b, "is_quantum_entangled", False)]
+        if len(entangled_balls) == 2:
+            b1, b2 = entangled_balls
+
+            # Setup initial state tracking for HP if not present
+            if not hasattr(b1, "last_entangled_hp"):
+                b1.last_entangled_hp = getattr(b1, "hp", getattr(b1, "max_hp", 100.0))
+            if not hasattr(b2, "last_entangled_hp"):
+                b2.last_entangled_hp = getattr(b2, "hp", getattr(b2, "max_hp", 100.0))
+
+            # Setup death tracking
+            b1_alive = getattr(b1, "alive", True)
+            b2_alive = getattr(b2, "alive", True)
+
+            if b1_alive and not b2_alive:
+                if not getattr(b1, "quantum_enraged", False):
+                    b1.quantum_enraged = True
+                    b1.speed = getattr(b1, "speed", 100.0) * 2.0
+                    if hasattr(b1, "base_speed"): b1.base_speed *= 2.0
+                    b1.damage = getattr(b1, "damage", 10.0) * 2.0
+                    if hasattr(b1, "base_damage"): b1.base_damage *= 2.0
+            elif b2_alive and not b1_alive:
+                if not getattr(b2, "quantum_enraged", False):
+                    b2.quantum_enraged = True
+                    b2.speed = getattr(b2, "speed", 100.0) * 2.0
+                    if hasattr(b2, "base_speed"): b2.base_speed *= 2.0
+                    b2.damage = getattr(b2, "damage", 10.0) * 2.0
+                    if hasattr(b2, "base_damage"): b2.base_damage *= 2.0
+
+            # If both alive, share damage/healing
+            if b1_alive and b2_alive:
+                b1_hp = getattr(b1, "hp", b1.last_entangled_hp)
+                b2_hp = getattr(b2, "hp", b2.last_entangled_hp)
+
+                b1_diff = b1_hp - b1.last_entangled_hp
+                b2_diff = b2_hp - b2.last_entangled_hp
+
+                b1_receiving = getattr(b1, "is_receiving_shared_damage", False)
+                b2_receiving = getattr(b2, "is_receiving_shared_damage", False)
+
+                if b1_diff != 0 and not b1_receiving:
+                    if isinstance(b1_diff, (int, float)):
+                        b2.is_receiving_shared_damage = True
+                        b2_hp_val = getattr(b2, "hp", b2.last_entangled_hp)
+                        if isinstance(b2_hp_val, (int, float)):
+                            b2.hp = b2_hp_val + (b1_diff * 0.5)
+                            max_hp2 = getattr(b2, "max_hp", 100.0)
+                            if isinstance(max_hp2, (int, float)) and isinstance(b2.hp, (int, float)):
+                                b2.hp = max(0.0, min(b2.hp, max_hp2))
+
+                if b2_diff != 0 and not b2_receiving:
+                    if isinstance(b2_diff, (int, float)):
+                        b1.is_receiving_shared_damage = True
+                        b1_hp_val = getattr(b1, "hp", b1.last_entangled_hp)
+                        if isinstance(b1_hp_val, (int, float)):
+                            b1.hp = b1_hp_val + (b2_diff * 0.5)
+                            max_hp1 = getattr(b1, "max_hp", 100.0)
+                            if isinstance(max_hp1, (int, float)) and isinstance(b1.hp, (int, float)):
+                                b1.hp = max(0.0, min(b1.hp, max_hp1))
+
+                b1.last_entangled_hp = getattr(b1, "hp", getattr(b1, "max_hp", 100.0))
+                b2.last_entangled_hp = getattr(b2, "hp", getattr(b2, "max_hp", 100.0))
+
+                b1.is_receiving_shared_damage = False
+                b2.is_receiving_shared_damage = False
 
         # Cosmetic Synergy Logic
         # Group alive balls by team
@@ -12205,6 +12274,8 @@ class BumperBallsMode(GameMode):
                     b.damage = getattr(b, "damage", 10.0) * 0.95
                     if hasattr(b, "base_damage"):
                         b.base_damage *= 0.95
+                elif trait == "quantum_entangled":
+                    b.is_quantum_entangled = True
 
         for b in balls:
 

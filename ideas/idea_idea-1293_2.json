@@ -1,0 +1,4 @@
+{
+  "title": "Cosmic Swap Event",
+  "description": "A random arena event that selects two random alive balls (from different teams, if possible) and swaps their physical positions after a short delay, with a visual indicator beforehand. This forces players to adapt instantly as they might be teleported directly into an enemy cluster or out of a safe zone."
+}

@@ -59,7 +59,7 @@ func select_traits(ball_id: int, traits: Array) -> void:
     var key = str(ball_id) + "_traits"
     selections[key] = []
     for trait in traits:
-        if trait in ["swift", "slow", "sturdy", "fragile", "lethal", "weak", "soul_dropper"]:
+        if trait in ["swift", "slow", "sturdy", "fragile", "lethal", "weak", "soul_dropper", "quantum_entangled"]:
             selections[key].append(trait)
 
 func get_traits(ball_id: int) -> Array:
