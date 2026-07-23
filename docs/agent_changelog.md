@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1390] Supernova Mine — *2026-07-23 05:56:02 UTC*
+
+A high-risk mine variant that takes 5 seconds to detonate. It projects an expanding aura showing the blast radius. If it detonates, it deals massive damage in a huge area and pushes all balls across the map, applying a blind effect to those looking towards it. Enemies can defuse it by staying within its core for 2 seconds before it blows.
+
+---
+
 ## [idea-1383] Mutator Synergy Combinations — *2026-07-23 05:22:02 UTC*
 
 If players vote for two specific mutators that complement each other (e.g., '10x Speed' and 'Bouncy Walls'), the game combines them into a secret third mutator (e.g., 'Pinball Nightmare').

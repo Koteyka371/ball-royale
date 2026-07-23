@@ -23811,7 +23811,7 @@
     },
     {
       "id": "idea-1390",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supernova Mine",
@@ -35214,6 +35214,23 @@
         "src/ai/enraged_minion_speed_boost.py",
         "src/ai/enraged_minion_speed_boost.gd",
         "tests/test_enraged_minion_speed_boost.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2060",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hive Defense Structure",
+      "description": "New team-based game mode Hive Defense",
+      "allowed_paths": [
+        "src/ai/hive_defense_structure.py",
+        "src/ai/hive_defense_structure.gd",
+        "tests/test_hive_defense_structure.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
