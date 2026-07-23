@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1345] Minion Explosive Demise — *2026-07-23 04:53:09 UTC*
+
+When an enraged minion's HP drops to 0 due to rapid decay, it explodes in a small area of effect, dealing damage based on its maximum health to any enemies nearby.
+
+---
+
 ## [idea-1357] Bounty Hunter Contracts — *2026-07-23 04:46:19 UTC*
 
 Players can spend prestige tokens or skill points at the start of a match to place a high-value contract on a specific enemy player. If they successfully eliminate that target, they receive triple the investment back. If another player claims the kill, they get a portion of the reward.

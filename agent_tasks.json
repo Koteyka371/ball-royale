@@ -23045,7 +23045,7 @@
     },
     {
       "id": "idea-1345",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Minion Explosive Demise",
@@ -35129,6 +35129,74 @@
         "src/ai/wormhole_relic.py",
         "src/ai/wormhole_relic.gd",
         "tests/test_wormhole_relic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2055",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tether Hook Traps",
+      "description": "A new hazard that throws out multiple tether hooks to passing enemies. Ensnared enemies are pulled towards the center of the trap slowly.",
+      "allowed_paths": [
+        "src/arena/tether_hook_traps.py",
+        "src/arena/tether_hook_traps.gd",
+        "tests/test_tether_hook_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2056",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Duplicate",
+      "description": "A new skill that creates a short-lived, invincible duplicate of the player that mirrors all movements and attacks but deals 50% damage.",
+      "allowed_paths": [
+        "src/ai/quantum_duplicate.py",
+        "src/ai/quantum_duplicate.gd",
+        "tests/test_quantum_duplicate.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2057",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage Bounties",
+      "description": "In addition to normal bounties, players can place a 'Sabotage Bounty' on a high-performing player. This doesn't reward the killer with currency, but instantly debuffs the target's stats when placed, making them easier to take down for the entire lobby.",
+      "allowed_paths": [
+        "src/ai/sabotage_bounties.py",
+        "src/ai/sabotage_bounties.gd",
+        "tests/test_sabotage_bounties.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2058",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Contract Streak",
+      "description": "Players can place multiple bounties consecutively without claiming them to build up a multiplier. When they finally claim one, the reward is multiplied by the streak, encouraging risky investments for massive payoffs.",
+      "allowed_paths": [
+        "src/ai/bounty_contract_streak.py",
+        "src/ai/bounty_contract_streak.gd",
+        "tests/test_bounty_contract_streak.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
