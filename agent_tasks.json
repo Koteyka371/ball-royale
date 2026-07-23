@@ -24392,7 +24392,7 @@
     },
     {
       "id": "idea-1424",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New mode 'Meteor Shower'",
@@ -35690,6 +35690,23 @@
         "src/ai/kinetic_accumulator_trait.py",
         "src/ai/kinetic_accumulator_trait.gd",
         "tests/test_kinetic_accumulator_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2088",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Siphon Aura",
+      "description": "An aura that drains a small amount of stamina from nearby enemies over time and grants it to the user.",
+      "allowed_paths": [
+        "src/ai/stamina_siphon_aura.py",
+        "src/ai/stamina_siphon_aura.gd",
+        "tests/test_stamina_siphon_aura.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

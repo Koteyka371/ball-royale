@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1424] New mode 'Meteor Shower' — *2026-07-23 22:25:21 UTC*
+
+Periodically, meteors fall from the sky onto the arena, creating temporary craters that act as hazards, dealing damage and knocking back balls.
+
+---
+
 ## [idea-1425] New loadout item 'Phase Boots' — *2026-07-23 20:58:40 UTC*
 
 Allows the ball to briefly ignore obstacles and hazards, moving through them without taking damage or being slowed down, but consumes stamina while active.
