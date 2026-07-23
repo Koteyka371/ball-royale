@@ -35083,6 +35083,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2052",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Siphon Drone Pet",
+      "description": "A new cosmetic pet that orbits the player and slowly drains aura buffs from nearby enemies to permanently increase its owner's base movement speed over the course of the match.",
+      "allowed_paths": [
+        "src/ai/siphon_drone_pet.py",
+        "src/ai/siphon_drone_pet.gd",
+        "tests/test_siphon_drone_pet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
