@@ -972,18 +972,19 @@ class GameMode:
                             setattr(ice, "duration", 10.0)
                             world.arena.hazards.append(ice)
                         elif theme == "Inferno":
-                            lava = Hazard(id=h_id, x=hx, y=hy, radius=50.0, kind="lava", damage=10.0)
-                            setattr(lava, "duration", 10.0)
-                            world.arena.hazards.append(lava)
+                            meteor = Hazard(id=h_id, x=hx, y=hy, radius=50.0, kind="meteor", damage=50.0)
+                            setattr(meteor, "duration", 10.0)
+                            world.arena.hazards.append(meteor)
                         elif theme == "Void":
                             bh = Hazard(id=h_id, x=hx, y=hy, radius=30.0, kind="black_hole", damage=5.0)
                             setattr(bh, "duration", 8.0)
                             setattr(bh, "pull_strength", 50.0)
                             world.arena.hazards.append(bh)
                         elif theme == "Abyssal":
-                            puddle = Hazard(id=h_id, x=hx, y=hy, radius=45.0, kind="puddle", damage=2.0)
-                            setattr(puddle, "duration", 12.0)
-                            world.arena.hazards.append(puddle)
+                            whirlpool = Hazard(id=h_id, x=hx, y=hy, radius=80.0, kind="whirlpool", damage=0.0)
+                            setattr(whirlpool, "duration", 12.0)
+                            setattr(whirlpool, "pull_strength", 50.0)
+                            world.arena.hazards.append(whirlpool)
                     except ImportError:
                         pass
 
