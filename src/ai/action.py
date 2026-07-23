@@ -3287,6 +3287,24 @@ class Action:
                         except ImportError:
                             pass
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_proximity_mud_puddle" in self.ball.inventory:
+            nearest = self._get_nearest_enemy()
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_proximity_mud_puddle")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            mud_id = f"{len(self.world.arena.hazards)}_{getattr(self.world, 'tick', 0)}_proxmud"
+                            # Spawns with 60 radius but proximity logic triggers on 30.
+                            puddle = Hazard(mud_id, self.ball.x, self.ball.y, 60.0, "proximity_mud_puddle", 0.0)
+                            puddle.duration = 30.0 # Stays active longer
+                            setattr(puddle, 'owner_id', getattr(self.ball, 'id', None))
+                            self.world.arena.hazards.append(puddle)
+                        except ImportError:
+                            pass
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_confetti_bomb" in self.ball.inventory:
             nearest = self._get_nearest_enemy()
             if nearest:
@@ -6448,6 +6466,59 @@ class Action:
                                                 b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
                                                 if hasattr(self, "_spawn_directed_particles"):
                                                     self._spawn_directed_particles(hazard, b, "lightning")
+
+                    elif hazard.kind == "proximity_mud_puddle":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 30.0) - delta
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                continue
+
+                            hx = getattr(hazard, "x", 0)
+                            hy = getattr(hazard, "y", 0)
+
+                            is_triggered = getattr(hazard, "is_triggered", False)
+
+                            if not is_triggered:
+                                # Check for enemy proximity to trigger
+                                triggered = False
+                                owner_id = getattr(hazard, "owner_id", None)
+                                trigger_radius = 40.0
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
+                                        bx = getattr(b, "x", 0)
+                                        by = getattr(b, "y", 0)
+                                        dist_sq = (hx - bx)**2 + (hy - by)**2
+                                        if dist_sq <= trigger_radius * trigger_radius:
+                                            triggered = True
+                                            break
+
+                                if triggered:
+                                    hazard.is_triggered = True
+                                    hazard.duration = 10.0 # Stays as puddle for 10s
+
+                            if getattr(hazard, "is_triggered", False):
+                                # Apply mud to everyone in 60 radius (persistent puddle)
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True):
+                                        bx = getattr(b, "x", 0)
+                                        by = getattr(b, "y", 0)
+                                        dist_sq = (hx - bx)**2 + (hy - by)**2
+                                        rad_sum = getattr(hazard, "radius", 60.0) + getattr(b, "radius", 20.0)
+                                        if dist_sq <= rad_sum * rad_sum:
+                                            b.mud_debuff_timer = 5.0
+                                            b.mud_debuff_stacks = 5 # Instant max stacks for heavy slow
+                                            b.mud_stack_cooldown = 1.0
+                                            # Apply continuous small damage
+                                            if hasattr(b, "hp"):
+                                                b.hp -= 20.0 * delta
+                                                if b.hp <= 0:
+                                                    b.alive = False
+                                                    b.hp = 0
+                                                    b.killer = "proximity_mud_puddle"
 
                     elif hazard.kind == "sticky_mud_puddle":
                         current_tick = getattr(self.world, "tick", 0)
@@ -13797,6 +13868,15 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_proximity_mud_puddle":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_proximity_mud_puddle")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_confetti_bomb":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -15968,7 +16048,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
