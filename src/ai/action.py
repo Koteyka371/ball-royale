@@ -5333,7 +5333,7 @@ class Action:
                 # Check if it dies from decay in this tick
                 rapid_decay = 20.0 * delta
                 died_from_decay = False
-                if getattr(self.ball, "hp", 0) > 0 and getattr(self.ball, "hp", 0) - rapid_decay <= 0:
+                if getattr(self.ball, "hp", 0) - rapid_decay <= 0:
                     died_from_decay = True
 
                 self.ball.hp -= rapid_decay # rapid decay
