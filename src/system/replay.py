@@ -11,6 +11,7 @@ class ReplaySystem:
         self.is_recording = False
         self.is_playing = False
         self.playback_speed = 1.0
+        self.commentary: List[str] = []
 
     def start_recording(self):
         self.frames = []
@@ -48,6 +49,10 @@ class ReplaySystem:
         self.current_frame_index = 0
         self.playback_speed = speed
 
+        # In python we simulate TTS or just print it if present
+        if self.commentary:
+            print(f"[TTS COMMENTARY]: {self.commentary[0]}")
+
     def stop_playback(self):
         self.is_playing = False
 
@@ -72,6 +77,23 @@ class ReplaySystem:
         """
         highlight = ReplaySystem()
         highlight.frames = [f for f in self.frames if start_tick <= f["tick"] <= end_tick]
+
+        kill_count = 0
+        player_ids = []
+        for f in highlight.frames:
+            for e in f.get("events", []):
+                if e.get("type") == "kill":
+                    kill_count += 1
+                    killer_id = e.get("killer_id")
+                    if killer_id not in player_ids:
+                        player_ids.append(killer_id)
+
+        if kill_count > 0:
+            pid = player_ids[0] if player_ids else "unknown"
+            highlight.commentary.append(f"Incredible performance! {kill_count} eliminations by player {pid}!")
+        else:
+            highlight.commentary.append("A very tense moment where survival was the only option.")
+
         return highlight
 
     def to_dict(self) -> Dict[str, Any]:

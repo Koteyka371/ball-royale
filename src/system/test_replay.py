@@ -57,6 +57,8 @@ def test_extract_highlight():
     assert len(highlight.frames) == 4
     assert highlight.frames[0]["tick"] == 3
     assert highlight.frames[-1]["tick"] == 6
+    assert highlight.commentary
+    assert highlight.commentary[0] == "A very tense moment where survival was the only option."
 
 def test_serialization():
     replay = ReplaySystem()

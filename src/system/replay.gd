@@ -6,9 +6,13 @@ var current_frame_index: int = 0
 var is_recording: bool = false
 var is_playing: bool = false
 var playback_speed: float = 1.0
+var commentary: Array = []
+var _tts_enabled: bool = false
 
 func _init():
-    pass
+    if ClassDB.class_exists("DisplayServer"):
+        if DisplayServer.has_method("tts_speak"):
+            _tts_enabled = true
 
 func start_recording() -> void:
     frames.clear()
@@ -48,6 +52,11 @@ func start_playback(speed: float = 1.0) -> void:
     is_recording = false
     current_frame_index = 0
     playback_speed = speed
+    if _tts_enabled and commentary.size() > 0:
+        var text = commentary[0]
+        var voices = DisplayServer.tts_get_voices()
+        var voice_id = voices[0] if voices.size() > 0 else ""
+        DisplayServer.tts_speak(text, voice_id)
 
 func stop_playback() -> void:
     is_playing = false
@@ -69,6 +78,23 @@ func extract_highlight(start_tick: int, end_tick: int) -> ReplaySystem:
     for f in frames:
         if f["tick"] >= start_tick and f["tick"] <= end_tick:
             highlight.frames.append(f.duplicate(true))
+
+    var kill_count = 0
+    var player_ids = []
+    for f in highlight.frames:
+        if f.has("events"):
+            for e in f["events"]:
+                if typeof(e) == TYPE_DICTIONARY and e.has("type") and e["type"] == "kill":
+                    kill_count += 1
+                    if e.has("killer_id") and not player_ids.has(e["killer_id"]):
+                        player_ids.append(e["killer_id"])
+
+    if kill_count > 0:
+        var pid_str = str(player_ids[0]) if player_ids.size() > 0 else "unknown"
+        highlight.commentary.append("Incredible performance! " + str(kill_count) + " eliminations by player " + pid_str + "!")
+    else:
+        highlight.commentary.append("A very tense moment where survival was the only option.")
+
     return highlight
 
 func to_dict() -> Dictionary:
