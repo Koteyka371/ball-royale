@@ -33,6 +33,12 @@ class NemesisScreen:
                     output.append(f"{killer_type} vs {victim_type}: {count} kills")
                     has_nemesis = True
 
+        enforcers = self.profile_manager.data.get("enforcers", {})
+        if enforcers:
+            output.append("\n--- Enforcer Pledges ---")
+            for player, nemesis in enforcers.items():
+                output.append(f"{player} is an Enforcer for {nemesis}")
+
         if not has_nemesis:
             output.append("No nemeses yet.")
 

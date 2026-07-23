@@ -203,9 +203,36 @@ class Action:
             orig_dmg = attacker.damage
             attacker.damage = orig_dmg * 0.85
 
+        # Enforcer damage modifiers
+        pm = getattr(self.world, "profile_manager", None)
+        has_orig_enforcer = False
+        if pm and hasattr(pm, "get_enforcer_pledge") and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
+            attacker_pledge = pm.get_enforcer_pledge(attacker.ball_type)
+            if attacker_pledge:
+                if target.ball_type == attacker_pledge:
+                    # Massive debuff if damaging the Nemesis they pledged to
+                    if not has_orig:
+                        has_orig = True
+                        orig_dmg = getattr(attacker, "damage", 0.0)
+                    else:
+                        has_orig_enforcer = True
+                        orig_dmg_enforcer = attacker.damage
+                    attacker.damage = orig_dmg * 0.1 # 90% reduction
+                elif pm.is_nemesis(attacker_pledge, target.ball_type) or pm.is_nemesis(target.ball_type, attacker_pledge):
+                    # Buff when fighting Nemesis's enemies
+                    if not has_orig:
+                        has_orig = True
+                        orig_dmg = getattr(attacker, "damage", 0.0)
+                    else:
+                        has_orig_enforcer = True
+                        orig_dmg_enforcer = attacker.damage
+                    attacker.damage = orig_dmg * 1.5 # 50% increase
+
         try:
             self._attempt_damage_internal(attacker, target)
         finally:
+            if has_orig_enforcer:
+                attacker.damage = orig_dmg_enforcer
             if has_orig:
                 attacker.damage = orig_dmg
 

@@ -33,6 +33,8 @@ class ProfileManager:
                     data["trap_levels"] = {}
                 if "nemeses" not in data:
                     data["nemeses"] = {}
+                if "enforcers" not in data:
+                    data["enforcers"] = {}
                 if "login_streak" not in data:
                     data["login_streak"] = 0
                 if "last_login_date" not in data:
@@ -461,6 +463,17 @@ class ProfileManager:
         if "nemeses" not in self.data:
             return False
         return self.data["nemeses"].get(killer_type, {}).get(victim_type, 0) >= 2
+
+    def pledge_enforcer(self, player_type, nemesis_type):
+        if "enforcers" not in self.data:
+            self.data["enforcers"] = {}
+        self.data["enforcers"][player_type] = nemesis_type
+        self.save()
+
+    def get_enforcer_pledge(self, player_type):
+        if "enforcers" not in self.data:
+            return None
+        return self.data["enforcers"].get(player_type)
 
     def process_daily_login(self, current_date_str: str):
         last_date_str = self.data.get("last_login_date", "")
