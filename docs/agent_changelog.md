@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1349] Aura Amplify Trap — *2026-07-23 19:24:53 UTC*
+
+A placeable trap that temporarily supercharges any active friendly stacking auras in its blast radius, doubling their effects and range for a short duration while dealing minor damage to enemies. This encourages teams to strategically defend the trap to maximize their buffs during engagements.
+
+---
+
 ## [idea-1405] Weather Altar Traps — *2026-07-23 15:48:11 UTC*
 
 Traps disguised as capture altars that, when fully captured, trigger an opposite detrimental weather effect solely on the capturing team.
