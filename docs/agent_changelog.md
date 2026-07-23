@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1415] Nemesis Tracking Drone — *2026-07-23 20:20:40 UTC*
+
+A consumable item that spawns a drone that automatically flies towards your nemesis and periodically pings their location on the map with a sonar-like effect for 30 seconds.
+
+---
+
 ## [idea-1419] Aura Disruption Mode — *2026-07-23 20:20:34 UTC*
 
 A mode where collecting an aura pickup grants you an aura, but randomly disrupts (removes/disables) one of the enemies' auras, causing chaotic shifting of elemental advantages.
