@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1399] Quantum Entanglement Transfer — *2026-07-23 10:31:07 UTC*
+
+A new hazard that randomly swaps the positions and momentum of two entangled balls when one takes massive damage.
+
+---
+
 ## [idea-1392] Guild Emblem Editor UI — *2026-07-23 10:11:58 UTC*
 
 Add a user interface in the main menu for players to easily edit their guild emblem visually.
