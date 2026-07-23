@@ -11303,7 +11303,25 @@ class Action:
             if isinstance(entities, dict):
                 enemies = [e for e in entities.get("enemies", []) if getattr(e, "ball_type", None) != "spectator"]
             else:
-                enemies = [e for e in entities if getattr(e, "ball_type", None) != self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True)]
+                enemies = []
+                for e in entities:
+                    if not getattr(e, "alive", True) or getattr(e, "ball_type", None) == "spectator":
+                        continue
+                    if getattr(e, "is_weekend_boss", False):
+                        if e != self.ball:
+                            enemies.append(e)
+                    elif getattr(self.ball, "is_weekend_boss", False):
+                        if e != self.ball:
+                            enemies.append(e)
+                    else:
+                        boss_alive = False
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "is_weekend_boss", False) and getattr(b, "alive", True):
+                                    boss_alive = True
+                                    break
+                        if not boss_alive and getattr(e, "ball_type", None) != self.ball.ball_type:
+                            enemies.append(e)
 
             # Apply silencer logic to these entities
             silenced_enemies = []
@@ -11331,7 +11349,24 @@ class Action:
 
         if not enemies and hasattr(self.world, "balls"):
             for b in self.world.balls:
-                if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
+                if getattr(b, "alive", True) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
+                    is_enemy = False
+                    if getattr(b, "is_weekend_boss", False):
+                        if b != self.ball:
+                            is_enemy = True
+                    elif getattr(self.ball, "is_weekend_boss", False):
+                        if b != self.ball:
+                            is_enemy = True
+                    else:
+                        boss_alive = False
+                        if hasattr(self.world, "balls"):
+                            for b_iter in self.world.balls:
+                                if getattr(b_iter, "is_weekend_boss", False) and getattr(b_iter, "alive", True):
+                                    boss_alive = True
+                                    break
+                        if not boss_alive and getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None):
+                            is_enemy = True
+                    if is_enemy:
                     target_pr = perception_radius
                     if getattr(b, "silencer_timer", 0.0) > 0:
                         target_pr *= 0.5
@@ -11422,9 +11457,23 @@ class Action:
         if hasattr(self.world, "get_nearby_entities"):
             entities = self.world.get_nearby_entities(self.ball, perception_radius)
             if isinstance(entities, dict):
-                return [e for e in entities.get("allies", []) if getattr(e, "ball_type", None) != "spectator"]
+                allies = [e for e in entities.get("allies", []) if getattr(e, "ball_type", None) != "spectator"]
             else:
-                return [e for e in entities if getattr(e, "ball_type", None) == self.ball.ball_type and getattr(e, "ball_type", None) != "spectator" and getattr(e, "alive", True) and e != self.ball]
+                allies = []
+                for e in entities:
+                    if getattr(e, "ball_type", None) == "spectator" or not getattr(e, "alive", True) or e == self.ball:
+                        continue
+                    if getattr(e, "is_weekend_boss", False) or getattr(self.ball, "is_weekend_boss", False):
+                        continue # Boss has no allies and is nobody's ally
+                    boss_alive = False
+                    if hasattr(self.world, "balls"):
+                        for b_iter in self.world.balls:
+                            if getattr(b_iter, "is_weekend_boss", False) and getattr(b_iter, "alive", True):
+                                boss_alive = True
+                                break
+                    if boss_alive or getattr(e, "ball_type", None) == self.ball.ball_type:
+                        allies.append(e)
+            return allies
         return []
 
     def _get_boosters(self) -> list:

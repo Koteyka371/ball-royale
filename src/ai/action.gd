@@ -21982,6 +21982,48 @@ func _get_enemies_internal() -> Array:
                 var e_type = e.ball_type if "ball_type" in e else (e.get_ball_type() if e.has_method("get_ball_type") else "")
                 var e_flying = e.is_flying if "is_flying" in e else (e.get_meta("is_flying") if e.has_method("has_meta") and e.has_meta("is_flying") else false)
                 if e_type != "spectator" and not e_flying:
+                    var e_is_boss = e.get("is_weekend_boss") if typeof(e) == TYPE_DICTIONARY else (e.is_weekend_boss if "is_weekend_boss" in e else (e.get_meta("is_weekend_boss") if e.has_method("has_meta") and e.has_meta("is_weekend_boss") else false))
+                    var my_is_boss = self.ball.get("is_weekend_boss") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.is_weekend_boss if "is_weekend_boss" in self.ball else (self.ball.get_meta("is_weekend_boss") if self.ball.has_method("has_meta") and self.ball.has_meta("is_weekend_boss") else false))
+                    var is_enemy_b = false
+                    if e_is_boss or my_is_boss:
+                        if typeof(e) == TYPE_DICTIONARY and typeof(self.ball) == TYPE_DICTIONARY:
+                            if e.get("id") != self.ball.get("id"): is_enemy_b = true
+                        elif typeof(e) == TYPE_OBJECT and typeof(self.ball) == TYPE_OBJECT:
+                            if e != self.ball: is_enemy_b = true
+                        else:
+                            is_enemy_b = true
+                    else:
+                        var boss_alive = false
+                        if self.world != null and "balls" in self.world:
+                            for b_iter in self.world.balls:
+                                var b_iter_is_boss = b_iter.get("is_weekend_boss") if typeof(b_iter) == TYPE_DICTIONARY else (b_iter.is_weekend_boss if "is_weekend_boss" in b_iter else (b_iter.get_meta("is_weekend_boss") if b_iter.has_method("has_meta") and b_iter.has_meta("is_weekend_boss") else false))
+                                var b_iter_alive = b_iter.alive if "alive" in b_iter else (b_iter.get_meta("alive") if b_iter.has_method("has_meta") and b_iter.has_meta("alive") else true)
+                                if b_iter_is_boss and b_iter_alive:
+                                    boss_alive = true
+                                    break
+                        if not boss_alive and e_type != (self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")):
+                            is_enemy_b = true
+                    if not is_enemy_b: continue
+                    var e_is_boss = e.get("is_weekend_boss") if typeof(e) == TYPE_DICTIONARY else (e.is_weekend_boss if "is_weekend_boss" in e else (e.get_meta("is_weekend_boss") if e.has_method("has_meta") and e.has_meta("is_weekend_boss") else false))
+                    var my_is_boss = ball.get("is_weekend_boss") if typeof(ball) == TYPE_DICTIONARY else (ball.is_weekend_boss if "is_weekend_boss" in ball else (ball.get_meta("is_weekend_boss") if ball.has_method("has_meta") and ball.has_meta("is_weekend_boss") else false))
+                    var is_enemy = false
+                    if e_is_boss or my_is_boss:
+                        if typeof(e) == TYPE_DICTIONARY and typeof(ball) == TYPE_DICTIONARY:
+                            if e.get("id") != ball.get("id"): is_enemy = true
+                        elif typeof(e) == TYPE_OBJECT and typeof(ball) == TYPE_OBJECT:
+                            if e != ball: is_enemy = true
+                        else:
+                            is_enemy = true
+                    elif e_type != (ball.ball_type if "ball_type" in ball else (ball.get_ball_type() if ball.has_method("get_ball_type") else "")):
+                        is_enemy = true
+                    if not is_enemy: continue
+                    var e_is_boss = e.is_weekend_boss if "is_weekend_boss" in e else (e.get_meta("is_weekend_boss") if e.has_method("has_meta") and e.has_meta("is_weekend_boss") else false)
+                    var my_is_boss = self.ball.is_weekend_boss if "is_weekend_boss" in self.ball else (self.ball.get_meta("is_weekend_boss") if self.ball.has_method("has_meta") and self.ball.has_meta("is_weekend_boss") else false)
+                    if (e_is_boss or my_is_boss) and typeof(e) == typeof(self.ball):
+                        if e == self.ball: continue
+                        if typeof(e) == TYPE_DICTIONARY and e.get("id") == self.ball.get("id"): continue
+                    elif e_type == (self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()):
+                        continue
                     var target_pr = perception_radius
                     var sil = 0.0
                     if "silencer_timer" in e: sil = e.silencer_timer
@@ -21996,7 +22038,30 @@ func _get_enemies_internal() -> Array:
                 if e.has_method("get_ball_type") or "ball_type" in e:
                     var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
                     var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
-                    if e_type != b_type and e_type != "spectator":
+                    if e_type != "spectator":
+                        var e_is_boss = e.get("is_weekend_boss") if typeof(e) == TYPE_DICTIONARY else (e.is_weekend_boss if "is_weekend_boss" in e else (e.get_meta("is_weekend_boss") if e.has_method("has_meta") and e.has_meta("is_weekend_boss") else false))
+                        var my_is_boss = self.ball.get("is_weekend_boss") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.is_weekend_boss if "is_weekend_boss" in self.ball else (self.ball.get_meta("is_weekend_boss") if self.ball.has_method("has_meta") and self.ball.has_meta("is_weekend_boss") else false))
+                        var is_enemy_b = false
+                        if e_is_boss or my_is_boss:
+                            if typeof(e) == TYPE_DICTIONARY and typeof(self.ball) == TYPE_DICTIONARY:
+                                if e.get("id") != self.ball.get("id"): is_enemy_b = true
+                            elif typeof(e) == TYPE_OBJECT and typeof(self.ball) == TYPE_OBJECT:
+                                if e != self.ball: is_enemy_b = true
+                            else:
+                                is_enemy_b = true
+                        else:
+                            var boss_alive = false
+                            if self.world != null and "balls" in self.world:
+                                for b_iter in self.world.balls:
+                                    var b_iter_is_boss = b_iter.get("is_weekend_boss") if typeof(b_iter) == TYPE_DICTIONARY else (b_iter.is_weekend_boss if "is_weekend_boss" in b_iter else (b_iter.get_meta("is_weekend_boss") if b_iter.has_method("has_meta") and b_iter.has_meta("is_weekend_boss") else false))
+                                    var b_iter_alive = b_iter.alive if "alive" in b_iter else (b_iter.get_meta("alive") if b_iter.has_method("has_meta") and b_iter.has_meta("alive") else true)
+                                    if b_iter_is_boss and b_iter_alive:
+                                        boss_alive = true
+                                        break
+                            if not boss_alive and e_type != b_type:
+                                is_enemy_b = true
+                        if not is_enemy_b: continue
+
                         var e_flying = e.is_flying if "is_flying" in e else (e.get_meta("is_flying") if e.has_method("has_meta") and e.has_meta("is_flying") else false)
                         if not e_flying:
                             var target_pr = perception_radius
@@ -22056,7 +22121,29 @@ func _get_enemies_internal() -> Array:
                 var e_type = b.ball_type if "ball_type" in b else (b.get_ball_type() if b.has_method("get_ball_type") else "")
                 var my_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if self.ball.has_method("get_ball_type") else "")
                 var e_flying = b.is_flying if "is_flying" in b else (b.get_meta("is_flying") if b.has_method("has_meta") and b.has_meta("is_flying") else false)
-                if e_type != my_type and e_type != "spectator" and not e_flying:
+                if e_type != "spectator" and not e_flying:
+                    var b_is_boss = b.get("is_weekend_boss") if typeof(b) == TYPE_DICTIONARY else (b.is_weekend_boss if "is_weekend_boss" in b else (b.get_meta("is_weekend_boss") if b.has_method("has_meta") and b.has_meta("is_weekend_boss") else false))
+                    var my_is_boss = self.ball.get("is_weekend_boss") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.is_weekend_boss if "is_weekend_boss" in self.ball else (self.ball.get_meta("is_weekend_boss") if self.ball.has_method("has_meta") and self.ball.has_meta("is_weekend_boss") else false))
+                    var is_enemy_b = false
+                    if b_is_boss or my_is_boss:
+                        if typeof(b) == TYPE_DICTIONARY and typeof(self.ball) == TYPE_DICTIONARY:
+                            if b.get("id") != self.ball.get("id"): is_enemy_b = true
+                        elif typeof(b) == TYPE_OBJECT and typeof(self.ball) == TYPE_OBJECT:
+                            if b != self.ball: is_enemy_b = true
+                        else:
+                            is_enemy_b = true
+                    else:
+                        var boss_alive = false
+                        if self.world != null and "balls" in self.world:
+                            for b_iter in self.world.balls:
+                                var b_iter_is_boss = b_iter.get("is_weekend_boss") if typeof(b_iter) == TYPE_DICTIONARY else (b_iter.is_weekend_boss if "is_weekend_boss" in b_iter else (b_iter.get_meta("is_weekend_boss") if b_iter.has_method("has_meta") and b_iter.has_meta("is_weekend_boss") else false))
+                                var b_iter_alive = b_iter.alive if "alive" in b_iter else (b_iter.get_meta("alive") if b_iter.has_method("has_meta") and b_iter.has_meta("alive") else true)
+                                if b_iter_is_boss and b_iter_alive:
+                                    boss_alive = true
+                                    break
+                        if not boss_alive and e_type != my_type:
+                            is_enemy_b = true
+                    if not is_enemy_b: continue
                     var bx = b.x if "x" in b else b.get_meta("x")
                     var by = b.y if "y" in b else b.get_meta("y")
                     var target_pr = perception_radius
@@ -22313,7 +22400,13 @@ func _get_allies_internal() -> Array:
     if self.world != null and self.world.has_method("get_nearby_entities"):
         var entities = self.world.get_nearby_entities(self.ball, perception_radius)
         if typeof(entities) == TYPE_DICTIONARY and entities.has("allies"):
-            return entities["allies"]
+            var allies = []
+            for e in entities["allies"]:
+                var e_is_boss = e.get("is_weekend_boss") if typeof(e) == TYPE_DICTIONARY else (e.is_weekend_boss if "is_weekend_boss" in e else (e.get_meta("is_weekend_boss") if e.has_method("has_meta") and e.has_meta("is_weekend_boss") else false))
+                var my_is_boss = ball.get("is_weekend_boss") if typeof(ball) == TYPE_DICTIONARY else (ball.is_weekend_boss if "is_weekend_boss" in ball else (ball.get_meta("is_weekend_boss") if ball.has_method("has_meta") and ball.has_meta("is_weekend_boss") else false))
+                if e_is_boss or my_is_boss: continue
+                allies.append(e)
+            return allies
         elif typeof(entities) == TYPE_ARRAY:
             var allies = []
             for e in entities:
@@ -22321,6 +22414,9 @@ func _get_allies_internal() -> Array:
                     var e_type = e.ball_type if "ball_type" in e else e.get_ball_type()
                     var b_type = self.ball.ball_type if "ball_type" in self.ball else self.ball.get_ball_type()
                     if e_type == b_type and e != self.ball and e_type != "spectator":
+                        var e_is_boss = e.get("is_weekend_boss") if typeof(e) == TYPE_DICTIONARY else (e.is_weekend_boss if "is_weekend_boss" in e else (e.get_meta("is_weekend_boss") if e.has_method("has_meta") and e.has_meta("is_weekend_boss") else false))
+                        var my_is_boss = ball.get("is_weekend_boss") if typeof(ball) == TYPE_DICTIONARY else (ball.is_weekend_boss if "is_weekend_boss" in ball else (ball.get_meta("is_weekend_boss") if ball.has_method("has_meta") and ball.has_meta("is_weekend_boss") else false))
+                        if e_is_boss or my_is_boss: continue
                         if ("alive" in e and e.alive) or (e.has_method("is_alive") and e.is_alive()):
                             allies.append(e)
             return allies
