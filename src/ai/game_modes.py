@@ -15878,6 +15878,99 @@ class MeteorCrashEventMode(GameMode):
                 for c in self.craters:
                     world.arena.hazards.append(Hazard(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
+class LavaFountainsEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Lava Fountains Event"
+        self.description = "A random event that periodically erupts lava fountains from the ground, leaving damaging puddles that players must navigate around during combat."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+        self.fountain_spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        import math
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id_val, x, y, radius, kind, damage):
+                    self.id = id_val
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+
+        if not self.event_active:
+            self.event_timer += delta
+
+        if not self.event_active and self.event_timer > 20.0:
+            if random.random() < 0.2:  # 20% chance every 20 seconds to trigger
+                self.event_active = True
+                self.event_duration = 15.0
+                self.event_timer = 0.0
+                self.fountain_spawn_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("lava_fountains_event", {"message": "LAVA FOUNTAINS ERUPTING! Watch out!"})
+            else:
+                self.event_timer = 0.0
+
+        if self.event_active:
+            self.event_duration -= delta
+            self.fountain_spawn_timer -= delta
+
+            if self.fountain_spawn_timer <= 0 and self.event_duration > 5.0:
+                h_id = 90000 + random.randint(1000, 9999)
+                hx = random.uniform(100, 700)
+                hy = random.uniform(100, 500)
+                h = Hazard(h_id, hx, hy, 30.0, "lava_fountain", 0.0)
+                h.timer = 2.0
+                if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                    world.arena.hazards.append(h)
+                self.fountain_spawn_timer = random.uniform(1.0, 3.0)
+
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                    world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") not in ("lava_fountain", "lava_puddle") and (not isinstance(h, dict) or h.get("kind", "") not in ("lava_fountain", "lava_puddle"))]
+                if hasattr(world, "add_event"):
+                    world.add_event("lava_fountains_event_ended", {"message": "Lava subsided!"})
+
+            if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                new_puddles = []
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "lava_fountain":
+                        if hasattr(h, "timer"):
+                            h.timer -= delta
+                            if h.timer <= 0:
+                                h.kind = "lava_puddle"
+                                h.radius *= 1.5
+                                h.damage = 40.0 * delta # per tick, but we process below
+                    elif isinstance(h, dict) and h.get("kind", "") == "lava_fountain":
+                        h["timer"] -= delta
+                        if h["timer"] <= 0:
+                            h["kind"] = "lava_puddle"
+                            h["radius"] *= 1.5
+                            h["damage"] = 40.0 * delta
+
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                    for h in world.arena.hazards:
+                        is_puddle = getattr(h, "kind", "") == "lava_puddle" or (isinstance(h, dict) and h.get("kind", "") == "lava_puddle")
+                        if is_puddle:
+                            hx = getattr(h, "x", h.get("x", 0.0) if isinstance(h, dict) else 0.0)
+                            hy = getattr(h, "y", h.get("y", 0.0) if isinstance(h, dict) else 0.0)
+                            hr = getattr(h, "radius", h.get("radius", 0.0) if isinstance(h, dict) else 0.0)
+                            dist = math.hypot(b.x - hx, b.y - hy)
+                            if dist < hr + b.radius:
+                                b.hp -= 40.0 * delta
+
+
 class MinefieldEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -27913,6 +28006,7 @@ GAME_MODES = {
     "reverse_event": ReverseEventMode(),
     "unstable_portals_event": UnstablePortalsEventMode(),
     "quantum_instability_event": QuantumInstabilityEventMode(),
+    "lava_fountains_event": LavaFountainsEventMode(),
     "minefield_event": MinefieldEventMode(),
     "chain_lightning_storm": ChainLightningStormMode(),
     "meteor_crash_event": MeteorCrashEventMode(),

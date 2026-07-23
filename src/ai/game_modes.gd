@@ -24346,6 +24346,143 @@ class MeteorCrashEventMode extends GameMode:
 				for c in craters:
 					world.arena.hazards.append({"id": c["id"], "x": c["x"], "y": c["y"], "radius": c["radius"], "kind": "meteor_crater", "damage": 10})
 
+class LavaFountainsEventMode extends GameMode:
+	var event_timer: float = 0.0
+	var event_active: bool = false
+	var event_duration: float = 0.0
+	var fountain_spawn_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Lava Fountains Event"
+		description = "A random event that periodically erupts lava fountains from the ground, leaving damaging puddles that players must navigate around during combat."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not event_active:
+			event_timer += delta
+
+		if not event_active and event_timer > 20.0:
+			if randf() < 0.2:  # 20% chance every 20 seconds to trigger
+				event_active = true
+				event_duration = 15.0
+				event_timer = 0.0
+				fountain_spawn_timer = 0.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("lava_fountains_event", {"message": "LAVA FOUNTAINS ERUPTING! Watch out!"})
+			else:
+				event_timer = 0.0
+
+		if event_active:
+			event_duration -= delta
+			fountain_spawn_timer -= delta
+
+			if fountain_spawn_timer <= 0 and event_duration > 5.0:
+				if world != null and world.arena != null and world.arena.get("hazards") != null:
+					var h = {
+						"id": 90000 + (randi() % 9000),
+						"x": 100.0 + randf() * 600.0,
+						"y": 100.0 + randf() * 400.0,
+						"radius": 30.0,
+						"kind": "lava_fountain",
+						"damage": 0.0,
+						"timer": 2.0
+					}
+					world.arena.hazards.append(h)
+				fountain_spawn_timer = 1.0 + randf() * 2.0
+
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+				if world != null and world.arena != null and world.arena.get("hazards") != null:
+					var keep_hazards = []
+					for h in world.arena.hazards:
+						var kind = ""
+						if typeof(h) == TYPE_DICTIONARY:
+							kind = h.get("kind", "")
+						else:
+							kind = h.kind
+						if kind != "lava_fountain" and kind != "lava_puddle":
+							keep_hazards.append(h)
+					world.arena.hazards = keep_hazards
+				if world != null and world.has_method("add_event"):
+					world.add_event("lava_fountains_event_ended", {"message": "Lava subsided!"})
+
+			if world != null and world.arena != null and world.arena.get("hazards") != null:
+				for i in range(world.arena.hazards.size()):
+					var h = world.arena.hazards[i]
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						kind = h.get("kind", "")
+					else:
+						kind = h.kind
+
+					if kind == "lava_fountain":
+						if typeof(h) == TYPE_DICTIONARY:
+							h["timer"] -= delta
+							if h["timer"] <= 0:
+								h["kind"] = "lava_puddle"
+								h["radius"] *= 1.5
+								h["damage"] = 40.0 * delta
+						else:
+							if h.get("timer") != null:
+								h.set("timer", h.get("timer") - delta)
+								if h.get("timer") <= 0:
+									h.kind = "lava_puddle"
+									h.radius *= 1.5
+									h.damage = 40.0 * delta
+
+			for b in balls:
+				var alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", false)
+				else:
+					alive = b.alive
+
+				if not alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var bradius = 0.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					bradius = b.get("radius", 0.0)
+				else:
+					bx = b.x
+					by = b.y
+					bradius = b.radius
+
+				if world != null and world.arena != null and world.arena.get("hazards") != null:
+					for h in world.arena.hazards:
+						var kind = ""
+						var hx = 0.0
+						var hy = 0.0
+						var hr = 0.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							kind = h.get("kind", "")
+							hx = h.get("x", 0.0)
+							hy = h.get("y", 0.0)
+							hr = h.get("radius", 0.0)
+						else:
+							kind = h.kind
+							hx = h.x
+							hy = h.y
+							hr = h.radius
+
+						if kind == "lava_puddle":
+							var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+							if dist < hr + bradius:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] -= 40.0 * delta
+								else:
+									if b.has_method("take_damage"):
+										b.take_damage(40.0 * delta)
+									else:
+										b.hp -= 40.0 * delta
+
+
 class MinefieldEventMode extends GameMode:
 	var event_timer: float = 0.0
 	var event_active: bool = false
@@ -44363,6 +44500,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"reverse_event": ReverseEventMode.new(),
 	"unstable_portals_event": UnstablePortalsEventMode.new(),
 	"quantum_instability_event": QuantumInstabilityEventMode.new(),
+	"lava_fountains_event": LavaFountainsEventMode.new(),
 	"minefield_event": MinefieldEventMode.new(),
 	"meteor_crash_event": MeteorCrashEventMode.new(),
 	"lightning_strike_event": LightningStrikeEventMode.new(),

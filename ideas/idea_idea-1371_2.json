@@ -1,0 +1,4 @@
+{
+  "title": "Earthquake Event",
+  "description": "A random event that periodically shakes the arena, applying random impulses to all balls and causing temporary walls to sprout from the ground, altering the play space dynamically."
+}
