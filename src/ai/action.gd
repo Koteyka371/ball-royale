@@ -34641,36 +34641,70 @@ func _apply_friendly_aura(delta: float):
     if ad_timer > 0.0:
         aura_radius = 0.0
 
+    var mode_name = ""
+    if world != null and "game_mode" in world and world.game_mode != null and "name" in world.game_mode:
+        mode_name = world.game_mode.name
+
     # Check nearby friendly balls
     var nearby_friendlies = []
-    for other in world.balls:
-        var other_alive = true
-        if "alive" in other:
-            other_alive = other.alive
-        elif other.has_method("get_meta") and other.has_meta("alive"):
-            other_alive = other.get_meta("alive")
+    if mode_name == "Aura Siphon":
+        for other in world.balls:
+            var other_alive = true
+            if "alive" in other:
+                other_alive = other.alive
+            elif other.has_method("get_meta") and other.has_meta("alive"):
+                other_alive = other.get_meta("alive")
 
-        var other_id = -1
-        if "id" in other:
-            other_id = other.id
-        elif other.has_method("get_meta") and other.has_meta("id"):
-            other_id = other.get_meta("id")
+            var other_id = -1
+            if "id" in other:
+                other_id = other.id
+            elif other.has_method("get_meta") and other.has_meta("id"):
+                other_id = other.get_meta("id")
 
-        if not other_alive or other_id == ball_id:
-            continue
+            if not other_alive or other_id == ball_id:
+                continue
 
-        var other_team = ""
-        if "team" in other:
-            other_team = other.team
-        elif "ball_type" in other:
-            other_team = other.ball_type
+            var other_team = ""
+            if "team" in other:
+                other_team = other.team
+            elif "ball_type" in other:
+                other_team = other.ball_type
 
-        if other_team == team:
-            var dx = self.ball.x - other.x
-            var dy = self.ball.y - other.y
-            var dist_sq = dx*dx + dy*dy
-            if dist_sq <= aura_radius*aura_radius:
-                nearby_friendlies.append(other)
+            if other_team != team:
+                var dx = self.ball.x - other.x
+                var dy = self.ball.y - other.y
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq <= aura_radius*aura_radius:
+                    nearby_friendlies.append(other)
+    else:
+        for other in world.balls:
+            var other_alive = true
+            if "alive" in other:
+                other_alive = other.alive
+            elif other.has_method("get_meta") and other.has_meta("alive"):
+                other_alive = other.get_meta("alive")
+
+            var other_id = -1
+            if "id" in other:
+                other_id = other.id
+            elif other.has_method("get_meta") and other.has_meta("id"):
+                other_id = other.get_meta("id")
+
+            if not other_alive or other_id == ball_id:
+                continue
+
+            var other_team = ""
+            if "team" in other:
+                other_team = other.team
+            elif "ball_type" in other:
+                other_team = other.ball_type
+
+            if other_team == team:
+                var dx = self.ball.x - other.x
+                var dy = self.ball.y - other.y
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq <= aura_radius*aura_radius:
+                    nearby_friendlies.append(other)
 
     # Count unique ball types among nearby friendlies, including self
     var unique_types = []

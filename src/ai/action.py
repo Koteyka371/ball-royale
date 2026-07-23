@@ -17842,16 +17842,31 @@ class Action:
         if getattr(self.ball, "aura_disruption_timer", 0.0) > 0:
             aura_radius = 0.0
 
+        mode_name = ""
+        if hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "name"):
+            mode_name = self.world.game_mode.name
+
         # Check nearby friendly balls
         nearby_friendlies = []
-        for other in self.world.balls:
-            if not getattr(other, "alive", True) or getattr(other, "id", None) == ball_id:
-                continue
-            other_team = getattr(other, "team", getattr(other, "ball_type", ""))
-            if other_team == team:
-                dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
-                if dist_sq <= aura_radius**2:
-                    nearby_friendlies.append(other)
+        if mode_name == "Aura Siphon":
+            # Nearby ENEMIES give the stack count
+            for other in self.world.balls:
+                if not getattr(other, "alive", True) or getattr(other, "id", None) == ball_id:
+                    continue
+                other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                if other_team != team:
+                    dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
+                    if dist_sq <= aura_radius**2:
+                        nearby_friendlies.append(other)
+        else:
+            for other in self.world.balls:
+                if not getattr(other, "alive", True) or getattr(other, "id", None) == ball_id:
+                    continue
+                other_team = getattr(other, "team", getattr(other, "ball_type", ""))
+                if other_team == team:
+                    dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
+                    if dist_sq <= aura_radius**2:
+                        nearby_friendlies.append(other)
 
         # Count unique ball types among nearby friendlies, including self
         unique_types = {ball_type}

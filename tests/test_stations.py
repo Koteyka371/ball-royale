@@ -55,6 +55,17 @@ def test_weather_stations_effects():
 
     mode.setup(world, [b1, b2])
 
+    # Reset stats mutated by time-dependent weekly mutator in GameMode.setup
+    b1.speed = 100.0
+    b1.base_speed = 100.0
+    b1.damage = 10.0
+    b1.base_damage = 10.0
+
+    b2.speed = 100.0
+    b2.base_speed = 100.0
+    b2.damage = 10.0
+    b2.base_damage = 10.0
+
     # Capture both stations
     mode.stations[0]["capture_progress"] = 100.0
     mode.stations[0]["owner"] = "teamA"
