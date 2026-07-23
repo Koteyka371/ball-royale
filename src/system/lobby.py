@@ -63,7 +63,7 @@ class PreGameLobby:
 
 
     def get_mutator_options(self):
-        return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost"]
+        return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost", "bouncy_walls"]
 
     def cast_mutator_vote(self, player_id, mutator, profile, spend_currency=False, currency_type="skill_points"):
         if "mutator_votes" not in self.selections:
@@ -108,7 +108,15 @@ class PreGameLobby:
             import random
             return random.choice(self.get_mutator_options())
 
-        winning_mutator = max(votes.items(), key=lambda x: x[1])[0]
+        sorted_votes = sorted(votes.items(), key=lambda x: x[1], reverse=True)
+
+        if len(sorted_votes) >= 2:
+            top1 = sorted_votes[0][0]
+            top2 = sorted_votes[1][0]
+            if {top1, top2} == {"high_speed", "bouncy_walls"}:
+                return "pinball_mutator"
+
+        winning_mutator = sorted_votes[0][0]
         return winning_mutator
 
     def apply_loadout_to_ball(self, ball_id, profile, loadout_name):

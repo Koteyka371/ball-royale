@@ -55,3 +55,20 @@ def test_mutator_vote_system_with_mutator_tokens():
 
     if os.path.exists("test_profile_mutator_tokens.json"):
         os.remove("test_profile_mutator_tokens.json")
+
+def test_pinball_mutator_combination():
+    lobby = PreGameLobby()
+    profile = ProfileManager(filename="test_profile_pinball.json")
+    profile.data["skill_points"] = 1000
+
+    lobby.cast_mutator_vote("player1", "high_speed", profile, spend_currency=True)
+    lobby.cast_mutator_vote("player2", "bouncy_walls", profile, spend_currency=True)
+    lobby.cast_mutator_vote("player3", "high_speed", profile)
+    lobby.cast_mutator_vote("player4", "low_gravity", profile)
+
+    # Votes: high_speed: 4, bouncy_walls: 3, low_gravity: 1
+    # Top 2 are high_speed and bouncy_walls -> should trigger secret mutator
+    assert lobby.get_winning_mutator() == "pinball_mutator"
+
+    if os.path.exists("test_profile_pinball.json"):
+        os.remove("test_profile_pinball.json")

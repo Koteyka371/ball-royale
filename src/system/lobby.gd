@@ -77,7 +77,7 @@ func get_perks(ball_id: int) -> Array:
 
 
 func get_mutator_options() -> Array:
-    return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost"]
+    return ["low_gravity", "double_damage", "high_speed", "vampirism", "global_hp", "global_cooldown", "invisible_hazards", "kinetic_ghost", "bouncy_walls"]
 
 func cast_mutator_vote(player_id: String, mutator: String, profile: ProfileManager, spend_currency: bool = false, currency_type: String = "skill_points") -> bool:
     if not selections.has("mutator_votes"):
@@ -127,15 +127,19 @@ func get_winning_mutator() -> String:
         return opts[randi() % opts.size()]
 
     var votes = selections["mutator_votes"]
-    var max_votes = -1
-    var winning_mutator = ""
-
+    var vote_list = []
     for mutator in votes.keys():
-        if votes[mutator] > max_votes:
-            max_votes = votes[mutator]
-            winning_mutator = mutator
+        vote_list.append({"mutator": mutator, "count": votes[mutator]})
 
-    return winning_mutator
+    vote_list.sort_custom(func(a, b): return a["count"] > b["count"])
+
+    if vote_list.size() >= 2:
+        var top1 = vote_list[0]["mutator"]
+        var top2 = vote_list[1]["mutator"]
+        if (top1 == "high_speed" and top2 == "bouncy_walls") or (top1 == "bouncy_walls" and top2 == "high_speed"):
+            return "pinball_mutator"
+
+    return vote_list[0]["mutator"]
 
 func apply_loadout_to_ball(ball_id: int, profile: ProfileManager, loadout_name: String) -> bool:
     var loadout = profile.get_loadout(loadout_name)
