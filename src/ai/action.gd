@@ -10377,8 +10377,7 @@ func execute(strategy: String, delta: float):
                 is_night = self.world.arena.is_night
             if "is_lunar_eclipse" in self.world.arena and self.world.arena.is_lunar_eclipse:
                 is_lunar = true
-            elif "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
-                is_lunar = true
+
 
         if self.world != null and "arena" in self.world and ("is_night" in self.world.arena or "is_lunar_eclipse" in self.world.arena or "is_eclipse" in self.world.arena):
             var b_type_action = ""
@@ -10480,7 +10479,15 @@ func execute(strategy: String, delta: float):
         # Apply global eclipse effect across all strategies early in the tick
         if self.world != null and "arena" in self.world and "is_eclipse" in self.world.arena and self.world.arena.is_eclipse:
             if "damage" in my_ball:
-                my_ball.damage *= 2.0
+                var base_dmg = 10.0
+                if my_ball.has_meta("base_damage"):
+                    base_dmg = my_ball.get_meta("base_damage")
+                elif "base_damage" in my_ball:
+                    base_dmg = my_ball.base_damage
+                var current_dmg = my_ball.damage
+                if current_dmg == null:
+                    current_dmg = base_dmg
+                my_ball.damage = current_dmg * 2.0
 
         var cur_stamina = 100.0
         if my_ball.has_meta("stamina"): cur_stamina = my_ball.get_meta("stamina")

@@ -5441,7 +5441,7 @@ class Action:
 
         if hasattr(self.world, "arena") and (getattr(self.world.arena, "is_night", None) is not None or getattr(self.world.arena, "is_lunar_eclipse", False) or getattr(self.world.arena, "is_eclipse", False)):
             b_type = getattr(self.ball, "ball_type", "").lower()
-            is_lunar = getattr(self.world.arena, "is_lunar_eclipse", False) or getattr(self.world.arena, "is_eclipse", False)
+            is_lunar = getattr(self.world.arena, "is_lunar_eclipse", False)
             is_night = getattr(self.world.arena, "is_night", False)
 
             if is_lunar:
