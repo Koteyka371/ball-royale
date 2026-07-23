@@ -1,0 +1,4 @@
+{
+    "title": "Weather Anomaly Zones",
+    "description": "Randomly spawning zones that inflict temporary extreme weather effects (e.g. freezing, blinding sandstorm) on any ball that stays within the zone for more than 3 seconds."
+}
