@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1428] Arena Event: Quake — *2026-07-23 23:38:47 UTC*
+
+A periodic random event where the entire arena shakes. Balls without the 'grounded' status take minor continuous damage and suffer a severe speed penalty, forcing players to find safe zones or use specific defensive skills.
+
+---
+
 ## [idea-1420] Aura Crafting Station — *2026-07-23 23:19:14 UTC*
 
 Instead of global random drops, specific hazard zones occasionally act as 'Crafting Stations' where you can deposit collected auras to purposefully trigger hybrid effects on demand.

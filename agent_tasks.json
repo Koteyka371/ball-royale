@@ -24460,7 +24460,7 @@
     },
     {
       "id": "idea-1428",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Arena Event: Quake",
@@ -35724,6 +35724,40 @@
         "src/arena/echo_strike_trap.py",
         "src/arena/echo_strike_trap.gd",
         "tests/test_echo_strike_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2090",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Hunter Tracking Contracts",
+      "description": "Players can find 'Contract' items on the map. Activating them assigns a specific enemy player as their Bounty for 60 seconds, giving them a slight movement speed bonus when moving toward the target and dropping massive rewards upon a successful takedown.",
+      "allowed_paths": [
+        "src/ai/bounty_hunter_tracking_contracts.py",
+        "src/ai/bounty_hunter_tracking_contracts.gd",
+        "tests/test_bounty_hunter_tracking_contracts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2091",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Artifact Set Bonuses",
+      "description": "Equipping multiple artifacts from the same 'set' (e.g., matching lore origins like 'Void' or 'Cybernetic') provides a powerful hidden passive bonus to encourage synergy-based builds.",
+      "allowed_paths": [
+        "src/ai/artifact_set_bonuses.py",
+        "src/ai/artifact_set_bonuses.gd",
+        "tests/test_artifact_set_bonuses.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
