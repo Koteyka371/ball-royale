@@ -9968,6 +9968,31 @@ class Action:
 
         # Chaos Link - Damage & Buff Sharing
         quantum_target = getattr(self.ball, "quantum_entanglement_target", None)
+        qt_target = getattr(self.ball, "quantum_tether_target", None)
+        if qt_target and getattr(qt_target, "alive", True) and getattr(self.ball, "quantum_tether_timer", 0.0) > 0:
+            if damage_taken > 0 and not getattr(self.ball, "quantum_tether_is_receiving", False):
+                qt_target.quantum_tether_is_receiving = True
+                half_damage = damage_taken * 0.5
+                if hasattr(qt_target, "take_damage"):
+                    qt_target.take_damage(half_damage)
+                elif hasattr(qt_target, "hp"):
+                    qt_target.hp -= half_damage
+                    if qt_target.hp <= 0:
+                        qt_target.alive = False
+                qt_target.quantum_tether_is_receiving = False
+
+            # Incorporate knockback sharing via velocity delta if present
+            dvx = getattr(self.ball, "vx", 0.0) - getattr(self.ball, "_prev_vx_for_tether", getattr(self.ball, "vx", 0.0))
+            dvy = getattr(self.ball, "vy", 0.0) - getattr(self.ball, "_prev_vy_for_tether", getattr(self.ball, "vy", 0.0))
+
+            if (abs(dvx) > 10.0 or abs(dvy) > 10.0) and not getattr(self.ball, "quantum_tether_is_receiving_knockback", False):
+                qt_target.quantum_tether_is_receiving_knockback = True
+                if not hasattr(qt_target, "vx"): qt_target.vx = 0.0
+                if not hasattr(qt_target, "vy"): qt_target.vy = 0.0
+                qt_target.vx += dvx * 0.5
+                qt_target.vy += dvy * 0.5
+                qt_target.quantum_tether_is_receiving_knockback = False
+
         if quantum_target and getattr(quantum_target, "alive", True) and getattr(self.ball, "quantum_entanglement_timer", 0.0) > 0:
             if damage_taken > 0 and not getattr(self.ball, "quantum_entanglement_is_receiving", False):
                 quantum_target.quantum_entanglement_is_receiving = True
@@ -14473,6 +14498,16 @@ class Action:
                     target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                     self.ball.leech_tether_target = target
                     self.ball.leech_tether_timer = 3.0
+            elif skill_name == "quantum_tether":
+                enemies = self._get_enemies()
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    self.ball.quantum_tether_target = target
+                    self.ball.quantum_tether_timer = 5.0
+                    target.quantum_tether_target = self.ball
+                    target.quantum_tether_timer = 5.0
+                    if hasattr(self, "_spawn_directed_particles"):
+                        self._spawn_directed_particles(self.ball, target, "quantum_tether")
             elif skill_name == "magnet_tether":
                 enemies = self._get_enemies()
                 if enemies:
@@ -19537,6 +19572,49 @@ class Action:
 
         if hasattr(self.ball, "attack_timer") and self.ball.attack_timer > 0:
             self.ball.attack_timer -= delta * cooldown_mult
+
+        if hasattr(self.ball, "quantum_tether_timer") and self.ball.quantum_tether_timer > 0:
+            self.ball.quantum_tether_timer -= delta
+            target = getattr(self.ball, "quantum_tether_target", None)
+
+            if target and getattr(target, "alive", True):
+                dist_sq = (target.x - self.ball.x)**2 + (target.y - self.ball.y)**2
+                if dist_sq > 90000:  # Distance > 300 breaks the link
+                    self.ball.quantum_tether_timer = 0
+                    self.ball.quantum_tether_target = None
+                    if getattr(target, "quantum_tether_target", None) == self.ball:
+                        target.quantum_tether_target = None
+
+                    damage = 30.0
+                    stun = 1.5
+
+                    if hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(damage)
+                    elif hasattr(self.ball, "hp"):
+                        self.ball.hp -= damage
+                        if self.ball.hp <= 0:
+                            self.ball.alive = False
+                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), stun)
+
+                    if hasattr(target, "take_damage"):
+                        target.take_damage(damage)
+                    elif hasattr(target, "hp"):
+                        target.hp -= damage
+                        if target.hp <= 0:
+                            target.alive = False
+                    target.stun_timer = max(getattr(target, "stun_timer", 0.0), stun)
+
+                    if hasattr(self, "_spawn_skill_particles"):
+                        self._spawn_skill_particles("explosion")
+                else:
+                    if self.ball.quantum_tether_timer <= 0:
+                        if getattr(target, "quantum_tether_target", None) == self.ball:
+                            target.quantum_tether_target = None
+                        self.ball.quantum_tether_target = None
+                        self.ball.quantum_tether_timer = 0
+            else:
+                self.ball.quantum_tether_timer = 0
+                self.ball.quantum_tether_target = None
 
         if hasattr(self.ball, "quantum_entanglement_timer") and self.ball.quantum_entanglement_timer > 0:
             self.ball.quantum_entanglement_timer -= delta
