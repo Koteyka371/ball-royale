@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1384] Reverse Gravity Zone — *2026-07-23 06:08:39 UTC*
+
+A game mutator where randomly a zone appears in the arena that pushes balls away from its center instead of pulling them, acting like a reverse black hole.
+
+---
+
 ## [idea-1377] Seasonal Weather Hazards — *2026-07-23 06:08:35 UTC*
 
 Each season could introduce a specific weather hazard dynamically into the arena. For example, 'Abyssal' could spawn whirlpools that pull balls in, and 'Inferno' could occasionally drop meteors that deal AoE damage.
