@@ -7663,6 +7663,127 @@ func execute(strategy: String, delta: float):
 					elif "inventory" in self.ball: self.ball.inventory = inv
 
 
+
+
+
+		if inv.has("deployable_teleporter_relay"):
+
+
+
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+
+
+
+				var p_script = load("res://src/arena/procedural_arena.gd")
+
+
+
+				if p_script:
+
+
+
+					var t1_id = str(arena.hazards.size()) + "_" + str(self.world.tick) + "_relay1"
+
+
+
+					var t2_id = str(arena.hazards.size() + 1) + "_" + str(self.world.tick) + "_relay2"
+
+
+
+					var t1 = p_script.Hazard.new(t1_id, self.ball.x, self.ball.y, 30.0, "teleporter", 0.0)
+
+
+
+
+
+
+
+					var target_x = self.ball.x + randf_range(-300.0, 300.0)
+
+
+
+					var target_y = self.ball.y + randf_range(-300.0, 300.0)
+
+
+
+					if "width" in arena and "height" in arena:
+
+
+
+						target_x = max(30.0, min(arena.width - 30.0, target_x))
+
+
+
+						target_y = max(30.0, min(arena.height - 30.0, target_y))
+
+
+
+
+
+
+
+					var t2 = p_script.Hazard.new(t2_id, target_x, target_y, 30.0, "teleporter", 0.0)
+
+
+
+
+
+
+
+					t1.set_meta("target_x", t2.x)
+
+
+
+					t1.set_meta("target_y", t2.y)
+
+
+
+					t2.set_meta("target_x", t1.x)
+
+
+
+					t2.set_meta("target_y", t1.y)
+
+
+
+					t1.set_meta("duration", 15.0)
+
+
+
+					t2.set_meta("duration", 15.0)
+
+
+
+
+
+
+
+					if typeof(t1) == TYPE_OBJECT:
+
+
+
+						t1.duration = 15.0
+
+
+
+						t2.duration = 15.0
+
+
+
+
+
+
+
+					arena.hazards.append(t1)
+
+
+
+					arena.hazards.append(t2)
+
+
+
+					inv.erase("deployable_teleporter_relay")
 		if inv.has("deployable_gravity_well"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -24179,6 +24300,20 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "deployable_teleporter_relay":
+                var b_inv = []
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+                    if self.ball.has_meta("inventory"): b_inv = self.ball.get_meta("inventory")
+                elif "inventory" in self.ball: b_inv = self.ball.inventory
+                if not b_inv.has("deployable_teleporter_relay"):
+                    b_inv.append("deployable_teleporter_relay")
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", b_inv)
+                elif "inventory" in self.ball: self.ball.inventory = b_inv
+
+                if world != null and "arena" in world and "hazards" in world.arena and nearest in world.arena.hazards:
+                    world.arena.hazards.erase(nearest)
+                if world != null and "boosters" in world and nearest in world.boosters:
+                    world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "deployable_mud_puddle":
                 var b_inv = []
                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):

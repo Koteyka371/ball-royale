@@ -3339,6 +3339,45 @@ class Action:
                             pass
 
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_teleporter_relay" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    pass
+                else:
+                    import random
+
+                    # Create two paired teleporters randomly positioned near the ball and somewhere else
+                    t1_id = f"{len(self.world.arena.hazards)}_{self.world.tick}_relay1"
+                    t2_id = f"{len(self.world.arena.hazards)+1}_{self.world.tick}_relay2"
+
+                    t1 = Hazard(t1_id, self.ball.x, self.ball.y, 30.0, "teleporter", 0.0)
+
+                    # Target position (can be random in the arena or near an enemy if attacking)
+                    target_x = self.ball.x + random.uniform(-300, 300)
+                    target_y = self.ball.y + random.uniform(-300, 300)
+
+                    # Clamp to arena bounds if possible
+                    if hasattr(self.world.arena, "width") and hasattr(self.world.arena, "height"):
+                        target_x = max(30, min(self.world.arena.width - 30, target_x))
+                        target_y = max(30, min(self.world.arena.height - 30, target_y))
+
+                    t2 = Hazard(t2_id, target_x, target_y, 30.0, "teleporter", 0.0)
+
+                    # Set up the pairing
+                    setattr(t1, "target_x", t2.x)
+                    setattr(t1, "target_y", t2.y)
+                    setattr(t2, "target_x", t1.x)
+                    setattr(t2, "target_y", t1.y)
+
+                    setattr(t1, "duration", 15.0)
+                    setattr(t2, "duration", 15.0)
+
+                    self.world.arena.hazards.append(t1)
+                    self.world.arena.hazards.append(t2)
+                self.ball.inventory.remove("deployable_teleporter_relay")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
@@ -13773,6 +13812,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("smoke_grenade")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_teleporter_relay":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_teleporter_relay")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

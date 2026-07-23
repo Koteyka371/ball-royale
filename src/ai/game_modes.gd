@@ -33729,6 +33729,7 @@ class WeaponCollectionMode extends GameMode:
 							"explosion",
 							"deployable_thumper",
 							"deployable_thin_hazard_line",
+							"deployable_teleporter_relay",
 							"laser_tripwire",
 							"mind_control",
 							"ground_pound",

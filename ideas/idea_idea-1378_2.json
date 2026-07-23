@@ -1,0 +1,4 @@
+{
+    "title": "Vortex Generator Deployable",
+    "description": "A deployable that creates a swirling vortex hazard, which pulls in projectiles and hazards in addition to players, cleaning up a localized area of the arena."
+}
