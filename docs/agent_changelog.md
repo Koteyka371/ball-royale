@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1389] Vampiric Aura Hazard — *2026-07-23 22:32:46 UTC*
+
+A new stationary hazard that slowly drains the HP of any player within its radius, but instead of just disappearing, it heals the closest player on the opposite team proportional to the damage dealt.
+
+---
+
 ## [idea-1424] New mode 'Meteor Shower' — *2026-07-23 22:25:21 UTC*
 
 Periodically, meteors fall from the sky onto the arena, creating temporary craters that act as hazards, dealing damage and knocking back balls.
