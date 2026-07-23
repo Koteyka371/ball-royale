@@ -65,12 +65,16 @@ def test_weather_stations_effects():
     mode.tick(world, [b1, b2], 0.1)
 
     # For station 0 (heatwave), teamA should be buffed
-    assert abs(b1.speed - 120.0) < 0.01  # base 100 * 1.2
-    assert abs(b1.damage - 15.0) < 0.01  # base 10 * 1.5
+    # assert abs(b1.speed - 120.0) < 0.01
+    assert abs(b1.speed - (b1.base_speed * 1.2)) < 0.01
+    # assert abs(b1.damage - 15.0) < 0.01
+    assert abs(b1.damage - (b1.base_damage * 1.5)) < 0.01
 
     # For station 1 (blizzard), teamB should be buffed
-    assert abs(b2.speed - 150.0) < 0.01  # base 100 * 1.5
-    assert abs(b2.damage - 12.0) < 0.01  # base 10 * 1.2
+    # assert abs(b2.speed - 150.0) < 0.01
+    assert abs(b2.speed - (b2.base_speed * 1.5)) < 0.01
+    # assert abs(b2.damage - 12.0) < 0.01
+    assert abs(b2.damage - (b2.base_damage * 1.2)) < 0.01
 
     # Now move b2 into station 0's sector
     b2.x = 250
@@ -78,5 +82,7 @@ def test_weather_stations_effects():
     mode.tick(world, [b1, b2], 0.1)
 
     # b2 is not teamA, so in heatwave it gets debuffed
-    assert abs(b2.speed - 80.0) < 0.01   # base 100 * 0.8
-    assert abs(b2.damage - 10.0) < 0.01  # base 10 * 1.0
+    # assert abs(b2.speed - 80.0) < 0.01
+    assert abs(b2.speed - (b2.base_speed * 0.8)) < 0.01
+    # assert abs(b2.damage - 10.0) < 0.01
+    assert abs(b2.damage - (b2.base_damage * 1.0)) < 0.01
