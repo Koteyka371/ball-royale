@@ -34669,6 +34669,8 @@ func _clamp_position() -> bool:
     var bounced = false
     if self.world != null:
         var radius = 10.0
+        var old_x = self.ball.x
+        var old_y = self.ball.y
         if "radius" in self.ball: radius = self.ball.radius
 
         if "game_mode" in self.world and self.world.game_mode != null:
@@ -34688,9 +34690,6 @@ func _clamp_position() -> bool:
                 self.ball.y = 1000.0 / 2.0
             bounced = true
 
-        var old_x = self.ball.x
-        var old_y = self.ball.y
-
         if "arena" in self.world and self.world.arena != null and self.world.arena.has_method("clamp_position"):
             var res = self.world.arena.clamp_position(self.ball.x, self.ball.y, radius)
             self.ball.x = res[0]
@@ -34708,13 +34707,23 @@ func _clamp_position() -> bool:
             if "velocity_multiplier" in self.world.game_mode:
                 mult = self.world.game_mode.velocity_multiplier
 
+            var bounced_x = old_x != self.ball.x
+            var bounced_y = old_y != self.ball.y
+            if not bounced_x and not bounced_y:
+                bounced_x = true
+                bounced_y = true
+
             if "vx" in self.ball and "vy" in self.ball:
-                self.ball.vx = self.ball.vx * mult
-                self.ball.vy = self.ball.vy * mult
+                if bounced_x:
+                    self.ball.vx = self.ball.vx * mult
+                if bounced_y:
+                    self.ball.vy = self.ball.vy * mult
 
             if "velocity_x" in self.ball and "velocity_y" in self.ball:
-                self.ball.velocity_x = self.ball.velocity_x * mult
-                self.ball.velocity_y = self.ball.velocity_y * mult
+                if bounced_x:
+                    self.ball.velocity_x = self.ball.velocity_x * mult
+                if bounced_y:
+                    self.ball.velocity_y = self.ball.velocity_y * mult
 
     return bounced
 

@@ -17926,6 +17926,7 @@ class Action:
             return False
         bounced = False
         radius = getattr(self.ball, "radius", 10.0)
+        old_x, old_y = self.ball.x, self.ball.y
 
         gm = getattr(self.world, "game_mode", None)
         if gm and getattr(gm, "name", "") in ["Bumper Balls", "Radiation Windstorm"]:
@@ -17956,12 +17957,24 @@ class Action:
             mult = getattr(gm, "velocity_multiplier", 3.0)
 
             # The velocity is already reflected by the main game loop, so we ONLY multiply it.
+            # However, we only multiply the axis that actually bounced.
+            bounced_x = old_x != self.ball.x
+            bounced_y = old_y != self.ball.y
+
+            # If bounced is True but neither axis changed, it was forced due to NaN/Inf. Multiply both.
+            if not bounced_x and not bounced_y:
+                bounced_x, bounced_y = True, True
+
             if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                self.ball.vx = self.ball.vx * mult
-                self.ball.vy = self.ball.vy * mult
+                if bounced_x:
+                    self.ball.vx = self.ball.vx * mult
+                if bounced_y:
+                    self.ball.vy = self.ball.vy * mult
             if hasattr(self.ball, "velocity_x") and hasattr(self.ball, "velocity_y"):
-                self.ball.velocity_x = self.ball.velocity_x * mult
-                self.ball.velocity_y = self.ball.velocity_y * mult
+                if bounced_x:
+                    self.ball.velocity_x = self.ball.velocity_x * mult
+                if bounced_y:
+                    self.ball.velocity_y = self.ball.velocity_y * mult
 
         return bounced
 
