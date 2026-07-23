@@ -1038,7 +1038,7 @@ class ProceduralArena:
                 elif getattr(h, "kind", "") == "bumper":
                     if getattr(h, "chain_link", False):
                         if hasattr(h, "target_hazard_id"):
-                            target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
+                            target = next((x for x in self.hazards if getattr(x, 'id', None) == h.target_hazard_id), None)
                             if target:
                                 dx = target.x - h.x
                                 dy = target.y - h.y
@@ -1048,7 +1048,7 @@ class ProceduralArena:
                                     h.x = target.x - (dx / dist) * desired_dist
                                     h.y = target.y - (dy / dist) * desired_dist
                     elif hasattr(h, "target_hazard_id"):
-                        target = next((x for x in self.hazards if x.id == h.target_hazard_id), None)
+                        target = next((x for x in self.hazards if getattr(x, 'id', None) == h.target_hazard_id), None)
                         if target:
                             h.orbit_angle += getattr(h, "orbit_speed", 1.0) * delta
                             h.x = target.x + math.cos(h.orbit_angle) * getattr(h, "orbit_radius", 50.0)
