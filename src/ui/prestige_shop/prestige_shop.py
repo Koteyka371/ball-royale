@@ -73,13 +73,70 @@ class PrestigeShop:
         else:
             return True, "Won nothing, better luck next time!"
 
+    def get_roulette_color(self, number):
+        if number == 0:
+            return "green"
+        return "red" if number % 2 != 0 else "black"
+
+    def get_roulette_section(self, number):
+        if number == 0:
+            return "none"
+        if 1 <= number <= 12:
+            return "1st12"
+        elif 13 <= number <= 24:
+            return "2nd12"
+        else:
+            return "3rd12"
+
+    def play_roulette(self, bet_amount, bet_type, bet_value):
+        current_tokens = self.profile_manager.data.get("prestige_tokens", 0)
+        if current_tokens < bet_amount:
+            return False, "Not enough tokens"
+
+        self.profile_manager.data["prestige_tokens"] = current_tokens - bet_amount
+        self.profile_manager.save()
+
+        # Spin the roulette (0 to 36)
+        winning_number = random.randint(0, 36)
+        winning_color = self.get_roulette_color(winning_number)
+        winning_section = self.get_roulette_section(winning_number)
+
+        payout = 0
+        if bet_type == "color":
+            if bet_value == winning_color:
+                payout = bet_amount * (35 if bet_value == "green" else 2)
+        elif bet_type == "section":
+            if bet_value == winning_section:
+                payout = bet_amount * 3
+        elif bet_type == "number":
+            try:
+                if int(bet_value) == winning_number:
+                    payout = bet_amount * 35
+            except ValueError:
+                pass
+
+        msg = f"Roulette spun {winning_number} ({winning_color}). "
+        if payout > 0:
+            self.profile_manager.data["prestige_tokens"] = self.profile_manager.data.get("prestige_tokens", 0) + payout
+            msg += f"You won {payout} tokens!"
+
+            # Chance to unlock cosmetic on large wins
+            if payout >= 50 and random.random() < 0.1:
+                self.profile_manager.add_cosmetic("roulette_master")
+                msg += " Also won exclusive cosmetic: roulette_master!"
+
+            self.profile_manager.save()
+            return True, msg
+        else:
+            msg += "You lost your bet."
+            return True, msg
 
     def equip_skin(self, skin_name):
         return self.profile_manager.equip_skin(skin_name)
 
     def render_ui(self):
         # A simple terminal/text-based UI representation for the python mock environment
-        output = ["--- Prestige Shop ---", "[Spin Wheel] - Cost 1 Token"]
+        output = ["--- Prestige Shop ---", "[Spin Wheel] - Cost 1 Token", "[Play Roulette] - High Stakes!"]
         upgrades = self.get_available_upgrades()
         current_tokens = self.profile_manager.data.get("prestige_tokens", 0)
         output.append(f"Tokens available: {current_tokens}")
