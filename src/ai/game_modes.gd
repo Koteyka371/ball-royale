@@ -44323,6 +44323,184 @@ class ExpandingLavaRoyaleMode extends GameMode:
 		return null
 
 
+class SnakeSafeZoneMode extends GameMode:
+	var path_width: float = 250.0
+	var min_path_width: float = 50.0
+	var shrink_rate: float = 2.0
+	var head_x: float = 500.0
+	var head_y: float = 500.0
+	var head_vx: float = 50.0
+	var head_vy: float = 0.0
+	var movement_speed: float = 80.0
+	var turn_timer: float = 0.0
+	var outside_damage_per_second: float = 10.0
+	var max_length: float = 1500.0
+	var path: Array = []
+
+	func _init() -> void:
+		name = "Snake Safe Zone"
+		description = "The safe zone is a winding path that continuously moves and shrinks, forcing players to navigate narrow corridors."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		head_x = arena_width / 2.0
+		head_y = arena_height / 2.0
+
+		var angle = randf() * 2.0 * PI
+		head_vx = cos(angle) * movement_speed
+		head_vy = sin(angle) * movement_speed
+
+		path = [{"x": head_x, "y": head_y}]
+		path_width = 250.0
+		max_length = 1500.0
+
+		for _i in range(100):
+			tick_movement(0.5, arena_width, arena_height)
+
+	func tick_movement(delta: float, arena_width: float, arena_height: float) -> void:
+		turn_timer -= delta
+		if turn_timer <= 0.0:
+			turn_timer = rand_range(1.0, 3.0)
+			var angle = atan2(head_vy, head_vx)
+			angle += rand_range(-PI/2.0, PI/2.0)
+			head_vx = cos(angle) * movement_speed
+			head_vy = sin(angle) * movement_speed
+
+		head_x += head_vx * delta
+		head_y += head_vy * delta
+
+		var margin = 100.0
+		if head_x < margin:
+			head_x = margin
+			head_vx = abs(head_vx)
+		elif head_x > arena_width - margin:
+			head_x = arena_width - margin
+			head_vx = -abs(head_vx)
+
+		if head_y < margin:
+			head_y = margin
+			head_vy = abs(head_vy)
+		elif head_y > arena_height - margin:
+			head_y = arena_height - margin
+			head_vy = -abs(head_vy)
+
+		var last_p = path[path.size() - 1]
+		var dx = head_x - last_p["x"]
+		var dy = head_y - last_p["y"]
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 20.0:
+			path.append({"x": head_x, "y": head_y})
+
+		var current_len = 0.0
+		for i in range(1, path.size()):
+			var p1 = path[i-1]
+			var p2 = path[i]
+			current_len += sqrt(pow(p2["x"] - p1["x"], 2) + pow(p2["y"] - p1["y"], 2))
+
+		while current_len > max_length and path.size() > 2:
+			var p1 = path[0]
+			var p2 = path[1]
+			var d = sqrt(pow(p2["x"] - p1["x"], 2) + pow(p2["y"] - p1["y"], 2))
+			current_len -= d
+			path.pop_front()
+
+	func tick(world, balls: Array, delta: float) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		tick_movement(delta, arena_width, arena_height)
+
+		if path_width > min_path_width:
+			path_width -= shrink_rate * delta
+
+		if max_length > 300.0:
+			max_length -= shrink_rate * 5.0 * delta
+
+		for b in balls:
+			var is_alive = false
+			var ball_type = ""
+			var bx = 0.0
+			var by = 0.0
+			var bhp = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				ball_type = b.get("ball_type", "")
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				bhp = b.get("hp", 0.0)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				ball_type = b.get("ball_type") if "ball_type" in b else ""
+				bx = b.get("x") if "x" in b else 0.0
+				by = b.get("y") if "y" in b else 0.0
+				bhp = b.get("hp") if "hp" in b else 0.0
+
+			if not is_alive or ball_type == "spectator":
+				continue
+
+			var min_dist = 9999999.0
+			if path.size() == 1:
+				min_dist = sqrt(pow(bx - path[0]["x"], 2) + pow(by - path[0]["y"], 2))
+			else:
+				for i in range(path.size() - 1):
+					var p1 = path[i]
+					var p2 = path[i+1]
+
+					var l2 = pow(p2["x"] - p1["x"], 2) + pow(p2["y"] - p1["y"], 2)
+					var d = 0.0
+					if l2 == 0.0:
+						d = sqrt(pow(bx - p1["x"], 2) + pow(by - p1["y"], 2))
+					else:
+						var t = max(0.0, min(1.0, ((bx - p1["x"]) * (p2["x"] - p1["x"]) + (by - p1["y"]) * (p2["y"] - p1["y"])) / l2))
+						var proj_x = p1["x"] + t * (p2["x"] - p1["x"])
+						var proj_y = p1["y"] + t * (p2["y"] - p1["y"])
+						d = sqrt(pow(bx - proj_x, 2) + pow(by - proj_y, 2))
+
+					if d < min_dist:
+						min_dist = d
+
+			if min_dist > path_width:
+				var damage = outside_damage_per_second * delta
+				bhp -= damage
+				if bhp <= 0.0:
+					bhp = 0.0
+					is_alive = false
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var victim_id = "Unknown"
+						if typeof(b) == TYPE_DICTIONARY:
+							victim_id = b.get("id", "Unknown")
+						else:
+							victim_id = b.get("id") if "id" in b else "Unknown"
+						world.add_event("death", {"victim": victim_id, "killer": "Snake Safe Zone"})
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = bhp
+					b["alive"] = is_alive
+				else:
+					if "hp" in b:
+						b.hp = bhp
+					if "alive" in b:
+						b.alive = is_alive
+
+
 GAME_MODES = {
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
@@ -48209,6 +48387,7 @@ class MeteorBombardmentMode extends GameMode:
 				world.arena.hazards.append(HazardObj.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
 
+GAME_MODES['snake_safe_zone'] = SnakeSafeZoneMode.new()
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()

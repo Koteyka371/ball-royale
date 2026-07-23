@@ -27939,7 +27939,132 @@ class AuraSiphonMode(GameMode):
         self.name = "Aura Siphon"
         self.description = "Friendly auras no longer passively apply to teammates. Instead, nearby enemies 'siphon' your team's auras, stealing the speed and damage buffs for themselves."
 
+class SnakeSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Snake Safe Zone"
+        self.description = "The safe zone is a winding path that continuously moves and shrinks, forcing players to navigate narrow corridors."
+        self.path = []
+        self.path_width = 250.0
+        self.min_path_width = 50.0
+        self.shrink_rate = 2.0
+        self.head_x = 500.0
+        self.head_y = 500.0
+        self.head_vx = 50.0
+        self.head_vy = 0.0
+        self.movement_speed = 80.0
+        self.turn_timer = 0.0
+        self.outside_damage_per_second = 10.0
+        self.max_length = 1500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random, math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.head_x = arena_width / 2.0
+        self.head_y = arena_height / 2.0
+        angle = random.uniform(0, 2 * math.pi)
+        self.head_vx = math.cos(angle) * self.movement_speed
+        self.head_vy = math.sin(angle) * self.movement_speed
+
+        self.path = [(self.head_x, self.head_y)]
+        self.path_width = 250.0
+        self.max_length = 1500.0
+
+        for _ in range(100):
+            self.tick_movement(0.5, arena_width, arena_height)
+
+    def tick_movement(self, delta, arena_width, arena_height):
+        import random, math
+        self.turn_timer -= delta
+        if self.turn_timer <= 0:
+            self.turn_timer = random.uniform(1.0, 3.0)
+            angle = math.atan2(self.head_vy, self.head_vx)
+            angle += random.uniform(-math.pi/2, math.pi/2)
+            self.head_vx = math.cos(angle) * self.movement_speed
+            self.head_vy = math.sin(angle) * self.movement_speed
+
+        self.head_x += self.head_vx * delta
+        self.head_y += self.head_vy * delta
+
+        margin = 100
+        if self.head_x < margin:
+            self.head_x = margin
+            self.head_vx = abs(self.head_vx)
+        elif self.head_x > arena_width - margin:
+            self.head_x = arena_width - margin
+            self.head_vx = -abs(self.head_vx)
+
+        if self.head_y < margin:
+            self.head_y = margin
+            self.head_vy = abs(self.head_vy)
+        elif self.head_y > arena_height - margin:
+            self.head_y = arena_height - margin
+            self.head_vy = -abs(self.head_vy)
+
+        dx = self.head_x - self.path[-1][0]
+        dy = self.head_y - self.path[-1][1]
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 20.0:
+            self.path.append((self.head_x, self.head_y))
+
+        current_len = sum(math.sqrt((self.path[i][0]-self.path[i-1][0])**2 + (self.path[i][1]-self.path[i-1][1])**2) for i in range(1, len(self.path)))
+        while current_len > self.max_length and len(self.path) > 2:
+            d = math.sqrt((self.path[1][0]-self.path[0][0])**2 + (self.path[1][1]-self.path[0][1])**2)
+            current_len -= d
+            self.path.pop(0)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.tick_movement(delta, arena_width, arena_height)
+
+        if self.path_width > self.min_path_width:
+            self.path_width -= self.shrink_rate * delta
+
+        if self.max_length > 300.0:
+            self.max_length -= self.shrink_rate * 5.0 * delta
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            min_dist = float('inf')
+            if len(self.path) == 1:
+                min_dist = math.sqrt((b.x - self.path[0][0])**2 + (b.y - self.path[0][1])**2)
+            else:
+                for i in range(len(self.path) - 1):
+                    p1 = self.path[i]
+                    p2 = self.path[i+1]
+
+                    l2 = (p2[0]-p1[0])**2 + (p2[1]-p1[1])**2
+                    if l2 == 0:
+                        d = math.sqrt((b.x-p1[0])**2 + (b.y-p1[1])**2)
+                    else:
+                        t = max(0.0, min(1.0, ((b.x-p1[0])*(p2[0]-p1[0]) + (b.y-p1[1])*(p2[1]-p1[1])) / l2))
+                        proj_x = p1[0] + t * (p2[0]-p1[0])
+                        proj_y = p1[1] + t * (p2[1]-p1[1])
+                        d = math.sqrt((b.x-proj_x)**2 + (b.y-proj_y)**2)
+
+                    if d < min_dist:
+                        min_dist = d
+
+            if min_dist > self.path_width:
+                damage = self.outside_damage_per_second * delta
+                b.hp -= damage
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("death", {"victim": getattr(b, "id", "Unknown"), "killer": "Snake Safe Zone"})
+
+
 GAME_MODES = {
+    'snake_safe_zone': SnakeSafeZoneMode(),
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
     'massive_pinball_arena': MassivePinballArenaMode(),
