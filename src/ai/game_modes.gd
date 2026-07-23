@@ -54578,3 +54578,82 @@ class TricksterEventMode extends GameMode:
 						b["ball_type"] = b["original_ball_type_trickster_event"]
 
 GAME_MODES['trickster_event'] = TricksterEventMode.new()
+
+
+class ItemJammerEventMode extends GameMode:
+	var jammer_timer = 20.0
+	var jammer_duration = 10.0
+	var is_jamming = false
+
+	func _init() -> void:
+		name = "Item Jammer Event"
+		description = "A random arena-wide event that temporarily disables all deployable items and boosts, forcing players to rely entirely on core movement and positioning."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		.tick(world, balls, delta)
+
+		if not is_jamming:
+			jammer_timer -= delta
+			if jammer_timer <= 0.0:
+				is_jamming = true
+				jammer_duration = 10.0
+				var world_has_event = false
+				if typeof(world) == TYPE_DICTIONARY:
+					if world.has("add_event"):
+						world_has_event = true
+				else:
+					if world.has_method("add_event"):
+						world_has_event = true
+				if world_has_event:
+					var event_data = {"message": "Item Jammer Active! Deployables and boosts disabled."}
+					if typeof(world) == TYPE_DICTIONARY:
+						world["add_event"].call("item_jammer_start", event_data)
+					else:
+						world.add_event("item_jammer_start", event_data)
+		else:
+			jammer_duration -= delta
+			if jammer_duration <= 0.0:
+				is_jamming = false
+				jammer_timer = 20.0
+				var world_has_event = false
+				if typeof(world) == TYPE_DICTIONARY:
+					if world.has("add_event"):
+						world_has_event = true
+				else:
+					if world.has_method("add_event"):
+						world_has_event = true
+				if world_has_event:
+					var event_data = {"message": "Item Jammer offline. Systems restored."}
+					if typeof(world) == TYPE_DICTIONARY:
+						world["add_event"].call("item_jammer_end", event_data)
+					else:
+						world.add_event("item_jammer_end", event_data)
+			else:
+				for b in balls:
+					var is_alive = false
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+						b_type = b.get("ball_type", "")
+					else:
+						is_alive = b.get("alive") if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else false)
+						b_type = b.get("ball_type") if "ball_type" in b else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else "")
+
+					if not is_alive or b_type == "spectator":
+						continue
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["emp_disabled_timer"] = max(b.get("emp_disabled_timer", 0.0), 0.5)
+						b["silence_timer"] = max(b.get("silence_timer", 0.0), 0.5)
+					else:
+						var emp = b.get("emp_disabled_timer") if "emp_disabled_timer" in b else (b.get_meta("emp_disabled_timer") if b.has_method("has_meta") and b.has_meta("emp_disabled_timer") else 0.0)
+						var sil = b.get("silence_timer") if "silence_timer" in b else (b.get_meta("silence_timer") if b.has_method("has_meta") and b.has_meta("silence_timer") else 0.0)
+						if b.has_method("set_meta"):
+							b.set_meta("emp_disabled_timer", max(emp, 0.5))
+							b.set_meta("silence_timer", max(sil, 0.5))
+						if "emp_disabled_timer" in b:
+							b.emp_disabled_timer = max(emp, 0.5)
+						if "silence_timer" in b:
+							b.silence_timer = max(sil, 0.5)
+
+GAME_MODES['item_jammer_event'] = ItemJammerEventMode.new()

@@ -35400,3 +35400,40 @@ class VolcanicEruptionEventMode(GameMode):
                 world.arena.hazards.append(h)
 
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
+
+
+class ItemJammerEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Item Jammer Event"
+        self.description = "A random arena-wide event that temporarily disables all deployable items and boosts, forcing players to rely entirely on core movement and positioning."
+        self.jammer_timer = 20.0
+        self.jammer_duration = 10.0
+        self.is_jamming = False
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not self.is_jamming:
+            self.jammer_timer -= delta
+            if self.jammer_timer <= 0.0:
+                self.is_jamming = True
+                self.jammer_duration = 10.0
+                if hasattr(world, "add_event"):
+                    world.add_event("item_jammer_start", {"message": "Item Jammer Active! Deployables and boosts disabled."})
+        else:
+            self.jammer_duration -= delta
+            if self.jammer_duration <= 0.0:
+                self.is_jamming = False
+                self.jammer_timer = 20.0
+                if hasattr(world, "add_event"):
+                    world.add_event("item_jammer_end", {"message": "Item Jammer offline. Systems restored."})
+            else:
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+
+                    b.emp_disabled_timer = max(getattr(b, "emp_disabled_timer", 0.0), 0.5)
+                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 0.5)
+
+GAME_MODES['item_jammer_event'] = ItemJammerEventMode()
