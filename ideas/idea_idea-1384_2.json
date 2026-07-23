@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Giant Mutator",
+  "description": "A mutator where all balls start with 3x mass, radius and health, and slowly shrink as they take damage."
+}

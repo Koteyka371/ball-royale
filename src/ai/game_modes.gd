@@ -54578,3 +54578,92 @@ class TricksterEventMode extends GameMode:
 						b["ball_type"] = b["original_ball_type_trickster_event"]
 
 GAME_MODES['trickster_event'] = TricksterEventMode.new()
+
+class ReverseBlackHoleMutatorMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Reverse Black Hole Mutator"
+		description = "Randomly spawns a zone that pushes balls away from its center instead of pulling them."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		if not (world.get("arena") if "arena" in world else null) or not (world.arena.get("hazards") if "hazards" in world.arena else null):
+			return
+
+		spawn_timer += delta
+		if spawn_timer >= 10.0:
+			spawn_timer = 0.0
+			var arena_width = world.arena.get("width") if world.arena.get("width") != null else 1000.0
+			var arena_height = world.arena.get("height") if world.arena.get("height") != null else 1000.0
+
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			var x = rng.randf_range(100.0, arena_width - 100.0)
+			var y = rng.randf_range(100.0, arena_height - 100.0)
+
+			var h_id = world.arena.hazards.size() + rng.randi_range(10000, 99999)
+
+			var well = {}
+			well["id"] = h_id
+			well["x"] = x
+			well["y"] = y
+			well["radius"] = 150.0
+			well["kind"] = "reverse_black_hole"
+			well["damage"] = 0.0
+			well["duration"] = 10.0
+			well["active"] = true
+			world.arena.hazards.append(well)
+
+		var to_remove = []
+		for i in range(world.arena.hazards.size()):
+			var h = world.arena.hazards[i]
+			var is_dict = typeof(h) == TYPE_DICTIONARY
+			var kind = h.get("kind") if is_dict else (h.kind if "kind" in h else "")
+			if kind == "reverse_black_hole":
+				var duration = h.get("duration") if is_dict else (h.duration if "duration" in h else 0.0)
+				duration -= delta
+				if is_dict:
+					h["duration"] = duration
+				else:
+					h.duration = duration
+
+				if duration <= 0.0:
+					to_remove.append(h)
+					continue
+
+				var h_x = h.get("x") if is_dict else (h.x if "x" in h else 0.0)
+				var h_y = h.get("y") if is_dict else (h.y if "y" in h else 0.0)
+				var h_radius = h.get("radius") if is_dict else (h.radius if "radius" in h else 150.0)
+
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT:
+						if not (b.get("alive") if "alive" in b else false) or (b.get("ball_type") if "ball_type" in b else "") == "spectator":
+							continue
+
+						var bx = b.get("x") if "x" in b else 0.0
+						var by = b.get("y") if "y" in b else 0.0
+						var dx = bx - h_x
+						var dy = by - h_y
+						var dist = sqrt(dx * dx + dy * dy)
+
+						if dist <= h_radius:
+							if dist > 0.0001:
+								var push_strength = 200.0 * (1.0 - (dist / h_radius))
+								var bvx = b.get("vx") if "vx" in b else 0.0
+								var bvy = b.get("vy") if "vy" in b else 0.0
+								bvx += (dx / dist) * push_strength * delta
+								bvy += (dy / dist) * push_strength * delta
+								b.set("vx", bvx)
+								b.set("vy", bvy)
+							else:
+								var push_strength = 200.0
+								var bvx = b.get("vx") if "vx" in b else 0.0
+								bvx += push_strength * delta
+								b.set("vx", bvx)
+
+		for h in to_remove:
+			world.arena.hazards.erase(h)
+
+GAME_MODES['reverse_black_hole_mutator'] = ReverseBlackHoleMutatorMode.new()

@@ -2486,7 +2486,7 @@ class BattleRoyaleMode(GameMode):
                         b.mutation_timer = 0.0
 
                     # Evolve when zone shrinks by 50 units
-                    if b.last_zone_radius - self.zone_radius >= 50.0:
+                    if isinstance(b.last_zone_radius, (int, float)) and isinstance(self.zone_radius, (int, float)) and b.last_zone_radius - self.zone_radius >= 50.0:
                         b.last_zone_radius = self.zone_radius
                         mutators = ["explosive_aura", "increased_speed", "pulling_gravity", "acid_trail", "shield_regen"]
                         available = [m for m in mutators if m not in b.mutations]
@@ -35400,3 +35400,87 @@ class VolcanicEruptionEventMode(GameMode):
                 world.arena.hazards.append(h)
 
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
+
+class ReverseBlackHoleMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Black Hole Mutator"
+        self.description = "Randomly spawns a zone that pushes balls away from its center instead of pulling them."
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 10.0:
+            self.spawn_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+            x = random.uniform(100.0, arena_width - 100.0)
+            y = random.uniform(100.0, arena_height - 100.0)
+            h_id = len(world.arena.hazards) + random.randint(10000, 99999)
+
+            try:
+                from arena.procedural_arena import Hazard
+                well = Hazard(id=h_id, x=x, y=y, radius=150.0, kind="reverse_black_hole", damage=0.0)
+                well.duration = 10.0
+                well.active = True
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.duration = 10.0
+                        self.active = True
+                well = FallbackHazard(id=h_id, x=x, y=y, radius=150.0, kind="reverse_black_hole", damage=0.0)
+
+            world.arena.hazards.append(well)
+
+        to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "reverse_black_hole":
+                if hasattr(h, "duration"):
+                    h.duration -= delta
+                    if h.duration <= 0:
+                        to_remove.append(h)
+                        continue
+
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    dx = bx - getattr(h, "x", 0.0)
+                    dy = by - getattr(h, "y", 0.0)
+                    dist = math.hypot(dx, dy)
+                    h_radius = getattr(h, "radius", 150.0)
+
+                    if dist <= h_radius:
+                        if dist > 0.0001:
+                            push_strength = 200.0 * (1.0 - (dist / h_radius))
+                            if not hasattr(b, "vx"): b.vx = 0.0
+                            if not hasattr(b, "vy"): b.vy = 0.0
+                            b.vx += (dx / dist) * push_strength * delta
+                            b.vy += (dy / dist) * push_strength * delta
+                        else:
+                            push_strength = 200.0
+                            if not hasattr(b, "vx"): b.vx = 0.0
+                            if not hasattr(b, "vy"): b.vy = 0.0
+                            b.vx += push_strength * delta
+                            b.vy += 0.0
+
+        for h in to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
+GAME_MODES['reverse_black_hole_mutator'] = ReverseBlackHoleMutatorMode()
