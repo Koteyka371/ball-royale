@@ -31264,6 +31264,110 @@ func _use_skill():
                     else:
                         self.ball.stamina_speed_burst_timer = 2.0
 
+
+        elif skill_name == "buff_drain":
+            var sk_cd = 3.0
+            if "SKILL_COOLDOWN" in self.ball: sk_cd = self.ball.SKILL_COOLDOWN
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): sk_cd = self.ball.get_meta("SKILL_COOLDOWN")
+            if "skill_timer" in self.ball: self.ball.skill_timer = sk_cd
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", sk_cd)
+
+            var closest_enemy = null
+            var closest_dist = 250.0 * 250.0
+            var enemies = _get_enemies()
+            for b in enemies:
+                var ex = 0.0
+                var ey = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    ex = b.get("x", 0.0)
+                    ey = b.get("y", 0.0)
+                else:
+                    ex = b.x
+                    ey = b.y
+
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    bx = self.ball.get("x", 0.0)
+                    by = self.ball.get("y", 0.0)
+                else:
+                    bx = self.ball.x
+                    by = self.ball.y
+
+                var d2 = (ex - bx) * (ex - bx) + (ey - by) * (ey - by)
+                if d2 < closest_dist:
+                    closest_dist = d2
+                    closest_enemy = b
+
+            if closest_enemy != null:
+                var buffs_to_check = [
+                    "insulator_timer", "kinetic_shield_timer", "speed_boost_timer",
+                    "energy_shield_timer", "reflect_shield_timer", "aegis_shield_active_timer",
+                    "hermes_boots_active_timer", "damage_buff_timer", "speed_buff_timer"
+                ]
+                var drained_any = false
+                for buff in buffs_to_check:
+                    var duration = 0.0
+                    if typeof(closest_enemy) == TYPE_DICTIONARY:
+                        duration = closest_enemy.get(buff, 0.0)
+                    elif buff in closest_enemy:
+                        duration = closest_enemy.get(buff)
+                    elif closest_enemy.has_method("has_meta") and closest_enemy.has_meta(buff):
+                        duration = closest_enemy.get_meta(buff)
+
+                    if duration > 0.0:
+                        if typeof(closest_enemy) == TYPE_DICTIONARY:
+                            closest_enemy[buff] = 0.0
+                        elif buff in closest_enemy:
+                            closest_enemy.set(buff, 0.0)
+                        elif closest_enemy.has_method("set_meta"):
+                            closest_enemy.set_meta(buff, 0.0)
+
+                        var my_val = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            my_val = self.ball.get(buff, 0.0)
+                        elif buff in self.ball:
+                            my_val = self.ball.get(buff)
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta(buff):
+                            my_val = self.ball.get_meta(buff)
+
+                        var new_val = duration
+                        if my_val > duration: new_val = my_val
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball[buff] = new_val
+                        elif buff in self.ball:
+                            self.ball.set(buff, new_val)
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta(buff, new_val)
+
+                        drained_any = true
+
+                if not drained_any:
+                    var cur_hp = 0.0
+                    if typeof(closest_enemy) == TYPE_DICTIONARY:
+                        cur_hp = closest_enemy.get("hp", 100.0)
+                    elif "hp" in closest_enemy:
+                        cur_hp = closest_enemy.hp
+                    elif closest_enemy.has_method("has_meta") and closest_enemy.has_meta("hp"):
+                        cur_hp = closest_enemy.get_meta("hp")
+
+                    if typeof(closest_enemy) == TYPE_DICTIONARY:
+                        closest_enemy["hp"] = cur_hp - 30.0
+                    elif "hp" in closest_enemy:
+                        closest_enemy.hp = cur_hp - 30.0
+                    elif closest_enemy.has_method("set_meta"):
+                        closest_enemy.set_meta("hp", cur_hp - 30.0)
+
+                    if self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                        var ex = closest_enemy.get("x", 0.0) if typeof(closest_enemy) == TYPE_DICTIONARY else (closest_enemy.x if "x" in closest_enemy else 0.0)
+                        var ey = closest_enemy.get("y", 0.0) if typeof(closest_enemy) == TYPE_DICTIONARY else (closest_enemy.y if "y" in closest_enemy else 0.0)
+                        self.world["events"].append(["damage_text", {"x": ex, "y": ey, "amount": 30.0, "color": "red"}])
+                    elif self.world != null and "events" in self.world:
+                        var ex = closest_enemy.get("x", 0.0) if typeof(closest_enemy) == TYPE_DICTIONARY else (closest_enemy.x if "x" in closest_enemy else 0.0)
+                        var ey = closest_enemy.get("y", 0.0) if typeof(closest_enemy) == TYPE_DICTIONARY else (closest_enemy.y if "y" in closest_enemy else 0.0)
+                        self.world.events.append(["damage_text", {"x": ex, "y": ey, "amount": 30.0, "color": "red"}])
+
         elif skill_name == "stamina_dash":
             _spawn_skill_particles("dash")
             var st = 0.0
