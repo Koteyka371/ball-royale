@@ -2580,7 +2580,7 @@ class BattleRoyaleMode(GameMode):
                         b.mutation_timer = 0.0
 
                     # Evolve when zone shrinks by 50 units
-                    if b.last_zone_radius - self.zone_radius >= 50.0:
+                    if float(getattr(b, 'last_zone_radius', self.zone_radius)) - float(getattr(self, 'zone_radius', 0.0)) >= 50.0:
                         b.last_zone_radius = self.zone_radius
                         mutators = ["explosive_aura", "increased_speed", "pulling_gravity", "acid_trail", "shield_regen"]
                         available = [m for m in mutators if m not in b.mutations]

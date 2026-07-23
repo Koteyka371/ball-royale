@@ -2750,6 +2750,29 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+    # Tick artifact timers
+    if "has_aegis_shield" in self.ball and self.ball.has_aegis_shield:
+        if "aegis_shield_cooldown" in self.ball and self.ball.aegis_shield_cooldown > 0:
+            self.ball.aegis_shield_cooldown -= delta
+        if "aegis_shield_active_timer" in self.ball and self.ball.aegis_shield_active_timer > 0:
+            self.ball.aegis_shield_active_timer -= delta
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("has_aegis_shield") and self.ball.get_meta("has_aegis_shield"):
+        if self.ball.has_meta("aegis_shield_cooldown") and self.ball.get_meta("aegis_shield_cooldown") > 0:
+            self.ball.set_meta("aegis_shield_cooldown", self.ball.get_meta("aegis_shield_cooldown") - delta)
+        if self.ball.has_meta("aegis_shield_active_timer") and self.ball.get_meta("aegis_shield_active_timer") > 0:
+            self.ball.set_meta("aegis_shield_active_timer", self.ball.get_meta("aegis_shield_active_timer") - delta)
+
+    if "has_hermes_boots" in self.ball and self.ball.has_hermes_boots:
+        if "hermes_boots_cooldown" in self.ball and self.ball.hermes_boots_cooldown > 0:
+            self.ball.hermes_boots_cooldown -= delta
+        if "hermes_boots_active_timer" in self.ball and self.ball.hermes_boots_active_timer > 0:
+            self.ball.hermes_boots_active_timer -= delta
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("has_hermes_boots") and self.ball.get_meta("has_hermes_boots"):
+        if self.ball.has_meta("hermes_boots_cooldown") and self.ball.get_meta("hermes_boots_cooldown") > 0:
+            self.ball.set_meta("hermes_boots_cooldown", self.ball.get_meta("hermes_boots_cooldown") - delta)
+        if self.ball.has_meta("hermes_boots_active_timer") and self.ball.get_meta("hermes_boots_active_timer") > 0:
+            self.ball.set_meta("hermes_boots_active_timer", self.ball.get_meta("hermes_boots_active_timer") - delta)
+
 	if "burning_trail_timer" in self.ball and self.ball.burning_trail_timer > 0.0:
 		self.ball.burning_trail_timer -= delta
 		if "burning_trail_spawn_timer" in self.ball and self.ball.burning_trail_spawn_timer > 0.0:
@@ -27231,6 +27254,58 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and (nearest.kind == "fragment_of_aegis" or nearest.kind == "fragment_of_hermes"):
+                var frag_kind = nearest.kind
+                var current_count = 0
+                if frag_kind in self.ball:
+                    current_count = self.ball.get(frag_kind)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta(frag_kind):
+                    current_count = self.ball.get_meta(frag_kind)
+
+                current_count += 1
+
+                if frag_kind in self.ball:
+                    self.ball.set(frag_kind, current_count)
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta(frag_kind, current_count)
+
+                if current_count >= 3:
+                    if frag_kind in self.ball:
+                        self.ball.set(frag_kind, 0)
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta(frag_kind, 0)
+
+                    if frag_kind == "fragment_of_aegis":
+                        if "has_aegis_shield" in self.ball:
+                            self.ball.has_aegis_shield = true
+                            self.ball.aegis_shield_cooldown = 0.0
+                            self.ball.aegis_shield_active_timer = 0.0
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("has_aegis_shield", true)
+                            self.ball.set_meta("aegis_shield_cooldown", 0.0)
+                            self.ball.set_meta("aegis_shield_active_timer", 0.0)
+                        if self.world != null and "events" in self.world:
+                            self.world.events.append(["artifact_completed", {"artifact": "aegis_shield", "ball_id": self.ball.id}])
+                    elif frag_kind == "fragment_of_hermes":
+                        if "has_hermes_boots" in self.ball:
+                            self.ball.has_hermes_boots = true
+                            self.ball.hermes_boots_cooldown = 0.0
+                            self.ball.hermes_boots_active_timer = 0.0
+                        elif self.ball.has_method("set_meta"):
+                            self.ball.set_meta("has_hermes_boots", true)
+                            self.ball.set_meta("hermes_boots_cooldown", 0.0)
+                            self.ball.set_meta("hermes_boots_active_timer", 0.0)
+                        if self.world != null and "events" in self.world:
+                            self.world.events.append(["artifact_completed", {"artifact": "hermes_boots", "ball_id": self.ball.id}])
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "link_booster":
                 var enemies_link = _get_enemies()
                 if enemies_link.size() > 0:
@@ -27490,6 +27565,53 @@ func _use_skill():
     if "silence_timer" in self.ball: _silence_timer = self.ball.silence_timer
     elif self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"): _silence_timer = self.ball.get_meta("silence_timer")
     if _silence_timer > 0.0: return
+
+    var has_aegis = false
+    if "has_aegis_shield" in self.ball:
+        has_aegis = self.ball.has_aegis_shield
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("has_aegis_shield"):
+        has_aegis = self.ball.get_meta("has_aegis_shield")
+
+    if has_aegis:
+        var aegis_cd = 0.0
+        if "aegis_shield_cooldown" in self.ball:
+            aegis_cd = self.ball.aegis_shield_cooldown
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("aegis_shield_cooldown"):
+            aegis_cd = self.ball.get_meta("aegis_shield_cooldown")
+
+        if aegis_cd <= 0.0:
+            if "aegis_shield_active_timer" in self.ball:
+                self.ball.aegis_shield_active_timer = 3.0
+                self.ball.aegis_shield_cooldown = 15.0
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("aegis_shield_active_timer", 3.0)
+                self.ball.set_meta("aegis_shield_cooldown", 15.0)
+            if self.world != null and "events" in self.world:
+                self.world.events.append(["aegis_shield_activated", {"ball_id": self.ball.id}])
+
+    var has_hermes = false
+    if "has_hermes_boots" in self.ball:
+        has_hermes = self.ball.has_hermes_boots
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("has_hermes_boots"):
+        has_hermes = self.ball.get_meta("has_hermes_boots")
+
+    if has_hermes:
+        var hermes_cd = 0.0
+        if "hermes_boots_cooldown" in self.ball:
+            hermes_cd = self.ball.hermes_boots_cooldown
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("hermes_boots_cooldown"):
+            hermes_cd = self.ball.get_meta("hermes_boots_cooldown")
+
+        if hermes_cd <= 0.0:
+            if "hermes_boots_active_timer" in self.ball:
+                self.ball.hermes_boots_active_timer = 3.0
+                self.ball.hermes_boots_cooldown = 15.0
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("hermes_boots_active_timer", 3.0)
+                self.ball.set_meta("hermes_boots_cooldown", 15.0)
+            if self.world != null and "events" in self.world:
+                self.world.events.append(["hermes_boots_activated", {"ball_id": self.ball.id}])
+
     var skill_timer = 0.0
     if "skill_timer" in self.ball:
         skill_timer = self.ball.skill_timer
