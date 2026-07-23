@@ -44322,8 +44322,10 @@ class ExpandingLavaRoyaleMode extends GameMode:
 
 		return null
 
+var LavaEruptionEventMode = preload("res://src/ai/lava_eruption.gd")
 
 GAME_MODES = {
+    "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
 	"aura_pulse_event": AuraPulseEventMode.new(),
