@@ -2511,7 +2511,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 									if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
 									var h_kind = ""
 									if typeof(h) == TYPE_OBJECT and h.has_meta("kind"): h_kind = h.get_meta("kind")
-									if t_var == "emp_trap" or h_kind == "lightning_rod" or h_kind == "deployable_lightning_rod":
+									if t_var == "emp_trap" or h_kind == "lightning_rod" or h_kind == "deployable_lightning_rod" or h_kind == "teleport_relay":
 										nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
 									else:
 										nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
@@ -9648,7 +9648,7 @@ func execute(strategy: String, delta: float):
                                     if typeof(h) == TYPE_OBJECT and h.has_meta("trap_variant"): t_var = h.get_meta("trap_variant")
                                     var h_kind = ""
                                     if typeof(h) == TYPE_OBJECT and h.has_meta("kind"): h_kind = h.get_meta("kind")
-                                    if t_var == "emp_trap" or h_kind == "lightning_rod" or h_kind == "deployable_lightning_rod":
+                                    if t_var == "emp_trap" or h_kind == "lightning_rod" or h_kind == "deployable_lightning_rod" or h_kind == "teleport_relay":
                                         nearby.append({"dist": -999999.0 + dist_sq, "entity": h, "type": "hazard"})
                                     else:
                                         nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
@@ -12194,6 +12194,31 @@ func execute(strategy: String, delta: float):
                                 self.ball.set_meta("stutter_timer", current_stutter + 2.0)
 
 
+                elif h_kind == "teleport_relay":
+                    var dist = sqrt(pow(self.ball.x - h_x, 2) + pow(self.ball.y - h_y, 2))
+                    if dist <= h_rad:
+                        var linked_id = null
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get"):
+                            linked_id = hazard.get("linked_relay_id")
+                        elif typeof(hazard) == TYPE_DICTIONARY:
+                            linked_id = hazard.get("linked_relay_id", null)
+
+                        if linked_id != null:
+                            var last_teleport = self.ball.get("last_teleport_tick") if self.ball.has_method("get") and self.ball.get("last_teleport_tick") != null else -100
+                            var current_tick = self.world.get("tick") if "tick" in self.world else 0
+                            if current_tick - last_teleport > 20:
+                                for h in self.world.arena.hazards:
+                                    var h_id = h.id if typeof(h) == TYPE_OBJECT else h.get("id", null)
+                                    if h_id == linked_id:
+                                        var t_x = h.x if typeof(h) == TYPE_OBJECT else h.get("x", 0)
+                                        var t_y = h.y if typeof(h) == TYPE_OBJECT else h.get("y", 0)
+                                        self.ball.x = t_x
+                                        self.ball.y = t_y
+                                        if self.ball.has_method("set"):
+                                            self.ball.set("last_teleport_tick", current_tick)
+                                            self.ball.set("_teleported_this_tick", true)
+                                        self.world.add_event("visual_effect", {"x": self.ball.x, "y": self.ball.y, "kind": "teleport"})
+                                        break
                 elif hazard.kind == "deployable_lightning_rod":
                     var current_tick = 0
                     if self.world.get("tick") != null:
@@ -24892,7 +24917,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -32794,6 +32819,39 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+        elif skill_name == "deploy_teleport_relay":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var relay_id = self.world.get("next_id", 99999) + randi() % 10000
+                var relay = {
+                    "id": relay_id,
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "radius": 25.0,
+                    "kind": "teleport_relay",
+                    "damage": 0.0,
+                    "linked_relay_id": null
+                }
+                var active_relay = self.ball.get("active_relay_id", null) if "active_relay_id" in self.ball else null
+                if active_relay != null:
+                    for h in self.world.arena.hazards:
+                        var h_id = h.id if typeof(h) == TYPE_OBJECT else h.get("id", null)
+                        if h_id == active_relay:
+                            if typeof(h) == TYPE_OBJECT and h.has_method("set"):
+                                h.set("linked_relay_id", relay_id)
+                            elif typeof(h) == TYPE_DICTIONARY:
+                                h["linked_relay_id"] = relay_id
+                            relay["linked_relay_id"] = active_relay
+                            break
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+                        self.ball.set("active_relay_id", null)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["active_relay_id"] = null
+                else:
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+                        self.ball.set("active_relay_id", relay_id)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["active_relay_id"] = relay_id
+                self.world.arena.hazards.append(relay)
         elif skill_name == "deploy_lightning_rod", "bounty_trap":
             if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
                 var bid = -1
