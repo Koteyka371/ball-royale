@@ -24069,7 +24069,7 @@
     },
     {
       "id": "idea-1405",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Altar Traps",
@@ -35469,6 +35469,40 @@
         "src/ai/grapple_hook.py",
         "src/ai/grapple_hook.gd",
         "tests/test_grapple_hook.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2075",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sun and Moon Aspects",
+      "description": "During the Day/Night mode, randomly drop Sun and Moon aspects (boosters). A Sun aspect instantly heals Light units but burns Shadow units, while a Moon aspect grants invisibility to Shadow units and slows Light units.",
+      "allowed_paths": [
+        "src/ai/sun_and_moon_aspects.py",
+        "src/ai/sun_and_moon_aspects.gd",
+        "tests/test_sun_and_moon_aspects.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2076",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Event",
+      "description": "Add a rare eclipse event to the Day/Night mode where both Light and Shadow buffs are active simultaneously for all units, and all sunlight beams and moonlight shadows disappear, creating a chaotic arena for a short duration.",
+      "allowed_paths": [
+        "src/ai/eclipse.py",
+        "src/ai/eclipse.gd",
+        "tests/test_eclipse.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

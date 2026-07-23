@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1405] Weather Altar Traps — *2026-07-23 15:48:11 UTC*
+
+Traps disguised as capture altars that, when fully captured, trigger an opposite detrimental weather effect solely on the capturing team.
+
+---
+
 ## [idea-1396] Dynamic Day/Night Cycle Influencing Traits — *2026-07-23 15:45:56 UTC*
 
 Implement a Day/Night cycle where 'Light' units gain increased perception radius and speed during the day, while 'Shadow' units gain stealth and critical hit chance during the night, adding another layer of dynamic trait mechanics.
