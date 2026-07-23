@@ -10245,7 +10245,7 @@ func execute(strategy: String, delta: float):
             elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp = self.ball.get_meta("hp")
 
             var died_from_decay = false
-            if hp > 0 and hp - (20.0 * delta) <= 0:
+            if hp - (20.0 * delta) <= 0:
                 died_from_decay = true
 
             hp -= 20.0 * delta
