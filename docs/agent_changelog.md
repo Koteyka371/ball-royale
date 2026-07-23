@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1350] Chameleon Ball Type — *2026-07-23 06:47:21 UTC*
+
+A new ball type that automatically adopts the primary trait of the last enemy it damaged, switching playstyles dynamically during combat.
+
+---
+
 ## [idea-1340] Artifact Combination System — *2026-07-23 06:43:58 UTC*
 
 Allow players to collect artifact fragments during battle. Gathering three matching fragments combines them into a single powerful artifact (like Aegis Shield or Hermes Boots) that gives unique passives and an active ability, independent of the ball's base skill.

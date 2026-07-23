@@ -23130,7 +23130,7 @@
     },
     {
       "id": "idea-1350",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chameleon Ball Type",
@@ -35299,6 +35299,40 @@
         "src/ai/portal_black_hole.py",
         "src/ai/portal_black_hole.gd",
         "tests/test_portal_black_hole.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2065",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Bracers",
+      "description": "An artifact that records the player's movement and actions for 5 seconds. On reactivation, a phantom clone replays these actions while dealing 50% damage.",
+      "allowed_paths": [
+        "src/ai/echo_bracers.py",
+        "src/ai/echo_bracers.gd",
+        "tests/test_echo_bracers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2066",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Midas Touch Artifact",
+      "description": "Gives players an active ability to turn all nearby hazards into gold coins, which grant an XP boost and short burst of speed when collected. Fragments can be found in special golden chests.",
+      "allowed_paths": [
+        "src/ai/midas_touch_artifact.py",
+        "src/ai/midas_touch_artifact.gd",
+        "tests/test_midas_touch_artifact.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
