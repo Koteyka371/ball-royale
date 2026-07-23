@@ -17546,6 +17546,15 @@ class Action:
             except Exception:
                 pass
 
+        # Add solid hazards like kinetic_absorber to the collision check
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for h in self.world.arena.hazards:
+                if getattr(h, "kind", "") == "kinetic_absorber":
+                    # Check distance roughly before adding to nearby
+                    dist_sq = (self.ball.x - h.x)**2 + (self.ball.y - h.y)**2
+                    if dist_sq <= (ball_radius + getattr(h, "radius", 30.0))**2 * 4:
+                        nearby.append(h)
+
         for other in nearby:
             if other is self.ball:
                 continue
@@ -17611,6 +17620,16 @@ class Action:
 
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
+
+                # Handle kinetic_absorber hazard collision
+                if getattr(other, "kind", "") == "kinetic_absorber":
+                    speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
+                    if speed_self > 50.0:
+                        energy_transferred = speed_self * getattr(self.ball, "mass", 1.0) * 0.5
+                        other.kinetic_energy_pool = getattr(other, "kinetic_energy_pool", 0.0) + energy_transferred
+                        # Stop the ball or reduce speed drastically
+                        self.ball.vx = 0.0
+                        self.ball.vy = 0.0
 
 
                 # Secondary stun explosion on collision
@@ -19016,6 +19035,33 @@ class Action:
 
                             hazard.duration = 0.0
                             hazard.active = False
+                if getattr(hazard, "kind", "") == "kinetic_absorber":
+                    if getattr(hazard, "kinetic_energy_pool", 0.0) >= 500.0:
+                        hazard.kinetic_energy_pool = 0.0
+
+                        # Massive shockwave
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_shockwave', 'x': hazard.x, 'y': hazard.y, 'radius': 400.0, 'force': 2000.0}})
+
+                        # Push all entities and damage shields
+                        if hasattr(self.world, "balls"):
+                            import math
+                            for b in self.world.balls:
+                                if getattr(b, "alive", True):
+                                    dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                    if dist_sq <= 400.0**2 and dist_sq > 0:
+                                        dist = math.sqrt(dist_sq)
+                                        nx = (b.x - hazard.x) / dist
+                                        ny = (b.y - hazard.y) / dist
+
+                                        # Push
+                                        b.vx = getattr(b, "vx", 0.0) + nx * 2000.0
+                                        b.vy = getattr(b, "vy", 0.0) + ny * 2000.0
+
+                                        # Damage shields
+                                        if hasattr(b, "shield") and b.shield > 0:
+                                            b.shield = max(0.0, b.shield - 150.0)
+
                 if getattr(hazard, "kind", "") == "aura_inverter_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2

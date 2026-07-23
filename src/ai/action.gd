@@ -33931,6 +33931,30 @@ func _resolve_collisions() -> bool:
         elif typeof(data) == TYPE_ARRAY:
             nearby = data
 
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for h in self.world.arena.hazards:
+            var h_kind = ""
+            if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+            elif "kind" in h: h_kind = h.kind
+            elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): h_kind = h.get_meta("kind")
+
+            if h_kind == "kinetic_absorber":
+                var h_x = 0.0
+                if "x" in h: h_x = h.x
+                elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+
+                var h_y = 0.0
+                if "y" in h: h_y = h.y
+                elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+
+                var h_rad = 30.0
+                if "radius" in h: h_rad = h.radius
+                elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_rad = h["radius"]
+
+                var dist_sq = (self.ball.x - h_x)*(self.ball.x - h_x) + (self.ball.y - h_y)*(self.ball.y - h_y)
+                if dist_sq <= (ball_radius + h_rad) * (ball_radius + h_rad) * 4.0:
+                    nearby.append(h)
+
     for other in nearby:
         if other == self.ball:
             continue
@@ -37362,6 +37386,71 @@ func _update_skill_timer(delta: float):
                                             self.ball.x += nx * force
                                             self.ball.y += ny * force
                             elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                if h_kind == "kinetic_absorber":
+                    var current_pool = 0.0
+                    if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kinetic_energy_pool"): current_pool = hazard["kinetic_energy_pool"]
+                    elif "kinetic_energy_pool" in hazard: current_pool = hazard.kinetic_energy_pool
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("kinetic_energy_pool"): current_pool = hazard.get_meta("kinetic_energy_pool")
+
+                    if current_pool >= 500.0:
+                        if typeof(hazard) == TYPE_DICTIONARY: hazard["kinetic_energy_pool"] = 0.0
+                        elif "kinetic_energy_pool" in hazard: hazard.kinetic_energy_pool = 0.0
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("kinetic_energy_pool", 0.0)
+
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                        if world != null and world.has_method("add_event"):
+                            world.add_event("explosion", {"x": h_x, "y": h_y, "radius": 400.0, "damage": 0.0}) # visual and basic sound
+                        if world != null and "events" in world:
+                            world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_shockwave', 'x': h_x, 'y': h_y, 'radius': 400.0, 'force': 2000.0}})
+
+                        if world != null and "balls" in world:
+                            for b in world.balls:
+                                var b_alive = true
+                                if "alive" in b: b_alive = b.alive
+                                elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                if b_alive:
+                                    var dx = b.x - h_x
+                                    var dy = b.y - h_y
+                                    var dist_sq = dx*dx + dy*dy
+                                    if dist_sq <= 400.0 * 400.0 and dist_sq > 0.0001:
+                                        var dist = sqrt(dist_sq)
+                                        var nx = dx / dist
+                                        var ny = dy / dist
+
+                                        var b_vx = 0.0
+                                        if "vx" in b: b_vx = b.vx
+                                        elif b.has_method("get_meta") and b.has_meta("vx"): b_vx = b.get_meta("vx")
+
+                                        var b_vy = 0.0
+                                        if "vy" in b: b_vy = b.vy
+                                        elif b.has_method("get_meta") and b.has_meta("vy"): b_vy = b.get_meta("vy")
+
+                                        b_vx += nx * 2000.0
+                                        b_vy += ny * 2000.0
+
+                                        if "vx" in b: b.vx = b_vx
+                                        elif b.has_method("set_meta"): b.set_meta("vx", b_vx)
+
+                                        if "vy" in b: b.vy = b_vy
+                                        elif b.has_method("set_meta"): b.set_meta("vy", b_vy)
+
+                                        var b_shield = 0.0
+                                        if "shield" in b: b_shield = b.shield
+                                        elif b.has_method("get_meta") and b.has_meta("shield"): b_shield = b.get_meta("shield")
+
+                                        if b_shield > 0.0:
+                                            b_shield -= 150.0
+                                            if b_shield < 0.0: b_shield = 0.0
+                                            if "shield" in b: b.shield = b_shield
+                                            elif b.has_method("set_meta"): b.set_meta("shield", b_shield)
+
                 if h_kind == "aura_inverter_trap":
                     var owner_id = null
                     if "owner_id" in hazard: owner_id = hazard.owner_id
