@@ -20432,6 +20432,7 @@ class ExtremeWeatherMode(GameMode):
                     arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
                     center_x, center_y = arena_w / 2, arena_h / 2
 
+                    import math
 
                     b_x, b_y = getattr(b, "x", 0), getattr(b, "y", 0)
                     dist_to_center = math.hypot(b_x - center_x, b_y - center_y)
