@@ -28168,7 +28168,90 @@ class SpawningSafeZonesMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("ball_died", {"id": b.id, "reason": "outside_safe_zone", "killer_id": -1})
 
+
+class CorruptedZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Corrupted Zones"
+        self.description = "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element."
+        self.zones = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 15.0
+        self.duration = 10.0
+        self.damage_per_second = 15.0
+        self.speed_multiplier = 2.0
+        self.damage_multiplier = 2.5
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.zones = []
+        self.spawn_timer = 0.0
+
+    def _spawn_zone(self, world):
+        import random
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        x = 200.0 + random.random() * max(0.0, arena_width - 400.0)
+        y = 200.0 + random.random() * max(0.0, arena_height - 400.0)
+        radius = 150.0 + random.random() * 100.0
+        self.zones.append({"x": x, "y": y, "radius": radius, "timer": self.duration})
+        if hasattr(world, "add_event"):
+            world.add_event("corrupted_zone_spawned", {"x": x, "y": y, "radius": radius})
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.spawn_timer += delta
+        while self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer -= self.spawn_interval
+            self._spawn_zone(world)
+
+        active_zones = []
+        for zone in self.zones:
+            zone["timer"] -= delta
+            if zone["timer"] > 0:
+                active_zones.append(zone)
+        self.zones = active_zones
+
+        damage_this_tick = self.damage_per_second * delta
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            in_zone = False
+            for z in self.zones:
+                dx = b.x - z["x"]
+                dy = b.y - z["y"]
+                if dx*dx + dy*dy <= z["radius"] * z["radius"]:
+                    in_zone = True
+                    break
+
+            if in_zone:
+                b.hp -= damage_this_tick
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if b.id not in world.dead_balls:
+                        world.dead_balls.append(b.id)
+                    if hasattr(world, "add_event"):
+                        world.add_event("ball_died", {"id": b.id, "reason": "corrupted_zone", "killer_id": -1})
+
+                # Apply buffs
+                # Using continuous override as per MEMORY directive "assign a static override value"
+                b.speed_multiplier = self.speed_multiplier
+                b.damage_multiplier = self.damage_multiplier
+                b.corrupted_buff = True
+            else:
+                if getattr(b, "corrupted_buff", False):
+                    b.speed_multiplier = 1.0
+                    b.damage_multiplier = 1.0
+                    b.corrupted_buff = False
+
 GAME_MODES = {
+    'corrupted_zones': CorruptedZonesMode(),
     'lava_eruption_event': LavaEruptionEventMode(),
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),

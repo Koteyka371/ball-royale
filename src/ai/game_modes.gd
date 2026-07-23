@@ -55298,6 +55298,139 @@ class HiveDefenseMode extends GameMode:
 				new_hazards.append(h)
 		world.arena.hazards = new_hazards
 
+
+class CorruptedZonesMode extends GameMode:
+	var zones: Array = []
+	var spawn_timer: float = 0.0
+	var spawn_interval: float = 15.0
+	var duration: float = 10.0
+	var damage_per_second: float = 15.0
+	var speed_multiplier_val: float = 2.0
+	var damage_multiplier_val: float = 2.5
+
+	func _init() -> void:
+		name = "Corrupted Zones"
+		description = "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		zones = []
+		spawn_timer = 0.0
+
+	func _spawn_zone(world) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var buffer = 200.0
+		var x = buffer + randf() * max(0.0, arena_width - buffer * 2.0)
+		var y = buffer + randf() * max(0.0, arena_height - buffer * 2.0)
+		var radius = 150.0 + randf() * 100.0
+		zones.append({"x": x, "y": y, "radius": radius, "timer": duration})
+		if world.has_method("add_event"):
+			world.add_event("corrupted_zone_spawned", {"x": x, "y": y, "radius": radius})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		spawn_timer += delta
+		while spawn_timer >= spawn_interval:
+			spawn_timer -= spawn_interval
+			_spawn_zone(world)
+
+		var active_zones = []
+		for z in zones:
+			z["timer"] -= delta
+			if z["timer"] > 0:
+				active_zones.append(z)
+		zones = active_zones
+
+		var damage_this_tick = damage_per_second * delta
+
+		var dead_balls = []
+		if "dead_balls" in world:
+			dead_balls = world.dead_balls
+		elif world.has_method("set_meta"):
+			world.set_meta("dead_balls", [])
+			if world.has_method("get_meta"):
+				dead_balls = world.get_meta("dead_balls")
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			var ball_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				ball_type = b.get("ball_type", "")
+			else:
+				ball_type = b.get("ball_type") if "ball_type" in b else ""
+
+			if not is_alive or ball_type == "spectator":
+				continue
+
+			var in_zone = false
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+			for z in zones:
+				var dx = bx - z["x"]
+				var dy = by - z["y"]
+				if dx*dx + dy*dy <= z["radius"] * z["radius"]:
+					in_zone = true
+					break
+
+			if in_zone:
+				var current_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp
+				var new_hp = current_hp - damage_this_tick
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = new_hp
+				else:
+					b.hp = new_hp
+
+				if new_hp <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = 0
+						b["alive"] = false
+					else:
+						b.hp = 0
+						b.alive = false
+
+					var bid = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+					if typeof(dead_balls) == TYPE_ARRAY and not dead_balls.has(bid):
+						dead_balls.append(bid)
+					if world.has_method("add_event"):
+						world.add_event("ball_died", {"id": bid, "reason": "corrupted_zone", "killer_id": -1})
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed_multiplier"] = speed_multiplier_val
+					b["damage_multiplier"] = damage_multiplier_val
+					b["corrupted_buff"] = true
+				else:
+					b.set("speed_multiplier", speed_multiplier_val)
+					b.set("damage_multiplier", damage_multiplier_val)
+					b.set("corrupted_buff", true)
+			else:
+				var has_buff = false
+				if typeof(b) == TYPE_DICTIONARY:
+					has_buff = b.get("corrupted_buff", false)
+				else:
+					has_buff = b.get("corrupted_buff") if "corrupted_buff" in b else false
+
+				if has_buff:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["speed_multiplier"] = 1.0
+						b["damage_multiplier"] = 1.0
+						b["corrupted_buff"] = false
+					else:
+						b.set("speed_multiplier", 1.0)
+						b.set("damage_multiplier", 1.0)
+						b.set("corrupted_buff", false)
+
+GAME_MODES['corrupted_zones'] = CorruptedZonesMode.new()
 GAME_MODES['hive_defense'] = HiveDefenseMode.new()
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode.new()
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode.new()
