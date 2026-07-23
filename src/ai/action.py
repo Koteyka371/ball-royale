@@ -1176,6 +1176,20 @@ class Action:
                 if actual_damage_dealt > 0:
                     attacker.hp = min(getattr(attacker, 'hp', 100.0) + actual_damage_dealt * 0.3, getattr(attacker, 'max_hp', 100.0))
 
+        # Nemesis Hunter Mode healing
+        if new_hp < old_hp:
+            mode_name = getattr(self.world, 'mode', None)
+            m_name = getattr(mode_name, 'name', '') if mode_name else getattr(self.world, 'current_mode_name', '')
+            if not m_name and hasattr(self.world, 'game_mode'):
+                m_name = getattr(self.world.game_mode, 'name', '')
+
+            if m_name == "Nemesis Hunter":
+                if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
+                    if pm.is_nemesis(attacker.ball_type, target.ball_type):
+                        damage_dealt = old_hp - new_hp
+                        heal_amount = damage_dealt * 1.0
+                        attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
+
         # Award XP for damage dealt and kills
         if new_hp < old_hp:
             self._award_xp(attacker, 10.0, self.world)

@@ -2268,6 +2268,42 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if "hp" in target: new_hp = float(target.hp)
 
 	if new_hp < old_hp:
+		var mode_name = ""
+		if self.world != null and "mode" in self.world and self.world.mode != null:
+			if "name" in self.world.mode:
+				mode_name = self.world.mode.name
+			elif self.world.mode.has_method("get_meta") and self.world.mode.has_meta("name"):
+				mode_name = self.world.mode.get_meta("name")
+		elif self.world != null and "current_mode_name" in self.world:
+			mode_name = self.world.current_mode_name
+
+		if mode_name == "" and self.world != null and "game_mode" in self.world and self.world.game_mode != null:
+			if "name" in self.world.game_mode:
+				mode_name = self.world.game_mode.name
+			elif self.world.game_mode.has_method("get_meta") and self.world.game_mode.has_meta("name"):
+				mode_name = self.world.game_mode.get_meta("name")
+
+		if mode_name == "Nemesis Hunter":
+			if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
+				if pm.is_nemesis(attacker_type, target_type):
+					var damage_dealt = old_hp - new_hp
+					var heal_amount = damage_dealt * 1.0
+					var max_hp = 100.0
+					if typeof(attacker) == TYPE_OBJECT and "max_hp" in attacker: max_hp = float(attacker.max_hp)
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("max_hp"): max_hp = float(attacker["max_hp"])
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("max_hp"): max_hp = float(attacker.get_meta("max_hp"))
+
+					var current_hp = 100.0
+					if typeof(attacker) == TYPE_OBJECT and "hp" in attacker: current_hp = float(attacker.hp)
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"): current_hp = float(attacker["hp"])
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("hp"): current_hp = float(attacker.get_meta("hp"))
+
+					var final_hp = min(current_hp + heal_amount, max_hp)
+					if typeof(attacker) == TYPE_OBJECT and "hp" in attacker: attacker.hp = final_hp
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"): attacker["hp"] = final_hp
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"): attacker.set_meta("hp", final_hp)
+
+	if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:
 			var base_xp = 50.0

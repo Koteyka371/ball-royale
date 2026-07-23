@@ -36817,3 +36817,11 @@ class VampiricZoneMode(GameMode):
                         closest_enemy.hp = min(closest_enemy.hp + damage, max_hp)
 
 GAME_MODES['vampiric_zone'] = VampiricZoneMode()
+
+class NemesisHunterMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nemesis Hunter"
+        self.description = "A game mode where dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+GAME_MODES['nemesis_hunter'] = NemesisHunterMode()
