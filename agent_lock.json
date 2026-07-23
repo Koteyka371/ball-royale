@@ -43,9 +43,9 @@
     "agent-6": {
       "name": "Jules Innovation",
       "area": "innovation",
-      "task_id": "idea-1385",
-      "status": "working",
-      "started_at": "2026-07-23T23:05:21.542393+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 4
     },
     "supervisor": {
@@ -67,9 +67,9 @@
     "agent-8": {
       "name": "Jules Worker 8",
       "area": "tests",
-      "task_id": "idea-1387",
-      "status": "assigned",
-      "started_at": "2026-07-23T22:58:44.878869+00:00",
+      "task_id": null,
+      "status": "idle",
+      "started_at": null,
       "cycles_today": 3
     },
     "agent-9": {
@@ -107,9 +107,9 @@
     "agent-13": {
       "name": "Jules Worker 13",
       "area": "tests",
-      "status": "assigned",
-      "task_id": "idea-1407",
-      "started_at": "2026-07-23T22:58:44.878869+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 5
     },
     "agent-14": {
@@ -123,9 +123,9 @@
     "agent-15": {
       "name": "Jules Worker 15",
       "area": "meta",
-      "status": "assigned",
-      "task_id": "idea-1408",
-      "started_at": "2026-07-23T22:58:44.878869+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-16": {
@@ -139,9 +139,9 @@
     "agent-17": {
       "name": "Jules Worker 17",
       "area": "ai-core",
-      "status": "working",
-      "task_id": "idea-1414",
-      "started_at": "2026-07-23T22:38:15.819985+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 4
     },
     "agent-18": {
@@ -155,9 +155,9 @@
     "agent-19": {
       "name": "Jules Worker 19",
       "area": "tests",
-      "status": "assigned",
-      "task_id": "idea-1420",
-      "started_at": "2026-07-23T22:58:44.878869+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 4
     },
     "agent-20": {
