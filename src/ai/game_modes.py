@@ -31369,6 +31369,130 @@ class CollapsingBubblesMode(GameMode):
         })
 GAME_MODES['collapsing_bubbles'] = CollapsingBubblesMode()
 
+class GhostTetherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ghost Tether"
+        self.description = "When you die, you become a weaker Ghost Ball tethered to your killer. To revive, deal 100 chip damage to enemies or wait for your killer to defeat another player."
+        self.ghosts = {}
+        self.previous_hps = {}
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        self.ghosts = {}
+        self.previous_hps = {}
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        assist_revivals = set()
+
+        # Ghost conversion & tracking
+        for b in balls:
+            b_id = getattr(b, "id", None)
+            if b_id is None or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            hp = getattr(b, "hp", 100.0)
+            is_ghost = getattr(b, "is_ghost", False)
+
+            if hp <= 0 and not is_ghost:
+                b.is_ghost = True
+                killer_id = getattr(b, "killer", None)
+
+                # Check if anyone is waiting for THIS killer to get a kill
+                if killer_id is not None:
+                    for g_id, g_data in list(self.ghosts.items()):
+                        if g_data["killer_id"] == killer_id:
+                            assist_revivals.add(g_id)
+
+                if killer_id is None or killer_id == -1:
+                    min_d = 999999
+                    nearest = None
+                    for ob in balls:
+                        if getattr(ob, "alive", True) and getattr(ob, "id", None) != b_id and not getattr(ob, "is_ghost", False):
+                            d = (ob.x - b.x)**2 + (ob.y - b.y)**2
+                            if d < min_d:
+                                min_d = d
+                                nearest = getattr(ob, "id", None)
+                    killer_id = nearest if nearest is not None else -1
+
+                self.ghosts[b_id] = {
+                    "killer_id": killer_id,
+                    "chip_damage": 0.0,
+                    "orig_max_hp": getattr(b, "max_hp", 100.0),
+                    "orig_damage": getattr(b, "damage", 10.0)
+                }
+                b.max_hp = getattr(b, "max_hp", 100.0) * 0.5
+                b.hp = b.max_hp
+                b.damage = getattr(b, "damage", 10.0) * 0.5
+                b.alive = True
+                if b_id in world.dead_balls:
+                    world.dead_balls.remove(b_id)
+
+        # Tether pull & Chip damage tracking
+        for b in balls:
+            b_id = getattr(b, "id", None)
+            if b_id is None or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            if getattr(b, "is_ghost", False):
+                g_data = self.ghosts.get(b_id)
+                if not g_data:
+                    continue
+
+                killer_b = next((x for x in balls if getattr(x, "id", None) == g_data["killer_id"]), None)
+                if killer_b:
+                    dx = killer_b.x - b.x
+                    dy = killer_b.y - b.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 300.0:
+                        pull_force = 500.0
+                        b.vx = getattr(b, "vx", 0.0) + (dx / dist) * pull_force * delta
+                        b.vy = getattr(b, "vy", 0.0) + (dy / dist) * pull_force * delta
+                else:
+                    assist_revivals.add(b_id)
+
+            else:
+                # Normal ball, track HP for chip damage
+                prev_hp = self.previous_hps.get(b_id, getattr(b, "hp", 100.0))
+                curr_hp = getattr(b, "hp", 100.0)
+                if curr_hp < prev_hp:
+                    hp_lost = prev_hp - curr_hp
+                    # Find nearest ghost within 200 units to attribute damage
+                    for gb in balls:
+                        gb_id = getattr(gb, "id", None)
+                        if getattr(gb, "is_ghost", False) and gb_id in self.ghosts:
+                            d = math.hypot(gb.x - b.x, gb.y - b.y)
+                            if d <= 200.0:
+                                self.ghosts[gb_id]["chip_damage"] += hp_lost
+                                break # Attribute to one ghost
+
+        # Execute revivals
+        for b in balls:
+            b_id = getattr(b, "id", None)
+            if getattr(b, "is_ghost", False) and b_id in self.ghosts:
+                if b_id in assist_revivals or self.ghosts[b_id]["chip_damage"] >= 100.0:
+                    b.is_ghost = False
+                    b.max_hp = self.ghosts[b_id]["orig_max_hp"]
+                    b.hp = b.max_hp # Full heal on revive
+                    b.damage = self.ghosts[b_id]["orig_damage"]
+                    del self.ghosts[b_id]
+                    if hasattr(world, "add_event"):
+                        world.add_event("ghost_revived", {"id": b_id, "message": "A ghost has returned to life!"})
+
+        # Update previous HPs
+        self.previous_hps = {}
+        for b in balls:
+            b_id = getattr(b, "id", None)
+            if b_id is not None:
+                self.previous_hps[b_id] = getattr(b, "hp", 100.0)
+
+
+GAME_MODES['ghost_tether'] = GhostTetherMode()
+
 class WatchtowerMode(GameMode):
     def __init__(self):
         super().__init__()
