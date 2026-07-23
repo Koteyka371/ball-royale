@@ -109,6 +109,63 @@ func get_theme(season_num: int) -> String:
     var index = (season_num - 1) % SEASON_THEMES.size()
     return SEASON_THEMES[index]
 
+
+
+
+func get_top_n_players(n: int = 10) -> Array:
+    if not data.has("players"):
+        return []
+
+    var players = data["players"]
+    var sorted_players = []
+    for pid in players.keys():
+        sorted_players.append({"id": pid, "prestige": players[pid]})
+
+    sorted_players.sort_custom(func(a, b): return a["prestige"] > b["prestige"])
+
+    var top_n = []
+    for i in range(min(n, sorted_players.size())):
+        top_n.append(sorted_players[i]["id"])
+
+    return top_n
+
+func record_match_replay(player_id: String, replay_system: Object):
+    var top_10 = get_top_n_players(10)
+    if top_10.has(player_id):
+        store_top_player_replay(player_id, replay_system.to_dict())
+
+func get_available_replays() -> Array:
+    if not data.has("top_replays"):
+        return []
+
+    return data["top_replays"].keys()
+
+func store_top_player_replay(player_id: String, replay_data: Dictionary):
+    if not data.has("top_replays"):
+        data["top_replays"] = {}
+
+    var replay_filename = "user://replay_" + player_id + ".json"
+    var file = FileAccess.open(replay_filename, FileAccess.WRITE)
+    if file:
+        file.store_string(JSON.stringify(replay_data, "  "))
+
+    data["top_replays"][player_id] = replay_filename
+    save_leaderboard()
+
+func get_top_player_replay(player_id: String):
+    if not data.has("top_replays") or not data["top_replays"].has(player_id):
+        return null
+
+    var replay_filename = data["top_replays"][player_id]
+    var file = FileAccess.open(replay_filename, FileAccess.READ)
+    if file:
+        var text = file.get_as_text()
+        var json = JSON.new()
+        var error = json.parse(text)
+        if error == OK:
+            return json.get_data()
+    return null
+
 func generate_season_summary_video(top_players: Array, season_num: int):
     var video_data = {
         "title": "Season " + str(season_num) + " Highlight Reel",
