@@ -678,6 +678,13 @@ class Action:
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
 
+        if getattr(target, "passive_reflect_percent", 0.0) > 0.0:
+            refl_dmg = getattr(attacker, "damage", 10.0) * target.passive_reflect_percent
+            if hasattr(attacker, "take_damage"):
+                attacker.take_damage(refl_dmg)
+            elif hasattr(attacker, "hp"):
+                attacker.hp -= refl_dmg
+
         if getattr(target, "damage_reflection_active", False):
             original_damage = getattr(attacker, "damage", 10.0)
             refl_dmg = original_damage * 0.5
