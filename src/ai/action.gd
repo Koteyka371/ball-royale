@@ -6623,6 +6623,7 @@ func execute(strategy: String, delta: float):
 			"x": float(self.ball.get("x", 0.0)),
 			"y": float(self.ball.get("y", 0.0)),
 			"hp": hp_val,
+			"stamina": float(self.ball.get("stamina", 100.0)),
 			"attack_timer": float(self.ball.get("attack_timer", 0.0)),
 			"skill_timer": float(self.ball.get("skill_timer", 0.0))
 		})
@@ -7789,6 +7790,20 @@ func execute(strategy: String, delta: float):
 							if "id" in self.ball: p_bomb.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_bomb)
 
+
+		if inv.has("deployable_time_anomaly"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var anomaly_id = arena.hazards.size() + randi() % 10000
+				var p_anomaly = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					p_anomaly = load("res://src/arena/procedural_arena.gd").Hazard.new(anomaly_id, self.ball.x, self.ball.y, 80.0, "deployable_time_anomaly", 0.0)
+					p_anomaly.set_meta("duration", 8.0)
+					if "id" in self.ball: p_anomaly.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(p_anomaly)
+					inv.erase("deployable_time_anomaly")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+					elif "inventory" in self.ball: self.ball.inventory = inv
 
 		if inv.has("deployable_acid_puddle"):
 			if world != null and "arena" in world and "hazards" in world.arena:
@@ -12437,6 +12452,73 @@ func execute(strategy: String, delta: float):
                                             "color": colors[randi() % colors.size()]
                                         }
                                     })
+
+                elif hazard.kind == "deployable_time_anomaly":
+                    var current_tick = world.tick if "tick" in world else 0
+                    var last_updated = -1
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("last_updated_tick"): last_updated = hazard.get_meta("last_updated_tick")
+                    elif "last_updated_tick" in hazard: last_updated = hazard.last_updated_tick
+
+                    if last_updated != current_tick:
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("last_updated_tick", current_tick)
+                        elif "last_updated_tick" in hazard: hazard.last_updated_tick = current_tick
+
+                        var h_dur = 8.0
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
+                        elif "duration" in hazard: h_dur = hazard.duration
+
+                        h_dur -= delta
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", h_dur)
+                        elif "duration" in hazard: hazard.duration = h_dur
+
+                        if h_dur <= 0.0:
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            elif "active" in hazard: hazard.active = false
+                            continue
+
+                        if world != null and "balls" in world:
+                            for b in world.balls:
+                                if typeof(b) != TYPE_OBJECT and typeof(b) != TYPE_DICTIONARY: continue
+                                var b_alive = true
+                                if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                                elif "alive" in b: b_alive = b.alive
+
+                                if b_alive:
+                                    var hx = 0.0
+                                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("x"): hx = hazard.get_meta("x")
+                                    elif "x" in hazard: hx = hazard.x
+                                    var hy = 0.0
+                                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("y"): hy = hazard.get_meta("y")
+                                    elif "y" in hazard: hy = hazard.y
+                                    var hr = 80.0
+                                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("radius"): hr = hazard.get_meta("radius")
+                                    elif "radius" in hazard: hr = hazard.radius
+
+                                    var bx = 0.0
+                                    if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                    elif "x" in b: bx = b.x
+                                    var by = 0.0
+                                    if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): by = b.get_meta("y")
+                                    elif "y" in b: by = b.y
+
+                                    var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+                                    if dist <= hr:
+                                        var history = []
+                                        if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("state_history"): history = b.get_meta("state_history")
+                                        elif "state_history" in b: history = b.state_history
+
+                                        if history.size() > 0:
+                                            var past_state = history[0]
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                b.set_meta("x", past_state["x"])
+                                                b.set_meta("y", past_state["y"])
+                                                if past_state.has("hp"): b.set_meta("hp", past_state["hp"])
+                                                if past_state.has("stamina"): b.set_meta("stamina", past_state["stamina"])
+                                            else:
+                                                if "x" in b: b.x = past_state["x"]
+                                                if "y" in b: b.y = past_state["y"]
+                                                if "hp" in b and past_state.has("hp"): b.hp = past_state["hp"]
+                                                if "stamina" in b and past_state.has("stamina"): b.stamina = past_state["stamina"]
 
                 elif hazard.kind == "deployable_acid_puddle":
                     var current_tick = world.tick if "tick" in world else 0
