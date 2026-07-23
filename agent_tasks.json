@@ -35508,6 +35508,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2077",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Weather Altar",
+      "description": "An altar that looks like it will provide a beneficial weather buff when captured, but actually triggers a localized storm that deals heavy damage to the capturing team.",
+      "allowed_paths": [
+        "src/ai/decoy_altar.py",
+        "src/ai/decoy_altar.gd",
+        "tests/test_decoy_altar.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2078",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Anomaly Zones",
+      "description": "Randomly spawning zones that inflict temporary extreme weather effects (e.g. freezing, blinding sandstorm) on any ball that stays within the zone for more than 3 seconds.",
+      "allowed_paths": [
+        "src/ai/anomaly_zones.py",
+        "src/ai/anomaly_zones.gd",
+        "tests/test_anomaly_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
