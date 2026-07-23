@@ -44324,6 +44324,94 @@ class ExpandingLavaRoyaleMode extends GameMode:
 
 var LavaEruptionEventMode = preload("res://src/ai/lava_eruption.gd")
 
+
+class SpawningSafeZonesMode extends GameMode:
+	var zones: Array = []
+	var spawn_timer: float = 0.0
+	var spawn_interval: float = 10.0
+	var shrink_rate: float = 15.0
+	var outside_damage: float = 5.0
+	var damage_increase_rate: float = 1.0
+
+	func _init():
+		pass
+		name = "Spawning Safe Zones"
+		description = "Safe zones periodically spawn and shrink. Players outside the safe zone take increasing damage over time."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		zones = []
+		spawn_timer = 0.0
+		outside_damage = 5.0
+		_spawn_zone(world)
+
+	func _spawn_zone(world) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+		var x = 200.0 + randf() * max(0.0, arena_width - 400.0)
+		var y = 200.0 + randf() * max(0.0, arena_height - 400.0)
+		var radius = 300.0 + randf() * 200.0
+		zones.append({"x": x, "y": y, "radius": radius})
+		if world.has_method("add_event"):
+			world.add_event("safe_zone_spawned", {"x": x, "y": y, "radius": radius})
+
+	func tick(world, balls: Array, delta: float) -> void:
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer -= spawn_interval
+			_spawn_zone(world)
+
+		outside_damage += damage_increase_rate * delta
+
+		var active_zones = []
+		for z in zones:
+			z["radius"] -= shrink_rate * delta
+			if z["radius"] > 0:
+				active_zones.append(z)
+		zones = active_zones
+
+		var damage_this_tick = outside_damage * delta
+
+		var dead_balls = []
+		if "dead_balls" in world:
+			dead_balls = world.dead_balls
+		else:
+			world.set("dead_balls", [])
+			dead_balls = world.dead_balls
+
+		for b in balls:
+			if not b.get("alive") or b.get("ball_type") == "spectator":
+				continue
+
+			var in_safe_zone = false
+			for z in zones:
+				var dx = b.x - z["x"]
+				var dy = b.y - z["y"]
+				if dx*dx + dy*dy <= z["radius"] * z["radius"]:
+					in_safe_zone = true
+					break
+
+			if not in_safe_zone:
+				if b.has_method("take_damage"):
+					b.take_damage(damage_this_tick, "outside_safe_zone")
+				else:
+					var current_hp = b.get("hp")
+					b.set("hp", current_hp - damage_this_tick)
+
+				var hp_after = b.get("hp")
+				if hp_after <= 0 and b.get("alive"):
+					b.set("hp", 0)
+					b.set("alive", false)
+					var bid = b.get("id")
+					if bid != null and not dead_balls.has(bid):
+						dead_balls.append(bid)
+					if world.has_method("add_event"):
+						world.add_event("ball_died", {"id": bid, "reason": "outside_safe_zone", "killer_id": -1})
+
 GAME_MODES = {
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
@@ -54659,3 +54747,4 @@ class ItemJammerEventMode extends GameMode:
 							b.silence_timer = max(sil, 0.5)
 
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode.new()
+GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode.new()

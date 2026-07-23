@@ -2195,3 +2195,62 @@ def test_killstreak_explosion_mode():
 
     assert len(mode.pending_explosions) == 0
     assert bystander.hp == 25.0 # 100 - 75
+
+from ai.game_modes import SpawningSafeZonesMode
+
+def test_spawning_safe_zones_spawning():
+    mode = SpawningSafeZonesMode()
+    world = DummyWorld()
+    # Mock arena
+    class Arena:
+        width = 1000
+        height = 1000
+    world.arena = Arena()
+
+    # After setup, 1 zone should be spawned
+    mode.setup(world, [])
+    assert len(mode.zones) == 1
+
+    # Tick for spawn_interval to trigger another spawn
+    mode.spawn_interval = 2.0
+    mode.tick(world, [], 1.0)
+    assert len(mode.zones) == 1
+    mode.tick(world, [], 1.0)
+    assert len(mode.zones) == 2
+
+def test_spawning_safe_zones_shrinking_and_damage():
+    mode = SpawningSafeZonesMode()
+    world = DummyWorld()
+    class Arena:
+        width = 1000
+        height = 1000
+    world.arena = Arena()
+
+    # A ball inside safe zone and a ball outside
+    b_in = DummyBall("in", 500, 500)
+    b_out = DummyBall("out", 10, 10)
+
+    mode.setup(world, [b_in, b_out])
+
+    # Force zone parameters to be precise
+    mode.zones = [{"x": 500.0, "y": 500.0, "radius": 100.0}]
+
+    initial_out_hp = b_out.hp
+    initial_in_hp = b_in.hp
+
+    # tick
+    mode.shrink_rate = 10.0
+    mode.tick(world, [b_in, b_out], 1.0)
+
+    # Check shrink
+    assert mode.zones[0]["radius"] == 90.0
+
+    # Check damage
+    assert b_in.hp == initial_in_hp # No damage inside
+    assert b_out.hp < initial_out_hp # Taken damage outside
+
+    # Check increasing damage
+    damage_taken = initial_out_hp - b_out.hp
+    mode.tick(world, [b_in, b_out], 1.0)
+    damage_taken_2 = (initial_out_hp - damage_taken) - b_out.hp
+    assert damage_taken_2 > damage_taken # Because outside_damage increases
