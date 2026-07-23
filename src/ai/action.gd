@@ -1520,6 +1520,22 @@ func _attempt_damage_internal(attacker, target) -> void:
 
 	if is_ranged_attack:
 		var recoil_force = original_damage * 10.0
+
+		var amp_timer = 0.0
+		if typeof(attacker) == TYPE_DICTIONARY and attacker.has("recoil_amplifier_timer"): amp_timer = float(attacker.recoil_amplifier_timer)
+		elif typeof(attacker) != TYPE_DICTIONARY:
+			if "recoil_amplifier_timer" in attacker: amp_timer = float(attacker.recoil_amplifier_timer)
+			elif attacker.has_method("has_meta") and attacker.has_meta("recoil_amplifier_timer"): amp_timer = float(attacker.get_meta("recoil_amplifier_timer"))
+		if amp_timer > 0.0:
+			recoil_force *= 2.0
+
+		var damp_timer = 0.0
+		if typeof(attacker) == TYPE_DICTIONARY and attacker.has("recoil_dampener_timer"): damp_timer = float(attacker.recoil_dampener_timer)
+		elif typeof(attacker) != TYPE_DICTIONARY:
+			if "recoil_dampener_timer" in attacker: damp_timer = float(attacker.recoil_dampener_timer)
+			elif attacker.has_method("has_meta") and attacker.has_meta("recoil_dampener_timer"): damp_timer = float(attacker.get_meta("recoil_dampener_timer"))
+		if damp_timer > 0.0:
+			recoil_force *= 0.2
 		var rdx = t_x2 - a_x2
 		var rdy = t_y2 - a_y2
 		var rdist_sq = rdx*rdx + rdy*rdy
