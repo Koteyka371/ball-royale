@@ -24970,7 +24970,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -33061,6 +33061,21 @@ func _use_skill():
                         self.ball.set_meta("ricochet_barrier_timer", 3.0)
 
                 self.world.arena.hazards.append(trap)
+
+        elif skill_name == "deploy_time_anomaly_field":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var field_id = self.world.get("next_id", 99999) + randi() % 10000
+                var field = {
+                    "id": field_id,
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "radius": 150.0,
+                    "kind": "time_anomaly_field",
+                    "damage": 0.0,
+                    "duration": 10.0,
+                    "owner_id": self.ball.id if "id" in self.ball else self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else -1
+                }
+                self.world.arena.hazards.append(field)
         elif skill_name == "deploy_teleport_relay":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var relay_id = self.world.get("next_id", 99999) + randi() % 10000
@@ -37948,6 +37963,38 @@ func _update_skill_timer(delta: float):
                                     elif hazard.has_method("set_meta"): hazard.set_meta("attached_id", null)
                                     elif "attached_id" in hazard: hazard.attached_id = null
 
+
+                if h_kind == "time_anomaly_field":
+                    var h_radius = float(hazard.radius) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (float(hazard.get_meta("radius")) if hazard.has_method("has_meta") and hazard.has_meta("radius") else (float(hazard.radius) if "radius" in hazard else 150.0))
+                    var h_x = float(hazard.x) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (float(hazard.get_meta("x")) if hazard.has_method("has_meta") and hazard.has_meta("x") else (float(hazard.x) if "x" in hazard else 0.0))
+                    var h_y = float(hazard.y) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (float(hazard.get_meta("y")) if hazard.has_method("has_meta") and hazard.has_meta("y") else (float(hazard.y) if "y" in hazard else 0.0))
+                    var dist_sq = (self.ball.x - h_x)*(self.ball.x - h_x) + (self.ball.y - h_y)*(self.ball.y - h_y)
+                    if dist_sq <= h_radius * h_radius:
+                        var history = []
+                        if self.ball.has_method("has_meta") and self.ball.has_meta("state_history"):
+                            history = self.ball.get_meta("state_history")
+                        elif "state_history" in self.ball:
+                            history = self.ball.state_history
+                        if history.size() > 0:
+                            var past_state = history[0]
+                            var p_x = past_state["x"]
+                            var p_y = past_state["y"]
+                            var dx = p_x - self.ball.x
+                            var dy = p_y - self.ball.y
+                            var pull_speed = 200.0 * delta
+                            var dist = sqrt(dx*dx + dy*dy)
+                            if dist > 0.001:
+                                self.ball.x += (dx / dist) * min(pull_speed, dist)
+                                self.ball.y += (dy / dist) * min(pull_speed, dist)
+                            else:
+                                self.ball.x = p_x
+                                self.ball.y = p_y
+                            if past_state.has("hp"):
+                                if "hp" in self.ball: self.ball.hp = past_state["hp"]
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", past_state["hp"])
+                            if past_state.has("stamina"):
+                                if "stamina" in self.ball: self.ball.stamina = past_state["stamina"]
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("stamina", past_state["stamina"])
                 if h_kind == "siphon_latch" and (hazard.target_id if "target_id" in hazard else (hazard.get_meta("target_id") if hazard.has_method("get_meta") and hazard.has_meta("target_id") else -1)) == (self.ball.id if "id" in self.ball else self.ball.get_meta("id")):
                     var h_owner_id = hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
 
