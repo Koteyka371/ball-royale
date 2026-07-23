@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1383] Mutator Synergy Combinations — *2026-07-23 05:22:02 UTC*
+
+If players vote for two specific mutators that complement each other (e.g., '10x Speed' and 'Bouncy Walls'), the game combines them into a secret third mutator (e.g., 'Pinball Nightmare').
+
+---
+
 ## [idea-1375] Trail of Fire Trap — *2026-07-23 05:15:58 UTC*
 
 A trap item that leaves a burning trail on the ground where the ball moves for the next 10 seconds. Enemies walking into the trail take continuous burn damage.
