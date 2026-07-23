@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1357] Bounty Hunter Contracts — *2026-07-23 04:46:19 UTC*
+
+Players can spend prestige tokens or skill points at the start of a match to place a high-value contract on a specific enemy player. If they successfully eliminate that target, they receive triple the investment back. If another player claims the kill, they get a portion of the reward.
+
+---
+
 ## [idea-1355] Confetti Bomb Trap — *2026-07-23 04:46:13 UTC*
 
 A deployable hazard that deals zero damage but heavily obscures vision by spawning massive amounts of confetti particles when triggered.
