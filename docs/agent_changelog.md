@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1355] Confetti Bomb Trap — *2026-07-23 04:46:13 UTC*
+
+A deployable hazard that deals zero damage but heavily obscures vision by spawning massive amounts of confetti particles when triggered.
+
+---
+
 ## [idea-1339] Quantum Tethers — *2026-07-23 04:46:08 UTC*
 
 Players can deploy a quantum tether that attaches to an enemy ball. For the next 5 seconds, any knockback or damage taken by the player is partially shared with the tethered enemy. If the enemy moves too far away, the tether violently snaps, causing significant damage and stunning both balls briefly.
