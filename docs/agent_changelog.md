@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1293] Quantum Entanglement Trait — *2026-07-23 19:24:58 UTC*
+
+A rare starting trait where two players are quantum entangled. Whatever damage or healing one receives, the other receives 50% of it. However, if one player is eliminated, the other gains a massive permanent speed and damage boost (Enraged State).
+
+---
+
 ## [idea-1349] Aura Amplify Trap — *2026-07-23 19:24:53 UTC*
 
 A placeable trap that temporarily supercharges any active friendly stacking auras in its blast radius, doubling their effects and range for a short duration while dealing minor damage to enemies. This encourages teams to strategically defend the trap to maximize their buffs during engagements.
