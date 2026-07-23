@@ -27,5 +27,6 @@
     "login_streak": 0,
     "last_login_date": "",
     "guild_name": "",
-    "clan_name": ""
+    "clan_name": "",
+    "enforcers": {}
 }

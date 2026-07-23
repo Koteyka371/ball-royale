@@ -55825,4 +55825,156 @@ class HiveDefenseMode extends GameMode:
 
 GAME_MODES['hive_defense'] = HiveDefenseMode.new()
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode.new()
+
+class WindingSnakePathMode extends GameMode:
+	var path_points: Array = []
+	var path_width: float = 300.0
+	var min_path_width: float = 80.0
+	var shrink_rate: float = 3.0
+	var head_x: float = 500.0
+	var head_y: float = 500.0
+	var head_angle: float = 0.0
+	var snake_speed: float = 80.0
+	var point_interval_timer: float = 0.0
+	var point_interval: float = 0.5
+	var max_points: int = 20
+	var outside_damage: float = 5.0
+	var damage_increase_rate: float = 1.0
+
+	func _init():
+		super._init()
+		name = "Winding Snake Path"
+		description = "The safe zone is a winding path that continuously moves and shrinks, forcing players to navigate narrow corridors."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		path_points = []
+		path_width = 300.0
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+		head_x = arena_width / 2.0
+		head_y = arena_height / 2.0
+		head_angle = randf() * 2.0 * PI
+		path_points.append({"x": head_x, "y": head_y})
+		outside_damage = 5.0
+		point_interval_timer = 0.0
+
+	func _point_to_segment_dist(px: float, py: float, ax: float, ay: float, bx: float, by: float) -> float:
+		var l2 = (ax - bx) * (ax - bx) + (ay - by) * (ay - by)
+		if l2 == 0.0:
+			return sqrt((px - ax) * (px - ax) + (py - ay) * (py - ay))
+		var t = max(0.0, min(1.0, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+		var proj_x = ax + t * (bx - ax)
+		var proj_y = ay + t * (by - ay)
+		return sqrt((px - proj_x) * (px - proj_x) + (py - proj_y) * (py - proj_y))
+
+	func tick(world, balls: Array, delta: float) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+		path_width = max(min_path_width, path_width - shrink_rate * delta)
+		outside_damage += damage_increase_rate * delta
+
+		var margin = 150.0
+		var turn = (randf() * 3.0 - 1.5) * delta
+
+		if head_x < margin:
+			turn += 2.0 * delta
+		elif head_x > arena_width - margin:
+			turn -= 2.0 * delta
+
+		if head_y < margin:
+			if sin(head_angle) < 0.0:
+				turn += 2.0 * delta * (1.0 if cos(head_angle) > 0.0 else -1.0)
+		elif head_y > arena_height - margin:
+			if sin(head_angle) > 0.0:
+				turn -= 2.0 * delta * (1.0 if cos(head_angle) > 0.0 else -1.0)
+
+		head_angle += turn
+		head_x += cos(head_angle) * snake_speed * delta
+		head_y += sin(head_angle) * snake_speed * delta
+
+		head_x = max(0.0, min(arena_width, head_x))
+		head_y = max(0.0, min(arena_height, head_y))
+
+		point_interval_timer += delta
+		if point_interval_timer >= point_interval:
+			point_interval_timer -= point_interval
+			path_points.append({"x": head_x, "y": head_y})
+			if path_points.size() > max_points:
+				path_points.pop_front()
+		else:
+			if path_points.size() > 0:
+				path_points[path_points.size() - 1] = {"x": head_x, "y": head_y}
+			else:
+				path_points.append({"x": head_x, "y": head_y})
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+			else:
+				alive = b.get("alive") if "alive" in b else false
+
+			if not alive:
+				continue
+			var ball_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				ball_type = b.get("ball_type", "")
+			else:
+				ball_type = b.get("ball_type") if "ball_type" in b else ""
+
+			if ball_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+			else:
+				bx = b.get("x") if "x" in b else 0.0
+				by = b.get("y") if "y" in b else 0.0
+
+			var in_safe_zone = false
+			if path_points.size() > 1:
+				for i in range(path_points.size() - 1):
+					var p1 = path_points[i]
+					var p2 = path_points[i+1]
+					var dist = _point_to_segment_dist(bx, by, p1["x"], p1["y"], p2["x"], p2["y"])
+					if dist <= path_width / 2.0:
+						in_safe_zone = true
+						break
+			elif path_points.size() == 1:
+				var p1 = path_points[0]
+				var dist = sqrt((bx - p1["x"]) * (bx - p1["x"]) + (by - p1["y"]) * (by - p1["y"]))
+				if dist <= path_width / 2.0:
+					in_safe_zone = true
+
+			if not in_safe_zone:
+				var damage = outside_damage * delta
+				if typeof(b) == TYPE_OBJECT:
+					if b.has_method("take_damage"):
+						b.take_damage(damage)
+					elif "hp" in b:
+						b.hp -= damage
+						if b.hp <= 0.0:
+							b.alive = false
+							b.hp = 0.0
+				elif typeof(b) == TYPE_DICTIONARY:
+					var hp = b.get("hp", 100.0) - damage
+					b["hp"] = hp
+					if hp <= 0.0:
+						b["alive"] = false
+						b["hp"] = 0.0
+
+GAME_MODES['winding_snake_path'] = WindingSnakePathMode.new()
+
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode.new()

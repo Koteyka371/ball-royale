@@ -36121,4 +36121,126 @@ class HiveDefenseMode(GameMode):
 GAME_MODES['hive_defense'] = HiveDefenseMode()
 
 GAME_MODES['item_jammer_event'] = ItemJammerEventMode()
+
+class WindingSnakePathMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Winding Snake Path"
+        self.description = "The safe zone is a winding path that continuously moves and shrinks, forcing players to navigate narrow corridors."
+        self.path_points = []
+        self.path_width = 300.0
+        self.min_path_width = 80.0
+        self.shrink_rate = 3.0
+        self.head_x = 500.0
+        self.head_y = 500.0
+        self.head_angle = 0.0
+        self.speed = 80.0
+        self.point_interval_timer = 0.0
+        self.point_interval = 0.5
+        self.max_points = 20
+        self.outside_damage = 5.0
+        self.damage_increase_rate = 1.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.path_points = []
+        self.path_width = 300.0
+        self.head_x = 500.0
+        self.head_y = 500.0
+        import random
+        import math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.head_x = arena_width / 2
+        self.head_y = arena_height / 2
+        self.head_angle = random.uniform(0, 2 * math.pi)
+        self.path_points.append({"x": self.head_x, "y": self.head_y})
+        self.outside_damage = 5.0
+        self.point_interval_timer = 0.0
+
+    def _point_to_segment_dist(self, px, py, ax, ay, bx, by):
+        import math
+        l2 = (ax - bx)**2 + (ay - by)**2
+        if l2 == 0:
+            return math.sqrt((px - ax)**2 + (py - ay)**2)
+        t = max(0, min(1, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+        proj_x = ax + t * (bx - ax)
+        proj_y = ay + t * (by - ay)
+        return math.sqrt((px - proj_x)**2 + (py - proj_y)**2)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.path_width = max(self.min_path_width, self.path_width - self.shrink_rate * delta)
+        self.outside_damage += self.damage_increase_rate * delta
+
+        margin = 150.0
+        turn = random.uniform(-1.5, 1.5) * delta
+
+        if self.head_x < margin:
+            turn += 2.0 * delta
+        elif self.head_x > arena_width - margin:
+            turn -= 2.0 * delta
+
+        if self.head_y < margin:
+            if math.sin(self.head_angle) < 0:
+                turn += 2.0 * delta * (1 if math.cos(self.head_angle) > 0 else -1)
+        elif self.head_y > arena_height - margin:
+            if math.sin(self.head_angle) > 0:
+                turn -= 2.0 * delta * (1 if math.cos(self.head_angle) > 0 else -1)
+
+        self.head_angle += turn
+        self.head_x += math.cos(self.head_angle) * self.speed * delta
+        self.head_y += math.sin(self.head_angle) * self.speed * delta
+
+        self.head_x = max(0.0, min(arena_width, self.head_x))
+        self.head_y = max(0.0, min(arena_height, self.head_y))
+
+        self.point_interval_timer += delta
+        if self.point_interval_timer >= self.point_interval:
+            self.point_interval_timer -= self.point_interval
+            self.path_points.append({"x": self.head_x, "y": self.head_y})
+            if len(self.path_points) > self.max_points:
+                self.path_points.pop(0)
+        else:
+            if len(self.path_points) > 0:
+                self.path_points[-1] = {"x": self.head_x, "y": self.head_y}
+            else:
+                self.path_points.append({"x": self.head_x, "y": self.head_y})
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            in_safe_zone = False
+            if len(self.path_points) > 1:
+                for i in range(len(self.path_points) - 1):
+                    p1 = self.path_points[i]
+                    p2 = self.path_points[i+1]
+                    dist = self._point_to_segment_dist(b.x, b.y, p1["x"], p1["y"], p2["x"], p2["y"])
+                    if dist <= self.path_width / 2.0:
+                        in_safe_zone = True
+                        break
+            elif len(self.path_points) == 1:
+                p1 = self.path_points[0]
+                dist = math.sqrt((b.x - p1["x"])**2 + (b.y - p1["y"])**2)
+                if dist <= self.path_width / 2.0:
+                    in_safe_zone = True
+
+            if not in_safe_zone:
+                damage = self.outside_damage * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(damage)
+                else:
+                    b.hp = getattr(b, "hp", 100.0) - damage
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0.0
+
+GAME_MODES['winding_snake_path'] = WindingSnakePathMode()
+
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode()
