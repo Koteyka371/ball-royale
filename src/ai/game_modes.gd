@@ -45519,8 +45519,97 @@ class SpawningSafeZonesMode extends GameMode:
 					if world.has_method("add_event"):
 						world.add_event("ball_died", {"id": bid, "reason": "outside_safe_zone", "killer_id": -1})
 
+class MirrorProjectilesMode extends GameMode:
+
+	func _init() -> void:
+		name = "Mirror Projectiles"
+		description = "A game mode where the entire arena is horizontally symmetrical. Firing a projectile on the left side of the map simultaneously spawns a 'phantom' projectile on the right side traveling in the mirrored direction. Players have to watch both sides of the arena to dodge effectively."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		if world == null or not "projectiles" in world or typeof(world.projectiles) != TYPE_ARRAY:
+			return
+
+		var arena_width = 1000
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "width" in world.arena:
+			arena_width = world.arena.width
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "width" in world.arena:
+			arena_width = world.arena.width
+
+		var new_mirrors = []
+		for p in world.projectiles:
+			var is_processed = false
+			if typeof(p) == TYPE_DICTIONARY and "has_been_mirrored" in p and p.has_been_mirrored:
+				is_processed = true
+			elif typeof(p) == TYPE_OBJECT and p.has_method("get") and p.get("has_been_mirrored"):
+				is_processed = true
+			elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("has_been_mirrored") and p.get_meta("has_been_mirrored"):
+				is_processed = true
+
+			var is_mirror = false
+			if typeof(p) == TYPE_DICTIONARY and "is_mirror_clone" in p and p.is_mirror_clone:
+				is_mirror = true
+			elif typeof(p) == TYPE_OBJECT and p.has_method("get") and p.get("is_mirror_clone"):
+				is_mirror = true
+			elif typeof(p) == TYPE_OBJECT and p.has_method("get_meta") and p.has_meta("is_mirror_clone") and p.get_meta("is_mirror_clone"):
+				is_mirror = true
+
+			if not is_processed and not is_mirror:
+				if typeof(p) == TYPE_DICTIONARY:
+					p.has_been_mirrored = true
+				elif typeof(p) == TYPE_OBJECT and p.has_method("set"):
+					p.set("has_been_mirrored", true)
+				elif typeof(p) == TYPE_OBJECT and p.has_method("set_meta"):
+					p.set_meta("has_been_mirrored", true)
+
+				var clone = null
+				if typeof(p) == TYPE_DICTIONARY:
+					clone = p.duplicate(true)
+					if "id" in clone:
+						clone.id = str(clone.id) + "_mirror"
+					if "x" in clone:
+						clone.x = arena_width - clone.x
+					if "vx" in clone:
+						clone.vx = -clone.vx
+					clone.is_mirror_clone = true
+				elif typeof(p) == TYPE_OBJECT:
+					# Attempt to shallow clone properties dynamically if possible. However, the exact class is unknown.
+					# Let's create a dictionary wrapper since the engine often consumes dictionaries.
+					# But actually, Godot 4 lets us instance the same script or clone. There's no safe generic clone in Godot for nodes.
+					# We will extract properties into a Dictionary so the game loop can at least use it.
+					var dict_clone = {}
+					# In this engine, most projectiles are dictionaries in GDScript AI layer, or simple Objects with properties.
+					# If it has a duplicate method (e.g. Node or Resource), use it.
+					if p.has_method("duplicate"):
+						clone = p.duplicate()
+						if clone.has_method("set"):
+							clone.set("id", str(p.get("id")) + "_mirror" if p.get("id") != null else "mirror")
+							clone.set("x", arena_width - p.get("x") if p.get("x") != null else arena_width)
+							clone.set("vx", -p.get("vx") if p.get("vx") != null else 0)
+							clone.set("is_mirror_clone", true)
+							clone.set("has_been_mirrored", true)
+					elif "x" in p and "vx" in p: # duck typing an object
+						# It's an object without duplicate, create a dict instead
+						dict_clone["id"] = str(p.get("id")) + "_mirror" if p.has_method("get") and p.get("id") != null else "mirror"
+						dict_clone["x"] = arena_width - p.get("x") if p.has_method("get") and p.get("x") != null else arena_width
+						dict_clone["y"] = p.get("y") if p.has_method("get") and p.get("y") != null else 0
+						dict_clone["vx"] = -p.get("vx") if p.has_method("get") and p.get("vx") != null else 0
+						dict_clone["vy"] = p.get("vy") if p.has_method("get") and p.get("vy") != null else 0
+						dict_clone["is_mirror_clone"] = true
+						dict_clone["has_been_mirrored"] = true
+						clone = dict_clone
+
+				if clone != null:
+					new_mirrors.append(clone)
+
+		if new_mirrors.size() > 0:
+			for m in new_mirrors:
+				world.projectiles.append(m)
+
+
 GAME_MODES = {
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
+	"mirror_projectiles": MirrorProjectilesMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),

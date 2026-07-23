@@ -36554,3 +36554,57 @@ class WeatherTrapMode(GameMode):
                         b.perception_radius = base_perception * 0.5
 
 GAME_MODES['weather_traps'] = WeatherTrapMode()
+
+class MirrorProjectilesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirror Projectiles"
+        self.description = "A game mode where the entire arena is horizontally symmetrical. Firing a projectile on the left side of the map simultaneously spawns a 'phantom' projectile on the right side traveling in the mirrored direction. Players have to watch both sides of the arena to dodge effectively."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world, 'projectiles'):
+            return
+
+        arena_width = getattr(getattr(world, 'arena', None), 'width', 1000)
+
+        new_mirrors = []
+        for p in world.projectiles:
+            if getattr(p, 'has_been_mirrored', False) or getattr(p, 'is_mirror_clone', False):
+                continue
+
+            p.has_been_mirrored = True
+
+            # Create a mirror clone
+            import copy
+            try:
+                clone = copy.copy(p)
+                if hasattr(clone, 'id'):
+                    clone.id = f"{getattr(p, 'id', '')}_mirror"
+                elif isinstance(clone, dict) and 'id' in clone:
+                    clone['id'] = f"{clone['id']}_mirror"
+
+                if hasattr(clone, 'x'):
+                    clone.x = arena_width - clone.x
+                elif isinstance(clone, dict) and 'x' in clone:
+                    clone['x'] = arena_width - clone['x']
+
+                if hasattr(clone, 'vx'):
+                    clone.vx = -clone.vx
+                elif isinstance(clone, dict) and 'vx' in clone:
+                    clone['vx'] = -clone['vx']
+
+                if hasattr(clone, 'is_mirror_clone'):
+                    pass
+                clone.is_mirror_clone = True
+                if isinstance(clone, dict):
+                    clone['is_mirror_clone'] = True
+
+                new_mirrors.append(clone)
+            except Exception:
+                pass
+
+        if new_mirrors:
+            world.projectiles.extend(new_mirrors)
+
+GAME_MODES["mirror_projectiles"] = MirrorProjectilesMode()
