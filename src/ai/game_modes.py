@@ -20434,7 +20434,6 @@ class ExtremeWeatherMode(GameMode):
 
 
                     b_x, b_y = getattr(b, "x", 0), getattr(b, "y", 0)
-                    import math
                     dist_to_center = math.hypot(b_x - center_x, b_y - center_y)
 
                     # Gradual flood expands from center over the 15s duration
