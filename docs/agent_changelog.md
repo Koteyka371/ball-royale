@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1404] AI Highlight Commentary — *2026-07-23 20:07:55 UTC*
+
+Add text-to-speech commentary during highlight playback, analyzing the player's performance.
+
+---
+
 ## [idea-1366] Quantum Tunneling Booster — *2026-07-23 20:07:50 UTC*
 
 A booster that allows the ball to phase through solid hazards like walls or rocks for a brief duration, enabling surprise attacks or escapes.
