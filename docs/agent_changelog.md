@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1344] Necromancer Lich Evolution — *2026-07-23 06:49:20 UTC*
+
+If a Necromancer survives for 60 seconds without taking any damage, it evolves into a Lich. A Lich's minions are permanently enraged and it can summon 2 skeletal dragons that have a ranged breath attack.
+
+---
+
 ## [idea-1350] Chameleon Ball Type — *2026-07-23 06:47:21 UTC*
 
 A new ball type that automatically adopts the primary trait of the last enemy it damaged, switching playstyles dynamically during combat.
