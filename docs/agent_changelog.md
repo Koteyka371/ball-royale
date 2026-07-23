@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1375] Trail of Fire Trap — *2026-07-23 05:15:58 UTC*
+
+A trap item that leaves a burning trail on the ground where the ball moves for the next 10 seconds. Enemies walking into the trail take continuous burn damage.
+
+---
+
 ## [idea-1381] Shrinking Danger Zones Mode — *2026-07-23 05:05:30 UTC*
 
 A game mode where safe zones periodically spawn and shrink. Players outside the safe zone take increasing damage over time.
