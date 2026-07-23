@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1353] Guild Territories — *2026-07-23 07:23:45 UTC*
+
+Introduce a persistent world map where clans and guilds can battle for control over different zones, gaining passive resource buffs based on controlled territories.
+
+---
+
 ## [idea-1386] Hive Mind Game Mode — *2026-07-23 07:04:50 UTC*
 
 A new team-based game mode where each team has a central 'Hive' structure that must be protected. Teams must gather resources scattered across the map to upgrade their hive's defenses and spawn automated minions to assault the enemy hive.

@@ -23181,7 +23181,7 @@
     },
     {
       "id": "idea-1353",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Territories",
@@ -35350,6 +35350,40 @@
         "src/ai/black_hole_core_item.py",
         "src/ai/black_hole_core_item.gd",
         "tests/test_black_hole_core_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2068",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stasis Bubble Projector",
+      "description": "A deployable item that projects a large bubble. Balls inside the bubble have their cooldown timers and stamina regeneration frozen, encouraging tactical positioning.",
+      "allowed_paths": [
+        "src/ai/stasis_bubble_projector.py",
+        "src/ai/stasis_bubble_projector.gd",
+        "tests/test_stasis_bubble_projector.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2069",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Relay Trap",
+      "description": "A deployable hazard that teleports any ball entering it to the most recent death location of another ball, dealing minor damage upon arrival.",
+      "allowed_paths": [
+        "src/arena/quantum_relay_trap.py",
+        "src/arena/quantum_relay_trap.gd",
+        "tests/test_quantum_relay_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
