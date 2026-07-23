@@ -38493,6 +38493,293 @@ class SacrificeAltarMode extends GameMode:
 								world.call("add_event", "sacrifice_altar_used", {"ball": b, "altar": altar})
 
 
+
+class GhostTetherMode extends GameMode:
+	var ghosts: Dictionary = {}
+	var previous_hps: Dictionary = {}
+
+	func _init() -> void:
+		name = "Ghost Tether"
+		description = "When you die, you become a weaker Ghost Ball tethered to your killer. To revive, deal 100 chip damage to enemies or wait for your killer to defeat another player."
+
+	func setup(world, balls: Array) -> void:
+		ghosts.clear()
+		previous_hps.clear()
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		var assist_revivals = []
+
+		# Ghost conversion & tracking
+		for b in balls:
+			var b_id = -1
+			if typeof(b) == TYPE_DICTIONARY and "id" in b: b_id = b.id
+			elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+			if b_id == -1 or b_type == "spectator":
+				continue
+
+			var hp = 100.0
+			var max_hp = 100.0
+			var damage = 10.0
+			var is_ghost = false
+			var killer = -1
+			var alive = true
+			var b_x = 0.0
+			var b_y = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if "hp" in b: hp = b.hp
+				if "max_hp" in b: max_hp = b.max_hp
+				if "damage" in b: damage = b.damage
+				if "is_ghost" in b: is_ghost = b.is_ghost
+				if "killer" in b: killer = b.killer
+				if "alive" in b: alive = b.alive
+				if "x" in b: b_x = b.x
+				if "y" in b: b_y = b.y
+			elif typeof(b) == TYPE_OBJECT:
+				if "hp" in b: hp = b.hp
+				if "max_hp" in b: max_hp = b.max_hp
+				if "damage" in b: damage = b.damage
+				if b.has_method("get_meta") and b.has_meta("is_ghost"): is_ghost = b.get_meta("is_ghost")
+				elif "is_ghost" in b: is_ghost = b.is_ghost
+				if "killer" in b: killer = b.killer
+				if "alive" in b: alive = b.alive
+				if "x" in b: b_x = b.x
+				if "y" in b: b_y = b.y
+
+			if hp <= 0 and not is_ghost:
+				is_ghost = true
+
+				# Assist revivals directly
+				for g_id in ghosts.keys():
+					if ghosts[g_id].killer_id == killer and killer != -1 and killer != null:
+						if not assist_revivals.has(g_id):
+							assist_revivals.append(g_id)
+
+				if killer == -1 or killer == null:
+					var min_d = 999999.0
+					var nearest = -1
+					for ob in balls:
+						var ob_id = -1
+						var ob_alive = true
+						var ob_ghost = false
+						var ob_x = 0.0
+						var ob_y = 0.0
+						if typeof(ob) == TYPE_DICTIONARY:
+							if "id" in ob: ob_id = ob.id
+							if "alive" in ob: ob_alive = ob.alive
+							if "is_ghost" in ob: ob_ghost = ob.is_ghost
+							if "x" in ob: ob_x = ob.x
+							if "y" in ob: ob_y = ob.y
+						elif typeof(ob) == TYPE_OBJECT:
+							if "id" in ob: ob_id = ob.id
+							if "alive" in ob: ob_alive = ob.alive
+							if ob.has_method("get_meta") and ob.has_meta("is_ghost"): ob_ghost = ob.get_meta("is_ghost")
+							elif "is_ghost" in ob: ob_ghost = ob.is_ghost
+							if "x" in ob: ob_x = ob.x
+							if "y" in ob: ob_y = ob.y
+
+						if ob_alive and ob_id != b_id and not ob_ghost:
+							var d = (ob_x - b_x)*(ob_x - b_x) + (ob_y - b_y)*(ob_y - b_y)
+							if d < min_d:
+								min_d = d
+								nearest = ob_id
+					killer = nearest
+
+				ghosts[b_id] = {
+					"killer_id": killer,
+					"chip_damage": 0.0,
+					"orig_max_hp": max_hp,
+					"orig_damage": damage
+				}
+
+				var new_max_hp = max_hp * 0.5
+				var new_hp = new_max_hp
+				var new_damage = damage * 0.5
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b.max_hp = new_max_hp
+					b.hp = new_hp
+					b.damage = new_damage
+					b.is_ghost = true
+					b.alive = true
+				elif typeof(b) == TYPE_OBJECT:
+					b.max_hp = new_max_hp
+					b.hp = new_hp
+					b.damage = new_damage
+					if b.has_method("set_meta"): b.set_meta("is_ghost", true)
+					b.is_ghost = true
+					b.alive = true
+
+				if typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
+					var db = world.dead_balls
+					if typeof(db) == TYPE_ARRAY and db.has(b_id):
+						db.erase(b_id)
+				elif typeof(world) == TYPE_OBJECT and "dead_balls" in world:
+					var db = world.dead_balls
+					if typeof(db) == TYPE_ARRAY and db.has(b_id):
+						db.erase(b_id)
+
+		# Tether pull & Chip damage tracking
+		for b in balls:
+			var b_id = -1
+			if typeof(b) == TYPE_DICTIONARY and "id" in b: b_id = b.id
+			elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+			if b_id == -1 or b_type == "spectator":
+				continue
+
+			var is_ghost = false
+			var b_x = 0.0
+			var b_y = 0.0
+			var curr_hp = 100.0
+			var b_vx = 0.0
+			var b_vy = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if "is_ghost" in b: is_ghost = b.is_ghost
+				if "x" in b: b_x = b.x
+				if "y" in b: b_y = b.y
+				if "hp" in b: curr_hp = b.hp
+				if "vx" in b: b_vx = b.vx
+				if "vy" in b: b_vy = b.vy
+			elif typeof(b) == TYPE_OBJECT:
+				if b.has_method("get_meta") and b.has_meta("is_ghost"): is_ghost = b.get_meta("is_ghost")
+				elif "is_ghost" in b: is_ghost = b.is_ghost
+				if "x" in b: b_x = b.x
+				if "y" in b: b_y = b.y
+				if "hp" in b: curr_hp = b.hp
+				if "vx" in b: b_vx = b.vx
+				if "vy" in b: b_vy = b.vy
+
+			if is_ghost:
+				if ghosts.has(b_id):
+					var g_data = ghosts[b_id]
+					var killer_b = null
+					for x in balls:
+						var x_id = -1
+						if typeof(x) == TYPE_DICTIONARY and "id" in x: x_id = x.id
+						elif typeof(x) == TYPE_OBJECT and "id" in x: x_id = x.id
+						if x_id == g_data.killer_id:
+							killer_b = x
+							break
+
+					if killer_b != null:
+						var k_x = 0.0
+						var k_y = 0.0
+						if typeof(killer_b) == TYPE_DICTIONARY:
+							if "x" in killer_b: k_x = killer_b.x
+							if "y" in killer_b: k_y = killer_b.y
+						elif typeof(killer_b) == TYPE_OBJECT:
+							if "x" in killer_b: k_x = killer_b.x
+							if "y" in killer_b: k_y = killer_b.y
+
+						var dx = k_x - b_x
+						var dy = k_y - b_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist > 300.0:
+							var pull_force = 500.0
+							var new_vx = b_vx + (dx / dist) * pull_force * delta
+							var new_vy = b_vy + (dy / dist) * pull_force * delta
+							if typeof(b) == TYPE_DICTIONARY:
+								b.vx = new_vx
+								b.vy = new_vy
+							elif typeof(b) == TYPE_OBJECT:
+								b.vx = new_vx
+								b.vy = new_vy
+					else:
+						if not assist_revivals.has(b_id):
+							assist_revivals.append(b_id)
+			else:
+				var prev_hp = 100.0
+				if previous_hps.has(b_id):
+					prev_hp = previous_hps[b_id]
+
+				if curr_hp < prev_hp:
+					var hp_lost = prev_hp - curr_hp
+					for gb in balls:
+						var gb_id = -1
+						var gb_ghost = false
+						var gb_x = 0.0
+						var gb_y = 0.0
+
+						if typeof(gb) == TYPE_DICTIONARY:
+							if "id" in gb: gb_id = gb.id
+							if "is_ghost" in gb: gb_ghost = gb.is_ghost
+							if "x" in gb: gb_x = gb.x
+							if "y" in gb: gb_y = gb.y
+						elif typeof(gb) == TYPE_OBJECT:
+							if "id" in gb: gb_id = gb.id
+							if gb.has_method("get_meta") and gb.has_meta("is_ghost"): gb_ghost = gb.get_meta("is_ghost")
+							elif "is_ghost" in gb: gb_ghost = gb.is_ghost
+							if "x" in gb: gb_x = gb.x
+							if "y" in gb: gb_y = gb.y
+
+						if gb_ghost and ghosts.has(gb_id):
+							var d = sqrt((gb_x - b_x)*(gb_x - b_x) + (gb_y - b_y)*(gb_y - b_y))
+							if d <= 200.0:
+								ghosts[gb_id].chip_damage += hp_lost
+								break
+
+		# Execute revivals
+		for b in balls:
+			var b_id = -1
+			var is_ghost = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if "id" in b: b_id = b.id
+				if "is_ghost" in b: is_ghost = b.is_ghost
+			elif typeof(b) == TYPE_OBJECT:
+				if "id" in b: b_id = b.id
+				if b.has_method("get_meta") and b.has_meta("is_ghost"): is_ghost = b.get_meta("is_ghost")
+				elif "is_ghost" in b: is_ghost = b.is_ghost
+
+			if is_ghost and ghosts.has(b_id):
+				if assist_revivals.has(b_id) or ghosts[b_id].chip_damage >= 100.0:
+					var orig_max_hp = ghosts[b_id].orig_max_hp
+					var orig_damage = ghosts[b_id].orig_damage
+					if typeof(b) == TYPE_DICTIONARY:
+						b.is_ghost = false
+						b.max_hp = orig_max_hp
+						b.hp = orig_max_hp
+						b.damage = orig_damage
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_method("set_meta"): b.set_meta("is_ghost", false)
+						b.is_ghost = false
+						b.max_hp = orig_max_hp
+						b.hp = orig_max_hp
+						b.damage = orig_damage
+
+					ghosts.erase(b_id)
+
+					if typeof(world) == TYPE_DICTIONARY and "add_event" in world:
+						pass
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("ghost_revived", {"id": b_id, "message": "A ghost has returned to life!"})
+
+		# Update previous HPs
+		previous_hps.clear()
+		for b in balls:
+			var b_id = -1
+			var b_hp = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "id" in b: b_id = b.id
+				if "hp" in b: b_hp = b.hp
+			elif typeof(b) == TYPE_OBJECT:
+				if "id" in b: b_id = b.id
+				if "hp" in b: b_hp = b.hp
+
+			if b_id != -1:
+				previous_hps[b_id] = b_hp
+
 class WatchtowerMode extends GameMode:
 	var towers: Array = []
 	var tower_spawn_timer: float = 0.0
@@ -45118,6 +45405,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"decreasing_safe_zones": DecreasingSafeZonesMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
+	"ghost_tether": GhostTetherMode.new(),
 	"entangled_arena": EntangledArenaMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
