@@ -334,6 +334,34 @@ func _attempt_damage(attacker, target) -> void:
 			orig_dmg = attacker.damage
 			attacker.damage *= 0.85
 
+	var pm = world.profile_manager if typeof(world) == TYPE_OBJECT and "profile_manager" in world else null
+	if pm != null and pm.has_method("get_enforcer_pledge") and pm.has_method("is_nemesis"):
+		var a_type = ""
+		if typeof(attacker) == TYPE_DICTIONARY and attacker.has("ball_type"): a_type = attacker.ball_type
+		elif typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker: a_type = attacker.ball_type
+
+		var t_type = ""
+		if typeof(target) == TYPE_DICTIONARY and target.has("ball_type"): t_type = target.ball_type
+		elif typeof(target) == TYPE_OBJECT and "ball_type" in target: t_type = target.ball_type
+
+		if a_type != "" and t_type != "":
+			var pledge = pm.get_enforcer_pledge(a_type)
+			if pledge != "":
+				if t_type == pledge:
+					if not has_orig:
+						has_orig = true
+						if typeof(attacker) == TYPE_OBJECT and "damage" in attacker: orig_dmg = attacker.damage
+						elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): orig_dmg = attacker.damage
+					if typeof(attacker) == TYPE_OBJECT and "damage" in attacker: attacker.damage *= 0.1
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): attacker.damage *= 0.1
+				elif pm.is_nemesis(pledge, t_type) or pm.is_nemesis(t_type, pledge):
+					if not has_orig:
+						has_orig = true
+						if typeof(attacker) == TYPE_OBJECT and "damage" in attacker: orig_dmg = attacker.damage
+						elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): orig_dmg = attacker.damage
+					if typeof(attacker) == TYPE_OBJECT and "damage" in attacker: attacker.damage *= 1.5
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): attacker.damage *= 1.5
+
 	_attempt_damage_internal(attacker, target)
 
 	if has_orig:

@@ -469,6 +469,8 @@ func add_status_effect(effect_name: String):
 func add_kill(killer_type: String, victim_type: String) -> void:
     if not data.has("nemeses"):
         data["nemeses"] = {}
+    if not data.has("enforcers"):
+        data["enforcers"] = {}
     if not data["nemeses"].has(killer_type):
         data["nemeses"][killer_type] = {}
     if not data["nemeses"][killer_type].has(victim_type):
@@ -487,6 +489,19 @@ func is_nemesis(killer_type: String, victim_type: String) -> bool:
     if data["nemeses"].has(killer_type) and data["nemeses"][killer_type].has(victim_type):
         return data["nemeses"][killer_type][victim_type] >= 2
     return false
+
+func pledge_enforcer(player_type: String, nemesis_type: String) -> void:
+    if not data.has("enforcers"):
+        data["enforcers"] = {}
+    data["enforcers"][player_type] = nemesis_type
+    save_profile()
+
+func get_enforcer_pledge(player_type: String) -> String:
+    if not data.has("enforcers"):
+        return ""
+    if data["enforcers"].has(player_type):
+        return data["enforcers"][player_type]
+    return ""
 
 func process_daily_login(current_date_str: String) -> Dictionary:
     var last_date_str = data.get("last_login_date", "")
