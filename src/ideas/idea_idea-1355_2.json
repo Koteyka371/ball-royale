@@ -1,0 +1,4 @@
+{
+  "title": "Shrink Ray Turret",
+  "description": "A deployable hazard that acts as a stationary mini-turret. Instead of dealing damage, it shoots a short-range beam that drastically reduces the size and collision radius of any enemy hit for 5 seconds, making them faster but highly vulnerable to being bounced far away."
+}
