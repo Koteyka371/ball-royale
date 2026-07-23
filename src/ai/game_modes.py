@@ -32,6 +32,99 @@ class GameMode:
         self.description = "Base game mode"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for hazard in world.arena.hazards[:]:
+                if getattr(hazard, "kind", "") == "high_risk_nuke_mine":
+                    # --- Defusing logic ---
+                    defusing_timers = getattr(hazard, "defusing_timers", {})
+                    anyone_defusing = False
+                    h_x = getattr(hazard, "x", 0.0)
+                    h_y = getattr(hazard, "y", 0.0)
+                    core_radius = getattr(hazard, "radius", 50.0)
+                    h_team = getattr(hazard, "team", None)
+
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            b_team = getattr(b, "team", None)
+                            if b_team != h_team: # Only enemies can defuse
+                                b_x = getattr(b, "x", 0.0)
+                                b_y = getattr(b, "y", 0.0)
+                                dist_sq = (h_x - b_x)**2 + (h_y - b_y)**2
+
+                                if dist_sq <= core_radius**2:
+                                    anyone_defusing = True
+                                    b_id = getattr(b, "id", None)
+                                    if b_id is not None:
+                                        if b_id not in defusing_timers:
+                                            defusing_timers[b_id] = 0.0
+                                        defusing_timers[b_id] += delta
+                                        if defusing_timers[b_id] >= 2.0:
+                                            # Defused!
+                                            if hazard in world.arena.hazards:
+                                                world.arena.hazards.remove(hazard)
+                                            if hasattr(world, "add_event"):
+                                                world.add_event("mine_defused", {"x": h_x, "y": h_y, "defuser_id": b_id})
+                                            break # stop checking other balls
+
+                    if getattr(hazard, "kind", "") != "high_risk_nuke_mine" or hazard not in world.arena.hazards:
+                        continue # Was defused
+
+                    # Decay defusing timers for those not in range
+                    for b_id in list(defusing_timers.keys()):
+                        # We just decay everything slightly and if it drops to 0 remove it, this is a simplified approach,
+                        # but it's better to just keep it simple.
+                        defusing_timers[b_id] = max(0.0, defusing_timers[b_id] - delta if not anyone_defusing else defusing_timers[b_id])
+                    setattr(hazard, "defusing_timers", defusing_timers)
+
+                    # --- Explosion logic ---
+                    timer = getattr(hazard, "timer", 5.0)
+                    timer -= delta
+                    setattr(hazard, "timer", timer)
+
+                    explosion_radius = getattr(hazard, "radius", 50.0) * 10.0 # Huge area
+
+                    # Project expanding aura
+                    if hasattr(world, "add_event"):
+                        if timer % 0.5 < delta:
+                            world.add_event("aura_project", {"x": h_x, "y": h_y, "radius": explosion_radius, "duration": 0.5, "type": "nuke_warning"})
+
+                    if timer <= 0.0:
+                        # Explode!
+                        if hazard in world.arena.hazards:
+                            world.arena.hazards.remove(hazard)
+                        damage = getattr(hazard, "damage", 100.0)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("explosion", {"x": h_x, "y": h_y, "radius": explosion_radius, "damage": damage, "color": "red"})
+                            world.add_event("screen_shake", {"duration": 1.0, "intensity": 2.0})
+
+                        import math
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                                b_x = getattr(b, "x", 0.0)
+                                b_y = getattr(b, "y", 0.0)
+                                dist_sq = (h_x - b_x)**2 + (h_y - b_y)**2
+
+                                # Massive damage if within blast radius
+                                if dist_sq <= explosion_radius**2:
+                                    world._deal_damage(hazard, b, damage)
+
+                                # Push all balls across map
+                                dist = math.sqrt(dist_sq)
+                                if dist > 0.0001:
+                                    nx, ny = (b_x - h_x) / dist, (b_y - h_y) / dist
+                                    push_force = 3000.0
+                                    b.vx += nx * push_force
+                                    b.vy += ny * push_force
+
+                                # Blind balls looking at it
+                                look_nx = getattr(b, "looking_x", 0.0)
+                                look_ny = getattr(b, "looking_y", 0.0)
+
+                                # dot product of looking dir and dir to mine
+                                dot = look_nx * (-nx) + look_ny * (-ny)
+                                if dot > 0.5: # Looking roughly towards it
+                                    setattr(b, "blind_timer", 3.0)
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
