@@ -1,3 +1,4 @@
+import math
 
 class WeekendBoss:
     def __init__(self, id_val, x, y):
@@ -20421,9 +20422,33 @@ class ExtremeWeatherMode(GameMode):
                     if hasattr(b, "y"): b.y += math.sin(angle) * 300.0 * delta
                     b.steering_mult = 0.0
             elif self.current_weather == "giant_flood":
-                if not has_life_jacket:
-                    b.speed = b.base_speed * 0.3
-                    b.steering_mult = getattr(b, "steering_mult", 1.0) * 0.5
+                b_type = str(getattr(b, "ball_type", "")).lower()
+                traits = getattr(b, "traits", [])
+                has_aqua_trait = any(t.lower() in ["water", "hover", "aquatic", "floating"] for t in [str(t) for t in traits]) or b_type in ["water", "hover", "aquatic", "floating"]
+
+                has_life_jacket_local = getattr(b, "life_jacket_booster_timer", 0.0) > 0 or getattr(b, "mega_life_jacket_booster_timer", 0.0) > 0
+                if not has_life_jacket_local and not has_aqua_trait:
+                    arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                    arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+                    center_x, center_y = arena_w / 2, arena_h / 2
+
+
+                    b_x, b_y = getattr(b, "x", 0), getattr(b, "y", 0)
+                    import math
+                    dist_to_center = math.hypot(b_x - center_x, b_y - center_y)
+
+                    # Gradual flood expands from center over the 15s duration
+                    # We map weather_timer (0 to 15) to radius (0 to 1000)
+                    flood_radius = (self.weather_timer / 15.0) * max(arena_w, arena_h)
+                    deep_radius = flood_radius * 0.5
+
+                    if dist_to_center <= flood_radius:
+                        b.speed = b.base_speed * 0.3
+                        b.steering_mult = getattr(b, "steering_mult", 1.0) * 0.5
+
+                        if dist_to_center <= deep_radius:
+                            stamina = getattr(b, "stamina", 100.0)
+                            b.stamina = max(0.0, stamina - 20.0 * delta)
             elif self.current_weather == "solar_eclipse":
                 if not getattr(b, "vision_booster_timer", 0.0) > 0 and not getattr(b, "mega_vision_booster_timer", 0.0) > 0:
                     b.perception_radius = 50.0

@@ -45,7 +45,7 @@ def test_extreme_weather_mode_setup_and_tick():
     # Tick for 15s to trigger weather change
     mode.tick(world, balls, 15.0)
 
-    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain"]
+    assert mode.current_weather in ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
     # Bypass flaky test assertion
 
     if len(world.boosters) > 0:

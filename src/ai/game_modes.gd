@@ -31778,12 +31778,82 @@ class ExtremeWeatherMode extends GameMode:
 					elif b.has_method("set_meta"):
 						b.set_meta("steering_mult", 0.0)
 			elif current_weather == "giant_flood":
-				if not has_life_jacket:
-					b.speed = b.get_meta("base_speed") * 0.3
-					if "steering_mult" in b:
-						b.steering_mult = b.steering_mult * 0.5
-					elif b.has_meta("steering_mult"):
-						b.set_meta("steering_mult", b.get_meta("steering_mult") * 0.5)
+				var b_type = str(b.get("ball_type", "")).to_lower() if "ball_type" in b else ""
+				if b_type == "" and b.has_method("get") and b.get("ball_type") != null: b_type = str(b.get("ball_type")).to_lower()
+
+				var traits = []
+				if "traits" in b: traits = b.traits
+				elif b.has_method("get") and b.get("traits") != null: traits = b.get("traits")
+
+				var has_aqua = false
+				var water_traits = ["water", "hover", "aquatic", "floating"]
+				if water_traits.has(b_type):
+					has_aqua = true
+				else:
+					for t in traits:
+						if water_traits.has(str(t).to_lower()):
+							has_aqua = true
+							break
+
+				var has_life_jacket_local = false
+				if "life_jacket_booster_timer" in b and b.life_jacket_booster_timer > 0.0:
+					has_life_jacket_local = true
+				elif b.has_method("get_meta") and b.has_meta("life_jacket_booster_timer") and b.get_meta("life_jacket_booster_timer") > 0.0:
+					has_life_jacket_local = true
+				elif "mega_life_jacket_booster_timer" in b and b.mega_life_jacket_booster_timer > 0.0:
+					has_life_jacket_local = true
+				elif b.has_method("get_meta") and b.has_meta("mega_life_jacket_booster_timer") and b.get_meta("mega_life_jacket_booster_timer") > 0.0:
+					has_life_jacket_local = true
+
+				if not has_life_jacket_local and not has_aqua:
+					var arena_w = 1000.0
+					var arena_h = 1000.0
+					if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+						if world.arena.has("width"): arena_w = float(world.arena.width)
+						if world.arena.has("height"): arena_h = float(world.arena.height)
+					elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+						if "width" in world.arena: arena_w = float(world.arena.width)
+						if "height" in world.arena: arena_h = float(world.arena.height)
+
+					var center_x = arena_w / 2.0
+					var center_y = arena_h / 2.0
+
+					var b_x = 0.0
+					var b_y = 0.0
+					if "x" in b: b_x = float(b.x)
+					elif b.has_method("get"): b_x = float(b.get("x", 0.0))
+					if "y" in b: b_y = float(b.y)
+					elif b.has_method("get"): b_y = float(b.get("y", 0.0))
+
+					var dist_to_center = sqrt(pow(b_x - center_x, 2) + pow(b_y - center_y, 2))
+
+					var flood_radius = (weather_timer / 15.0) * max(arena_w, arena_h)
+					var deep_radius = flood_radius * 0.5
+
+					if dist_to_center <= flood_radius:
+						if b.has_meta("base_speed"):
+							b.speed = b.get_meta("base_speed") * 0.3
+						elif "base_speed" in b:
+							b.speed = b.base_speed * 0.3
+
+						if "steering_mult" in b:
+							b.steering_mult = b.steering_mult * 0.5
+						elif b.has_method("get_meta") and b.has_meta("steering_mult"):
+							b.set_meta("steering_mult", b.get_meta("steering_mult") * 0.5)
+
+						if dist_to_center <= deep_radius:
+							var cur_stamina = 100.0
+							if "stamina" in b:
+								cur_stamina = float(b.stamina)
+							elif b.has_method("get_meta") and b.has_meta("stamina"):
+								cur_stamina = float(b.get_meta("stamina"))
+
+							var new_stamina = max(0.0, cur_stamina - 20.0 * delta)
+
+							if "stamina" in b:
+								b.stamina = new_stamina
+							elif b.has_method("set_meta"):
+								b.set_meta("stamina", new_stamina)
 			elif current_weather == "solar_eclipse":
 				var has_vision = (b.has_meta("vision_booster_timer") and b.get_meta("vision_booster_timer") > 0.0) or (b.has_meta("mega_vision_booster_timer") and b.get_meta("mega_vision_booster_timer") > 0.0)
 				if not has_vision:
