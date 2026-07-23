@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1373] Time dilation trap — *2026-07-23 23:50:01 UTC*
+
+A trap that dramatically slows down the time for the ball that triggered it, causing them to move and attack in slow motion for a few seconds.
+
+---
+
 ## [idea-1428] Arena Event: Quake — *2026-07-23 23:38:47 UTC*
 
 A periodic random event where the entire arena shakes. Balls without the 'grounded' status take minor continuous damage and suffer a severe speed penalty, forcing players to find safe zones or use specific defensive skills.
