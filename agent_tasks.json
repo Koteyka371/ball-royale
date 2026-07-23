@@ -35423,6 +35423,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2072",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Potion",
+      "description": "Instantly refills stamina to maximum.",
+      "allowed_paths": [
+        "src/ai/stamina_potion.py",
+        "src/ai/stamina_potion.gd",
+        "tests/test_stamina_potion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2073",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Mirage Field",
+      "description": "A field hazard that spawns hostile clones of any ball that enters it. The clones mirror the movement of the player but inverted.",
+      "allowed_paths": [
+        "src/ai/mirror_mirage_field.py",
+        "src/ai/mirror_mirage_field.gd",
+        "tests/test_mirror_mirage_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2074",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook",
+      "description": "A consumable booster that allows you to grapple to a nearby wall and pull yourself.",
+      "allowed_paths": [
+        "src/ai/grapple_hook.py",
+        "src/ai/grapple_hook.gd",
+        "tests/test_grapple_hook.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
