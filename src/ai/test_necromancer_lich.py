@@ -31,7 +31,7 @@ def test_necromancer_lich_evolution():
     assert minion.enrage_timer == 99999.0
 
     # Check if dragons spawned
-    dragons = [b for b in world.balls if getattr(b, "ball_type", "") == "skeletal_dragon"]
+    dragons = [b for b in world.balls if getattr(b, "BALL_TYPE", getattr(b, "ball_type", "")) == "skeletal_dragon"]
     assert len(dragons) == 2
     for d in dragons:
         assert getattr(d, "has_ranged_breath", False) == True
