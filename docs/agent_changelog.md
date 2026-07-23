@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1365] Solar Flare Event — *2026-07-23 04:46:03 UTC*
+
+A random arena-wide event that temporarily disables all deployable items and boosts, forcing players to rely entirely on core movement and positioning.
+
+---
+
 ## [idea-1368] Black Hole Slingshot Mutator — *2026-07-23 04:41:37 UTC*
 
 Black holes periodically appear and pull players in, but if a player uses a dash skill when near the event horizon, they gain a massive speed boost in the direction of their dash.

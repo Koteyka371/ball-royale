@@ -23386,7 +23386,7 @@
     },
     {
       "id": "idea-1365",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Flare Event",
@@ -35095,6 +35095,40 @@
         "src/ai/siphon_drone_pet.py",
         "src/ai/siphon_drone_pet.gd",
         "tests/test_siphon_drone_pet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2053",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supernova Trap",
+      "description": "A new hazard that acts as a delayed explosive trap. Once triggered, it starts pulling nearby players slowly, increasing its pull strength over 3 seconds, before exploding in a massive area-of-effect blast, damaging and knocking back anyone caught inside.",
+      "allowed_paths": [
+        "src/arena/supernova_trap.py",
+        "src/arena/supernova_trap.gd",
+        "tests/test_supernova_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2054",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wormhole Relic",
+      "description": "A new item that can be picked up. Once activated, it creates a temporary two-way wormhole linking the player's current location with a targeted location, allowing anyone to teleport back and forth instantly until it closes.",
+      "allowed_paths": [
+        "src/ai/wormhole_relic.py",
+        "src/ai/wormhole_relic.gd",
+        "tests/test_wormhole_relic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
