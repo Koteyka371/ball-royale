@@ -28209,6 +28209,32 @@ func _use_skill():
                 elif typeof(self.ball) == TYPE_DICTIONARY:
                     self.ball.leech_tether_target = target
                     self.ball.leech_tether_timer = 3.0
+        elif skill_name == "quantum_tether":
+            var enemies = _get_enemies()
+            if enemies.size() > 0:
+                var target = enemies[0]
+                var min_dist = pow(target.x - self.ball.x, 2) + pow(target.y - self.ball.y, 2)
+                for i in range(1, enemies.size()):
+                    var e = enemies[i]
+                    var dist = pow(e.x - self.ball.x, 2) + pow(e.y - self.ball.y, 2)
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = e
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("quantum_tether_target", target)
+                    self.ball.set_meta("quantum_tether_timer", 5.0)
+                elif "quantum_tether_timer" in self.ball:
+                    self.ball.quantum_tether_target = target
+                    self.ball.quantum_tether_timer = 5.0
+
+                if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
+                    target.set_meta("quantum_tether_target", self.ball)
+                    target.set_meta("quantum_tether_timer", 5.0)
+                elif "quantum_tether_timer" in target:
+                    target.quantum_tether_target = self.ball
+                    target.quantum_tether_timer = 5.0
+
+                self._spawn_directed_particles(self.ball, target, "quantum_tether")
         elif skill_name == "magnet_tether":
             var enemies = _get_enemies()
             if enemies.size() > 0:
