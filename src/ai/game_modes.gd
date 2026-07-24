@@ -49289,7 +49289,7 @@ class ColorTrailMode extends GameMode:
 			if territory.has(key):
 				var haz = territory[key]
 				if haz.team == bteam:
-					var new_speed = base_speed * 1.5
+					var new_speed = base_speed * 2.0
 					if typeof(b) == TYPE_DICTIONARY:
 						b["speed"] = new_speed
 						var cur_hp = b.get("hp", 100.0)
