@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1407] Dynamic Weather Mutator - Flood — *2026-07-24 05:34:12 UTC*
+
+A rare weather event that gradually floods the arena with water. Balls that lack aquatic or floating traits will have their movement speed significantly reduced, and deep areas might cause continuous stamina drain.
+
+---
+
 ## [idea-1438] Day/Night Cycle Effect on Traits — *2026-07-24 05:14:38 UTC*
 
 Introduce a day/night cycle that dynamically affects traits. Nighttime could boost 'vampire' or 'stealth' traits, while daytime enhances 'solar' or 'radiant' units.

@@ -24103,7 +24103,7 @@
     },
     {
       "id": "idea-1407",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Weather Mutator - Flood",
@@ -36014,6 +36014,57 @@
         "src/ui/quicksand_pit.gd",
         "src/ai/quicksand_pit.py",
         "tests/test_quicksand_pit.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2107",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Starlight Celestial Event",
+      "description": "An extremely rare mid-game event during nighttime modes where a large Starlight Nexus drops into the center of the arena. When destroyed, it grants a 'Celestial Aura' to the team that dealt the most damage, turning all of their shadow-based traits into 'radiant' variations, dramatically altering their playstyles and counters for the rest of the match.",
+      "allowed_paths": [
+        "src/ai/starlight_celestial.py",
+        "src/ai/starlight_celestial.gd",
+        "tests/test_starlight_celestial.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2108",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Drain Aura",
+      "description": "An event where a slow-moving aura circles the arena. Any player caught inside the aura has their stamina slowly drained, forcing them to rely on base movement speed.",
+      "allowed_paths": [
+        "src/ai/stamina_drain_aura.py",
+        "src/ai/stamina_drain_aura.gd",
+        "tests/test_stamina_drain_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2109",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Season-Based Evolution Mode",
+      "description": "A game mode that cycles through Spring, Summer, Autumn, and Winter phases. Each season fundamentally alters arena physics (e.g. Winter makes surfaces slippery, Summer causes stamina drain, Autumn creates strong winds, Spring speeds up cooldowns). Ball units that align with the current season gain temporary massive buffs to unique abilities.",
+      "allowed_paths": [
+        "src/ai/season_based_evolution.py",
+        "src/ai/season_based_evolution.gd",
+        "tests/test_season_based_evolution.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
