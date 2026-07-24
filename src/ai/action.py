@@ -5921,6 +5921,10 @@ class Action:
                             if b_decoy_type_pre == "flash":
                                 radius = 300.0
 
+                            decoy_element = getattr(b, "element", None)
+                            if decoy_element:
+                                radius *= 1.25
+
                             if simultaneous:
                                 radius *= 2.0
                                 explosion_damage *= 2.0
@@ -5997,6 +6001,14 @@ class Action:
                                             if random.random() < 0.3:
                                                 other.is_confused = True
                                                 other.confusion_timer = 3.0
+
+                                            if decoy_element == "fire":
+                                                other.burn_timer = getattr(other, "burn_timer", 0.0) + 5.0
+                                            elif decoy_element == "ice":
+                                                other.freeze_timer = getattr(other, "freeze_timer", 0.0) + 3.0
+                                            elif decoy_element == "lightning":
+                                                other.stun_timer = getattr(other, "stun_timer", 0.0) + 2.0
+                                                other.chain_lightning_timer = getattr(other, "chain_lightning_timer", 0.0) + 4.0
 
                                             if b_type == "trickster" or b_team == "trickster":
                                                 # Trickster decoy specific logic
@@ -15968,6 +15980,9 @@ class Action:
                         if getattr(self.ball, "rearm_damage_boost", False):
                             decoy.rearm_damage_boost = True
                             self.ball.rearm_damage_boost = False
+
+                        if getattr(self.ball, "element", None):
+                            decoy.element = self.ball.element
 
                         self.world.balls.append(decoy)
 

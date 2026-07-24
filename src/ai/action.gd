@@ -11799,6 +11799,27 @@ func execute(strategy: String, delta: float):
                                                     emp_combo = true
                                                     break
 
+                                        var decoy_element = b.element if "element" in b else (b.get_meta("element") if b.has_method("get_meta") and b.has_meta("element") else null)
+                                        if decoy_element == "fire":
+                                            if "burn_timer" in other: other.burn_timer += 5.0
+                                            elif other.has_method("set_meta"):
+                                                var b_val = other.get_meta("burn_timer") if other.has_meta("burn_timer") else 0.0
+                                                other.set_meta("burn_timer", b_val + 5.0)
+                                        elif decoy_element == "ice":
+                                            if "freeze_timer" in other: other.freeze_timer += 3.0
+                                            elif other.has_method("set_meta"):
+                                                var f_val = other.get_meta("freeze_timer") if other.has_meta("freeze_timer") else 0.0
+                                                other.set_meta("freeze_timer", f_val + 3.0)
+                                        elif decoy_element == "lightning":
+                                            if "stun_timer" in other: other.stun_timer += 2.0
+                                            elif other.has_method("set_meta"):
+                                                var s_val = other.get_meta("stun_timer") if other.has_meta("stun_timer") else 0.0
+                                                other.set_meta("stun_timer", s_val + 2.0)
+                                            if "chain_lightning_timer" in other: other.chain_lightning_timer += 4.0
+                                            elif other.has_method("set_meta"):
+                                                var cl_val = other.get_meta("chain_lightning_timer") if other.has_meta("chain_lightning_timer") else 0.0
+                                                other.set_meta("chain_lightning_timer", cl_val + 4.0)
+
                                         if emp_combo:
                                             if "silence_timer" in other:
                                                 other.silence_timer += 5.0
@@ -11823,7 +11844,7 @@ func execute(strategy: String, delta: float):
                                                 other.set_meta("stutter_timer", other.get_meta("stutter_timer") + 5.0)
                                             elif other.has_method("set_meta"):
                                                 other.set_meta("stutter_timer", 5.0)
-                                        elif b_decoy_type == "explosive":
+                                        elif b_decoy_type == "explosive" or b_decoy_type == "":
                                             var actual_damage = explosion_damage
                                             var has_rearm_boost = false
                                             if "rearm_damage_boost" in b and b.rearm_damage_boost:
@@ -34586,6 +34607,11 @@ func _use_skill():
                         var b_radius = 10.0
                         if "radius" in self.ball: b_radius = self.ball.radius
                         elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_radius = self.ball.get_meta("radius")
+
+                        var self_elem = self.ball.element if "element" in self.ball else (self.ball.get_meta("element") if self.ball.has_method("get_meta") and self.ball.has_meta("element") else null)
+                        if self_elem != null:
+                            if "element" in decoy: decoy.element = self_elem
+                            elif decoy.has_method("set_meta"): decoy.set_meta("element", self_elem)
 
                         decoy.x = self.ball.x + nx * (b_radius + 15.0)
                         decoy.y = self.ball.y + ny * (b_radius + 15.0)
