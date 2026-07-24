@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1440] Chain Lightning Enhancer Booster — *2026-07-24 23:03:45 UTC*
+
+A new booster that, when picked up, gives the player a temporary buff that makes their chain lightning jump an additional 2 times and deal 50% more damage to secondary targets.
+
+---
+
 ## [idea-1426] Magnetic Anchor Trap — *2026-07-24 22:25:18 UTC*
 
 A trap that greatly increases the gravity well effect on any enemy that steps on it, preventing them from dashing or being pushed for 3 seconds.
