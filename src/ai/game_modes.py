@@ -36677,6 +36677,95 @@ GAME_MODES['winding_snake_path'] = WindingSnakePathMode()
 
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode()
 
+class CorruptionZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Corruption Zones"
+        self.description = "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element."
+        self.zone_radius = 150.0
+        self.drain_rate = 15.0
+        self.buff_multiplier = 2.0
+        self.spawn_interval = 10.0
+        self.spawn_timer = 0.0
+        self.max_zones = 3
+        self.zones = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = self.spawn_interval
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+            if len(self.zones) < self.max_zones:
+                import random
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+                if not hasattr(hazard_class, "__init__"):
+                    class FallbackHazard:
+                        def __init__(self, h_id, x, y, radius, kind, damage=0):
+                            self.id = h_id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                    hazard_class = FallbackHazard
+
+                hx = random.uniform(self.zone_radius, arena_width - self.zone_radius)
+                hy = random.uniform(self.zone_radius, arena_height - self.zone_radius)
+
+                hz = hazard_class(
+                    f"corruption_zone_{random.randint(1000, 9999)}",
+                    hx, hy, self.zone_radius,
+                    "corruption_zone",
+                    0
+                )
+                self.zones.append(hz)
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(hz)
+
+        import math
+        for ball in balls:
+            if not getattr(ball, "alive", True):
+                continue
+
+            in_zone = False
+            for zone in self.zones:
+                dist = math.hypot(ball.x - zone.x, ball.y - zone.y)
+                if dist < zone.radius:
+                    in_zone = True
+                    break
+
+            if in_zone:
+                ball.hp -= self.drain_rate * delta
+
+                # Apply massive speed and damage boost
+                if hasattr(ball, "base_speed"):
+                    ball.speed = ball.base_speed * self.buff_multiplier
+                else:
+                    ball.speed = getattr(ball, "speed", 100.0) * self.buff_multiplier
+
+                if hasattr(ball, "base_damage"):
+                    ball.damage = ball.base_damage * self.buff_multiplier
+                else:
+                    ball.damage = getattr(ball, "damage", 10.0) * self.buff_multiplier
+
+                # Flag to inform frontend or other systems
+                setattr(ball, "in_corruption_zone", True)
+            else:
+                setattr(ball, "in_corruption_zone", False)
+                # Resets are naturally handled by action.py which recalculates speed and damage every tick
+
+GAME_MODES["corruption_zones"] = CorruptionZoneMode()
+
+
 
 class WeatherTrapMode(GameMode):
     def __init__(self):
@@ -36816,7 +36905,7 @@ class VampiricZoneMode(GameMode):
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             try:
-                from .action import Hazard
+                from arena.procedural_arena import Hazard
                 hazard_class = Hazard
             except ImportError:
                 class FallbackHazard:

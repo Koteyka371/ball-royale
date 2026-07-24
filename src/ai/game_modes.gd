@@ -56698,6 +56698,156 @@ GAME_MODES['winding_snake_path'] = WindingSnakePathMode.new()
 
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode.new()
 
+class CorruptionZoneMode extends GameMode:
+	var zone_radius: float = 150.0
+	var drain_rate: float = 15.0
+	var buff_multiplier: float = 2.0
+	var spawn_interval: float = 10.0
+	var spawn_timer: float = 0.0
+	var max_zones: int = 3
+	var zones: Array = []
+
+	func _init() -> void:
+		super._init()
+		name = "Corruption Zones"
+		description = "Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		spawn_timer = spawn_interval
+		zones.clear()
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = float(arena.get("width", 1000.0))
+				arena_height = float(arena.get("height", 1000.0))
+		elif typeof(world) == TYPE_OBJECT and "arena" in world:
+			var arena = world.arena
+			if typeof(arena) == TYPE_OBJECT:
+				arena_width = float(arena.width)
+				arena_height = float(arena.height)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+			if zones.size() < max_zones:
+				var hazard_class = null
+				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+					var script = load("res://src/arena/procedural_arena.gd")
+					if script != null:
+						for k in script.get_script_constant_map().keys():
+							if k == "Hazard":
+								hazard_class = script.Hazard
+								break
+
+				var hx = zone_radius + randf() * (arena_width - 2 * zone_radius)
+				var hy = zone_radius + randf() * (arena_height - 2 * zone_radius)
+
+				if hazard_class != null and hazard_class.has_method("new"):
+					var hz = hazard_class.new("corruption_zone_%d" % (randi() % 10000), hx, hy, zone_radius, "corruption_zone", 0.0)
+					zones.append(hz)
+					if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+						world.arena.hazards.append(hz)
+					elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+						world.arena.hazards.append(hz)
+				else:
+					# Fallback dict
+					var hz = {
+						"id": "corruption_zone_%d" % (randi() % 10000),
+						"x": hx,
+						"y": hy,
+						"radius": zone_radius,
+						"kind": "corruption_zone",
+						"damage": 0.0
+					}
+					zones.append(hz)
+					if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+						world.arena.hazards.append(hz)
+					elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+						world.arena.hazards.append(hz)
+
+		for ball in balls:
+			var is_alive = true
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("alive"): is_alive = ball.get("alive")
+			elif typeof(ball) == TYPE_OBJECT and "alive" in ball: is_alive = ball.alive
+			if not is_alive: continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(ball) == TYPE_DICTIONARY:
+				bx = float(ball.get("x", 0.0))
+				by = float(ball.get("y", 0.0))
+			elif typeof(ball) == TYPE_OBJECT:
+				bx = float(ball.x)
+				by = float(ball.y)
+
+			var in_zone = false
+			for zone in zones:
+				var zx = 0.0
+				var zy = 0.0
+				var zr = zone_radius
+				if typeof(zone) == TYPE_DICTIONARY:
+					zx = float(zone.get("x", 0.0))
+					zy = float(zone.get("y", 0.0))
+					zr = float(zone.get("radius", zone_radius))
+				else:
+					zx = float(zone.x)
+					zy = float(zone.y)
+					if "radius" in zone:
+						zr = float(zone.radius)
+
+				var dx = bx - zx
+				var dy = by - zy
+				if sqrt(dx*dx + dy*dy) < zr:
+					in_zone = true
+					break
+
+			if in_zone:
+				var current_hp = 0.0
+				if typeof(ball) == TYPE_DICTIONARY and ball.has("hp"):
+					current_hp = float(ball.get("hp"))
+					ball["hp"] = max(0.0, current_hp - drain_rate * delta)
+				elif typeof(ball) == TYPE_OBJECT and "hp" in ball:
+					current_hp = float(ball.hp)
+					ball.hp = max(0.0, current_hp - drain_rate * delta)
+
+				# Apply Buffs
+				var b_speed = 100.0
+				var b_damage = 10.0
+
+				if typeof(ball) == TYPE_DICTIONARY:
+					b_speed = float(ball.get("base_speed", ball.get("speed", 100.0)))
+					b_damage = float(ball.get("base_damage", ball.get("damage", 10.0)))
+					ball["speed"] = b_speed * buff_multiplier
+					ball["damage"] = b_damage * buff_multiplier
+					ball["in_corruption_zone"] = true
+				elif typeof(ball) == TYPE_OBJECT:
+					b_speed = float(ball.get_meta("base_speed") if ball.has_method("has_meta") and ball.has_meta("base_speed") else (ball.base_speed if "base_speed" in ball else ball.speed))
+					b_damage = float(ball.get_meta("base_damage") if ball.has_method("has_meta") and ball.has_meta("base_damage") else (ball.base_damage if "base_damage" in ball else ball.damage))
+					ball.speed = b_speed * buff_multiplier
+					ball.damage = b_damage * buff_multiplier
+					if ball.has_method("set_meta"):
+						ball.set_meta("in_corruption_zone", true)
+					else:
+						ball.in_corruption_zone = true
+			else:
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["in_corruption_zone"] = false
+				elif typeof(ball) == TYPE_OBJECT:
+					if ball.has_method("set_meta"):
+						ball.set_meta("in_corruption_zone", false)
+					else:
+						ball.in_corruption_zone = false
+
+GAME_MODES["corruption_zones"] = CorruptionZoneMode.new()
+
+
 class VampiricZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
