@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1410] Shock Collar Traps — *2026-07-24 07:43:04 UTC*
+
+A new trap variant that latches onto the first ball that steps on it. Instead of exploding immediately, it periodically triggers a minor chain lightning effect to nearby teammates, turning the infected ball into a mobile hazard. It can be removed by picking up a cleansing item or if the infected ball takes enough damage.
+
+---
+
 ## [idea-1437] Tornado Alley Mode — *2026-07-24 06:48:15 UTC*
 
 A game mode where the arena has multiple huge tornados slowly moving around, constantly sucking players in and dealing damage.

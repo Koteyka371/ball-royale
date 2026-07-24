@@ -24154,7 +24154,7 @@
     },
     {
       "id": "idea-1410",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shock Collar Traps",
@@ -36235,6 +36235,23 @@
         "src/ai/slippery_mud_puddles.py",
         "src/ai/slippery_mud_puddles.gd",
         "tests/test_slippery_mud_puddles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2120",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Stop Powerup",
+      "description": "Freezes all other players for 3 seconds.",
+      "allowed_paths": [
+        "src/ai/time_stop_powerup.py",
+        "src/ai/time_stop_powerup.gd",
+        "tests/test_time_stop_powerup.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
