@@ -17653,6 +17653,58 @@ class Action:
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("explosion")
 
+            elif skill_name == "recoil_blanks":
+                enemies = self._get_enemies()
+                nx, ny = 1.0, 0.0
+                if enemies:
+                    closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = closest_enemy.x - self.ball.x
+                    dy = closest_enemy.y - self.ball.y
+                    import math
+                    dist = math.hypot(dx, dy)
+                    if dist > 0.0001:
+                        nx, ny = dx/dist, dy/dist
+
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    class Hazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+
+                # Generate a burst of 3 non-damaging blanks
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for i in range(3):
+                        spread_angle = (i - 1) * 0.15 # small spread
+                        import math
+                        cos_val = math.cos(spread_angle)
+                        sin_val = math.sin(spread_angle)
+                        rnx = nx * cos_val - ny * sin_val
+                        rny = nx * sin_val + ny * cos_val
+
+                        h = Hazard(
+                            id=18100 + len(self.world.arena.hazards) + i,
+                            x=self.ball.x + rnx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                            y=self.ball.y + rny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                            radius=10.0,
+                            kind="blank_burst",
+                            damage=0.0
+                        )
+                        setattr(h, "vx", rnx * 400.0)
+                        setattr(h, "vy", rny * 400.0)
+                        setattr(h, "duration", 0.5)
+                        setattr(h, "owner_id", getattr(self.ball, "id", None))
+                        self.world.arena.hazards.append(h)
+
+                # Intense backward thrust
+                self.ball.vx -= nx * 800.0
+                self.ball.vy -= ny * 800.0
+                self.ball.skill_timer = 2.0
             elif skill_name == "fireball":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     fireball_hazard = None

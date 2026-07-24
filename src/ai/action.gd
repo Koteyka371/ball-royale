@@ -31583,6 +31583,50 @@ func _use_skill():
             if self.ball is Dictionary: self.ball["skill_timer"] = cd
             else: self.ball.set("skill_timer", cd)
 
+        elif skill_name == "recoil_blanks":
+            var enemies = _get_enemies()
+            var nx = 1.0
+            var ny = 0.0
+            if enemies.size() > 0:
+                var closest = enemies[0]
+                var min_dist = (closest.x - self.ball.x)*(closest.x - self.ball.x) + (closest.y - self.ball.y)*(closest.y - self.ball.y)
+                for i in range(1, enemies.size()):
+                    var d = (enemies[i].x - self.ball.x)*(enemies[i].x - self.ball.x) + (enemies[i].y - self.ball.y)*(enemies[i].y - self.ball.y)
+                    if d < min_dist:
+                        closest = enemies[i]
+                        min_dist = d
+                var dx = closest.x - self.ball.x
+                var dy = closest.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    nx = dx/dist
+                    ny = dy/dist
+
+            if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                for i in range(3):
+                    var spread = (i - 1) * 0.15
+                    var c = cos(spread)
+                    var s = sin(spread)
+                    var rnx = nx * c - ny * s
+                    var rny = nx * s + ny * c
+
+                    var h = {
+                        "id": 18100 + self.world.arena.hazards.size() + i,
+                        "x": self.ball.x + rnx * (self.ball.radius + 5.0),
+                        "y": self.ball.y + rny * (self.ball.radius + 5.0),
+                        "radius": 10.0,
+                        "kind": "blank_burst",
+                        "damage": 0.0,
+                        "vx": rnx * 400.0,
+                        "vy": rny * 400.0,
+                        "duration": 0.5,
+                        "owner_id": self.ball.id
+                    }
+                    self.world.arena.hazards.append(h)
+
+            self.ball.vx -= nx * 800.0
+            self.ball.vy -= ny * 800.0
+            self.ball.skill_timer = 2.0
         elif skill_name == "fireball":
             if world != null and world.has_method("get_arena"):
                 var arena = world.call("get_arena")
