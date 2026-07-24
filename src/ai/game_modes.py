@@ -34,6 +34,29 @@ class GameMode:
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards[:]:
+                if getattr(hazard, "kind", "") == "magma_field":
+                    import math
+                    h_x = getattr(hazard, "x", 0.0)
+                    h_y = getattr(hazard, "y", 0.0)
+                    h_r = getattr(hazard, "radius", 60.0)
+                    h_team = getattr(hazard, "team", None)
+
+                    duration = getattr(hazard, "duration", 0.0) - delta
+                    if duration <= 0:
+                        if hazard in world.arena.hazards:
+                            world.arena.hazards.remove(hazard)
+                        continue
+                    setattr(hazard, "duration", duration)
+
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            if h_team is None or getattr(b, "team", None) != h_team:
+                                dist = math.hypot(b.x - h_x, b.y - h_y)
+                                if dist < h_r + getattr(b, "radius", 20.0):
+                                    if hasattr(b, "take_damage"): b.take_damage(10.0 * delta)
+                                    else: b.hp -= 10.0 * delta
+                                    b.speed = getattr(b, "speed", 100.0) * (0.3 ** delta)
+
                 if getattr(hazard, "kind", "") == "high_risk_nuke_mine":
                     # --- Defusing logic ---
                     defusing_timers = getattr(hazard, "defusing_timers", {})
@@ -291,6 +314,53 @@ class GameMode:
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
+        # Synergy: Fire + Earth = Magma
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+
+            m_cd = getattr(b, "magma_synergy_cd", 0.0)
+            if isinstance(m_cd, (int, float)) and m_cd > 0:
+                b.magma_synergy_cd = m_cd - delta
+
+            b_type = getattr(b, "ball_type", "").lower()
+            traits = getattr(b, "traits", [])
+            is_fire = "fire" in b_type or "fire" in traits
+
+            if is_fire and (not isinstance(getattr(b, "magma_synergy_cd", 0.0), (int, float)) or getattr(b, "magma_synergy_cd", 0.0) <= 0):
+                for other in balls:
+                    if not getattr(other, "alive", False) or getattr(other, "id", None) == getattr(b, "id", None): continue
+                    if getattr(other, "team", "") == getattr(b, "team", ""):
+                        o_type = getattr(other, "ball_type", "").lower()
+                        o_traits = getattr(other, "traits", [])
+                        is_earth = "earth" in o_type or "rock" in o_type or "earth" in o_traits or "rock" in o_traits
+                        if is_earth and (not isinstance(getattr(other, "magma_synergy_cd", 0.0), (int, float)) or getattr(other, "magma_synergy_cd", 0.0) <= 0):
+                            import math
+                            dist = math.hypot(b.x - other.x, b.y - other.y)
+                            if dist < getattr(b, "radius", 20.0) + getattr(other, "radius", 20.0) + 10.0:
+                                b.magma_synergy_cd = 5.0
+                                other.magma_synergy_cd = 5.0
+                                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                                    try:
+                                        from arena.procedural_arena import Hazard
+                                        world.arena.hazards.append(Hazard(f"magma_{b.id}_{other.id}", (b.x + other.x)/2, (b.y + other.y)/2, 60.0, "magma_field", 0.0))
+                                        # Need to manually add duration and team
+                                        h = world.arena.hazards[-1]
+                                        h.duration = 4.0
+                                        h.team = b.team
+                                    except Exception:
+                                        class MagmaHazard:
+                                            def __init__(self, hid, x, y, r, k, t):
+                                                self.id = hid
+                                                self.x = x
+                                                self.y = y
+                                                self.radius = r
+                                                self.kind = k
+                                                self.team = t
+                                                self.duration = 4.0
+                                                self.active = True
+                                        world.arena.hazards.append(MagmaHazard(f"magma_{b.id}_{other.id}", (b.x + other.x)/2, (b.y + other.y)/2, 60.0, "magma_field", b.team))
+
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         self.total_match_time = 0.0
         if not hasattr(world, "dead_balls"):
@@ -322,7 +392,7 @@ class GameMode:
                         b.traits.extend(traits)
                     else:
                         b.traits = traits
-            except ImportError:
+            except Exception:
                 pass
 
             traits = getattr(b, "traits", [])
@@ -596,7 +666,7 @@ class GameMode:
                                     try:
                                         from arena.procedural_arena import Hazard
                                         frag = Hazard(id=fragment_id, x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind="bone_fragment", damage=30.0)
-                                    except ImportError:
+                                    except Exception:
                                         frag = SimpleFragment(id=fragment_id, x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind="bone_fragment", damage=30.0)
 
                                     setattr(frag, "vx", math.cos(angle) * 300.0)
@@ -852,7 +922,7 @@ class GameMode:
                                 exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                                 world.arena.hazards.append(exp)
-                            except ImportError:
+                            except Exception:
                                 pass
             for h in hazards_to_remove:
                 if h in world.arena.hazards:
@@ -1200,7 +1270,7 @@ class GameMode:
                             setattr(whirlpool, "duration", 12.0)
                             setattr(whirlpool, "pull_strength", 50.0)
                             world.arena.hazards.append(whirlpool)
-                    except ImportError:
+                    except Exception:
                         pass
 
         # Aura explosion logic
@@ -1416,7 +1486,7 @@ class GameMode:
                     setattr(grave_trap, "active", True)
                     setattr(grave_trap, "owner_team", getattr(ball, "team", "unknown"))
                     world.arena.hazards.append(grave_trap)
-                except ImportError:
+                except Exception:
                     class FallbackHazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -1919,7 +1989,7 @@ class BattleRoyaleMode(GameMode):
                 world.arena.hazards = []
             try:
                 from arena.procedural_arena import Hazard
-            except ImportError:
+            except Exception:
                 class Hazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -2340,7 +2410,7 @@ class BattleRoyaleMode(GameMode):
                 lava_h = Hazard(h_id, lx, ly, self.random.uniform(40.0, 80.0), "lava_puddle", 0.0) # Damage handled manually by zone
                 setattr(lava_h, "duration", 5.0) # Temporary visual
                 world.arena.hazards.append(lava_h)
-            except ImportError:
+            except Exception:
                 pass
 
         # Calculate dynamic safe zone damage per second based on how small the zone has become
@@ -2407,7 +2477,7 @@ class BattleRoyaleMode(GameMode):
                     setattr(wall, "vy", vy)
                     setattr(wall, "duration", 20.0)
                     world.arena.hazards.append(wall)
-                except ImportError:
+                except Exception:
                     pass
 
             # Update moving walls
@@ -2621,7 +2691,7 @@ class BattleRoyaleMode(GameMode):
                                 item = Hazard(h_id, drop_x, drop_y, 25.0, "legendary_item", 0.0)
                                 item.duration = 20.0
                                 world.arena.hazards.append(item)
-                        except ImportError:
+                        except Exception:
                             class FallbackHazard:
                                 def __init__(self, id, x, y, radius, kind, damage):
                                     self.id = id
@@ -2738,7 +2808,7 @@ class BattleRoyaleMode(GameMode):
                                 setattr(wall, "duration", 5.0)
                                 if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                                     world.arena.hazards.append(wall)
-                            except ImportError:
+                            except Exception:
                                 pass
                     if "shield_regen" in b.mutations:
                         if getattr(b, "shield", 0) < getattr(b, "max_shield", 1000.0):
@@ -2882,7 +2952,7 @@ class BattleRoyaleMode(GameMode):
                 try:
                     from arena.procedural_arena import Hazard
                     drop = Hazard(id=f"ht_drop_{rnd.randint(1000, 9999)}", x=x, y=y, radius=100.0, kind="high_tier_drop", damage=0.0)
-                except ImportError:
+                except Exception:
                     drop = type("Hazard", (), {"id": f"ht_drop_{rnd.randint(1000, 9999)}", "x": x, "y": y, "radius": 100.0, "kind": "high_tier_drop", "damage": 0.0, "active": True})
 
                 drop.capture_progress = 0.0
@@ -3100,7 +3170,7 @@ class BattleRoyaleMode(GameMode):
 
                         if hasattr(world, "add_event"):
                             world.add_event("volcano_eruption", {"x": target_x, "y": target_y})
-                    except ImportError:
+                    except Exception:
                         pass
             if not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
@@ -3175,7 +3245,7 @@ class BattleRoyaleMode(GameMode):
 
                     try:
                         from arena.procedural_arena import Hazard
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -3661,7 +3731,7 @@ class BattleRoyaleMode(GameMode):
                     setattr(low_grav, "target_radius", 300.0)
                     if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                         world.arena.hazards.append(low_grav)
-                except ImportError:
+                except Exception:
                     pass
                 if hasattr(world, "add_event"):
                     world.add_event("low_gravity_zone", {"message": "A Low Gravity Zone is expanding in the center!"})
@@ -3786,7 +3856,7 @@ class BattleRoyaleMode(GameMode):
                 try:
                     from arena.procedural_arena import Hazard
                     shadow = Hazard(id=len(world.arena.hazards) + 9800, x=mx, y=my, radius=10.0, kind="meteor_shadow", damage=0.0)
-                except ImportError:
+                except Exception:
                     class FallbackHazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id
@@ -3816,7 +3886,7 @@ class BattleRoyaleMode(GameMode):
                         try:
                             from arena.procedural_arena import Hazard
                             lava = Hazard(id=h.id + 100, x=h.x, y=h.y, radius=max_rad, kind="lava_puddle", damage=0.0)
-                        except ImportError:
+                        except Exception:
                             class FallbackHazard:
                                 def __init__(self, id, x, y, radius, kind, damage):
                                     self.id = id
@@ -3901,7 +3971,7 @@ class BattleRoyaleMode(GameMode):
                         crater = Hazard(id=len(world.arena.hazards) + 9500, x=mx, y=my, radius=40.0, kind="wall", damage=0.0)
                         setattr(crater, "duration", 10.0)
                         world.arena.hazards.append(crater)
-                    except ImportError:
+                    except Exception:
                         class FallbackHazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -5208,7 +5278,7 @@ class DualPayloadMode(GameMode):
                     try:
                         from arena.procedural_arena import Hazard
                         drop = Hazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
-                    except ImportError:
+                    except Exception:
                         drop = DummyHazard(h_id, hx, hy, 40.0, "supply_drop", 0.0)
 
                     world.arena.hazards.append(drop)
@@ -5253,7 +5323,7 @@ class DualPayloadMode(GameMode):
                     hy = center_y + random.uniform(-200, 200)
                     new_hazard = Hazard(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
                     world.arena.hazards.append(new_hazard)
-                except ImportError:
+                except Exception:
                     pass
 
         if self.payload_red and getattr(self.payload_red, "alive", False):
@@ -5333,7 +5403,7 @@ class DualPayloadMode(GameMode):
                             setattr(drop, 'duration', 15.0)
                             setattr(drop, 'team', "Red")
                             world.arena.hazards.append(drop)
-                        except ImportError:
+                        except Exception:
                             pass
 
             dx = (arena_width - 100.0) - getattr(self.payload_red, "x", 0)
@@ -5435,7 +5505,7 @@ class DualPayloadMode(GameMode):
                             setattr(drop, 'duration', 15.0)
                             setattr(drop, 'team', "Blue")
                             world.arena.hazards.append(drop)
-                        except ImportError:
+                        except Exception:
                             pass
 
             dx = 100.0 - getattr(self.payload_blue, "x", 0)
@@ -5815,7 +5885,7 @@ class EscortMode(GameMode):
                     hy = getattr(self.payload, "y", 0) + random.uniform(-200, 200)
                     new_hazard = Hazard(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
                     world.arena.hazards.append(new_hazard)
-                except ImportError:
+                except Exception:
                     pass
 
         if not hasattr(self, "supply_drop_timer"):
@@ -5835,7 +5905,7 @@ class EscortMode(GameMode):
                     world.arena.hazards.append(drop)
                     if hasattr(world, "add_event"):
                         world.add_event("supply_drop_spawned", {"x": hx, "y": hy})
-                except ImportError:
+                except Exception:
                     pass
 
         # Check collisions with supply drops for all balls
@@ -5988,7 +6058,7 @@ class EscortMode(GameMode):
                         setattr(drop, 'duration', 15.0)
                         setattr(drop, 'team', getattr(self.payload, "team", "Defenders"))
                         world.arena.hazards.append(drop)
-                    except ImportError:
+                    except Exception:
                         pass
 
                 dx = target_x - getattr(self.payload, "x", 0)
@@ -6048,7 +6118,7 @@ class EscortMode(GameMode):
                         h_type = random.choice(["mine", "spike", "fire"])
                         new_hazard = Hazard(h_id, hx, hy, 20.0, h_type, 10.0)
                         world.arena.hazards.append(new_hazard)
-                    except ImportError:
+                    except Exception:
                         pass
 
             # Payload unique abilities logic
@@ -8029,7 +8099,7 @@ class WeatherChaosMode(GameMode):
 
                     try:
                         from arena.procedural_arena import Hazard
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -9992,7 +10062,7 @@ class EMPBurstMode(GameMode):
         self.spawn_timer += delta
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -12251,7 +12321,7 @@ class BumperBallsMode(GameMode):
                         b.traits.extend(traits)
                     else:
                         b.traits = traits
-            except ImportError:
+            except Exception:
                 pass
 
             traits = getattr(b, "traits", [])
@@ -13001,10 +13071,10 @@ class BlackoutMode(GameMode):
                     if self.random.random() < 0.2:  # 20% chance every second to spawn shadow booster
                         try:
                             from arena.procedural_arena import Hazard
-                        except ImportError:
+                        except Exception:
                             try:
                                 from arena.procedural_arena import Hazard
-                            except ImportError:
+                            except Exception:
                                 Hazard = None
 
                         if Hazard is not None:
@@ -13031,7 +13101,7 @@ class BlackoutMode(GameMode):
                             setattr(spotlight, "vx", self.random.uniform(-50, 50))
                             setattr(spotlight, "vy", self.random.uniform(-50, 50))
                             world.arena.hazards.append(spotlight)
-                        except ImportError:
+                        except Exception:
                             pass
 
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -13800,7 +13870,7 @@ class GravityWellMode(GameMode):
                                         knockback_force = (exp.radius - dist) * 10.0
                                         b.x += (dx / dist) * knockback_force * delta
                                         b.y += (dy / dist) * knockback_force * delta
-                        except ImportError:
+                        except Exception:
                             pass
 
         for h in hazards_to_remove:
@@ -13809,7 +13879,7 @@ class GravityWellMode(GameMode):
         self.spawn_timer += delta
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -14358,7 +14428,7 @@ class GuildVsGuildMode(GameMode):
             guild2 = g_names[1] if len(g_names) > 1 else "GuildB"
             self.gvg_mutator = gm.get_gvg_match_mutator(guild1, guild2)
             self.world.active_mutator = self.gvg_mutator
-        except ImportError:
+        except Exception:
             pass
         self.control_points = [
             {"x": 200, "y": 200, "radius": 50, "owner": None, "progress": 0},
@@ -14449,7 +14519,7 @@ class GuildVsGuildMode(GameMode):
                                 "color": "red",
                                 "duration": 9999.0
                             })
-            except ImportError:
+            except Exception:
                 pass
 
         # Check win condition (one guild owns all CPs)
@@ -14522,7 +14592,7 @@ class GuildVsGuildMode(GameMode):
 
             # record match
             gm.record_gvg_match(winner_guild, loser, winner_guild)
-        except ImportError:
+        except Exception:
             pass
 
 class MagneticCollisionsMode(GameMode):
@@ -14719,7 +14789,7 @@ class MagneticCollisionsMode(GameMode):
 
                     try:
                         from arena.procedural_arena import Hazard
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -14750,7 +14820,7 @@ class MagneticCollisionsMode(GameMode):
                     h = Hazard(id=hid, x=hx, y=hy, radius=r, kind=kind, damage=0.0)
                     h.invisible = True
                     return h
-            except ImportError:
+            except Exception:
                 class MagHazard:
                     def __init__(self, hid, hx, hy, r, kind):
                         self.id = hid
@@ -15163,7 +15233,7 @@ class PinballMode(GameMode):
 
                     try:
                         from arena.procedural_arena import Hazard
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -15192,7 +15262,7 @@ class PinballMode(GameMode):
                 from arena.procedural_arena import Hazard
                 def create_hazard(hid, hx, hy, r, k):
                     return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
-            except ImportError:
+            except Exception:
                 class BumperHazard:
                     def __init__(self, hid, hx, hy, r, k):
                         self.id = hid
@@ -15273,7 +15343,7 @@ class InvisibleWallsMode(GameMode):
 
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -16242,7 +16312,7 @@ class MeteorCrashEventMode(GameMode):
                 world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") not in ["meteor_indicator", "meteor_crater"]]
                 try:
                     from arena.procedural_arena import Hazard
-                except ImportError:
+                except Exception:
                     class Hazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id
@@ -16961,7 +17031,7 @@ class MinefieldSafeZoneMode(SafeZoneMode):
                     mine = Hazard(id=h_id, x=mx, y=my, radius=25.0, kind="hidden_mine", damage=45.0)
                     mine.duration = -1.0
                     mine.active = True
-                except ImportError:
+                except Exception:
                     mine = _MinefieldHazard(h_id, mx, my, 25.0, "hidden_mine", 45.0, duration=-1.0)
 
                 world.arena.hazards.append(mine)
@@ -17951,7 +18021,7 @@ class FloorIsLavaMode(GameMode):
                     from arena.procedural_arena import Hazard
                     new_h = Hazard(id=99000 + idx, x=bp["x"], y=bp["y"], radius=bp["radius"], kind="bounce_pad", damage=0.0)
                     world.arena.hazards.append(new_h)
-                except ImportError:
+                except Exception:
                     # Fallback to dict
                     new_h = type("Hazard", (), {"id": 99000 + idx, "x": bp["x"], "y": bp["y"], "radius": bp["radius"], "kind": "bounce_pad", "damage": 0.0, "active": True})
                     world.arena.hazards.append(new_h)
@@ -17962,7 +18032,7 @@ class FloorIsLavaMode(GameMode):
                     from arena.procedural_arena import Hazard
                     new_h = Hazard(id=99100 + idx, x=pool["x"], y=pool["y"], radius=pool["radius"], kind="lava", damage=20.0)
                     world.arena.hazards.append(new_h)
-                except ImportError:
+                except Exception:
                     # Fallback to dict
                     new_h = type("Hazard", (), {"id": 99100 + idx, "x": pool["x"], "y": pool["y"], "radius": pool["radius"], "kind": "lava", "damage": 20.0, "active": True})
                     world.arena.hazards.append(new_h)
@@ -18151,7 +18221,7 @@ class BlizzardMode(GameMode):
                 self.spawn_timer = 0.0
                 try:
                     from arena.procedural_arena import Hazard
-                except ImportError:
+                except Exception:
                     class Hazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id
@@ -18440,7 +18510,7 @@ class MeteorShowerMode(GameMode):
 
             try:
                 from arena.procedural_arena import Hazard
-            except ImportError:
+            except Exception:
                 class Hazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -18583,7 +18653,7 @@ class CursedBuffZoneMode(GameMode):
         import random
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -18773,7 +18843,7 @@ class RhythmPanelsMode(GameMode):
         import random
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -19017,7 +19087,7 @@ class LunarEclipseEventMode(GameMode):
                         world.arena.hazards = []
                     try:
                         from arena.procedural_arena import Hazard
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -19118,7 +19188,7 @@ class ScramblerDroneMode(GameMode):
                 arena_height = getattr(world.arena, "height", 1000)
                 try:
                     from arena.procedural_arena import Hazard
-                except ImportError:
+                except Exception:
                     class Hazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id
@@ -19637,7 +19707,7 @@ class SweepingPaddlesMode(GameMode):
 
                     try:
                         from arena.procedural_arena import Hazard
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -19665,7 +19735,7 @@ class SweepingPaddlesMode(GameMode):
                 from arena.procedural_arena import Hazard
                 def create_hazard(hid, hx, hy, r, k):
                     return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, hid, hx, hy, r, k):
                         self.id = hid
@@ -19722,7 +19792,7 @@ class SweepingLasersMode(GameMode):
                 from arena.procedural_arena import Hazard
                 def create_hazard(hid, hx, hy, r, k):
                     return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=0.0)
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, hid, hx, hy, r, k):
                         self.id = hid
@@ -20550,7 +20620,7 @@ class ExtremeWeatherMode(GameMode):
 
                 try:
                     from arena.procedural_arena import Hazard
-                except ImportError:
+                except Exception:
                     class Hazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id
@@ -20605,7 +20675,7 @@ class ExtremeWeatherMode(GameMode):
                                 p = Hazard(self.random.randint(10000, 99999), getattr(boss, "x", 0), getattr(boss, "y", 0), 15.0, "starlight_projectile", 15.0)
                                 setattr(p, "target_id", getattr(nearest, "id", 0))
                                 world.arena.hazards.append(p)
-                            except ImportError:
+                            except Exception:
                                 class MockHazard:
                                     def __init__(self, id, x, y, radius, kind, damage):
                                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -20727,7 +20797,7 @@ class ExtremeWeatherMode(GameMode):
 
                 try:
                     from arena.procedural_arena import Hazard
-                except ImportError:
+                except Exception:
                     class Hazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id
@@ -21170,7 +21240,7 @@ class HexGridRoyaleMode(GameMode):
                                 id=f"hex_warn_{t['id']}",
                                 x=t["x"], y=t["y"], radius=self.hex_size, kind="hex_warning", damage=0.0
                             ))
-                        except ImportError:
+                        except Exception:
                             pass
 
         valid_balls = [b for b in balls if getattr(b, "alive", False)]
@@ -21443,7 +21513,7 @@ class TickingPayloadMode(GameMode):
                                 setattr(drop, 'duration', 15.0)
                                 setattr(drop, 'team', "Red")
                                 world.arena.hazards.append(drop)
-                            except ImportError:
+                            except Exception:
                                 pass
                     # Crossed milestone going left (Blue pushing)
                     elif px <= m and m < 500.0 and blue_count > red_count:
@@ -21457,7 +21527,7 @@ class TickingPayloadMode(GameMode):
                                 setattr(drop, 'duration', 15.0)
                                 setattr(drop, 'team', "Blue")
                                 world.arena.hazards.append(drop)
-                            except ImportError:
+                            except Exception:
                                 pass
 
             # Check for goals
@@ -21588,7 +21658,7 @@ class BlackoutEventMode(GameMode):
                                 exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                                 world.arena.hazards.append(exp)
-                            except ImportError:
+                            except Exception:
                                 pass
             for h in hazards_to_remove:
                 if h in world.arena.hazards:
@@ -21631,7 +21701,7 @@ class BlacksmithBossMode(GameMode):
             self.anvil_pieces_spawned = True
             try:
                 from arena.procedural_arena import Hazard
-            except ImportError:
+            except Exception:
                 class Hazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -21660,7 +21730,7 @@ class BlacksmithBossMode(GameMode):
             try:
                 from system.item_manager import MockBall
                 boss = MockBall(boss_id, getattr(world.arena, "width", 1000) / 2, getattr(world.arena, "height", 1000) / 2)
-            except ImportError:
+            except Exception:
                 class GenericBoss:
                     pass
                 boss = GenericBoss()
@@ -21695,7 +21765,7 @@ class BlacksmithBossMode(GameMode):
                 if hasattr(world, "boosters"):
                     try:
                         from ai.game_modes import Hazard
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -21850,7 +21920,7 @@ class WeaponCollectionMode(GameMode):
 
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -21919,7 +21989,7 @@ class CenterVortexMode(GameMode):
         if not existing:
             try:
                 from arena.procedural_arena import Hazard
-            except ImportError:
+            except Exception:
                 class Hazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -22014,7 +22084,7 @@ class CenterGravityWellMode(GameMode):
                     damage=self.damage
                 )
                 world.arena.hazards.append(bh)
-            except ImportError:
+            except Exception:
                 # Mock hazard for testing without arena module
                 class DummyHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
@@ -22130,7 +22200,7 @@ class EndGameMagnetMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 HazardClass = Hazard
-            except ImportError:
+            except Exception:
                 pass
 
             magnet = HazardClass(id=self.magnet_id, x=cx, y=cy, radius=30.0, kind="end_game_magnet", damage=0.0)
@@ -22434,7 +22504,7 @@ class ShrinkingBoundaryMode(GameMode):
                                 exp = Hazard(exp_id, h.x, h.y, h.radius, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
                                 world.arena.hazards.append(exp)
-                            except ImportError:
+                            except Exception:
                                 pass
             for h in hazards_to_remove:
                 if h in world.arena.hazards:
@@ -23210,7 +23280,7 @@ class LavaRoyaleMode(GameMode):
                 lava_h = Hazard(id=h_id, x=lx, y=ly, radius=self.random.uniform(40.0, 80.0), kind="lava_puddle", damage=0.0)
                 setattr(lava_h, "duration", 5.0)
                 world.arena.hazards.append(lava_h)
-            except ImportError:
+            except Exception:
                 pass
 
         zone_damage_per_second = 100.0
@@ -23580,7 +23650,7 @@ class ElementalAurasMode(GameMode):
                 try:
                     from arena.procedural_arena import Hazard
                     h = Hazard(f"crafting_station_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 40.0, f"crafting_station_{element}", 0.0)
-                except ImportError:
+                except Exception:
                     class FallbackHazard:
                         def __init__(self, hid, hx, hy, r, k, d):
                             self.id = hid
@@ -23631,7 +23701,7 @@ class ElementalAurasMode(GameMode):
                                         try:
                                             from arena.procedural_arena import Hazard
                                             world.arena.hazards.append(Hazard(f"magma_{b.id}_{random.randint(0,1000)}", h.x, h.y, 80.0, "fire", 20.0))
-                                        except ImportError:
+                                        except Exception:
                                             class FallbackHazard2:
                                                 def __init__(self, hid, hx, hy, r, k, d):
                                                     self.id, self.x, self.y, self.radius, self.kind, self.damage, self.active = hid, hx, hy, r, k, d, True
@@ -24500,7 +24570,7 @@ class RotatingLasersMode(GameMode):
             import math
             try:
                 from arena.procedural_arena import Hazard
-            except ImportError:
+            except Exception:
                 class Hazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -24656,7 +24726,7 @@ class ChickenCurseMode(GameMode):
         # Spawn some chicken curse fields
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -25595,7 +25665,7 @@ class SweepingRotatingLasersMode(GameMode):
 
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -25783,7 +25853,7 @@ class DiscoFloorMode(GameMode):
 
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -26574,7 +26644,7 @@ class SlimeBossMode(GameMode):
         import random
         try:
             from ai.action import base_class_map
-        except ImportError:
+        except Exception:
             base_class_map = {}
 
         boss_x = random.uniform(200, getattr(world.arena, "width", 1000) - 200)
@@ -26650,7 +26720,7 @@ class SlimeBossMode(GameMode):
                         patch.active = True
                         patch.duration = 10.0
                         patches_to_add.append(patch)
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -26732,7 +26802,7 @@ class SlimeBossMode(GameMode):
                         trail.active = True
                         trail.duration = 10.0
                         world.arena.hazards.append(trail)
-                    except ImportError:
+                    except Exception:
                         class Hazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -26779,7 +26849,7 @@ class SlimeBossMode(GameMode):
                                     proj.vy = vy
                                     proj.duration = 2.0
                                     world.arena.hazards.append(proj)
-                                except ImportError:
+                                except Exception:
                                     class Hazard:
                                         def __init__(self, id, x, y, radius, kind, damage):
                                             self.id = id
@@ -26963,7 +27033,7 @@ class EntangledHazardsMode(GameMode):
 
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -28458,7 +28528,7 @@ class ExpandingLavaRoyaleMode(GameMode):
                 hazard.duration = 10.0
                 hazard.active = True
                 world.arena.hazards.append(hazard)
-            except ImportError:
+            except Exception:
                 class TempHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -28871,7 +28941,7 @@ GAME_MODES = {
 try:
     from ai.interactive_training import InteractiveTrainingMode
     GAME_MODES["interactive_training"] = InteractiveTrainingMode()
-except ImportError:
+except Exception:
     pass
 
 class RollingBouldersMode(GameMode):
@@ -29006,7 +29076,7 @@ class RollingBouldersMode(GameMode):
 
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -29464,7 +29534,7 @@ class ClanTournamentMode(GameMode):
                 cm.unlock_decoration(winner_clan, "Champion_Trophy")
             if hasattr(cm, "unlock_buff"):
                 cm.unlock_buff(winner_clan, "Guild_Wide_Passive_Buff")
-        except ImportError:
+        except Exception:
             pass
 
 class ReversedInputMode(GameMode):
@@ -29935,7 +30005,7 @@ GAME_MODES["crossfire"] = CrossfireMode()
 try:
     from .reverse_friction import ReverseFrictionMode
     GAME_MODES["reverse_friction"] = ReverseFrictionMode()
-except ImportError:
+except Exception:
     pass
 
 class TeleporterHubMode(GameMode):
@@ -30410,7 +30480,7 @@ class IllusionWallMode(GameMode):
 
         try:
             from arena.procedural_arena import Hazard
-        except ImportError:
+        except Exception:
             class Hazard:
                 def __init__(self, id, x, y, radius, kind, damage):
                     self.id = id
@@ -31124,7 +31194,7 @@ class ThermalFreezeTagMode(FreezeTagMode):
                 h = Hazard(id=h_id, x=random.uniform(100, arena_w-100), y=random.uniform(100, arena_h-100), radius=150.0, kind=kind, damage=0.0)
                 h.duration = 15.0
                 world.arena.hazards.append(h)
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -31424,7 +31494,7 @@ class BermudaTriangleMode(GameMode):
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             try:
                 from arena.procedural_arena import Hazard
-            except ImportError:
+            except Exception:
                 class Hazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -31514,7 +31584,7 @@ class TemporalRiftsMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 h_obj = Hazard(id=f"rift_{random.randint(1000, 9999)}", x=x, y=y, radius=100.0, kind="temporal_rift", damage=0.0)
-            except ImportError:
+            except Exception:
                 h_obj = type("Hazard", (), {"id": f"rift_{random.randint(1000, 9999)}", "x": x, "y": y, "radius": 100.0, "kind": "temporal_rift", "damage": 0.0, "active": True})
 
             h_obj.rift_type = rift_type
@@ -33032,7 +33102,7 @@ class InvisibleMinesMode(GameMode):
                         mine = Hazard(id=h_id, x=current_pos[0], y=current_pos[1], radius=20.0, kind="hidden_mine", damage=45.0)
                         mine.duration = -1.0
                         mine.active = True
-                    except ImportError:
+                    except Exception:
                         mine = _MinefieldHazard(h_id, current_pos[0], current_pos[1], 20.0, "hidden_mine", 45.0, duration=-1.0)
 
                     world.arena.hazards.append(mine)
@@ -33168,7 +33238,7 @@ class ElasticBandZoneMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -33383,7 +33453,7 @@ class PerfectReflectorHazardMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -33491,7 +33561,7 @@ class ChronosphereEventMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -33573,7 +33643,7 @@ class TimeDilationZoneMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -33658,7 +33728,7 @@ class InverseControlsZoneMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -33729,7 +33799,7 @@ class EdgeSlingshotsMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -33866,7 +33936,7 @@ class AuraInversionZoneMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -34862,7 +34932,7 @@ class TornadoSwarmEventMode(GameMode):
                 try:
                     from arena.procedural_arena import Hazard
                     HazardClass = Hazard
-                except ImportError:
+                except Exception:
                     class FallbackHazard:
                         def __init__(self, id, x, y, radius, kind, damage):
                             self.id = id
@@ -35009,7 +35079,7 @@ class DynamicDangerZonesMode(GameMode):
                         try:
                             from arena.procedural_arena import Hazard
                             HazardClass = Hazard
-                        except ImportError:
+                        except Exception:
                             class FallbackHazard:
                                 def __init__(self, id, x, y, radius, kind, damage):
                                     self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -35295,7 +35365,7 @@ class OrbitalCrosshairMode(GameMode):
                         try:
                             from arena.procedural_arena import Hazard
                             HazardClass = Hazard
-                        except ImportError:
+                        except Exception:
                             class FallbackHazard:
                                 def __init__(self, id, x, y, radius, kind, damage):
                                     self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
@@ -35497,7 +35567,7 @@ class InvisibleGravityWellsMode(GameMode):
                 well = Hazard(id=h_id, x=x, y=y, radius=200.0, kind="invisible_gravity_well", damage=0.0)
                 well.duration = 15.0
                 well.active = True
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, radius, kind, damage):
                         self.id = id
@@ -36279,7 +36349,7 @@ class VolcanicEruptionEventMode(GameMode):
                     try:
                         from arena.procedural_arena import Hazard
                         HazardClass = Hazard
-                    except ImportError:
+                    except Exception:
                         class FallbackHazard:
                             def __init__(self, id, x, y, radius, kind, damage):
                                 self.id = id
@@ -36324,7 +36394,7 @@ class VolcanicEruptionEventMode(GameMode):
                             try:
                                 from arena.procedural_arena import Hazard
                                 HazardClass = Hazard
-                            except ImportError:
+                            except Exception:
                                 class FallbackHazard:
                                     def __init__(self, id, x, y, radius, kind, damage):
                                         self.id = id
@@ -36984,7 +37054,7 @@ class VampiricZoneMode(GameMode):
             try:
                 from arena.procedural_arena import Hazard
                 hazard_class = Hazard
-            except ImportError:
+            except Exception:
                 class FallbackHazard:
                     def __init__(self, id, x, y, r, kind, dur):
                         self.id = id

@@ -23,6 +23,76 @@ class GameMode:
 					if typeof(hazard) == TYPE_DICTIONARY and "kind" in hazard: h_kind = hazard.kind
 					elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
+					if h_kind == "magma_field":
+						var h_x = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "x" in hazard: h_x = hazard.x
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+
+						var h_y = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "y" in hazard: h_y = hazard.y
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+						var h_r = 60.0
+						if typeof(hazard) == TYPE_DICTIONARY and "radius" in hazard: h_r = hazard.radius
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("radius"): h_r = hazard.get_meta("radius")
+
+						var h_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and "team" in hazard: h_team = hazard.team
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("team"): h_team = hazard.get_meta("team")
+
+						var duration = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "duration" in hazard: duration = hazard.duration
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("duration"): duration = hazard.get_meta("duration")
+
+						duration -= delta
+						if duration <= 0.0:
+							var h_array = []
+							if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+								h_array = world.arena.hazards
+							elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+								h_array = world.arena.hazards
+							if hazard in h_array:
+								h_array.erase(hazard)
+							continue
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["duration"] = duration
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+							hazard.set_meta("duration", duration)
+
+						for b in balls:
+							var is_alive = false
+							if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+							elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = str(b.ball_type)
+							elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = str(b.ball_type)
+
+							if is_alive and b_type != "spectator":
+								var b_team = null
+								if typeof(b) == TYPE_DICTIONARY and "team" in b: b_team = b.team
+								elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+
+								if h_team == null or b_team != h_team:
+									var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+									var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+									var b_r = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 20.0)
+									var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+									if dist < h_r + b_r:
+										var dmg = 10.0 * delta
+										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+											b.take_damage(dmg)
+										else:
+											var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100.0)
+											if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp - dmg
+											elif "hp" in b: b.hp = hp - dmg
+
+										var speed = b.get("speed", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.speed if "speed" in b else 100.0)
+										var new_speed = speed * pow(0.3, delta)
+										if typeof(b) == TYPE_DICTIONARY: b["speed"] = new_speed
+										elif "speed" in b: b.speed = new_speed
+
 					if h_kind == "high_risk_nuke_mine":
 						var defusing_timers = {}
 						if typeof(hazard) == TYPE_DICTIONARY and "defusing_timers" in hazard: defusing_timers = hazard.defusing_timers
@@ -470,6 +540,115 @@ class GameMode:
 
 						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
 						if "speed" in b: b.speed = bs * 1.15
+
+		# Synergy: Fire + Earth = Magma
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			if not is_alive: continue
+
+			var m_cd = 0.0
+			if typeof(b) == TYPE_DICTIONARY and "magma_synergy_cd" in b: m_cd = b.magma_synergy_cd
+			elif typeof(b) == TYPE_OBJECT and "magma_synergy_cd" in b: m_cd = b.magma_synergy_cd
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("magma_synergy_cd"): m_cd = b.get_meta("magma_synergy_cd")
+
+			if m_cd > 0.0:
+				var new_cd = m_cd - delta
+				if typeof(b) == TYPE_DICTIONARY: b["magma_synergy_cd"] = new_cd
+				elif "magma_synergy_cd" in b: b.magma_synergy_cd = new_cd
+				elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("magma_synergy_cd", new_cd)
+				m_cd = new_cd
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = str(b.ball_type).to_lower()
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = str(b.ball_type).to_lower()
+
+			var traits = []
+			if typeof(b) == TYPE_DICTIONARY and "traits" in b: traits = b.traits
+			elif typeof(b) == TYPE_OBJECT and "traits" in b: traits = b.traits
+
+			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+			if is_fire and m_cd <= 0.0:
+				var b_team = null
+				if typeof(b) == TYPE_DICTIONARY and "team" in b: b_team = b.team
+				elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+
+				var b_id = null
+				if typeof(b) == TYPE_DICTIONARY and "id" in b: b_id = b.id
+				elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+
+				for other in balls:
+					var o_alive = false
+					if typeof(other) == TYPE_DICTIONARY and "alive" in other: o_alive = other.alive
+					elif typeof(other) == TYPE_OBJECT and "alive" in other: o_alive = other.alive
+					if not o_alive: continue
+
+					var o_id = null
+					if typeof(other) == TYPE_DICTIONARY and "id" in other: o_id = other.id
+					elif typeof(other) == TYPE_OBJECT and "id" in other: o_id = other.id
+					if o_id == b_id: continue
+
+					var o_team = null
+					if typeof(other) == TYPE_DICTIONARY and "team" in other: o_team = other.team
+					elif typeof(other) == TYPE_OBJECT and "team" in other: o_team = other.team
+
+					if o_team == b_team:
+						var o_type = ""
+						if typeof(other) == TYPE_DICTIONARY and "ball_type" in other: o_type = str(other.ball_type).to_lower()
+						elif typeof(other) == TYPE_OBJECT and "ball_type" in other: o_type = str(other.ball_type).to_lower()
+
+						var o_traits = []
+						if typeof(other) == TYPE_DICTIONARY and "traits" in other: o_traits = other.traits
+						elif typeof(other) == TYPE_OBJECT and "traits" in other: o_traits = other.traits
+
+						var is_earth = o_type.find("earth") != -1 or o_type.find("rock") != -1 or o_traits.has("earth") or o_traits.has("rock")
+
+						if is_earth:
+							var o_cd = 0.0
+							if typeof(other) == TYPE_DICTIONARY and "magma_synergy_cd" in other: o_cd = other.magma_synergy_cd
+							elif typeof(other) == TYPE_OBJECT and "magma_synergy_cd" in other: o_cd = other.magma_synergy_cd
+							elif typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("magma_synergy_cd"): o_cd = other.get_meta("magma_synergy_cd")
+
+							if o_cd <= 0.0:
+								var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+								var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+								var b_r = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else 20.0)
+
+								var o_x = other.get("x") if typeof(other) == TYPE_DICTIONARY else (other.x if "x" in other else 0.0)
+								var o_y = other.get("y") if typeof(other) == TYPE_DICTIONARY else (other.y if "y" in other else 0.0)
+								var o_r = other.get("radius", 20.0) if typeof(other) == TYPE_DICTIONARY else (other.radius if "radius" in other else 20.0)
+
+								var dist = sqrt(pow(b_x - o_x, 2) + pow(b_y - o_y, 2))
+								if dist < b_r + o_r + 10.0:
+									if typeof(b) == TYPE_DICTIONARY: b["magma_synergy_cd"] = 5.0
+									elif "magma_synergy_cd" in b: b.magma_synergy_cd = 5.0
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("magma_synergy_cd", 5.0)
+
+									if typeof(other) == TYPE_DICTIONARY: other["magma_synergy_cd"] = 5.0
+									elif "magma_synergy_cd" in other: other.magma_synergy_cd = 5.0
+									elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("magma_synergy_cd", 5.0)
+
+									if world != null:
+										var h_array = null
+										if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+											h_array = world.arena.hazards
+										elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+											h_array = world.arena.hazards
+
+										if h_array != null:
+											var magma = {
+												"id": "magma_" + str(b_id) + "_" + str(o_id),
+												"x": (b_x + o_x) / 2.0,
+												"y": (b_y + o_y) / 2.0,
+												"radius": 60.0,
+												"kind": "magma_field",
+												"team": b_team,
+												"duration": 4.0,
+												"active": true
+											}
+											h_array.append(magma)
+
 
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
