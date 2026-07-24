@@ -28669,7 +28669,87 @@ class RicochetArenaMode(GameMode):
         super().tick(world, balls, delta)
         # Bouncing logic is handled in action.py _clamp_position for this mode
 
+
+class ChainLightningEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chain Lightning Event"
+        self.description = "Chain lightning periodically strikes the center, turning entities into conduits that spread smaller, low-damage arcs to nearby balls for 10 seconds."
+        self.strike_timer = 0.0
+        self.strike_interval = 20.0
+        self.conduit_duration = 10.0
+        self.arc_damage = 5.0
+        self.arc_radius = 150.0
+        self.arc_cooldown_duration = 1.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        self.strike_timer += delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        if self.strike_timer >= self.strike_interval:
+            self.strike_timer = 0.0
+            strike_radius = 200.0
+
+            if hasattr(world, "add_event"):
+                world.add_event("chain_lightning_strike", {"x": center_x, "y": center_y, "radius": strike_radius})
+
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+                dist = math.hypot(b.x - center_x, b.y - center_y)
+                if dist <= strike_radius + getattr(b, "radius", 15.0):
+                    b.chain_lightning_conduit_timer = self.conduit_duration
+                    b.chain_lightning_arc_timer = 0.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("status_effect", {"id": getattr(b, "id", "unknown"), "effect": "conduit", "duration": self.conduit_duration})
+
+        # Process conduits
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+            conduit_timer = getattr(b, "chain_lightning_conduit_timer", 0.0)
+            if conduit_timer > 0:
+                b.chain_lightning_conduit_timer = conduit_timer - delta
+                arc_timer = getattr(b, "chain_lightning_arc_timer", 0.0)
+                arc_timer -= delta
+                if arc_timer <= 0:
+                    arc_timer = self.arc_cooldown_duration
+
+                    # Find nearby targets to zap
+                    targets = []
+                    for target in balls:
+                        if target == b or not getattr(target, "alive", True):
+                            continue
+                        dist = math.hypot(target.x - b.x, target.y - b.y)
+                        if dist <= self.arc_radius + getattr(b, "radius", 15.0) + getattr(target, "radius", 15.0):
+                            targets.append(target)
+
+                    if targets:
+                        target = random.choice(targets)
+                        if hasattr(world, "_deal_damage"):
+                            world._deal_damage(b, target, self.arc_damage)
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {
+                                "type": "line",
+                                "x": b.x, "y": b.y,
+                                "tx": target.x, "ty": target.y,
+                                "color": "cyan"
+                            })
+                            world.add_event("chain_lightning_arc", {
+                                "source": getattr(b, "id", "unknown"),
+                                "target": getattr(target, "id", "unknown")
+                            })
+                b.chain_lightning_arc_timer = arc_timer
+
 GAME_MODES = {
+    'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
     "snake_safe_zone": SnakeSafeZoneMode(),
