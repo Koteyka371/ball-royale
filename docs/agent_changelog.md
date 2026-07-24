@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1395] Introduce Elemental Synergy Combos — *2026-07-24 09:44:12 UTC*
+
+When units with 'Fire' and 'Earth' traits interact, they could create a temporary 'Magma' field that slows and damages enemies. This encourages team compositions based on elemental synergies rather than just raw stats.
+
+---
+
 ## [idea-1445] Trail Blazer Mutation — *2026-07-24 07:48:07 UTC*
 
 Mutator: All players move 2x faster when on their own team's color trail.
