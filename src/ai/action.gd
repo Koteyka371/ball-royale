@@ -11596,6 +11596,24 @@ func execute(strategy: String, delta: float):
                                                 other.set_meta("stutter_timer", 5.0)
                                         elif b_decoy_type == "explosive":
                                             var actual_damage = explosion_damage
+                                            var decoy_element = null
+                                            if typeof(b) == TYPE_OBJECT and "element" in b: decoy_element = b.element
+                                            elif typeof(b) == TYPE_DICTIONARY and b.has("element"): decoy_element = b["element"]
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("element"): decoy_element = b.get_meta("element")
+
+                                            if decoy_element == "fire":
+                                                if "burn_timer" in other: other.burn_timer += 3.0
+                                                elif other.has_method("set_meta") and other.has_meta("burn_timer"): other.set_meta("burn_timer", other.get_meta("burn_timer") + 3.0)
+                                                elif other.has_method("set_meta"): other.set_meta("burn_timer", 3.0)
+                                            elif decoy_element == "ice":
+                                                if "freeze_timer" in other: other.freeze_timer += 2.0
+                                                elif other.has_method("set_meta") and other.has_meta("freeze_timer"): other.set_meta("freeze_timer", other.get_meta("freeze_timer") + 2.0)
+                                                elif other.has_method("set_meta"): other.set_meta("freeze_timer", 2.0)
+                                            elif decoy_element == "lightning":
+                                                if "shock_timer" in other: other.shock_timer += 2.0
+                                                elif other.has_method("set_meta") and other.has_meta("shock_timer"): other.set_meta("shock_timer", other.get_meta("shock_timer") + 2.0)
+                                                elif other.has_method("set_meta"): other.set_meta("shock_timer", 2.0)
+
                                             var has_rearm_boost = false
                                             if "rearm_damage_boost" in b and b.rearm_damage_boost:
                                                 has_rearm_boost = true
@@ -25315,11 +25333,29 @@ func _collect_booster(delta: float):
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_timer", 5.0)
                         decoy.set_meta("decoy_type", "explosive")
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["element"] = chosen
+				elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("element", chosen)
+				elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+					decoy.element = chosen
                     elif typeof(decoy) == TYPE_DICTIONARY:
                         decoy["is_decoy"] = true
                         decoy["decoy_timer"] = 5.0
                         decoy["owner_id"] = self_id_stat
                         decoy["decoy_type"] = "explosive"
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["element"] = chosen
+				elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("element", chosen)
+				elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+					decoy.element = chosen
 
                     if self.world != null and "balls" in self.world:
                         self.world.balls.append(decoy)
@@ -25925,7 +25961,25 @@ func _collect_booster(delta: float):
                         elif decoy.has_method("set_meta"): decoy.set_meta("is_decoy", true)
 
                         if "decoy_type" in decoy: decoy.decoy_type = "explosive"
+ if randf() < 0.5:
+	var elems = ["fire", "ice", "lightning"]
+	var chosen = elems[randi() % elems.size()]
+	if typeof(decoy) == TYPE_DICTIONARY:
+		decoy["element"] = chosen
+	elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+		decoy.set_meta("element", chosen)
+	elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+		decoy.element = chosen
                         elif decoy.has_method("set_meta"): decoy.set_meta("decoy_type", "explosive")
+ if randf() < 0.5:
+	var elems = ["fire", "ice", "lightning"]
+	var chosen = elems[randi() % elems.size()]
+	if typeof(decoy) == TYPE_DICTIONARY:
+		decoy["element"] = chosen
+	elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+		decoy.set_meta("element", chosen)
+	elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+		decoy.element = chosen
 
                         if "decoy_timer" in decoy: decoy.decoy_timer = 5.0
                         elif decoy.has_method("set_meta"): decoy.set_meta("decoy_timer", 5.0)
@@ -30709,6 +30763,15 @@ func _use_skill():
                         clone.set_meta("mimic_timer", 15.0)
                         clone.set_meta("is_decoy", true)
                         clone.set_meta("decoy_type", "explosive")
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(clone) == TYPE_DICTIONARY:
+					clone["element"] = chosen
+				elif typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+					clone.set_meta("element", chosen)
+				elif typeof(clone) == TYPE_OBJECT and "element" in clone:
+					clone.element = chosen
                         clone.set_meta("decoy_timer", 15.0)
                         clone.set_meta("is_confetti_clone", true)
                     elif typeof(clone) == TYPE_DICTIONARY:
@@ -30718,6 +30781,15 @@ func _use_skill():
                         clone["mimic_timer"] = 15.0
                         clone["is_decoy"] = true
                         clone["decoy_type"] = "explosive"
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(clone) == TYPE_DICTIONARY:
+					clone["element"] = chosen
+				elif typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+					clone.set_meta("element", chosen)
+				elif typeof(clone) == TYPE_OBJECT and "element" in clone:
+					clone.element = chosen
                         clone["decoy_timer"] = 15.0
                         clone["is_confetti_clone"] = true
 
@@ -31159,6 +31231,15 @@ func _use_skill():
                                 decoy["mimic_timer"] = 10.0
                                 decoy["is_decoy"] = true
                                 decoy["decoy_type"] = "explosive"
+                                if randf() < 0.5:
+					var elems = ["fire", "ice", "lightning"]
+					var chosen = elems[randi() % elems.size()]
+					if typeof(decoy) == TYPE_DICTIONARY:
+						decoy["element"] = chosen
+					elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+						decoy.set_meta("element", chosen)
+					elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+						decoy.element = chosen
                             else:
                                 if "id" in decoy: decoy.id = next_id
 
@@ -31188,6 +31269,15 @@ func _use_skill():
                                     decoy.set_meta("mimic_timer", 10.0)
                                     decoy.set_meta("is_decoy", true)
                                     decoy.set_meta("decoy_type", "explosive")
+                                    if randf() < 0.5:
+					var elems = ["fire", "ice", "lightning"]
+					var chosen = elems[randi() % elems.size()]
+					if typeof(decoy) == TYPE_DICTIONARY:
+						decoy["element"] = chosen
+					elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+						decoy.set_meta("element", chosen)
+					elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+						decoy.element = chosen
                                 elif "is_active_clone" in decoy:
                                     decoy.is_active_clone = true
                                     decoy.is_illusion = true
@@ -31195,6 +31285,15 @@ func _use_skill():
                                     decoy.mimic_timer = 10.0
                                     decoy.is_decoy = true
                                     decoy.decoy_type = "explosive"
+                                    if randf() < 0.5:
+					var elems = ["fire", "ice", "lightning"]
+					var chosen = elems[randi() % elems.size()]
+					if typeof(decoy) == TYPE_DICTIONARY:
+						decoy["element"] = chosen
+					elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+						decoy.set_meta("element", chosen)
+					elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+						decoy.element = chosen
 
                             self.world.balls.append(decoy)
 
@@ -32715,6 +32814,15 @@ func _use_skill():
                         decoy.set_meta("owner_id", self.ball.get_meta("id") if self.ball.has_meta("id") else null)
                         decoy.set_meta("is_decoy", true)
                         decoy.set_meta("decoy_type", "explosive")
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["element"] = chosen
+				elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("element", chosen)
+				elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+					decoy.element = chosen
                         decoy.set_meta("decoy_timer", 5.0)
                         var b_hp = 100
                         if self.ball.has_meta("max_hp"): b_hp = self.ball.get_meta("max_hp")
@@ -32731,6 +32839,15 @@ func _use_skill():
                         decoy.owner_id = self.ball.id if "id" in self.ball else null
                         decoy.is_decoy = true
                         decoy.decoy_type = "explosive"
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["element"] = chosen
+				elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("element", chosen)
+				elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+					decoy.element = chosen
                         decoy.decoy_timer = 5.0
                         var b_hp = 100
                         if "max_hp" in self.ball: b_hp = self.ball.max_hp
@@ -34100,6 +34217,15 @@ func _use_skill():
                         decoy.skill = null
                         decoy.active_skill = null
                         decoy.decoy_type = "explosive"
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["element"] = chosen
+				elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("element", chosen)
+				elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+					decoy.element = chosen
 
                         var b_radius = 10.0
                         if "radius" in self.ball: b_radius = self.ball.radius
@@ -34127,7 +34253,25 @@ func _use_skill():
                         decoy.set_meta("active_skill", null)
                         if "active_skill" in decoy: decoy.active_skill = null
                         decoy.set_meta("decoy_type", "explosive")
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["element"] = chosen
+				elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("element", chosen)
+				elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+					decoy.element = chosen
                         decoy.decoy_type = "explosive"
+                        if randf() < 0.5:
+				var elems = ["fire", "ice", "lightning"]
+				var chosen = elems[randi() % elems.size()]
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["element"] = chosen
+				elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+					decoy.set_meta("element", chosen)
+				elif typeof(decoy) == TYPE_OBJECT and "element" in decoy:
+					decoy.element = chosen
 
                         var b_radius = 10.0
                         if "radius" in self.ball: b_radius = self.ball.radius

@@ -5838,6 +5838,14 @@ class Action:
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
                                             elif decoy_type == "explosive":
                                                 actual_damage = explosion_damage
+                                                decoy_element = getattr(b, "element", None)
+                                                if decoy_element == "fire":
+                                                    other.burn_timer = getattr(other, "burn_timer", 0.0) + 3.0
+                                                elif decoy_element == "ice":
+                                                    other.freeze_timer = getattr(other, "freeze_timer", 0.0) + 2.0
+                                                elif decoy_element == "lightning":
+                                                    other.shock_timer = getattr(other, "shock_timer", 0.0) + 2.0
+
                                                 if getattr(b, "rearm_damage_boost", False):
                                                     actual_damage *= 1.25
                                                 other.hp -= actual_damage
@@ -12857,7 +12865,9 @@ class Action:
                         decoy.is_decoy = True
                         decoy.decoy_timer = 5.0
                         decoy.owner_id = getattr(self.ball, "id", None)
-                        decoy.decoy_type = "explosive" # make the pickup decoy explode automatically
+                        decoy.decoy_type = "explosive"
+                        if __import__('random').random() < 0.5:
+                            decoy.element = __import__('random').choice(['fire', 'ice', 'lightning']) # make the pickup decoy explode automatically
                         self.world.balls.append(decoy)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
@@ -13239,6 +13249,8 @@ class Action:
                         decoy.owner_id = getattr(self.ball, "id", None)
                         decoy.is_decoy = True
                         decoy.decoy_type = "explosive"
+                        if __import__('random').random() < 0.5:
+                            decoy.element = __import__('random').choice(['fire', 'ice', 'lightning'])
                         decoy.decoy_timer = 5.0
                         decoy.skill_timer = 9999.0
                         decoy.attack_timer = 9999.0
@@ -15776,8 +15788,12 @@ class Action:
                                 decoy.decoy_type = "stun_trap"
                             else:
                                 decoy.decoy_type = "explosive"
+                                if __import__('random').random() < 0.5:
+                                    decoy.element = __import__('random').choice(['fire', 'ice', 'lightning'])
                         else:
                             decoy.decoy_type = "explosive"
+                            if __import__('random').random() < 0.5:
+                                decoy.element = __import__('random').choice(['fire', 'ice', 'lightning'])
 
                         if getattr(self.ball, "rearm_damage_boost", False):
                             decoy.rearm_damage_boost = True
@@ -15809,6 +15825,8 @@ class Action:
 
                     clone.is_decoy = True
                     clone.decoy_type = "explosive"
+                    if __import__('random').random() < 0.5:
+                        clone.element = __import__('random').choice(['fire', 'ice', 'lightning'])
                     clone.decoy_timer = 15.0
                     clone.is_confetti_clone = True
 
@@ -15999,6 +16017,8 @@ class Action:
 
                         decoy.is_decoy = True
                         decoy.decoy_type = "explosive"
+                        if __import__('random').random() < 0.5:
+                            decoy.element = __import__('random').choice(['fire', 'ice', 'lightning'])
 
                         angle = (i * 2 * math.pi / 3)
                         decoy.x += math.cos(angle) * 25.0
@@ -16328,6 +16348,8 @@ class Action:
                     decoy.vy = ny * 800.0
                     # A thrown decoy explodes on impact or timeout
                     decoy.decoy_type = "explosive"
+                    if __import__('random').random() < 0.5:
+                        decoy.element = __import__('random').choice(['fire', 'ice', 'lightning'])
 
                     self.world.balls.append(decoy)
 
@@ -17085,6 +17107,8 @@ class Action:
                     decoy.owner_id = getattr(self.ball, "id", None)
                     decoy.is_decoy = True
                     decoy.decoy_type = "explosive"
+                    if __import__('random').random() < 0.5:
+                        decoy.element = __import__('random').choice(['fire', 'ice', 'lightning'])
                     decoy.decoy_timer = 5.0
                     decoy.x = old_x
                     decoy.y = old_y
