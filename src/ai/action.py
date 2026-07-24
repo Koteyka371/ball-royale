@@ -1226,6 +1226,11 @@ class Action:
                 attacker.hp = min(getattr(attacker, "hp", 100.0) + (attacker.max_hp - attacker.max_hp / 1.5), attacker.max_hp)
                 attacker.loadout_fragments = getattr(attacker, "loadout_fragments", 0) + 1
                 attacker.is_minor_bounty = True
+
+                # Bonus points and temporary speed buff
+                attacker.score = getattr(attacker, "score", 0) + 150
+                attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 5.0
+
                 if hasattr(self.world, "add_event"):
                     self.world.add_event("dynamic_bounty_claimed", {"message": "Dynamic Bounty claimed!"})
             elif getattr(target, "is_minor_bounty", False):

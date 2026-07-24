@@ -19,6 +19,8 @@ class MockEntity:
         self.team = "Red"
         self.stun_timer = 0.0
         self.charge_level = 0.0
+        self.score = 0
+        self.speed_boost_timer = 0.0
 
 class MockWorld:
     def __init__(self):
@@ -49,17 +51,36 @@ def test_dynamic_bounty_assignment():
 
     balls = [b1, b2, b3]
 
-    # Tick should assign bounty to b2
+    b3.score = 100
+
+    # b3 has higher score, so they should be assigned the bounty over b2 with kills
     mode.tick(world, balls, delta=0.5)
 
     assert b1.is_dynamic_bounty is False
-    assert b2.is_dynamic_bounty is True
-    assert b3.is_dynamic_bounty is False
+    assert b2.is_dynamic_bounty is False
+    assert b3.is_dynamic_bounty is True
 
     # Tick again with time increment to trigger VFX
     mode.tick(world, balls, delta=0.6)
 
     assert any(e[0] == "visual_effect" and e[1]["type"] == "bounty_mark" for e in world.events)
+
+def test_dynamic_bounty_assignment_fallback_kills():
+    mode = DynamicBountyMode()
+    world = MockWorld()
+
+    b1 = MockEntity(1, kills=0)
+    b2 = MockEntity(2, kills=2)
+    b3 = MockEntity(3, kills=1)
+
+    balls = [b1, b2, b3]
+
+    # Tick should assign bounty to b2 (fallback to kills)
+    mode.tick(world, balls, delta=0.5)
+
+    assert b1.is_dynamic_bounty is False
+    assert b2.is_dynamic_bounty is True
+    assert b3.is_dynamic_bounty is False
 
 def test_dynamic_bounty_buffs_on_kill():
     world = MockWorld()
@@ -81,6 +102,8 @@ def test_dynamic_bounty_buffs_on_kill():
     # HP should go up by the diff: 50.0. Current HP was 100.0. Max is 150.0, so should be 150.0
     assert attacker.hp == 150.0
     assert attacker.loadout_fragments == 1
+    assert attacker.score == 150
+    assert attacker.speed_boost_timer == 5.0
 
     assert any(e[0] == "dynamic_bounty_claimed" for e in world.events)
 

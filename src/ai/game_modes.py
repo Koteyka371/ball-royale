@@ -13538,21 +13538,36 @@ class DynamicBountyMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
         super().tick(world, balls, delta)
 
+        highest_score = -1
         highest_kills = -1
         bounty_candidates = []
 
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                score = getattr(b, "score", 0)
                 kills = getattr(b, "kills", 0)
-                if kills > highest_kills:
+                # Use score as primary, kills as secondary (fallback)
+                if score > highest_score:
+                    highest_score = score
                     highest_kills = kills
                     bounty_candidates = [b]
-                elif kills == highest_kills and highest_kills > 0:
-                    bounty_candidates.append(b)
+                elif score == highest_score and score > 0:
+                    if kills > highest_kills:
+                        highest_kills = kills
+                        bounty_candidates = [b]
+                    elif kills == highest_kills:
+                        bounty_candidates.append(b)
+                elif score == 0 and highest_score <= 0:
+                    # Fallback if no one has a score yet
+                    if kills > highest_kills:
+                        highest_kills = kills
+                        bounty_candidates = [b]
+                    elif kills == highest_kills and kills > 0:
+                        bounty_candidates.append(b)
 
-        # Only assign bounty if someone has at least 1 kill
+        # Only assign bounty if someone has a score or kills
         new_bounty_id = None
-        if highest_kills > 0 and bounty_candidates:
+        if (highest_score > 0 or highest_kills > 0) and bounty_candidates:
             # If multiple people have the same highest kills, pick the first one (or keep the existing if tied)
             selected = bounty_candidates[0]
             if self.current_bounty_id is not None:
