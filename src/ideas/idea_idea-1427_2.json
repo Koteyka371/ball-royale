@@ -1,4 +1,1 @@
-{
-  "title": "Shrinking Safe Zone Mutator",
-  "description": "A game mode mutator where the arena slowly shrinks. Instead of a hard barrier, outside the zone applies a stacking slow and damage-over-time effect, forcing players to fight in the center."
-}
+{"title": "Time Dilator Trap", "description": "A deployable hazard that halves the movement and cooldown speeds of all enemies within its radius."}
