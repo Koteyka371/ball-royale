@@ -47305,7 +47305,113 @@ class MirrorArenaMode extends GameMode:
 		for np in new_projectiles:
 			projectiles.append(np)
 
+class PeriodicGravityFlipMode extends GameMode:
+	var flip_timer = 0.0
+	var flip_interval = 5.0
+	var gravity_direction = 1.0
+	var gravity_strength = 200.0
+
+	func _init():
+		name = "Periodic Gravity Flip"
+		description = "Periodically flips the gravity of the arena, sending heavy objects flying and altering player momentum."
+
+	func tick(world, balls, delta=0.016):
+		apply_dynamic_traits(world, balls, delta)
+		flip_timer += delta
+		if flip_timer >= flip_interval:
+			flip_timer = 0.0
+			gravity_direction *= -1.0
+			if world.has_method("add_event"):
+				var dir_str = "Up" if gravity_direction < 0 else "Down"
+				world.add_event("gravity_flip", {"message": "Gravity flipped " + dir_str + "!"})
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false):
+					var mass = b.get("mass", 1.0)
+					if not b.has("vy"):
+						b["vy"] = 0.0
+					b["vy"] += gravity_strength * gravity_direction * mass * delta
+			else:
+				var alive_val = false
+				if "alive" in b:
+					alive_val = b.alive
+				elif b.has_method("get") and b.get("alive") != null:
+					alive_val = b.get("alive")
+
+				if alive_val:
+					var mass = 1.0
+					if "mass" in b:
+						mass = b.mass
+					elif b.has_method("get") and b.get("mass") != null:
+						mass = b.get("mass")
+
+					var vy = 0.0
+					if "vy" in b:
+						vy = b.vy
+					elif b.has_method("get") and b.get("vy") != null:
+						vy = b.get("vy")
+
+					var new_vy = vy + (gravity_strength * gravity_direction * mass * delta)
+					if "vy" in b:
+						b.vy = new_vy
+					elif b.has_method("set"):
+						b.set("vy", new_vy)
+
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+		else:
+			if "arena" in world and world.arena != null:
+				if "hazards" in world.arena:
+					hazards = world.arena.hazards
+				elif world.arena.has_method("get") and world.arena.get("hazards") != null:
+					hazards = world.arena.get("hazards")
+
+		for h in hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				var mass = h.get("mass", 3.0)
+				if not h.has("vy"):
+					h["vy"] = 0.0
+				if not h.has("vx"):
+					h["vx"] = 0.0
+				h["vy"] += gravity_strength * gravity_direction * mass * delta
+				if h.has("y"):
+					h["y"] += h["vy"] * delta
+			else:
+				var mass = 3.0
+				if "mass" in h:
+					mass = h.mass
+				elif h.has_method("get") and h.get("mass") != null:
+					mass = h.get("mass")
+
+				var vy = 0.0
+				if "vy" in h:
+					vy = h.vy
+				elif h.has_method("get") and h.get("vy") != null:
+					vy = h.get("vy")
+
+				var new_vy = vy + (gravity_strength * gravity_direction * mass * delta)
+				if "vy" in h:
+					h.vy = new_vy
+				elif h.has_method("set"):
+					h.set("vy", new_vy)
+
+				var h_y = 0.0
+				if "y" in h:
+					h_y = h.y
+				elif h.has_method("get") and h.get("y") != null:
+					h_y = h.get("y")
+
+				var new_y = h_y + (new_vy * delta)
+				if "y" in h:
+					h.y = new_y
+				elif h.has_method("set"):
+					h.set("y", new_y)
+
 GAME_MODES = {
+	"periodic_gravity_flip": PeriodicGravityFlipMode.new(),
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
