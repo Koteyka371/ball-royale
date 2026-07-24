@@ -2523,6 +2523,40 @@ class Action:
                         # Adding a visual indicator flag
                         self.ball.show_sniper_nest_indicator = True
 
+                        # Sniper Drone Logic
+                        drone_active = getattr(hazard, "sniper_drone_active", False)
+                        drone_timer = getattr(hazard, "sniper_drone_timer", 0.0)
+
+                        if not drone_active:
+                            drone_timer -= delta
+                            setattr(hazard, "sniper_drone_timer", drone_timer)
+                            if drone_timer <= 0.0:
+                                setattr(hazard, "sniper_drone_active", True)
+                                setattr(hazard, "sniper_drone_angle", 0.0)
+
+                        drone_active = getattr(hazard, "sniper_drone_active", False)
+                        if drone_active:
+                            angle = getattr(hazard, "sniper_drone_angle", 0.0)
+                            angle += delta * 2.0 # Drone orbits at 2 rad/s
+                            setattr(hazard, "sniper_drone_angle", angle)
+
+                            orbit_radius = getattr(hazard, "radius", 50.0) * 1.5
+                            drone_x = getattr(hazard, "x", 0.0) + orbit_radius * __import__("math").cos(angle)
+                            drone_y = getattr(hazard, "y", 0.0) + orbit_radius * __import__("math").sin(angle)
+
+                            # Drone provides massive vision radius to the sniper
+                            self.ball.perception_radius = max(self.ball.perception_radius, 800.0)
+
+                            # Check if drone is destroyed by enemy
+                            for enemy in getattr(self.world, "balls", []):
+                                if getattr(enemy, "team", "") != getattr(self.ball, "team", ""):
+                                    dx = drone_x - getattr(enemy, "x", 0.0)
+                                    dy = drone_y - getattr(enemy, "y", 0.0)
+                                    if __import__("math").hypot(dx, dy) <= getattr(enemy, "radius", 10.0) + 15.0:
+                                        setattr(hazard, "sniper_drone_active", False)
+                                        setattr(hazard, "sniper_drone_timer", 10.0) # Respawn time
+                                        break
+
                         if hasattr(self.world, "events"):
                             self.world.events.append({
                                 "type": "sniper_nest_indicator",

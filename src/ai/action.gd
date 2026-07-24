@@ -5487,16 +5487,996 @@ func execute(strategy: String, delta: float):
 							self.ball["perception_radius"] = base_p * 1.25
 							self.ball["damage_multiplier"] = base_dmg * 1.15
 							self.ball["show_sniper_nest_indicator"] = true
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									if self.ball["perception_radius"] < 800.0: self.ball["perception_radius"] = 800.0
+								else:
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									if self.ball["perception_radius"] < 800.0: self.ball["perception_radius"] = 800.0
+								else:
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									if self.ball["perception_radius"] < 800.0: self.ball["perception_radius"] = 800.0
+								else:
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									if self.ball["perception_radius"] < 800.0: self.ball["perception_radius"] = 800.0
+								else:
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									if self.ball["perception_radius"] < 800.0: self.ball["perception_radius"] = 800.0
+								else:
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								if typeof(self.ball) == TYPE_DICTIONARY:
+									if self.ball["perception_radius"] < 800.0: self.ball["perception_radius"] = 800.0
+								else:
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
 						else:
 							if self.ball.has_method("set_meta"):
 								self.ball.set_meta("in_sniper_nest", true)
 								self.ball.set_meta("perception_radius", base_p * 1.25)
 								self.ball.set_meta("damage_multiplier", base_dmg * 1.15)
 								self.ball.set_meta("show_sniper_nest_indicator", true)
+
+								var drone_active = false
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+								var drone_timer = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+								if not drone_active:
+									drone_timer -= delta
+									if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+									elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+									if drone_timer <= 0.0:
+										drone_active = true
+										if typeof(hazard) == TYPE_DICTIONARY:
+											hazard["sniper_drone_active"] = true
+											hazard["sniper_drone_angle"] = 0.0
+										elif typeof(hazard) == TYPE_OBJECT:
+											hazard.set("sniper_drone_active", true)
+											hazard.set("sniper_drone_angle", 0.0)
+
+								if drone_active:
+									var angle = 0.0
+									if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+									elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+									angle += delta * 2.0
+									if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+									elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+									var orbit_radius = rad * 1.5
+									var drone_x = hx + orbit_radius * cos(angle)
+									var drone_y = hy + orbit_radius * sin(angle)
+
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+									if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", pr)
+
+									# Enemy drone destruction check
+									var b_team = ""
+									if "team" in self.ball: b_team = self.ball.team
+
+									var balls = []
+									if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+									elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+									for enemy in balls:
+										var e_team = ""
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+										elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+										if e_team != b_team:
+											var ex = 0.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+											elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+											var ey = 0.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+											elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+											var erad = 10.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+											elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+											var ddx = drone_x - ex
+											var ddy = drone_y - ey
+											if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+												if typeof(hazard) == TYPE_DICTIONARY:
+													hazard["sniper_drone_active"] = false
+													hazard["sniper_drone_timer"] = 10.0
+												elif typeof(hazard) == TYPE_OBJECT:
+													hazard.set("sniper_drone_active", false)
+													hazard.set("sniper_drone_timer", 10.0)
+												break
+
+								var drone_active = false
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+								var drone_timer = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+								if not drone_active:
+									drone_timer -= delta
+									if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+									elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+									if drone_timer <= 0.0:
+										drone_active = true
+										if typeof(hazard) == TYPE_DICTIONARY:
+											hazard["sniper_drone_active"] = true
+											hazard["sniper_drone_angle"] = 0.0
+										elif typeof(hazard) == TYPE_OBJECT:
+											hazard.set("sniper_drone_active", true)
+											hazard.set("sniper_drone_angle", 0.0)
+
+								if drone_active:
+									var angle = 0.0
+									if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+									elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+									angle += delta * 2.0
+									if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+									elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+									var orbit_radius = rad * 1.5
+									var drone_x = hx + orbit_radius * cos(angle)
+									var drone_y = hy + orbit_radius * sin(angle)
+
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+									if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", pr)
+
+									# Enemy drone destruction check
+									var b_team = ""
+									if "team" in self.ball: b_team = self.ball.team
+
+									var balls = []
+									if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+									elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+									for enemy in balls:
+										var e_team = ""
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+										elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+										if e_team != b_team:
+											var ex = 0.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+											elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+											var ey = 0.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+											elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+											var erad = 10.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+											elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+											var ddx = drone_x - ex
+											var ddy = drone_y - ey
+											if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+												if typeof(hazard) == TYPE_DICTIONARY:
+													hazard["sniper_drone_active"] = false
+													hazard["sniper_drone_timer"] = 10.0
+												elif typeof(hazard) == TYPE_OBJECT:
+													hazard.set("sniper_drone_active", false)
+													hazard.set("sniper_drone_timer", 10.0)
+												break
+
+								var drone_active = false
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+								var drone_timer = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+								if not drone_active:
+									drone_timer -= delta
+									if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+									elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+									if drone_timer <= 0.0:
+										drone_active = true
+										if typeof(hazard) == TYPE_DICTIONARY:
+											hazard["sniper_drone_active"] = true
+											hazard["sniper_drone_angle"] = 0.0
+										elif typeof(hazard) == TYPE_OBJECT:
+											hazard.set("sniper_drone_active", true)
+											hazard.set("sniper_drone_angle", 0.0)
+
+								if drone_active:
+									var angle = 0.0
+									if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+									elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+									angle += delta * 2.0
+									if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+									elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+									var orbit_radius = rad * 1.5
+									var drone_x = hx + orbit_radius * cos(angle)
+									var drone_y = hy + orbit_radius * sin(angle)
+
+									var pr = 800.0
+									if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+									if "perception_radius" in self.ball: self.ball.perception_radius = pr
+									if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", pr)
+
+									# Enemy drone destruction check
+									var b_team = ""
+									if "team" in self.ball: b_team = self.ball.team
+
+									var balls = []
+									if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+									elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+									for enemy in balls:
+										var e_team = ""
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+										elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+										if e_team != b_team:
+											var ex = 0.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+											elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+											var ey = 0.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+											elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+											var erad = 10.0
+											if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+											elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+											var ddx = drone_x - ex
+											var ddy = drone_y - ey
+											if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+												if typeof(hazard) == TYPE_DICTIONARY:
+													hazard["sniper_drone_active"] = false
+													hazard["sniper_drone_timer"] = 10.0
+												elif typeof(hazard) == TYPE_OBJECT:
+													hazard.set("sniper_drone_active", false)
+													hazard.set("sniper_drone_timer", 10.0)
+												break
 							if "in_sniper_nest" in self.ball: self.ball.in_sniper_nest = true
 							if "perception_radius" in self.ball: self.ball.perception_radius = base_p * 1.25
 							if "damage_multiplier" in self.ball: self.ball.damage_multiplier = base_dmg * 1.15
 							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = true
+
+							var drone_active_3 = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active_3 = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active_3 = hazard.sniper_drone_active
+
+							var drone_timer_3 = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer_3 = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer_3 = hazard.sniper_drone_timer
+
+							if not drone_active_3:
+								drone_timer_3 -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer_3
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer_3)
+								if drone_timer_3 <= 0.0:
+									drone_active_3 = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active_3:
+								var angle_3 = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle_3 = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle_3 = hazard.sniper_drone_angle
+
+								angle_3 += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle_3
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle_3)
+
+								var orbit_radius_3 = rad * 1.5
+								var drone_x_3 = hx + orbit_radius_3 * cos(angle_3)
+								var drone_y_3 = hy + orbit_radius_3 * sin(angle_3)
+
+								var pr = 800.0
+								if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+								if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x_3 - ex
+										var ddy = drone_y_3 - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active_3 = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active_3 = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active_3 = hazard.sniper_drone_active
+
+							var drone_timer_3 = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer_3 = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer_3 = hazard.sniper_drone_timer
+
+							if not drone_active_3:
+								drone_timer_3 -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer_3
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer_3)
+								if drone_timer_3 <= 0.0:
+									drone_active_3 = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active_3:
+								var angle_3 = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle_3 = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle_3 = hazard.sniper_drone_angle
+
+								angle_3 += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle_3
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle_3)
+
+								var orbit_radius_3 = rad * 1.5
+								var drone_x_3 = hx + orbit_radius_3 * cos(angle_3)
+								var drone_y_3 = hy + orbit_radius_3 * sin(angle_3)
+
+								var pr = 800.0
+								if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+								if "perception_radius" in self.ball: self.ball.perception_radius = pr
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+								elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x_3 - ex
+										var ddy = drone_y_3 - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								var pr = 800.0
+								if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+								if "perception_radius" in self.ball: self.ball.perception_radius = pr
+								if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", pr)
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
+
+							var drone_active = false
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_active"): drone_active = hazard["sniper_drone_active"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_active" in hazard: drone_active = hazard.sniper_drone_active
+
+							var drone_timer = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_timer"): drone_timer = hazard["sniper_drone_timer"]
+							elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_timer" in hazard: drone_timer = hazard.sniper_drone_timer
+
+							if not drone_active:
+								drone_timer -= delta
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_timer"] = drone_timer
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_timer", drone_timer)
+								if drone_timer <= 0.0:
+									drone_active = true
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["sniper_drone_active"] = true
+										hazard["sniper_drone_angle"] = 0.0
+									elif typeof(hazard) == TYPE_OBJECT:
+										hazard.set("sniper_drone_active", true)
+										hazard.set("sniper_drone_angle", 0.0)
+
+							if drone_active:
+								var angle = 0.0
+								if typeof(hazard) == TYPE_DICTIONARY and hazard.has("sniper_drone_angle"): angle = hazard["sniper_drone_angle"]
+								elif typeof(hazard) == TYPE_OBJECT and "sniper_drone_angle" in hazard: angle = hazard.sniper_drone_angle
+
+								angle += delta * 2.0
+								if typeof(hazard) == TYPE_DICTIONARY: hazard["sniper_drone_angle"] = angle
+								elif typeof(hazard) == TYPE_OBJECT: hazard.set("sniper_drone_angle", angle)
+
+								var orbit_radius = rad * 1.5
+								var drone_x = hx + orbit_radius * cos(angle)
+								var drone_y = hy + orbit_radius * sin(angle)
+
+								var pr = 800.0
+								if "perception_radius" in self.ball: pr = max(self.ball.perception_radius, 800.0)
+								if "perception_radius" in self.ball: self.ball.perception_radius = pr
+								if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", pr)
+
+								# Enemy drone destruction check
+								var b_team = ""
+								if "team" in self.ball: b_team = self.ball.team
+
+								var balls = []
+								if typeof(world) == TYPE_DICTIONARY and world.has("balls"): balls = world["balls"]
+								elif typeof(world) == TYPE_OBJECT and "balls" in world: balls = world.balls
+
+								for enemy in balls:
+									var e_team = ""
+									if typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = enemy["team"]
+									elif typeof(enemy) == TYPE_OBJECT and "team" in enemy: e_team = enemy.team
+
+									if e_team != b_team:
+										var ex = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): ex = enemy["x"]
+										elif typeof(enemy) == TYPE_OBJECT and "x" in enemy: ex = enemy.x
+										var ey = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): ey = enemy["y"]
+										elif typeof(enemy) == TYPE_OBJECT and "y" in enemy: ey = enemy.y
+										var erad = 10.0
+										if typeof(enemy) == TYPE_DICTIONARY and enemy.has("radius"): erad = enemy["radius"]
+										elif typeof(enemy) == TYPE_OBJECT and "radius" in enemy: erad = enemy.radius
+
+										var ddx = drone_x - ex
+										var ddy = drone_y - ey
+										if sqrt(ddx*ddx + ddy*ddy) <= erad + 15.0:
+											if typeof(hazard) == TYPE_DICTIONARY:
+												hazard["sniper_drone_active"] = false
+												hazard["sniper_drone_timer"] = 10.0
+											elif typeof(hazard) == TYPE_OBJECT:
+												hazard.set("sniper_drone_active", false)
+												hazard.set("sniper_drone_timer", 10.0)
+											break
 
 							if typeof(world) == TYPE_OBJECT and "events" in world:
 								var bx2 = 0.0
