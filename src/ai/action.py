@@ -8698,6 +8698,10 @@ class Action:
                                     # Anchor Trap: Disables movement abilities (dash/teleport) for 5 seconds
                                     self.ball.anchor_trap_timer = max(getattr(self.ball, "anchor_trap_timer", 0.0), 5.0)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "heavy_gravity_well":
+                                    self.ball.heavy_gravity_timer = max(getattr(self.ball, "heavy_gravity_timer", 0.0), 3.0)
+                                    self.ball.anchor_trap_timer = max(getattr(self.ball, "anchor_trap_timer", 0.0), 3.0)
+                                    hazard.duration = 0.0
                                 elif trap_variant == "jump_pad":
                                     hazard.duration = 0.0 # Destroy trap
                                     import random
@@ -18435,6 +18439,9 @@ class Action:
                     self.ball.kinetic_absorbed_energy += overlap
                     self.ball.speed_boost_timer = min(3.0, getattr(self.ball, "speed_boost_timer", 0.0) + (overlap * 0.1))
 
+                if getattr(self.ball, "heavy_gravity_timer", 0.0) > 0.0:
+                    knockback_multiplier = 0.0
+
                 self.ball.x += nx * overlap * knockback_multiplier
                 self.ball.y += ny * overlap * knockback_multiplier
 
@@ -19462,6 +19469,11 @@ class Action:
             self.ball.anchor_trap_timer -= delta
             if self.ball.anchor_trap_timer < 0:
                 self.ball.anchor_trap_timer = 0.0
+
+        if hasattr(self.ball, "heavy_gravity_timer") and self.ball.heavy_gravity_timer > 0:
+            self.ball.heavy_gravity_timer -= delta
+            if self.ball.heavy_gravity_timer < 0:
+                self.ball.heavy_gravity_timer = 0.0
 
         if hasattr(self.ball, "anchor_booster_timer") and self.ball.anchor_booster_timer > 0:
             self.ball.anchor_booster_timer -= delta
