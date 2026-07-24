@@ -24767,7 +24767,7 @@
     },
     {
       "id": "idea-1446",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ice Boots",
@@ -36133,6 +36133,23 @@
         "src/ai/abyssal_fog_mutator.py",
         "src/ai/abyssal_fog_mutator.gd",
         "tests/test_abyssal_fog_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2114",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decaying Orbits mutator",
+      "description": "The safe zone isn't a shrinking circle, but instead is a rapidly orbiting spotlight that gets faster and smaller as the game progresses.",
+      "allowed_paths": [
+        "src/ai/decaying_orbits_mutator.py",
+        "src/ai/decaying_orbits_mutator.gd",
+        "tests/test_decaying_orbits_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

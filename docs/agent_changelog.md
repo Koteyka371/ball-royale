@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1446] Ice Boots — *2026-07-24 06:42:13 UTC*
+
+Boots that ignore snow/ice
+
+---
+
 ## [idea-1417] Mirror World Mode — *2026-07-24 06:18:17 UTC*
 
 A game mode where the entire arena is horizontally symmetrical. Firing a projectile on the left side of the map simultaneously spawns a 'phantom' projectile on the right side traveling in the mirrored direction. Players have to watch both sides of the arena to dodge effectively.
