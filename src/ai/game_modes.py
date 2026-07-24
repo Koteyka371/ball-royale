@@ -25388,6 +25388,13 @@ class FloodingArenaMode(GameMode):
                 if not is_aquatic:
                     b.hp -= self.damage_per_second * delta
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.5  # Slow non-aquatics in flood
+
+                    # Deep area stamina drain
+                    deep_radius = self.flood_radius * 0.5
+                    if distance_to_center > deep_radius:
+                        stamina = getattr(b, "stamina", 100.0)
+                        b.stamina = max(0.0, stamina - 10.0 * delta)
+
                     if b.hp <= 0:
                         b.alive = False
                         b.hp = 0
