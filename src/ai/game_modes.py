@@ -3583,39 +3583,29 @@ class BattleRoyaleMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
 
-        # Weekend Juggernaut Boss logic
-        if not getattr(self, "_weekend_boss_checked", False):
-            self._weekend_boss_checked = True
-            import datetime
-            is_weekend = datetime.datetime.now().weekday() >= 5
-            if is_weekend:
-                if getattr(self, "random", __import__("random")).random() < 0.2: # 20% chance
-                    self._weekend_boss_spawned = True
-
-                    arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
-                    arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-                    boss_x = arena_width / 2.0
-                    boss_y = arena_height / 2.0
-
-                    boss_id = 99000 + getattr(self, "random", __import__("random")).randint(0, 9999)
-                    new_boss = WeekendBoss(boss_id, boss_x, boss_y)
-
-                    if hasattr(world, "balls"):
-                        world.balls.append(new_boss)
-                        if hasattr(world, "entities") and world.balls is not world.entities:
-                            world.entities.append(new_boss)
-
-                    if hasattr(world, "add_event"):
-                        world.add_event("weekend_boss_spawn", {"message": "A massive Juggernaut Boss has emerged in the center of the arena!"})
-
+        # Weekend Boss Temporary Alliance
         if getattr(self, "_weekend_boss_spawned", False):
+            boss_alive = False
             for b in balls:
-                if getattr(b, "is_weekend_boss", False):
-                    if not getattr(b, "alive", False) and not getattr(b, "reward_given", False):
-                        b.reward_given = True
-                        killer_id = getattr(b, "killer_id", None)
-                        if hasattr(world, "add_event"):
-                            world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
+                if getattr(b, "is_weekend_boss", False) and getattr(b, "alive", False):
+                    boss_alive = True
+                    break
+
+            # If boss is alive, all players ally against it
+            if boss_alive:
+                for b in balls:
+                    if getattr(b, "ball_type", "") != "juggernaut" and not getattr(b, "is_weekend_boss", False):
+                        if not hasattr(b, "_original_team"):
+                            b._original_team = getattr(b, "team", None)
+                        b.team = "BossHunters"
+            else:
+                # Restore original teams once boss is defeated
+                for b in balls:
+                    if hasattr(b, "_original_team"):
+                        b.team = b._original_team
+                        del b._original_team
+
+
 
         self.match_time += delta
 

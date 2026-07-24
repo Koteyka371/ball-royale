@@ -1,0 +1,4 @@
+{
+  "title": "Environmental Disasters",
+  "description": "Introduce dynamic map hazards such as flash floods or earthquakes that physically alter the terrain during the match. Flash floods could create temporary water zones that slow movement but extinguish fire-based DoT, while earthquakes create impassable fissures."
+}
