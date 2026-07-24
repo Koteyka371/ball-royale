@@ -21692,8 +21692,8 @@ class DayNightMode extends GameMode:
 				elif "is_night" in world.arena:
 					is_night = world.arena.is_night
 
-			var has_light = b_type.find("light") != -1 or traits.has("light")
-			var has_shadow = b_type.find("shadow") != -1 or traits.has("shadow")
+			var has_light = b_type.find("light") != -1 or traits.has("light") or b_type.find("solar") != -1 or traits.has("solar") or b_type.find("radiant") != -1 or traits.has("radiant")
+			var has_shadow = b_type.find("shadow") != -1 or traits.has("shadow") or b_type.find("vampire") != -1 or traits.has("vampire") or b_type.find("stealth") != -1 or traits.has("stealth")
 
 			if has_light:
 				if not is_night:
