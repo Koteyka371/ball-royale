@@ -45,6 +45,8 @@ def test_massive_pinball_arena_mode_tick_collision():
 
     mode.setup(world, balls)
 
+    # Clear all but one bumper to avoid random interference
+    world.arena.hazards = [world.arena.hazards[0]]
     # Place a bumper exactly at (550, 500), radius 80
     # Ball is at 500, 500, radius 20
     # Distance is 50. Min dist is 100. They overlap.
