@@ -2279,6 +2279,31 @@ func _attempt_damage_internal(attacker, target) -> void:
 	var new_hp = 0.0
 	if "hp" in target: new_hp = float(target.hp)
 
+	var damage_dealt = max(0, old_hp - new_hp)
+	if damage_dealt > 0:
+		var mode_name = ""
+		if self.world != null and "mode" in self.world and self.world.mode != null and "name" in self.world.mode:
+			mode_name = self.world.mode.name
+		elif self.world != null and "current_mode_name" in self.world:
+			mode_name = self.world.current_mode_name
+		elif self.world != null and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode:
+			mode_name = self.world.game_mode.name
+
+		if mode_name == "Nemesis Vampirism":
+			if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
+				if pm.is_nemesis(target_type, attacker_type):
+					var a_hp = 100.0
+					if typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"): a_hp = float(attacker["hp"])
+					elif "hp" in attacker: a_hp = float(attacker.hp)
+
+					var a_max_hp = 100.0
+					if typeof(attacker) == TYPE_DICTIONARY and attacker.has("max_hp"): a_max_hp = float(attacker["max_hp"])
+					elif "max_hp" in attacker: a_max_hp = float(attacker.max_hp)
+
+					var next_hp = min(a_hp + damage_dealt, a_max_hp)
+					if typeof(attacker) == TYPE_DICTIONARY: attacker["hp"] = next_hp
+					elif "hp" in attacker: attacker.hp = next_hp
+
 	if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:

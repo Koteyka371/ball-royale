@@ -1151,6 +1151,19 @@ class Action:
         new_hp = getattr(target, "hp", 0.0)
 
         damage_dealt_general = max(0, old_hp - new_hp)
+
+        if damage_dealt_general > 0:
+            gm = getattr(self.world, 'mode', None)
+            gm_name = getattr(gm, 'name', '') if gm else getattr(self.world, 'current_mode_name', '')
+            if not gm_name and hasattr(self.world, 'game_mode'):
+                gm_name = getattr(self.world.game_mode, 'name', '')
+
+            if gm_name == "Nemesis Vampirism" and pm and hasattr(pm, "is_nemesis"):
+                attacker_type = getattr(attacker, "ball_type", None)
+                target_type = getattr(target, "ball_type", None)
+                if attacker_type and target_type and pm.is_nemesis(target_type, attacker_type):
+                    # Heal attacker by 100% of damage dealt
+                    attacker.hp = min(getattr(attacker, 'hp', 100.0) + damage_dealt_general, getattr(attacker, 'max_hp', 100.0))
         if damage_dealt_general > 0 and getattr(attacker, "has_vampiric_aura", False):
             heal_amount = damage_dealt_general * 0.5
             attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))

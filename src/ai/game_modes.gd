@@ -47197,6 +47197,11 @@ class ChainLightningEventMode extends GameMode:
 				elif typeof(b) == TYPE_DICTIONARY: b["chain_lightning_arc_timer"] = arc_timer
 
 
+class NemesisVampirismMode extends GameMode:
+	func _init():
+		self.name = "Nemesis Vampirism"
+		self.description = "Dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
 class MirrorArenaMode extends GameMode:
 	func _init() -> void:
 		name = "Mirror Arena"
@@ -47309,7 +47314,8 @@ GAME_MODES = {
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
-    "ricochet_arena": RicochetArenaMode.new(),
+    "nemesis_vampirism": NemesisVampirismMode.new(),
+	"ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),

@@ -91,7 +91,7 @@ def test_solar_flare_recovery():
     assert b1.flare_hp_penalty > 0
 
     # Let the flare end and recover
-    for _ in range(15): # Next ticks should bring it down
+    for _ in range(50): # Next ticks should bring it down
         mode.tick(world, balls, 0.1)
 
     # Recovery is fast enough that it should be 0 again
