@@ -5461,6 +5461,69 @@ func execute(strategy: String, delta: float):
 										if typeof(owner) == TYPE_DICTIONARY: owner["combo_multiplier"] = c_combo + siphoned_combo
 										elif typeof(owner) == TYPE_OBJECT: owner.combo_multiplier = c_combo + siphoned_combo
 
+				if kind == "spotter_drone":
+					var o_angle = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("orbit_angle"): o_angle = hazard["orbit_angle"]
+					elif typeof(hazard) == TYPE_OBJECT and "orbit_angle" in hazard: o_angle = hazard.orbit_angle
+
+					var o_speed = 1.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("orbit_speed"): o_speed = hazard["orbit_speed"]
+					elif typeof(hazard) == TYPE_OBJECT and "orbit_speed" in hazard: o_speed = hazard.orbit_speed
+
+					o_angle += delta * o_speed
+
+					if typeof(hazard) == TYPE_DICTIONARY: hazard["orbit_angle"] = o_angle
+					elif typeof(hazard) == TYPE_OBJECT:
+						if hazard.has_method("set_meta"): hazard.set_meta("orbit_angle", o_angle)
+						if "orbit_angle" in hazard: hazard.orbit_angle = o_angle
+
+					var o_cx = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("orbit_center_x"): o_cx = hazard["orbit_center_x"]
+					elif typeof(hazard) == TYPE_OBJECT and "orbit_center_x" in hazard: o_cx = hazard.orbit_center_x
+
+					var o_cy = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("orbit_center_y"): o_cy = hazard["orbit_center_y"]
+					elif typeof(hazard) == TYPE_OBJECT and "orbit_center_y" in hazard: o_cy = hazard.orbit_center_y
+
+					var o_rad = 100.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("orbit_radius"): o_rad = hazard["orbit_radius"]
+					elif typeof(hazard) == TYPE_OBJECT and "orbit_radius" in hazard: o_rad = hazard.orbit_radius
+
+					var new_x = o_cx + o_rad * cos(o_angle)
+					var new_y = o_cy + o_rad * sin(o_angle)
+
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard["x"] = new_x
+						hazard["y"] = new_y
+					elif typeof(hazard) == TYPE_OBJECT:
+						if hazard.has_method("set_meta"):
+							hazard.set_meta("x", new_x)
+							hazard.set_meta("y", new_y)
+						if "x" in hazard: hazard.x = new_x
+						if "y" in hazard: hazard.y = new_y
+
+					var h_rad = 15.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_rad = hazard["radius"]
+					elif typeof(hazard) == TYPE_OBJECT and "radius" in hazard: h_rad = hazard.radius
+
+					var enemies = self._get_enemies()
+					for e in enemies:
+						var ex = 0.0
+						if typeof(e) == TYPE_DICTIONARY and e.has("x"): ex = e["x"]
+						elif typeof(e) == TYPE_OBJECT and "x" in e: ex = e.x
+						var ey = 0.0
+						if typeof(e) == TYPE_DICTIONARY and e.has("y"): ey = e["y"]
+						elif typeof(e) == TYPE_OBJECT and "y" in e: ey = e.y
+						var erad = 10.0
+						if typeof(e) == TYPE_DICTIONARY and e.has("radius"): erad = e["radius"]
+						elif typeof(e) == TYPE_OBJECT and "radius" in e: erad = e.radius
+
+						var dist_sq = (ex - new_x)*(ex - new_x) + (ey - new_y)*(ey - new_y)
+						if dist_sq <= (h_rad + erad)*(h_rad + erad):
+							if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+								self.world.arena.hazards.erase(hazard)
+							break
+
 				if kind == "sniper_nest":
 					var hx = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
@@ -5482,19 +5545,78 @@ func execute(strategy: String, delta: float):
 					var dx = hx - bx
 					var dy = hy - by
 					if sqrt(dx*dx + dy*dy) <= rad:
+						var b_id = -1
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+						elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+
+						var has_drone = false
+						if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+							for h in self.world.arena.hazards:
+								var h_kind = ""
+								if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+								elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+
+								var h_owner = null
+								if typeof(h) == TYPE_DICTIONARY and h.has("owner_id"): h_owner = h["owner_id"]
+								elif typeof(h) == TYPE_OBJECT and "owner_id" in h: h_owner = h.owner_id
+
+								if h_kind == "spotter_drone" and h_owner == b_id:
+									has_drone = true
+									break
+
+						var sdt = 5.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("spotter_drone_timer"): sdt = self.ball["spotter_drone_timer"]
+						elif typeof(self.ball) == TYPE_OBJECT and "spotter_drone_timer" in self.ball: sdt = self.ball.spotter_drone_timer
+						elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("spotter_drone_timer"): sdt = self.ball.get_meta("spotter_drone_timer")
+
+						if not has_drone:
+							sdt -= delta
+
+						if typeof(self.ball) == TYPE_DICTIONARY: self.ball["spotter_drone_timer"] = sdt
+						elif typeof(self.ball) == TYPE_OBJECT:
+							if self.ball.has_method("set_meta"): self.ball.set_meta("spotter_drone_timer", sdt)
+							if "spotter_drone_timer" in self.ball: self.ball.spotter_drone_timer = sdt
+
+						if not has_drone and sdt <= 0.0:
+							var new_drone = {
+								"kind": "spotter_drone",
+								"orbit_center_x": hx,
+								"orbit_center_y": hy,
+								"orbit_radius": 80.0,
+								"orbit_angle": 0.0,
+								"orbit_speed": 1.5,
+								"x": hx + 80.0,
+								"y": hy,
+								"radius": 15.0,
+								"owner_id": b_id,
+								"active": true
+							}
+							if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+								self.world.arena.hazards.append(new_drone)
+
+							if typeof(self.ball) == TYPE_DICTIONARY: self.ball["spotter_drone_timer"] = 15.0
+							elif typeof(self.ball) == TYPE_OBJECT:
+								if self.ball.has_method("set_meta"): self.ball.set_meta("spotter_drone_timer", 15.0)
+								if "spotter_drone_timer" in self.ball: self.ball.spotter_drone_timer = 15.0
+							has_drone = true
+
+						var final_pr = base_p * 1.25
+						if has_drone:
+							final_pr = base_p * 2.0
+
 						if typeof(self.ball) == TYPE_DICTIONARY:
 							self.ball["in_sniper_nest"] = true
-							self.ball["perception_radius"] = base_p * 1.25
+							self.ball["perception_radius"] = final_pr
 							self.ball["damage_multiplier"] = base_dmg * 1.15
 							self.ball["show_sniper_nest_indicator"] = true
 						else:
 							if self.ball.has_method("set_meta"):
 								self.ball.set_meta("in_sniper_nest", true)
-								self.ball.set_meta("perception_radius", base_p * 1.25)
+								self.ball.set_meta("perception_radius", final_pr)
 								self.ball.set_meta("damage_multiplier", base_dmg * 1.15)
 								self.ball.set_meta("show_sniper_nest_indicator", true)
 							if "in_sniper_nest" in self.ball: self.ball.in_sniper_nest = true
-							if "perception_radius" in self.ball: self.ball.perception_radius = base_p * 1.25
+							if "perception_radius" in self.ball: self.ball.perception_radius = final_pr
 							if "damage_multiplier" in self.ball: self.ball.damage_multiplier = base_dmg * 1.15
 							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = true
 

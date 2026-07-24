@@ -2510,15 +2510,67 @@ class Action:
         self.ball.perception_radius = self.ball.base_perception_radius
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Spotter drone updates
+            for hazard in list(self.world.arena.hazards):
+                if getattr(hazard, "kind", "") == "spotter_drone":
+                    # Update its orbit
+                    if hasattr(hazard, "orbit_angle"):
+                        hazard.orbit_angle += delta * getattr(hazard, "orbit_speed", 1.0)
+                        hazard.x = getattr(hazard, "orbit_center_x", 0.0) + getattr(hazard, "orbit_radius", 100.0) * math.cos(hazard.orbit_angle)
+                        hazard.y = getattr(hazard, "orbit_center_y", 0.0) + getattr(hazard, "orbit_radius", 100.0) * math.sin(hazard.orbit_angle)
+
+                    # Check collision with enemies to destroy it
+                    enemies = self._get_enemies()
+                    for enemy in enemies:
+                        ex = getattr(enemy, "x", 0.0) - getattr(hazard, "x", 0.0)
+                        ey = getattr(enemy, "y", 0.0) - getattr(hazard, "y", 0.0)
+                        if math.hypot(ex, ey) <= getattr(hazard, "radius", 15.0) + getattr(enemy, "radius", 10.0):
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+                            break
+
             # Bush stealth state
             self.ball.in_bush = False
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "kind", "") == "sniper_nest":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
                     if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
                         self.ball.in_sniper_nest = True
-                        self.ball.perception_radius = self.ball.base_perception_radius * 1.25
+
+                        # Spotter drone logic
+                        has_drone = False
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "kind", "") == "spotter_drone" and getattr(h, "owner_id", None) == getattr(self.ball, "id", None):
+                                has_drone = True
+                                break
+
+                        if not hasattr(self.ball, "spotter_drone_timer"):
+                            self.ball.spotter_drone_timer = 5.0
+
+                        if not has_drone:
+                            self.ball.spotter_drone_timer -= delta
+
+                        if not has_drone and self.ball.spotter_drone_timer <= 0:
+                            # Spawn spotter drone
+                            class SpotterDrone:
+                                def __init__(self, nx, ny, owner_id):
+                                    self.kind = "spotter_drone"
+                                    self.orbit_center_x = nx
+                                    self.orbit_center_y = ny
+                                    self.orbit_radius = 80.0
+                                    self.orbit_angle = 0.0
+                                    self.orbit_speed = 1.5
+                                    self.x = nx + self.orbit_radius
+                                    self.y = ny
+                                    self.radius = 15.0
+                                    self.owner_id = owner_id
+                                    self.active = True
+
+                            self.world.arena.hazards.append(SpotterDrone(getattr(hazard, "x", 0.0), getattr(hazard, "y", 0.0), getattr(self.ball, "id", -1)))
+                            self.ball.spotter_drone_timer = 15.0 # Cooldown before next spawn if destroyed
+                            has_drone = True
+
                         self.ball.damage_multiplier = self.ball.base_damage_multiplier * 1.15
                         # Adding a visual indicator flag
                         self.ball.show_sniper_nest_indicator = True
@@ -2531,6 +2583,10 @@ class Action:
                                     "target_y": getattr(self.ball, "y", 0.0)
                                 }
                             })
+
+                        self.ball.perception_radius = self.ball.base_perception_radius * 1.25
+                        if has_drone:
+                            self.ball.perception_radius = self.ball.base_perception_radius * 2.0
 
 
                     else:
