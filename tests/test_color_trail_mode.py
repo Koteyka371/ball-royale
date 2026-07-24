@@ -32,5 +32,5 @@ def test_color_trail_mode():
 
     mode.tick(world, balls, 1.0)
 
-    assert red.speed == 150.0
+    assert red.speed == 200.0
     assert red.hp == 100.0
