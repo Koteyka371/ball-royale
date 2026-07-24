@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Trap",
+  "description": "A trap that instantly swaps the position of the ball that triggers it with a random enemy ball, leaving both slightly disoriented (short stun or confusion)."
+}

@@ -4699,6 +4699,50 @@ class Action:
             if self.ball._cl_collision_cd <= 0:
                 self.ball._cl_collision_cd = 0.0
 
+
+        if getattr(self.ball, "chain_infection_timer", 0.0) > 0:
+            current_hp = getattr(self.ball, "hp", 100.0)
+            prev_hp = getattr(self.ball, "_prev_hp_for_infection", current_hp)
+            if current_hp < prev_hp:
+                dmg_taken = prev_hp - current_hp
+                threshold = getattr(self.ball, "chain_infection_damage_threshold", 100.0) - dmg_taken
+                self.ball.chain_infection_damage_threshold = threshold
+                if threshold <= 0:
+                    self.ball.chain_infection_timer = 0.0
+            self.ball._prev_hp_for_infection = current_hp
+
+            if self.ball.chain_infection_timer > 0:
+                self.ball.chain_infection_timer -= delta
+                if self.ball.chain_infection_timer <= 0:
+                    self.ball.chain_infection_timer = 0.0
+                else:
+                    tick = getattr(self.ball, "chain_infection_tick_timer", 2.0) - delta
+                    if tick <= 0:
+                        tick = 2.0
+                        # Trigger chain lightning to nearest teammate
+                        teammates = [b for b in getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                     if b != self.ball and getattr(b, "alive", True)
+                                     and getattr(b, "team", getattr(b, "ball_type", "")) == getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]
+
+                        best_dist = 300.0 * 300.0
+                        nearest = None
+                        for t in teammates:
+                            dist_sq = (t.x - self.ball.x)**2 + (t.y - self.ball.y)**2
+                            if dist_sq < best_dist:
+                                best_dist = dist_sq
+                                nearest = t
+
+                        if nearest:
+                            if hasattr(self.world, "_deal_damage"):
+                                mock_hazard = type("MockHazard", (), {"damage": 20.0, "owner_id": getattr(self.ball, "id", -1)})()
+                                self.world._deal_damage(mock_hazard, nearest)
+                            else:
+                                nearest.hp = getattr(nearest, "hp", 100) - 20.0
+                                if nearest.hp <= 0: nearest.alive = False
+                            if hasattr(self.world, "events"):
+                                self.world.events.append(('visual_effect', {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y, 'tx': nearest.x, 'ty': nearest.y}))
+                    self.ball.chain_infection_tick_timer = tick
+
         if getattr(self.ball, "chain_lightning_timer", 0.0) > 0:
             self.ball.chain_lightning_timer -= delta
             if self.ball.chain_lightning_timer <= 0:
@@ -8608,6 +8652,12 @@ class Action:
                                         setattr(laser, "radius", 5.0)
 
                                         self.world.balls.append(laser)
+                                elif trap_variant == "chain_infection":
+                                    self.ball.chain_infection_timer = 30.0
+                                    self.ball.chain_infection_damage_threshold = 100.0
+                                    self.ball.chain_infection_tick_timer = 2.0
+                                    self.ball._prev_hp_for_infection = getattr(self.ball, "hp", 100.0)
+                                    hazard.duration = 0.0
                                 elif trap_variant == "chain_lightning":
                                     # Chain Lightning trap: zap the triggering ball and then jump to nearest enemy
                                     if hasattr(self.world, "_deal_damage"):
@@ -13258,6 +13308,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cleanse_booster":
                     self.ball.immunity_timer = 15.0
+                    if hasattr(self.ball, "chain_infection_timer"): self.ball.chain_infection_timer = 0.0
                     if hasattr(self.ball, "burn_timer"): self.ball.burn_timer = 0.0
                     if hasattr(self.ball, "poison_timer"): self.ball.poison_timer = 0.0
                     if hasattr(self.ball, "slow_timer"): self.ball.slow_timer = 0.0
@@ -14364,6 +14415,8 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cleanser":
+                    if hasattr(self.ball, "chain_infection_timer"):
+                        self.ball.chain_infection_timer = 0
                     if hasattr(self.ball, "burn_timer"):
                         self.ball.burn_timer = 0
                     if hasattr(self.ball, "poison_timer"):
