@@ -19982,6 +19982,41 @@ class Action:
                                 push_force = 200.0
                                 self.ball.vx = getattr(self.ball, 'vx', 0.0) + nx * push_force * delta
                                 self.ball.vy = getattr(self.ball, 'vy', 0.0) + ny * push_force * delta
+                if getattr(hazard, "kind", "") == "aura_siphon_trap":
+                    import math
+                    dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
+                    if dist <= getattr(hazard, "radius", 60.0) + getattr(self.ball, "radius", 10.0):
+                        trap_owner_id = getattr(hazard, "owner_id", None)
+                        trap_owner_team = getattr(hazard, "owner_team", None)
+                        ball_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+
+                        is_ally = False
+                        if trap_owner_id == getattr(self.ball, "id", None):
+                            is_ally = True
+                        elif trap_owner_team is not None and ball_team == trap_owner_team:
+                            is_ally = True
+
+                        if not is_ally:
+                            drain_rate = 2.0 * delta
+
+                            siphoned_timers = 0.0
+
+                            for buff in ["aura_booster_timer", "aura_amplifier_timer", "vampiric_aura_timer"]:
+                                val = getattr(self.ball, buff, 0.0)
+                                if val > 0:
+                                    drain = min(val, drain_rate)
+                                    setattr(self.ball, buff, val - drain)
+                                    siphoned_timers += drain
+
+                            if siphoned_timers > 0 and trap_owner_id is not None and hasattr(self.world, "balls"):
+                                owner = next((b for b in self.world.balls if getattr(b, "id", None) == trap_owner_id), None)
+                                if owner is None or not getattr(owner, "alive", True):
+                                    owner = next((b for b in self.world.balls if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) == trap_owner_team), None)
+
+                                if owner:
+                                    target_buffs = ["aura_booster_timer", "aura_amplifier_timer", "vampiric_aura_timer"]
+                                    buff_to_add = getattr(self, "random", __import__("random")).choice(target_buffs)
+                                    setattr(owner, buff_to_add, getattr(owner, buff_to_add, 0.0) + siphoned_timers)
                 if getattr(hazard, "kind", "") == "buff_siphon_trap":
                     import math
                     dist = math.hypot(self.ball.x - hazard.x, self.ball.y - hazard.y)
