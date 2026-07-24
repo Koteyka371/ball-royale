@@ -15971,6 +15971,24 @@ func execute(strategy: String, delta: float):
 
                                 if "confusion_timer" in self.ball: self.ball.confusion_timer = 3.0
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", 3.0)
+
+                            elif trap_variant == "confusion":
+                                if "is_confused" in self.ball: self.ball.is_confused = true
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_confused", true)
+
+                                var cur_conf = 0.0
+                                if "confusion_timer" in self.ball: cur_conf = self.ball.confusion_timer
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("confusion_timer"): cur_conf = self.ball.get_meta("confusion_timer")
+                                var new_conf = max(cur_conf, 3.0)
+                                if "confusion_timer" in self.ball: self.ball.confusion_timer = new_conf
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("confusion_timer", new_conf)
+
+                                var cur_inv = 0.0
+                                if "invert_timer" in self.ball: cur_inv = self.ball.invert_timer
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("invert_timer"): cur_inv = self.ball.get_meta("invert_timer")
+                                var new_inv = max(cur_inv, 3.0)
+                                if "invert_timer" in self.ball: self.ball.invert_timer = new_inv
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("invert_timer", new_inv)
                             elif trap_variant == "blindness":
                                 var is_blinded = false
                                 if "is_blinded" in self.ball:

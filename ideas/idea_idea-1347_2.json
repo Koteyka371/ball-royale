@@ -1,0 +1,4 @@
+{
+  "title": "Time Loop Zone",
+  "description": "A hazard zone where any projectile that passes through it has its trajectory recorded and periodically replayed for the next 15 seconds, creating a dense bullet-hell area."
+}

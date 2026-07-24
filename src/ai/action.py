@@ -320,7 +320,7 @@ class Action:
                     self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 300.0, "damage": 0.0, "type": "steam"})
 
                 if hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "alive", True):
                             dist_sq = (b.x - target.x)**2 + (b.y - target.y)**2
                             if dist_sq < 300.0**2:
@@ -924,7 +924,7 @@ class Action:
 
                         # AoE damage to all nearby entities
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True): # Affects allies too
                                     dist = math.hypot(target.x - b.x, target.y - b.y)
                                     if dist <= explosion_radius:
@@ -943,7 +943,7 @@ class Action:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 150.0, "damage": initial * 0.5})
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if b != target and getattr(b, "alive", True):
                                     dist = ((target.x - b.x)**2 + (target.y - b.y)**2)**0.5
                                     if dist <= 150.0:
@@ -1111,7 +1111,7 @@ class Action:
                     chain_damage = original_damage * 0.5
                     nearby_entities = []
                     if hasattr(self.world, "balls"):
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(target, "id", None) and getattr(b, "id", None) != getattr(attacker, "id", None):
                                 d_sq = (getattr(b, "x", 0) - getattr(target, "x", 0))**2 + (getattr(b, "y", 0) - getattr(target, "y", 0))**2
                                 if d_sq <= chain_radius**2:
@@ -1164,7 +1164,7 @@ class Action:
         if b_type == 'necromancer' and new_hp < old_hp: # dealt damage
             has_minion = False
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "ball_type", "") == "minion" and getattr(b, "team", "") == getattr(attacker, "team", ""):
                         dx = getattr(b, "x", 0) - getattr(attacker, "x", 0)
                         dy = getattr(b, "y", 0) - getattr(attacker, "y", 0)
@@ -1393,7 +1393,7 @@ class Action:
 
                                     # AoE damage to all nearby entities
                                     if hasattr(self.world, "balls"):
-                                        for b in self.world.balls:
+                                        for b in getattr(self.world, "balls", []):
                                             if getattr(b, "alive", True):
                                                 dist = math.hypot(next_entity.x - b.x, next_entity.y - b.y)
                                                 if dist <= explosion_radius:
@@ -1495,7 +1495,7 @@ class Action:
                                 else:
                                     setattr(next_entity, "active", False)
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(next_entity, "owner_id", None):
                                             dist_burst = ((b.x - next_entity.x)**2 + (b.y - next_entity.y)**2)**0.5
                                             if dist_burst <= 200.0:
@@ -1726,7 +1726,7 @@ class Action:
                         owner_id = getattr(h, "owner_id", None)
                         team = getattr(h, "team", None)
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "id", None) != owner_id and getattr(b, "team", None) != team and getattr(b, "alive", True):
                                     dx = b.x - h.x
                                     dy = b.y - h.y
@@ -1819,7 +1819,7 @@ class Action:
         b_type_initial = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")).lower()
         if b_type_initial == "linker" and getattr(self.ball, "link_target", None) is None:
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     b_type = getattr(b, "ball_type", getattr(b.__class__, "BALL_TYPE", "")).lower()
                     if getattr(b, "alive", True) and b_type != "spectator" and b.id != getattr(self.ball, "id", None) and getattr(b, "team", b_type) != getattr(self.ball, "team", b_type_initial):
                         self.ball.link_target = b
@@ -1964,7 +1964,7 @@ class Action:
                 self.ball.survival_swap_timer = 0.0
                 target_id = getattr(self.ball, "survival_swap_target_id", None)
                 if target_id is not None and hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "id", None) == target_id and getattr(b, "alive", True) and getattr(b, "is_decoy", False):
                             # Swap positions
                             tx, ty = self.ball.x, self.ball.y
@@ -2623,7 +2623,7 @@ class Action:
             import math
             aura_fear_radius = getattr(self.ball, "cosmetic_aura_scale", 1.0) * 50.0
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
                         if getattr(b, "level", 1) < getattr(self.ball, "level", 1):
                             dx = b.x - self.ball.x
@@ -3065,7 +3065,7 @@ class Action:
             owner_id = getattr(self.ball, "mimic_owner", None)
             owner = None
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "id", None) == owner_id:
                         owner = b
                         break
@@ -3095,7 +3095,7 @@ class Action:
                 explosion_radius = 150.0
                 explosion_damage = 50.0
                 if hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "alive", False) and b != self.ball:
                             b_team = getattr(b, "team", getattr(b, "ball_type", ""))
                             my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
@@ -3117,7 +3117,7 @@ class Action:
 
             attacker = None
             if attacker_id is not None and hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "id", None) == attacker_id and getattr(b, "alive", False):
                         attacker = b
                         break
@@ -3851,7 +3851,7 @@ class Action:
 
             grapple_targets = []
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if b != self.ball and getattr(b, "alive", True):
                         dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
                         grapple_targets.append({"target": b, "type": "ball", "dist_sq": dist_sq, "x": b.x, "y": b.y})
@@ -4035,7 +4035,7 @@ class Action:
                     attached_id = getattr(hazard, "attached_id", None)
                     if attached_id is None:
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True):
                                     dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                     if dist_sq < 30.0**2:
@@ -4045,7 +4045,7 @@ class Action:
                     else:
                         current_attached = None
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "id", None) == attached_id:
                                     current_attached = b
                                     break
@@ -4058,7 +4058,7 @@ class Action:
                                 hazard.pass_cooldown = pass_cooldown - delta
                             else:
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", True) and getattr(b, "id", None) != attached_id:
                                             dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                             if dist_sq < 40.0**2:
@@ -4078,7 +4078,7 @@ class Action:
                             explosion_radius = 100.0
                             explosion_damage = 100.0
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True):
                                         dx = hazard.x - b.x
                                         dy = hazard.y - b.y
@@ -4103,7 +4103,7 @@ class Action:
                             explosion_radius = 80.0
                             explosion_damage = 50.0
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True):
                                         dx = hazard.x - b.x
                                         dy = hazard.y - b.y
@@ -4121,7 +4121,7 @@ class Action:
                             attached_id = getattr(hazard, "attached_id", None)
                             if attached_id is None:
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", True):
                                             dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                             if dist_sq < 30.0**2:
@@ -4130,7 +4130,7 @@ class Action:
                             else:
                                 current_attached = None
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "id", None) == attached_id:
                                             current_attached = b
                                             break
@@ -4139,7 +4139,7 @@ class Action:
                                     hazard.y = current_attached.y
 
                                     if hasattr(self.world, "balls"):
-                                        for b in self.world.balls:
+                                        for b in getattr(self.world, "balls", []):
                                             if getattr(b, "alive", True) and getattr(b, "id", None) != attached_id:
                                                 dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                                 if dist_sq < 40.0**2:
@@ -4163,7 +4163,7 @@ class Action:
                             owner_id = getattr(hazard, "owner_id", None)
 
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
                                         dx = hazard.x - b.x
                                         dy = hazard.y - b.y
@@ -4232,7 +4232,7 @@ class Action:
                             # Apply disruption to enemies
                             owner_team = getattr(hazard, "team", None)
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True) and getattr(b, "team", None) != owner_team:
                                         dx = hazard.x - b.x
                                         dy = hazard.y - b.y
@@ -4263,7 +4263,7 @@ class Action:
                             owner_team = getattr(hazard, "team", None)
 
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True) and getattr(b, "team", None) != owner_team:
                                         dx = hazard.x - b.x
                                         dy = hazard.y - b.y
@@ -4300,7 +4300,7 @@ class Action:
 
                         # Check collision
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
                                     dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                     if dist_sq <= (getattr(hazard, "radius", 15.0) + getattr(b, "radius", 10.0))**2:
@@ -4319,7 +4319,7 @@ class Action:
                         # Attached
                         current_attached = None
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "id", None) == attached_id:
                                     current_attached = b
                                     break
@@ -4340,7 +4340,7 @@ class Action:
                                 explosion_radius = 100.0
                                 explosion_damage = 50.0
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", True):
                                             dx = hazard.x - b.x
                                             dy = hazard.y - b.y
@@ -4511,7 +4511,7 @@ class Action:
                                         break
                             if is_nemesis:
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", False) and b != self.ball and getattr(b, "ball_type", "") != "spectator":
                                             b.scrambled_movement_timer = 3.0
                                 hazard.duration = 0.0 # Destroy hazard after successful kill
@@ -4572,7 +4572,7 @@ class Action:
                             owner_id = getattr(hazard, "owner_id", None)
                             if owner_id is not None:
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "id", None) == owner_id:
                                             owner_team = getattr(b, "team", getattr(b, "ball_type", ""))
                                             hazard.owner_team = owner_team
@@ -4637,7 +4637,7 @@ class Action:
                     if getattr(hazard, "last_reversed_cycle", -1) != cycle_id and (current_time % 5.0) < 0.2:
                         hazard.last_reversed_cycle = cycle_id
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 b_type = getattr(b, "ball_type", getattr(b, "kind", ""))
                                 if b_type in ["projectile", "spell"] or getattr(b, "is_projectile", False):
                                     dist_to_proj = math.sqrt((b.x - hazard.x)**2 + (b.y - hazard.y)**2)
@@ -4779,7 +4779,7 @@ class Action:
 
             # Decoy Scramble Aura
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if b == self.ball: continue
                     if not getattr(b, "alive", True): continue
                     if getattr(b, "is_decoy", False) or getattr(b, "is_decoy_clone", False): continue
@@ -4803,7 +4803,7 @@ class Action:
                     if hasattr(self.world, "events"):
                         self.world.events.append({'type': 'explosion', 'data': {'x': getattr(self.ball, "x", 0.0), 'y': getattr(self.ball, "y", 0.0), 'radius': 120.0}})
                     if hasattr(self.world, "balls"):
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
                                 import math
                                 d = math.sqrt((self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2)
@@ -4827,7 +4827,7 @@ class Action:
                 owner_id = getattr(self.ball, "mimic_owner", None)
                 owner = None
                 if hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "id", None) == owner_id:
                             owner = b
                             break
@@ -4859,7 +4859,7 @@ class Action:
                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0, 'color': 'gray'}})
 
                 if hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "alive", True) and getattr(b, "team", "") != self.ball.team and b.id != self.ball.id:
                             dx = b.x - self.ball.x
                             dy = b.y - self.ball.y
@@ -4883,7 +4883,7 @@ class Action:
             owner_id = getattr(self.ball, "mimic_owner", None)
             owner = None
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "id", None) == owner_id:
                         owner = b
                         break
@@ -4915,7 +4915,7 @@ class Action:
             nearest_enemy = None
             min_dist = 999999.0
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     b_team = getattr(b, "team", "")
                     if b_team == "": b_team = getattr(b, "ball_type", "")
                     my_team = getattr(self.ball, "team", "")
@@ -4959,7 +4959,7 @@ class Action:
                     import copy
                     import random
                     new_clones = []
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
                             d = math.sqrt((self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2)
                             if d <= 60.0:
@@ -5034,7 +5034,7 @@ class Action:
 
                 # Still trigger cascade for nearby clones
                 if hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "alive", True):
                             d_sq = (self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2
                             if d_sq <= aoe_radius**2:
@@ -5539,7 +5539,7 @@ class Action:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 80.0, "damage": explosion_damage})
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
                                     dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
                                     if dist <= 80.0:
@@ -5599,7 +5599,7 @@ class Action:
         if getattr(self.ball, "is_decoy_beacon", False):
             # heal allies
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "alive", True) and getattr(b, "team", "") == getattr(self.ball, "team", "") and b != self.ball:
                         dx = b.x - self.ball.x
                         dy = b.y - self.ball.y
@@ -5620,7 +5620,7 @@ class Action:
                     # Siren ping effect: reveal hidden enemies within wide radius (e.g. 250), cause fear
                     wide_radius = 250.0
                     if hasattr(self.world, "balls"):
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
                                 dx = b.x - self.ball.x
                                 dy = b.y - self.ball.y
@@ -5647,7 +5647,7 @@ class Action:
 
             # Emit aura that grants slightly increased speed and stamina regen to allies within a certain radius
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(self.ball, "id", None):
                         if getattr(b, "team", "") == getattr(self.ball, "team", ""):
                             dx = self.ball.x - getattr(b, "x", 0)
@@ -5695,7 +5695,7 @@ class Action:
 
         # Global decoy explosion check
         if hasattr(self.world, "balls"):
-            for b in self.world.balls:
+            for b in getattr(self.world, "balls", []):
                 if getattr(b, "is_decoy", False):
                     # Proximity detonation check
                     if getattr(b, "alive", True) and getattr(b, "hp", 1.0) > 0 and getattr(b, "decoy_timer", 1.0) > 0:
@@ -5950,7 +5950,7 @@ class Action:
 
         # Global illusion explosion check
         if hasattr(self.world, "balls"):
-            for b in self.world.balls:
+            for b in getattr(self.world, "balls", []):
                 if getattr(b, "is_illusion", False) and not getattr(b, "is_mimic_clone", False) and not getattr(b, "is_mimic_charging", False):
                     # Absorbs 1 hit or timer runs out
                     if getattr(b, "hp", 1.0) <= 0 or getattr(b, "illusion_timer", 1.0) <= 0 or not getattr(b, "alive", True):
@@ -5988,7 +5988,7 @@ class Action:
 
         # Global hologram explosion check
         if hasattr(self.world, "balls"):
-            for b in self.world.balls:
+            for b in getattr(self.world, "balls", []):
                 if getattr(b, "is_hologram", False):
                     if getattr(b, "hp", 1.0) <= 0 or getattr(b, "hologram_timer", 1.0) <= 0 or not getattr(b, "alive", True):
                         if not getattr(b, "_hologram_exploded", False):
@@ -6166,7 +6166,7 @@ class Action:
                         radius = 300.0 # Match shuffle_booster's range
                         nearby_players = []
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if b != self.ball and getattr(b, "alive", True):
                                     dist = math.sqrt((b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)
                                     if dist <= radius:
@@ -6267,7 +6267,7 @@ class Action:
                             # Fallback to owner if no booster/healing spring found
                             if target_to_clone is None:
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "id", None) == getattr(hazard, "owner_id", None):
                                             target_to_clone = b
                                             break
@@ -6356,7 +6356,7 @@ class Action:
                                                 self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": explosion_radius, "damage": explosion_damage})
 
                                             if hasattr(self.world, "balls"):
-                                                for b in self.world.balls:
+                                                for b in getattr(self.world, "balls", []):
                                                     if getattr(b, "alive", True):
                                                         dist = math.hypot(self.ball.x - b.x, self.ball.y - b.y)
                                                         if dist <= explosion_radius:
@@ -6374,7 +6374,7 @@ class Action:
 
                                             if hasattr(hazard, "owner_id"):
                                                 # Find owner to stun
-                                                for b in self.world.balls:
+                                                for b in getattr(self.world, "balls", []):
                                                     if getattr(b, "id", None) == hazard.owner_id:
                                                         b.stun_timer = max(getattr(b, "stun_timer", 0.0), 3.0)
                                                         if hasattr(self.world, "add_event"):
@@ -6385,7 +6385,7 @@ class Action:
 
                                     if hasattr(hazard, "owner_id") and hasattr(self.world, "balls"):
                                         # Try to find owner and deal damage to them
-                                        for b in self.world.balls:
+                                        for b in getattr(self.world, "balls", []):
                                             if getattr(b, "id", None) == hazard.owner_id:
                                                 if hasattr(self.world, "_deal_damage"):
                                                     old_dmg = getattr(hazard, "damage", hazard.damage)
@@ -6594,7 +6594,7 @@ class Action:
                             # Apply shield to nearby allies
                             pulse_radius = getattr(hazard, "pulse_radius", 250.0)
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
                                         dx = b.x - hazard.x
                                         dy = b.y - hazard.y
@@ -6613,7 +6613,7 @@ class Action:
                                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
 
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(hazard, "team", ""):
                                             dx = b.x - hazard.x
                                             dy = b.y - hazard.y
@@ -6647,7 +6647,7 @@ class Action:
                                 triggered = False
                                 owner_id = getattr(hazard, "owner_id", None)
                                 trigger_radius = 40.0
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
                                         bx = getattr(b, "x", 0)
                                         by = getattr(b, "y", 0)
@@ -6662,7 +6662,7 @@ class Action:
 
                             if getattr(hazard, "is_triggered", False):
                                 # Apply mud to everyone in 60 radius (persistent puddle)
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True):
                                         bx = getattr(b, "x", 0)
                                         by = getattr(b, "y", 0)
@@ -6691,7 +6691,7 @@ class Action:
                                 continue
 
                             # Apply debuff to balls in radius
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True):
                                     hx = getattr(hazard, "x", 0)
                                     hy = getattr(hazard, "y", 0)
@@ -6721,7 +6721,7 @@ class Action:
 
                             # Trigger if any enemy enters radius
                             triggered = False
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
                                     hx = getattr(hazard, "x", 0)
                                     hy = getattr(hazard, "y", 0)
@@ -6766,7 +6766,7 @@ class Action:
                                 hazard.active = False
                                 continue
 
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True):
                                     hx = getattr(hazard, "x", 0)
                                     hy = getattr(hazard, "y", 0)
@@ -6794,7 +6794,7 @@ class Action:
                                 continue
 
                             # Apply debuff to balls in radius
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True):
                                     hx = getattr(hazard, "x", 0)
                                     hy = getattr(hazard, "y", 0)
@@ -6823,7 +6823,7 @@ class Action:
                                 continue
 
                             # Apply debuff to balls in radius
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True):
                                     hx = getattr(hazard, "x", 0)
                                     hy = getattr(hazard, "y", 0)
@@ -6871,7 +6871,7 @@ class Action:
 
                                 # Disable enemy skills
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", True) and getattr(b, "team", "") != getattr(hazard, "team", ""):
                                             dx = b.x - hazard.x
                                             dy = b.y - hazard.y
@@ -6906,7 +6906,7 @@ class Action:
                             if dist_sq < (getattr(hazard, "radius", 20.0) + self.ball.radius)**2:
                                 owner_extension = False
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "id", None) == getattr(hazard, "owner_id", None):
                                             if getattr(b, "bounty_extension_active", False):
                                                 owner_extension = True
@@ -7019,7 +7019,7 @@ class Action:
                                 if paired_hazard:
                                     # Find entity on paired_hazard
                                     entity_to_swap = None
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if b != self.ball and getattr(b, "alive", True):
                                             b_dx = paired_hazard.x - getattr(b, "x", 0)
                                             b_dy = paired_hazard.y - getattr(b, "y", 0)
@@ -7735,7 +7735,7 @@ class Action:
                             # Only affect enemies
                             is_enemy = True
                             if owner_id != -1 and hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "id", None) == owner_id:
                                         if getattr(b, "team", -1) == getattr(self.ball, "team", -2):
                                             is_enemy = False
@@ -8227,7 +8227,7 @@ class Action:
                                 explosion_damage = getattr(current_trap, "damage", 25.0)
 
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if not getattr(b, "alive", True):
                                             continue
                                         # Owner is immune to their own trap explosion
@@ -8318,6 +8318,12 @@ class Action:
                                     if not getattr(self.ball, "is_confused", False):
                                         self.ball.is_confused = True
                                     self.ball.confusion_timer = 3.0
+
+                                elif trap_variant == "confusion":
+                                    if not getattr(self.ball, "is_confused", False):
+                                        self.ball.is_confused = True
+                                    self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
+                                    self.ball.invert_timer = max(getattr(self.ball, "invert_timer", 0.0), 3.0)
                                 elif trap_variant == "blindness":
                                     if not getattr(self.ball, "is_blinded", False):
                                         self.ball.is_blinded = True
@@ -8350,7 +8356,7 @@ class Action:
                                 elif trap_variant == "nullifier":
                                     # Nullifier Trap: disables all shields and buffs of all players in a huge radius
                                     if hasattr(self.world, "balls"):
-                                        for b in self.world.balls:
+                                        for b in getattr(self.world, "balls", []):
                                             if getattr(b, "alive", True):
                                                 dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
                                                 if dist_sq <= 4000000.0:  # 2000 radius squared (huge radius)
@@ -8451,7 +8457,7 @@ class Action:
                                     enemy = None
                                     enemies = []
                                     if hasattr(self.world, "balls"):
-                                        for b in self.world.balls:
+                                        for b in getattr(self.world, "balls", []):
                                             if b != self.ball and getattr(b, "alive", True):
                                                 a_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                                                 b_team = getattr(b, "team", getattr(b, "ball_type", ""))
@@ -8628,7 +8634,7 @@ class Action:
                                     nearest_enemy = None
                                     min_dist = float('inf')
                                     if hasattr(self.world, "balls"):
-                                        for b in self.world.balls:
+                                        for b in getattr(self.world, "balls", []):
 
                                             owner = None
                                             if hasattr(self.world, "balls"):
@@ -8659,7 +8665,7 @@ class Action:
 
                                         owner = None
                                         if hasattr(self.world, "balls"):
-                                            for b in self.world.balls:
+                                            for b in getattr(self.world, "balls", []):
                                                 if getattr(b, "id", None) == owner_id:
                                                     owner = b
                                                     break
@@ -9999,7 +10005,7 @@ class Action:
                             lowest_hp_ball = None
                             lowest_hp = 999999.0
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True) and hasattr(b, "hp") and hasattr(b, "max_hp") and b.hp < b.max_hp:
                                         if b.hp < lowest_hp:
                                             lowest_hp = b.hp
@@ -10018,7 +10024,7 @@ class Action:
                                 closest_dist = 999999.0
                                 closest_ball = None
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if b != self.ball and getattr(b, "alive", True) and not getattr(b, "damage_link_target", None):
                                             d_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
                                             if d_sq < closest_dist:
@@ -10220,7 +10226,7 @@ class Action:
             min_dist_sq = float('inf')
 
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if b != self.ball and getattr(b, "is_decoy", False) and getattr(b, "alive", True) and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
                         dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
                         if dist_sq < min_dist_sq:
@@ -10515,7 +10521,7 @@ class Action:
                 if hasattr(self.world, "balls"):
                     my_clones = []
                     my_id = getattr(self.ball, "id", None)
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "is_clone", False) and getattr(b, "alive", True):
                             if getattr(b, "clone_owner", None) == my_id:
                                 my_clones.append(b)
@@ -10843,7 +10849,7 @@ class Action:
                         # Give attacking player a speed boost
                         last_hitter_id = getattr(self.ball, "_last_hit_by_id", None)
                         if last_hitter_id is not None and getattr(self.ball, "_last_hit_by_timer", 0.0) > 0:
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "id", None) == last_hitter_id:
                                     setattr(b, "speed_boost_timer", max(getattr(b, "speed_boost_timer", 0.0), 2.0))
                                     break
@@ -11330,7 +11336,7 @@ class Action:
         enemies = filtered_enemies
 
         if not enemies and hasattr(self.world, "balls"):
-            for b in self.world.balls:
+            for b in getattr(self.world, "balls", []):
                 if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
                     target_pr = perception_radius
                     if getattr(b, "silencer_timer", 0.0) > 0:
@@ -11341,7 +11347,7 @@ class Action:
                         enemies.append(b)
 
         if hasattr(self.world, "balls"):
-            for b in self.world.balls:
+            for b in getattr(self.world, "balls", []):
                 if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
                     if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None):
                         enemy_id = getattr(self.ball, "id", 0)
@@ -11353,7 +11359,7 @@ class Action:
                                 enemies.append(b)
 
         if hasattr(self.world, "balls"):
-            for b in self.world.balls:
+            for b in getattr(self.world, "balls", []):
                 if getattr(b, "is_illusion", False) and getattr(b, "alive", True) and b not in enemies:
                     if getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
                         dx = getattr(b, "x", 0) - self.ball.x
@@ -11362,7 +11368,7 @@ class Action:
                             enemies.append(b)
 
         if hasattr(self.world, "balls"):
-            for b in self.world.balls:
+            for b in getattr(self.world, "balls", []):
                 if getattr(b, "is_decoy", False) and getattr(b, "alive", True) and b not in enemies:
                     if getattr(b, "ball_type", None) != getattr(self.ball, "ball_type", None):
                         enemy_id = getattr(self.ball, "id", 0)
@@ -11393,7 +11399,7 @@ class Action:
             tracker_target = getattr(self.ball, "tracker_booster_target", None)
             if tracker_target is not None:
                 if hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "id", None) == tracker_target and getattr(b, "alive", True):
                             if b not in enemies:
                                 enemies.append(b)
@@ -12718,7 +12724,7 @@ class Action:
                         if hasattr(self.world, "balls"):
                             my_team = getattr(self.ball, "team", "")
                             if my_team == "": my_team = getattr(self.ball, "ball_type", "")
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
                                     nearest_enemy = None
                                     min_dist = 999999.0
@@ -13004,6 +13010,20 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "confusion_booster":
+                    # Apply confusion to all other alive balls
+                    for b in getattr(self.world, "balls", []):
+                        if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(self.ball, "id", None):
+                            b.is_confused = True
+                            b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), 10.0)
+                            b.invert_timer = max(getattr(b, "invert_timer", 0.0), 10.0)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "debuff_booster":
                     # Applies debuffs
                     self.ball.slow_timer = 5.0
@@ -13267,7 +13287,7 @@ class Action:
                 elif getattr(nearest, "kind", None) == "tracker_booster":
                     all_enemies = []
                     if hasattr(self.world, "balls"):
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if b != self.ball and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")) and getattr(b, "alive", True) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False):
                                 all_enemies.append(b)
                     if all_enemies:
@@ -13563,7 +13583,7 @@ class Action:
                     radius = getattr(nearest, "radius", 300.0)
                     nearby_players = []
                     if hasattr(self.world, "balls"):
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if b != self.ball and getattr(b, "alive", True):
                                 dist = math.sqrt((b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)
                                 if dist <= radius:
@@ -13735,7 +13755,7 @@ class Action:
                     dmg = getattr(nearest, "damage", 50.0)
                     stun_dur = getattr(nearest, "stun_duration", 2.0)
                     if hasattr(self.world, "balls"):
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             bx = getattr(b, "x", 0)
                             by = getattr(b, "y", 0)
                             nx = getattr(nearest, "x", 0)
@@ -14548,7 +14568,7 @@ class Action:
                         break
         elif skill_timer > 0 and skill_name == "deploy_turret":
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
                         if not getattr(b, "is_overclocked", False):
                             import math
@@ -14578,7 +14598,7 @@ class Action:
                                 hazard.active = False
                                 # Apply AoE damage to all nearby balls
                                 if hasattr(self.world, "balls"):
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                         if b_dist_sq <= r * r:
                                             b.hp = getattr(b, "hp", 100) - 50.0
@@ -15393,7 +15413,7 @@ class Action:
             elif skill_name == "deploy_turret":
                 if can_recast:
                     if hasattr(self.world, "balls"):
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
                                 if not getattr(b, "is_overclocked", False):
                                     import math
@@ -15520,7 +15540,7 @@ class Action:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": tx, "y": ty, "radius": 150.0, "damage": 50.0})
 
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if b != self.ball and getattr(b, "alive", True):
                                 if getattr(b, "team", "") != getattr(self.ball, "team", ""):
                                     dx = b.x - tx
@@ -15713,7 +15733,7 @@ class Action:
                 if hasattr(self.world, "balls"):
                     active_clone = None
                     my_id = getattr(self.ball, "id", None)
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if getattr(b, "is_mimic_clone", False) and getattr(b, "alive", True):
                             if getattr(b, "mimic_owner", None) == my_id:
                                 active_clone = b
@@ -15806,7 +15826,7 @@ class Action:
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
                 elif hasattr(self.world, "balls"):
                     new_decoys = []
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if not getattr(b, "alive", True):
                             continue
                         # don't clone decoys or illusions
@@ -16529,7 +16549,7 @@ class Action:
                 # Find all entities (balls, items, hazards) that can be grappled
                 grapple_targets = []
                 if hasattr(self.world, "balls"):
-                    for b in self.world.balls:
+                    for b in getattr(self.world, "balls", []):
                         if b != self.ball and getattr(b, "alive", True):
                             dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
                             grapple_targets.append(("ball", b, dist_sq))
@@ -18308,7 +18328,7 @@ class Action:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": 50.0})
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if b != self.ball and getattr(b, "alive", True):
                                     dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
                                     if dist <= 150.0:
@@ -18327,7 +18347,7 @@ class Action:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": other.x, "y": other.y, "radius": 150.0, "damage": 50.0})
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if b != other and getattr(b, "alive", True):
                                     dist = ((other.x - b.x)**2 + (other.y - b.y)**2)**0.5
                                     if dist <= 150.0:
@@ -18709,7 +18729,7 @@ class Action:
 
                 # Find owners with 'decoy_network' trait
                 network_owners = set()
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "alive", True) and "decoy_network" in getattr(b, "traits", []):
                         network_owners.add(getattr(b, "id", None))
 
@@ -19214,7 +19234,7 @@ class Action:
         if hasattr(self.ball, "tornado_booster_timer") and self.ball.tornado_booster_timer > 0:
             self.ball.tornado_booster_timer -= delta
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator" and b.id != self.ball.id and b.team != self.ball.team:
                         dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
@@ -19348,7 +19368,7 @@ class Action:
         if hasattr(self.ball, "gravity_well_aura_timer") and self.ball.gravity_well_aura_timer > 0:
             self.ball.gravity_well_aura_timer -= delta
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator" and b.id != self.ball.id and b.team != self.ball.team:
                         dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
@@ -19406,7 +19426,7 @@ class Action:
                     owner_id = getattr(hazard, "owner_id", None)
                     owner_ball = None
                     if owner_id is not None:
-                        for b in self.world.balls:
+                        for b in getattr(self.world, "balls", []):
                             if b.id == owner_id:
                                 owner_ball = b
                                 b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + siphon_dmg)
@@ -19498,7 +19518,7 @@ class Action:
                             explosion_radius = getattr(hazard, "radius", 40.0) * 3.0
                             import math
                             if hasattr(self.world, "balls"):
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True):
                                         b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                         if b_dist_sq < explosion_radius**2:
@@ -19560,7 +19580,7 @@ class Action:
                         # Push all entities and damage shields
                         if hasattr(self.world, "balls"):
                             import math
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if getattr(b, "alive", True):
                                     dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                     if dist_sq <= 400.0**2 and dist_sq > 0:
@@ -19590,7 +19610,7 @@ class Action:
                                 b_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
                                 if b_team != owner_team:
                                     # Explode and apply aura_amplifier_timer to nearby friendlies and damage nearby enemies
-                                    for b in self.world.balls:
+                                    for b in getattr(self.world, "balls", []):
                                         if getattr(b, "alive", True):
                                             b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                             if b_dist_sq < (100.0 * 100.0): # Blast radius
@@ -19623,7 +19643,7 @@ class Action:
                             if getattr(hazard, "owner_id", None) is not None and hasattr(self.world, "balls"):
                                 owner = next((b for b in self.world.balls if getattr(b, "id", None) == hazard.owner_id), None)
 
-                                for b in self.world.balls:
+                                for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", True) and getattr(b, "id", None) != hazard.owner_id:
                                         b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                         if b_dist_sq < (80.0 * 80.0): # Blast radius
@@ -19674,7 +19694,7 @@ class Action:
                                     if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 40.0) * 0.25):
                                         # Trigger AoE explosion
                                         if hasattr(self.world, "balls"):
-                                            for b in self.world.balls:
+                                            for b in getattr(self.world, "balls", []):
                                                 if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
                                                     b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
                                                     # Check if caught in explosion radius (which is the trap's full trigger radius)
@@ -20542,7 +20562,7 @@ class Action:
             import math
             # Get enemies safely
             if hasattr(self.world, "balls"):
-                for b in self.world.balls:
+                for b in getattr(self.world, "balls", []):
                     if getattr(b, "id", None) != getattr(self.ball, "id", None) and getattr(b, "team", "") != getattr(self.ball, "team", "") and getattr(b, "alive", True):
                         if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
                             b.time_warp_slow_timer = 0.2
@@ -20644,7 +20664,7 @@ class Action:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": absorbed * 0.5})
                         if hasattr(self.world, "balls"):
-                            for b in self.world.balls:
+                            for b in getattr(self.world, "balls", []):
                                 if b != self.ball and getattr(b, "alive", True):
                                     dist = ((self.ball.x - b.x)**2 + (self.ball.y - b.y)**2)**0.5
                                     if dist <= 150.0:
