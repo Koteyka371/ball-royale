@@ -268,10 +268,33 @@ class GameMode:
 
 				var dist = sqrt((b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y))
 				if dist < h_r:
+					var b_type_ice = ""
+					var b_traits_ice = []
+					var b_cosmetic = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						b_type_ice = str(b.get("ball_type", "")).to_lower()
+						b_traits_ice = b.get("traits", [])
+						b_cosmetic = b.get("cosmetic", "")
+					else:
+						b_type_ice = str(b.ball_type).to_lower() if "ball_type" in b else ""
+						b_traits_ice = b.traits if "traits" in b else []
+						b_cosmetic = b.cosmetic if "cosmetic" in b else ""
+
+					var is_ice_trait = b_type_ice.find("ice") != -1 or b_traits_ice.has("ice") or b_cosmetic == "ice_elemental"
+
 					if h_kind == "lava":
 						target_temp = 60.0
 					elif h_kind == "ice_patch" or h_kind == "ice_patches":
-						target_temp = -30.0
+						if is_ice_trait:
+							target_temp = 20.0
+							if typeof(b) == TYPE_DICTIONARY:
+								var base_s = b.get("base_speed", b.get("speed", 100.0))
+								b["speed"] = base_s * 1.5
+							else:
+								var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+								if "speed" in b: b.speed = base_s * 1.5
+						else:
+							target_temp = -30.0
 
 			if has_cooling and target_temp > -10.0:
 				target_temp = -10.0
@@ -433,6 +456,44 @@ class GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -2082,6 +2143,44 @@ class GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -3210,6 +3309,44 @@ class DraftRoyaleMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -3574,6 +3711,44 @@ class BattleRoyaleMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -6737,6 +6912,44 @@ class TeamDeathmatchMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -6944,6 +7157,44 @@ class ZombieInfectionMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -7206,6 +7457,44 @@ class GuildBossFightMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -7513,6 +7802,44 @@ class BossFightMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -7772,6 +8099,44 @@ class VIPDefenseMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -7985,6 +8350,44 @@ class SurvivalMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -8546,6 +8949,44 @@ class DualPayloadMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -9166,6 +9607,44 @@ class EscortMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -10016,6 +10495,44 @@ class CaptureTheFlagMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -10234,6 +10751,44 @@ class EvolutionarySimulationMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -10647,6 +11202,44 @@ class MassiveGravityWellMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -10999,6 +11592,44 @@ class KingOfTheHillMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -11260,6 +11891,44 @@ class SweepingBlackHoleMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -11642,6 +12311,44 @@ class WeatherChaosMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -12641,6 +13348,44 @@ class DominationMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -12932,6 +13677,44 @@ class MovingZoneMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -13233,6 +14016,44 @@ class MemoryTrapsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -13482,6 +14303,44 @@ class CustomMatchMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -13836,6 +14695,44 @@ class EcholocationMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -14095,6 +14992,44 @@ class PitchBlackMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -14327,6 +15262,44 @@ class VisionReducedMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -14783,6 +15756,44 @@ class PortalNodeMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -15028,6 +16039,44 @@ class MovingSafeZoneMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -15428,6 +16477,44 @@ class ShrinkingDangerZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -15790,6 +16877,44 @@ class ModifierSafeZoneMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -16171,6 +17296,44 @@ class ModifierZonesSafeZoneMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -16816,6 +17979,44 @@ class SafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -17194,6 +18395,44 @@ class InverseMirrorArenaMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -17441,6 +18680,44 @@ class MirrorMatchMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -17646,6 +18923,44 @@ class VolatileClonesMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -18026,6 +19341,44 @@ class CloneChaosMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -18251,6 +19604,44 @@ class SumoKnockoutMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -18496,6 +19887,44 @@ class PacifistKnockoutMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -18806,6 +20235,44 @@ class BumperBallsMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -19122,6 +20589,44 @@ class ToxicEnvironmentMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -19415,6 +20920,44 @@ class ModifierZonesMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -19705,6 +21248,44 @@ class WindstormMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -20190,6 +21771,44 @@ class BlackoutMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -20501,6 +22120,44 @@ class BountyHuntMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -21149,6 +22806,44 @@ class ShiftingMazeMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -21883,6 +23578,44 @@ class DayNightMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -22624,6 +24357,44 @@ class MagneticCollisionsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -23303,6 +25074,44 @@ class PinballMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -23776,6 +25585,44 @@ class InvisibleWallsMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -24244,6 +26091,44 @@ class BodySwapMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -24481,6 +26366,44 @@ class TugOfWarMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -25699,6 +27622,44 @@ class StaminaSpeedMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -25966,6 +27927,44 @@ class HazardBilliardsMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -26493,6 +28492,44 @@ class InverseSafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -26887,6 +28924,44 @@ class DynamicSafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -27233,6 +29308,44 @@ class PrestigeWeatherMutatorMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -27448,6 +29561,44 @@ class DailyMutatorMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -27713,6 +29864,44 @@ class BlackMarketMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -28634,6 +30823,44 @@ class SoulLinkMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -28961,6 +31188,44 @@ class CursedBuffZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -29250,6 +31515,44 @@ class RhythmPanelsMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -29623,6 +31926,44 @@ class PolarityShiftMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -30440,6 +32781,44 @@ class ArtifactUpgraderMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -30909,6 +33288,44 @@ class SweepingPaddlesMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -31372,6 +33789,44 @@ class MazeSafeZoneMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -31823,6 +34278,44 @@ class InvisibleDecoysMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -32631,6 +35124,44 @@ class JuggernautMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -33006,6 +35537,44 @@ class ReverseTugOfWarMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -33415,6 +35984,44 @@ class HexGridRoyaleMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -33710,6 +36317,44 @@ class TickingPayloadMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -34150,6 +36795,44 @@ class BlackoutEventMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -34515,6 +37198,44 @@ class WeaponCollectionMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -35648,6 +38369,44 @@ class ShrinkingBoundaryMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -35885,6 +38644,44 @@ class EntangledArenaMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -36356,6 +39153,44 @@ class EntanglementMutatorMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -37408,6 +40243,44 @@ class LavaRoyaleMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -47450,6 +50323,44 @@ class CrossfireMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -47718,6 +50629,44 @@ class TagTeamMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -48243,6 +51192,44 @@ class TeleporterHubMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
@@ -48829,6 +51816,44 @@ class IllusionWallMode extends GameMode:
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
 
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
+
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")
 			if is_water:
@@ -49229,6 +52254,44 @@ class UndergroundTunnelMode extends GameMode:
 							b.defense_multiplier = dm * 1.5
 						elif b.has_method("set_meta"):
 							b.set_meta("defense_multiplier", dm * 1.5)
+
+			# Trait: Ice
+			var b_cosm = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_cosm = b.get("cosmetic", "")
+			else:
+				b_cosm = b.cosmetic if "cosmetic" in b else ""
+
+			var is_ice = b_type.find("ice") != -1 or traits.has("ice") or b_cosm == "ice_elemental"
+			if is_ice:
+				if weather_cond == "blizzard" or weather_cond == "snow":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+						var cur_hp = b.get("hp", 100.0)
+						var m_hp = b.get("max_hp", 100.0)
+						b["hp"] = min(m_hp, cur_hp + (2.0 * delta))
+						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 1.2
+
+						var cur_hp = b.get("hp") if "hp" in b else 100.0
+						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
+						var new_hp = min(m_hp, cur_hp + (2.0 * delta))
+						if "hp" in b: b.hp = new_hp
+						elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
+
+						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
+						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
+						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
+				elif weather_cond == "heatwave" or weather_cond == "lava":
+					if typeof(b) == TYPE_DICTIONARY:
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 0.8
+					else:
+						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+						if "speed" in b: b.speed = base_s * 0.8
 
 			# Trait: Water
 			var is_water = b_type.find("water") != -1 or traits.has("water")

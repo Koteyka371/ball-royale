@@ -216,10 +216,15 @@ class GameMode:
                     import math
                     dist = math.sqrt((b_x - h_x)**2 + (b_y - h_y)**2)
                     if dist < r:
+                        is_ice_trait = "ice" in getattr(b, "ball_type", "").lower() or "ice" in getattr(b, "traits", []) or getattr(b, "cosmetic", "") == "ice_elemental"
                         if kind == "lava":
                             target_temp = 60.0
                         elif kind in ["ice_patch", "ice_patches"]:
-                            target_temp = -30.0
+                            if is_ice_trait:
+                                target_temp = 20.0
+                                b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
+                            else:
+                                target_temp = -30.0
 
             # Check boosters
             c_timer = getattr(b, "cooling_booster_timer", 0.0)
@@ -274,6 +279,18 @@ class GameMode:
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -1671,6 +1688,18 @@ class DraftRoyaleMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -1972,6 +2001,18 @@ class BattleRoyaleMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -4324,6 +4365,18 @@ class TeamDeathmatchMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -4460,6 +4513,18 @@ class ZombieInfectionMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -4642,6 +4707,18 @@ class GuildBossFightMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -4844,6 +4921,18 @@ class BossFightMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -5198,6 +5287,18 @@ class DualPayloadMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -5702,6 +5803,18 @@ class EscortMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -6332,6 +6445,18 @@ class VIPDefenseMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -6475,6 +6600,18 @@ class SurvivalMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -6689,6 +6826,18 @@ class CaptureTheFlagMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -6847,6 +6996,18 @@ class EvolutionarySimulationMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -7126,6 +7287,18 @@ class MassiveGravityWellMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -7358,6 +7531,18 @@ class KingOfTheHillMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -7556,6 +7741,18 @@ class SweepingBlackHoleMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -7848,6 +8045,18 @@ class WeatherChaosMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -8741,6 +8950,18 @@ class DominationMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -9065,6 +9286,18 @@ class MemoryTrapsMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -9248,6 +9481,18 @@ class CustomMatchMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -9533,6 +9778,18 @@ class EcholocationMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -9720,6 +9977,18 @@ class PitchBlackMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -9891,6 +10160,18 @@ class VisionReducedMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -10074,6 +10355,18 @@ class EMPBurstMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -10226,6 +10519,18 @@ class DynamicHazardsMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -11580,6 +11885,18 @@ class MirrorMatchMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -11726,6 +12043,18 @@ class VolatileClonesMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -11983,6 +12312,18 @@ class CloneChaosMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -12315,6 +12656,18 @@ class BumperBallsMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -12625,6 +12978,18 @@ class ModifierZonesMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -12860,6 +13225,18 @@ class WindstormMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -13305,6 +13682,18 @@ class BountyHuntMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -13857,6 +14246,18 @@ class GravityWellMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -14746,6 +15147,18 @@ class MagneticCollisionsMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -15193,6 +15606,18 @@ class PinballMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -16603,6 +17028,18 @@ class StaminaSpeedMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -16784,6 +17221,18 @@ class HazardBilliardsMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -17578,6 +18027,18 @@ class DailyMutatorMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -17751,6 +18212,18 @@ class BlackMarketMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -18224,6 +18697,18 @@ class BlizzardMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -18444,6 +18929,18 @@ class MeteorShowerMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -18686,6 +19183,18 @@ class CursedBuffZoneMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -18874,6 +19383,18 @@ class RhythmPanelsMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -19426,6 +19947,18 @@ class ArtifactUpgraderMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -19671,6 +20204,18 @@ class SweepingPaddlesMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -20254,6 +20799,18 @@ class InvisibleDecoysMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -20982,6 +21539,18 @@ class JuggernautMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -21430,6 +21999,18 @@ class TickingPayloadMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -21951,6 +22532,18 @@ class WeaponCollectionMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -22422,6 +23015,18 @@ class CenterBlackHoleMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -29475,6 +30080,18 @@ class RollingBouldersMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -29777,6 +30394,18 @@ class SoulLinkMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -30108,6 +30737,18 @@ class TagTeamMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -30378,6 +31019,18 @@ class CrossfireMode(GameMode):
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
 
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
+
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
             if is_water:
@@ -30544,6 +31197,18 @@ class TeleporterHubMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
@@ -31321,6 +31986,18 @@ class FreezeTagMode(GameMode):
                     b.x = getattr(b, "x", 0.0) + (100.0 * delta)
                     b.y = getattr(b, "y", 0.0) + (100.0 * delta)
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
+
+            # Trait: Ice
+            is_ice = "ice" in b_type or "ice" in traits or getattr(b, "cosmetic", "") == "ice_elemental"
+            if is_ice:
+                if weather in ["blizzard", "snow"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (2.0 * delta))
+                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
+                elif weather in ["heatwave", "lava"]:
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 0.8
 
             # Trait: Water
             is_water = "water" in b_type or "water" in traits
