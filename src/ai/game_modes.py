@@ -308,6 +308,10 @@ class GameMode:
                         team_traits[b_team].add("water")
                     if "lightning" in b_type or "lightning" in traits or "electric" in b_type or "electric" in traits:
                         team_traits[b_team].add("lightning")
+                    if "fire" in b_type or "fire" in traits:
+                        team_traits[b_team].add("fire")
+                    if "earth" in b_type or "earth" in traits:
+                        team_traits[b_team].add("earth")
 
         # Now apply synergies to units
         for b in balls:
@@ -322,6 +326,42 @@ class GameMode:
 
                     is_water = "water" in b_type or "water" in traits
                     is_lightning = "lightning" in b_type or "lightning" in traits or "electric" in b_type or "electric" in traits
+
+                    team_has_fire = "fire" in team_traits[b_team]
+                    team_has_earth = "earth" in team_traits[b_team]
+                    is_fire = "fire" in b_type or "fire" in traits
+                    is_earth = "earth" in b_type or "earth" in traits
+
+                    if team_has_fire and team_has_earth and (is_fire or is_earth):
+                        # Apply 'Magma' field: pulsing magma aura that slows and damages enemies
+                        if not hasattr(b, "magma_field_timer"):
+                            b.magma_field_timer = 0.0
+                        b.magma_field_timer += delta
+                        if b.magma_field_timer >= 1.5:
+                            b.magma_field_timer = 0.0
+                            b_x = getattr(b, "x", 0.0)
+                            b_y = getattr(b, "y", 0.0)
+                            magma_radius = 120.0
+                            magma_damage = 20.0
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("visual_effect", {"type": "magma_pulse", "x": b_x, "y": b_y, "radius": magma_radius})
+
+                            for enemy in balls:
+                                if enemy is not b and getattr(enemy, "alive", False) and getattr(enemy, "team", None) != b_team:
+                                    e_x = getattr(enemy, "x", 0.0)
+                                    e_y = getattr(enemy, "y", 0.0)
+                                    dist_sq = (b_x - e_x)**2 + (b_y - e_y)**2
+                                    if dist_sq <= magma_radius**2:
+                                        if hasattr(world, "_deal_damage"):
+                                            world._deal_damage(b, enemy, magma_damage)
+                                        else:
+                                            enemy.hp = getattr(enemy, "hp", 100.0) - magma_damage
+                                            if enemy.hp <= 0:
+                                                enemy.alive = False
+                                        # Slow enemy
+                                        base_e_speed = getattr(enemy, "base_speed", getattr(enemy, "speed", 100.0))
+                                        enemy.speed = min(getattr(enemy, "speed", 100.0), base_e_speed * 0.7)
 
                     if team_has_water and team_has_lightning and (is_water or is_lightning):
                         # Apply 'electrified water' buff: Increased speed and a pulsing electric aura

@@ -489,7 +489,7 @@ class GameMode:
 
 				if b_team != null:
 					if not team_traits.has(b_team):
-						team_traits[b_team] = {"water": false, "lightning": false}
+						team_traits[b_team] = {"water": false, "lightning": false, "fire": false, "earth": false}
 
 					var b_type = ""
 					var traits = []
@@ -506,6 +506,10 @@ class GameMode:
 						team_traits[b_team]["water"] = true
 					if b_type.find("lightning") != -1 or traits.has("lightning") or b_type.find("electric") != -1 or traits.has("electric"):
 						team_traits[b_team]["lightning"] = true
+					if b_type.find("fire") != -1 or traits.has("fire"):
+						team_traits[b_team]["fire"] = true
+					if b_type.find("earth") != -1 or traits.has("earth"):
+						team_traits[b_team]["earth"] = true
 
 		for b in balls:
 			var b_alive = false
@@ -538,6 +542,106 @@ class GameMode:
 
 					var is_water = b_type.find("water") != -1 or traits.has("water")
 					var is_lightning = b_type.find("lightning") != -1 or traits.has("lightning") or b_type.find("electric") != -1 or traits.has("electric")
+
+					var team_has_fire = team_traits[b_team]["fire"]
+					var team_has_earth = team_traits[b_team]["earth"]
+					var is_fire = b_type.find("fire") != -1 or traits.has("fire")
+					var is_earth = b_type.find("earth") != -1 or traits.has("earth")
+
+					if team_has_fire and team_has_earth and (is_fire or is_earth):
+						# Apply 'Magma' field: pulsing magma aura that slows and damages enemies
+						var m_timer = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							m_timer = b.get("magma_field_timer", 0.0) + delta
+						else:
+							if "magma_field_timer" in b:
+								m_timer = b.magma_field_timer + delta
+							elif b.has_method("has_meta") and b.has_meta("magma_field_timer"):
+								m_timer = b.get_meta("magma_field_timer") + delta
+
+						if m_timer >= 1.5:
+							m_timer = 0.0
+							var b_x = 0.0
+							var b_y = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								b_x = b.get("x", 0.0)
+								b_y = b.get("y", 0.0)
+							else:
+								b_x = b.get("x") if "x" in b else 0.0
+								b_y = b.get("y") if "y" in b else 0.0
+
+							var magma_radius = 120.0
+							var magma_damage = 20.0
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("visual_effect", {"type": "magma_pulse", "x": b_x, "y": b_y, "radius": magma_radius})
+
+							for enemy in balls:
+								var e_alive = false
+								if typeof(enemy) == TYPE_DICTIONARY:
+									e_alive = enemy.get("alive", false)
+								else:
+									e_alive = enemy.get("alive") if "alive" in enemy else false
+
+								if enemy != b and e_alive:
+									var e_team = null
+									if typeof(enemy) == TYPE_DICTIONARY:
+										e_team = enemy.get("team")
+									else:
+										e_team = enemy.get("team") if "team" in enemy else null
+
+									if e_team != b_team:
+										var e_x = 0.0
+										var e_y = 0.0
+										if typeof(enemy) == TYPE_DICTIONARY:
+											e_x = enemy.get("x", 0.0)
+											e_y = enemy.get("y", 0.0)
+										else:
+											e_x = enemy.get("x") if "x" in enemy else 0.0
+											e_y = enemy.get("y") if "y" in enemy else 0.0
+
+										var dist_sq = pow(b_x - e_x, 2) + pow(b_y - e_y, 2)
+										if dist_sq <= pow(magma_radius, 2):
+											if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+												world._deal_damage(b, enemy, magma_damage)
+											else:
+												var e_hp = 100.0
+												if typeof(enemy) == TYPE_DICTIONARY:
+													e_hp = enemy.get("hp", 100.0) - magma_damage
+													enemy["hp"] = e_hp
+													if e_hp <= 0:
+														enemy["alive"] = false
+												else:
+													e_hp = (enemy.get("hp") if "hp" in enemy else 100.0) - magma_damage
+													if "hp" in enemy:
+														enemy.hp = e_hp
+													if e_hp <= 0:
+														if "alive" in enemy:
+															enemy.alive = false
+
+											# Slow down enemy
+											if typeof(enemy) == TYPE_DICTIONARY:
+												var base_e_speed = enemy.get("base_speed", enemy.get("speed", 100.0))
+												enemy["speed"] = min(enemy.get("speed", 100.0), base_e_speed * 0.7)
+											else:
+												var base_e_speed = 100.0
+												if "base_speed" in enemy:
+													base_e_speed = enemy.base_speed
+												elif "speed" in enemy:
+													base_e_speed = enemy.speed
+												var current_e_speed = 100.0
+												if "speed" in enemy:
+													current_e_speed = enemy.speed
+												if "speed" in enemy:
+													enemy.speed = min(current_e_speed, base_e_speed * 0.7)
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["magma_field_timer"] = m_timer
+						else:
+							if "magma_field_timer" in b:
+								b.magma_field_timer = m_timer
+							elif b.has_method("set_meta"):
+								b.set_meta("magma_field_timer", m_timer)
 
 					if team_has_water and team_has_lightning and (is_water or is_lightning):
 						if typeof(b) == TYPE_DICTIONARY:
