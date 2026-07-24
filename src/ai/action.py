@@ -17923,6 +17923,38 @@ class Action:
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+
+            elif skill_name == "propulsion_blanks":
+                import math
+                import random
+                enemies = self._get_enemies()
+
+                angle = random.uniform(0, 2 * math.pi)
+                if enemies:
+                    target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        angle = math.atan2(dy, dx)
+
+                thrust_amount = 1200.0
+                # Thrust backwards away from target (or random angle)
+                if hasattr(self.ball, "vx"):
+                    self.ball.vx -= math.cos(angle) * thrust_amount
+                if hasattr(self.ball, "vy"):
+                    self.ball.vy -= math.sin(angle) * thrust_amount
+
+                if hasattr(self.world, "events"):
+                    # Visual blanks firing forward
+                    for i in range(5):
+                        spread = random.uniform(-0.2, 0.2)
+                        tx = self.ball.x + math.cos(angle + spread) * 50
+                        ty = self.ball.y + math.sin(angle + spread) * 50
+                        self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": tx, "y": ty, "intensity": 1.5}})
+                        self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": tx, "y": ty, "radius": 10.0}})
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
             elif skill_name == "orbital_mines":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random

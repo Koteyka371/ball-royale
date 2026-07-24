@@ -34461,6 +34461,94 @@ func _use_skill():
                 else:
                     m.owner_id = bid
                 self.world.arena.hazards.append(m)
+
+        elif skill_name == "propulsion_blanks":
+            var enemies = _get_enemies()
+            var angle = randf() * 2 * PI
+            if enemies.size() > 0:
+                var target = null
+                var min_dist = INF
+                for e in enemies:
+                    var ex = 0.0
+                    var ey = 0.0
+                    if typeof(e) == TYPE_DICTIONARY:
+                        ex = e.get("x", 0.0)
+                        ey = e.get("y", 0.0)
+                    else:
+                        ex = e.get("x", 0.0) if not (typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and not "x" in e) else e.get_meta("x")
+                        ey = e.get("y", 0.0) if not (typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and not "y" in e) else e.get_meta("y")
+
+                    var bx = 0.0
+                    var by = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        bx = self.ball.get("x", 0.0)
+                        by = self.ball.get("y", 0.0)
+                    else:
+                        bx = self.ball.get("x", 0.0) if not (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and not "x" in self.ball) else self.ball.get_meta("x")
+                        by = self.ball.get("y", 0.0) if not (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and not "y" in self.ball) else self.ball.get_meta("y")
+
+                    var dx = ex - bx
+                    var dy = ey - by
+                    var dist = dx * dx + dy * dy
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = e
+
+                if target != null:
+                    var ex = 0.0
+                    var ey = 0.0
+                    if typeof(target) == TYPE_DICTIONARY:
+                        ex = target.get("x", 0.0)
+                        ey = target.get("y", 0.0)
+                    else:
+                        ex = target.get("x", 0.0) if not (typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and not "x" in target) else target.get_meta("x")
+                        ey = target.get("y", 0.0) if not (typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and not "y" in target) else target.get_meta("y")
+
+                    var bx = 0.0
+                    var by = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        bx = self.ball.get("x", 0.0)
+                        by = self.ball.get("y", 0.0)
+                    else:
+                        bx = self.ball.get("x", 0.0) if not (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and not "x" in self.ball) else self.ball.get_meta("x")
+                        by = self.ball.get("y", 0.0) if not (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and not "y" in self.ball) else self.ball.get_meta("y")
+                    var dx = ex - bx
+                    var dy = ey - by
+                    if sqrt(dx*dx + dy*dy) > 0.0001:
+                        angle = atan2(dy, dx)
+
+            var thrust_amount = 1200.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("vx"): self.ball["vx"] -= cos(angle) * thrust_amount
+                if self.ball.has("vy"): self.ball["vy"] -= sin(angle) * thrust_amount
+            else:
+                if "vx" in self.ball: self.ball.vx -= cos(angle) * thrust_amount
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") - cos(angle) * thrust_amount)
+                if "vy" in self.ball: self.ball.vy -= sin(angle) * thrust_amount
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") - sin(angle) * thrust_amount)
+
+            if "events" in self.world:
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    bx = self.ball.get("x", 0.0)
+                    by = self.ball.get("y", 0.0)
+                else:
+                    bx = self.ball.get("x", 0.0) if not (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and not "x" in self.ball) else self.ball.get_meta("x")
+                    by = self.ball.get("y", 0.0) if not (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and not "y" in self.ball) else self.ball.get_meta("y")
+
+                for i in range(5):
+                    var spread = randf_range(-0.2, 0.2)
+                    var tx = bx + cos(angle + spread) * 50
+                    var ty = by + sin(angle + spread) * 50
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "noise", "x": tx, "y": ty, "intensity": 1.5}})
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": tx, "y": ty, "radius": 10.0}})
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["skill_timer"] = 4.0
+            else:
+                if "skill_timer" in self.ball: self.ball.skill_timer = 4.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", 4.0)
         elif skill_name == "orbital_mines":
             if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
                 var HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
