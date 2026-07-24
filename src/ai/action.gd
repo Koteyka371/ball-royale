@@ -8153,6 +8153,64 @@ func execute(strategy: String, delta: float):
 			if "storm_link_timer" in self.ball: self.ball.storm_link_timer = storm_link_timer
 			elif self.ball.has_method("set_meta"): self.ball.set_meta("storm_link_timer", storm_link_timer)
 
+		var anchor_point_timer = 0.0
+		if self.ball.has_method("has_meta") and self.ball.has_meta("anchor_point_timer"):
+			anchor_point_timer = self.ball.get_meta("anchor_point_timer")
+		elif "anchor_point_timer" in self.ball:
+			anchor_point_timer = self.ball.anchor_point_timer
+
+		if anchor_point_timer > 0:
+			var bx = self.ball.get("x") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else (self.ball.x if "x" in self.ball else 0.0))
+			var by = self.ball.get("y") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else (self.ball.y if "y" in self.ball else 0.0))
+
+			var ax = bx
+			if self.ball.has_method("has_meta") and self.ball.has_meta("anchor_point_x"):
+				ax = self.ball.get_meta("anchor_point_x")
+			elif "anchor_point_x" in self.ball:
+				ax = self.ball.anchor_point_x
+
+			var ay = by
+			if self.ball.has_method("has_meta") and self.ball.has_meta("anchor_point_y"):
+				ay = self.ball.get_meta("anchor_point_y")
+			elif "anchor_point_y" in self.ball:
+				ay = self.ball.anchor_point_y
+
+			var dx = ax - bx
+			var dy = ay - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 150.0:
+				var b_speed = self.ball.get("speed") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("speed") if self.ball.has_method("has_meta") and self.ball.has_meta("speed") else (self.ball.speed if "speed" in self.ball else 2.0))
+				var snap_speed = b_speed * 10.0
+				var nvx = (dx / dist) * snap_speed
+				var nvy = (dy / dist) * snap_speed
+
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					self.ball["vx"] = nvx
+					self.ball["vy"] = nvy
+					self.ball["x"] = bx + nvx * delta
+					self.ball["y"] = by + nvy * delta
+				elif self.ball.has_method("set_meta"):
+					self.ball.set_meta("vx", nvx)
+					self.ball.set_meta("vy", nvy)
+					self.ball.set_meta("x", bx + nvx * delta)
+					self.ball.set_meta("y", by + nvy * delta)
+				else:
+					if not "vx" in self.ball: self.ball.vx = 0.0
+					if not "vy" in self.ball: self.ball.vy = 0.0
+					self.ball.vx = nvx
+					self.ball.vy = nvy
+					self.ball.x = bx + nvx * delta
+					self.ball.y = by + nvy * delta
+
+			anchor_point_timer -= delta
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["anchor_point_timer"] = anchor_point_timer
+			elif self.ball.has_method("set_meta"):
+				self.ball.set_meta("anchor_point_timer", anchor_point_timer)
+			else:
+				self.ball.anchor_point_timer = anchor_point_timer
+
 		var tether_booster_timer = 0.0
 		if self.ball.has_method("has_meta") and self.ball.has_meta("tether_booster_timer"):
 			tether_booster_timer = self.ball.get_meta("tether_booster_timer")
@@ -24954,6 +25012,32 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "anchor_point_booster":
+                var bx = self.ball.get("x") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else (self.ball.x if "x" in self.ball else 0.0))
+                var by = self.ball.get("y") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else (self.ball.y if "y" in self.ball else 0.0))
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["anchor_point_timer"] = 10.0
+                    self.ball["anchor_point_x"] = bx
+                    self.ball["anchor_point_y"] = by
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("anchor_point_timer", 10.0)
+                    self.ball.set_meta("anchor_point_x", bx)
+                    self.ball.set_meta("anchor_point_y", by)
+                else:
+                    self.ball.anchor_point_timer = 10.0
+                    self.ball.anchor_point_x = bx
+                    self.ball.anchor_point_y = by
+
+                if self.world != null and "events" in self.world:
+                    self.world.events.append({"type": "anchor_point", "x": bx, "y": by})
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "tether_booster":
                 var enemies = self._get_enemies_internal()
                 if enemies.size() > 0:
@@ -25996,6 +26080,32 @@ func _collect_booster(delta: float):
                     var bx = self.ball.get("x") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else (self.ball.x if "x" in self.ball else 0.0))
                     var by = self.ball.get("y") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else (self.ball.y if "y" in self.ball else 0.0))
                     self.world.events.append({"type": "orbital_link", "x": bx, "y": by})
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "anchor_point_booster":
+                var bx = self.ball.get("x") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else (self.ball.x if "x" in self.ball else 0.0))
+                var by = self.ball.get("y") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else (self.ball.y if "y" in self.ball else 0.0))
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["anchor_point_timer"] = 10.0
+                    self.ball["anchor_point_x"] = bx
+                    self.ball["anchor_point_y"] = by
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("anchor_point_timer", 10.0)
+                    self.ball.set_meta("anchor_point_x", bx)
+                    self.ball.set_meta("anchor_point_y", by)
+                else:
+                    self.ball.anchor_point_timer = 10.0
+                    self.ball.anchor_point_x = bx
+                    self.ball.anchor_point_y = by
+
+                if self.world != null and "events" in self.world:
+                    self.world.events.append({"type": "anchor_point", "x": bx, "y": by})
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

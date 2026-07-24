@@ -12786,6 +12786,17 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "anchor_point_booster":
+                    self.ball.anchor_point_timer = 10.0
+                    self.ball.anchor_point_x = self.ball.x
+                    self.ball.anchor_point_y = self.ball.y
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "anchor_point", "x": self.ball.x, "y": self.ball.y})
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "tether_booster":
                     enemies = self._get_enemies()
                     if enemies:
@@ -13286,6 +13297,17 @@ class Action:
                         target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
                         self.ball.storm_link_timer = 5.0
                         self.ball.storm_link_target = target
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "anchor_point_booster":
+                    self.ball.anchor_point_timer = 10.0
+                    self.ball.anchor_point_x = self.ball.x
+                    self.ball.anchor_point_y = self.ball.y
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "anchor_point", "x": self.ball.x, "y": self.ball.y})
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -20637,6 +20659,24 @@ class Action:
                             target.y += t_ny * boost
 
             self.ball.storm_link_timer = storm_link_timer - delta
+
+        anchor_point_timer = getattr(self.ball, "anchor_point_timer", 0.0)
+        if anchor_point_timer > 0:
+            anchor_x = getattr(self.ball, "anchor_point_x", self.ball.x)
+            anchor_y = getattr(self.ball, "anchor_point_y", self.ball.y)
+            import math
+            dx = anchor_x - self.ball.x
+            dy = anchor_y - self.ball.y
+            dist = math.hypot(dx, dy)
+            if dist > 150.0:
+                snap_speed = getattr(self.ball, "speed", 2.0) * 10.0
+                if not hasattr(self.ball, "vx"): self.ball.vx = 0.0
+                if not hasattr(self.ball, "vy"): self.ball.vy = 0.0
+                self.ball.vx = (dx / dist) * snap_speed
+                self.ball.vy = (dy / dist) * snap_speed
+                self.ball.x += self.ball.vx * delta
+                self.ball.y += self.ball.vy * delta
+            self.ball.anchor_point_timer = anchor_point_timer - delta
 
         tether_booster_timer = getattr(self.ball, "tether_booster_timer", 0.0)
         if tether_booster_timer > 0:
