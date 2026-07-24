@@ -711,6 +711,14 @@ class Action:
             if hasattr(self.world, "events"):
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
+
+        if getattr(target, "velocity_shield_active", False) and is_ranged:
+            inc_dmg = getattr(attacker, "damage", 10.0)
+            target.speed_boost_timer = getattr(target, "speed_boost_timer", 0.0) + (inc_dmg * 0.1)
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
+            return
+
         if getattr(target, "energy_shield_active", False):
 
             import math
@@ -14969,6 +14977,9 @@ class Action:
             elif skill_name == "surge_shield":
                 self.ball.surge_shield_active = True
                 self.ball.surge_shield_timer = 3.0
+            elif skill_name == "velocity_shield":
+                self.ball.velocity_shield_active = True
+                self.ball.velocity_shield_timer = 5.0
 
             elif skill_name == "trickster_swap":
                 all_entities = getattr(self.world, "balls", [])
@@ -19438,6 +19449,11 @@ class Action:
             self.ball.surge_shield_timer -= delta
             if self.ball.surge_shield_timer <= 0:
                 self.ball.surge_shield_active = False
+
+        if hasattr(self.ball, "velocity_shield_timer") and self.ball.velocity_shield_timer > 0:
+            self.ball.velocity_shield_timer -= delta
+            if self.ball.velocity_shield_timer <= 0:
+                self.ball.velocity_shield_active = False
 
 
         if hasattr(self.ball, "orbital_shield_timer") and self.ball.orbital_shield_timer > 0:
