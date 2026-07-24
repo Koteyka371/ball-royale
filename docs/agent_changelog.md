@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1387] Corruption Hazard Zones — *2026-07-24 00:35:49 UTC*
+
+Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element.
+
+---
+
 ## [idea-1352] Pet System — *2026-07-24 00:21:38 UTC*
 
 Allow players to find, tame, and equip mini-balls as pets that follow them around, providing minor stat boosts or utility skills like auto-looting.
