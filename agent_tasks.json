@@ -24273,7 +24273,7 @@
     },
     {
       "id": "idea-1417",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror World Mode",
@@ -36099,6 +36099,40 @@
         "src/arena/stamina_syphon.py",
         "src/arena/stamina_syphon.gd",
         "tests/test_stamina_syphon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2112",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Booster Synergy",
+      "description": "Boosters also react to the seasonal theme. For example, during the 'Frost' season, speed boosters leave a temporary slippery ice trail behind the player for 3 seconds, making it harder for enemies to chase.",
+      "allowed_paths": [
+        "src/ai/seasonal_booster_synergy.py",
+        "src/ai/seasonal_booster_synergy.gd",
+        "tests/test_seasonal_booster_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2113",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Abyssal Fog Mutator",
+      "description": "During the 'Abyssal' season, introducing a random event where dense purple fog covers the arena. The fog limits vision radius to 150 units for 15 seconds, encouraging stealth mechanics and ambushes.",
+      "allowed_paths": [
+        "src/ai/abyssal_fog_mutator.py",
+        "src/ai/abyssal_fog_mutator.gd",
+        "tests/test_abyssal_fog_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

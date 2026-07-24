@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1417] Mirror World Mode — *2026-07-24 06:18:17 UTC*
+
+A game mode where the entire arena is horizontally symmetrical. Firing a projectile on the left side of the map simultaneously spawns a 'phantom' projectile on the right side traveling in the mirrored direction. Players have to watch both sides of the arena to dodge effectively.
+
+---
+
 ## [idea-1431] Dynamic Hazard Evolution — *2026-07-24 05:42:52 UTC*
 
 Hazards can interact with the current seasonal theme. For example, a standard trap could freeze over during Frost season or catch fire during Inferno season, adding an extra layer of strategy.
