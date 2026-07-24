@@ -22817,6 +22817,204 @@ class EntanglementMutatorMode(GameMode):
 
             self._init_prev_state(b)
 
+class SpreadingEntanglementMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Spreading Entanglement Mutator"
+        self.description = "Randomly entangles pairs of balls. Entanglement can spread to up to four players if they remain in close proximity."
+        self.prev_state = {}
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+    class BallState:
+        def __init__(self, hp, vx, vy):
+            self.hp = hp
+            self.vx = vx
+            self.vy = vy
+
+    def _init_prev_state(self, b):
+        state = self.BallState(getattr(b, "hp", 100.0), getattr(b, "vx", 0.0), getattr(b, "vy", 0.0))
+        for eff in self.status_effects:
+            setattr(state, eff, getattr(b, eff, 0.0))
+        self.prev_state[b.id] = state
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        for b in alive_balls:
+            b.spreading_entangled_group = [b]
+            b.entanglement_proximity_timer = {}
+
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+            b1.spreading_entangled_group = [b1, b2]
+            b2.spreading_entangled_group = [b1, b2]
+
+        self.prev_state = {}
+        for b in balls:
+            self._init_prev_state(b)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
+
+        for i in range(len(alive_balls)):
+            for j in range(i+1, len(alive_balls)):
+                b1 = alive_balls[i]
+                b2 = alive_balls[j]
+
+                group1 = getattr(b1, "spreading_entangled_group", [b1])
+                group2 = getattr(b2, "spreading_entangled_group", [b2])
+
+                if b2 not in group1:
+                    dist = math.hypot(b1.x - b2.x, b1.y - b2.y)
+                    if dist < 80.0:
+                        if not hasattr(b1, "entanglement_proximity_timer"):
+                            b1.entanglement_proximity_timer = {}
+                        if b2.id not in b1.entanglement_proximity_timer:
+                            b1.entanglement_proximity_timer[b2.id] = 0.0
+
+                        b1.entanglement_proximity_timer[b2.id] += delta
+                        if b1.entanglement_proximity_timer[b2.id] > 1.5:
+                            union_set = set(group1).union(set(group2))
+                            union = list(union_set)
+                            if len(union) <= 4:
+                                for member in union:
+                                    member.spreading_entangled_group = union
+
+                                if hasattr(world, "events"):
+                                    world.events.append({
+                                        'type': 'visual_effect',
+                                        'data': {
+                                            'type': 'entangle_link',
+                                            'x1': getattr(b1, "x", 0),
+                                            'y1': getattr(b1, "y", 0),
+                                            'x2': getattr(b2, "x", 0),
+                                            'y2': getattr(b2, "y", 0)
+                                        }
+                                    })
+                    else:
+                        if hasattr(b1, "entanglement_proximity_timer") and b2.id in b1.entanglement_proximity_timer:
+                            b1.entanglement_proximity_timer[b2.id] = max(0.0, b1.entanglement_proximity_timer[b2.id] - delta)
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+            group = getattr(b, "spreading_entangled_group", [b])
+
+            curr_hp = getattr(b, "hp", 100.0)
+            if curr_hp < state.hp:
+                damage = state.hp - curr_hp
+                for target in group:
+                    if target != b and getattr(target, "alive", False):
+                        if getattr(target, "id", None) not in self.prev_state:
+                            self._init_prev_state(target)
+                        target_state = self.prev_state[target.id]
+
+                        target_curr_hp = getattr(target, "hp", 100.0)
+                        if target_curr_hp > 0:
+                            if hasattr(target, "take_damage"):
+                                target.take_damage(damage)
+                            else:
+                                target.hp = target_curr_hp - damage
+                                if target.hp <= 0:
+                                    target.hp = 0
+                                    target.alive = False
+                                    if hasattr(b, "killer"):
+                                        target.killer = getattr(b, "killer", None)
+
+                            target_state.hp -= damage
+                            if target_state.hp < 0:
+                                target_state.hp = 0
+
+                            if hasattr(world, "events"):
+                                world.events.append({
+                                    'type': 'visual_effect',
+                                    'data': {
+                                        'type': 'entangle_damage',
+                                        'x1': getattr(b, "x", 0),
+                                        'y1': getattr(b, "y", 0),
+                                        'x2': getattr(target, "x", 0),
+                                        'y2': getattr(target, "y", 0)
+                                    }
+                                })
+
+            elif curr_hp > state.hp:
+                healing = curr_hp - state.hp
+                for target in group:
+                    if target != b and getattr(target, "alive", False):
+                        if getattr(target, "id", None) not in self.prev_state:
+                            self._init_prev_state(target)
+                        target_state = self.prev_state[target.id]
+
+                        target_curr_hp = getattr(target, "hp", 100.0)
+                        target_max_hp = getattr(target, "max_hp", 100.0)
+                        if target_curr_hp > 0 and target_curr_hp < target_max_hp:
+                            if hasattr(target, "heal"):
+                                target.heal(healing)
+                            else:
+                                target.hp = min(target_curr_hp + healing, target_max_hp)
+
+                            target_state.hp += healing
+                            if target_state.hp > target_max_hp:
+                                target_state.hp = target_max_hp
+
+                            if hasattr(world, "events"):
+                                world.events.append({
+                                    'type': 'visual_effect',
+                                    'data': {
+                                        'type': 'entangle_heal',
+                                        'x1': getattr(b, "x", 0),
+                                        'y1': getattr(b, "y", 0),
+                                        'x2': getattr(target, "x", 0),
+                                        'y2': getattr(target, "y", 0)
+                                    }
+                                })
+
+            curr_vx = getattr(b, "vx", 0.0)
+            curr_vy = getattr(b, "vy", 0.0)
+            if abs(curr_vx - state.vx) > 5.0 or abs(curr_vy - state.vy) > 5.0:
+                delta_vx = curr_vx - state.vx
+                delta_vy = curr_vy - state.vy
+
+                for target in group:
+                    if target != b and getattr(target, "alive", False):
+                        if getattr(target, "id", None) not in self.prev_state:
+                            self._init_prev_state(target)
+                        target_state = self.prev_state[target.id]
+
+                        target.vx = getattr(target, "vx", 0.0) + delta_vx
+                        target.vy = getattr(target, "vy", 0.0) + delta_vy
+                        target_state.vx += delta_vx
+                        target_state.vy += delta_vy
+
+            for eff in self.status_effects:
+                curr_eff = getattr(b, eff, 0.0)
+                state_eff = getattr(state, eff, 0.0)
+                if curr_eff > state_eff:
+                    delta_eff = curr_eff - state_eff
+                    for target in group:
+                        if target != b and getattr(target, "alive", False):
+                            if getattr(target, "id", None) not in self.prev_state:
+                                self._init_prev_state(target)
+                            target_state = self.prev_state[target.id]
+
+                            setattr(target, eff, getattr(target, eff, 0.0) + delta_eff)
+                            setattr(target_state, eff, getattr(target_state, eff, 0.0) + delta_eff)
+
+            self._init_prev_state(b)
+
+
 class DecreasingSafeZonesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -28733,6 +28931,7 @@ GAME_MODES = {
     "entangled_arena": EntangledArenaMode(),
     "entangled_swap_hazard": EntangledSwapHazardMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
+    "spreading_entanglement_mutator": SpreadingEntanglementMutatorMode(),
     "spiked_walls": SpikedWallsMode(),
     "center_vortex": CenterVortexMode(),
     "center_gravity_well": CenterGravityWellMode(),
