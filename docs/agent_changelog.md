@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1441] Lightning Storm Arena Event — *2026-07-24 05:14:32 UTC*
+
+An arena event where chain lightning periodically strikes the center of the arena, and any entity caught in it becomes a conduit, rapidly spreading smaller, low-damage chain lightnings to anyone nearby for 10 seconds.
+
+---
+
 ## [idea-1444] Tornado Hazard that pulls balls in — *2026-07-24 05:08:06 UTC*
 
 Add a moving tornado hazard that pulls nearby balls towards its center, causing them to group up and take collision damage.

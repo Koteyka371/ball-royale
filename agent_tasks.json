@@ -24682,7 +24682,7 @@
     },
     {
       "id": "idea-1441",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lightning Storm Arena Event",
@@ -35979,6 +35979,41 @@
         "src/ai/chain_reaction_combos.py",
         "src/ai/chain_reaction_combos.gd",
         "tests/test_chain_reaction_combos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2105",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Strike Event",
+      "description": "An arena-wide event where meteors fall from the sky, dealing massive damage to anyone caught in the blast radius.",
+      "allowed_paths": [
+        "src/ai/meteor_strike.py",
+        "src/ai/meteor_strike.gd",
+        "tests/test_meteor_strike.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2106",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quicksand Pit",
+      "description": "A stationary hazard that slowly drags players to its center, heavily reducing their movement speed the closer they get.",
+      "allowed_paths": [
+        "src/ui/quicksand_pit.py",
+        "src/ui/quicksand_pit.gd",
+        "src/ai/quicksand_pit.py",
+        "tests/test_quicksand_pit.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
