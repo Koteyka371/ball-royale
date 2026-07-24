@@ -24512,7 +24512,7 @@
     },
     {
       "id": "idea-1431",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Hazard Evolution",
@@ -36065,6 +36065,40 @@
         "src/ai/season_based_evolution.py",
         "src/ai/season_based_evolution.gd",
         "tests/test_season_based_evolution.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2110",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Whirlpool Pull Mutator",
+      "description": "In water-themed maps, small whirlpools spawn sporadically which draw in nearby entities, forcing them into deep water or hazard zones.",
+      "allowed_paths": [
+        "src/ai/whirlpool_pull_mutator.py",
+        "src/ai/whirlpool_pull_mutator.gd",
+        "tests/test_whirlpool_pull_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2111",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Syphon Hazard",
+      "description": "A field that directly targets a player's stamina reserve instead of health, acting as an anti-mobility trap.",
+      "allowed_paths": [
+        "src/arena/stamina_syphon.py",
+        "src/arena/stamina_syphon.gd",
+        "tests/test_stamina_syphon.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

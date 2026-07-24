@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1431] Dynamic Hazard Evolution — *2026-07-24 05:42:52 UTC*
+
+Hazards can interact with the current seasonal theme. For example, a standard trap could freeze over during Frost season or catch fire during Inferno season, adding an extra layer of strategy.
+
+---
+
 ## [idea-1407] Dynamic Weather Mutator - Flood — *2026-07-24 05:34:12 UTC*
 
 A rare weather event that gradually floods the arena with water. Balls that lack aquatic or floating traits will have their movement speed significantly reduced, and deep areas might cause continuous stamina drain.
