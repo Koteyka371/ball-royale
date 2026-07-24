@@ -22356,6 +22356,21 @@ class GuildVsGuildMode extends GameMode:
 			var GuildManager = load("res://src/system/guild.gd")
 			if GuildManager:
 				var gm = GuildManager.new()
+
+				for guild_name in guilds.keys():
+					if gm.has_method("get_territories") and gm.has_method("get_stronghold_status"):
+						var territories = gm.get_territories(guild_name)
+						if territories.size() > 0:
+							var status = gm.get_stronghold_status(guild_name)
+							if status.has("aura_buffs") and status["aura_buffs"] > 0:
+								for ball in world.balls:
+									var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+									if guilds[guild_name].has(bid):
+										if ball.has_method("set_meta"):
+											ball.set_meta("stronghold_aura", true)
+										elif "stronghold_aura" in ball:
+											ball.stronghold_aura = true
+
 				var bounty_targets = []
 
 				for guild_name in guilds.keys():
@@ -22450,6 +22465,8 @@ class GuildVsGuildMode extends GameMode:
 		if GuildManager:
 			var gm = GuildManager.new()
 			gm.capture_territory(winner_guild, "GvG_Arena")
+			if gm.has_method("grant_stronghold_upgrade"):
+				gm.grant_stronghold_upgrade(winner_guild)
 			var loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
 
 			var loser_defenses = gm.get_hq_defenses(loser)

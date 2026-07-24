@@ -14526,12 +14526,21 @@ class GuildVsGuildMode(GameMode):
             else:
                 cp["progress"] = max(0, cp["progress"] - delta * 5)
 
-        # Apply bounty effects
+        # Apply stronghold aura and bounty effects
         if not hasattr(self, "bounties_checked"):
             self.bounties_checked = True
             try:
                 from system.guild import GuildManager
                 gm = GuildManager()
+
+                for guild_name, members in self.guilds.items():
+                    territories = gm.get_territories(guild_name)
+                    if len(territories) > 0:
+                        status = gm.get_stronghold_status(guild_name)
+                        if status.get("aura_buffs", 0) > 0:
+                            for ball in self.world.balls:
+                                if ball.id in members:
+                                    ball.stronghold_aura = True
 
                 # Fetch all bounties once per match instead of every tick
                 bounty_targets = set()
@@ -14611,6 +14620,7 @@ class GuildVsGuildMode(GameMode):
             from system.guild import GuildManager
             gm = GuildManager()
             gm.capture_territory(winner_guild, "GvG_Arena")
+            gm.grant_stronghold_upgrade(winner_guild)
 
             loser = "GuildB" if winner_guild == "GuildA" else "GuildA"
 
