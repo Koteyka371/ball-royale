@@ -1620,6 +1620,7 @@ class Action:
                     if owner:
                         traits = getattr(owner, "traits", [])
                         if getattr(owner, "has_decoy_mimic_cast", False) or "decoy_mimic_cast" in traits:
+                            # A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.
                             skill = getattr(owner, "active_skill", getattr(owner, "skill", getattr(owner, "SKILL", None)))
                             if skill:
                                 if not hasattr(self.world, "events"):

@@ -3017,6 +3017,7 @@ func execute(strategy: String, delta: float):
                         if "decoy_mimic_cast" in traits: has_mimic = true
 
                     if has_mimic:
+                        # A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.
                         var skill = null
                         if "active_skill" in owner_b: skill = owner_b.active_skill
                         elif "skill" in owner_b: skill = owner_b.skill
