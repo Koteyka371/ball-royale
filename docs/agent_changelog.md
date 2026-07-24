@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1467] Dynamic Weather Events - Solar Flare — *2026-07-24 21:51:36 UTC*
+
+Introduce a random Solar Flare event during Day mode where sunlight beams intensify and all balls' max health is temporarily reduced if they step outside of shade or cover, forcing heavily tactical positioning.
+
+---
+
 ## [idea-1463] Tornado Grenade — *2026-07-24 21:37:10 UTC*
 
 A deployable grenade that creates a temporary localized wind vortex, sucking in nearby balls and causing chaotic physics interactions.

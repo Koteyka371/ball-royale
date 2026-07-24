@@ -25125,7 +25125,7 @@
     },
     {
       "id": "idea-1467",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Weather Events - Solar Flare",
@@ -36525,6 +36525,23 @@
         "src/ai/dynamic_season_changes.py",
         "src/ai/dynamic_season_changes.gd",
         "tests/test_dynamic_season_changes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2137",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Anomaly Modifier",
+      "description": "A random event that spawns a massive black hole in the center of the arena, dragging players towards it over time.",
+      "allowed_paths": [
+        "src/ai/black_hole_anomaly.py",
+        "src/ai/black_hole_anomaly.gd",
+        "tests/test_black_hole_anomaly.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
