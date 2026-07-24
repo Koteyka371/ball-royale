@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1432] Aura Syphon Field Trap — *2026-07-24 04:49:03 UTC*
+
+A trap that creates an aura siphon field. Any enemy caught inside has their positive aura buffs (speed, healing, etc.) constantly transferred to the trap owner, turning enemy team coordination into an advantage for the individual.
+
+---
+
 ## [idea-1385] Weekend Boss Invasions — *2026-07-24 00:46:27 UTC*
 
 On weekends, there is a chance for a massive world boss to invade the standard battle royale map, forcing all remaining balls to temporarily ally against it before resuming their fight.
