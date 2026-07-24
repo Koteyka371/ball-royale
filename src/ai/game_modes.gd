@@ -4274,7 +4274,7 @@ class BattleRoyaleMode extends GameMode:
 							# Mutate based on kind
 							var new_damage = h_damage
 							var new_radius = h_rad
-							if kind in ["spikes", "trap", "proximity_trap", "hidden_trap"]:
+							if kind in ["spikes", "trap", "proximity_trap", "hidden_trap", "grapple_trap"]:
 								new_damage = h_damage * 2.0
 								new_radius = h_rad * 1.5
 							elif kind in ["poison_cloud", "lava", "fire_zone", "poison_nova", "fire_ring"]:

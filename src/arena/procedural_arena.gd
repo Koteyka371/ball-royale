@@ -185,6 +185,8 @@ func generate():
             kind = "shuffle_trap"
         elif r < 0.16:
             kind = "slow_motion_trap"
+        elif r < 0.18:
+            kind = "grapple_trap"
         elif r < 0.25:
             kind = "lava"
         elif r < 0.34:

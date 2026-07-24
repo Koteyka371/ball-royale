@@ -2590,7 +2590,7 @@ class BattleRoyaleMode(GameMode):
                         kind = getattr(h, "kind", "")
 
                         # Make them more lethal/chaotic
-                        if kind in ["spikes", "trap", "proximity_trap", "hidden_trap"]:
+                        if kind in ["spikes", "trap", "proximity_trap", "hidden_trap", "grapple_trap"]:
                             h.damage = getattr(h, "damage", 10.0) * 2.0
                             h.radius = getattr(h, "radius", 20.0) * 1.5
                             if hasattr(h, "target_radius"): h.target_radius = h.radius
