@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1461] Weather Resistant Cosmetics — *2026-07-24 21:34:25 UTC*
+
+Introduce cosmetic items or specific ball types (like 'Ice Elemental') that are completely immune to certain localized weather hazards or even gain buffs from them.
+
+---
+
 ## [idea-1408] Recoil-Powered Evasive Maneuver Skill — *2026-07-24 21:17:13 UTC*
 
 An active skill that fires a rapid burst of high-recoil blanks, generating intense backward thrust to quickly escape dangerous situations without damaging enemies.
