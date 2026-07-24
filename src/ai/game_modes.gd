@@ -36149,6 +36149,313 @@ class EntanglementMutatorMode extends GameMode:
 
 
 
+class SpreadingEntanglementMutatorMode extends GameMode:
+	var prev_state: Dictionary = {}
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+
+	func _init() -> void:
+		name = "Spreading Entanglement Mutator"
+		description = "Randomly entangles pairs of balls. Entanglement can spread to up to four players if they remain in close proximity."
+
+	func _init_prev_state(b) -> void:
+		var state = {
+			"hp": b.hp if "hp" in b else 100.0,
+			"vx": b.vx if "vx" in b else 0.0,
+			"vy": b.vy if "vy" in b else 0.0
+		}
+		for eff in status_effects:
+			if eff in b:
+				state[eff] = b[eff]
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta(eff):
+				state[eff] = b.get_meta(eff)
+			else:
+				state[eff] = 0.0
+		if "id" in b:
+			prev_state[b.id] = state
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var alive_balls = []
+		for b in balls:
+			var b_type = b.ball_type if "ball_type" in b else ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			if str(b_type).to_lower() != "spectator":
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+		for b in alive_balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				b["spreading_entangled_group"] = [b]
+				b["entanglement_proximity_timer"] = {}
+			else:
+				if "spreading_entangled_group" in b: b.spreading_entangled_group = [b]
+				elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("spreading_entangled_group", [b])
+				if "entanglement_proximity_timer" in b: b.entanglement_proximity_timer = {}
+				elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("entanglement_proximity_timer", {})
+
+		for i in range(0, alive_balls.size() - 1, 2):
+			var b1 = alive_balls[i]
+			var b2 = alive_balls[i+1]
+			var g = [b1, b2]
+			if typeof(b1) == TYPE_DICTIONARY: b1["spreading_entangled_group"] = g
+			else:
+				if "spreading_entangled_group" in b1: b1.spreading_entangled_group = g
+				elif b1.has_method("set_meta"): b1.set_meta("spreading_entangled_group", g)
+			if typeof(b2) == TYPE_DICTIONARY: b2["spreading_entangled_group"] = g
+			else:
+				if "spreading_entangled_group" in b2: b2.spreading_entangled_group = g
+				elif b2.has_method("set_meta"): b2.set_meta("spreading_entangled_group", g)
+
+		prev_state.clear()
+		for b in balls:
+			_init_prev_state(b)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if is_alive and str(b_type).to_lower() != "spectator":
+				alive_balls.append(b)
+
+		for i in range(alive_balls.size()):
+			for j in range(i+1, alive_balls.size()):
+				var b1 = alive_balls[i]
+				var b2 = alive_balls[j]
+
+				var group1 = [b1]
+				if typeof(b1) == TYPE_DICTIONARY and b1.has("spreading_entangled_group"): group1 = b1["spreading_entangled_group"]
+				elif typeof(b1) == TYPE_OBJECT:
+					if "spreading_entangled_group" in b1: group1 = b1.spreading_entangled_group
+					elif b1.has_method("has_meta") and b1.has_meta("spreading_entangled_group"): group1 = b1.get_meta("spreading_entangled_group")
+
+				var group2 = [b2]
+				if typeof(b2) == TYPE_DICTIONARY and b2.has("spreading_entangled_group"): group2 = b2["spreading_entangled_group"]
+				elif typeof(b2) == TYPE_OBJECT:
+					if "spreading_entangled_group" in b2: group2 = b2.spreading_entangled_group
+					elif b2.has_method("has_meta") and b2.has_meta("spreading_entangled_group"): group2 = b2.get_meta("spreading_entangled_group")
+
+				if not group1.has(b2):
+					var b1x = b1.x if "x" in b1 else 0.0
+					var b1y = b1.y if "y" in b1 else 0.0
+					var b2x = b2.x if "x" in b2 else 0.0
+					var b2y = b2.y if "y" in b2 else 0.0
+
+					var dist = sqrt(pow(b1x - b2x, 2) + pow(b1y - b2y, 2))
+					var b2_id = b2.id if "id" in b2 else null
+
+					var timers1 = {}
+					if typeof(b1) == TYPE_DICTIONARY and b1.has("entanglement_proximity_timer"): timers1 = b1["entanglement_proximity_timer"]
+					elif typeof(b1) == TYPE_OBJECT:
+						if "entanglement_proximity_timer" in b1: timers1 = b1.entanglement_proximity_timer
+						elif b1.has_method("has_meta") and b1.has_meta("entanglement_proximity_timer"): timers1 = b1.get_meta("entanglement_proximity_timer")
+
+					if dist < 80.0 and b2_id != null:
+						if not timers1.has(b2_id):
+							timers1[b2_id] = 0.0
+
+						timers1[b2_id] += delta
+
+						if timers1[b2_id] > 1.5:
+							var union_dict = {}
+							for mem in group1:
+								if "id" in mem: union_dict[mem.id] = mem
+							for mem in group2:
+								if "id" in mem: union_dict[mem.id] = mem
+
+							var union = union_dict.values()
+							if union.size() <= 4:
+								for member in union:
+									if typeof(member) == TYPE_DICTIONARY:
+										member["spreading_entangled_group"] = union
+									elif typeof(member) == TYPE_OBJECT:
+										if "spreading_entangled_group" in member: member.spreading_entangled_group = union
+										elif member.has_method("set_meta"): member.set_meta("spreading_entangled_group", union)
+
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("visual_effect", {"type": "entangle_link", "x1": b1x, "y1": b1y, "x2": b2x, "y2": b2y})
+					else:
+						if b2_id != null and timers1.has(b2_id):
+							timers1[b2_id] = max(0.0, timers1[b2_id] - delta)
+
+					if typeof(b1) == TYPE_DICTIONARY:
+						b1["entanglement_proximity_timer"] = timers1
+					elif typeof(b1) == TYPE_OBJECT:
+						if "entanglement_proximity_timer" in b1: b1.entanglement_proximity_timer = timers1
+						elif b1.has_method("set_meta"): b1.set_meta("entanglement_proximity_timer", timers1)
+
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var b_id = b.id if "id" in b else null
+			if b_id == null:
+				continue
+
+			if not prev_state.has(b_id):
+				_init_prev_state(b)
+
+			var state = prev_state[b_id]
+
+			var group = [b]
+			if typeof(b) == TYPE_DICTIONARY and b.has("spreading_entangled_group"): group = b["spreading_entangled_group"]
+			elif typeof(b) == TYPE_OBJECT:
+				if "spreading_entangled_group" in b: group = b.spreading_entangled_group
+				elif b.has_method("has_meta") and b.has_meta("spreading_entangled_group"): group = b.get_meta("spreading_entangled_group")
+
+			var curr_hp = b.hp if "hp" in b else 100.0
+			if curr_hp < state.hp:
+				var damage = state.hp - curr_hp
+				for target in group:
+					if target != b:
+						var t_alive = false
+						if typeof(target) == TYPE_DICTIONARY: t_alive = target.get("alive", false)
+						else: t_alive = target.alive if "alive" in target else false
+
+						if t_alive:
+							var t_id = target.id if "id" in target else null
+							if t_id != null:
+								if not prev_state.has(t_id):
+									_init_prev_state(target)
+								var target_state = prev_state[t_id]
+
+								var target_curr_hp = target.hp if "hp" in target else 100.0
+								if target_curr_hp > 0:
+									if typeof(target) == TYPE_OBJECT and target.has_method("take_damage"):
+										target.take_damage(damage)
+									else:
+										target.hp = target_curr_hp - damage
+										if target.hp <= 0:
+											target.hp = 0
+											target.alive = false
+											if "killer" in b: target.killer = b.killer
+
+									target_state.hp -= damage
+									if target_state.hp < 0:
+										target_state.hp = 0
+
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+										var bx = b.x if "x" in b else 0
+										var by = b.y if "y" in b else 0
+										var tx = target.x if "x" in target else 0
+										var ty = target.y if "y" in target else 0
+										world.add_event("visual_effect", {"type": "entangle_damage", "x1": bx, "y1": by, "x2": tx, "y2": ty})
+
+			elif curr_hp > state.hp:
+				var healing = curr_hp - state.hp
+				for target in group:
+					if target != b:
+						var t_alive = false
+						if typeof(target) == TYPE_DICTIONARY: t_alive = target.get("alive", false)
+						else: t_alive = target.alive if "alive" in target else false
+
+						if t_alive:
+							var t_id = target.id if "id" in target else null
+							if t_id != null:
+								if not prev_state.has(t_id):
+									_init_prev_state(target)
+								var target_state = prev_state[t_id]
+
+								var target_curr_hp = target.hp if "hp" in target else 100.0
+								var target_max_hp = target.max_hp if "max_hp" in target else 100.0
+								if target_curr_hp > 0 and target_curr_hp < target_max_hp:
+									if typeof(target) == TYPE_OBJECT and target.has_method("heal"):
+										target.heal(healing)
+									else:
+										target.hp = min(target_curr_hp + healing, target_max_hp)
+
+									target_state.hp += healing
+									if target_state.hp > target_max_hp:
+										target_state.hp = target_max_hp
+
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+										var bx = b.x if "x" in b else 0
+										var by = b.y if "y" in b else 0
+										var tx = target.x if "x" in target else 0
+										var ty = target.y if "y" in target else 0
+										world.add_event("visual_effect", {"type": "entangle_heal", "x1": bx, "y1": by, "x2": tx, "y2": ty})
+
+			var curr_vx = b.vx if "vx" in b else 0.0
+			var curr_vy = b.vy if "vy" in b else 0.0
+			if abs(curr_vx - state.vx) > 5.0 or abs(curr_vy - state.vy) > 5.0:
+				var delta_vx = curr_vx - state.vx
+				var delta_vy = curr_vy - state.vy
+
+				for target in group:
+					if target != b:
+						var t_alive = false
+						if typeof(target) == TYPE_DICTIONARY: t_alive = target.get("alive", false)
+						else: t_alive = target.alive if "alive" in target else false
+
+						if t_alive:
+							var t_id = target.id if "id" in target else null
+							if t_id != null:
+								if not prev_state.has(t_id):
+									_init_prev_state(target)
+								var target_state = prev_state[t_id]
+
+								var target_vx = target.vx if "vx" in target else 0.0
+								var target_vy = target.vy if "vy" in target else 0.0
+								target.vx = target_vx + delta_vx
+								target.vy = target_vy + delta_vy
+
+								target_state.vx += delta_vx
+								target_state.vy += delta_vy
+
+			for eff in status_effects:
+				var curr_eff = 0.0
+				if eff in b: curr_eff = b[eff]
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta(eff): curr_eff = b.get_meta(eff)
+
+				var state_eff = state[eff] if state.has(eff) else 0.0
+				if curr_eff > state_eff:
+					var delta_eff = curr_eff - state_eff
+
+					for target in group:
+						if target != b:
+							var t_alive = false
+							if typeof(target) == TYPE_DICTIONARY: t_alive = target.get("alive", false)
+							else: t_alive = target.alive if "alive" in target else false
+
+							if t_alive:
+								var t_id = target.id if "id" in target else null
+								if t_id != null:
+									if not prev_state.has(t_id):
+										_init_prev_state(target)
+									var target_state = prev_state[t_id]
+
+									var target_eff = 0.0
+									if eff in target: target_eff = target[eff]
+									elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta(eff): target_eff = target.get_meta(eff)
+
+									if eff in target: target[eff] = target_eff + delta_eff
+									elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta(eff, target_eff + delta_eff)
+
+									target_state[eff] += delta_eff
+
+			_init_prev_state(b)
+
+
 class DecreasingSafeZonesMode extends GameMode:
 	var round_timer: float = 15.0
 	var max_round_timer: float = 15.0
@@ -46096,6 +46403,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"entangled_arena": EntangledArenaMode.new(),
 	"entangled_swap_hazard": EntangledSwapHazardMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
+	"spreading_entanglement_mutator": SpreadingEntanglementMutatorMode.new(),
 	"freeze_tag": FreezeTagMode.new(),
 	"thermal_freeze_tag": ThermalFreezeTagMode.new(),
 	"spiked_walls": SpikedWallsMode.new(),
