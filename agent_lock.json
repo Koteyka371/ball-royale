@@ -99,9 +99,9 @@
     "agent-12": {
       "name": "Jules Worker 12",
       "area": "ai-core",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1391",
+      "status": "working",
+      "started_at": "2026-07-24T01:03:33.403536+00:00",
       "cycles_today": 0
     },
     "agent-13": {
