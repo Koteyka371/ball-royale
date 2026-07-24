@@ -10177,6 +10177,19 @@ func execute(strategy: String, delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("chain_lightning_timer", cl_timer)
 
+    var clo_timer = 0.0
+    if "chain_lightning_overload_timer" in self.ball:
+        clo_timer = self.ball.chain_lightning_overload_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("chain_lightning_overload_timer"):
+        clo_timer = self.ball.get_meta("chain_lightning_overload_timer")
+    if clo_timer > 0.0:
+        clo_timer -= delta
+        if clo_timer < 0.0: clo_timer = 0.0
+        if "chain_lightning_overload_timer" in self.ball:
+            self.ball.chain_lightning_overload_timer = clo_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("chain_lightning_overload_timer", clo_timer)
+
     var cl_col_cd = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "_cl_collision_cd" in self.ball:
         cl_col_cd = self.ball._cl_collision_cd
@@ -28377,6 +28390,22 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "chain_lightning_overload_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("chain_lightning_overload_timer", 15.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["chain_lightning_overload_timer"] = 15.0
+                else:
+                    self.ball.chain_lightning_overload_timer = 15.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "juggernaut_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("juggernaut_booster_timer", 15.0)
@@ -36042,7 +36071,20 @@ func _resolve_collisions() -> bool:
 
                     var bounced_enemies = [other]
                     var current_pos = other
-                    for _i in range(4):
+                    var overload_active = false
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("chain_lightning_overload_timer") and float(self.ball["chain_lightning_overload_timer"]) > 0:
+                        overload_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and "chain_lightning_overload_timer" in self.ball and float(self.ball.chain_lightning_overload_timer) > 0:
+                        overload_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("chain_lightning_overload_timer") and float(self.ball.get_meta("chain_lightning_overload_timer")) > 0:
+                        overload_active = true
+
+                    var jumps = 4
+                    if overload_active:
+                        jumps += 2
+                        chain_damage *= 1.5
+
+                    for _i in range(jumps):
                         var best_dist = 40000.0 # 200 squared
                         var next_target = null
                         for e in nearby:

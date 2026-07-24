@@ -28,5 +28,6 @@
     "last_login_date": "",
     "guild_name": "",
     "clan_name": "",
-    "enforcers": {}
+    "enforcers": {},
+    "scratchcards": 0
 }

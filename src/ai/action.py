@@ -4833,6 +4833,11 @@ class Action:
                                 self.world.events.append(('visual_effect', {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y, 'tx': nearest.x, 'ty': nearest.y}))
                     self.ball.chain_infection_tick_timer = tick
 
+        if getattr(self.ball, "chain_lightning_overload_timer", 0.0) > 0:
+            self.ball.chain_lightning_overload_timer -= delta
+            if self.ball.chain_lightning_overload_timer <= 0:
+                self.ball.chain_lightning_overload_timer = 0.0
+
         if getattr(self.ball, "chain_lightning_timer", 0.0) > 0:
             self.ball.chain_lightning_timer -= delta
             if self.ball.chain_lightning_timer <= 0:
@@ -14623,6 +14628,12 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "chain_lightning_overload_booster":
+                    self.ball.chain_lightning_overload_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "juggernaut_booster":
                     self.ball.juggernaut_booster_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
@@ -18573,7 +18584,11 @@ class Action:
                         bounced_enemies = {other}
                         current_pos = other
                         # Chain up to 3 times (meaning 3 additional jumps)
-                        for _ in range(4):
+                        jumps = 4
+                        if getattr(self.ball, "chain_lightning_overload_timer", 0.0) > 0.0:
+                            jumps += 2
+                            chain_damage *= 1.5
+                        for _ in range(jumps):
                             # find next nearest enemy within medium radius (e.g., 200)
                             best_dist = float("inf")
                             next_target = None
