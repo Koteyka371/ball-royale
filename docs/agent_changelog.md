@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1458] Reflect shield upgrade — *2026-07-24 20:43:31 UTC*
+
+Allow upgrading reflect shield duration via currency.
+
+---
+
 ## [idea-1413] Camouflage Net — *2026-07-24 20:30:06 UTC*
 
 An interactable item that can be placed over a sniper nest. It hides the visual indicator that normally marks the nest's occupant as a high-priority target, allowing for stealthy ambushes until the camouflage is blown away by explosives or wind.
