@@ -11507,6 +11507,117 @@ class BlackHoleMode extends GameMode:
 		return null
 
 
+
+class BlackHoleSafeZoneMode extends GameMode:
+	var black_hole_radius = 50.0
+	var safe_zone_radius = 500.0
+	var shrink_rate = 10.0
+	var outside_damage_per_second = 10.0
+
+	func _init() -> void:
+		name = "Black Hole Safe Zone"
+		description = "A safe zone slowly shrinks while a black hole grows in the center, pulling everyone in!"
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world:
+				kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world:
+				current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
+
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		black_hole_radius += 2.0 * delta
+		safe_zone_radius -= shrink_rate * delta
+		if safe_zone_radius < black_hole_radius:
+			safe_zone_radius = black_hole_radius
+
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+				continue
+
+			if b.alive and b.ball_type != "spectator":
+				var dx = center_x - b.x
+				var dy = center_y - b.y
+				var dist = sqrt(dx * dx + dy * dy)
+
+				if dist > safe_zone_radius:
+					if "hp" in b:
+						b.hp -= outside_damage_per_second * delta
+						if b.hp <= 0:
+							b.alive = false
+							continue
+
+				if dist < black_hole_radius:
+					if "hp" in b:
+						b.hp = 0
+					b.alive = false
+				elif dist > 0:
+					var pull_strength = 20000.0 / (dist * dist)
+					var radius_multiplier = black_hole_radius / 50.0
+					pull_strength *= radius_multiplier
+					pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+
+					var grav_rev = false
+					if "gravity_reversal_active" in world:
+						grav_rev = world.gravity_reversal_active
+					elif world.has_method("get") and world.get("gravity_reversal_active") != null:
+						grav_rev = world.get("gravity_reversal_active")
+					if grav_rev:
+						pull_strength = -pull_strength
+
+					b.x += (dx / dist) * pull_strength * delta
+					b.y += (dy / dist) * pull_strength * delta
+
+	func check_winner(world, balls: Array):
+		var alive = []
+		for b in balls:
+			if b.alive and b.ball_type != "spectator" and b.ball_type != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var teams_alive = {}
+		for b in alive:
+			if "team" in b:
+				teams_alive[b.team] = true
+			else:
+				teams_alive[b.ball_type] = true
+
+		if teams_alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return teams_alive.keys()[0]
+
+		if alive.size() == 1:
+			if has_method("_award_skill_points"): call("_award_skill_points")
+			return alive[0].ball_type
+
+		return null
+
 class WeatherChaosMode extends GameMode:
 	var weather: String = "clear"
 	var weather_timer: float = 0.0
@@ -47280,6 +47391,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"solar_eclipse_event": SolarEclipseEventMode.new(),
 	"domination": DominationMode.new(),
 	"black_hole": BlackHoleMode.new(),
+	"black_hole_safe_zone": BlackHoleSafeZoneMode.new(),
 	"sweeping_black_hole": SweepingBlackHoleMode.new(),
 	"gravity_well": GravityWellMode.new(),
 	"pulsing_gravity_well": PulsingGravityWellMode.new(),

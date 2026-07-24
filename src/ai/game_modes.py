@@ -7746,6 +7746,90 @@ class BlackHoleMode(GameMode):
 
         return None
 
+
+class BlackHoleSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole Safe Zone"
+        self.description = "A safe zone slowly shrinks while a black hole grows in the center, pulling everyone in!"
+        self.black_hole_radius = 50.0
+        self.safe_zone_radius = 500.0
+        self.shrink_rate = 10.0
+        self.outside_damage_per_second = 10.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+
+        import math
+        arena_width = 1000
+        arena_height = 1000
+        if hasattr(world, "arena") and world.arena:
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        # The black hole slowly grows over time
+        self.black_hole_radius += 2.0 * delta
+
+        # The safe zone slowly shrinks over time
+        self.safe_zone_radius -= self.shrink_rate * delta
+        if self.safe_zone_radius < self.black_hole_radius:
+            self.safe_zone_radius = self.black_hole_radius
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death += delta
+                continue
+
+            # Check safe zone damage
+            dx = center_x - b.x
+            dy = center_y - b.y
+            dist = math.hypot(dx, dy)
+
+            if dist > self.safe_zone_radius:
+                b.hp -= self.outside_damage_per_second * delta
+                if b.hp <= 0:
+                    b.alive = False
+                    continue
+
+            # Check black hole pull and death
+            if dist < self.black_hole_radius:
+                b.hp = 0
+                b.alive = False
+            elif dist > 0:
+                pull_strength = 20000.0 / (dist * dist)
+                radius_multiplier = self.black_hole_radius / 50.0
+                pull_strength *= radius_multiplier
+                pull_strength = min(pull_strength, 150.0 * radius_multiplier)
+
+                if getattr(world, 'gravity_reversal_active', False):
+                    pull_strength = -pull_strength
+
+                b.x += (dx / dist) * pull_strength * delta
+                b.y += (dy / dist) * pull_strength * delta
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
+        if len(teams_alive) == 1:
+            return list(teams_alive)[0]
+
+        if len(alive) == 1:
+            return alive[0].ball_type
+
+        return None
+
 class WeatherChaosMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -37961,3 +38045,4 @@ class HugeTornadosMode(GameMode):
 
 GAME_MODES['huge_tornados'] = HugeTornadosMode()
 GAME_MODES['black_hole_weather'] = BlackHoleWeatherMode()
+GAME_MODES['black_hole_safe_zone'] = BlackHoleSafeZoneMode()
