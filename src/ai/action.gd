@@ -6324,13 +6324,21 @@ func execute(strategy: String, delta: float):
                                 if other.has("is_bounty_target") and other["is_bounty_target"]: is_target = true
 
                             if is_target:
-                                if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
-                                    var ox = float(other.x) if typeof(other) == TYPE_OBJECT else float(other.get("x", 0.0))
-                                    var oy = float(other.y) if typeof(other) == TYPE_OBJECT else float(other.get("y", 0.0))
-                                    var bx = float(self.ball.x) if typeof(self.ball) == TYPE_OBJECT else float(self.ball.get("x", 0.0))
-                                    var by = float(self.ball.y) if typeof(self.ball) == TYPE_OBJECT else float(self.ball.get("y", 0.0))
-                                    self.world.events.append({"type": "bounty_compass", "data": {"target_x": ox, "target_y": oy, "owner_id": self_id}})
-                                    self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": bx, "y": by, "tx": ox, "ty": oy, "color": "orange"}})
+                                var is_disguised = false
+                                if typeof(self.ball) == TYPE_OBJECT:
+                                    if "is_disguised" in self.ball and self.ball.is_disguised: is_disguised = true
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("is_disguised") and self.ball.get_meta("is_disguised"): is_disguised = true
+                                else:
+                                    if self.ball.has("is_disguised") and self.ball["is_disguised"]: is_disguised = true
+
+                                if not is_disguised:
+                                    if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                                        var ox = float(other.x) if typeof(other) == TYPE_OBJECT else float(other.get("x", 0.0))
+                                        var oy = float(other.y) if typeof(other) == TYPE_OBJECT else float(other.get("y", 0.0))
+                                        var bx = float(self.ball.x) if typeof(self.ball) == TYPE_OBJECT else float(self.ball.get("x", 0.0))
+                                        var by = float(self.ball.y) if typeof(self.ball) == TYPE_OBJECT else float(self.ball.get("y", 0.0))
+                                        self.world.events.append({"type": "bounty_compass", "data": {"target_x": ox, "target_y": oy, "owner_id": self_id}})
+                                        self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": bx, "y": by, "tx": ox, "ty": oy, "color": "orange"}})
 
     # Nemesis Reveal Passive
     var ks_timer = 0.0
