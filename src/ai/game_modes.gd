@@ -58185,3 +58185,223 @@ class AuraBombEventMode extends GameMode:
 			else:
 				for e in new_explosions:
 					if "hazards" in world.arena: world.arena.hazards.append(e)
+
+class HugeTornadosMode extends GameMode:
+	var max_tornados: int = 3
+
+	func _init() -> void:
+		name = "Huge Tornados"
+		description = "The arena has multiple huge tornados slowly moving around, constantly sucking players in and dealing damage."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not ("arena" in world) or world.arena == null:
+			return
+		if typeof(world.arena) == TYPE_DICTIONARY and not world.arena.has("hazards"):
+			world.arena.hazards = []
+		elif typeof(world.arena) == TYPE_OBJECT and not ("hazards" in world.arena):
+			return
+
+		for i in range(max_tornados):
+			_spawn_tornado(world)
+
+	func _spawn_tornado(world) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if world.arena.has("width"): arena_width = float(world.arena.width)
+			if world.arena.has("height"): arena_height = float(world.arena.height)
+		elif typeof(world.arena) == TYPE_OBJECT:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var tx = randf_range(200.0, arena_width - 200.0)
+		var ty = randf_range(200.0, arena_height - 200.0)
+
+		var HazardClass = null
+		if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+			var script = load("res://src/arena/procedural_arena.gd")
+			if script != null:
+				for k in script.get_script_constant_map().keys():
+					if k == "Hazard":
+						HazardClass = script.Hazard
+						break
+
+		var hazards_list = []
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards_list = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards_list = world.arena.hazards
+
+		var t_id = hazards_list.size() + (randi() % 10000 + 10000)
+
+		var tornado = null
+		if HazardClass != null and HazardClass.has_method("new"):
+			tornado = HazardClass.new(t_id, tx, ty, 250.0, "huge_tornado", 25.0)
+			if typeof(tornado) == TYPE_OBJECT and tornado.has_method("set_meta"):
+				tornado.set_meta("duration", 9999.0)
+				tornado.set_meta("vx", randf_range(-50.0, 50.0))
+				tornado.set_meta("vy", randf_range(-50.0, 50.0))
+		else:
+			tornado = {
+				"id": t_id,
+				"x": tx,
+				"y": ty,
+				"radius": 250.0,
+				"kind": "huge_tornado",
+				"damage": 25.0,
+				"duration": 9999.0,
+				"vx": randf_range(-50.0, 50.0),
+				"vy": randf_range(-50.0, 50.0),
+				"active": true
+			}
+
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			world.arena.hazards.append(tornado)
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			world.arena.hazards.append(tornado)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not ("arena" in world) or world.arena == null:
+			return
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if world.arena.has("width"): arena_width = float(world.arena.width)
+			if world.arena.has("height"): arena_height = float(world.arena.height)
+		elif typeof(world.arena) == TYPE_OBJECT:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var hazards_list = []
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards_list = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards_list = world.arena.hazards
+
+		for h in hazards_list:
+			var h_kind = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+
+			if h_kind == "huge_tornado":
+				var h_x = 0.0
+				var h_y = 0.0
+				var h_vx = 0.0
+				var h_vy = 0.0
+				var h_r = 250.0
+				var h_dmg = 25.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.has("x"): h_x = float(h.x)
+					if h.has("y"): h_y = float(h.y)
+					if h.has("vx"): h_vx = float(h.vx)
+					if h.has("vy"): h_vy = float(h.vy)
+					if h.has("radius"): h_r = float(h.radius)
+					if h.has("damage"): h_dmg = float(h.damage)
+				elif typeof(h) == TYPE_OBJECT:
+					if "x" in h: h_x = float(h.x)
+					if "y" in h: h_y = float(h.y)
+					if "vx" in h: h_vx = float(h.vx)
+					elif h.has_method("get_meta") and h.has_meta("vx"): h_vx = float(h.get_meta("vx"))
+					if "vy" in h: h_vy = float(h.vy)
+					elif h.has_method("get_meta") and h.has_meta("vy"): h_vy = float(h.get_meta("vy"))
+					if "radius" in h: h_r = float(h.radius)
+					if "damage" in h: h_dmg = float(h.damage)
+
+				h_x += h_vx * delta
+				h_y += h_vy * delta
+
+				if h_x < h_r:
+					h_x = h_r
+					h_vx = abs(h_vx)
+				elif h_x > arena_width - h_r:
+					h_x = arena_width - h_r
+					h_vx = -abs(h_vx)
+
+				if h_y < h_r:
+					h_y = h_r
+					h_vy = abs(h_vy)
+				elif h_y > arena_height - h_r:
+					h_y = arena_height - h_r
+					h_vy = -abs(h_vy)
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h.x = h_x
+					h.y = h_y
+					h.vx = h_vx
+					h.vy = h_vy
+				elif typeof(h) == TYPE_OBJECT:
+					if "x" in h: h.x = h_x
+					if "y" in h: h.y = h_y
+					if "vx" in h: h.vx = h_vx
+					elif h.has_method("set_meta"): h.set_meta("vx", h_vx)
+					if "vy" in h: h.vy = h_vy
+					elif h.has_method("set_meta"): h.set_meta("vy", h_vy)
+
+				for b in balls:
+					var b_alive = false
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("alive"): b_alive = b.alive
+						if b.has("ball_type"): b_type = str(b.ball_type)
+					elif typeof(b) == TYPE_OBJECT:
+						if "alive" in b: b_alive = b.alive
+						if "ball_type" in b: b_type = str(b.ball_type)
+
+					if b_alive and b_type != "spectator":
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("x"): bx = float(b.x)
+							if b.has("y"): by = float(b.y)
+						elif typeof(b) == TYPE_OBJECT:
+							if "x" in b: bx = float(b.x)
+							if "y" in b: by = float(b.y)
+
+						var dx = h_x - bx
+						var dy = h_y - by
+						var dist_sq = dx * dx + dy * dy
+						var pull_radius = 500.0
+
+						if dist_sq < pull_radius * pull_radius and dist_sq > 0.0001:
+							var dist = sqrt(dist_sq)
+							var nx = dx / dist
+							var ny = dy / dist
+							var pull_strength = (1.0 - (dist / pull_radius)) * 400.0 * delta
+
+							bx += nx * pull_strength
+							by += ny * pull_strength
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b.x = bx
+								b.y = by
+								if b.has("vx"): b.vx += nx * pull_strength * 10
+								if b.has("vy"): b.vy += ny * pull_strength * 10
+							elif typeof(b) == TYPE_OBJECT:
+								if "x" in b: b.x = bx
+								if "y" in b: b.y = by
+								if "vx" in b: b.vx += nx * pull_strength * 10
+								if "vy" in b: b.vy += ny * pull_strength * 10
+
+							if dist < h_r * 0.5:
+								var damage = h_dmg * delta
+								if typeof(b) == TYPE_DICTIONARY:
+									if b.has("hp"):
+										b.hp -= damage
+										if b.hp <= 0:
+											b.hp = 0
+											b.alive = false
+								elif typeof(b) == TYPE_OBJECT:
+									if b.has_method("take_damage"):
+										b.take_damage(damage)
+									elif "hp" in b:
+										b.hp -= damage
+										if b.hp <= 0:
+											b.hp = 0
+											b.alive = false
+
+GAME_MODES['huge_tornados'] = HugeTornadosMode.new()
