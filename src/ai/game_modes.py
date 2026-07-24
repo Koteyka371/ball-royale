@@ -14391,18 +14391,20 @@ class DayNightMode(GameMode):
             traits = getattr(b, "traits", [])
 
             # Apply Light trait during the day
-            if not is_night and "light" in traits:
+            has_light = "light" in traits or "solar" in traits or "radiant" in traits or "solar" in getattr(b, "ball_type", "").lower() or "radiant" in getattr(b, "ball_type", "").lower()
+            if not is_night and has_light:
                 b.speed = getattr(b, "base_speed", 100.0) * 1.3
                 b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 1.5
-            elif "light" in traits:
+            elif has_light:
                 b.speed = getattr(b, "base_speed", 100.0)
                 b.perception_radius = getattr(b, "base_perception_radius", 150.0)
 
             # Apply Shadow trait during the night
-            if is_night and "shadow" in traits:
+            has_shadow = "shadow" in traits or "vampire" in traits or "stealth" in traits or "vampire" in getattr(b, "ball_type", "").lower() or "stealth" in getattr(b, "ball_type", "").lower()
+            if is_night and has_shadow:
                 b.stealth = True
                 b.crit_chance = getattr(b, "base_crit_chance", 0.0) + 0.25
-            elif "shadow" in traits:
+            elif has_shadow:
                 b.stealth = False
                 b.crit_chance = getattr(b, "base_crit_chance", 0.0)
 
