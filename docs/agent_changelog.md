@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1401] Bounty Hunter Disguise Skill — *2026-07-24 11:30:44 UTC*
+
+An active skill for the Bounty Hunter that temporarily hides their bounty target indicator from the enemy, while disguising themselves as a normal tier ball for 5 seconds to set up surprise attacks.
+
+---
+
 ## [idea-1395] Introduce Elemental Synergy Combos — *2026-07-24 09:44:12 UTC*
 
 When units with 'Fire' and 'Earth' traits interact, they could create a temporary 'Magma' field that slows and damages enemies. This encourages team compositions based on elemental synergies rather than just raw stats.
