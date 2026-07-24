@@ -306,6 +306,33 @@ class GuildManager:
             return self.data["guilds"][guild_name]["buffs"]
         return {"bonus_hp": 0, "bonus_speed": 0, "bonus_damage": 0}
 
+    def grant_stronghold_upgrade(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            guild["stronghold_upgrade_tokens"] = guild.get("stronghold_upgrade_tokens", 0) + 1
+            self.save()
+            return True
+        return False
+
+    def apply_stronghold_upgrade(self, guild_name, upgrade_type):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            tokens = guild.get("stronghold_upgrade_tokens", 0)
+            if tokens > 0 and upgrade_type in ["defenses", "traps", "aura_buffs"]:
+                guild["stronghold_upgrade_tokens"] -= 1
+                upgrades = guild.setdefault("stronghold_upgrades", {"defenses": 0, "traps": 0, "aura_buffs": 0})
+                upgrades[upgrade_type] = upgrades.get(upgrade_type, 0) + 1
+                self.save()
+                return True
+        return False
+
+    def get_stronghold_status(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            upgrades = guild.get("stronghold_upgrades", {"defenses": 0, "traps": 0, "aura_buffs": 0})
+            return upgrades
+        return {"defenses": 0, "traps": 0, "aura_buffs": 0}
+
     def record_gvg_match(self, guild1_name, guild2_name, winner_name):
         if guild1_name in self.data["guilds"] and guild2_name in self.data["guilds"]:
             if winner_name == guild1_name:

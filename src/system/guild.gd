@@ -411,6 +411,42 @@ func get_guild_buffs(guild_name: String) -> Dictionary:
         return data["guilds"][guild_name]["buffs"]
     return {"bonus_hp": 0, "bonus_speed": 0, "bonus_damage": 0}
 
+func grant_stronghold_upgrade(guild_name: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("stronghold_upgrade_tokens"):
+            guild["stronghold_upgrade_tokens"] += 1
+        else:
+            guild["stronghold_upgrade_tokens"] = 1
+        save_guilds()
+        return true
+    return false
+
+func apply_stronghold_upgrade(guild_name: String, upgrade_type: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var tokens = 0
+        if guild.has("stronghold_upgrade_tokens"):
+            tokens = guild["stronghold_upgrade_tokens"]
+        if tokens > 0 and (upgrade_type == "defenses" or upgrade_type == "traps" or upgrade_type == "aura_buffs"):
+            guild["stronghold_upgrade_tokens"] -= 1
+            if not guild.has("stronghold_upgrades"):
+                guild["stronghold_upgrades"] = {"defenses": 0, "traps": 0, "aura_buffs": 0}
+            if guild["stronghold_upgrades"].has(upgrade_type):
+                guild["stronghold_upgrades"][upgrade_type] += 1
+            else:
+                guild["stronghold_upgrades"][upgrade_type] = 1
+            save_guilds()
+            return true
+    return false
+
+func get_stronghold_status(guild_name: String) -> Dictionary:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("stronghold_upgrades"):
+            return guild["stronghold_upgrades"]
+    return {"defenses": 0, "traps": 0, "aura_buffs": 0}
+
 func record_gvg_match(guild1_name: String, guild2_name: String, winner_name: String) -> bool:
     if data["guilds"].has(guild1_name) and data["guilds"].has(guild2_name):
         if winner_name == guild1_name:
