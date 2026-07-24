@@ -27914,7 +27914,7 @@ class BlackMarketMode extends GameMode:
 						bcurrency -= 5
 						bpcooldown = 5.0
 
-						var upgrades = ["max_hp", "speed", "damage", "radius"]
+						var upgrades = ["max_hp", "speed", "damage", "radius", "reflect_shield_duration"]
 						var upgrade_type = upgrades[randi() % upgrades.size()]
 
 						if typeof(b) == TYPE_DICTIONARY:
@@ -27935,6 +27935,9 @@ class BlackMarketMode extends GameMode:
 								if not b.has("base_radius"): b["base_radius"] = float(b.get("radius", 10.0))
 								b["base_radius"] = max(5.0, b["base_radius"] - 2.0)
 								b["radius"] = b["base_radius"]
+							elif upgrade_type == "reflect_shield_duration":
+								if not b.has("bonus_reflect_shield_duration"): b["bonus_reflect_shield_duration"] = 0.0
+								b["bonus_reflect_shield_duration"] += 1.0
 						else:
 							if upgrade_type == "max_hp":
 								var cur_base_mhp = b.get_meta("base_max_hp") if b.has_meta("base_max_hp") else float(b.get("max_hp"))
@@ -27953,6 +27956,10 @@ class BlackMarketMode extends GameMode:
 								var cur_base_rad = b.get_meta("base_radius") if b.has_meta("base_radius") else float(b.get("radius"))
 								b.set_meta("base_radius", max(5.0, cur_base_rad - 2.0))
 								b.set("radius", max(5.0, cur_base_rad - 2.0))
+							elif upgrade_type == "reflect_shield_duration":
+								var brsd = b.get_meta("bonus_reflect_shield_duration") if b.has_meta("bonus_reflect_shield_duration") else (b.get("bonus_reflect_shield_duration") if "bonus_reflect_shield_duration" in b else 0.0)
+								b.set_meta("bonus_reflect_shield_duration", brsd + 1.0)
+								if "bonus_reflect_shield_duration" in b: b.set("bonus_reflect_shield_duration", brsd + 1.0)
 
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
@@ -45834,7 +45841,7 @@ class CurrencyBurdenMode extends GameMode:
 						else:
 							b.set_meta("currency", 0)
 
-						var upgrade_types = ["max_hp", "base_speed", "base_damage"]
+						var upgrade_types = ["max_hp", "base_speed", "base_damage", "reflect_shield_duration"]
 						var upgrade_type = upgrade_types[randi() % upgrade_types.size()]
 
 						if upgrade_type == "max_hp":
@@ -45864,6 +45871,14 @@ class CurrencyBurdenMode extends GameMode:
 								var bbd = b.get_meta("base_damage") + 1.0 * buff_amount
 								b.set_meta("base_damage", bbd)
 								b.set("damage", bbd)
+						elif upgrade_type == "reflect_shield_duration":
+							if typeof(b) == TYPE_DICTIONARY:
+								if not b.has("bonus_reflect_shield_duration"): b["bonus_reflect_shield_duration"] = 0.0
+								b["bonus_reflect_shield_duration"] += 0.5 * buff_amount
+							else:
+								var brsd = b.get_meta("bonus_reflect_shield_duration") if b.has_meta("bonus_reflect_shield_duration") else (b.get("bonus_reflect_shield_duration") if "bonus_reflect_shield_duration" in b else 0.0)
+								b.set_meta("bonus_reflect_shield_duration", brsd + 0.5 * buff_amount)
+								if "bonus_reflect_shield_duration" in b: b.set("bonus_reflect_shield_duration", brsd + 0.5 * buff_amount)
 
 						# Reset stats immediately
 						if typeof(b) == TYPE_DICTIONARY:
