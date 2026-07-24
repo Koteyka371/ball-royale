@@ -21629,6 +21629,24 @@ func execute(strategy: String, delta: float):
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("hazard_immunity_timer", haz_imm_timer)
 
+        var has_hazard_immunity = false
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "hazard_immunity" in self.ball: has_hazard_immunity = self.ball.hazard_immunity
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("hazard_immunity"): has_hazard_immunity = self.ball.get_meta("hazard_immunity")
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hazard_immunity"):
+            has_hazard_immunity = self.ball["hazard_immunity"]
+
+        if has_hazard_immunity:
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "hazard_immunity_timer" in self.ball: self.ball.hazard_immunity_timer = 1.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("hazard_immunity_timer", 1.0)
+                if "pull_immunity" in self.ball: self.ball.pull_immunity = true
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("pull_immunity", true)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["hazard_immunity_timer"] = 1.0
+                self.ball["pull_immunity"] = true
+
+
         var ph_timer = 0.0
         if "phase_booster_timer" in self.ball:
             ph_timer = float(self.ball.phase_booster_timer)
@@ -28764,6 +28782,61 @@ func _use_skill():
 
             if "skill_timer" in self.ball: self.ball.skill_timer = cd
             elif self.ball is Dictionary: self.ball["skill_timer"] = cd
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+
+        elif skill_name == "spawn_tornado":
+            if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                var h_id = "mini_tornado_" + str(randi() % 9000 + 1000) + "_" + str(self.ball.id if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball else self.ball.get("id", 0))
+                var tx = self.ball.x if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball else self.ball.get("x", 0.0)
+                var ty = self.ball.y if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball else self.ball.get("y", 0.0)
+                var vx = self.ball.vx if typeof(self.ball) == TYPE_OBJECT and "vx" in self.ball else self.ball.get("vx", 0.0)
+                var vy = self.ball.vy if typeof(self.ball) == TYPE_OBJECT and "vy" in self.ball else self.ball.get("vy", 0.0)
+                var speed = sqrt(vx*vx + vy*vy)
+                var dir_x = 0.0
+                var dir_y = 0.0
+                if speed > 0:
+                    dir_x = vx / speed
+                    dir_y = vy / speed
+                else:
+                    var dirs = [[1,0], [-1,0], [0,1], [0,-1]]
+                    var d = dirs[randi() % dirs.size()]
+                    dir_x = float(d[0])
+                    dir_y = float(d[1])
+
+                var arena_script = load("res://src/arena/procedural_arena.gd")
+                var h = null
+                if arena_script != null:
+                    for key in arena_script.get_script_constant_map().keys():
+                        var val = arena_script.get_script_constant_map()[key]
+                        if typeof(val) == TYPE_OBJECT and val.has_method("new") and str(val).find("Hazard") != -1:
+                            h = val.new(h_id, tx + dir_x * 20.0, ty + dir_y * 20.0, 30.0, "tornado", 5.0)
+                            break
+                    if h == null and arena_script.has_method("Hazard"):
+                        h = arena_script.Hazard.new(h_id, tx + dir_x * 20.0, ty + dir_y * 20.0, 30.0, "tornado", 5.0)
+                    elif h == null:
+                        var HazardClass = null
+                        for key in arena_script.get_script_constant_map().keys():
+                            var val = arena_script.get_script_constant_map()[key]
+                            if typeof(val) == TYPE_OBJECT and val.has_method("new"):
+                                h = val.new(h_id, tx + dir_x * 20.0, ty + dir_y * 20.0, 30.0, "tornado", 5.0)
+                                break
+                if h != null:
+                    if h.has_method("set_meta"):
+                        h.set_meta("pull_strength", 60.0)
+                    else:
+                        h.pull_strength = 60.0
+                    h.owner_id = self.ball.id if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball else self.ball.get("id", 0)
+                    h.duration = 6.0
+                    world.arena.hazards.append(h)
+
+                    if "events" in world:
+                        world.events.append({"type": "visual_effect", "data": {"type": "spawn_tornado", "x": tx, "y": ty}})
+
+            var cd = 15.0
+            if typeof(self.ball) == TYPE_OBJECT and "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cd = self.ball["SKILL_COOLDOWN"]
+            if typeof(self.ball) == TYPE_OBJECT and "skill_timer" in self.ball: self.ball.skill_timer = cd
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_timer"): self.ball["skill_timer"] = cd
             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
 
         elif skill_name == "command":

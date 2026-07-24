@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mine",
+  "description": "A new hazard that, when triggered by a player, entangles them with the nearest enemy. Entangled players share damage and healing for 10 seconds. If one dies, the other takes massive damage."
+}
