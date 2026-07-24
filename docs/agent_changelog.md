@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1444] Tornado Hazard that pulls balls in — *2026-07-24 05:08:06 UTC*
+
+Add a moving tornado hazard that pulls nearby balls towards its center, causing them to group up and take collision damage.
+
+---
+
 ## [idea-1439] Synergistic Trait Combos — *2026-07-24 04:56:09 UTC*
 
 Create synergies when different traits are combined on the same team. For instance, pairing a 'water' trait unit with a 'lightning' trait unit triggers an 'electrified water' area of effect buff.

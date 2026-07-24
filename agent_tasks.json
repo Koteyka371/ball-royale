@@ -24733,7 +24733,7 @@
     },
     {
       "id": "idea-1444",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Hazard that pulls balls in",
@@ -35877,6 +35877,108 @@
         "src/ai/decoy_mimic_cast.py",
         "src/ai/decoy_mimic_cast.gd",
         "tests/test_decoy_mimic_cast.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2099",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Synergy: Thunderstorm Elementals",
+      "description": "If a team has a 'lightning' and 'water' elemental unit while it is raining, they passively create a thunderstorm aura. The rain amplifies the lightning radius, hitting targets further away but consuming more stamina per hit.",
+      "allowed_paths": [
+        "src/ai/synergy_thunderstorm_elementals.py",
+        "src/ai/synergy_thunderstorm_elementals.gd",
+        "tests/test_synergy_thunderstorm_elementals.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2100",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hydro-Pump Trap Item",
+      "description": "A deployable trap that, when triggered, blasts a powerful cone of high-pressure water. It knocks enemies back violently and inflicts a 'Soaked' status effect, temporarily nullifying fire-based traits and increasing their vulnerability to electricity.",
+      "allowed_paths": [
+        "src/arena/hydro_pump_trap_item.py",
+        "src/arena/hydro_pump_trap_item.gd",
+        "tests/test_hydro_pump_trap_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2101",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Leap Mutator",
+      "description": "Every 15 seconds, all players instantly swap positions with a randomly chosen opponent. Players must adapt quickly to their new surroundings and momentum to avoid taking damage or falling into hazards.",
+      "allowed_paths": [
+        "src/ai/quantum_leap_mutator.py",
+        "src/ai/quantum_leap_mutator.gd",
+        "tests/test_quantum_leap_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2102",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Infected Shadows",
+      "description": "One random player starts with an 'Infection' aura. Any player who comes too close for more than 2 seconds gets infected as well. Infected players take low continuous damage over time, and the last surviving player wins.",
+      "allowed_paths": [
+        "src/ai/infected_shadows.py",
+        "src/ai/infected_shadows.gd",
+        "tests/test_infected_shadows.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2103",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Abyssal Deep Biome Mode",
+      "description": "A new mode where the entire arena is submerged in deep water, significantly reducing movement speed and perception for non-aquatic balls. Periodically, giant whirlpools spawn, dragging players into the center. Players must find buoyant floating debris to regain normal speed and stamina.",
+      "allowed_paths": [
+        "src/ai/abyssal_deep_biome.py",
+        "src/ai/abyssal_deep_biome.gd",
+        "tests/test_abyssal_deep_biome.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2104",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Combos",
+      "description": "Introduce combo potentials for hazard traits. For instance, 'fire' units can ignite 'poison' clouds, creating an explosion that heavily damages any unit inside the cloud. Units with 'earth' can build a barrier to shield themselves against it.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_combos.py",
+        "src/ai/chain_reaction_combos.gd",
+        "tests/test_chain_reaction_combos.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
