@@ -24886,7 +24886,7 @@
     },
     {
       "id": "idea-1453",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Inversion Mutator",
@@ -36730,6 +36730,23 @@
         "src/ai/gravity_boots_item.py",
         "src/ai/gravity_boots_item.gd",
         "tests/test_gravity_boots_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2149",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chronosphere Grenade",
+      "description": "A throwable item that creates a large dome where time is significantly slowed for enemies but normal for allies.",
+      "allowed_paths": [
+        "src/ai/chronosphere_grenade.py",
+        "src/ai/chronosphere_grenade.gd",
+        "tests/test_chronosphere_grenade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1453] Gravity Inversion Mutator — *2026-07-24 23:15:19 UTC*
+
+Periodically flips the gravity of the arena, sending heavy objects flying and altering player momentum.
+
+---
+
 ## [idea-1440] Chain Lightning Enhancer Booster — *2026-07-24 23:03:45 UTC*
 
 A new booster that, when picked up, gives the player a temporary buff that makes their chain lightning jump an additional 2 times and deal 50% more damage to secondary targets.
