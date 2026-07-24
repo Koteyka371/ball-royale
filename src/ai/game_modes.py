@@ -17881,7 +17881,7 @@ class BlackMarketMode(GameMode):
                         b.purchase_cooldown = 5.0
 
                         # Apply random upgrade
-                        upgrade_type = random.choice(["max_hp", "speed", "damage", "radius"])
+                        upgrade_type = random.choice(["max_hp", "speed", "damage", "radius", "reflect_shield_duration"])
                         if upgrade_type == "max_hp":
                             if not hasattr(b, "base_max_hp"):
                                 b.base_max_hp = getattr(b, "max_hp", 100.0)
@@ -17903,6 +17903,10 @@ class BlackMarketMode(GameMode):
                                 b.base_radius = getattr(b, "radius", 10.0)
                             b.base_radius = max(5.0, b.base_radius - 2.0)
                             b.radius = b.base_radius
+                        elif upgrade_type == "reflect_shield_duration":
+                            if not hasattr(b, "bonus_reflect_shield_duration"):
+                                b.bonus_reflect_shield_duration = 0.0
+                            b.bonus_reflect_shield_duration += 1.0
 
                         if hasattr(world, "add_event"):
                             world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade_type})
@@ -28543,7 +28547,7 @@ class CurrencyBurdenMode(GameMode):
                         b.currency = 0
 
                         # Apply permanent buff based on amount deposited
-                        upgrade_type = random.choice(["max_hp", "base_speed", "base_damage"])
+                        upgrade_type = random.choice(["max_hp", "base_speed", "base_damage", "reflect_shield_duration"])
                         if upgrade_type == "max_hp":
                             if not hasattr(b, "base_max_hp"):
                                 b.base_max_hp = getattr(b, "max_hp", 100.0)
@@ -28554,6 +28558,10 @@ class CurrencyBurdenMode(GameMode):
                             b.base_speed += 2.0 * buff_amount
                         elif upgrade_type == "base_damage":
                             b.base_damage += 1.0 * buff_amount
+                        elif upgrade_type == "reflect_shield_duration":
+                            if not hasattr(b, "bonus_reflect_shield_duration"):
+                                b.bonus_reflect_shield_duration = 0.0
+                            b.bonus_reflect_shield_duration += 0.5 * buff_amount
 
                         # Reset dynamic stats calculation
                         b.speed = b.base_speed
