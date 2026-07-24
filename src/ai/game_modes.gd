@@ -34968,11 +34968,12 @@ class CenterBlackHoleMode extends GameMode:
 	var pull_strength = 200.0
 	var pull_growth_rate = 10.0
 	var damage = 10.0
+	var shrink_timer: float = 0.0
 
 	func _init():
 		super()
 		name = "Center Black Hole"
-		description = "A black hole in the center slowly grows and pulls players inwards. The gravitational pull becomes stronger as time progresses."
+		description = "A black hole in the center slowly grows and pulls players inwards. The safe zone outside the black hole slowly shrinks over time. The gravitational pull becomes stronger as time progresses."
 
 	func setup(world, balls):
 		super.setup(world, balls)
@@ -35006,6 +35007,61 @@ class CenterBlackHoleMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
+
+		if not ("shrink_timer" in self):
+			self.set("shrink_timer", 0.0)
+		self.set("shrink_timer", self.get("shrink_timer") + delta)
+
+		if self.get("shrink_timer") >= 10.0:
+			self.set("shrink_timer", self.get("shrink_timer") - 10.0)
+			if ("arena" in world) and world.arena != null:
+				var old_w = 1000.0
+				var old_h = 1000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					old_w = world.arena.get("width", 1000.0)
+					old_h = world.arena.get("height", 1000.0)
+				else:
+					if "width" in world.arena: old_w = world.arena.width
+					if "height" in world.arena: old_h = world.arena.height
+
+				var new_w = max(200.0, old_w * 0.9)
+				var new_h = max(200.0, old_h * 0.9)
+
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["width"] = new_w
+					world.arena["height"] = new_h
+				else:
+					world.arena.width = new_w
+					world.arena.height = new_h
+
+				for b in balls:
+					var radius = 15.0
+					if typeof(b) == TYPE_DICTIONARY:
+						radius = b.get("radius", 15.0)
+						var bx = b.get("x", 0.0)
+						var by = b.get("y", 0.0)
+						if bx > new_w - radius: b["x"] = new_w - radius
+						if by > new_h - radius: b["y"] = new_h - radius
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_method("get"):
+							var r = b.get("radius")
+							if r != null: radius = r
+							var bx = b.get("x")
+							var by = b.get("y")
+							if bx != null and bx > new_w - radius: b.set("x", new_w - radius)
+							if by != null and by > new_h - radius: b.set("y", new_h - radius)
+
+				if ("hazards" in world.arena):
+					for h in world.arena.hazards:
+						if typeof(h) == TYPE_DICTIONARY:
+							if h.get("kind", "") == "black_hole" and h.get("id", null) == bh_id:
+								h["x"] = new_w / 2.0
+								h["y"] = new_h / 2.0
+						elif typeof(h) == TYPE_OBJECT:
+							if h.get("kind") == "black_hole" and h.get("id") == bh_id:
+								h.set("x", new_w / 2.0)
+								h.set("y", new_h / 2.0)
+
 		if not "hazards" in world.arena:
 			return
 

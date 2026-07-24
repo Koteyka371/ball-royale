@@ -22271,7 +22271,7 @@ class CenterBlackHoleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Center Black Hole"
-        self.description = "A black hole in the center slowly grows and pulls players inwards. The gravitational pull becomes stronger as time progresses."
+        self.description = "A black hole in the center slowly grows and pulls players inwards. The safe zone outside the black hole slowly shrinks over time. The gravitational pull becomes stronger as time progresses."
         self.bh_id = 999999
         self.growth_rate = 5.0  # radius per second
         self.pull_strength = 200.0
@@ -22409,6 +22409,37 @@ class CenterBlackHoleMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
+
+        if not hasattr(self, "shrink_timer"):
+            self.shrink_timer = 0.0
+        self.shrink_timer += delta
+
+        if self.shrink_timer >= 10.0:  # Shrink every 10 seconds
+            self.shrink_timer -= 10.0
+            if hasattr(world, "arena"):
+                old_w = getattr(world.arena, "width", 1000.0)
+                old_h = getattr(world.arena, "height", 1000.0)
+                new_w = max(200.0, old_w * 0.9)
+                new_h = max(200.0, old_h * 0.9)
+                world.arena.width = new_w
+                world.arena.height = new_h
+
+                for b in balls:
+                    radius = getattr(b, "radius", 15.0)
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    if bx > new_w - radius: b.x = new_w - radius
+                    if by > new_h - radius: b.y = new_h - radius
+
+                if hasattr(world.arena, "hazards"):
+                    for h in world.arena.hazards:
+                        if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == getattr(self, "bh_id", 999999):
+                            h.x = new_w / 2.0
+                            h.y = new_h / 2.0
+
+                if hasattr(world, "add_event"):
+                    world.add_event("arena_shrunk", {"width": new_w, "height": new_h})
+
         if not hasattr(world.arena, "hazards"):
             return
 
