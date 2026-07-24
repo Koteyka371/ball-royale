@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1413] Camouflage Net — *2026-07-24 20:30:06 UTC*
+
+An interactable item that can be placed over a sniper nest. It hides the visual indicator that normally marks the nest's occupant as a high-priority target, allowing for stealthy ambushes until the camouflage is blown away by explosives or wind.
+
+---
+
 ## [idea-1401] Bounty Hunter Disguise Skill — *2026-07-24 11:30:44 UTC*
 
 An active skill for the Bounty Hunter that temporarily hides their bounty target indicator from the enemy, while disguising themselves as a normal tier ball for 5 seconds to set up surprise attacks.
