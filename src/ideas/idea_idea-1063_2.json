@@ -1,4 +1,0 @@
-{
-    "title": "Dynamic Puddle Expansion",
-    "description": "During a thunderstorm, puddles should slowly expand in radius over time as it rains, increasing the hazardous area dynamically before evaporating when the sun returns."
-}

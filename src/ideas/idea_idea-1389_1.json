@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Entanglement Mine",
-  "description": "A new deployable mine that doesn't deal damage directly. Instead, when a player steps on it, they become 'entangled' with the player who placed the mine. For the next 10 seconds, any damage taken by one player is also dealt to the other, creating high-risk tactical plays."
-}

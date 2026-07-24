@@ -8300,18 +8300,41 @@ class Action:
                                 if not weather and hasattr(self.world, "arena"):
                                     weather = getattr(self.world.arena, "weather", "")
 
+                                theme = "Genesis"
+                                season_num = 1
+                                if hasattr(self.world, "leaderboard_manager"):
+                                    season_num = getattr(self.world.leaderboard_manager, "data", {}).get("current_season", 1)
+                                elif hasattr(self.world, "profile_manager") and hasattr(self.world.profile_manager, "leaderboard_manager"):
+                                    season_num = getattr(self.world.profile_manager.leaderboard_manager, "data", {}).get("current_season", 1)
+
+                                if hasattr(self.world, "leaderboard_manager") and hasattr(self.world.leaderboard_manager, "get_theme"):
+                                    try:
+                                        theme = self.world.leaderboard_manager.get_theme(season_num)
+                                    except Exception:
+                                        pass
+                                elif hasattr(self.world, "profile_manager") and hasattr(self.world.profile_manager, "leaderboard_manager") and hasattr(self.world.profile_manager.leaderboard_manager, "get_theme"):
+                                    try:
+                                        theme = self.world.profile_manager.leaderboard_manager.get_theme(season_num)
+                                    except Exception:
+                                        pass
+
                                 if trap_variant == "normal":
-                                    if weather in ["blizzard", "snow", "ice"]:
+                                    if weather in ["blizzard", "snow", "ice"] or theme == "Frost":
                                         trap_variant = "freeze"
                                         hazard.kind = "ice_patch"
                                     elif weather == "thunderstorm":
                                         trap_variant = "emp_trap"
                                     elif weather in ["sandstorm", "desert"]:
                                         hazard.kind = "quicksand"
-                                    elif weather == "rain":
+                                    elif weather == "rain" or theme == "Abyssal":
+                                        if theme == "Abyssal":
+                                            trap_variant = "pull"
                                         hazard.kind = "mud_puddle"
-                                    elif weather == "heatwave":
+                                    elif weather == "heatwave" or theme == "Inferno":
                                         hazard.kind = "lava_pool"
+                                    elif theme == "Void":
+                                        trap_variant = "black_hole"
+                                        hazard.kind = "black_hole"
 
                                 if trap_variant == "poison":
                                     # Poison: no slow, but take DoT (e.g. 5 damage per second)

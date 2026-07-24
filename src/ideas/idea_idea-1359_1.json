@@ -1,4 +1,0 @@
-{
-  "title": "Chain Lightning Hazard",
-  "description": "A new hazard that acts as a Tesla coil. When an enemy gets too close, it periodically arcs lightning to them. If another enemy is nearby, the lightning jumps to them as well, chaining up to 3 times for decreasing damage."
-}
