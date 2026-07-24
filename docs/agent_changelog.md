@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1463] Tornado Grenade — *2026-07-24 21:37:10 UTC*
+
+A deployable grenade that creates a temporary localized wind vortex, sucking in nearby balls and causing chaotic physics interactions.
+
+---
+
 ## [idea-1461] Weather Resistant Cosmetics — *2026-07-24 21:34:25 UTC*
 
 Introduce cosmetic items or specific ball types (like 'Ice Elemental') that are completely immune to certain localized weather hazards or even gain buffs from them.

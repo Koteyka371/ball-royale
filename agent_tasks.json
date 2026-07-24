@@ -25057,7 +25057,7 @@
     },
     {
       "id": "idea-1463",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Grenade",
@@ -36508,6 +36508,23 @@
         "src/ai/cosmic_drift.py",
         "src/ai/cosmic_drift.gd",
         "tests/test_cosmic_drift.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2136",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Season Changes",
+      "description": "Introduce dynamic season changes during matches, where spring, summer, fall, and winter each bring unique global effects such as increased stamina regeneration, slower movement speeds, or hazard interactions. Seasons rotate on a fixed timer during long battle royale matches, forcing players to adapt their strategies mid-game.",
+      "allowed_paths": [
+        "src/ai/dynamic_season_changes.py",
+        "src/ai/dynamic_season_changes.gd",
+        "tests/test_dynamic_season_changes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
