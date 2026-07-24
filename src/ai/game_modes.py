@@ -20104,6 +20104,16 @@ class ReverseGravityEventMode(GameMode):
                     else:
                         b.y += force_mag * direction_mult
 
+            if hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "mass", 0.0) >= 50.0 or getattr(h, "kind", "") in ["rolling_boulder", "rock", "heavy_crate"]:
+                        # Send heavy objects flying
+                        hazard_force = force_mag * 1.5 if self.event_active else force_mag * 0.5
+                        if hasattr(h, "vy"):
+                            h.vy += hazard_force * direction_mult
+                        else:
+                            h.y += hazard_force * direction_mult
+
 class InvisibleDecoysMode(GameMode):
     def __init__(self):
         super().__init__()

@@ -60,3 +60,24 @@ def test_reverse_gravity_event_mode_trigger():
         assert mode.event_duration == 9.9
     finally:
         random.random = original_random
+
+class MockHazard:
+    def __init__(self, y=500.0, vy=0.0, mass=100.0, kind="rock"):
+        self.y = y
+        self.vy = vy
+        self.mass = mass
+        self.kind = kind
+
+def test_reverse_gravity_event_hazards():
+    mode = GAME_MODES["reverse_gravity_event"]
+    world = MockWorld()
+
+    h1 = MockHazard(y=500.0, vy=0.0, mass=100.0)
+    world.arena.hazards = [h1]
+
+    mode.event_active = True
+    mode.event_duration = 10.0
+
+    mode.tick(world, [], delta=1.0)
+
+    assert h1.vy < 0.0
