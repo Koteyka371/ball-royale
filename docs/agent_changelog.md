@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1430] Daily Token Scratchcards — *2026-07-24 22:08:43 UTC*
+
+Players receive one free scratchcard per day that guarantees a small reward, with a rare chance to unveil prestige tokens, encouraging daily logins beyond standard streaks.
+
+---
+
 ## [idea-1448] Bungee Cord Item — *2026-07-24 21:52:55 UTC*
 
 An item that attaches a player to a specific point on the map. They can move freely within a certain radius, but if they go too far or get knocked back, they are snapped back to the anchor point with high velocity.

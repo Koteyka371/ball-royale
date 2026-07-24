@@ -24495,7 +24495,7 @@
     },
     {
       "id": "idea-1430",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Daily Token Scratchcards",
@@ -36559,6 +36559,57 @@
         "src/ai/homing_missile_booster.py",
         "src/ai/homing_missile_booster.gd",
         "tests/test_homing_missile_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2139",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Polarity Synergy",
+      "description": "Introduce a team synergy where players with matching elemental traits (e.g., both electric) periodically emit a magnetic pull towards each other, increasing their combined speed when moving together but making them vulnerable to area-of-effect attacks.",
+      "allowed_paths": [
+        "src/ai/magnetic_polarity_synergy.py",
+        "src/ai/magnetic_polarity_synergy.gd",
+        "tests/test_magnetic_polarity_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2140",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Gravity Zone Hazard",
+      "description": "A hazard that flips the gravity for any ball inside it, causing them to float upwards or be repelled away from the arena center instead of being pulled towards it. This would disrupt standard positioning and create chaotic combat scenarios.",
+      "allowed_paths": [
+        "src/arena/reverse_gravity_zone.py",
+        "src/arena/reverse_gravity_zone.gd",
+        "tests/test_reverse_gravity_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2141",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Comeback Aura",
+      "description": "When a team is severely behind in score or player count, their remaining members emit a visible aura and gain slowly regenerating shields to encourage late-game clutches.",
+      "allowed_paths": [
+        "src/ai/comeback_aura.py",
+        "src/ai/comeback_aura.gd",
+        "tests/test_comeback_aura.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
