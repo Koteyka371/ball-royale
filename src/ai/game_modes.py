@@ -29036,7 +29036,35 @@ class ChainLightningEventMode(GameMode):
                             })
                 b.chain_lightning_arc_timer = arc_timer
 
+class NemesisVampireMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nemesis Vampire"
+        self.description = "Dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+        self.tick_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.apply_dynamic_traits(world, balls, delta)
+
+        self.tick_timer += delta
+        if self.tick_timer >= 1.0:
+            self.tick_timer = 0.0
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b.hp = max(0, getattr(b, "hp", 100) - 3.0)
+                    if b.hp <= 0:
+                        b.alive = False
+
+    def check_winner(self, world, balls):
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive: return "Draw"
+        if len(alive) == 1: return getattr(alive[0], "team", alive[0].ball_type)
+        return None
+
 GAME_MODES = {
+    'nemesis_vampire': NemesisVampireMode(),
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),

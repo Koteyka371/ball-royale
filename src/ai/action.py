@@ -11774,6 +11774,12 @@ class Action:
                     if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                         dmg = getattr(self.ball, 'damage', 10.0)
                         self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                    if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                        pm = getattr(self.world, 'profile_manager', None)
+                        if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                            if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                dmg = getattr(self.ball, 'damage', 10.0)
+                                self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                     if hasattr(target, "id") and hasattr(self.ball, "id"):
                         # Ball Relationships - Balls remember each other
                         # Rivalry skill: attacked me before -> attack on sight
@@ -11931,6 +11937,12 @@ class Action:
                         if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                             dmg = getattr(self.ball, 'damage', 10.0)
                             self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                        if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                            pm = getattr(self.world, 'profile_manager', None)
+                            if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                                if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                    dmg = getattr(self.ball, 'damage', 10.0)
+                                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -12050,6 +12062,12 @@ class Action:
                         if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                             dmg = getattr(self.ball, 'damage', 10.0)
                             self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                        if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                            pm = getattr(self.world, 'profile_manager', None)
+                            if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                                if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                    dmg = getattr(self.ball, 'damage', 10.0)
+                                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -12259,6 +12277,12 @@ class Action:
                         if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                             dmg = getattr(self.ball, 'damage', 10.0)
                             self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                        if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                            pm = getattr(self.world, 'profile_manager', None)
+                            if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                                if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                    dmg = getattr(self.ball, 'damage', 10.0)
+                                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(target, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -12438,6 +12462,12 @@ class Action:
                                 if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                                     dmg = getattr(self.ball, 'damage', 10.0)
                                     self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                                if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                                    pm = getattr(self.world, 'profile_manager', None)
+                                    if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                                        if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                            dmg = getattr(self.ball, 'damage', 10.0)
+                                            self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                                 if hasattr(target_enemy, "id") and hasattr(self.ball, "id"):
                                     target_enemy.memory = getattr(target_enemy, "memory", {})
                                     # Ball Relationships - Balls remember each other
@@ -18546,6 +18576,12 @@ class Action:
                         if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                             dmg = getattr(self.ball, 'damage', 10.0)
                             self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                        if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                            pm = getattr(self.world, 'profile_manager', None)
+                            if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                                if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                    dmg = getattr(self.ball, 'damage', 10.0)
+                                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                         if hasattr(other, "id") and hasattr(self.ball, "id"):
                             # Ball Relationships - Balls remember each other
                             # Rivalry skill: attacked me before -> attack on sight
@@ -21067,6 +21103,12 @@ class Action:
                     if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                         dmg = getattr(self.ball, 'damage', 10.0)
                         self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                    if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                        pm = getattr(self.world, 'profile_manager', None)
+                        if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                            if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                dmg = getattr(self.ball, 'damage', 10.0)
+                                self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                     if hasattr(optimal_target, "id") and hasattr(self.ball, "id"):
                         tgt_memory = getattr(optimal_target, "memory", {})
                         tgt_memory[self.ball.id] = {"relation": "rival"}
@@ -21152,6 +21194,12 @@ class Action:
                                 if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                                     dmg = getattr(self.ball, 'damage', 10.0)
                                     self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                                if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                                    pm = getattr(self.world, 'profile_manager', None)
+                                    if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                                        if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                            dmg = getattr(self.ball, 'damage', 10.0)
+                                            self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                             b_speed = getattr(self.ball, "speed", 2.0)
                             new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                             self.ball.attack_timer = new_cooldown
@@ -21266,6 +21314,12 @@ class Action:
                         if getattr(self.world, 'current_mode_name', '') == 'Vampire Royale':
                             dmg = getattr(self.ball, 'damage', 10.0)
                             self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.0, getattr(self.ball, 'max_hp', 100.0))
+                        if getattr(self.world, 'current_mode_name', '') == 'Nemesis Vampire':
+                            pm = getattr(self.world, 'profile_manager', None)
+                            if pm and hasattr(pm, 'is_nemesis') and hasattr(target, 'ball_type') and hasattr(self.ball, 'ball_type'):
+                                if pm.is_nemesis(self.ball.ball_type, target.ball_type):
+                                    dmg = getattr(self.ball, 'damage', 10.0)
+                                    self.ball.hp = min(getattr(self.ball, 'hp', 100.0) + dmg * 2.5, getattr(self.ball, 'max_hp', 100.0))
                     b_speed = getattr(self.ball, "speed", 2.0)
                     new_cooldown = max(0.2, 2.0 / b_speed if b_speed > 0 else 1.0)
                     self.ball.attack_timer = new_cooldown

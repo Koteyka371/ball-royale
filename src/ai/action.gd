@@ -23139,9 +23139,25 @@ func _group_attack(delta: float):
                     if "hp" in self.ball and "max_hp" in self.ball:
                         self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                 if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                    var dmg_vamp_mode = 10.0
-                    if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
-                    if "hp" in self.ball and "max_hp" in self.ball:
+			var dmg_vamp_mode = 10.0
+			if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+			if "hp" in self.ball and "max_hp" in self.ball:
+				self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+			if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+				if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+				if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                         self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
 
                 if "id" in target and "id" in self.ball:
@@ -23405,9 +23421,25 @@ func _flank(delta: float):
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                        var dmg_vamp_mode = 10.0
-                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
-                        if "hp" in self.ball and "max_hp" in self.ball:
+			var dmg_vamp_mode = 10.0
+			if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+			if "hp" in self.ball and "max_hp" in self.ball:
+				self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+			if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+				if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+				if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                             self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
@@ -23591,9 +23623,25 @@ func _chase(delta: float):
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                        var dmg_vamp_mode = 10.0
-                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
-                        if "hp" in self.ball and "max_hp" in self.ball:
+			var dmg_vamp_mode = 10.0
+			if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+			if "hp" in self.ball and "max_hp" in self.ball:
+				self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+			if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+				if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+				if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                             self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
@@ -23942,9 +23990,25 @@ func _attack(delta: float):
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                        var dmg_vamp_mode = 10.0
-                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
-                        if "hp" in self.ball and "max_hp" in self.ball:
+			var dmg_vamp_mode = 10.0
+			if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+			if "hp" in self.ball and "max_hp" in self.ball:
+				self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+			if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+				if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+				if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                             self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in target and "id" in self.ball:
                         var mem = {}
@@ -35973,9 +36037,25 @@ func _trigger_ripple_effect():
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                        var dmg_vamp_mode = 10.0
-                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
-                        if "hp" in self.ball and "max_hp" in self.ball:
+			var dmg_vamp_mode = 10.0
+			if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+			if "hp" in self.ball and "max_hp" in self.ball:
+				self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+			if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+				if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+				if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                             self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in other and "id" in self.ball:
                         var mem = {}
@@ -41335,9 +41415,25 @@ func _kite(delta: float):
                         if "hp" in self.ball and "max_hp" in self.ball:
                             self.ball.hp = min(self.ball.hp + dmg_vamp1 * 0.5, self.ball.max_hp)
                     if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                        var dmg_vamp_mode = 10.0
-                        if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
-                        if "hp" in self.ball and "max_hp" in self.ball:
+			var dmg_vamp_mode = 10.0
+			if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+			if "hp" in self.ball and "max_hp" in self.ball:
+				self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+			if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+				if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+				if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                             self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
                     if "id" in optimal_target and "id" in self.ball:
                         var mem = {}
@@ -41472,9 +41568,25 @@ func _escort(delta: float) -> void:
                                 if "hp" in ball and "max_hp" in ball:
                                     ball.hp = min(ball.hp + dmg_vamp2 * 0.5, ball.max_hp)
                             if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                                var dmg_vamp_mode = 10.0
-                                if "damage" in ball: dmg_vamp_mode = float(ball.damage)
-                                if "hp" in ball and "max_hp" in ball:
+				var dmg_vamp_mode = 10.0
+				if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+				if "hp" in self.ball and "max_hp" in self.ball:
+					self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                            if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+				if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+					if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+						if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+							var dmg_vamp_mode2 = 10.0
+							if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+							if "hp" in self.ball and "max_hp" in self.ball:
+								self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+				elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+					if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+						if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+							var dmg_vamp_mode2 = 10.0
+							if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+							if "hp" in self.ball and "max_hp" in self.ball:
+								self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                                     ball.hp = min(ball.hp + dmg_vamp_mode * 2.0, ball.max_hp)
                         var s_speed = 2.0
                         if "speed" in ball:
@@ -41585,9 +41697,25 @@ func _intercept(delta: float) -> void:
                         if "hp" in ball and "max_hp" in ball:
                             ball.hp = min(ball.hp + dmg_vamp2 * 0.5, ball.max_hp)
                     if "current_mode_name" in world and world.current_mode_name == "Vampire Royale":
-                        var dmg_vamp_mode = 10.0
-                        if "damage" in ball: dmg_vamp_mode = float(ball.damage)
-                        if "hp" in ball and "max_hp" in ball:
+			var dmg_vamp_mode = 10.0
+			if "damage" in self.ball: dmg_vamp_mode = float(self.ball.damage)
+			if "hp" in self.ball and "max_hp" in self.ball:
+				self.ball.hp = min(self.ball.hp + dmg_vamp_mode * 2.0, self.ball.max_hp)
+                    if "current_mode_name" in world and world.current_mode_name == "Nemesis Vampire":
+			if typeof(world) == TYPE_DICTIONARY and world.has("profile_manager") and world["profile_manager"] != null:
+				if world["profile_manager"].has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world["profile_manager"].is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
+			elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("profile_manager") != null:
+				if world.get("profile_manager").has_method("is_nemesis") and "ball_type" in self.ball and "ball_type" in target:
+					if world.get("profile_manager").is_nemesis(self.ball.ball_type, target.ball_type):
+						var dmg_vamp_mode2 = 10.0
+						if "damage" in self.ball: dmg_vamp_mode2 = float(self.ball.damage)
+						if "hp" in self.ball and "max_hp" in self.ball:
+							self.ball.hp = min(self.ball.hp + dmg_vamp_mode2 * 2.5, self.ball.max_hp)
                             ball.hp = min(ball.hp + dmg_vamp_mode * 2.0, ball.max_hp)
                 var s_speed = 2.0
                 if "speed" in ball:
