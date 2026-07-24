@@ -34484,6 +34484,47 @@ func _use_skill():
                 var cd = 5.0
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
+
+        elif skill_name == "throw_vortex_grenade":
+            if "hazards" in self.world.arena:
+                var hazards = self.world.arena.hazards
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_dist_sq = INF
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dist_sq = dx_e*dx_e + dy_e*dy_e
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            closest_enemy = e
+                    var dx = closest_enemy.x - self.ball.x
+                    var dy = closest_enemy.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx = dx/dist
+                        ny = dy/dist
+
+                var thrown_grenade = {
+                    "id": str(randi()),
+                    "x": self.ball.x + nx * (self.ball.get("radius", 10.0) + 5.0),
+                    "y": self.ball.y + ny * (self.ball.get("radius", 10.0) + 5.0),
+                    "radius": 150.0,
+                    "kind": "vortex_grenade",
+                    "damage": 0.0,
+                    "active": true,
+                    "duration": 4.0,
+                    "pull_strength": 250.0,
+                    "owner_id": self.ball.get("id", null)
+                }
+                hazards.append(thrown_grenade)
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
+
         elif skill_name == "throw_bomb":
             if "hazards" in self.world.arena:
                 var hazards = self.world.arena.hazards
@@ -38662,6 +38703,78 @@ func _update_skill_timer(delta: float):
                                     elif hazard.has_method("set_meta"): hazard.set_meta("attached_id", null)
                                     elif "attached_id" in hazard: hazard.attached_id = null
 
+
+
+                if h_kind == "vortex_grenade":
+                    var h_owner_id = null
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        h_owner_id = hazard.get("owner_id", null)
+                    elif hazard.has_method("get"):
+                        h_owner_id = hazard.get("owner_id")
+
+                    if h_owner_id == self.ball.get("id", null):
+                        var duration = 0.0
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            duration = hazard.get("duration", 0.0)
+                        elif hazard.has_method("get"):
+                            var g_dur = hazard.get("duration")
+                            if g_dur != null: duration = g_dur
+
+                        if duration > 0.0:
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["duration"] = duration - delta
+                            elif hazard.has_method("set"):
+                                hazard.set("duration", duration - delta)
+
+                            var balls_arr = []
+                            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                                balls_arr = self.world.balls
+                            elif typeof(self.world) == TYPE_OBJECT and self.world.get("balls") != null:
+                                balls_arr = self.world.balls
+
+                            for b in balls_arr:
+                                var b_id = b.get("id", null)
+                                var is_alive = b.get("alive", true)
+                                if is_alive and b_id != h_owner_id:
+                                    var bx_ = b.get("x", 0.0)
+                                    var by_ = b.get("y", 0.0)
+                                    var hx = 0.0
+                                    var hy = 0.0
+                                    var hr = 150.0
+                                    var pull_st = 250.0
+                                    if typeof(hazard) == TYPE_DICTIONARY:
+                                        hx = hazard.get("x", 0.0)
+                                        hy = hazard.get("y", 0.0)
+                                        hr = hazard.get("radius", 150.0)
+                                        pull_st = hazard.get("pull_strength", 250.0)
+                                    elif hazard.has_method("get"):
+                                        var gx = hazard.get("x")
+                                        if gx != null: hx = gx
+                                        var gy = hazard.get("y")
+                                        if gy != null: hy = gy
+                                        var gr = hazard.get("radius")
+                                        if gr != null: hr = gr
+                                        var ps = hazard.get("pull_strength")
+                                        if ps != null: pull_st = ps
+
+                                    var dx = hx - bx_
+                                    var dy = hy - by_
+                                    var dist = sqrt(dx*dx + dy*dy)
+                                    if dist < hr:
+                                        if dist > 0.0001:
+                                            var b_vx = b.get("vx", 0.0)
+                                            var b_vy = b.get("vy", 0.0)
+                                            b_vx += (dx/dist) * pull_st * delta
+                                            b_vy += (dy/dist) * pull_st * delta
+                                            b_vx += randf_range(-10.0, 10.0) * delta
+                                            b_vy += randf_range(-10.0, 10.0) * delta
+                                            b.set("vx", b_vx)
+                                            b.set("vy", b_vy)
+                        else:
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["active"] = false
+                            elif hazard.has_method("set"):
+                                hazard.set("active", false)
 
                 if h_kind == "time_anomaly_field":
                     var h_radius = float(hazard.radius) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (float(hazard.get_meta("radius")) if hazard.has_method("has_meta") and hazard.has_meta("radius") else (float(hazard.radius) if "radius" in hazard else 150.0))

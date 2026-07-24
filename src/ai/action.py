@@ -1861,9 +1861,11 @@ class Action:
                 self.ball.damage = getattr(self.ball, "mount_damage", 10)
                 self.ball.speed = getattr(self.ball, "mount_speed", 50)
 
+
         else:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in list(self.world.arena.hazards):
+
                     if getattr(hazard, "kind", "") == "vehicle_mount":
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq <= getattr(hazard, "radius", 30)**2:
@@ -6330,6 +6332,9 @@ class Action:
                                             b.hp -= hazard.damage * 2.0
                                             if b.hp <= 0:
                                                 b.alive = False
+
+
+
                     elif hazard.kind == "shuffle_trap":
                         import random
                         import math
@@ -13029,7 +13034,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -16555,6 +16560,50 @@ class Action:
                     setattr(thrown_mine, "explosion_timer", 3.0)
                     self.world.arena.hazards.append(thrown_mine)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            elif skill_name == "throw_vortex_grenade":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        import math
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.active = True
+
+                    import uuid
+                    thrown_grenade = Hazard(
+                        id=str(uuid.uuid4()),
+                        x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        radius=150.0,
+                        kind="vortex_grenade",
+                        damage=0.0
+                    )
+                    setattr(thrown_grenade, "duration", 4.0)
+                    setattr(thrown_grenade, "pull_strength", 250.0)
+                    setattr(thrown_grenade, "owner_id", getattr(self.ball, "id", None))
+                    setattr(thrown_grenade, "active", True)
+
+                    self.world.arena.hazards.append(thrown_grenade)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "throw_bomb":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     enemies = self._get_enemies()
@@ -19685,6 +19734,34 @@ class Action:
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
 
+
+
+                if getattr(hazard, "kind", "") == "vortex_grenade":
+                    # Only update the hazard if this ball is its owner, to prevent multi-updates
+                    if getattr(hazard, "owner_id", None) == self.ball.id:
+                        duration = getattr(hazard, "duration", 0.0)
+                        if duration > 0:
+                            hazard.duration = duration - delta
+                            if hasattr(self.world, "balls"):
+                                import math
+                                import random
+                                for b in list(self.world.balls):
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                        dx = hazard.x - getattr(b, "x", 0.0)
+                                        dy = hazard.y - getattr(b, "y", 0.0)
+                                        dist = math.sqrt(dx*dx + dy*dy)
+                                        if dist < getattr(hazard, "radius", 150.0):
+                                            if dist > 0.0001:
+                                                pull_strength = getattr(hazard, "pull_strength", 250.0)
+
+                                                # Sucking in towards grenade
+                                                if hasattr(b, "vx"): b.vx += (dx/dist) * pull_strength * delta
+                                                if hasattr(b, "vy"): b.vy += (dy/dist) * pull_strength * delta
+
+                                                if hasattr(b, "vx"): b.vx += random.uniform(-10.0, 10.0) * delta
+                                                if hasattr(b, "vy"): b.vy += random.uniform(-10.0, 10.0) * delta
+                        else:
+                            hazard.active = False
 
                 if getattr(hazard, "kind", "") == "time_anomaly_field":
                     dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
