@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1423] Grapple Hook Trap — *2026-07-24 21:51:42 UTC*
+
+A trap that shoots out a grappling hook when triggered, reeling the victim into the trap's center and rooting them for 2 seconds.
+
+---
+
 ## [idea-1467] Dynamic Weather Events - Solar Flare — *2026-07-24 21:51:36 UTC*
 
 Introduce a random Solar Flare event during Day mode where sunlight beams intensify and all balls' max health is temporarily reduced if they step outside of shade or cover, forcing heavily tactical positioning.
