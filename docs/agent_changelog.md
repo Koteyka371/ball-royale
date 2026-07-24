@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1456] Black Hole Center with Shrinking Safe Zone — *2026-07-24 22:20:10 UTC*
+
+A game mode where a black hole at the center of the arena slowly pulls all players inwards. The safe zone outside the black hole slowly shrinks over time. Players must constantly maneuver and fight each other while avoiding the ever-growing black hole.
+
+---
+
 ## [idea-1451] Elemental Decoys — *2026-07-24 22:20:06 UTC*
 
 Decoys can spawn with an element (fire, ice, lightning) which triggers a secondary status effect on explosion.
