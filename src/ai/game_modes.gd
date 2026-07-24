@@ -58664,4 +58664,87 @@ class HugeTornadosMode extends GameMode:
 											b.hp = 0
 											b.alive = false
 
+
+class BlackHoleWeatherMode extends GameMode:
+	var weather = "black_hole_storm"
+	var pull_strength = 20.0
+
+	func _init():
+		name = "Black Hole Weather"
+		description = "A weather event that slowly pulls everyone towards the center of the arena."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = float(world.arena.width)
+				if world.arena.has("height"): arena_height = float(world.arena.height)
+			elif typeof(world.arena) == TYPE_OBJECT:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if world.arena.has("width"): arena_width = float(world.arena.width)
+				if world.arena.has("height"): arena_height = float(world.arena.height)
+			elif typeof(world.arena) == TYPE_OBJECT:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		for b in balls:
+			var alive = true
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+			if alive and b_type != "spectator":
+				var w_timer = 0.0
+				if typeof(b) == TYPE_DICTIONARY and b.has("weather_immunity_timer"): w_timer = b.weather_immunity_timer
+				elif typeof(b) == TYPE_OBJECT and "weather_immunity_timer" in b: w_timer = b.weather_immunity_timer
+
+				if w_timer > 0.0:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b.x
+					if b.has("y"): by = b.y
+				elif typeof(b) == TYPE_OBJECT:
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+
+				var dx = center_x - bx
+				var dy = center_y - by
+				var dist_sq = dx*dx + dy*dy
+
+				if dist_sq > 0.0001:
+					var dist = sqrt(dist_sq)
+					var nx = dx / dist
+					var ny = dy / dist
+
+					var pull_x = nx * pull_strength * delta
+					var pull_y = ny * pull_strength * delta
+
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("x"): b.x += pull_x
+						if b.has("y"): b.y += pull_y
+						if b.has("vx"): b.vx += pull_x * 5.0
+						if b.has("vy"): b.vy += pull_y * 5.0
+					elif typeof(b) == TYPE_OBJECT:
+						if "x" in b: b.x += pull_x
+						if "y" in b: b.y += pull_y
+						if "vx" in b: b.vx += pull_x * 5.0
+						if "vy" in b: b.vy += pull_y * 5.0
+
 GAME_MODES['huge_tornados'] = HugeTornadosMode.new()
+GAME_MODES['black_hole_weather'] = BlackHoleWeatherMode.new()
