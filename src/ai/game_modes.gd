@@ -21700,6 +21700,8 @@ class DayNightMode extends GameMode:
 	var active_moonlight_shadows = []
 	var eclipse_timer = 0.0
 	var is_eclipse_active = false
+	var is_solar_flare = false
+	var solar_flare_timer = 0.0
 
 	func _init():
 		pass
@@ -21930,8 +21932,8 @@ class DayNightMode extends GameMode:
 		active_sunlight_beams = []
 		moonlight_shadow_timer = 0.0
 		active_moonlight_shadows = []
-		moonlight_shadow_timer = 0.0
-		active_moonlight_shadows = []
+		is_solar_flare = false
+		solar_flare_timer = 0.0
 
 	func _line_intersects_circle(p1_x, p1_y, p2_x, p2_y, cx, cy, radius):
 		var dx = p2_x - p1_x
@@ -22176,6 +22178,13 @@ class DayNightMode extends GameMode:
 						world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
 			if not is_night:
+				if not is_solar_flare:
+					if randf() < 0.02 * delta:
+						is_solar_flare = true
+						solar_flare_timer = 10.0
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "solar_flare_start", "duration": 10.0})
+
 				sunlight_beam_timer += delta
 
 				if randf() < 0.005:
@@ -22204,6 +22213,106 @@ class DayNightMode extends GameMode:
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
 
+
+			if is_solar_flare:
+				solar_flare_timer -= delta
+				if solar_flare_timer <= 0.0:
+					is_solar_flare = false
+
+			for b in balls:
+				var balive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					balive = b.get("alive", false)
+				else:
+					balive = b.get("alive") if "alive" in b else false
+
+				var btype = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					btype = str(b.get("ball_type", ""))
+				else:
+					btype = str(b.get("ball_type", "")) if "ball_type" in b else ""
+
+				if not balive or btype == "spectator":
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var b_radius = 15.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					b_radius = b.get("radius", 15.0)
+				else:
+					bx = b.get("x", 0.0) if "x" in b else 0.0
+					by = b.get("y", 0.0) if "y" in b else 0.0
+					b_radius = b.get("radius", 15.0) if "radius" in b else 15.0
+
+				var in_cover = false
+				var hazards = []
+				if "hazards" in world.arena: hazards = world.arena.hazards
+
+				for hz in hazards:
+					var hx = 0.0
+					var hy = 0.0
+					var hr = 0.0
+					if typeof(hz) == TYPE_DICTIONARY:
+						hx = hz.get("x", 0.0)
+						hy = hz.get("y", 0.0)
+						hr = hz.get("radius", 0.0)
+					else:
+						hx = hz.get("x", 0.0) if "x" in hz else 0.0
+						hy = hz.get("y", 0.0) if "y" in hz else 0.0
+						hr = hz.get("radius", 0.0) if "radius" in hz else 0.0
+
+					var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+					if dist_sq <= (hr + b_radius) * (hr + b_radius):
+						in_cover = true
+						break
+
+				var current_penalty = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					current_penalty = b.get("flare_hp_penalty", 0.0)
+				else:
+					current_penalty = b.get("flare_hp_penalty") if "flare_hp_penalty" in b else (b.get_meta("flare_hp_penalty") if b.has_method("has_meta") and b.has_meta("flare_hp_penalty") else 0.0)
+
+				if is_solar_flare and not in_cover:
+					var increase = 20.0 * delta
+					if current_penalty + increase > 50.0:
+						increase = 50.0 - current_penalty
+					if increase > 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["flare_hp_penalty"] = current_penalty + increase
+							var mhp = b.get("max_hp", 100.0)
+							b["max_hp"] = mhp - increase
+							if b.get("hp", 100.0) > b["max_hp"]:
+								b["hp"] = b["max_hp"]
+						else:
+							var new_p = current_penalty + increase
+							if "flare_hp_penalty" in b: b.flare_hp_penalty = new_p
+							elif b.has_method("set_meta"): b.set_meta("flare_hp_penalty", new_p)
+
+							var mhp = b.get("max_hp") if "max_hp" in b else 100.0
+							if "max_hp" in b: b.max_hp = mhp - increase
+
+							var hp = b.get("hp") if "hp" in b else 100.0
+							var cur_max = b.get("max_hp") if "max_hp" in b else 100.0
+							if hp > cur_max:
+								if "hp" in b: b.hp = cur_max
+				else:
+					if current_penalty > 0.0:
+						var decrease = 20.0 * delta
+						decrease = min(decrease, current_penalty)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["flare_hp_penalty"] = current_penalty - decrease
+							var mhp = b.get("max_hp", 100.0)
+							b["max_hp"] = mhp + decrease
+						else:
+							var new_p = current_penalty - decrease
+							if "flare_hp_penalty" in b: b.flare_hp_penalty = new_p
+							elif b.has_method("set_meta"): b.set_meta("flare_hp_penalty", new_p)
+
+							var mhp = b.get("max_hp") if "max_hp" in b else 100.0
+							if "max_hp" in b: b.max_hp = mhp + decrease
 
 			# Solar flare timer decay (runs always) and random buff (only during day)
 			for b in balls:
