@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Trap",
+  "description": "A trap that links the movement of the player who triggered it with another random player for a short duration. Any damage taken by one is also shared with the other, encouraging chaotic teamwork or sudden betrayal."
+}
