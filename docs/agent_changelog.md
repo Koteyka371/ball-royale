@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1433] Corrosive Chain Reaction — *2026-07-24 00:01:53 UTC*
+
+A new skill that applies a corrosive debuff on a target. If the target dies while under the effect, it explodes and applies the debuff to all nearby enemies. Successive explosions deal increased damage.
+
+---
+
 ## [idea-1373] Time dilation trap — *2026-07-23 23:50:01 UTC*
 
 A trap that dramatically slows down the time for the ball that triggered it, causing them to move and attack in slow motion for a few seconds.

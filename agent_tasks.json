@@ -24546,7 +24546,7 @@
     },
     {
       "id": "idea-1433",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corrosive Chain Reaction",
@@ -35758,6 +35758,23 @@
         "src/ai/artifact_set_bonuses.py",
         "src/ai/artifact_set_bonuses.gd",
         "tests/test_artifact_set_bonuses.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2092",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Feedback Booster",
+      "description": "A booster that allows the ball to accumulate potential energy as they move. When they collide with an enemy, the stored energy is released as a burst of bonus damage and knockback.",
+      "allowed_paths": [
+        "src/ai/kinetic_feedback_booster.py",
+        "src/ai/kinetic_feedback_booster.gd",
+        "tests/test_kinetic_feedback_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
