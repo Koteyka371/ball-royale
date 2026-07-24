@@ -16942,6 +16942,64 @@ func execute(strategy: String, delta: float):
                                     hazard["duration"] = 0.0
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "grapple":
+                                var g_id = 8700
+                                if "hazards" in world.arena:
+                                    g_id += world.arena.hazards.size()
+                                var script = load("res://src/arena/procedural_arena.gd")
+                                if script:
+                                    var HazardCls = null
+                                    for k in script.get_script_constant_map().values():
+                                        if typeof(k) == TYPE_OBJECT and k.has_method("new"):
+                                            var test_inst = k.new(0,0,0,0,"",0)
+                                            if "x" in test_inst:
+                                                HazardCls = k
+                                                break
+                                    if HazardCls:
+                                        var oid = -1
+                                        if "owner_id" in hazard: oid = hazard.owner_id
+                                        elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): oid = hazard.get_meta("owner_id")
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): oid = hazard["owner_id"]
+                                        var g_trap = HazardCls.new(g_id, hazard.x, hazard.y, 40.0, "grapple_trap", 0.0)
+                                        if "duration" in g_trap: g_trap.duration = 10.0
+                                        if "owner_id" in g_trap: g_trap.owner_id = oid
+                                        elif g_trap.has_method("set_meta"): g_trap.set_meta("owner_id", oid)
+                                        if "hazards" in world.arena: world.arena.hazards.append(g_trap)
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+                            elif trap_variant == "grapple":
+                                var g_id = 8700
+                                if "hazards" in world.arena:
+                                    g_id += world.arena.hazards.size()
+                                var script = load("res://src/arena/procedural_arena.gd")
+                                if script:
+                                    var HazardCls = null
+                                    for k in script.get_script_constant_map().values():
+                                        if typeof(k) == TYPE_OBJECT and k.has_method("new"):
+                                            var test_inst = k.new(0,0,0,0,"",0)
+                                            if "x" in test_inst:
+                                                HazardCls = k
+                                                break
+                                    if HazardCls:
+                                        var oid = -1
+                                        if "owner_id" in hazard: oid = hazard.owner_id
+                                        elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): oid = hazard.get_meta("owner_id")
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): oid = hazard["owner_id"]
+                                        var g_trap = HazardCls.new(g_id, hazard.x, hazard.y, 40.0, "grapple_trap", 0.0)
+                                        if "duration" in g_trap: g_trap.duration = 10.0
+                                        if "owner_id" in g_trap: g_trap.owner_id = oid
+                                        elif g_trap.has_method("set_meta"): g_trap.set_meta("owner_id", oid)
+                                        if "hazards" in world.arena: world.arena.hazards.append(g_trap)
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "tar":
                                 if "speed_multiplier" in self.ball:
                                     self.ball.speed_multiplier *= 0.2
@@ -16975,6 +17033,35 @@ func execute(strategy: String, delta: float):
                                 if "anchor_trap_timer" in self.ball: self.ball.anchor_trap_timer = max(current_anchor, 5.0)
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("anchor_trap_timer", max(current_anchor, 5.0))
 
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
+                            elif trap_variant == "grapple":
+                                var g_id = 8700
+                                if "hazards" in world.arena:
+                                    g_id += world.arena.hazards.size()
+                                var script = load("res://src/arena/procedural_arena.gd")
+                                if script:
+                                    var HazardCls = null
+                                    for k in script.get_script_constant_map().values():
+                                        if typeof(k) == TYPE_OBJECT and k.has_method("new"):
+                                            var test_inst = k.new(0,0,0,0,"",0)
+                                            if "x" in test_inst:
+                                                HazardCls = k
+                                                break
+                                    if HazardCls:
+                                        var oid = -1
+                                        if "owner_id" in hazard: oid = hazard.owner_id
+                                        elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): oid = hazard.get_meta("owner_id")
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): oid = hazard["owner_id"]
+                                        var g_trap = HazardCls.new(g_id, hazard.x, hazard.y, 40.0, "grapple_trap", 0.0)
+                                        if "duration" in g_trap: g_trap.duration = 10.0
+                                        if "owner_id" in g_trap: g_trap.owner_id = oid
+                                        elif g_trap.has_method("set_meta"): g_trap.set_meta("owner_id", oid)
+                                        if "hazards" in world.arena: world.arena.hazards.append(g_trap)
                                 if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
                                 elif typeof(hazard) == TYPE_DICTIONARY:

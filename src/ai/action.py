@@ -8654,6 +8654,16 @@ class Action:
                                     self.ball.burning_trail_timer = max(getattr(self.ball, "burning_trail_timer", 0.0), 10.0)
                                     self.ball.burning_trail_owner_id = getattr(hazard, "owner_id", -1)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "grapple":
+                                    # Grapple trap: Spawn a grapple hook hazard to pull the victim in
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        from arena.procedural_arena import Hazard
+                                        g_id = len(self.world.arena.hazards) + 8700
+                                        g_trap = Hazard(g_id, hazard.x, hazard.y, 40.0, "grapple_trap", 0.0)
+                                        g_trap.duration = 10.0
+                                        setattr(g_trap, "owner_id", getattr(hazard, "owner_id", -1))
+                                        self.world.arena.hazards.append(g_trap)
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "tar":
                                     # Tar trap: heavily slow down the ball and create a tar puddle
                                     if hasattr(self.ball, "speed_multiplier"):

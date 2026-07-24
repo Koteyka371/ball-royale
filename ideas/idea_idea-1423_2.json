@@ -1,0 +1,4 @@
+{
+  "title": "Homing Missile Booster",
+  "description": "A consumable booster that allows the player's next 3 attacks to track the nearest enemy within a medium radius. The missiles travel slightly slower than normal attacks but have a high turn rate, making them excellent for hitting agile targets."
+}
