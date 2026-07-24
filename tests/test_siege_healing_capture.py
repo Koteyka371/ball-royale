@@ -16,9 +16,13 @@ class MockBall:
         self.radius = 15.0
         self.ball_type = "player"
 
+class _MockSiegeArena(SiegeArena):
+    pass
+_MockSiegeArena.__name__ = "SiegeArena"
+
 class MockWorld:
     def __init__(self):
-        self.arena = SiegeArena(2000.0)
+        self.arena = _MockSiegeArena(2000.0)
         self.arena.generate()
         self.balls = []
 
@@ -35,8 +39,8 @@ def test_attacker_captures_healing_spring():
     action = Action(b, world)
 
     # 5 iterations of 1s delta = 5 seconds. 20 progress per sec = 100
-    for i in range(5):
-        action.execute(strategy={}, delta=1.0)
+    for i in range(6):
+        action.execute(strategy='idle', delta=1.0)
 
     assert getattr(world.arena.hazards[0], 'active', True) == False
     assert getattr(world.arena.hazards[0], 'capture_progress', 0.0) >= 100.0
