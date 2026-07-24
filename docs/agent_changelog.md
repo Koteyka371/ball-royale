@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1452] Windstorm event — *2026-07-24 06:42:18 UTC*
+
+Add a new Windstorm event that knocks all balls back.
+
+---
+
 ## [idea-1446] Ice Boots — *2026-07-24 06:42:13 UTC*
 
 Boots that ignore snow/ice
