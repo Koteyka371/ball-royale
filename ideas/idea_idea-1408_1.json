@@ -1,0 +1,4 @@
+{
+  "title": "Bouncy Borders Mode",
+  "description": "A mutator where hitting the arena bounds reflects the ball with 150% momentum instead of 100%, causing the arena to become chaotic as entities keep accelerating into pinballs unless they manage to brake."
+}

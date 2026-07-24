@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Traps",
+  "description": "Certain booby-trapped safe zones will begin shrinking quickly once a ball enters them, trapping players inside a rapidly decaying safe area that eventually detonates if they don't leave."
+}

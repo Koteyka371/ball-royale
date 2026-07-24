@@ -25516,7 +25516,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'blank_burst']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -34373,6 +34373,44 @@ func _use_skill():
                 var cd = 5.0
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
+        elif skill_name == "blank_burst":
+            # Fire a rapid burst of high-recoil blanks, generating backward thrust to escape
+            var enemies = self._get_enemies()
+            var nx = 1.0
+            var ny = 0.0
+            if enemies.size() > 0:
+                var closest_enemy = enemies[0]
+                var min_dist_sq = INF
+                for e in enemies:
+                    var dx_e = e.x - self.ball.x
+                    var dy_e = e.y - self.ball.y
+                    var dist_sq = dx_e*dx_e + dy_e*dy_e
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        closest_enemy = e
+                var dx = closest_enemy.x - self.ball.x
+                var dy = closest_enemy.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    nx = dx/dist
+                    ny = dy/dist
+
+            # Apply high recoil backward to escape
+            var thrust = 300.0
+            self.ball.vx -= nx * thrust
+            self.ball.vy -= ny * thrust
+
+            # Visual effect for the blanks
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'blank_burst', 'x': self.ball.x, 'y': self.ball.y, 'dir_x': nx, 'dir_y': ny}})
+            elif typeof(self.world) == TYPE_OBJECT and self.world.has_method("get_class"): # crude check for object
+                 if "events" in self.world:
+                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'blank_burst', 'x': self.ball.x, 'y': self.ball.y, 'dir_x': nx, 'dir_y': ny}})
+
+            var cd = 5.0
+            if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+            self.ball.skill_timer = cd
+
         elif skill_name == "throw_bomb":
             if "hazards" in self.world.arena:
                 var hazards = self.world.arena.hazards
