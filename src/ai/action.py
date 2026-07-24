@@ -1161,6 +1161,18 @@ class Action:
                 heal_amount = damage_dealt * 2.0
                 attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
 
+        # Check for Nemesis Vampirism Mode
+        gm = getattr(self.world, 'game_mode', None)
+        if gm and getattr(gm, 'name', '') == 'Nemesis Vampirism':
+            if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
+                if pm.is_nemesis(target.ball_type, attacker.ball_type):
+                    damage_dealt = max(0, old_hp - new_hp)
+                    if damage_dealt > 0:
+                        heal_amount = damage_dealt * 1.0 # 100% lifesteal against nemesis
+                        attacker.hp = min(getattr(attacker, 'hp', 100.0) + heal_amount, getattr(attacker, 'max_hp', 100.0))
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("visual_effect", {"type": "heal", "x": getattr(attacker, "x", 0), "y": getattr(attacker, "y", 0)})
+
         # Apply Necromancer healing on attack logic
         # Check if attacker is necromancer and if so, check for minions within range
         b_type = getattr(attacker, 'ball_type', getattr(attacker.__class__, 'BALL_TYPE', '')).lower()

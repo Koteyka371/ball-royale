@@ -47305,7 +47305,16 @@ class MirrorArenaMode extends GameMode:
 		for np in new_projectiles:
 			projectiles.append(np)
 
+
+class NemesisVampirismMode extends GameMode:
+	func _init():
+		super._init()
+		self.name = "Nemesis Vampirism"
+		self.description = "A game mode where dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+
 GAME_MODES = {
+	"nemesis_vampirism": NemesisVampirismMode.new(),
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),

@@ -29440,7 +29440,16 @@ class BlackHoleWeatherMode(GameMode):
                     if hasattr(b, 'vy'):
                         b.vy += pull_y * 5
 
+
+class NemesisVampirismMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nemesis Vampirism"
+        self.description = "A game mode where dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+
 GAME_MODES = {
+    "nemesis_vampirism": NemesisVampirismMode(),
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),

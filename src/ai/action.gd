@@ -2279,6 +2279,44 @@ func _attempt_damage_internal(attacker, target) -> void:
 	var new_hp = 0.0
 	if "hp" in target: new_hp = float(target.hp)
 
+	var damage_dealt = max(0, old_hp - new_hp)
+	var gm = null
+	if typeof(self.world) == TYPE_OBJECT and "game_mode" in self.world:
+		gm = self.world.game_mode
+	elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("game_mode"):
+		gm = self.world["game_mode"]
+
+	var gm_name = ""
+	if typeof(gm) == TYPE_OBJECT and "name" in gm:
+		gm_name = gm.name
+	elif typeof(gm) == TYPE_DICTIONARY and gm.has("name"):
+		gm_name = gm.name
+
+	if gm_name == "Nemesis Vampirism":
+		if pm != null and pm.has_method("is_nemesis") and attacker_type != "" and target_type != "":
+			if pm.is_nemesis(target_type, attacker_type):
+				if damage_dealt > 0:
+					var heal_amount = damage_dealt * 1.0 # 100% lifesteal against nemesis
+					var cur_hp = 100.0
+					if typeof(attacker) == TYPE_OBJECT and "hp" in attacker: cur_hp = attacker.hp
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"): cur_hp = attacker.hp
+
+					var max_hp = 100.0
+					if typeof(attacker) == TYPE_OBJECT and "max_hp" in attacker: max_hp = attacker.max_hp
+					elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("max_hp"): max_hp = attacker.max_hp
+
+					var final_hp = min(cur_hp + heal_amount, max_hp)
+
+					if typeof(attacker) == TYPE_OBJECT and "hp" in attacker:
+						attacker.hp = final_hp
+					elif typeof(attacker) == TYPE_DICTIONARY:
+						attacker.hp = final_hp
+
+					if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+						var ax = attacker.get("x", 0.0) if typeof(attacker) == TYPE_DICTIONARY else (attacker.x if "x" in attacker else 0.0)
+						var ay = attacker.get("y", 0.0) if typeof(attacker) == TYPE_DICTIONARY else (attacker.y if "y" in attacker else 0.0)
+						self.world.add_event("visual_effect", {"type": "heal", "x": ax, "y": ay})
+
 	if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:
