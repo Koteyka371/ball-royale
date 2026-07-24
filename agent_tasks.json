@@ -24750,7 +24750,7 @@
     },
     {
       "id": "idea-1445",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trail Blazer Mutation",
@@ -36252,6 +36252,23 @@
         "src/ai/time_stop_powerup.py",
         "src/ai/time_stop_powerup.gd",
         "tests/test_time_stop_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2121",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Leech Mode",
+      "description": "A mutator where all balls slowly lose health over time, and the only way to regain health is by dealing damage to enemies, encouraging highly aggressive playstyles.",
+      "allowed_paths": [
+        "src/ai/vampiric_leech.py",
+        "src/ai/vampiric_leech.gd",
+        "tests/test_vampiric_leech.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

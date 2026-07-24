@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1445] Trail Blazer Mutation — *2026-07-24 07:48:07 UTC*
+
+Mutator: All players move 2x faster when on their own team's color trail.
+
+---
+
 ## [idea-1410] Shock Collar Traps — *2026-07-24 07:43:04 UTC*
 
 A new trap variant that latches onto the first ball that steps on it. Instead of exploding immediately, it periodically triggers a minor chain lightning effect to nearby teammates, turning the infected ball into a mobile hazard. It can be removed by picking up a cleansing item or if the infected ball takes enough damage.
