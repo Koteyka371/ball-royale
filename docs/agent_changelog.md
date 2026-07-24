@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1426] Magnetic Anchor Trap — *2026-07-24 22:25:18 UTC*
+
+A trap that greatly increases the gravity well effect on any enemy that steps on it, preventing them from dashing or being pushed for 3 seconds.
+
+---
+
 ## [idea-1468] New Hazard - Stalker Shadows — *2026-07-24 22:25:14 UTC*
 
 During the night cycle, AI-controlled shadow entities can spawn. They act as independent hazards that chase the nearest player, slowing them down on contact and slowly sapping stamina.
