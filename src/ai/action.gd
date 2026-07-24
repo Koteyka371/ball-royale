@@ -16125,6 +16125,36 @@ func execute(strategy: String, delta: float):
                                 weather = self.world.arena.weather
 
                             if trap_variant == "normal":
+                                var season_num = 1
+                                var lbm = null
+                                if typeof(world) == TYPE_DICTIONARY:
+                                    if world.has("leaderboard_manager"): lbm = world["leaderboard_manager"]
+                                    elif world.has("profile_manager") and typeof(world["profile_manager"]) == TYPE_OBJECT and "leaderboard_manager" in world["profile_manager"]:
+                                        lbm = world["profile_manager"].leaderboard_manager
+                                elif typeof(world) == TYPE_OBJECT:
+                                    if "leaderboard_manager" in world: lbm = world.leaderboard_manager
+                                    elif "profile_manager" in world and world.profile_manager != null and "leaderboard_manager" in world.profile_manager:
+                                        lbm = world.profile_manager.leaderboard_manager
+
+                                var theme = "Genesis"
+                                if lbm != null:
+                                    if typeof(lbm) == TYPE_OBJECT and "data" in lbm and typeof(lbm.data) == TYPE_DICTIONARY:
+                                        season_num = lbm.data.get("current_season", 1)
+                                    elif typeof(lbm) == TYPE_DICTIONARY and lbm.has("data") and typeof(lbm["data"]) == TYPE_DICTIONARY:
+                                        season_num = lbm["data"].get("current_season", 1)
+                                    if typeof(lbm) == TYPE_OBJECT and lbm.has_method("get_theme"):
+                                        theme = lbm.get_theme(season_num)
+
+                                if theme == "Inferno":
+                                    hazard.kind = "lava_pool"
+                                elif theme == "Frost":
+                                    trap_variant = "freeze"
+                                    hazard.kind = "ice_patch"
+                                elif theme == "Void":
+                                    hazard.kind = "black_hole"
+                                    if "damage" in hazard: hazard.damage = 0.0
+                                    elif typeof(hazard) == TYPE_DICTIONARY: hazard["damage"] = 0.0
+
                                 if weather == "blizzard" or weather == "snow" or weather == "ice":
                                     trap_variant = "freeze"
                                     hazard.kind = "ice_patch"

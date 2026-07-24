@@ -8301,7 +8301,30 @@ class Action:
                                 if not weather and hasattr(self.world, "arena"):
                                     weather = getattr(self.world.arena, "weather", "")
 
+                                # Apply seasonal theme if trap is normal
                                 if trap_variant == "normal":
+                                    season_num = 1
+                                    if getattr(self.world, "leaderboard_manager", None) is not None and hasattr(self.world.leaderboard_manager, "data"):
+                                        season_num = getattr(self.world.leaderboard_manager, "data", {}).get("current_season", 1)
+                                    elif getattr(self.world, "profile_manager", None) is not None and getattr(self.world.profile_manager, "leaderboard_manager", None) is not None and hasattr(self.world.profile_manager.leaderboard_manager, "data"):
+                                        season_num = getattr(self.world.profile_manager.leaderboard_manager, "data", {}).get("current_season", 1)
+
+                                    theme = "Genesis"
+                                    if getattr(self.world, "leaderboard_manager", None) is not None and hasattr(self.world.leaderboard_manager, "get_theme"):
+                                        theme = self.world.leaderboard_manager.get_theme(season_num)
+                                    elif getattr(self.world, "profile_manager", None) is not None and getattr(self.world.profile_manager, "leaderboard_manager", None) is not None and hasattr(self.world.profile_manager.leaderboard_manager, "get_theme"):
+                                        theme = self.world.profile_manager.leaderboard_manager.get_theme(season_num)
+
+                                    if theme == "Inferno":
+                                        hazard.kind = "lava_pool"
+                                    elif theme == "Frost":
+                                        trap_variant = "freeze"
+                                        hazard.kind = "ice_patch"
+                                    elif theme == "Void":
+                                        hazard.kind = "black_hole"
+                                        hazard.damage = 0.0
+                                        # To ensure black hole works we need some specific stats?
+
                                     if weather in ["blizzard", "snow", "ice"]:
                                         trap_variant = "freeze"
                                         hazard.kind = "ice_patch"
