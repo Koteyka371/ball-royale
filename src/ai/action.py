@@ -15228,6 +15228,25 @@ class Action:
 
                 self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 10.0)
 
+            elif skill_name == "recoil_blanks":
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("recoil_blanks")
+
+                # Rapid burst of high-recoil blanks generating intense backward thrust
+                if getattr(self.ball, "vx", 0.0) == 0.0 and getattr(self.ball, "vy", 0.0) == 0.0:
+                    pass
+                else:
+                    mag = math.hypot(self.ball.vx, self.ball.vy)
+                    nx = self.ball.vx / mag
+                    ny = self.ball.vy / mag
+
+                    # intense backward thrust to quickly escape dangerous situations
+                    thrust = getattr(self.ball, "speed", 200.0) * 5.0
+                    self.ball.vx -= nx * thrust
+                    self.ball.vy -= ny * thrust
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
+
             elif skill_name == "clone":
                 import copy
                 import random

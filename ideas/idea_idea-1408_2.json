@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Entanglement Mine",
+  "description": "A deployable hazard that links to the ball that placed it. When an enemy triggers the mine, they receive a burst of damage, and the owner of the mine is immediately teleported to the mine's location, allowing for sudden ambushes."
+}
