@@ -2247,6 +2247,14 @@ class Action:
                 if self.ball.thermal_boots_timer <= 0.0:
                     if hasattr(self.ball, "inventory") and "thermal_boots" in self.ball.inventory:
                         self.ball.inventory.remove("thermal_boots")
+
+        if hasattr(self.ball, "snow_boots_timer"):
+            if self.ball.snow_boots_timer > 0.0:
+                self.ball.snow_boots_timer = max(0.0, self.ball.snow_boots_timer - delta)
+                if self.ball.snow_boots_timer <= 0.0:
+                    if hasattr(self.ball, "inventory") and "snow_boots" in self.ball.inventory:
+                        self.ball.inventory.remove("snow_boots")
+
         if getattr(self.ball, "ball_type", "") == "spectator":
             if strategy.startswith("cheer:"):
                 parts = strategy.split(":")
@@ -5217,7 +5225,7 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
             ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
-            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", []))
+            ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
             ignores_wind = cosmetic in ["heavy_boots", "lead_boots"] or (hasattr(self.ball, "inventory") and "gravity_boots" in getattr(self.ball, "inventory", []))
             is_kite = cosmetic == "kite"
 
@@ -5448,7 +5456,8 @@ class Action:
             is_heatwave = getattr(arena, 'is_heatwave', False) if arena else False
             is_windy = getattr(arena, 'is_windy', False) if arena else False
 
-            if is_snowing:
+            ignores_snow_ice = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
+            if is_snowing and not ignores_snow_ice:
                 self.ball.base_speed *= 0.8  # Snow slows down
             if is_windy:
                 self.ball.base_speed *= 1.2  # Windy speeds up
@@ -7381,7 +7390,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])):
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
                                         self.ball.y += self.ball.vy * delta
@@ -7394,7 +7403,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])):
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -7406,7 +7415,7 @@ class Action:
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
                             if dist_sq < hazard.radius * hazard.radius:
-                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])):
+                                if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] and not (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                     self.ball.is_frictionless = True
                                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                         self.ball.x += self.ball.vx * delta
@@ -7554,7 +7563,7 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])):
+                            if getattr(self.ball, "ball_type", "") == "snow_yeti" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] or (hasattr(self.ball, "inventory") and ("thermal_boots" in getattr(self.ball, "inventory", []) or "snow_boots" in getattr(self.ball, "inventory", []))):
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * (2.0 if getattr(self.ball, "ball_type", "") == "snow_yeti" else 1.0)
                                 if hasattr(self.ball, "is_slipping"):
                                     self.ball.is_slipping = False
@@ -14135,6 +14144,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "snow_boots":
+                    if "snow_boots" not in self.ball.inventory:
+                        self.ball.inventory.append("snow_boots")
+                    self.ball.snow_boots_timer = 15.0
+                    if getattr(nearest, "active", True):
+                        nearest.active = False
+                        if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                            self.world.boosters.remove(nearest)
+                        self.world.events.append({"type": "booster_collected", "ball_id": self.ball.id, "booster_type": "snow_boots"})
+
                 elif getattr(nearest, "kind", None) == "thermal_boots":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -14146,6 +14165,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "snow_boots":
+                    if "snow_boots" not in self.ball.inventory:
+                        self.ball.inventory.append("snow_boots")
+                    self.ball.snow_boots_timer = 15.0
+                    if getattr(nearest, "active", True):
+                        nearest.active = False
+                        if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                            self.world.boosters.remove(nearest)
+                        self.world.events.append({"type": "booster_collected", "ball_id": self.ball.id, "booster_type": "snow_boots"})
+
                 elif getattr(nearest, "kind", None) == "thermal_boots":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -20388,7 +20417,8 @@ class Action:
             cooldown_mult *= 0.5
         elif getattr(self.ball, "fast_motion_zone_active", False):
             cooldown_mult *= 1.5
-        if is_snowing:
+        ignores_snow_ice = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
+        if is_snowing and not ignores_snow_ice:
             cooldown_mult *= 0.5  # Snow slows down cooldowns (longer wait)
         elif is_heatwave:
             cooldown_mult *= 1.5  # Heatwave speeds up cooldowns (faster recovery)

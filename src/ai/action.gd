@@ -10280,7 +10280,7 @@ func execute(strategy: String, delta: float):
         if "cosmetic" in my_ball:
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
         var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
-        var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"]
+        var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get") and my_ball.get("inventory") != null and typeof(my_ball.get("inventory")) == TYPE_ARRAY and my_ball.get("inventory").has("snow_boots")) or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("inventory") and typeof(my_ball["inventory"]) == TYPE_ARRAY and my_ball["inventory"].has("snow_boots"))
         if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get") and my_ball.get("inventory") != null and typeof(my_ball.get("inventory")) == TYPE_ARRAY and my_ball.get("inventory").has("thermal_boots"):
             ignores_snow_ice = true
         elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("inventory") and typeof(my_ball["inventory"]) == TYPE_ARRAY and my_ball["inventory"].has("thermal_boots"):
@@ -14311,9 +14311,9 @@ func execute(strategy: String, delta: float):
                             if "cosmetic" in self.ball:
                                 cos_slip = str(self.ball.cosmetic).to_lower().replace(" ", "_")
                             var has_thermal = false
-                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("inventory") != null and typeof(self.ball.get("inventory")) == TYPE_ARRAY and self.ball.get("inventory").has("thermal_boots"):
+                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("inventory") != null and typeof(self.ball.get("inventory")) == TYPE_ARRAY and (self.ball.get("inventory").has("thermal_boots") or self.ball.get("inventory").has("snow_boots")):
                                 has_thermal = true
-                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory") and typeof(self.ball["inventory"]) == TYPE_ARRAY and self.ball["inventory"].has("thermal_boots"):
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory") and typeof(self.ball["inventory"]) == TYPE_ARRAY and (self.ball["inventory"].has("thermal_boots") or self.ball["inventory"].has("snow_boots")):
                                 has_thermal = true
                             if not (cos_slip in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] or has_thermal):
                                 if "vx" in self.ball and "vy" in self.ball:
@@ -14896,9 +14896,9 @@ func execute(strategy: String, delta: float):
                         var cos_slip = ""
                         if "cosmetic" in self.ball: cos_slip = str(self.ball.cosmetic).to_lower().replace(" ", "_")
                         var has_thermal2 = false
-                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("inventory") != null and typeof(self.ball.get("inventory")) == TYPE_ARRAY and self.ball.get("inventory").has("thermal_boots"):
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("inventory") != null and typeof(self.ball.get("inventory")) == TYPE_ARRAY and (self.ball.get("inventory").has("thermal_boots") or self.ball.get("inventory").has("snow_boots")):
                             has_thermal2 = true
-                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory") and typeof(self.ball["inventory"]) == TYPE_ARRAY and self.ball["inventory"].has("thermal_boots"):
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory") and typeof(self.ball["inventory"]) == TYPE_ARRAY and (self.ball["inventory"].has("thermal_boots") or self.ball["inventory"].has("snow_boots")):
                             has_thermal2 = true
                         if bt == "snow_yeti" or cos_slip in ["snowshoes", "snow_boots", "snow_tires", "spiked_tires"] or has_thermal2:
                             var base_s = 100.0
@@ -39919,7 +39919,12 @@ func _update_skill_timer(delta: float):
     if smz_active:
         cooldown_mult *= 0.5
 
-    if is_snowing:
+    var ignores_snow_ice = false
+    var cosmetic = str(self.ball.get("cosmetic") if typeof(self.ball) == TYPE_OBJECT else self.ball.get("cosmetic", "")).to_lower().replace(" ", "_")
+    if cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"]: ignores_snow_ice = true
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("inventory") != null and typeof(self.ball.get("inventory")) == TYPE_ARRAY and (self.ball.get("inventory").has("thermal_boots") or self.ball.get("inventory").has("snow_boots")): ignores_snow_ice = true
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory") and typeof(self.ball["inventory"]) == TYPE_ARRAY and (self.ball["inventory"].has("thermal_boots") or self.ball["inventory"].has("snow_boots")): ignores_snow_ice = true
+    if is_snowing and not ignores_snow_ice:
         cooldown_mult *= 0.5
     elif is_heatwave:
         cooldown_mult *= 1.5
