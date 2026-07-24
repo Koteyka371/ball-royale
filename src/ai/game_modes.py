@@ -14166,6 +14166,8 @@ class DayNightMode(GameMode):
         self.active_sunlight_beams = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
         self.moonlight_shadow_timer = 0.0
         self.active_moonlight_shadows = [] # list of dicts: {'x', 'y', 'radius', 'duration'}
+        self.is_solar_flare = False
+        self.solar_flare_timer = 0.0
 
     def setup(self, world, balls):
         super().setup(world, balls)
@@ -14179,6 +14181,8 @@ class DayNightMode(GameMode):
         self.active_moonlight_shadows = []
         self.eclipse_timer = 0.0
         self.is_eclipse_active = False
+        self.is_solar_flare = False
+        self.solar_flare_timer = 0.0
 
     def _line_intersects_circle(self, p1, p2, circle_center, radius):
         # Math calculation to see if a line segment intersects a circle
@@ -14365,6 +14369,12 @@ class DayNightMode(GameMode):
 
             # Sunlight beams only during the day spawn
             if not is_night:
+                if not getattr(self, "is_solar_flare", False):
+                    if random.random() < 0.02 * delta:
+                        self.is_solar_flare = True
+                        self.solar_flare_timer = 10.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "solar_flare_start", "duration": 10.0})
                 self.sunlight_beam_timer += delta
 
                 # Occasionally spawn reflective shields during the day
@@ -14387,6 +14397,49 @@ class DayNightMode(GameMode):
 
                     if hasattr(world, "add_event"):
                         world.add_event("visual_effect", {"type": "sunlight_beam", "x": fx, "y": fy, "radius": beam_radius, "duration": 2.0})
+
+            if getattr(self, "is_solar_flare", False):
+                self.solar_flare_timer -= delta
+                if self.solar_flare_timer <= 0.0:
+                    self.is_solar_flare = False
+
+            is_solar_flare = getattr(self, "is_solar_flare", False)
+
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                in_cover = False
+                b_radius = getattr(b, "radius", 15.0)
+                hazards = getattr(world.arena, "hazards", [])
+                for hz in hazards:
+                    hx, hy, hr = 0.0, 0.0, 0.0
+                    if isinstance(hz, dict):
+                        hx, hy, hr = hz.get("x", 0.0), hz.get("y", 0.0), hz.get("radius", 0.0)
+                    else:
+                        hx, hy, hr = getattr(hz, "x", 0.0), getattr(hz, "y", 0.0), getattr(hz, "radius", 0.0)
+
+                    dist_sq = (b.x - hx)**2 + (b.y - hy)**2
+                    if dist_sq <= (hr + b_radius)**2:
+                        in_cover = True
+                        break
+
+                current_penalty = getattr(b, "flare_hp_penalty", 0.0)
+                if is_solar_flare and not in_cover:
+                    increase = 20.0 * delta
+                    if isinstance(current_penalty, (int, float)) and current_penalty + increase > 50.0:
+                        increase = 50.0 - current_penalty
+                    if increase > 0:
+                        b.flare_hp_penalty = current_penalty + increase
+                        b.max_hp = getattr(b, "max_hp", 100.0) - increase
+                        if getattr(b, "hp", 100.0) > b.max_hp:
+                            b.hp = b.max_hp
+                else:
+                    if isinstance(current_penalty, (int, float)) and current_penalty > 0.0:
+                        decrease = 20.0 * delta
+                        decrease = min(decrease, current_penalty)
+                        b.flare_hp_penalty = current_penalty - decrease
+                        b.max_hp = getattr(b, "max_hp", 100.0) + decrease
 
             # Solar flare timer decay (runs always) and random buff (only during day)
             for b in balls:
