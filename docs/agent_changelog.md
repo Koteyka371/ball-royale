@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1380] Aura Bomb Event — *2026-07-24 00:40:15 UTC*
+
+An event where random players are given a ticking 'Aura Bomb'. They must rush away from their teammates to avoid wiping them out in an aura explosion, but rushing towards enemies will damage them.
+
+---
+
 ## [idea-1387] Corruption Hazard Zones — *2026-07-24 00:35:49 UTC*
 
 Periodically, zones of corruption appear in the arena. Balls that stay in the corruption zone have their health drained, but they gain a temporary massive boost to attack damage and movement speed while inside, offering a high-risk, high-reward tactical element.
