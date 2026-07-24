@@ -1,0 +1,4 @@
+{
+    "title": "Orbital Debris Hazard",
+    "description": "A hazard that spawns in the center of the arena and periodically flings small, destructible debris towards players. The debris blocks projectiles and deals minor damage on impact."
+}
