@@ -24120,7 +24120,7 @@
     },
     {
       "id": "idea-1408",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Recoil-Powered Evasive Maneuver Skill",
@@ -36491,6 +36491,23 @@
         "src/ui/guild_stronghold_layout_editor.gd",
         "src/ai/guild_stronghold_layout_editor.py",
         "tests/test_guild_stronghold_layout_editor.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2135",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Drift Modifier",
+      "description": "A new arena modifier mode where physics friction is disabled entirely, and all balls continue moving endlessly in their last direction unless acted upon by a skill, wall, or another player.",
+      "allowed_paths": [
+        "src/ai/cosmic_drift.py",
+        "src/ai/cosmic_drift.gd",
+        "tests/test_cosmic_drift.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

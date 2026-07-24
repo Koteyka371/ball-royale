@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1408] Recoil-Powered Evasive Maneuver Skill — *2026-07-24 21:17:13 UTC*
+
+An active skill that fires a rapid burst of high-recoil blanks, generating intense backward thrust to quickly escape dangerous situations without damaging enemies.
+
+---
+
 ## [idea-1455] Magnetic Boots Cosmetic Item — *2026-07-24 21:03:59 UTC*
 
 A cosmetic item that alters physical collisions by significantly reducing the knockback multiplier when a ball is hit by an attack, effectively rooting them or slowing their displacement in the arena.
