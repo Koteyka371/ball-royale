@@ -36359,6 +36359,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2127",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Portal Mine",
+      "description": "A mine that teleports the triggering player to a random spot on the arena while dealing minor damage.",
+      "allowed_paths": [
+        "src/ai/portal_mine.py",
+        "src/ai/portal_mine.gd",
+        "tests/test_portal_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
