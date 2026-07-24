@@ -3038,6 +3038,159 @@ func execute(strategy: String, delta: float):
             self.ball["decoy_mimic_cast_timer"] = mimic_timer
 
     # Tick artifact timers
+    var has_quantum_echo = false
+    if typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and "quantum_echo" in self.ball and self.ball.quantum_echo: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and typeof(self.ball["traits"]) == TYPE_ARRAY and self.ball["traits"].has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo") and self.ball["quantum_echo"]: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("traits") and typeof(self.ball.get_meta("traits")) == TYPE_ARRAY and self.ball.get_meta("traits").has("quantum_echo"): has_quantum_echo = true
+
+    if has_quantum_echo:
+        var q_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_timer" in self.ball: q_timer = self.ball.quantum_echo_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_timer"): q_timer = self.ball["quantum_echo_timer"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_timer"): q_timer = self.ball.get_meta("quantum_echo_timer")
+        else: q_timer = 3.0
+
+        q_timer -= delta
+        if q_timer <= 0.0:
+            q_timer = 3.0
+            var ghosts = []
+            if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: ghosts = self.ball.quantum_echo_ghosts
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghosts"): ghosts = self.ball["quantum_echo_ghosts"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghosts"): ghosts = self.ball.get_meta("quantum_echo_ghosts")
+
+            var b_hp = 100.0
+            if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: b_hp = self.ball.hp
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): b_hp = self.ball["hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("hp"): b_hp = self.ball.get_meta("hp")
+
+            var b_x = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: b_x = self.ball.x
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): b_x = self.ball["x"]
+
+            var b_y = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: b_y = self.ball.y
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): b_y = self.ball["y"]
+
+            ghosts.append({"x": b_x, "y": b_y, "hp": b_hp})
+            if ghosts.size() > 10: ghosts.pop_front()
+
+            if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: self.ball.quantum_echo_ghosts = ghosts
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["quantum_echo_ghosts"] = ghosts
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_ghosts", ghosts)
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({"type": "visual_effect", "data": {"type": "quantum_echo_ghost", "x": b_x, "y": b_y}})
+            elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world["events"].append({"type": "visual_effect", "data": {"type": "quantum_echo_ghost", "x": b_x, "y": b_y}})
+
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_timer" in self.ball: self.ball.quantum_echo_timer = q_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["quantum_echo_timer"] = q_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_timer", q_timer)
+
+    var has_quantum_echo = false
+    if typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and "quantum_echo" in self.ball and self.ball.quantum_echo: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and typeof(self.ball["traits"]) == TYPE_ARRAY and self.ball["traits"].has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo") and self.ball["quantum_echo"]: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("traits") and typeof(self.ball.get_meta("traits")) == TYPE_ARRAY and self.ball.get_meta("traits").has("quantum_echo"): has_quantum_echo = true
+
+    if has_quantum_echo:
+        var q_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_timer" in self.ball: q_timer = self.ball.quantum_echo_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_timer"): q_timer = self.ball["quantum_echo_timer"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_timer"): q_timer = self.ball.get_meta("quantum_echo_timer")
+        else: q_timer = 3.0
+
+        q_timer -= delta
+        if q_timer <= 0.0:
+            q_timer = 3.0
+            var ghosts = []
+            if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: ghosts = self.ball.quantum_echo_ghosts
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghosts"): ghosts = self.ball["quantum_echo_ghosts"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghosts"): ghosts = self.ball.get_meta("quantum_echo_ghosts")
+
+            var b_hp = 100.0
+            if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: b_hp = self.ball.hp
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): b_hp = self.ball["hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("hp"): b_hp = self.ball.get_meta("hp")
+
+            var b_x = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: b_x = self.ball.x
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): b_x = self.ball["x"]
+
+            var b_y = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: b_y = self.ball.y
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): b_y = self.ball["y"]
+
+            ghosts.append({"x": b_x, "y": b_y, "hp": b_hp})
+            if ghosts.size() > 10: ghosts.pop_front()
+
+            if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: self.ball.quantum_echo_ghosts = ghosts
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["quantum_echo_ghosts"] = ghosts
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_ghosts", ghosts)
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({"type": "visual_effect", "data": {"type": "quantum_echo_ghost", "x": b_x, "y": b_y}})
+            elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world["events"].append({"type": "visual_effect", "data": {"type": "quantum_echo_ghost", "x": b_x, "y": b_y}})
+
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_timer" in self.ball: self.ball.quantum_echo_timer = q_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["quantum_echo_timer"] = q_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_timer", q_timer)
+
+    var has_quantum_echo = false
+    if typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and "quantum_echo" in self.ball and self.ball.quantum_echo: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and typeof(self.ball["traits"]) == TYPE_ARRAY and self.ball["traits"].has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo") and self.ball["quantum_echo"]: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("traits") and typeof(self.ball.get_meta("traits")) == TYPE_ARRAY and self.ball.get_meta("traits").has("quantum_echo"): has_quantum_echo = true
+
+    if has_quantum_echo:
+        var q_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_timer" in self.ball: q_timer = self.ball.quantum_echo_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_timer"): q_timer = self.ball["quantum_echo_timer"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_timer"): q_timer = self.ball.get_meta("quantum_echo_timer")
+        else: q_timer = 3.0
+
+        q_timer -= delta
+        if q_timer <= 0.0:
+            q_timer = 3.0
+            var ghosts = []
+            if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: ghosts = self.ball.quantum_echo_ghosts
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghosts"): ghosts = self.ball["quantum_echo_ghosts"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghosts"): ghosts = self.ball.get_meta("quantum_echo_ghosts")
+
+            var b_hp = 100.0
+            if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: b_hp = self.ball.hp
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): b_hp = self.ball["hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("hp"): b_hp = self.ball.get_meta("hp")
+
+            var b_x = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: b_x = self.ball.x
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): b_x = self.ball["x"]
+
+            var b_y = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: b_y = self.ball.y
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): b_y = self.ball["y"]
+
+            ghosts.append({"x": b_x, "y": b_y, "hp": b_hp})
+            if ghosts.size() > 10: ghosts.pop_front()
+
+            if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: self.ball.quantum_echo_ghosts = ghosts
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["quantum_echo_ghosts"] = ghosts
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_ghosts", ghosts)
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({"type": "visual_effect", "data": {"type": "quantum_echo_ghost", "x": b_x, "y": b_y}})
+            elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world["events"].append({"type": "visual_effect", "data": {"type": "quantum_echo_ghost", "x": b_x, "y": b_y}})
+
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_timer" in self.ball: self.ball.quantum_echo_timer = q_timer
+        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["quantum_echo_timer"] = q_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_timer", q_timer)
+
     if "has_aegis_shield" in self.ball and self.ball.has_aegis_shield:
         if "aegis_shield_cooldown" in self.ball and self.ball.aegis_shield_cooldown > 0:
             self.ball.aegis_shield_cooldown -= delta
@@ -28482,6 +28635,132 @@ func _use_skill():
 
     if "active_skill" in self.ball and self.ball.active_skill != "":
         skill_name = self.ball.active_skill
+
+    var has_quantum_echo = false
+    if typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and "quantum_echo" in self.ball and self.ball.quantum_echo: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and typeof(self.ball["traits"]) == TYPE_ARRAY and self.ball["traits"].has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo") and self.ball["quantum_echo"]: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("traits") and typeof(self.ball.get_meta("traits")) == TYPE_ARRAY and self.ball.get_meta("traits").has("quantum_echo"): has_quantum_echo = true
+
+    if has_quantum_echo:
+        var ghosts = []
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: ghosts = self.ball.quantum_echo_ghosts
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghosts"): ghosts = self.ball["quantum_echo_ghosts"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghosts"): ghosts = self.ball.get_meta("quantum_echo_ghosts")
+
+        if ghosts.size() > 0:
+            var recent = ghosts.pop_back()
+
+            if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: self.ball.x = recent["x"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] = recent["x"]
+
+            if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: self.ball.y = recent["y"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] = recent["y"]
+
+            if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = recent["hp"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = recent["hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", recent["hp"])
+
+            var s_cd = 3.0
+            if typeof(self.ball) == TYPE_OBJECT and "SKILL_COOLDOWN" in self.ball: s_cd = self.ball.SKILL_COOLDOWN
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): s_cd = self.ball["SKILL_COOLDOWN"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): s_cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+            if typeof(self.ball) == TYPE_OBJECT and "skill_timer" in self.ball: self.ball.skill_timer = s_cd
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = s_cd
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", s_cd)
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({"type": "visual_effect", "data": {"type": "quantum_echo_teleport", "x": recent["x"], "y": recent["y"]}})
+            elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world["events"].append({"type": "visual_effect", "data": {"type": "quantum_echo_teleport", "x": recent["x"], "y": recent["y"]}})
+
+            return
+
+    var has_quantum_echo = false
+    if typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and "quantum_echo" in self.ball and self.ball.quantum_echo: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and typeof(self.ball["traits"]) == TYPE_ARRAY and self.ball["traits"].has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo") and self.ball["quantum_echo"]: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("traits") and typeof(self.ball.get_meta("traits")) == TYPE_ARRAY and self.ball.get_meta("traits").has("quantum_echo"): has_quantum_echo = true
+
+    if has_quantum_echo:
+        var ghosts = []
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: ghosts = self.ball.quantum_echo_ghosts
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghosts"): ghosts = self.ball["quantum_echo_ghosts"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghosts"): ghosts = self.ball.get_meta("quantum_echo_ghosts")
+
+        if ghosts.size() > 0:
+            var recent = ghosts.pop_back()
+
+            if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: self.ball.x = recent["x"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] = recent["x"]
+
+            if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: self.ball.y = recent["y"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] = recent["y"]
+
+            if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = recent["hp"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = recent["hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", recent["hp"])
+
+            var s_cd = 3.0
+            if typeof(self.ball) == TYPE_OBJECT and "SKILL_COOLDOWN" in self.ball: s_cd = self.ball.SKILL_COOLDOWN
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): s_cd = self.ball["SKILL_COOLDOWN"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): s_cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+            if typeof(self.ball) == TYPE_OBJECT and "skill_timer" in self.ball: self.ball.skill_timer = s_cd
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = s_cd
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", s_cd)
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({"type": "visual_effect", "data": {"type": "quantum_echo_teleport", "x": recent["x"], "y": recent["y"]}})
+            elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world["events"].append({"type": "visual_effect", "data": {"type": "quantum_echo_teleport", "x": recent["x"], "y": recent["y"]}})
+
+            return
+
+    var has_quantum_echo = false
+    if typeof(self.ball) == TYPE_OBJECT and "traits" in self.ball and typeof(self.ball.traits) == TYPE_ARRAY and self.ball.traits.has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and "quantum_echo" in self.ball and self.ball.quantum_echo: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("traits") and typeof(self.ball["traits"]) == TYPE_ARRAY and self.ball["traits"].has("quantum_echo"): has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo") and self.ball["quantum_echo"]: has_quantum_echo = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("traits") and typeof(self.ball.get_meta("traits")) == TYPE_ARRAY and self.ball.get_meta("traits").has("quantum_echo"): has_quantum_echo = true
+
+    if has_quantum_echo:
+        var ghosts = []
+        if typeof(self.ball) == TYPE_OBJECT and "quantum_echo_ghosts" in self.ball: ghosts = self.ball.quantum_echo_ghosts
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghosts"): ghosts = self.ball["quantum_echo_ghosts"]
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghosts"): ghosts = self.ball.get_meta("quantum_echo_ghosts")
+
+        if ghosts.size() > 0:
+            var recent = ghosts.pop_back()
+
+            if typeof(self.ball) == TYPE_OBJECT and "x" in self.ball: self.ball.x = recent["x"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] = recent["x"]
+
+            if typeof(self.ball) == TYPE_OBJECT and "y" in self.ball: self.ball.y = recent["y"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] = recent["y"]
+
+            if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = recent["hp"]
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = recent["hp"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", recent["hp"])
+
+            var s_cd = 3.0
+            if typeof(self.ball) == TYPE_OBJECT and "SKILL_COOLDOWN" in self.ball: s_cd = self.ball.SKILL_COOLDOWN
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): s_cd = self.ball["SKILL_COOLDOWN"]
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): s_cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+            if typeof(self.ball) == TYPE_OBJECT and "skill_timer" in self.ball: self.ball.skill_timer = s_cd
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = s_cd
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", s_cd)
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({"type": "visual_effect", "data": {"type": "quantum_echo_teleport", "x": recent["x"], "y": recent["y"]}})
+            elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world["events"].append({"type": "visual_effect", "data": {"type": "quantum_echo_teleport", "x": recent["x"], "y": recent["y"]}})
+
+            return
 
     var can_recast = false
     if skill_name == "glitch_teleport":
