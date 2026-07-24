@@ -1402,6 +1402,18 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if tgt_emotion == "anger" or tgt_emotion == "rage":
 		original_damage *= 1.5
 
+	var c_timer = 0.0
+	if typeof(attacker) == TYPE_OBJECT:
+		if "courage_timer" in attacker:
+			c_timer = float(attacker.courage_timer)
+		elif attacker.has_method("get_meta") and attacker.has_meta("courage_timer"):
+			c_timer = float(attacker.get_meta("courage_timer"))
+	elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("courage_timer"):
+		c_timer = float(attacker["courage_timer"])
+
+	if c_timer > 0.0:
+		original_damage *= 1.15
+
 	if target.has_method("get_meta") and target.has_meta("spotlight_damage_multiplier"):
 		original_damage *= float(target.get_meta("spotlight_damage_multiplier"))
 	elif "spotlight_damage_multiplier" in target:
@@ -2276,6 +2288,26 @@ func _attempt_damage_internal(attacker, target) -> void:
 					base_xp *= 2.0
 			self._award_xp(attacker, base_xp, self.world)
 	if new_hp <= 0 and old_hp > 0:
+		var tgt_em = ""
+		if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("emotion"):
+			tgt_em = target.get_meta("emotion")
+		elif "emotion" in target:
+			tgt_em = target.emotion
+
+		if tgt_em == "fear" and randf() < 0.5:
+			if typeof(attacker) == TYPE_OBJECT:
+				if "courage_timer" in attacker:
+					attacker.courage_timer = 10.0
+				elif attacker.has_method("set_meta"):
+					attacker.set_meta("courage_timer", 10.0)
+			elif typeof(attacker) == TYPE_DICTIONARY:
+				attacker["courage_timer"] = 10.0
+
+			if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+				var ax = attacker.get("x", 0.0) if typeof(attacker) == TYPE_DICTIONARY else (attacker.x if "x" in attacker else 0.0)
+				var ay = attacker.get("y", 0.0) if typeof(attacker) == TYPE_DICTIONARY else (attacker.y if "y" in attacker else 0.0)
+				self.world.add_event("visual_effect", {"type": "courage_proc", "x": ax, "y": ay})
+
 		var pm_local = null
 		if typeof(self.world) == TYPE_OBJECT and "profile_manager" in self.world:
 			pm_local = self.world.profile_manager
@@ -2902,6 +2934,40 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var c_timer = 0.0
+	if typeof(self.ball) == TYPE_OBJECT:
+		if "courage_timer" in self.ball:
+			c_timer = float(self.ball.courage_timer)
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("courage_timer"):
+			c_timer = float(self.ball.get_meta("courage_timer"))
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("courage_timer"):
+		c_timer = float(self.ball["courage_timer"])
+
+	if c_timer > 0.0:
+		c_timer -= delta
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "courage_timer" in self.ball:
+				self.ball.courage_timer = c_timer
+			elif self.ball.has_method("set_meta"):
+				self.ball.set_meta("courage_timer", c_timer)
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["courage_timer"] = c_timer
+
+		var b_em = ""
+		if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("emotion"):
+			b_em = self.ball.get_meta("emotion")
+		elif "emotion" in self.ball:
+			b_em = self.ball.emotion
+
+		if b_em == "fear":
+			if typeof(self.ball) == TYPE_OBJECT:
+				if "emotion" in self.ball:
+					self.ball.emotion = "neutral"
+				elif self.ball.has_method("set_meta"):
+					self.ball.set_meta("emotion", "neutral")
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["emotion"] = "neutral"
+
     var is_decoy = false
     if "is_decoy" in self.ball and self.ball.is_decoy: is_decoy = true
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("is_decoy") and self.ball.get_meta("is_decoy"): is_decoy = true

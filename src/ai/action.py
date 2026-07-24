@@ -763,6 +763,9 @@ class Action:
         if att_emotion in ("anger", "rage"):
             original_damage *= 1.5
 
+        if getattr(attacker, "courage_timer", 0.0) > 0:
+            original_damage *= 1.15
+
         tgt_emotion = getattr(target, "emotion", "")
         if tgt_emotion in ("anger", "rage"):
             original_damage *= 1.5
@@ -1187,6 +1190,13 @@ class Action:
                 self._award_xp(attacker, base_xp, self.world)
 
         if new_hp <= 0 and old_hp > 0:
+            import random
+            tgt_emotion = getattr(target, "emotion", "")
+            if tgt_emotion == "fear" and random.random() < 0.5:
+                attacker.courage_timer = 10.0
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("visual_effect", {"type": "courage_proc", "x": getattr(attacker, "x", 0), "y": getattr(attacker, "y", 0)})
+
             if b_type_attacker == 'bounty_hunter' and (getattr(target, 'is_bounty', False) or getattr(target, 'high_threat', False) or getattr(target, 'is_bounty_target', False)):
                 reward_amt = getattr(target, 'bounty_contract_xp_reward', 500)
                 currency_cut = int(reward_amt * 0.1) # 10% of xp as currency
@@ -1592,6 +1602,10 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "courage_timer", 0.0) > 0:
+            self.ball.courage_timer -= delta
+            if getattr(self.ball, "emotion", "") == "fear":
+                self.ball.emotion = "neutral"
         if getattr(self.ball, "is_decoy", False) or getattr(self.ball, "is_decoy_clone", False):
             if not hasattr(self.ball, "decoy_mimic_cast_timer"):
                 import random
