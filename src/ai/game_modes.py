@@ -36598,6 +36598,79 @@ GAME_MODES['tilting_platform'] = TiltingPlatformMode()
 GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode()
 
 
+
+class WindstormEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Windstorm Event"
+        self.description = "A global event that causes a massive windstorm, periodically knocking all balls back in a specific direction and increasing chaotic movement."
+        self.push_timer = 3.0
+        self.push_duration = 0.0
+        self.push_dir_x = 0.0
+        self.push_dir_y = 0.0
+        self.push_strength = 800.0
+
+        self.event_timer = 20.0
+        self.event_duration = 10.0
+        self.is_active = False
+        import random
+        self.random = random
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not self.is_active:
+            self.event_timer -= delta
+            if self.event_timer <= 0.0:
+                self.is_active = True
+                self.event_duration = 10.0
+                if hasattr(world, "add_event"):
+                    world.add_event("windstorm_event_start", {"message": "A massive windstorm is blowing through the arena!"})
+                # Immediately start a push
+                self.push_timer = 0.0
+        else:
+            self.event_duration -= delta
+            if self.event_duration <= 0.0:
+                self.is_active = False
+                self.event_timer = 20.0
+                self.push_duration = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("windstorm_event_end", {"message": "The windstorm has passed."})
+            else:
+                self.push_timer -= delta
+                if self.push_timer <= 0.0:
+                    if self.push_duration <= 0.0:
+                        import math
+                        angle = self.random.uniform(0, 2 * math.pi)
+                        self.push_dir_x = math.cos(angle)
+                        self.push_dir_y = math.sin(angle)
+                        self.push_duration = self.random.uniform(1.5, 2.5)
+                        if hasattr(world, "add_event"):
+                            world.add_event("windstorm_gust", {"message": "A strong gust of wind hits!"})
+                    else:
+                        self.push_duration -= delta
+                        if self.push_duration <= 0.0:
+                            self.push_timer = self.random.uniform(2.0, 4.0)
+
+                if self.push_duration > 0.0:
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            if not hasattr(b, "vx"):
+                                b.vx = 0.0
+                            if not hasattr(b, "vy"):
+                                b.vy = 0.0
+                            b.vx += self.push_dir_x * self.push_strength * delta
+                            b.vy += self.push_dir_y * self.push_strength * delta
+
+                    if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                        for h in world.arena.hazards:
+                            if hasattr(h, 'vx') and hasattr(h, 'vy'):
+                                h.vx += self.push_dir_x * self.push_strength * delta
+                                h.vy += self.push_dir_y * self.push_strength * delta
+                            elif hasattr(h, 'x') and hasattr(h, 'y'):
+                                h.x += self.push_dir_x * self.push_strength * delta
+                                h.y += self.push_dir_y * self.push_strength * delta
+
 class VolcanicEruptionEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -36723,6 +36796,7 @@ class VolcanicEruptionEventMode(GameMode):
             for h in to_add:
                 world.arena.hazards.append(h)
 
+GAME_MODES['windstorm_event'] = WindstormEventMode()
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
 class EarthquakeEventMode(GameMode):
     def __init__(self):
