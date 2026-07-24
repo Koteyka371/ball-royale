@@ -1778,7 +1778,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 						self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": explosion_radius, "damage": explosion_damage})
 
 					if self.world != null and "balls" in self.world:
-						for b in self.world.balls:
+						for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 							var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
 							if is_alive:
 								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
@@ -1812,7 +1812,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 					if self.world != null and self.world.has_method("add_event"):
 						self.world.add_event("explosion", {"x": target.x, "y": target.y, "radius": 150.0, "damage": initial_cap * 0.5})
 					if self.world != null and "balls" in self.world:
-						for b in self.world.balls:
+						for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 							var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
 							var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else b.id
 							var target_id = target.get("id", null) if typeof(target) == TYPE_DICTIONARY else target.id
@@ -2185,7 +2185,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 				elif attacker.has_method("get_meta") and attacker.has_meta("id"): attacker_id = attacker.get_meta("id")
 
 				if "balls" in self.world:
-					for b in self.world.balls:
+					for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 						var b_alive = false
 						if "alive" in b and b.alive: b_alive = true
 						elif b.has_method("get_meta") and b.has_meta("alive") and b.get_meta("alive"): b_alive = true
@@ -2309,7 +2309,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 
 			if owner_id != null and typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
 				var owner = null
-				for b in self.world.balls:
+				for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
 					if b_id == owner_id:
 						owner = b
@@ -2645,7 +2645,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 									self.world.add_event("explosion", {"x": next_entity.x, "y": next_entity.y, "radius": explosion_radius, "damage": explosion_damage})
 
 								if self.world != null and "balls" in self.world:
-									for b in self.world.balls:
+									for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 										var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
 										if is_alive:
 											var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
@@ -2800,7 +2800,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 								elif next_entity.has_method("set_meta"): next_entity.set_meta("active", false)
 
 								if self.world != null and "balls" in self.world:
-									for b in self.world.balls:
+									for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 										var b_alive = false
 										if "alive" in b: b_alive = b.alive
 										elif typeof(b) == TYPE_OBJECT and b.has_meta("alive"): b_alive = b.get_meta("alive")
@@ -2927,7 +2927,7 @@ func execute(strategy: String, delta: float):
 
             if owner_id != null and self.world != null and "balls" in self.world:
                 var owner_b = null
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var b_id = null
                     if "id" in b: b_id = b.id
                     elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
@@ -3145,7 +3145,7 @@ func execute(strategy: String, delta: float):
                     var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
 
                     if self.world != null and "balls" in self.world:
-                        for b in self.world.balls:
+                        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                             var b_id = b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if "id" in b else null))
                             var b_team = b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.team if "team" in b else null))
                             var b_alive = b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.alive if "alive" in b else true))
@@ -3277,7 +3277,7 @@ func execute(strategy: String, delta: float):
             elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
             if my_team == "": my_team = ball_type
 
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var b_alive = true
                 if "alive" in b: b_alive = b.alive
                 elif b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
@@ -3812,7 +3812,7 @@ func execute(strategy: String, delta: float):
                 target_id = self.ball["survival_swap_target_id"]
 
             if target_id != -1 and self.world != null and "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var b_id = -2
                     if "id" in b: b_id = b.id
                     elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
@@ -4448,7 +4448,7 @@ func execute(strategy: String, delta: float):
                 self_id = self.ball["id"]
 
         if self_id != null and "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var is_decoy = false
                 if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): is_decoy = true
                 elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy") and b["is_decoy"]: is_decoy = true
@@ -4912,7 +4912,7 @@ func execute(strategy: String, delta: float):
             var min_hp_ratio = 1.0
 
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var b_t = ""
                     if typeof(b) == TYPE_DICTIONARY: b_t = b.get("team", "")
                     elif "team" in b: b_t = b.team
@@ -5838,7 +5838,7 @@ func execute(strategy: String, delta: float):
 			decoy_swap_timer = randf_range(2.0, 4.0)
 			if "balls" in self.world:
 				var my_decoys = []
-				for b in self.world.balls:
+				for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 					var is_decoy = false
 					if "is_decoy" in b and b.is_decoy: is_decoy = true
 					elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): is_decoy = true
@@ -6696,7 +6696,7 @@ func execute(strategy: String, delta: float):
 				if "team" in self.ball: ball_team = self.ball.team
 				elif "ball_type" in self.ball: ball_team = self.ball.ball_type
 
-				for b in self.world.balls:
+				for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 					if b != self.ball:
 						var is_alive = false
 						if "alive" in b: is_alive = b.alive
@@ -6734,7 +6734,7 @@ func execute(strategy: String, delta: float):
 
 		var attacker = null
 		if a_id != null and self.world != null and "balls" in self.world:
-			for b in self.world.balls:
+			for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 				var bid = null
 				if "id" in b: bid = b.id
 				elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
@@ -7315,7 +7315,7 @@ func execute(strategy: String, delta: float):
 				self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0, 'color': 'gray'}})
 
 			if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
-				for b in self.world.balls:
+				for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 					var b_alive = true
 					if "alive" in b: b_alive = b.alive
 					var b_team = ""
@@ -9140,7 +9140,7 @@ func execute(strategy: String, delta: float):
 						if "balls" in self.world:
 							var owner_id = hazard.owner_id if "owner_id" in hazard else -1
 							var owner = null
-							for b in self.world.balls:
+							for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 								var b_id = -1
 								var b_alive = false
 								if typeof(b) == TYPE_OBJECT:
@@ -10820,7 +10820,7 @@ func execute(strategy: String, delta: float):
                 ranged_attack_timer = 2.0
                 var enemies = []
                 if "balls" in self.world:
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         var b_team = ""
                         if typeof(b) == TYPE_DICTIONARY and "team" in b: b_team = b.team
                         elif "team" in b: b_team = b.team
@@ -10971,7 +10971,7 @@ func execute(strategy: String, delta: float):
 
     if is_decoy:
         if "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var b_alive = false
                 if "alive" in b: b_alive = b.alive
                 elif b is Dictionary and b.has("alive"): b_alive = b["alive"]
@@ -11977,7 +11977,7 @@ func execute(strategy: String, delta: float):
                         var radius = 300.0
                         var nearby_players = []
                         if "balls" in self.world:
-                            for b in self.world.balls:
+                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                 if _get_id(b) != _get_id(self.ball):
                                     var b_alive = true
                                     if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null:
@@ -12072,7 +12072,7 @@ func execute(strategy: String, delta: float):
                             elif "ball_type" in self.ball: my_team = self.ball.ball_type
                             elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): my_team = self.ball.get_meta("ball_type")
 
-                            for b in self.world.balls:
+                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                 if _get_id(b) != _get_id(self.ball):
                                     var b_alive = true
                                     var is_decoy = false
@@ -12099,7 +12099,7 @@ func execute(strategy: String, delta: float):
                                             valid_targets.append(b)
 
                             if valid_targets.size() == 0:
-                                for b in self.world.balls:
+                                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                     if _get_id(b) != _get_id(self.ball):
                                         var b_alive = true
                                         var is_decoy = false
@@ -12225,7 +12225,7 @@ func execute(strategy: String, delta: float):
 
                             if target_to_clone == null:
                                 if "balls" in self.world:
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         var bid = null
                                         if "id" in b: bid = b.id
                                         elif b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
@@ -12449,7 +12449,7 @@ func execute(strategy: String, delta: float):
                         if hazard.has("pulse_radius"): p_rad = float(hazard.pulse_radius)
 
                         if self.world.get("balls") != null:
-                            for b in self.world.balls:
+                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                 var b_alive = true
                                 if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
                                 elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
@@ -13088,7 +13088,7 @@ func execute(strategy: String, delta: float):
 
                             var owner_extension = false
                             if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
-                                for b in self.world.balls:
+                                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                     var bid = null
                                     if typeof(b) == TYPE_DICTIONARY: bid = b.get("id")
                                     elif typeof(b) == TYPE_OBJECT:
@@ -13371,7 +13371,7 @@ func execute(strategy: String, delta: float):
                                                 self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": explosion_radius, "damage": explosion_damage})
 
                                             if self.world != null and "balls" in self.world:
-                                                for b in self.world.balls:
+                                                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                                     var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
                                                     if is_alive:
                                                         var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
@@ -13403,7 +13403,7 @@ func execute(strategy: String, delta: float):
 
                                                 var hazard_owner_id = hazard.get("owner_id", null) if typeof(hazard) == TYPE_DICTIONARY else (hazard.owner_id if "owner_id" in hazard else null)
                                                 if hazard_owner_id != null:
-                                                    for b in self.world.balls:
+                                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                                         var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
                                                         if b_id == hazard_owner_id:
                                                             var b_stun = 3.0
@@ -13517,7 +13517,7 @@ func execute(strategy: String, delta: float):
 
                                 if paired_hazard != null:
                                     var entity_to_swap = null
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         if b != self.ball and b.get("alive") == true:
                                             var b_dx = paired_hazard.x - b.x
                                             var b_dy = paired_hazard.y - b.y
@@ -15869,7 +15869,7 @@ func execute(strategy: String, delta: float):
                             })
 
                         if self.world != null and "balls" in self.world:
-                            for b in self.world.balls:
+                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                 if not ("alive" in b and b.alive):
                                     continue
 
@@ -16284,7 +16284,7 @@ func execute(strategy: String, delta: float):
                                     hazard.duration = 0.0
                             elif trap_variant == "nullifier":
                                 if self.world != null and "balls" in self.world:
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         var b_alive = true
                                         if "alive" in b: b_alive = b.alive
                                         elif typeof(b) == TYPE_OBJECT and b.has_meta("alive"): b_alive = b.get_meta("alive")
@@ -18483,7 +18483,7 @@ func execute(strategy: String, delta: float):
 
                                 var valid_targets = []
                                 if "balls" in self.world:
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         if _get_id(b) != _get_id(self.ball):
                                             var is_alive = true
                                             if "alive" in b: is_alive = b.alive
@@ -19424,7 +19424,7 @@ func execute(strategy: String, delta: float):
                         var lowest_hp_ball = null
                         var lowest_hp = INF
                         if self.world != null and "balls" in self.world:
-                            for b in self.world.balls:
+                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                 if "alive" in b and b.alive and "hp" in b and "max_hp" in b and b.hp < b.max_hp:
                                     if b.hp < lowest_hp:
                                         lowest_hp = b.hp
@@ -19452,7 +19452,7 @@ func execute(strategy: String, delta: float):
                             var closest_dist = INF
                             var closest_ball = null
                             if self.world != null and "balls" in self.world:
-                                for b in self.world.balls:
+                                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                     if b != self.ball and ("alive" in b and b.alive):
                                         var b_has_target = false
                                         if "damage_link_target" in b and b.damage_link_target != null: b_has_target = true
@@ -19957,7 +19957,7 @@ func execute(strategy: String, delta: float):
         elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
 
         if typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 if b != self.ball:
                     var is_decoy = false
                     if typeof(b) == TYPE_DICTIONARY and b.has("is_decoy"): is_decoy = b.is_decoy
@@ -19987,7 +19987,7 @@ func execute(strategy: String, delta: float):
                             min_dist_sq = dist_sq
                             target_obj = b
         elif typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 if b != self.ball:
                     var is_decoy = false
                     if typeof(b) == TYPE_DICTIONARY and b.has("is_decoy"): is_decoy = b.is_decoy
@@ -20566,7 +20566,7 @@ func execute(strategy: String, delta: float):
                     var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
 
                     if self.world != null and "balls" in self.world:
-                        for b in self.world.balls:
+                        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                             var b_id = b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if "id" in b else null))
                             var b_team = b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.team if "team" in b else null))
                             var b_alive = b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.alive if "alive" in b else true))
@@ -20617,7 +20617,7 @@ func execute(strategy: String, delta: float):
                     var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
 
                     if self.world != null and "balls" in self.world:
-                        for b in self.world.balls:
+                        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                             var b_id = b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if "id" in b else null))
                             var b_team = b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else (b.team if "team" in b else null))
                             var b_alive = b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else (b.alive if "alive" in b else true))
@@ -20733,7 +20733,7 @@ func execute(strategy: String, delta: float):
                 if "id" in self.ball: my_id = self.ball.id
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
 
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var b_is_clone = false
                     if "is_clone" in b: b_is_clone = b.is_clone
                     elif b.has_method("get_meta") and b.has_meta("is_clone"): b_is_clone = b.get_meta("is_clone")
@@ -20866,7 +20866,7 @@ func execute(strategy: String, delta: float):
 
         if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
             var o_ball = null
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var b_id = null
                 if "id" in b: b_id = b.id
                 elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
@@ -22122,7 +22122,7 @@ func _get_enemies_internal() -> Array:
 
     if t_timer > 0 and t_target != null:
         if self.world != null and "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var b_id = b.id if "id" in b else null
                 var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
                 if b_id == t_target and b_alive:
@@ -22148,7 +22148,7 @@ func _get_enemies_internal() -> Array:
     enemies = filtered_enemies
 
     if enemies.size() == 0 and self.world != null and "balls" in self.world:
-        for b in self.world.balls:
+        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
             var is_decoy = b.is_decoy if "is_decoy" in b else (b.get_meta("is_decoy") if b.has_method("has_meta") and b.has_meta("is_decoy") else false)
             var is_illusion = b.is_illusion if "is_illusion" in b else (b.get_meta("is_illusion") if b.has_method("has_meta") and b.has_meta("is_illusion") else false)
             var alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
@@ -22171,7 +22171,7 @@ func _get_enemies_internal() -> Array:
                         enemies.append(b)
 
     if self.world != null and "balls" in self.world:
-        for b in self.world.balls:
+        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
             var is_decoy = false
             if "is_decoy" in b:
                 is_decoy = b.is_decoy
@@ -22200,7 +22200,7 @@ func _get_enemies_internal() -> Array:
                         enemies.append(b)
 
     if self.world != null and "balls" in self.world:
-        for b in self.world.balls:
+        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
             var is_illusion = false
             if "is_illusion" in b:
                 is_illusion = b.is_illusion
@@ -22273,7 +22273,7 @@ func _get_enemies_internal() -> Array:
 
     if t_timer > 0 and t_target != null:
         if self.world != null and "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var b_id = b.id if "id" in b else null
                 var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
                 if b_id == t_target and b_alive:
@@ -23851,7 +23851,7 @@ func _defend(delta: float):
     if b_type == "decoy_master":
         var active_decoys = []
         if "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var is_d = false
                 if "is_decoy" in b and b.is_decoy:
                     is_d = true
@@ -24629,7 +24629,7 @@ func _collect_booster(delta: float):
 					self.world.events.append({"type": "overclock_start", "x": self.ball.x, "y": self.ball.y})
 
 				if self.world != null and "balls" in self.world:
-					for b in self.world.balls:
+					for b in (self.world.balls if self.world != null and "balls" in self.world else []):
 						if b != self.ball:
 							var my_team = -1
 							if "team" in self.ball: my_team = self.ball.team
@@ -24765,7 +24765,7 @@ func _collect_booster(delta: float):
                         if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): self_id = self.ball.id
                         elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: self_id = self.ball.id
 
-                        for b in self.world.balls:
+                        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                             var is_turret = false
                             if typeof(b) == TYPE_DICTIONARY and b.has("is_turret"): is_turret = b.is_turret
                             elif typeof(b) == TYPE_OBJECT and "is_turret" in b: is_turret = b.is_turret
@@ -26494,7 +26494,7 @@ func _collect_booster(delta: float):
 
                 var nearby_players = []
                 if self.world != null and "balls" in self.world:
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         if b != self.ball:
                             var b_alive = true
                             if typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null:
@@ -26842,7 +26842,7 @@ func _collect_booster(delta: float):
                 if "stun_duration" in nearest: stun_dur = nearest.stun_duration
 
                 if self.world != null and "balls" in self.world:
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         var bx = 0.0
                         var by = 0.0
                         if "x" in b: bx = b.x
@@ -27301,7 +27301,7 @@ func _collect_booster(delta: float):
             elif "kind" in nearest and nearest.kind == "tracker_booster":
                 var all_enemies = []
                 if self.world != null and "balls" in self.world:
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         var b_team = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else (b.ball_type if "ball_type" in b else ""))
                         var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else (self.ball.ball_type if "ball_type" in self.ball else ""))
                         var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
@@ -27779,7 +27779,7 @@ func _collect_booster(delta: float):
             elif "kind" in nearest and nearest.kind == "entanglement_booster":
                 var others = []
                 if self.world != null and "balls" in self.world:
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         var alive = true
                         if typeof(b) == TYPE_DICTIONARY:
                             alive = b.get("alive", true)
@@ -28335,7 +28335,7 @@ func _use_skill():
                             break
     elif skill_timer > 0.0 and skill_name == "deploy_turret":
         if self.world.has("balls"):
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var is_turret = false
                 if "is_turret" in b: is_turret = b.is_turret
                 elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
@@ -28417,7 +28417,7 @@ func _use_skill():
                                     elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
 
                                 if self.world.has("balls") and typeof(self.world.balls) == TYPE_ARRAY:
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         var b_x = 0.0
                                         if "x" in b: b_x = b.x
                                         var b_y = 0.0
@@ -28436,7 +28436,7 @@ func _use_skill():
         # Synergy Logic
         var allies = []
         if self.world.has("balls"):
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var is_alive = true
                 if "alive" in b: is_alive = b.alive
                 elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
@@ -29022,7 +29022,7 @@ func _use_skill():
         elif skill_name == "time_rewind":
             var r_allies = []
             if self.world.has("balls"):
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_alive = true
                     if typeof(b) == TYPE_DICTIONARY:
                         is_alive = b.get("alive", true)
@@ -29541,7 +29541,7 @@ func _use_skill():
         elif skill_name == "corpse_explosion":
             if "balls" in self.world:
                 var minions = []
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_minion = false
                     if "ball_type" in b and (b.ball_type == "minion" or b.ball_type == "elite_minion"):
                         is_minion = true
@@ -29607,7 +29607,7 @@ func _use_skill():
         elif skill_name == "devour":
             if "balls" in self.world:
                 var minions = []
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_minion = false
                     if "ball_type" in b and (b.ball_type == "minion" or b.ball_type == "elite_minion"):
                         is_minion = true
@@ -29733,7 +29733,7 @@ func _use_skill():
         elif skill_name == "decoy_transmutation":
             var active_decoys = []
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_d = false
                     if "is_decoy" in b and b.is_decoy:
                         is_d = true
@@ -29831,7 +29831,7 @@ func _use_skill():
         elif skill_name == "deploy_turret":
             if can_recast:
                 if self.world.has("balls"):
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         var is_turret = false
                         if "is_turret" in b: is_turret = b.is_turret
                         elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
@@ -29940,7 +29940,7 @@ func _use_skill():
         elif skill_name == "master_decoys":
             var active_decoys = []
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_d = false
                     if "is_decoy" in b and b.is_decoy:
                         is_d = true
@@ -30052,7 +30052,7 @@ func _use_skill():
                 if "id" in self.ball: self_id = self.ball.id
                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
 
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_d = false
                     if "is_decoy" in b and b.is_decoy: is_d = true
                     elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): is_d = true
@@ -30120,7 +30120,7 @@ func _use_skill():
         elif skill_name == "decoy_swap_detonate":
             var active_decoys = []
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_d = false
                     if "is_decoy" in b and b.is_decoy:
                         is_d = true
@@ -30166,7 +30166,7 @@ func _use_skill():
                     self.world.add_event("explosion", {"x": tx, "y": ty, "radius": 150.0, "damage": 50.0})
 
                 if "balls" in self.world:
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         if b != self.ball:
                             var b_alive = true
                             if "alive" in b: b_alive = b.alive
@@ -30275,7 +30275,7 @@ func _use_skill():
             var active_decoys = []
             var has_swapped_any = false
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_d = false
                     if "is_decoy" in b and b.is_decoy:
                         is_d = true
@@ -30566,7 +30566,7 @@ func _use_skill():
                 if "id" in self.ball: my_id = self.ball.id
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
 
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var b_is_mimic_clone = false
                     if "is_mimic_clone" in b: b_is_mimic_clone = b.is_mimic_clone
                     elif b.has_method("get_meta") and b.has_meta("is_mimic_clone"): b_is_mimic_clone = b.get_meta("is_mimic_clone")
@@ -30735,7 +30735,7 @@ func _use_skill():
         elif skill_name == "global_mirage":
             if "balls" in self.world:
                 var new_decoys = []
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_alive = true
                     if "alive" in b: is_alive = b.alive
                     if not is_alive: continue
@@ -30857,7 +30857,7 @@ func _use_skill():
                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
                 elif "id" in self.ball: my_id = self.ball.id
 
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_illusion = false
                     if typeof(b) == TYPE_DICTIONARY and b.has("is_illusion"): is_illusion = b["is_illusion"]
                     elif "is_illusion" in b: is_illusion = b.is_illusion
@@ -31831,7 +31831,7 @@ func _use_skill():
             var closest_target_dist_sq = 1e9
 
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     if b != self.ball:
                         var is_alive = true
                         if "alive" in b: is_alive = b.alive
@@ -31962,7 +31962,7 @@ func _use_skill():
                     var secondary_dist_sq = 999999.0
 
                     if "balls" in self.world:
-                        for b in self.world.balls:
+                        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                             if b != self.ball and b != closest_target:
                                 var is_alive = true
                                 if "alive" in b: is_alive = b.alive
@@ -32782,7 +32782,7 @@ func _use_skill():
             var enemies = self._get_enemies()
             var allies = []
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_alive = true
                     if "alive" in b:
                         is_alive = b.alive
@@ -33043,7 +33043,7 @@ func _use_skill():
             if enemies.size() == 0 and "balls" in self.world:
                 var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else "")
                 var my_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else -1)
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else true)
                     var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("has_meta") and b.has_meta("id") else -1)
                     var b_team = b.team if "team" in b else (b.get_meta("team") if b.has_method("has_meta") and b.has_meta("team") else "")
@@ -33681,7 +33681,7 @@ func _use_skill():
             var closest_enemy = null
             var min_d_sq = 9999999.0
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var alive = true
                     if "alive" in b: alive = b.alive
 
@@ -33740,7 +33740,7 @@ func _use_skill():
             var active_decoys = []
             var has_swapped_any = false
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_d = false
                     if "is_decoy" in b and b.is_decoy:
                         is_d = true
@@ -34640,7 +34640,7 @@ func _spawn_skill_particles(skill_name: String = ""):
         elif skill_name == "chaos_link":
             var all_balls = []
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_alive = true
                     if "alive" in b: is_alive = b.alive
                     elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
@@ -34664,7 +34664,7 @@ func _spawn_skill_particles(skill_name: String = ""):
         elif skill_name == "quantum_entanglement":
             var allies = []
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     if b != self.ball:
                         var team1 = ""
                         var team2 = ""
@@ -34713,7 +34713,7 @@ func _spawn_skill_particles(skill_name: String = ""):
         elif skill_name == "health_link":
             var allies_hl = []
             if "balls" in self.world:
-                for b in self.world.balls:
+                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                     var is_alive = true
                     if "alive" in b: is_alive = b.alive
                     elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
@@ -35141,7 +35141,7 @@ func _resolve_collisions() -> bool:
 
                 var nearby_all = []
                 if "balls" in self.world:
-                    for b in self.world.balls: nearby_all.append(b)
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []): nearby_all.append(b)
                 if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
                     for h in self.world.arena.hazards: nearby_all.append(h)
 
@@ -37425,7 +37425,7 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("tornado_booster_timer", tornado_booster_timer)
 
         if self.world != null and "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var is_alive = false
                 if typeof(b) == TYPE_DICTIONARY:
                     if b.has("alive"): is_alive = b.alive
@@ -37581,7 +37581,7 @@ func _update_skill_timer(delta: float):
             self.ball.set_meta("gravity_well_aura_timer", gravity_well_aura_timer)
 
         if self.world != null and "balls" in self.world:
-            for b in self.world.balls:
+            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                 var is_alive = false
                 if typeof(b) == TYPE_DICTIONARY:
                     if b.has("alive"): is_alive = b.alive
@@ -37871,7 +37871,7 @@ func _update_skill_timer(delta: float):
 
                     if attached_id == null:
                         if self.world != null and "balls" in self.world:
-                            for b in self.world.balls:
+                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                 var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
                                 if typeof(b) == TYPE_DICTIONARY:
                                     b_alive = b.get("alive", false)
@@ -37905,7 +37905,7 @@ func _update_skill_timer(delta: float):
                     else:
                         var current_attached = null
                         if self.world != null and "balls" in self.world:
-                            for b in self.world.balls:
+                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                 var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
                                 if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
                                 if bid == attached_id:
@@ -37945,7 +37945,7 @@ func _update_skill_timer(delta: float):
                                     hazard.pass_cooldown = pass_cooldown
                             else:
                                 if self.world != null and "balls" in self.world:
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
                                         if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
                                         var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
@@ -38007,7 +38007,7 @@ func _update_skill_timer(delta: float):
                             var explosion_radius = 100.0
                             var explosion_damage = 100.0
                             if self.world != null and "balls" in self.world:
-                                for b in self.world.balls:
+                                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                     var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
                                     if typeof(b) == TYPE_DICTIONARY:
                                         b_alive = b.get("alive", false)
@@ -38068,7 +38068,7 @@ func _update_skill_timer(delta: float):
                             var explosion_radius = 80.0
                             var explosion_damage = 50.0
                             if self.world != null and "balls" in self.world:
-                                for b in self.world.balls:
+                                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                     var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
                                     if typeof(b) == TYPE_DICTIONARY:
                                         b_alive = b.get("alive", false)
@@ -38115,7 +38115,7 @@ func _update_skill_timer(delta: float):
 
                             if attached_id == null:
                                 if self.world != null and "balls" in self.world:
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
                                         if typeof(b) == TYPE_DICTIONARY:
                                             b_alive = b.get("alive", false)
@@ -38141,7 +38141,7 @@ func _update_skill_timer(delta: float):
                             else:
                                 var current_attached = null
                                 if self.world != null and "balls" in self.world:
-                                    for b in self.world.balls:
+                                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                         var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
                                         if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
                                         if bid == attached_id:
@@ -38168,7 +38168,7 @@ func _update_skill_timer(delta: float):
                                         hazard.y = cay
 
                                     if self.world != null and "balls" in self.world:
-                                        for b in self.world.balls:
+                                        for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                             var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
                                             if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
                                             var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
@@ -38414,7 +38414,7 @@ func _update_skill_timer(delta: float):
                         if dist_sq < (b_rad + det_rad)*(b_rad + det_rad):
                             var exp_rad = h_rad * 3.0
                             if self.world != null and "balls" in self.world:
-                                for b in self.world.balls:
+                                for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                     var b_alive = true
                                     if "alive" in b: b_alive = b.alive
                                     elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
@@ -38858,7 +38858,7 @@ func _update_skill_timer(delta: float):
                                                         trap_owner = ob
                                                         break
 
-                                            for b in self.world.balls:
+                                            for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                                                 var b_alive = true
                                                 if "alive" in b: b_alive = b.alive
                                                 elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
@@ -39911,7 +39911,7 @@ func _update_skill_timer(delta: float):
                 if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
                     self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": absorbed * 0.5})
                 if self.world != null and "balls" in self.world:
-                    for b in self.world.balls:
+                    for b in (self.world.balls if self.world != null and "balls" in self.world else []):
                         var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
                         var b_id = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else b.id
                         var self_id = self.ball.get("id", null) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id
