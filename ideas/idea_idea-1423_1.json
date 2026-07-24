@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Trap",
+  "description": "A trap that triggers when an enemy steps on it, emitting a chain lightning effect that jumps between nearby enemies, dealing damage and briefly staggering them. The lightning can jump up to 3 times, with reduced damage on each consecutive jump."
+}
