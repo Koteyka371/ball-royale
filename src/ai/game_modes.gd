@@ -20860,25 +20860,43 @@ class DynamicBountyMode extends GameMode:
 	func tick(world, balls: Array, delta: float) -> void:
 		super.tick(world, balls, delta)
 
+		var highest_score = -1
 		var highest_kills = -1
 		var bounty_candidates = []
 
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
+				var score = 0
+				if "score" in b:
+					score = b.score
+				elif b.has_method("get_meta") and b.has_meta("score"):
+					score = b.get_meta("score")
+
 				var kills = 0
 				if "kills" in b:
 					kills = b.kills
 				elif b.has_method("get_meta") and b.has_meta("kills"):
 					kills = b.get_meta("kills")
 
-				if kills > highest_kills:
+				if score > highest_score:
+					highest_score = score
 					highest_kills = kills
 					bounty_candidates = [b]
-				elif kills == highest_kills and highest_kills > 0:
-					bounty_candidates.append(b)
+				elif score == highest_score and score > 0:
+					if kills > highest_kills:
+						highest_kills = kills
+						bounty_candidates = [b]
+					elif kills == highest_kills:
+						bounty_candidates.append(b)
+				elif score == 0 and highest_score <= 0:
+					if kills > highest_kills:
+						highest_kills = kills
+						bounty_candidates = [b]
+					elif kills == highest_kills and kills > 0:
+						bounty_candidates.append(b)
 
 		var new_bounty_id = null
-		if highest_kills > 0 and bounty_candidates.size() > 0:
+		if (highest_score > 0 or highest_kills > 0) and bounty_candidates.size() > 0:
 			var selected = bounty_candidates[0]
 			if current_bounty_id != null:
 				for b in bounty_candidates:
