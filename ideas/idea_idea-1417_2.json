@@ -1,0 +1,4 @@
+{
+  "title": "Decaying Orbits mutator",
+  "description": "The safe zone isn't a shrinking circle, but instead is a rapidly orbiting spotlight that gets faster and smaller as the game progresses."
+}

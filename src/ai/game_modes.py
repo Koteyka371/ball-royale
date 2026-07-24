@@ -37511,3 +37511,53 @@ class TornadoHazardMode(GameMode):
                                         b.hp -= damage
 
 GAME_MODES['tornado_hazard'] = TornadoHazardMode()
+
+class MirrorArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirror Arena"
+        self.description = "The entire arena is horizontally symmetrical. Firing a projectile on the left side simultaneously spawns a 'phantom' projectile on the right side traveling in the mirrored direction."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        center_x = arena_width / 2.0
+
+        if hasattr(world, "projectiles"):
+            new_projectiles = []
+            for p in world.projectiles:
+                if not getattr(p, "has_mirrored", False) and not getattr(p, "is_mirrored_phantom", False):
+                    p.has_mirrored = True
+
+                    # Create mirrored phantom
+                    import copy
+                    try:
+                        phantom = copy.copy(p)
+                    except TypeError:
+                        # Fallback for mock objects
+                        phantom = type(p)(p.x, p.y, p.vx, p.vy)
+                        for k, v in vars(p).items():
+                            setattr(phantom, k, v)
+
+                    phantom.is_mirrored_phantom = True
+
+                    # Mirror position and velocity horizontally
+                    phantom.x = center_x + (center_x - p.x)
+                    if hasattr(phantom, "vx"):
+                        phantom.vx = -p.vx
+
+                    # Also need to make sure the target coordinates are mirrored if they exist
+                    if hasattr(phantom, "target_x"):
+                        phantom.target_x = center_x + (center_x - p.target_x)
+
+                    # Slightly visually distinct or same? The prompt says "spawns a 'phantom' projectile"
+                    if not hasattr(phantom, "cosmetic_aura_color"):
+                        phantom.cosmetic_aura_color = [1.0, 1.0, 1.0, 0.5] # White spectral
+
+                    new_projectiles.append(phantom)
+
+            if new_projectiles:
+                world.projectiles.extend(new_projectiles)
+
+GAME_MODES['mirror_arena'] = MirrorArenaMode()
