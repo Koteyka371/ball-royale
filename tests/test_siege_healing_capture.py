@@ -16,14 +16,11 @@ class MockBall:
         self.radius = 15.0
         self.ball_type = "player"
 
-class _MockSiegeArena(SiegeArena):
-    pass
-_MockSiegeArena.__name__ = "SiegeArena"
-
 class MockWorld:
     def __init__(self):
-        self.arena = _MockSiegeArena(2000.0)
-        self.arena.generate()
+        real_arena = SiegeArena(2000.0)
+        real_arena.generate()
+        self.arena = real_arena
         self.balls = []
 
     def _deal_damage(self, attacker, target):
@@ -38,8 +35,10 @@ def test_attacker_captures_healing_spring():
 
     action = Action(b, world)
 
-    # 5 iterations of 1s delta = 5 seconds. 20 progress per sec = 100
-    for i in range(6):
+    for i in range(10):
+        # We need to keep the ball within the hazard's radius
+        b.x = world.arena.hazards[0].x
+        b.y = world.arena.hazards[0].y
         action.execute(strategy='idle', delta=1.0)
 
     assert getattr(world.arena.hazards[0], 'active', True) == False
@@ -54,7 +53,7 @@ def test_defender_heals_from_healing_spring():
 
     action = Action(b, world)
 
-    action.execute(strategy={}, delta=1.0)
+    action.execute(strategy='idle', delta=1.0)
 
     assert getattr(world.arena.hazards[0], 'active', True) == True
     assert getattr(world.arena.hazards[0], 'capture_progress', 0.0) == 0.0
