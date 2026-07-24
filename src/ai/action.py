@@ -17061,6 +17061,44 @@ class Action:
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", getattr(self.ball, "skill_cooldown", 5.0))
 
 
+            elif skill_name == "recoil_blanks":
+                burst_count = 5
+                recoil_per_blank = 300.0
+
+                enemies = self._get_enemies()
+                nx, ny = 1.0, 0.0
+                if enemies:
+                    closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                    dx = closest_enemy.x - self.ball.x
+                    dy = closest_enemy.y - self.ball.y
+                    import math
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx, ny = dx/dist, dy/dist
+                elif getattr(self.ball, "vx", 0) != 0 or getattr(self.ball, "vy", 0) != 0:
+                    import math
+                    v_mag = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
+                    nx, ny = self.ball.vx/v_mag, self.ball.vy/v_mag
+
+                total_recoil = burst_count * recoil_per_blank
+                self.ball.vx = getattr(self.ball, 'vx', 0.0) - nx * total_recoil
+                self.ball.vy = getattr(self.ball, 'vy', 0.0) - ny * total_recoil
+
+                if hasattr(self.world, "events"):
+                    self.world.events.append({
+                        "type": "visual_effect",
+                        "data": {
+                            "type": "recoil_blanks_burst",
+                            "x": self.ball.x,
+                            "y": self.ball.y,
+                            "nx": nx,
+                            "ny": ny,
+                            "count": burst_count
+                        }
+                    })
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 6.0)
+
             elif skill_name == "dash":
                 # Check for mutator
                 is_teleport_dash = False

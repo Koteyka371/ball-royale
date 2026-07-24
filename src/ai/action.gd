@@ -32640,6 +32640,85 @@ func _use_skill():
                     self.ball.skill_timer = cooldown
 
 
+        elif skill_name == "recoil_blanks":
+		var burst_count = 5
+		var recoil_per_blank = 300.0
+
+		var enemies = _get_enemies()
+		var nx = 1.0
+		var ny = 0.0
+
+		if enemies.size() > 0:
+			var closest_enemy = enemies[0]
+			var closest_dist = (closest_enemy.x - self.ball.x) * (closest_enemy.x - self.ball.x) + (closest_enemy.y - self.ball.y) * (closest_enemy.y - self.ball.y)
+			for e in enemies:
+				var d = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+				if d < closest_dist:
+					closest_dist = d
+					closest_enemy = e
+
+			var dx = closest_enemy.x - self.ball.x
+			var dy = closest_enemy.y - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0.0001:
+				nx = dx/dist
+				ny = dy/dist
+		else:
+			var vx = 0.0
+			var vy = 0.0
+			if "vx" in self.ball: vx = float(self.ball.vx)
+			elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): vx = float(self.ball.get_meta("vx"))
+			if "vy" in self.ball: vy = float(self.ball.vy)
+			elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): vy = float(self.ball.get_meta("vy"))
+
+			if vx != 0 or vy != 0:
+				var v_mag = sqrt(vx*vx + vy*vy)
+				nx = vx/v_mag
+				ny = vy/v_mag
+
+		var total_recoil = burst_count * recoil_per_blank
+
+		var current_vx = 0.0
+		var current_vy = 0.0
+		if "vx" in self.ball: current_vx = float(self.ball.vx)
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): current_vx = float(self.ball.get_meta("vx"))
+		if "vy" in self.ball: current_vy = float(self.ball.vy)
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): current_vy = float(self.ball.get_meta("vy"))
+
+		var new_vx = current_vx - nx * total_recoil
+		var new_vy = current_vy - ny * total_recoil
+
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["vx"] = new_vx
+			self.ball["vy"] = new_vy
+		else:
+			if "vx" in self.ball: self.ball.vx = new_vx
+			if "vy" in self.ball: self.ball.vy = new_vy
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("vx", new_vx)
+				self.ball.set_meta("vy", new_vy)
+
+		if "events" in self.world:
+			self.world.events.append({
+				"type": "visual_effect",
+				"data": {
+					"type": "recoil_blanks_burst",
+					"x": self.ball.x,
+					"y": self.ball.y,
+					"nx": nx,
+					"ny": ny,
+					"count": burst_count
+				}
+			})
+
+		var cd = 6.0
+		if "SKILL_COOLDOWN" in self.ball: cd = float(self.ball.SKILL_COOLDOWN)
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = float(self.ball.get_meta("SKILL_COOLDOWN"))
+		if typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cd
+		else:
+			if "skill_timer" in self.ball: self.ball.skill_timer = cd
+			if self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+
         elif skill_name == "dash":
             var is_teleport_dash = false
             if "game_mode" in self.world and typeof(self.world.game_mode) == TYPE_OBJECT:
