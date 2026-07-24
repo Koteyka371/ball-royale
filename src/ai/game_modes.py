@@ -1459,7 +1459,7 @@ class DraftRoyaleMode(GameMode):
             "elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
             "monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone", "shield_drone",
             "scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
-            "warlock", "warrior"
+            "warlock", "warrior", "hazard_master"
         ]
         self.team_rosters = {}
         self.teams = ["Team A", "Team B"]
@@ -9307,7 +9307,7 @@ class CustomMatchMode(GameMode):
                     trigger_reroll = True
                     self.random_reroll_timer = 0.0
                     import random
-                    types = ['time_mage', 'paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'drone', 'shield_drone', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster']
+                    types = ['time_mage', 'paladin', 'assassin', 'ninja', 'warrior', 'guardian', 'chaos', 'bomber', 'templar', 'necromancer', 'vampire', 'sniper', 'king', 'easy', 'phantom', 'warlock', 'mimic', 'juggernaut', 'tank', 'berserker', 'druid', 'hard', 'scout', 'brawler', 'medium', 'neural', 'ranger', 'healer', 'rogue', 'drone', 'shield_drone', 'swarm', 'conjurer', 'monk', 'mage', 'elementalist', 'trickster', 'hazard_master']
 
             for b in balls:
                 if not getattr(b, "alive", False):

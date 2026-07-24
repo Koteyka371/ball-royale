@@ -14711,6 +14711,30 @@ class Action:
                                 self.ball.is_stunned = False
 
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+            elif skill_name == "spawn_tornado":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    from arena.procedural_arena import Hazard
+                    # Spawn a miniature tornado that moves in the direction the ball is facing/moving
+                    tx = self.ball.x
+                    ty = self.ball.y
+                    vx = getattr(self.ball, 'vx', 0.0)
+                    vy = getattr(self.ball, 'vy', 0.0)
+                    import math
+                    speed = math.hypot(vx, vy)
+                    if speed > 0:
+                        dir_x = vx / speed
+                        dir_y = vy / speed
+                    else:
+                        dir_x, dir_y = random.choice([(1,0), (-1,0), (0,1), (0,-1)])
+
+                    h_id = f"mini_tornado_{random.randint(1000, 9999)}_{self.ball.id}"
+                    h = Hazard(h_id, tx + dir_x * 20.0, ty + dir_y * 20.0, 30.0, "tornado", 5.0)
+                    setattr(h, 'pull_strength', 60.0)
+                    h.owner_id = self.ball.id
+                    h.duration = 6.0
+                    self.world.arena.hazards.append(h)
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'spawn_tornado', 'x': tx, 'y': ty}})
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
             elif skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
             elif skill_name == "black_hole_summon":
@@ -19163,6 +19187,11 @@ class Action:
             self.ball.hazard_immunity_timer -= delta
             if self.ball.hazard_immunity_timer < 0:
                 self.ball.hazard_immunity_timer = 0.0
+        if getattr(self.ball, "hazard_immunity", False):
+            # hazard_master passive ability
+            self.ball.hazard_immunity_timer = 1.0
+            self.ball.pull_immunity = True
+
         if getattr(self.ball, "phase_booster_timer", 0.0) > 0:
             self.ball.phase_booster_timer -= delta
             if self.ball.phase_booster_timer < 0:
