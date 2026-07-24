@@ -5454,6 +5454,54 @@ class BattleRoyaleMode extends GameMode:
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("weekend_boss_defeated", {"killer_id": killer_id, "points": 10000, "message": "The Juggernaut Boss was defeated! Massive rewards granted!"})
 
+		# Weekend Boss Temporary Alliance
+		if weekend_boss_spawned:
+			var boss_alive = false
+			for b in balls:
+				var is_boss = false
+				if typeof(b) == TYPE_DICTIONARY and b.has("is_weekend_boss"): is_boss = b.is_weekend_boss
+				elif typeof(b) == TYPE_OBJECT and "is_weekend_boss" in b: is_boss = b.is_weekend_boss
+
+				if is_boss:
+					var b_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+
+					if b_alive:
+						boss_alive = true
+						break
+
+			if boss_alive:
+				for b in balls:
+					var is_boss = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("is_weekend_boss"): is_boss = b.is_weekend_boss
+					elif typeof(b) == TYPE_OBJECT and "is_weekend_boss" in b: is_boss = b.is_weekend_boss
+
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+					elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+					if not is_boss and b_type != "juggernaut":
+						if typeof(b) == TYPE_DICTIONARY:
+							if not b.has("_original_team"):
+								b["_original_team"] = b.get("team", null)
+							b["team"] = "BossHunters"
+						elif typeof(b) == TYPE_OBJECT:
+							if not b.has_meta("_original_team"):
+								b.set_meta("_original_team", b.get("team") if "team" in b else null)
+							b.team = "BossHunters"
+			else:
+				for b in balls:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("_original_team"):
+							b["team"] = b["_original_team"]
+							b.erase("_original_team")
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_meta("_original_team"):
+							b.team = b.get_meta("_original_team")
+							b.remove_meta("_original_team")
+
+
 		match_time += delta
 
 		# Loot Goblin Event
