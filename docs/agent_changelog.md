@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1468] New Hazard - Stalker Shadows — *2026-07-24 22:25:14 UTC*
+
+During the night cycle, AI-controlled shadow entities can spawn. They act as independent hazards that chase the nearest player, slowing them down on contact and slowly sapping stamina.
+
+---
+
 ## [idea-1456] Black Hole Center with Shrinking Safe Zone — *2026-07-24 22:20:10 UTC*
 
 A game mode where a black hole at the center of the arena slowly pulls all players inwards. The safe zone outside the black hole slowly shrinks over time. Players must constantly maneuver and fight each other while avoiding the ever-growing black hole.

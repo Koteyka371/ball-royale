@@ -25142,7 +25142,7 @@
     },
     {
       "id": "idea-1468",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Hazard - Stalker Shadows",
@@ -36645,6 +36645,57 @@
         "src/ai/mounts.py",
         "src/ai/mounts.gd",
         "tests/test_mounts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2144",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Survival",
+      "description": "Players start far away from the black hole and must reach the safe zone.",
+      "allowed_paths": [
+        "src/ai/black_hole_survival.py",
+        "src/ai/black_hole_survival.gd",
+        "tests/test_black_hole_survival.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2145",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Resonance",
+      "description": "When multiple decoys of the same element explode near each other, their secondary effects combine into a stronger, longer-lasting storm.",
+      "allowed_paths": [
+        "src/ai/decoy_resonance.py",
+        "src/ai/decoy_resonance.gd",
+        "tests/test_decoy_resonance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2146",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elemental Imbuement",
+      "description": "Players can pick up elemental orbs to change the element of their next deployed decoy, allowing tactical switching based on the current situation.",
+      "allowed_paths": [
+        "src/ai/elemental_imbuement.py",
+        "src/ai/elemental_imbuement.gd",
+        "tests/test_elemental_imbuement.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
