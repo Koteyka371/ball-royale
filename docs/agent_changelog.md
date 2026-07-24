@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1347] Inverted Controls Status Effect — *2026-07-24 00:10:17 UTC*
+
+Add a new status effect called 'confusion' that randomly reverses the directional inputs or movement outputs of a ball for a few seconds. This can be inflicted by a new trap variant or a specific booster to add chaos to the battlefield.
+
+---
+
 ## [idea-1433] Corrosive Chain Reaction — *2026-07-24 00:01:53 UTC*
 
 A new skill that applies a corrosive debuff on a target. If the target dies while under the effect, it explodes and applies the debuff to all nearby enemies. Successive explosions deal increased damage.
