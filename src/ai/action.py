@@ -12873,6 +12873,24 @@ class Action:
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = 15.0  # Duration of stealth effect
 
+                elif getattr(nearest, "kind", None) == "pet_item":
+                    self.ball.has_pet = True
+                    self.ball.pet_type = "auto_looter"
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            pet = Hazard(id=999000 + len(self.world.arena.hazards) + random.randint(0,10000), x=self.ball.x, y=self.ball.y, radius=8.0, kind="pet", damage=0.0)
+                            pet.owner_id = self.ball.id
+                            self.world.arena.hazards.append(pet)
+                        except:
+                            self.world.arena.hazards.append({"id":999000 + len(self.world.arena.hazards), "x":self.ball.x, "y":self.ball.y, "radius":8.0, "kind":"pet", "damage":0.0, "owner_id":self.ball.id})
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "silencer_attachment":
                     self.ball.silencer_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
@@ -16375,7 +16393,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -19348,7 +19366,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
@@ -19367,7 +19385,7 @@ class Action:
                     if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                         continue
                     # Ignore harmless items/boosters and the repulsor zone itself if we don't want to break it
-                    if getattr(hazard, "kind", "") in ["booster", "repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster"]:
+                    if getattr(hazard, "kind", "") in ["booster", "repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item"]:
                         continue
 
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
@@ -20466,6 +20484,50 @@ class Action:
                     self.ball.supercharge_timer = 10.0
                     self.ball.supercharge_stun_ready = True
                     self.ball.pending_supercharge = False
+        if getattr(self.ball, "has_pet", False):
+            pet_hazard = None
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                for hazard in self.world.arena.hazards:
+                    if getattr(hazard, "kind", "") == "pet" and getattr(hazard, "owner_id", None) == getattr(self.ball, "id", None):
+                        pet_hazard = hazard
+                        break
+
+            if pet_hazard:
+                import math
+                dx = self.ball.x - getattr(pet_hazard, "x", 0.0)
+                dy = self.ball.y - getattr(pet_hazard, "y", 0.0)
+                dist_sq = dx**2 + dy**2
+                if dist_sq > 900.0: # 30^2
+                    dist = math.sqrt(dist_sq)
+                    if dist > 0.0001:
+                        nx, ny = dx / dist, dy / dist
+                        move_speed = 200.0 * delta
+                        if hasattr(pet_hazard, "x"): pet_hazard.x += nx * move_speed
+                        if hasattr(pet_hazard, "y"): pet_hazard.y += ny * move_speed
+
+                if getattr(self.ball, "pet_type", "") == "auto_looter" and hasattr(self.world, "arena") and hasattr(self.world.arena, "items"):
+                    pet_x = getattr(pet_hazard, "x", 0.0)
+                    pet_y = getattr(pet_hazard, "y", 0.0)
+                    for item in self.world.arena.items:
+                        item_kind = getattr(item, "kind", item.get("kind", "") if isinstance(item, dict) else "")
+                        if item_kind in ["material", "coin"]:
+                            item_x = getattr(item, "x", item.get("x", 0.0) if isinstance(item, dict) else 0.0)
+                            item_y = getattr(item, "y", item.get("y", 0.0) if isinstance(item, dict) else 0.0)
+                            item_dx = pet_x - item_x
+                            item_dy = pet_y - item_y
+                            item_dist_sq = item_dx**2 + item_dy**2
+                            if item_dist_sq < 22500.0: # 150^2
+                                item_dist = math.sqrt(item_dist_sq)
+                                if item_dist > 0.0001:
+                                    inx, iny = item_dx / item_dist, item_dy / item_dist
+                                    pull_strength = 150.0 * delta
+                                    if isinstance(item, dict):
+                                        item["x"] = item_x + inx * pull_strength
+                                        item["y"] = item_y + iny * pull_strength
+                                    else:
+                                        if hasattr(item, "x"): item.x += inx * pull_strength
+                                        if hasattr(item, "y"): item.y += iny * pull_strength
+
         if hasattr(self.ball, "stealth_drone_timer") and self.ball.stealth_drone_timer > 0:
             self.ball.stealth_drone_timer -= delta
             if self.ball.stealth_drone_timer <= 0:
