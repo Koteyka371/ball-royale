@@ -1643,6 +1643,74 @@ class Action:
                 if self.ball.hermes_boots_active_timer <= 0:
                     pass
 
+        # Quantum Echo passive logic
+        traits = getattr(self.ball, "traits", [])
+        if "quantum_echo" in traits or getattr(self.ball, "quantum_echo", False):
+            if not hasattr(self.ball, "quantum_echo_ghosts"):
+                self.ball.quantum_echo_ghosts = []
+            if not hasattr(self.ball, "quantum_echo_timer"):
+                self.ball.quantum_echo_timer = 3.0
+
+            self.ball.quantum_echo_timer -= delta
+            if self.ball.quantum_echo_timer <= 0:
+                self.ball.quantum_echo_timer = 3.0
+                # Leave behind a faint ghost of past position
+                ghost_state = {
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "hp": getattr(self.ball, "hp", 100.0)
+                }
+                self.ball.quantum_echo_ghosts.append(ghost_state)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'quantum_echo_ghost', 'x': self.ball.x, 'y': self.ball.y}})
+                # keep history small if needed, but the prompt says "most recent ghost", so just appending is fine.
+                if len(self.ball.quantum_echo_ghosts) > 10:
+                    self.ball.quantum_echo_ghosts.pop(0)
+
+        # Quantum Echo passive logic
+        traits = getattr(self.ball, "traits", [])
+        if "quantum_echo" in traits or getattr(self.ball, "quantum_echo", False):
+            if not hasattr(self.ball, "quantum_echo_ghosts"):
+                self.ball.quantum_echo_ghosts = []
+            if not hasattr(self.ball, "quantum_echo_timer"):
+                self.ball.quantum_echo_timer = 3.0
+
+            self.ball.quantum_echo_timer -= delta
+            if self.ball.quantum_echo_timer <= 0:
+                self.ball.quantum_echo_timer = 3.0
+                ghost_state = {
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "hp": getattr(self.ball, "hp", 100.0)
+                }
+                self.ball.quantum_echo_ghosts.append(ghost_state)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'quantum_echo_ghost', 'x': self.ball.x, 'y': self.ball.y}})
+                if len(self.ball.quantum_echo_ghosts) > 10:
+                    self.ball.quantum_echo_ghosts.pop(0)
+
+        # Quantum Echo passive logic
+        traits = getattr(self.ball, "traits", [])
+        if "quantum_echo" in traits or getattr(self.ball, "quantum_echo", False):
+            if not hasattr(self.ball, "quantum_echo_ghosts"):
+                self.ball.quantum_echo_ghosts = []
+            if not hasattr(self.ball, "quantum_echo_timer"):
+                self.ball.quantum_echo_timer = 3.0
+
+            self.ball.quantum_echo_timer -= delta
+            if self.ball.quantum_echo_timer <= 0:
+                self.ball.quantum_echo_timer = 3.0
+                ghost_state = {
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "hp": getattr(self.ball, "hp", 100.0)
+                }
+                self.ball.quantum_echo_ghosts.append(ghost_state)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'quantum_echo_ghost', 'x': self.ball.x, 'y': self.ball.y}})
+                if len(self.ball.quantum_echo_ghosts) > 10:
+                    self.ball.quantum_echo_ghosts.pop(0)
+
         if getattr(self.ball, "recoil_amplifier_timer", 0.0) > 0.0:
             self.ball.recoil_amplifier_timer -= delta
         if getattr(self.ball, "recoil_dampener_timer", 0.0) > 0.0:
@@ -14596,6 +14664,48 @@ class Action:
             return
 
         can_recast = False
+        # Quantum Echo active override
+        traits = getattr(self.ball, "traits", [])
+        if "quantum_echo" in traits or getattr(self.ball, "quantum_echo", False):
+            ghosts = getattr(self.ball, "quantum_echo_ghosts", [])
+            if ghosts:
+                recent_ghost = ghosts.pop()
+                self.ball.x = recent_ghost["x"]
+                self.ball.y = recent_ghost["y"]
+                self.ball.hp = recent_ghost["hp"]
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'quantum_echo_teleport', 'x': self.ball.x, 'y': self.ball.y}})
+                return
+
+        # Quantum Echo active override
+        traits = getattr(self.ball, "traits", [])
+        if "quantum_echo" in traits or getattr(self.ball, "quantum_echo", False):
+            ghosts = getattr(self.ball, "quantum_echo_ghosts", [])
+            if ghosts:
+                recent_ghost = ghosts.pop()
+                self.ball.x = recent_ghost["x"]
+                self.ball.y = recent_ghost["y"]
+                self.ball.hp = recent_ghost["hp"]
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'quantum_echo_teleport', 'x': self.ball.x, 'y': self.ball.y}})
+                return
+
+        # Quantum Echo active override
+        traits = getattr(self.ball, "traits", [])
+        if "quantum_echo" in traits or getattr(self.ball, "quantum_echo", False):
+            ghosts = getattr(self.ball, "quantum_echo_ghosts", [])
+            if ghosts:
+                recent_ghost = ghosts.pop()
+                self.ball.x = recent_ghost["x"]
+                self.ball.y = recent_ghost["y"]
+                self.ball.hp = recent_ghost["hp"]
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'quantum_echo_teleport', 'x': self.ball.x, 'y': self.ball.y}})
+                return
+
         if skill_name == "glitch_teleport":
             self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
             self.ball.vx = -getattr(self.ball, "vx", 0.0)

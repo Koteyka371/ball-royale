@@ -1,0 +1,4 @@
+{
+    "title": "Echo Devourer Boss",
+    "description": "A new boss entity that specifically hunts players with the 'quantum_echo' trait. It consumes the ghosts left behind to heal itself and gain a temporary speed boost, forcing players to be strategic about when they teleport."
+}
