@@ -2510,31 +2510,88 @@ class Action:
         self.ball.perception_radius = self.ball.base_perception_radius
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            # Pre-process camouflage hazards
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "sniper_nest_camouflage":
+                    weather = getattr(self.world.arena, "weather", "") if hasattr(self.world, "arena") and self.world.arena else ""
+                    if weather in ("wind", "windstorm", "hurricane", "tornado", "sandstorm"):
+                        hazard.active = False
+                        hazard.duration = 0.0
+                    else:
+                        for other_hazard in self.world.arena.hazards:
+                            if getattr(other_hazard, "kind", "") in ("explosion", "bomb", "mine", "volatile_barrel", "explosive_barrel", "fire_zone"):
+                                if getattr(other_hazard, "active", True) and (getattr(other_hazard, "is_exploded", False) or getattr(other_hazard, "kind", "") in ("explosion", "fire_zone")):
+                                    if __import__("math").hypot(hazard.x - other_hazard.x, hazard.y - other_hazard.y) <= getattr(other_hazard, "radius", 100.0) + getattr(hazard, "radius", 50.0):
+                                        hazard.active = False
+                                        hazard.duration = 0.0
+                                        break
+                        if getattr(hazard, "active", True) and hasattr(self.world, "events"):
+                            for ev in self.world.events:
+                                if isinstance(ev, (list, tuple)) and len(ev) > 0:
+                                    if ev[0] == "explosion":
+                                        ev_data = ev[1] if len(ev) > 1 else {}
+                                        ex, ey = ev_data.get("x", 0.0), ev_data.get("y", 0.0)
+                                        er = ev_data.get("radius", 100.0)
+                                        if __import__("math").hypot(hazard.x - ex, hazard.y - ey) <= er + getattr(hazard, "radius", 50.0):
+                                            hazard.active = False
+                                            hazard.duration = 0.0
+                                            break
+                                elif isinstance(ev, dict):
+                                    if ev.get("type") == "explosion":
+                                        ex, ey = ev.get("x", 0.0), ev.get("y", 0.0)
+                                        er = ev.get("radius", 100.0)
+                                        if __import__("math").hypot(hazard.x - ex, hazard.y - ey) <= er + getattr(hazard, "radius", 50.0):
+                                            hazard.active = False
+                                            hazard.duration = 0.0
+                                            break
+                                    elif ev.get("type") == "visual_effect" and ev.get("data", {}).get("type") == "explosion":
+                                        ex, ey = ev.get("data", {}).get("x", 0.0), ev.get("data", {}).get("y", 0.0)
+                                        er = ev.get("data", {}).get("radius", 100.0)
+                                        if __import__("math").hypot(hazard.x - ex, hazard.y - ey) <= er + getattr(hazard, "radius", 50.0):
+                                            hazard.active = False
+                                            hazard.duration = 0.0
+                                            break
+
             # Bush stealth state
             self.ball.in_bush = False
+
+            in_nest_flag = False
             for hazard in self.world.arena.hazards:
                 if getattr(hazard, "kind", "") == "sniper_nest":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
                     if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
                         self.ball.in_sniper_nest = True
+                        in_nest_flag = True
                         self.ball.perception_radius = self.ball.base_perception_radius * 1.25
                         self.ball.damage_multiplier = self.ball.base_damage_multiplier * 1.15
-                        # Adding a visual indicator flag
-                        self.ball.show_sniper_nest_indicator = True
 
-                        if hasattr(self.world, "events"):
-                            self.world.events.append({
-                                "type": "sniper_nest_indicator",
-                                "data": {
-                                    "target_x": getattr(self.ball, "x", 0.0),
-                                    "target_y": getattr(self.ball, "y", 0.0)
-                                }
-                            })
+                        is_camouflaged = False
+                        for camo_hazard in self.world.arena.hazards:
+                            if getattr(camo_hazard, "kind", "") == "sniper_nest_camouflage" and getattr(camo_hazard, "active", True):
+                                cx = getattr(camo_hazard, "x", 0.0) - getattr(hazard, "x", 0.0)
+                                cy = getattr(camo_hazard, "y", 0.0) - getattr(hazard, "y", 0.0)
+                                if math.hypot(cx, cy) <= getattr(hazard, "radius", 50.0) + getattr(camo_hazard, "radius", 50.0):
+                                    is_camouflaged = True
+                                    break
 
+                        if not is_camouflaged:
+                            # Adding a visual indicator flag
+                            self.ball.show_sniper_nest_indicator = True
 
-                    else:
-                        self.ball.show_sniper_nest_indicator = False
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({
+                                    "type": "sniper_nest_indicator",
+                                    "data": {
+                                        "target_x": getattr(self.ball, "x", 0.0),
+                                        "target_y": getattr(self.ball, "y", 0.0)
+                                    }
+                                })
+                        else:
+                            self.ball.show_sniper_nest_indicator = False
+
+            if not in_nest_flag:
+                self.ball.show_sniper_nest_indicator = False
 
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
