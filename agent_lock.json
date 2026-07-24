@@ -14,7 +14,7 @@
       "task_id": "idea-1394",
       "status": "working",
       "started_at": "2026-07-24T15:45:53.453478+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-3": {
       "name": "Jules Tests",
