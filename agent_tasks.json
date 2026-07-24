@@ -24035,7 +24035,7 @@
     },
     {
       "id": "idea-1403",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Entanglement Chain",
@@ -35809,6 +35809,74 @@
         "src/ai/health_drain_artifact.py",
         "src/ai/health_drain_artifact.gd",
         "tests/test_health_drain_artifact.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2095",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Disruption Trap",
+      "description": "A new trap that emits an EMP-like pulse. Enemies caught in its radius instantly lose all active aura effects (speed, healing, etc.) and cannot gain new ones for a short duration.",
+      "allowed_paths": [
+        "src/arena/aura_disruption_trap.py",
+        "src/arena/aura_disruption_trap.gd",
+        "tests/test_aura_disruption_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2096",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Strike",
+      "description": "A follow up attack where an echo repeats a smaller percentage of damage 1 second after original strike.",
+      "allowed_paths": [
+        "src/ai/echo_strike.py",
+        "src/ai/echo_strike.gd",
+        "tests/test_echo_strike.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2097",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Aura Overload Booster",
+      "description": "A rare consumable booster that amplifies the player's current auras to 300% effectiveness but drains their HP over time while active. High risk, high reward.",
+      "allowed_paths": [
+        "src/ai/aura_overload_booster.py",
+        "src/ai/aura_overload_booster.gd",
+        "tests/test_aura_overload_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2098",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Mimic Cast",
+      "description": "A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.",
+      "allowed_paths": [
+        "src/ai/decoy_mimic_cast.py",
+        "src/ai/decoy_mimic_cast.gd",
+        "tests/test_decoy_mimic_cast.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

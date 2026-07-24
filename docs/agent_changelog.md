@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1403] Entanglement Chain — *2026-07-24 04:56:04 UTC*
+
+A new mutator where entanglement can spread from two players to up to four if they remain in close proximity.
+
+---
+
 ## [idea-1421] Decoy Mimic Mastery — *2026-07-24 04:49:07 UTC*
 
 A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.
