@@ -1235,6 +1235,27 @@ func _attempt_damage_internal(attacker, target) -> void:
 				else:
 					attacker.hp -= refl_dmg
 			return
+		var has_velocity = false
+		if "velocity_shield_active" in target and target.velocity_shield_active:
+			has_velocity = true
+		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("velocity_shield_active") and target.get_meta("velocity_shield_active"):
+			has_velocity = true
+
+		if has_velocity and is_ranged:
+			var inc_dmg = 10.0
+			if "damage" in attacker: inc_dmg = float(attacker.damage)
+			var cur_sbt = 0.0
+			if "speed_boost_timer" in target: cur_sbt = float(target.speed_boost_timer)
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("speed_boost_timer"): cur_sbt = float(target.get_meta("speed_boost_timer"))
+
+			if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
+				target.set_meta("speed_boost_timer", cur_sbt + (inc_dmg * 0.1))
+			else:
+				target.speed_boost_timer = cur_sbt + (inc_dmg * 0.1)
+
+			world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
+			return
+
 	var target_es = false
 	if "energy_shield_active" in target and target.energy_shield_active:
 		target_es = true
@@ -29268,6 +29289,14 @@ func _use_skill():
                 self.ball.surge_shield_active = true
                 self.ball.surge_shield_timer = 3.0
 
+        elif skill_name == "velocity_shield":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("velocity_shield_active", true)
+                self.ball.set_meta("velocity_shield_timer", 5.0)
+            else:
+                self.ball.velocity_shield_active = true
+                self.ball.velocity_shield_timer = 5.0
+
         elif skill_name == "trickster_swap":
             var all_entities = []
             if "balls" in self.world:
@@ -37937,6 +37966,25 @@ func _update_skill_timer(delta: float):
                 self.ball.set_meta("surge_shield_timer", ss_timer)
             else:
                 self.ball.surge_shield_timer = ss_timer
+
+    var vs_timer = 0.0
+    if "velocity_shield_timer" in self.ball: vs_timer = self.ball.velocity_shield_timer
+    elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("velocity_shield_timer"): vs_timer = self.ball.get_meta("velocity_shield_timer")
+
+    if vs_timer > 0.0:
+        vs_timer -= delta
+        if vs_timer <= 0.0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("velocity_shield_active", false)
+                self.ball.set_meta("velocity_shield_timer", 0.0)
+            else:
+                self.ball.velocity_shield_active = false
+                self.ball.velocity_shield_timer = 0.0
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("velocity_shield_timer", vs_timer)
+            else:
+                self.ball.velocity_shield_timer = vs_timer
 
 
     var m_tether_timer = 0.0
