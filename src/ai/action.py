@@ -4757,12 +4757,24 @@ class Action:
                 if getattr(hazard, "kind", "") == "localized_blizzard":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 120.0) + getattr(self.ball, "radius", 10.0):
-                        self.ball.speed = getattr(self.ball, "base_speed", 150.0) * 0.5
+                        cosmetic = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
+                        ball_type = str(getattr(self.ball, "ball_type", "")).lower().replace(" ", "_")
+                        if cosmetic == "ice_elemental" or ball_type == "ice_elemental":
+                            self.ball.speed = getattr(self.ball, "base_speed", 150.0) * 1.2
+                        elif cosmetic == "snow_tires":
+                            pass # Immune to slow
+                        else:
+                            self.ball.speed = getattr(self.ball, "base_speed", 150.0) * 0.5
 
                 if getattr(hazard, "kind", "") == "localized_heatwave":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 100.0) + getattr(self.ball, "radius", 10.0):
-                        self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 100.0) - 20.0 * delta)
+                        cosmetic = str(getattr(self.ball, "cosmetic", "")).lower().replace(" ", "_")
+                        ball_type = str(getattr(self.ball, "ball_type", "")).lower().replace(" ", "_")
+                        if cosmetic == "fire_elemental" or ball_type == "fire_elemental":
+                            self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 20.0 * delta)
+                        else:
+                            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 100.0) - 20.0 * delta)
 
         # Chain lightning timer
         if getattr(self.ball, "_cl_collision_cd", 0.0) > 0:
