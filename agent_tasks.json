@@ -24614,7 +24614,7 @@
     },
     {
       "id": "idea-1437",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Alley Mode",
@@ -36150,6 +36150,91 @@
         "src/ai/decaying_orbits_mutator.py",
         "src/ai/decaying_orbits_mutator.gd",
         "tests/test_decaying_orbits_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2115",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetize Buff",
+      "description": "A buff that allows a player to pull in all nearby boosters and items automatically without having to touch them, increasing their item pickup efficiency.",
+      "allowed_paths": [
+        "src/ai/magnetize_buff.py",
+        "src/ai/magnetize_buff.gd",
+        "tests/test_magnetize_buff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2116",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Anomaly Event",
+      "description": "Periodically, an intense magnetic storm sweeps across the arena, forcefully pushing or pulling all metallic balls or hazard items towards the center or edges depending on their polarity.",
+      "allowed_paths": [
+        "src/ai/magnetic_anomaly.py",
+        "src/ai/magnetic_anomaly.gd",
+        "tests/test_magnetic_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2117",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slippery Arena",
+      "description": "A game mode where balls have significantly less friction and bounce around with higher velocity, making it harder to control movement but enabling interesting ricochet plays.",
+      "allowed_paths": [
+        "src/arena/slippery_arena.py",
+        "src/arena/slippery_arena.gd",
+        "tests/test_slippery_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2118",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sunburn Effect",
+      "description": "During extreme heatwaves, staying outside shadow areas (new terrain feature) causes gradual HP drain. Thermal boots or cooling cosmetics can negate the sunburn effect.",
+      "allowed_paths": [
+        "src/ai/sunburn_effect.py",
+        "src/ai/sunburn_effect.gd",
+        "tests/test_sunburn_effect.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2119",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slippery Mud Puddles",
+      "description": "Add new 'mud_puddle' hazards during rain weather that increase slide distance and decrease acceleration. Mud tires cosmetic or rain boots negate these effects.",
+      "allowed_paths": [
+        "src/ai/slippery_mud_puddles.py",
+        "src/ai/slippery_mud_puddles.gd",
+        "tests/test_slippery_mud_puddles.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

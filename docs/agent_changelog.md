@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1437] Tornado Alley Mode — *2026-07-24 06:48:15 UTC*
+
+A game mode where the arena has multiple huge tornados slowly moving around, constantly sucking players in and dealing damage.
+
+---
+
 ## [idea-1449] Sticky Wall Pads — *2026-07-24 06:42:23 UTC*
 
 Boots or a passive item that allows a ball to stick to a wall for a few seconds when they hit it, preventing them from falling out of bounds and giving them a chance to aim a powerful jump off the wall.
