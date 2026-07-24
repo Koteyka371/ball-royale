@@ -31748,7 +31748,7 @@ class ColorTrailMode(GameMode):
             if (gx, gy) in self.territory:
                 haz = self.territory[(gx, gy)]
                 if haz.team == team:
-                    b.speed = getattr(b, "base_speed", 100.0) * 1.5
+                    b.speed = getattr(b, "base_speed", 100.0) * 2.0
                     b.hp = min(getattr(b, "max_hp", 100.0), b.hp + 5.0 * delta)
                 else:
                     b.speed = getattr(b, "base_speed", 100.0) * 0.5
