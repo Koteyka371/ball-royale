@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1287] Emotion Synergy: Courage — *2026-07-24 00:10:21 UTC*
+
+Introduce a new emotion 'courage' that can randomly proc on balls that successfully defeat an enemy that was under the 'fear' effect. Courage grants immunity to fear and a 15% bonus to attack power for 10 seconds.
+
+---
+
 ## [idea-1347] Inverted Controls Status Effect — *2026-07-24 00:10:17 UTC*
 
 Add a new status effect called 'confusion' that randomly reverses the directional inputs or movement outputs of a ball for a few seconds. This can be inflicted by a new trap variant or a specific booster to add chaos to the battlefield.
