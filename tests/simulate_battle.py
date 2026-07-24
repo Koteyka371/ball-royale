@@ -11,10 +11,11 @@ import sys
 import os
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple, Any
-from system.crowd_system import CrowdSystem
 from collections import Counter
-
+import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+from system.crowd_system import CrowdSystem
 
 from ai.ball_brain import BallBrain # type: ignore
 from ai.neural_network_brain import NeuralNetworkBrain # type: ignore
