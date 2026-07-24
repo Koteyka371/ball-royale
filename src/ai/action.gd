@@ -10044,10 +10044,25 @@ func execute(strategy: String, delta: float):
 					elif "base_speed" in self.ball:
 						b_speed = float(self.ball.base_speed)
 
+					var cb = ""
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+					var b_type = ""
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = str(self.ball["ball_type"]).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower().replace(" ", "_")
+
+					var new_speed = b_speed * 0.5
+					if cb == "ice_elemental" or b_type == "ice_elemental":
+						new_speed = b_speed * 1.2
+					elif cb == "snow_tires":
+						new_speed = b_speed
+
 					if typeof(self.ball) == TYPE_DICTIONARY:
-						self.ball["speed"] = b_speed * 0.5
+						self.ball["speed"] = new_speed
 					else:
-						self.ball.speed = b_speed * 0.5
+						self.ball.speed = new_speed
 
 			if hazard.get("kind") == "localized_heatwave":
 				var my_rad = 10.0
@@ -10064,8 +10079,25 @@ func execute(strategy: String, delta: float):
 						if self.ball.has("stamina"): b_stamina = float(self.ball["stamina"])
 					elif "stamina" in self.ball:
 						b_stamina = float(self.ball.stamina)
+					var b_max_stamina = 100.0
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						if self.ball.has("max_stamina"): b_max_stamina = float(self.ball["max_stamina"])
+					elif "max_stamina" in self.ball:
+						b_max_stamina = float(self.ball.max_stamina)
 
-					b_stamina = max(0.0, b_stamina - 20.0 * delta)
+					var cb = ""
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+					var b_type = ""
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = str(self.ball["ball_type"]).to_lower().replace(" ", "_")
+					elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: b_type = str(self.ball.ball_type).to_lower().replace(" ", "_")
+
+					if cb == "fire_elemental" or b_type == "fire_elemental":
+						b_stamina = min(b_max_stamina, b_stamina + 20.0 * delta)
+					else:
+						b_stamina = max(0.0, b_stamina - 20.0 * delta)
 
 					if typeof(self.ball) == TYPE_DICTIONARY:
 						self.ball["stamina"] = b_stamina

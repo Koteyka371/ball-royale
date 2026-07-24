@@ -249,6 +249,7 @@ def test_localized_weather_logic():
             self.id = 1
             self.intangible_timer = 0.0
             self.ball_type = "normal"
+            self.cosmetic = "normal"
 
     ball = DummyBall()
 
@@ -374,3 +375,131 @@ def test_ground_pound_lava_terrain():
     action.execute("use_skill", 0.1)
 
     assert lava_puddle not in world.arena.hazards
+
+def test_localized_blizzard_immunities():
+    from ai.action import Action
+
+    class DummyHazard:
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 100
+            self.y = 100
+            self.radius = 100
+
+    blizzard = DummyHazard("localized_blizzard")
+
+    class DummyArena:
+        def __init__(self):
+            self.hazards = [blizzard]
+            self.weather = "clear"
+
+    class DummyWorld:
+        def __init__(self):
+            self.arena = DummyArena()
+            self.balls = []
+
+        def get_nearby_entities(self, b, r):
+            return {"boosters": [], "hazards": [blizzard]}
+
+    world = DummyWorld()
+
+    class DummyBall:
+        def __init__(self, cosmetic):
+            self.x = 100
+            self.y = 100
+            self.base_speed = 200
+            self.speed = 200
+            self.stamina = 100
+            self.max_stamina = 100
+            self.radius = 10
+            self.team = 1
+            self.id = 1
+            self.intangible_timer = 0.0
+            self.ball_type = "normal"
+            self.cosmetic = cosmetic
+
+    # Test normal slow
+    normal = DummyBall("none")
+    action_normal = Action(normal, world)
+    action_normal.execute("idle", 1.0)
+    assert normal.speed == 100.0
+
+    # Test snow tires immunity
+    snow = DummyBall("snow_tires")
+    action_snow = Action(snow, world)
+    action_snow.execute("idle", 1.0)
+    assert snow.speed == 200.0
+
+    # Test ice elemental buff
+    ice = DummyBall("ice_elemental")
+    action_ice = Action(ice, world)
+    action_ice.execute("idle", 1.0)
+    assert ice.speed == 240.0
+
+    print("Success test_localized_blizzard_immunities")
+
+def test_localized_heatwave_immunities():
+    from ai.action import Action
+
+    class DummyHazard:
+        def __init__(self, kind):
+            self.kind = kind
+            self.x = 100
+            self.y = 100
+            self.radius = 100
+
+    heatwave = DummyHazard("localized_heatwave")
+
+    class DummyArena:
+        def __init__(self):
+            self.hazards = [heatwave]
+            self.weather = "clear"
+
+    class DummyWorld:
+        def __init__(self):
+            self.arena = DummyArena()
+            self.balls = []
+
+        def get_nearby_entities(self, b, r):
+            return {"boosters": [], "hazards": [heatwave]}
+
+    world = DummyWorld()
+
+    class DummyBall:
+        def __init__(self, cosmetic):
+            self.x = 100
+            self.y = 100
+            self.base_speed = 200
+            self.speed = 200
+            self.stamina = 100
+            self.max_stamina = 100
+            self.radius = 10
+            self.team = 1
+            self.id = 1
+            self.intangible_timer = 0.0
+            self.ball_type = "normal"
+            self.cosmetic = cosmetic
+
+    # Test normal drain
+    normal = DummyBall("none")
+    normal.stamina = 50.0
+    action_normal = Action(normal, world)
+    action_normal.execute("idle", 1.0)
+
+    # normal stamina after drain + idle regen = 60
+    assert normal.stamina == 60.0
+
+    # Test fire elemental buff
+    fire = DummyBall("fire_elemental")
+    fire.stamina = 50.0
+    action_fire = Action(fire, world)
+    action_fire.execute("idle", 1.0)
+
+    # Fire elemental gets 20 stamina regen from heatwave + idle regen = 100 max
+    assert fire.stamina > 60.0
+
+    print("Success test_localized_heatwave_immunities")
+
+if __name__ == "__main__":
+    test_localized_blizzard_immunities()
+    test_localized_heatwave_immunities()
