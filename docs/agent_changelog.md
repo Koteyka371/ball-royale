@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1385] Weekend Boss Invasions — *2026-07-24 00:46:27 UTC*
+
+On weekends, there is a chance for a massive world boss to invade the standard battle royale map, forcing all remaining balls to temporarily ally against it before resuming their fight.
+
+---
+
 ## [idea-1380] Aura Bomb Event — *2026-07-24 00:40:15 UTC*
 
 An event where random players are given a ticking 'Aura Bomb'. They must rush away from their teammates to avoid wiping them out in an aura explosion, but rushing towards enemies will damage them.

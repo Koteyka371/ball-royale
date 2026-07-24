@@ -23726,7 +23726,7 @@
     },
     {
       "id": "idea-1385",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weekend Boss Invasions",
@@ -35792,6 +35792,23 @@
         "src/ai/time_loop_zone.py",
         "src/ai/time_loop_zone.gd",
         "tests/test_time_loop_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2094",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Health Drain Artifact",
+      "description": "An artifact that, when equipped, slowly drains the user's health but significantly boosts their movement speed and damage output.",
+      "allowed_paths": [
+        "src/ai/health_drain_artifact.py",
+        "src/ai/health_drain_artifact.gd",
+        "tests/test_health_drain_artifact.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
