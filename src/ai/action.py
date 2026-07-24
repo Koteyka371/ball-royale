@@ -8660,6 +8660,23 @@ class Action:
                                     self.ball.burning_trail_timer = max(getattr(self.ball, "burning_trail_timer", 0.0), 10.0)
                                     self.ball.burning_trail_owner_id = getattr(hazard, "owner_id", -1)
                                     hazard.duration = 0.0 # Destroy trap
+                                elif trap_variant == "web":
+                                    # Web trap: heavily slow down the ball and create a spider_web hazard
+                                    if hasattr(self.ball, "speed_multiplier"):
+                                        self.ball.speed_multiplier *= 0.3
+                                    if hasattr(self.ball, "slow_timer"):
+                                        self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 4.0)
+                                    else:
+                                        self.ball.slow_timer = 4.0
+
+                                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                        from arena.procedural_arena import Hazard
+                                        web_id = len(self.world.arena.hazards) + 9000
+                                        web_zone = Hazard(web_id, hazard.x, hazard.y, 50.0, "spider_web", 0.0)
+                                        web_zone.duration = 10.0
+                                        self.world.arena.hazards.append(web_zone)
+
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "tar":
                                     # Tar trap: heavily slow down the ball and create a tar puddle
                                     if hasattr(self.ball, "speed_multiplier"):
@@ -10145,6 +10162,13 @@ class Action:
                                     self.ball.take_damage(20.0 * delta)
                                 elif hasattr(self.ball, "hp"):
                                     self.ball.hp -= 20.0 * delta
+                        elif hazard.kind == "spider_web":
+                            if hasattr(self.ball, "slow_timer"):
+                                self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 2.0)
+                            else:
+                                self.ball.slow_timer = 2.0
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.3)
                         elif hazard.kind == "tar_puddle":
                             if hasattr(self.ball, "slow_timer"):
                                 self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)

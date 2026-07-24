@@ -16949,6 +16949,34 @@ func execute(strategy: String, delta: float):
                                     hazard["duration"] = 0.0
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "web":
+                                if "speed_multiplier" in self.ball:
+                                    self.ball.speed_multiplier *= 0.3
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("speed_multiplier", self.ball.get_meta("speed_multiplier") * 0.3 if self.ball.has_meta("speed_multiplier") else 0.3)
+
+                                var current_slow = 0.0
+                                if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("slow_timer"): current_slow = self.ball.get_meta("slow_timer")
+
+                                if "slow_timer" in self.ball: self.ball.slow_timer = max(current_slow, 4.0)
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(current_slow, 4.0))
+
+                                if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+                                    var web_zone = null
+                                    if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+                                        web_zone = load("res://src/arena/procedural_arena.gd").Hazard.new(world.get_arena().hazards.size() + 9000, hazard.x, hazard.y, 50.0, "spider_web", 0.0)
+                                    else:
+                                        web_zone = {"id": world.get_arena().hazards.size() + 9000, "x": hazard.x, "y": hazard.y, "radius": 50.0, "kind": "spider_web", "damage": 0.0, "active": true, "duration": 10.0}
+
+                                    if typeof(web_zone) == TYPE_OBJECT and web_zone.has_method("set_meta"):
+                                        web_zone.set_meta("duration", 10.0)
+                                    world.get_arena().hazards.append(web_zone)
+
+                                if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"):
+                                    hazard["duration"] = 0.0
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "tar":
                                 if "speed_multiplier" in self.ball:
                                     self.ball.speed_multiplier *= 0.2
@@ -19702,6 +19730,20 @@ func execute(strategy: String, delta: float):
                             self.ball.hp -= 20.0 * delta
                         elif self.ball.has_method("set_meta") and self.ball.has_meta("hp"):
                             self.ball.set_meta("hp", self.ball.get_meta("hp") - 20.0 * delta)
+                elif hazard.kind == "spider_web":
+                    var current_slow = 0.0
+                    if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("slow_timer"): current_slow = self.ball.get_meta("slow_timer")
+
+                    if "slow_timer" in self.ball: self.ball.slow_timer = max(current_slow, 2.0)
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(current_slow, 2.0))
+
+                    var current_mult = 1.0
+                    if "speed_multiplier" in self.ball: current_mult = self.ball.speed_multiplier
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("speed_multiplier"): current_mult = self.ball.get_meta("speed_multiplier")
+
+                    if "speed_multiplier" in self.ball: self.ball.speed_multiplier = min(current_mult, 0.3)
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", min(current_mult, 0.3))
                 elif hazard.kind == "tar_puddle":
                     var current_slow = 0.0
                     if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
