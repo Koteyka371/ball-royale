@@ -141,3 +141,40 @@ def test_earth_trait_dirt():
     b = MockBall(ball_type="earth")
     mode.apply_dynamic_traits(world, [b], 1.0)
     assert b.defense_multiplier == 0.8
+
+def test_synergy_water_lightning_electrified_water():
+    mode = MockTraitsMode()
+    world = MockWorld()
+
+    # Setup team
+    b_water = MockBall(ball_type="water")
+    b_water.team = 1
+
+    b_lightning = MockBall(ball_type="lightning")
+    b_lightning.team = 1
+
+    # Setup enemies
+    enemy1 = MockBall(ball_type="base", hp=100.0)
+    enemy1.team = 2
+    enemy1.x = 10.0
+    enemy1.y = 10.0
+
+    b_water.x = 0.0
+    b_water.y = 0.0
+    b_lightning.x = 50.0
+    b_lightning.y = 50.0
+
+    # Initial timer is 0. Delta of 1.5 should trigger the 1.0 check
+    mode.apply_dynamic_traits(world, [b_water, b_lightning, enemy1], 1.5)
+
+    # Water should get speed boost (base 100 * 1.25 = 125)
+    assert b_water.speed == 125.0
+    # Lightning should get speed boost (base 100 * 1.25 = 125)
+    assert b_lightning.speed == 125.0
+
+    # Enemy1 should take damage from the electrified water pulse
+    # Two pulses (one from water, one from lightning) since both triggered > 1.0 timer
+    # Wait, enemy1 is at (10,10) which is distance ~14 from water (r=150) -> hit
+    # and distance ~56 from lightning (r=150) -> hit
+    # Damage is 15 per hit. 100 - 15 - 15 = 70
+    assert enemy1.hp == 70.0

@@ -291,6 +291,77 @@ class GameMode:
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
+        # Apply Team Synergies
+        # First, gather team data
+        team_traits = {}
+        for b in balls:
+            if getattr(b, "alive", False):
+                b_team = getattr(b, "team", None)
+                if b_team is not None:
+                    if b_team not in team_traits:
+                        team_traits[b_team] = set()
+
+                    b_type = getattr(b, "ball_type", "").lower()
+                    traits = getattr(b, "traits", [])
+
+                    if "water" in b_type or "water" in traits:
+                        team_traits[b_team].add("water")
+                    if "lightning" in b_type or "lightning" in traits or "electric" in b_type or "electric" in traits:
+                        team_traits[b_team].add("lightning")
+
+        # Now apply synergies to units
+        for b in balls:
+            if getattr(b, "alive", False):
+                b_team = getattr(b, "team", None)
+                b_type = getattr(b, "ball_type", "").lower()
+                traits = getattr(b, "traits", [])
+
+                if b_team is not None and b_team in team_traits:
+                    team_has_water = "water" in team_traits[b_team]
+                    team_has_lightning = "lightning" in team_traits[b_team]
+
+                    is_water = "water" in b_type or "water" in traits
+                    is_lightning = "lightning" in b_type or "lightning" in traits or "electric" in b_type or "electric" in traits
+
+                    if team_has_water and team_has_lightning and (is_water or is_lightning):
+                        # Apply 'electrified water' buff: Increased speed and a pulsing electric aura
+                        base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                        b.speed = base_s * 1.25 # 25% speed boost
+
+                        # Pulsing damage aura
+                        if not hasattr(b, "electrified_water_timer"):
+                            b.electrified_water_timer = 0.0
+                        b.electrified_water_timer += delta
+                        if b.electrified_water_timer >= 1.0:
+                            b.electrified_water_timer = 0.0
+
+                            # Find enemies nearby to shock
+                            b_x = getattr(b, "x", 0.0)
+                            b_y = getattr(b, "y", 0.0)
+                            shock_radius = 150.0
+                            shock_damage = 15.0
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("visual_effect", {"type": "electrified_water_pulse", "x": b_x, "y": b_y, "radius": shock_radius})
+
+                            for enemy in balls:
+                                if enemy is not b and getattr(enemy, "alive", False) and getattr(enemy, "team", None) != b_team:
+                                    e_x = getattr(enemy, "x", 0.0)
+                                    e_y = getattr(enemy, "y", 0.0)
+                                    dist_sq = (b_x - e_x)**2 + (b_y - e_y)**2
+                                    if dist_sq <= shock_radius**2:
+                                        # Shock enemy
+                                        if hasattr(world, "_deal_damage"):
+                                            world._deal_damage(b, enemy, shock_damage)
+                                        else:
+                                            enemy.hp = getattr(enemy, "hp", 100.0) - shock_damage
+                                            if enemy.hp <= 0:
+                                                enemy.alive = False
+
+                                        # Chain lightning visual
+                                        if hasattr(world, "add_event"):
+                                            world.add_event("visual_effect", {"type": "lightning_chain", "x": b_x, "y": b_y, "tx": e_x, "ty": e_y, "color": "blue_yellow"})
+
     def setup(self, world: Any, balls: List[Any]) -> None:
         self.total_match_time = 0.0
         if not hasattr(world, "dead_balls"):

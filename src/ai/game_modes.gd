@@ -471,6 +471,200 @@ class GameMode:
 						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
 						if "speed" in b: b.speed = bs * 1.15
 
+		# Apply Team Synergies
+		var team_traits = {}
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", false)
+			else:
+				b_alive = b.get("alive") if "alive" in b else false
+
+			if b_alive:
+				var b_team = null
+				if typeof(b) == TYPE_DICTIONARY:
+					b_team = b.get("team")
+				else:
+					b_team = b.get("team") if "team" in b else null
+
+				if b_team != null:
+					if not team_traits.has(b_team):
+						team_traits[b_team] = {"water": false, "lightning": false}
+
+					var b_type = ""
+					var traits = []
+					if typeof(b) == TYPE_DICTIONARY:
+						b_type = str(b.get("ball_type", "")).to_lower()
+						traits = b.get("traits", [])
+					else:
+						if "ball_type" in b:
+							b_type = str(b.ball_type).to_lower()
+						if "traits" in b:
+							traits = b.traits
+
+					if b_type.find("water") != -1 or traits.has("water"):
+						team_traits[b_team]["water"] = true
+					if b_type.find("lightning") != -1 or traits.has("lightning") or b_type.find("electric") != -1 or traits.has("electric"):
+						team_traits[b_team]["lightning"] = true
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				b_alive = b.get("alive", false)
+			else:
+				b_alive = b.get("alive") if "alive" in b else false
+
+			if b_alive:
+				var b_team = null
+				if typeof(b) == TYPE_DICTIONARY:
+					b_team = b.get("team")
+				else:
+					b_team = b.get("team") if "team" in b else null
+
+				if b_team != null and team_traits.has(b_team):
+					var team_has_water = team_traits[b_team]["water"]
+					var team_has_lightning = team_traits[b_team]["lightning"]
+
+					var b_type = ""
+					var traits = []
+					if typeof(b) == TYPE_DICTIONARY:
+						b_type = str(b.get("ball_type", "")).to_lower()
+						traits = b.get("traits", [])
+					else:
+						if "ball_type" in b:
+							b_type = str(b.ball_type).to_lower()
+						if "traits" in b:
+							traits = b.traits
+
+					var is_water = b_type.find("water") != -1 or traits.has("water")
+					var is_lightning = b_type.find("lightning") != -1 or traits.has("lightning") or b_type.find("electric") != -1 or traits.has("electric")
+
+					if team_has_water and team_has_lightning and (is_water or is_lightning):
+						if typeof(b) == TYPE_DICTIONARY:
+							var base_s = b.get("base_speed", b.get("speed", 100.0))
+							b["speed"] = base_s * 1.25 # 25% speed boost
+
+							var e_timer = b.get("electrified_water_timer", 0.0) + delta
+							if e_timer >= 1.0:
+								e_timer = 0.0
+								var b_x = b.get("x", 0.0)
+								var b_y = b.get("y", 0.0)
+								var shock_radius = 150.0
+								var shock_damage = 15.0
+
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("visual_effect", {"type": "electrified_water_pulse", "x": b_x, "y": b_y, "radius": shock_radius})
+
+								for enemy in balls:
+									if typeof(enemy) != typeof(b) or enemy != b:
+										var enemy_alive = false
+										if typeof(enemy) == TYPE_DICTIONARY:
+											enemy_alive = enemy.get("alive", false)
+										else:
+											enemy_alive = enemy.get("alive") if "alive" in enemy else false
+
+										if enemy_alive:
+											var enemy_team = null
+											if typeof(enemy) == TYPE_DICTIONARY:
+												enemy_team = enemy.get("team")
+											else:
+												enemy_team = enemy.get("team") if "team" in enemy else null
+
+											if enemy_team != b_team:
+												var e_x = 0.0
+												var e_y = 0.0
+												if typeof(enemy) == TYPE_DICTIONARY:
+													e_x = enemy.get("x", 0.0)
+													e_y = enemy.get("y", 0.0)
+												else:
+													e_x = enemy.get("x") if "x" in enemy else 0.0
+													e_y = enemy.get("y") if "y" in enemy else 0.0
+
+												var dist_sq = (b_x - e_x)*(b_x - e_x) + (b_y - e_y)*(b_y - e_y)
+												if dist_sq <= shock_radius * shock_radius:
+													if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+														world._deal_damage(b, enemy, shock_damage)
+													else:
+														if typeof(enemy) == TYPE_DICTIONARY:
+															enemy["hp"] = enemy.get("hp", 100.0) - shock_damage
+															if enemy["hp"] <= 0:
+																enemy["alive"] = false
+														elif "hp" in enemy:
+															enemy.hp -= shock_damage
+															if enemy.hp <= 0:
+																enemy.alive = false
+
+													if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+														world.add_event("visual_effect", {"type": "lightning_chain", "x": b_x, "y": b_y, "tx": e_x, "ty": e_y, "color": "blue_yellow"})
+							b["electrified_water_timer"] = e_timer
+						else:
+							var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+							if "speed" in b: b.speed = base_s * 1.25
+
+							var e_timer = 0.0
+							if "electrified_water_timer" in b:
+								e_timer = b.electrified_water_timer
+							elif b.has_method("has_meta") and b.has_meta("electrified_water_timer"):
+								e_timer = b.get_meta("electrified_water_timer")
+							e_timer += delta
+
+							if e_timer >= 1.0:
+								e_timer = 0.0
+								var b_x = b.get("x") if "x" in b else 0.0
+								var b_y = b.get("y") if "y" in b else 0.0
+								var shock_radius = 150.0
+								var shock_damage = 15.0
+
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("visual_effect", {"type": "electrified_water_pulse", "x": b_x, "y": b_y, "radius": shock_radius})
+
+								for enemy in balls:
+									if typeof(enemy) != typeof(b) or enemy != b:
+										var enemy_alive = false
+										if typeof(enemy) == TYPE_DICTIONARY:
+											enemy_alive = enemy.get("alive", false)
+										else:
+											enemy_alive = enemy.get("alive") if "alive" in enemy else false
+
+										if enemy_alive:
+											var enemy_team = null
+											if typeof(enemy) == TYPE_DICTIONARY:
+												enemy_team = enemy.get("team")
+											else:
+												enemy_team = enemy.get("team") if "team" in enemy else null
+
+											if enemy_team != b_team:
+												var e_x = 0.0
+												var e_y = 0.0
+												if typeof(enemy) == TYPE_DICTIONARY:
+													e_x = enemy.get("x", 0.0)
+													e_y = enemy.get("y", 0.0)
+												else:
+													e_x = enemy.get("x") if "x" in enemy else 0.0
+													e_y = enemy.get("y") if "y" in enemy else 0.0
+
+												var dist_sq = (b_x - e_x)*(b_x - e_x) + (b_y - e_y)*(b_y - e_y)
+												if dist_sq <= shock_radius * shock_radius:
+													if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+														world._deal_damage(b, enemy, shock_damage)
+													else:
+														if typeof(enemy) == TYPE_DICTIONARY:
+															enemy["hp"] = enemy.get("hp", 100.0) - shock_damage
+															if enemy["hp"] <= 0:
+																enemy["alive"] = false
+														elif "hp" in enemy:
+															enemy.hp -= shock_damage
+															if enemy.hp <= 0:
+																enemy.alive = false
+
+													if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+														world.add_event("visual_effect", {"type": "lightning_chain", "x": b_x, "y": b_y, "tx": e_x, "ty": e_y, "color": "blue_yellow"})
+
+							if "electrified_water_timer" in b:
+								b.electrified_water_timer = e_timer
+							elif b.has_method("set_meta"):
+								b.set_meta("electrified_water_timer", e_timer)
+
 	func setup(world, balls: Array) -> void:
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
