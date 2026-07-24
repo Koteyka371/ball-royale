@@ -674,6 +674,7 @@ class Action:
             # Absorb ranged attack
             inc_dmg = getattr(attacker, "damage", 10.0)
             target.kinetic_shield_stored_damage = getattr(target, "kinetic_shield_stored_damage", 0.0) + inc_dmg
+            target.speed_boost_timer = max(getattr(target, "speed_boost_timer", 0.0), 3.0)
             if hasattr(self.world, "events"):
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
@@ -21020,7 +21021,11 @@ class Action:
 
         if getattr(self.ball, "speed_boost_timer", 0.0) > 0:
             self.ball.speed_boost_timer -= delta
-            self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
+            if getattr(self.ball, "kinetic_shield_stored_damage", 0.0) > 0:
+                # Movement speed proportional to absorbed damage
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0) * (1.0 + min(self.ball.kinetic_shield_stored_damage / 50.0, 3.0))
+            else:
+                self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
             # leave fire trail
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 if getattr(self.ball, "speed_boost_timer", 0.0) > 0 and __import__('random').random() < 0.3:
