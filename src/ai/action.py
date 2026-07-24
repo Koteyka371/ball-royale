@@ -4061,6 +4061,71 @@ class Action:
                             self.world.arena.hazards.append(bh)
 
 
+                if getattr(hazard, "kind", "") == "lightning_parasite_trap":
+                    attached_id = getattr(hazard, "attached_id", None)
+                    if attached_id is None:
+                        if hasattr(self.world, "balls"):
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "alive", True):
+                                    dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                    if dist_sq < 30.0**2:
+                                        hazard.attached_id = getattr(b, "id", None)
+                                        hazard.parasite_hp = getattr(hazard, "parasite_hp", 50.0)
+                                        hazard.last_hp = getattr(b, "hp", 100.0)
+                                        hazard.tick_timer = 0.0
+                                        hazard.duration = 9999.0
+                                        break
+                    else:
+                        current_attached = None
+                        if hasattr(self.world, "balls"):
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "id", None) == attached_id:
+                                    current_attached = b
+                                    break
+                        if current_attached and getattr(current_attached, "alive", True):
+                            hazard.x = current_attached.x
+                            hazard.y = current_attached.y
+
+                            current_hp = getattr(current_attached, "hp", 100.0)
+                            last_hp = getattr(hazard, "last_hp", current_hp)
+                            if current_hp < last_hp:
+                                damage_taken = last_hp - current_hp
+                                hazard.parasite_hp = getattr(hazard, "parasite_hp", 50.0) - damage_taken
+
+                            hazard.last_hp = current_hp
+
+                            if getattr(hazard, "parasite_hp", 50.0) <= 0:
+                                hazard.duration = 0.0
+                            else:
+                                tick_timer = getattr(hazard, "tick_timer", 0.0) - delta
+                                if tick_timer <= 0:
+                                    tick_timer = 1.0
+                                    if hasattr(self.world, "balls"):
+                                        team = getattr(current_attached, "team", None)
+                                        best_target = None
+                                        best_dist = 150.0 * 150.0
+                                        for b in getattr(self.world, "balls", []):
+                                            if b == current_attached or not getattr(b, "alive", True): continue
+                                            if getattr(b, "team", None) == team:
+                                                dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                                if dist_sq < best_dist:
+                                                    best_dist = dist_sq
+                                                    best_target = b
+                                        if best_target:
+                                            damage = 10.0
+                                            if hasattr(self.world, "_deal_damage"):
+                                                hazard.damage = damage
+                                                self.world._deal_damage(hazard, best_target)
+                                            elif hasattr(best_target, "hp"):
+                                                best_target.hp -= damage
+                                                if best_target.hp <= 0:
+                                                    best_target.alive = False
+
+                                            if hasattr(self.world, "events"):
+                                                self.world.events.append(('visual_effect', {'type': 'lightning', 'x': hazard.x, 'y': hazard.y, 'tx': best_target.x, 'ty': best_target.y}))
+                                hazard.tick_timer = tick_timer
+                        else:
+                            hazard.duration = 0.0
                 if getattr(hazard, "kind", "") in ["sticky_bomb", "sticky_bomb_trap"]:
                     attached_id = getattr(hazard, "attached_id", None)
                     if attached_id is None:
@@ -8534,6 +8599,13 @@ class Action:
                                     speed = 1000.0
                                     self.ball.vx = math.cos(angle) * speed
                                     self.ball.vy = math.sin(angle) * speed
+                                elif trap_variant == "lightning_parasite":
+                                    hazard.kind = "lightning_parasite_trap"
+                                    hazard.attached_id = getattr(self.ball, "id", None)
+                                    hazard.parasite_hp = 50.0
+                                    hazard.last_hp = getattr(self.ball, "hp", 100.0)
+                                    hazard.tick_timer = 0.0
+                                    hazard.duration = 9999.0
                                 elif trap_variant == "ricochet":
                                     hazard.duration = 0.0 # Destroy trap
 
@@ -14301,6 +14373,10 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cleanser":
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "kind", "") == "lightning_parasite_trap" and getattr(h, "attached_id", None) == getattr(self.ball, "id", None):
+                                h.duration = 0.0
                     if hasattr(self.ball, "burn_timer"):
                         self.ball.burn_timer = 0
                     if hasattr(self.ball, "poison_timer"):

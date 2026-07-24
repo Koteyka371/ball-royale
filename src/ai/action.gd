@@ -16826,6 +16826,34 @@ func execute(strategy: String, delta: float):
                                 var speed = 1000.0
                                 _set_prop(self.ball, "vx", cos(angle) * speed)
                                 _set_prop(self.ball, "vy", sin(angle) * speed)
+                            elif trap_variant == "lightning_parasite":
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("kind", "lightning_parasite_trap")
+                                    hazard.set_meta("attached_id", self.ball.id if "id" in self.ball else null)
+                                    hazard.set_meta("parasite_hp", 50.0)
+                                    var hp = 100.0
+                                    if "hp" in self.ball: hp = self.ball.hp
+                                    hazard.set_meta("last_hp", hp)
+                                    hazard.set_meta("tick_timer", 0.0)
+                                    hazard.set_meta("duration", 9999.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["kind"] = "lightning_parasite_trap"
+                                    hazard["attached_id"] = self.ball.id if "id" in self.ball else null
+                                    hazard["parasite_hp"] = 50.0
+                                    var hp = 100.0
+                                    if "hp" in self.ball: hp = self.ball.hp
+                                    hazard["last_hp"] = hp
+                                    hazard["tick_timer"] = 0.0
+                                    hazard["duration"] = 9999.0
+                                elif "kind" in hazard:
+                                    hazard.kind = "lightning_parasite_trap"
+                                    hazard.attached_id = self.ball.id if "id" in self.ball else null
+                                    hazard.parasite_hp = 50.0
+                                    var hp = 100.0
+                                    if "hp" in self.ball: hp = self.ball.hp
+                                    hazard.last_hp = hp
+                                    hazard.tick_timer = 0.0
+                                    hazard.duration = 9999.0
                             elif trap_variant == "ricochet":
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
@@ -27842,6 +27870,21 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "cleanser":
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    for h in self.world.arena.hazards:
+                        var h_k = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("get_meta") and h.has_meta("kind") else "")
+                        if typeof(h) == TYPE_DICTIONARY: h_k = h.get("kind", "")
+                        if h_k == "lightning_parasite_trap":
+                            var att_id = h.attached_id if "attached_id" in h else (h.get_meta("attached_id") if h.has_method("get_meta") and h.has_meta("attached_id") else null)
+                            if typeof(h) == TYPE_DICTIONARY: att_id = h.get("attached_id", null)
+
+                            var self_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id") else null)
+                            if typeof(self.ball) == TYPE_DICTIONARY: self_id = self.ball.get("id", null)
+
+                            if att_id == self_id:
+                                if typeof(h) == TYPE_DICTIONARY: h["duration"] = 0.0
+                                elif h.has_method("set_meta"): h.set_meta("duration", 0.0)
+                                elif "duration" in h: h.duration = 0.0
                 if "burn_timer" in self.ball: self.ball.burn_timer = 0.0
                 if "poison_timer" in self.ball: self.ball.poison_timer = 0.0
                 if "slow_timer" in self.ball: self.ball.slow_timer = 0.0
@@ -38009,6 +38052,186 @@ func _update_skill_timer(delta: float):
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
 
+                if h_kind == "lightning_parasite_trap":
+                    var attached_id = hazard.attached_id if "attached_id" in hazard else (hazard.get_meta("attached_id") if hazard.has_method("get_meta") and hazard.has_meta("attached_id") else null)
+                    if typeof(hazard) == TYPE_DICTIONARY:
+                        attached_id = hazard.get("attached_id", null)
+
+                    if attached_id == null:
+                        if self.world != null and "balls" in self.world:
+                            for b in self.world.balls:
+                                var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                                if typeof(b) == TYPE_DICTIONARY:
+                                    b_alive = b.get("alive", false)
+                                if b_alive:
+                                    var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+                                    var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        bx = b.get("x", 0.0)
+                                        by = b.get("y", 0.0)
+                                    var hx = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                                    var hy = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+                                    if typeof(hazard) == TYPE_DICTIONARY:
+                                        hx = hazard.get("x", 0.0)
+                                        hy = hazard.get("y", 0.0)
+
+                                    var dx = hx - bx
+                                    var dy = hy - by
+                                    if dx * dx + dy * dy < 30.0 * 30.0:
+                                        var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                                        if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
+
+                                        var bhp = b.hp if "hp" in b else (b.get_meta("hp") if b.has_method("get_meta") and b.has_meta("hp") else 100.0)
+                                        if typeof(b) == TYPE_DICTIONARY: bhp = b.get("hp", 100.0)
+
+                                        if typeof(hazard) == TYPE_DICTIONARY:
+                                            hazard["attached_id"] = bid
+                                            hazard["parasite_hp"] = hazard.get("parasite_hp", 50.0)
+                                            hazard["last_hp"] = bhp
+                                            hazard["tick_timer"] = 0.0
+                                            hazard["duration"] = 9999.0
+                                        elif hazard.has_method("set_meta"):
+                                            hazard.set_meta("attached_id", bid)
+                                            hazard.set_meta("parasite_hp", hazard.get_meta("parasite_hp") if hazard.has_meta("parasite_hp") else 50.0)
+                                            hazard.set_meta("last_hp", bhp)
+                                            hazard.set_meta("tick_timer", 0.0)
+                                            hazard.set_meta("duration", 9999.0)
+                                        elif "attached_id" in hazard:
+                                            hazard.attached_id = bid
+                                            hazard.parasite_hp = hazard.parasite_hp if "parasite_hp" in hazard else 50.0
+                                            hazard.last_hp = bhp
+                                            hazard.tick_timer = 0.0
+                                            hazard.duration = 9999.0
+                                        break
+                    else:
+                        var current_attached = null
+                        if self.world != null and "balls" in self.world:
+                            for b in self.world.balls:
+                                var bid = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                                if typeof(b) == TYPE_DICTIONARY: bid = b.get("id", null)
+                                if bid == attached_id:
+                                    current_attached = b
+                                    break
+                        var ca_alive = false
+                        if current_attached != null:
+                            ca_alive = current_attached.alive if "alive" in current_attached else (current_attached.get_meta("alive") if current_attached.has_method("get_meta") and current_attached.has_meta("alive") else false)
+                            if typeof(current_attached) == TYPE_DICTIONARY:
+                                ca_alive = current_attached.get("alive", false)
+
+                        if current_attached != null and ca_alive:
+                            var cx = current_attached.x if "x" in current_attached else (current_attached.get_meta("x") if current_attached.has_method("get_meta") and current_attached.has_meta("x") else 0.0)
+                            var cy = current_attached.y if "y" in current_attached else (current_attached.get_meta("y") if current_attached.has_method("get_meta") and current_attached.has_meta("y") else 0.0)
+                            if typeof(current_attached) == TYPE_DICTIONARY:
+                                cx = current_attached.get("x", 0.0)
+                                cy = current_attached.get("y", 0.0)
+
+                            if "x" in hazard: hazard.x = cx
+                            elif hazard.has_method("set_meta") and hazard.has_meta("x"): hazard.set_meta("x", cx)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["x"] = cx
+
+                            if "y" in hazard: hazard.y = cy
+                            elif hazard.has_method("set_meta") and hazard.has_meta("y"): hazard.set_meta("y", cy)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["y"] = cy
+
+                            var current_hp = current_attached.hp if "hp" in current_attached else (current_attached.get_meta("hp") if current_attached.has_method("get_meta") and current_attached.has_meta("hp") else 100.0)
+                            if typeof(current_attached) == TYPE_DICTIONARY: current_hp = current_attached.get("hp", 100.0)
+
+                            var last_hp = hazard.last_hp if "last_hp" in hazard else (hazard.get_meta("last_hp") if hazard.has_method("get_meta") and hazard.has_meta("last_hp") else current_hp)
+                            if typeof(hazard) == TYPE_DICTIONARY: last_hp = hazard.get("last_hp", current_hp)
+
+                            var parasite_hp = hazard.parasite_hp if "parasite_hp" in hazard else (hazard.get_meta("parasite_hp") if hazard.has_method("get_meta") and hazard.has_meta("parasite_hp") else 50.0)
+                            if typeof(hazard) == TYPE_DICTIONARY: parasite_hp = hazard.get("parasite_hp", 50.0)
+
+                            if current_hp < last_hp:
+                                parasite_hp -= (last_hp - current_hp)
+
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["last_hp"] = current_hp
+                                hazard["parasite_hp"] = parasite_hp
+                            elif hazard.has_method("set_meta"):
+                                hazard.set_meta("last_hp", current_hp)
+                                hazard.set_meta("parasite_hp", parasite_hp)
+                            elif "last_hp" in hazard:
+                                hazard.last_hp = current_hp
+                                hazard.parasite_hp = parasite_hp
+
+                            if parasite_hp <= 0:
+                                if typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                                elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard: hazard.duration = 0.0
+                            else:
+                                var tick_timer = hazard.tick_timer if "tick_timer" in hazard else (hazard.get_meta("tick_timer") if hazard.has_method("get_meta") and hazard.has_meta("tick_timer") else 0.0)
+                                if typeof(hazard) == TYPE_DICTIONARY: tick_timer = hazard.get("tick_timer", 0.0)
+
+                                tick_timer -= delta
+                                if tick_timer <= 0:
+                                    tick_timer = 1.0
+
+                                    var team = current_attached.team if "team" in current_attached else (current_attached.get_meta("team") if current_attached.has_method("get_meta") and current_attached.has_meta("team") else null)
+                                    if typeof(current_attached) == TYPE_DICTIONARY: team = current_attached.get("team", null)
+
+                                    var best_target = null
+                                    var best_dist = 150.0 * 150.0
+
+                                    if self.world != null and "balls" in self.world:
+                                        for b in self.world.balls:
+                                            var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                                            if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+
+                                            if b == current_attached or not b_alive: continue
+
+                                            var b_team = b.team if "team" in b else (b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else null)
+                                            if typeof(b) == TYPE_DICTIONARY: b_team = b.get("team", null)
+
+                                            if b_team == team:
+                                                var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+                                                var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+                                                if typeof(b) == TYPE_DICTIONARY:
+                                                    bx = b.get("x", 0.0)
+                                                    by = b.get("y", 0.0)
+
+                                                var dist_sq = (bx - cx)*(bx - cx) + (by - cy)*(by - cy)
+                                                if dist_sq < best_dist:
+                                                    best_dist = dist_sq
+                                                    best_target = b
+
+                                    if best_target != null:
+                                        var damage = 10.0
+                                        if self.world != null and self.world.has_method("_deal_damage"):
+                                            if typeof(hazard) == TYPE_DICTIONARY: hazard["damage"] = damage
+                                            elif hazard.has_method("set_meta"): hazard.set_meta("damage", damage)
+                                            elif "damage" in hazard: hazard.damage = damage
+                                            self.world._deal_damage(hazard, best_target)
+                                        else:
+                                            var target_hp = best_target.hp if "hp" in best_target else (best_target.get_meta("hp") if best_target.has_method("get_meta") and best_target.has_meta("hp") else 100.0)
+                                            if typeof(best_target) == TYPE_DICTIONARY: target_hp = best_target.get("hp", 100.0)
+
+                                            target_hp -= damage
+
+                                            if typeof(best_target) == TYPE_DICTIONARY: best_target["hp"] = target_hp
+                                            elif best_target.has_method("set_meta"): best_target.set_meta("hp", target_hp)
+                                            elif "hp" in best_target: best_target.hp = target_hp
+
+                                            if target_hp <= 0:
+                                                if typeof(best_target) == TYPE_DICTIONARY: best_target["alive"] = false
+                                                elif best_target.has_method("set_meta"): best_target.set_meta("alive", false)
+                                                elif "alive" in best_target: best_target.alive = false
+
+                                        if self.world != null and self.world.has_method("add_event"):
+                                            var target_x = best_target.x if "x" in best_target else (best_target.get_meta("x") if best_target.has_method("get_meta") and best_target.has_meta("x") else 0.0)
+                                            var target_y = best_target.y if "y" in best_target else (best_target.get_meta("y") if best_target.has_method("get_meta") and best_target.has_meta("y") else 0.0)
+                                            if typeof(best_target) == TYPE_DICTIONARY:
+                                                target_x = best_target.get("x", 0.0)
+                                                target_y = best_target.get("y", 0.0)
+                                            self.world.add_event("visual_effect", {"type": "lightning", "x": cx, "y": cy, "tx": target_x, "ty": target_y})
+
+                                if typeof(hazard) == TYPE_DICTIONARY: hazard["tick_timer"] = tick_timer
+                                elif hazard.has_method("set_meta"): hazard.set_meta("tick_timer", tick_timer)
+                                elif "tick_timer" in hazard: hazard.tick_timer = tick_timer
+                        else:
+                            if typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif "duration" in hazard: hazard.duration = 0.0
                 if h_kind == "sticky_bomb" or h_kind == "sticky_bomb_trap":
                     var attached_id = hazard.attached_id if "attached_id" in hazard else (hazard.get_meta("attached_id") if hazard.has_method("get_meta") and hazard.has_meta("attached_id") else null)
                     if typeof(hazard) == TYPE_DICTIONARY:

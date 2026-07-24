@@ -150,7 +150,7 @@ class PreGameLobby:
             unlocked_balls = ["basic"]
 
         ball_type = random.choice(unlocked_balls)
-        trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "chain_lightning", "decoy", "mine", "elemental_mine", "warp", "siphon", "clone", "tar", "link"]
+        trap_variants = ["normal", "poison", "stun", "ricochet", "emp", "hologram", "blindness", "chain_lightning", "lightning_parasite", "decoy", "mine", "elemental_mine", "warp", "siphon", "clone", "tar", "link"]
         trap_variant = random.choice(trap_variants)
 
         self.select_trap_variant(ball_id, trap_variant)
