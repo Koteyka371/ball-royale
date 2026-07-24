@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Relay Trap",
+    "description": "A new trap variant that creates a temporary quantum relay node. When an enemy steps on it, instead of taking damage, they are teleported to a random location in the arena, but leave behind a weak clone that mimics their recent movements."
+}

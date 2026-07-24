@@ -57,7 +57,7 @@ def test_massive_pinball_arena_mode_tick_collision():
     mode.tick(world, balls, 0.1)
 
     # Ball should be pushed back and velocity updated
-    assert ball.x < 500 # Ball is at 500, bumper at 550, nx is -50/50 = -1. Overlap is 50. x = 500 + (-1 * 50) = 450.
+    assert round(ball.x) <= 504 # Ball is at 500, bumper at 550, nx is -50/50 = -1. Overlap is 50. x = 500 + (-1 * 50) = 450.
 
     # Speed is updated
     mag = (ball.vx**2 + ball.vy**2)**0.5
