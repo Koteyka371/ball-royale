@@ -10023,7 +10023,7 @@ func execute(strategy: String, delta: float):
 					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
 					elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
 					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
-					if cb == "grounded_boots":
+					if cb == "grounded_boots" or cb == "rooted_boots":
 						time_scale = 1.0 - (1.0 - time_scale) * 0.1
 					delta *= time_scale
 					break
@@ -10732,6 +10732,8 @@ func execute(strategy: String, delta: float):
             base_s *= 0.9
         elif cosmetic_val == "grounded_boots":
             base_s *= 0.85
+        elif cosmetic_val == "rooted_boots":
+            base_s *= 0.5
 
         var arena_ref_sp = self.world.get("arena") if "arena" in self.world else null
         var is_snowing_sp = arena_ref_sp.get("is_snowing") if arena_ref_sp != null and "is_snowing" in arena_ref_sp else false
@@ -15231,6 +15233,8 @@ func execute(strategy: String, delta: float):
                                 push_strength *= 0.5
                             elif cosmetic_val == "grounded_boots":
                                 push_strength *= 0.1
+                            elif cosmetic_val == "rooted_boots":
+                                push_strength *= 0.05
 
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
@@ -15390,6 +15394,8 @@ func execute(strategy: String, delta: float):
                                 push_strength *= 0.5
                             elif cosmetic_val == "grounded_boots":
                                 push_strength *= 0.1
+                            elif cosmetic_val == "rooted_boots":
+                                push_strength *= 0.05
 
                             self.ball.x += nx * push_strength
                             self.ball.y += ny * push_strength
@@ -15426,6 +15432,7 @@ func execute(strategy: String, delta: float):
 
                                 var mod = 1.0
                                 if c == "grounded_boots": mod = 0.5
+                                elif c == "rooted_boots": mod = 0.2
 
                                 if "x" in self.ball: self.ball.x += nx * pull_strength * mod
                                 elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength * mod)
@@ -15674,7 +15681,7 @@ func execute(strategy: String, delta: float):
                                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                                 elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
                                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
-                                var mod = 0.1 if cb == "grounded_boots" else 1.0
+                                var mod = 0.05 if cb == "rooted_boots" else (0.1 if cb == "grounded_boots" else 1.0)
                                 self.ball.x += nx * pull_strength * mod
                                 self.ball.y += ny * pull_strength * mod
                 elif hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal"]:
@@ -15972,7 +15979,7 @@ func execute(strategy: String, delta: float):
                                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cb = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                                 elif typeof(self.ball) == TYPE_OBJECT and "cosmetic" in self.ball: cb = str(self.ball.cosmetic).to_lower().replace(" ", "_")
                                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): cb = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
-                                var mod = 0.1 if cb == "grounded_boots" else 1.0
+                                var mod = 0.05 if cb == "rooted_boots" else (0.1 if cb == "grounded_boots" else 1.0)
                                 self.ball.x += nx * pull_strength * mod
                                 self.ball.y += ny * pull_strength * mod
                             if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"]:
@@ -17396,6 +17403,8 @@ func execute(strategy: String, delta: float):
                                 knockback_force *= 0.5
                             elif cosmetic_val == "grounded_boots":
                                 knockback_force *= 0.1
+                            elif cosmetic_val == "rooted_boots":
+                                knockback_force *= 0.05
 
                             self.ball.x += nx * knockback_force
                             self.ball.y += ny * knockback_force
@@ -35403,6 +35412,8 @@ func _resolve_collisions() -> bool:
                 knockback_multiplier *= 0.5
             elif cosmetic_val == "grounded_boots":
                 knockback_multiplier *= 0.1
+            elif cosmetic_val == "rooted_boots":
+                knockback_multiplier *= 0.05
             elif cosmetic_val == "kinetic_absorber":
                 var o_team = null
                 if typeof(other) == TYPE_DICTIONARY and other.has("team"):
@@ -39646,6 +39657,7 @@ func _update_skill_timer(delta: float):
                                 if "cosmetic" in self.ball: c = str(self.ball.cosmetic).to_lower().replace(" ", "_")
                                 elif self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): c = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
                                 if c == "grounded_boots": mod = 0.1
+                                elif c == "rooted_boots": mod = 0.05
 
                                 self.ball.x += nx * pull_strength * mod
                                 self.ball.y += ny * pull_strength * mod
