@@ -56252,6 +56252,105 @@ GAME_MODES['elemental_chain_reactions'] = ElementalChainReactionMode.new()
 GAME_MODES['quadrant_royale'] = QuadrantRoyaleMode.new()
 
 
+
+class WindstormEventMode extends GameMode:
+	var push_timer: float = 3.0
+	var push_duration: float = 0.0
+	var push_dir_x: float = 0.0
+	var push_dir_y: float = 0.0
+	var push_strength: float = 800.0
+	var event_timer: float = 20.0
+	var event_duration: float = 10.0
+	var is_active: bool = false
+
+	func _init():
+		super._init()
+		name = "Windstorm Event"
+		description = "A global event that causes a massive windstorm, periodically knocking all balls back in a specific direction and increasing chaotic movement."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not is_active:
+			event_timer -= delta
+			if event_timer <= 0.0:
+				is_active = true
+				event_duration = 10.0
+				if world.has("add_event") and typeof(world.add_event) == TYPE_CALLABLE:
+					world.add_event.call("windstorm_event_start", {"message": "A massive windstorm is blowing through the arena!"})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("windstorm_event_start", {"message": "A massive windstorm is blowing through the arena!"})
+				push_timer = 0.0
+		else:
+			event_duration -= delta
+			if event_duration <= 0.0:
+				is_active = false
+				event_timer = 20.0
+				push_duration = 0.0
+				if world.has("add_event") and typeof(world.add_event) == TYPE_CALLABLE:
+					world.add_event.call("windstorm_event_end", {"message": "The windstorm has passed."})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("windstorm_event_end", {"message": "The windstorm has passed."})
+			else:
+				push_timer -= delta
+				if push_timer <= 0.0:
+					if push_duration <= 0.0:
+						var angle = randf() * 2.0 * PI
+						push_dir_x = cos(angle)
+						push_dir_y = sin(angle)
+						push_duration = randf_range(1.5, 2.5)
+						if world.has("add_event") and typeof(world.add_event) == TYPE_CALLABLE:
+							world.add_event.call("windstorm_gust", {"message": "A strong gust of wind hits!"})
+						elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("windstorm_gust", {"message": "A strong gust of wind hits!"})
+					else:
+						push_duration -= delta
+						if push_duration <= 0.0:
+							push_timer = randf_range(2.0, 4.0)
+
+				if push_duration > 0.0:
+					for b in balls:
+						var is_alive = false
+						var b_type = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							b_type = str(b.get("ball_type", "")).to_lower()
+						else:
+							is_alive = b.get("alive") if "alive" in b else false
+							b_type = str(b.ball_type).to_lower() if "ball_type" in b else ""
+
+						if is_alive and b_type != "spectator":
+							if typeof(b) == TYPE_DICTIONARY:
+								b["vx"] = b.get("vx", 0.0) + push_dir_x * push_strength * delta
+								b["vy"] = b.get("vy", 0.0) + push_dir_y * push_strength * delta
+							elif typeof(b) == TYPE_OBJECT:
+								if "vx" in b and "vy" in b:
+									b.vx += push_dir_x * push_strength * delta
+									b.vy += push_dir_y * push_strength * delta
+
+					if "arena" in world and world.arena != null:
+						var hazards_list = []
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							hazards_list = world.arena.get("hazards", [])
+						elif typeof(world.arena) == TYPE_OBJECT:
+							hazards_list = world.arena.hazards
+
+						for h in hazards_list:
+							if typeof(h) == TYPE_DICTIONARY:
+								if "vx" in h and "vy" in h:
+									h["vx"] += push_dir_x * push_strength * delta
+									h["vy"] += push_dir_y * push_strength * delta
+								elif "x" in h and "y" in h:
+									h["x"] += push_dir_x * push_strength * delta
+									h["y"] += push_dir_y * push_strength * delta
+							elif typeof(h) == TYPE_OBJECT:
+								if "vx" in h and "vy" in h:
+									h.vx += push_dir_x * push_strength * delta
+									h.vy += push_dir_y * push_strength * delta
+								elif "x" in h and "y" in h:
+									h.x += push_dir_x * push_strength * delta
+									h.y += push_dir_y * push_strength * delta
+
 class VolcanicEruptionEventMode extends GameMode:
 	var eruption_timer: float = 20.0
 	var eruption_duration: float = 5.0
@@ -56435,6 +56534,7 @@ class VolcanicEruptionEventMode extends GameMode:
 				elif typeof(world.arena) == TYPE_OBJECT:
 					world.arena.hazards.append(h)
 
+GAME_MODES['windstorm_event'] = WindstormEventMode.new()
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode.new()
 GAME_MODES['earthquake_event'] = EarthquakeEventMode.new()
 
