@@ -31791,6 +31791,7 @@ class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
 	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+	var flood_level: float = 0.0
 
 	func _init():
 		name = "Extreme Weather"
@@ -31811,6 +31812,10 @@ class ExtremeWeatherMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016):
 		super.tick(world, balls, delta)
 		weather_timer += delta
+		if current_weather == "giant_flood":
+			flood_level = min(1.0, flood_level + delta * 0.1)
+		else:
+			flood_level = max(0.0, flood_level - delta * 0.2)
 
 		for b in balls:
 			var is_active = false
@@ -32091,12 +32096,27 @@ class ExtremeWeatherMode extends GameMode:
 					elif b.has_method("set_meta"):
 						b.set_meta("steering_mult", 0.0)
 			elif current_weather == "giant_flood":
-				if not has_life_jacket:
-					b.speed = b.get_meta("base_speed") * 0.3
+				var b_type = b.ball_type.to_lower() if "ball_type" in b else ""
+				var is_aquatic = false
+				if "water" in b_type or "swamp" in b_type or "hover" in b_type or "floating" in b_type or "aquatic" in b_type:
+					is_aquatic = true
+				if "traits" in b:
+					for t in b.traits:
+						var t_str = str(t).to_lower()
+						if t_str in ["water", "swamp", "hover", "floating", "aquatic"]:
+							is_aquatic = true
+							break
+				if not has_life_jacket and not is_aquatic:
+					b.speed = b.get_meta("base_speed") * (1.0 - 0.7 * flood_level)
 					if "steering_mult" in b:
-						b.steering_mult = b.steering_mult * 0.5
+						b.steering_mult = b.steering_mult * (1.0 - 0.5 * flood_level)
 					elif b.has_meta("steering_mult"):
-						b.set_meta("steering_mult", b.get_meta("steering_mult") * 0.5)
+						b.set_meta("steering_mult", b.get_meta("steering_mult") * (1.0 - 0.5 * flood_level))
+					if flood_level > 0.8:
+						if "stamina" in b:
+							b.stamina = max(0.0, b.stamina - 20.0 * delta)
+						elif b.has_meta("stamina"):
+							b.set_meta("stamina", max(0.0, b.get_meta("stamina") - 20.0 * delta))
 			elif current_weather == "solar_eclipse":
 				var has_vision = (b.has_meta("vision_booster_timer") and b.get_meta("vision_booster_timer") > 0.0) or (b.has_meta("mega_vision_booster_timer") and b.get_meta("mega_vision_booster_timer") > 0.0)
 				if not has_vision:
