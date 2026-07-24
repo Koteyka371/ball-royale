@@ -43,6 +43,8 @@ class ProfileManager:
                     data["guild_name"] = ""
                 if "clan_name" not in data:
                     data["clan_name"] = ""
+                if "scratchcards" not in data:
+                    data["scratchcards"] = 0
                 return data
         except (FileNotFoundError, json.JSONDecodeError):
             return {
@@ -67,7 +69,8 @@ class ProfileManager:
                 "login_streak": 0,
                 "last_login_date": "",
                 "guild_name": "",
-                "clan_name": ""
+                "clan_name": "",
+                "scratchcards": 0
             }
 
     def get_trap_level(self, trap_variant):
@@ -233,7 +236,8 @@ class ProfileManager:
                 "login_streak": self.data.get("login_streak", 0),
                 "last_login_date": self.data.get("last_login_date", ""),
                 "guild_name": self.data.get("guild_name", ""),
-                "clan_name": self.data.get("clan_name", "")
+                "clan_name": self.data.get("clan_name", ""),
+                "scratchcards": self.data.get("scratchcards", 0)
             }
 
             for level in range(5, prestige_level + 1, 5):
@@ -513,7 +517,8 @@ class ProfileManager:
             pass
 
         self.add_skill_points(sp_reward)
-        rewards = {"skill_points": sp_reward}
+        self.data["scratchcards"] = self.data.get("scratchcards", 0) + 1
+        rewards = {"skill_points": sp_reward, "scratchcards": 1}
 
         if streak > 0 and streak % 7 == 0:
             self.data["prestige_tokens"] = self.data.get("prestige_tokens", 0) + 1
@@ -524,6 +529,20 @@ class ProfileManager:
 
         self.save()
         return rewards
+
+    def use_scratchcard(self):
+        if self.data.get("scratchcards", 0) > 0:
+            self.data["scratchcards"] -= 1
+            import random
+            if random.random() < 0.05:
+                self.data["prestige_tokens"] = self.data.get("prestige_tokens", 0) + 1
+                self.save()
+                return {"prestige_tokens": 1}
+            else:
+                self.data["skill_points"] += 50
+                self.save()
+                return {"skill_points": 50}
+        return {}
 
     def add_ancient_fragment(self):
         """Adds an ancient loadout fragment. Collect 3 to unlock ancient items."""

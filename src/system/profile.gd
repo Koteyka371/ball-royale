@@ -48,6 +48,8 @@ func load_profile():
                 data["guild_name"] = ""
             if not data.has("clan_name"):
                 data["clan_name"] = ""
+            if not data.has("scratchcards"):
+                data["scratchcards"] = 0
             return
 
     # Default profile
@@ -73,7 +75,8 @@ func load_profile():
         "login_streak": 0,
         "last_login_date": "",
         "guild_name": "",
-        "clan_name": ""
+        "clan_name": "",
+        "scratchcards": 0
     }
 
 func get_trap_level(trap_variant: String) -> int:
@@ -243,7 +246,8 @@ func do_prestige() -> bool:
             "nemeses": data.get("nemeses", {}),
             "login_streak": data.get("login_streak", 0),
             "last_login_date": data.get("last_login_date", ""),
-            "guild_name": data.get("guild_name", "")
+            "guild_name": data.get("guild_name", ""),
+            "scratchcards": data.get("scratchcards", 0)
         }
 
         var new_prestige = current_prestige + 1
@@ -538,7 +542,8 @@ func process_daily_login(current_date_str: String) -> Dictionary:
         sp_reward *= 2
 
     add_skill_points(sp_reward)
-    var rewards = {"skill_points": sp_reward}
+    data["scratchcards"] = data.get("scratchcards", 0) + 1
+    var rewards = {"skill_points": sp_reward, "scratchcards": 1}
 
     if streak > 0 and streak % 7 == 0:
         data["prestige_tokens"] = data.get("prestige_tokens", 0) + 1
@@ -549,6 +554,19 @@ func process_daily_login(current_date_str: String) -> Dictionary:
 
     save_profile()
     return rewards
+
+func use_scratchcard() -> Dictionary:
+    if data.get("scratchcards", 0) > 0:
+        data["scratchcards"] -= 1
+        if randf() < 0.05:
+            data["prestige_tokens"] = data.get("prestige_tokens", 0) + 1
+            save_profile()
+            return {"prestige_tokens": 1}
+        else:
+            data["skill_points"] += 50
+            save_profile()
+            return {"skill_points": 50}
+    return {}
 
 func add_ancient_fragment() -> bool:
     var count = data.get("ancient_fragments", 0) + 1
