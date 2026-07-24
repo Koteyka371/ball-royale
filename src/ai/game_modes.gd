@@ -3603,7 +3603,7 @@ class BattleRoyaleMode extends GameMode:
 
 		if weather_timer > 10.0:
 			weather_timer = 0.0
-			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+			var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower", "gravity_storm"]
 			var old_weather = weather
 			if not has_meta("next_weather"):
 				set_meta("next_weather", weathers[randi() % weathers.size()])
@@ -3637,6 +3637,12 @@ class BattleRoyaleMode extends GameMode:
 			if "is_heatwave" in world.arena: world.arena.is_heatwave = (weather == "heatwave")
 			if "is_lunar_eclipse" in world.arena: world.arena.is_lunar_eclipse = (weather == "lunar_eclipse")
 			if "is_eclipse" in world.arena: world.arena.is_eclipse = (weather == "lunar_eclipse")
+			if "is_gravity_storm" in world.arena:
+				world.arena.is_gravity_storm = (weather == "gravity_storm")
+			elif typeof(world.arena) == TYPE_DICTIONARY:
+				world.arena["is_gravity_storm"] = (weather == "gravity_storm")
+			elif world.arena.has_method("set"):
+				world.arena.set("is_gravity_storm", weather == "gravity_storm")
 			if "wind_dx" in world.arena: world.arena.wind_dx = get_meta("wind_dx") if (weather == "wind" and has_meta("wind_dx")) else 0.0
 			if "wind_dy" in world.arena: world.arena.wind_dy = get_meta("wind_dy") if (weather == "wind" and has_meta("wind_dy")) else 0.0
 
@@ -4888,7 +4894,7 @@ class BattleRoyaleMode extends GameMode:
 			self.weather_timer += delta
 			if self.weather_timer > 15.0:
 				self.weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse", "meteor_shower"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse", "meteor_shower", "gravity_storm"]
 				var old_weather = self.weather
 				self.weather = weathers[randi() % weathers.size()]
 				if old_weather != self.weather:
@@ -4991,9 +4997,17 @@ class BattleRoyaleMode extends GameMode:
 			if self.weather == "lunar_eclipse" and not is_imm:
 				world.arena.is_lunar_eclipse = true
 				world.arena.is_eclipse = true
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["is_gravity_storm"] = (weather == "gravity_storm")
+				elif world.arena.has_method("set"):
+					world.arena.set("is_gravity_storm", weather == "gravity_storm")
 			else:
 				world.arena.is_lunar_eclipse = false
 				world.arena.is_eclipse = false
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["is_gravity_storm"] = (weather == "gravity_storm")
+				elif world.arena.has_method("set"):
+					world.arena.set("is_gravity_storm", weather == "gravity_storm")
 
 			if not "hazards" in world.arena:
 				world.arena.hazards = []
@@ -11606,7 +11620,7 @@ class WeatherChaosMode extends GameMode:
 
 			if weather_timer > 10.0:
 				weather_timer = 0.0
-				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+				var weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower", "gravity_storm"]
 				var old_weather = weather
 				if not has_meta("next_weather"):
 					set_meta("next_weather", weathers[randi() % weathers.size()])
@@ -29475,6 +29489,10 @@ class LunarEclipseEventMode extends GameMode:
 			if world != null and "arena" in world:
 				world.arena.is_lunar_eclipse = true
 				world.arena.is_eclipse = true
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["is_gravity_storm"] = (weather == "gravity_storm")
+				elif world.arena.has_method("set"):
+					world.arena.set("is_gravity_storm", weather == "gravity_storm")
 
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena_w = 1000.0
@@ -31596,7 +31614,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "gravity_storm"]
 
 	func _init():
 		name = "Extreme Weather"
@@ -31689,6 +31707,7 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
 			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
 			elif current_weather == "celestial_alignment": booster_kind = "starlight_booster"
+			elif current_weather == "gravity_storm": booster_kind = "heavy_anchor_booster"
 
 			if current_weather == "acid_rain" and world != null and "boosters" in world:
 				var arena_w = 1000
@@ -31711,7 +31730,8 @@ class ExtremeWeatherMode extends GameMode:
 				"violent_quake": "Tectonic Lord",
 				"giant_flood": "Ocean Overlord",
 				"solar_eclipse": "Umbra Lord",
-				"celestial_alignment": "Starlight Boss"
+				"celestial_alignment": "Starlight Boss",
+				"gravity_storm": "Singularity Boss"
 			}
 
 			if current_weather in boss_map and world != null and "balls" in world:

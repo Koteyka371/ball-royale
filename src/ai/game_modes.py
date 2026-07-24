@@ -2099,7 +2099,7 @@ class BattleRoyaleMode(GameMode):
         self.weather_timer += delta
         if self.weather_timer > 10.0:
             self.weather_timer = 0.0
-            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+            weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower", "gravity_storm"]
             import random
             rnd = getattr(self, "random", random)
             old_weather = self.weather
@@ -2128,6 +2128,7 @@ class BattleRoyaleMode(GameMode):
             world.arena.is_heatwave = (self.weather == "heatwave")
             world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
             world.arena.is_eclipse = (self.weather == "lunar_eclipse")
+            world.arena.is_gravity_storm = (self.weather == "gravity_storm")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
@@ -3032,7 +3033,7 @@ class BattleRoyaleMode(GameMode):
 
             if self.weather_timer > 15.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse", "meteor_shower"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "lunar_eclipse", "meteor_shower", "gravity_storm"]
                 rnd = getattr(self, "random", __import__("random"))
                 old_weather = self.weather
                 self.weather = rnd.choice(weathers)
@@ -7917,7 +7918,7 @@ class WeatherChaosMode(GameMode):
 
             if self.weather_timer > 10.0:
                 self.weather_timer = 0.0
-                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower"]
+                weathers = ["clear", "rain", "fog", "snow", "wind", "thunderstorm", "sandstorm", "heatwave", "blizzard", "magnetic_storm", "meteor_shower", "gravity_storm"]
                 import random
                 rnd = getattr(self, "random", random)
                 old_weather = self.weather
@@ -7953,6 +7954,7 @@ class WeatherChaosMode(GameMode):
             world.arena.is_heatwave = (self.weather == "heatwave")
             world.arena.is_lunar_eclipse = (self.weather == "lunar_eclipse")
             world.arena.is_eclipse = (self.weather == "lunar_eclipse")
+            world.arena.is_gravity_storm = (self.weather == "gravity_storm")
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
@@ -20192,7 +20194,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "gravity_storm"]
         import random
         self.random = random
 
@@ -20258,6 +20260,7 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
             elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
             elif self.current_weather == "celestial_alignment": booster_kind = "starlight_booster"
+            elif self.current_weather == "gravity_storm": booster_kind = "heavy_anchor_booster"
 
             # Also spawn rain-exclusive umbrella booster in acid rain
             if self.current_weather == "acid_rain" and hasattr(world, "boosters"):
@@ -20288,6 +20291,7 @@ class ExtremeWeatherMode(GameMode):
                     "giant_flood": "Ocean Overlord",
                     "solar_eclipse": "Umbra Lord",
                     "celestial_alignment": "Starlight Boss",
+                    "gravity_storm": "Singularity Boss",
                     "monsoon": "Monsoon Deity",
                     "monsoon": "Monsoon Deity",
                     "monsoon": "Monsoon Deity"

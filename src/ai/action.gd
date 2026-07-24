@@ -10237,6 +10237,21 @@ func execute(strategy: String, delta: float):
             if "vx" in my_ball and "vy" in my_ball:
                 my_ball.vx *= 0.95
                 my_ball.vy *= 0.95
+
+        if world.arena.get("is_gravity_storm") == true or world.arena.get("is_black_hole") == true:
+            var arena_w = 1000.0
+            var arena_h = 1000.0
+            if world.arena.get("width") != null: arena_w = world.arena.get("width")
+            if world.arena.get("height") != null: arena_h = world.arena.get("height")
+            var cx = arena_w / 2.0
+            var cy = arena_h / 2.0
+            var dx = cx - my_ball.x
+            var dy = cy - my_ball.y
+            var dist = sqrt(dx*dx + dy*dy)
+            if dist > 0.0:
+                var pull_speed = 40.0
+                my_ball.x += (dx / dist) * pull_speed * delta
+                my_ball.y += (dy / dist) * pull_speed * delta
         if world.arena.get("is_windy") == true and not ignores_wind:
             var _is_wr = false
             if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("has_meta") and my_ball.has_meta("is_wind_riding"):

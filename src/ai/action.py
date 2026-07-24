@@ -5258,6 +5258,20 @@ class Action:
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                     self.ball.vx *= 0.95
                     self.ball.vy *= 0.95
+
+            if getattr(self.world.arena, "is_gravity_storm", False) or getattr(self.world.arena, "is_black_hole", False):
+                arena_w = getattr(self.world.arena, "width", 1000)
+                arena_h = getattr(self.world.arena, "height", 1000)
+                cx = arena_w / 2.0
+                cy = arena_h / 2.0
+                import math
+                dx = cx - self.ball.x
+                dy = cy - self.ball.y
+                dist = math.hypot(dx, dy)
+                if dist > 0:
+                    pull_speed = 40.0
+                    self.ball.x += (dx / dist) * pull_speed * delta
+                    self.ball.y += (dy / dist) * pull_speed * delta
             if getattr(self.world.arena, "is_windy", False) and not ignores_wind and not getattr(self.ball, "_is_wind_riding", False):
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta * 0.2
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta * 0.2

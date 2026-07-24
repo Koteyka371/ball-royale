@@ -30,12 +30,14 @@ def test_tornado_roam_thunderstorm():
     assert len(tornados) >= 1
     t = tornados[0]
 
+    mode.weather = 'clear'
     t.x = 500
     t.y = 500
     t.vx = 100
     t.vy = 0
     mode.tick(world, [], delta=0.1)
     # distance moved: 10
+    print('t.x =', t.x, 'expected 510, delta is 0.1, vx is 100')
     dist1 = abs(t.x - 510)
     assert dist1 < 0.1
 

@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Mutator",
+  "description": "A battle royale mutator where a toxic fog slowly encroaches from the edges of the arena toward a randomly moving safe zone point. Players caught in the fog lose health rapidly and have their movement speed reduced, forcing aggressive close-quarters engagements in the end game."
+}
