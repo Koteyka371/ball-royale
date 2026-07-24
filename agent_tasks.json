@@ -36325,6 +36325,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2125",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Air and Earth Synergy: Sandstorm Aura",
+      "description": "When units with 'Air' and 'Earth' traits interact, they create a 'Sandstorm Aura' that blinds enemies, reducing their accuracy and making their projectiles scatter randomly for a short duration.",
+      "allowed_paths": [
+        "src/ai/air_and_earth_synergy_sandstorm_aura.py",
+        "src/ai/air_and_earth_synergy_sandstorm_aura.gd",
+        "tests/test_air_and_earth_synergy_sandstorm_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2126",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Water and Ice Synergy: Absolute Zero",
+      "description": "When units with 'Water' and 'Ice' traits interact, they combine to form an 'Absolute Zero' field, freezing the ground around them which increases allies' speed via slipping mechanics but roots enemies completely if they stay in the area too long.",
+      "allowed_paths": [
+        "src/ai/water_and_ice_synergy_absolute_zero.py",
+        "src/ai/water_and_ice_synergy_absolute_zero.gd",
+        "tests/test_water_and_ice_synergy_absolute_zero.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
