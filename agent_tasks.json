@@ -24801,7 +24801,7 @@
     },
     {
       "id": "idea-1448",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bungee Cord Item",
@@ -36542,6 +36542,23 @@
         "src/ai/black_hole_anomaly.py",
         "src/ai/black_hole_anomaly.gd",
         "tests/test_black_hole_anomaly.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2138",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Homing Missile Booster",
+      "description": "A consumable booster that allows the player's next 3 attacks to track the nearest enemy within a medium radius. The missiles travel slightly slower than normal attacks but have a high turn rate, making them excellent for hitting agile targets.",
+      "allowed_paths": [
+        "src/ai/homing_missile_booster.py",
+        "src/ai/homing_missile_booster.gd",
+        "tests/test_homing_missile_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

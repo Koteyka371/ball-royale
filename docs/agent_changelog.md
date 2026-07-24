@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1448] Bungee Cord Item — *2026-07-24 21:52:55 UTC*
+
+An item that attaches a player to a specific point on the map. They can move freely within a certain radius, but if they go too far or get knocked back, they are snapped back to the anchor point with high velocity.
+
+---
+
 ## [idea-1423] Grapple Hook Trap — *2026-07-24 21:51:42 UTC*
 
 A trap that shoots out a grappling hook when triggered, reeling the victim into the trap's center and rooting them for 2 seconds.
