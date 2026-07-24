@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1455] Magnetic Boots Cosmetic Item — *2026-07-24 21:03:59 UTC*
+
+A cosmetic item that alters physical collisions by significantly reducing the knockback multiplier when a ball is hit by an attack, effectively rooting them or slowing their displacement in the arena.
+
+---
+
 ## [idea-1443] Black Hole Weather — *2026-07-24 21:01:59 UTC*
 
 Weather event that slowly pulls everyone towards center.

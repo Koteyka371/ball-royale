@@ -24920,7 +24920,7 @@
     },
     {
       "id": "idea-1455",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Boots Cosmetic Item",
@@ -36439,6 +36439,58 @@
         "src/ai/black_market_loyalty_card.py",
         "src/ai/black_market_loyalty_card.gd",
         "tests/test_black_market_loyalty_card.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2132",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Siege Behemoth Mode",
+      "description": "In territory battles, if one guild is significantly outnumbered or has fewer resources, they can temporarily spawn a 'Siege Behemoth' which is a massive NPC unit that helps break through enemy stronghold defenses, giving them a fighting chance.",
+      "allowed_paths": [
+        "src/ai/siege_behemoth.py",
+        "src/ai/siege_behemoth.gd",
+        "tests/test_siege_behemoth.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2133",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar Flare Mutator",
+      "description": "Periodically disables all deployed shields and turrets and slows down all entities momentarily, acting as a global EMP.",
+      "allowed_paths": [
+        "src/ai/solar_flare_mutator.py",
+        "src/ai/solar_flare_mutator.gd",
+        "tests/test_solar_flare_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2134",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Stronghold Layout Editor",
+      "description": "Allow guilds to actively arrange their base layouts (defenses, traps, etc.) on a grid to optimize their stronghold's defensive capability against sieges from rival guilds. Certain combinations of adjacent traps could yield a synergistic bonus.",
+      "allowed_paths": [
+        "src/ui/guild_stronghold_layout_editor.py",
+        "src/ui/guild_stronghold_layout_editor.gd",
+        "src/ai/guild_stronghold_layout_editor.py",
+        "tests/test_guild_stronghold_layout_editor.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
