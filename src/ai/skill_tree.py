@@ -25,7 +25,10 @@ class SkillTree:
             # Level 6 Passives
             SkillTreeNode("Juggernaut", "Massive HP but slower", 6, {"max_hp": 1.5, "speed": 0.9}),
             SkillTreeNode("Assassin", "Massive Damage but less HP", 6, {"damage": 1.5, "max_hp": 0.8}),
-            SkillTreeNode("Speedster", "Massive Speed but less Damage", 6, {"speed": 1.5, "damage": 0.9})
+                        SkillTreeNode("Speedster", "Massive Speed but less Damage", 6, {"speed": 1.5, "damage": 0.9}),
+
+            # Level 8 Passives
+            SkillTreeNode("Decoy Mimic", "Decoys occasionally mimic casting harmless visual versions of your active skill", 8, special_effects=["decoy_mimic_cast"])
         ]
 
     def get_available_upgrades(self, level: int) -> List[SkillTreeNode]:
@@ -48,3 +51,8 @@ class SkillTree:
                 ball.health_regen = getattr(ball, "health_regen", 0.0) + 5.0
             elif effect == "lifesteal":
                 ball.lifesteal = getattr(ball, "lifesteal", 0.0) + 0.2
+            elif effect == "decoy_mimic_cast":
+                if not hasattr(ball, "traits"):
+                    ball.traits = []
+                if "decoy_mimic_cast" not in ball.traits:
+                    ball.traits.append("decoy_mimic_cast")
