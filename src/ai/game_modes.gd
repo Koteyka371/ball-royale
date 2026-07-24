@@ -46207,6 +46207,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"reverse_black_hole_event": ReverseBlackHoleMode.new(),
 	"massive_black_hole_event": MassiveBlackHoleEventMode.new(),
 	"ticking_bomb": TickingBombMode.new(),
+	"aura_bomb_event": AuraBombEventMode.new(),
 	"orbital_mines": OrbitalMinesMode.new(),
 	"dragging_magnetic_mines": DraggingMagneticMinesMode.new(),
 }
@@ -56833,3 +56834,157 @@ class VampiricZoneMode extends GameMode:
 							closest_enemy["hp"] = min(float(closest_enemy.get("hp", 0.0)) + damage, max_hp)
 
 GAME_MODES["vampiric_zone"] = VampiricZoneMode.new()
+
+
+class AuraBombEventMode extends GameMode:
+	var assign_timer: float = 10.0
+	var assign_interval: float = 15.0
+	var bomb_duration: float = 5.0
+	var explosion_radius: float = 250.0
+	var explosion_damage: float = 50.0
+
+	func _init() -> void:
+		name = "Aura Bomb Event"
+		description = "Random players receive a ticking Aura Bomb that explodes after a short delay, damaging all nearby players."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		assign_timer = 10.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		assign_timer -= delta
+
+		var alive_balls = []
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = str(b.get("ball_type", ""))
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				if b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+				b_type = b.get("ball_type") if "ball_type" in b else ""
+			if is_alive and b_type != "spectator":
+				alive_balls.append(b)
+
+		if assign_timer <= 0:
+			assign_timer = assign_interval
+			if alive_balls.size() > 0:
+				var rng = RandomNumberGenerator.new()
+				rng.randomize()
+				var num_to_assign = min(alive_balls.size(), max(1, alive_balls.size() / 4))
+
+				var shuffled_balls = alive_balls.duplicate()
+				shuffled_balls.shuffle()
+
+				for i in range(num_to_assign):
+					var t = shuffled_balls[i]
+					if typeof(t) == TYPE_DICTIONARY:
+						t["aura_bomb_timer"] = bomb_duration
+					else:
+						if t.has_method("set_meta"):
+							t.set_meta("aura_bomb_timer", bomb_duration)
+						else:
+							t.set("aura_bomb_timer", bomb_duration)
+
+					if world != null and "events" in world:
+						if typeof(world.events) == TYPE_ARRAY:
+							world.events.append({'type': 'aura_bomb_assigned', 'data': {'ball_id': t.get("id", null)}})
+
+		var new_explosions = []
+		for b in alive_balls:
+			var bomb_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bomb_timer = b.get("aura_bomb_timer", 0.0)
+			else:
+				bomb_timer = b.get("aura_bomb_timer") if "aura_bomb_timer" in b else (b.get_meta("aura_bomb_timer") if b.has_method("has_meta") and b.has_meta("aura_bomb_timer") else 0.0)
+
+			if bomb_timer > 0:
+				bomb_timer -= delta
+				if typeof(b) == TYPE_DICTIONARY:
+					b["aura_bomb_timer"] = bomb_timer
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("aura_bomb_timer", bomb_timer)
+					else:
+						b.set("aura_bomb_timer", bomb_timer)
+
+				if bomb_timer <= 0:
+					var bx = b.get("x", 0.0)
+					var by = b.get("y", 0.0)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["aura_bomb_timer"] = 0.0
+					else:
+						if b.has_method("set_meta"):
+							b.set_meta("aura_bomb_timer", 0.0)
+						else:
+							b.set("aura_bomb_timer", 0.0)
+
+					if world != null and "events" in world:
+						if typeof(world.events) == TYPE_ARRAY:
+							world.events.append({'type': 'chain_explosion', 'data': {
+								"x": bx,
+								"y": by,
+								"radius": explosion_radius
+							}})
+
+					var rng = RandomNumberGenerator.new()
+					rng.randomize()
+					var visual_exp = {
+						"id": rng.randi_range(100000, 999999),
+						"x": bx,
+						"y": by,
+						"radius": explosion_radius,
+						"kind": "explosion",
+						"duration": 0.5,
+						"damage": 0.0,
+						"active": true
+					}
+					new_explosions.append(visual_exp)
+
+					for other in alive_balls:
+						if other != b:
+							var ox = other.get("x", 0.0)
+							var oy = other.get("y", 0.0)
+							var dist = sqrt((ox - bx)*(ox - bx) + (oy - by)*(oy - by))
+
+							if dist <= explosion_radius:
+								var oteam = other.get("team", -1)
+								var bteam = b.get("team", -1)
+								var dmg_mult = 2.0 if oteam == bteam else 1.0
+								var total_dmg = explosion_damage * dmg_mult
+
+								var ohp = 0.0
+								if typeof(other) == TYPE_DICTIONARY:
+									ohp = other.get("hp", 100.0)
+								else:
+									ohp = other.get("hp") if "hp" in other else 100.0
+									if ohp == null: ohp = 100.0
+
+								var new_hp = ohp - total_dmg
+								if typeof(other) == TYPE_DICTIONARY:
+									other["hp"] = new_hp
+									if new_hp <= 0:
+										other["hp"] = 0
+										other["alive"] = false
+								else:
+									if other.has_method("take_damage"):
+										other.take_damage(total_dmg)
+									else:
+										other.set("hp", new_hp)
+										if new_hp <= 0:
+											other.set("hp", 0)
+											other.set("alive", false)
+											if other.has_method("set_meta"):
+												other.set_meta("alive", false)
+
+		if new_explosions.size() > 0 and world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				for e in new_explosions:
+					if world.arena.has("hazards"): world.arena.hazards.append(e)
+			else:
+				for e in new_explosions:
+					if "hazards" in world.arena: world.arena.hazards.append(e)
