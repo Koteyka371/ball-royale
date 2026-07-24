@@ -46408,7 +46408,140 @@ class RicochetArenaMode extends GameMode:
 		self.description = "Arena walls apply a massive velocity multiplier on bounce."
 		self.velocity_multiplier = 3.0
 
+
+class ChainLightningEventMode extends GameMode:
+	var strike_timer: float = 0.0
+	var strike_interval: float = 20.0
+	var conduit_duration: float = 10.0
+	var arc_damage: float = 5.0
+	var arc_radius: float = 150.0
+	var arc_cooldown_duration: float = 1.0
+
+	func _init() -> void:
+		name = "Chain Lightning Event"
+		description = "Chain lightning periodically strikes the center, turning entities into conduits that spread smaller, low-damage arcs to nearby balls for 10 seconds."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		strike_timer += delta
+
+		var arena_width = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "width" in world.arena:
+			arena_width = world.arena.width
+		elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null and "width" in world.get("arena"):
+			arena_width = world.get("arena").width
+
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "height" in world.arena:
+			arena_height = world.arena.height
+		elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null and "height" in world.get("arena"):
+			arena_height = world.get("arena").height
+
+		var center_x = arena_width / 2.0
+		var center_y = arena_height / 2.0
+
+		if strike_timer >= strike_interval:
+			strike_timer = 0.0
+			var strike_radius = 200.0
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("chain_lightning_strike", {"x": center_x, "y": center_y, "radius": strike_radius})
+
+			for b in balls:
+				var alive = true
+				if "alive" in b: alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and b.has_meta("alive"): alive = b.get_meta("alive")
+				if not alive: continue
+
+				var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else 0.0)
+				var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else 0.0)
+				var br = b.radius if "radius" in b else (b.get_meta("radius") if typeof(b) == TYPE_OBJECT and b.has_meta("radius") else 15.0)
+
+				var dist = Vector2(bx - center_x, by - center_y).length()
+				if dist <= strike_radius + br:
+					if typeof(b) == TYPE_OBJECT:
+						b.set_meta("chain_lightning_conduit_timer", conduit_duration)
+						b.set_meta("chain_lightning_arc_timer", 0.0)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["chain_lightning_conduit_timer"] = conduit_duration
+						b["chain_lightning_arc_timer"] = 0.0
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var bid = b.id if "id" in b else (b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else "unknown")
+						world.add_event("status_effect", {"id": bid, "effect": "conduit", "duration": conduit_duration})
+
+		for b in balls:
+			var alive = true
+			if "alive" in b: alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_meta("alive"): alive = b.get_meta("alive")
+			if not alive: continue
+
+			var conduit_timer = 0.0
+			if "chain_lightning_conduit_timer" in b: conduit_timer = b.chain_lightning_conduit_timer
+			elif typeof(b) == TYPE_OBJECT and b.has_meta("chain_lightning_conduit_timer"): conduit_timer = b.get_meta("chain_lightning_conduit_timer")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("chain_lightning_conduit_timer"): conduit_timer = b["chain_lightning_conduit_timer"]
+
+			if conduit_timer > 0:
+				var new_conduit = conduit_timer - delta
+				if typeof(b) == TYPE_OBJECT: b.set_meta("chain_lightning_conduit_timer", new_conduit)
+				elif typeof(b) == TYPE_DICTIONARY: b["chain_lightning_conduit_timer"] = new_conduit
+
+				var arc_timer = 0.0
+				if "chain_lightning_arc_timer" in b: arc_timer = b.chain_lightning_arc_timer
+				elif typeof(b) == TYPE_OBJECT and b.has_meta("chain_lightning_arc_timer"): arc_timer = b.get_meta("chain_lightning_arc_timer")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("chain_lightning_arc_timer"): arc_timer = b["chain_lightning_arc_timer"]
+
+				arc_timer -= delta
+				if arc_timer <= 0:
+					arc_timer = arc_cooldown_duration
+					var targets = []
+					for t in balls:
+						if t == b: continue
+						var t_alive = true
+						if "alive" in t: t_alive = t.alive
+						elif typeof(t) == TYPE_OBJECT and t.has_meta("alive"): t_alive = t.get_meta("alive")
+						if not t_alive: continue
+
+						var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else 0.0)
+						var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else 0.0)
+						var br = b.radius if "radius" in b else (b.get_meta("radius") if typeof(b) == TYPE_OBJECT and b.has_meta("radius") else 15.0)
+
+						var tx = t.x if "x" in t else (t.get_meta("x") if typeof(t) == TYPE_OBJECT and t.has_meta("x") else 0.0)
+						var ty = t.y if "y" in t else (t.get_meta("y") if typeof(t) == TYPE_OBJECT and t.has_meta("y") else 0.0)
+						var tr = t.radius if "radius" in t else (t.get_meta("radius") if typeof(t) == TYPE_OBJECT and t.has_meta("radius") else 15.0)
+
+						var dist = Vector2(tx - bx, ty - by).length()
+						if dist <= arc_radius + br + tr:
+							targets.append(t)
+
+					if targets.size() > 0:
+						var target = targets[randi() % targets.size()]
+						if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+							world._deal_damage(b, target, arc_damage)
+
+						var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else 0.0)
+						var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else 0.0)
+						var tx = target.x if "x" in target else (target.get_meta("x") if typeof(target) == TYPE_OBJECT and target.has_meta("x") else 0.0)
+						var ty = target.y if "y" in target else (target.get_meta("y") if typeof(target) == TYPE_OBJECT and target.has_meta("y") else 0.0)
+						var bid = b.id if "id" in b else (b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_meta("id") else "unknown")
+						var tid = target.id if "id" in target else (target.get_meta("id") if typeof(target) == TYPE_OBJECT and target.has_meta("id") else "unknown")
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("visual_effect", {
+								"type": "line",
+								"x": bx, "y": by,
+								"tx": tx, "ty": ty,
+								"color": "cyan"
+							})
+							world.add_event("chain_lightning_arc", {
+								"source": bid,
+								"target": tid
+							})
+
+				if typeof(b) == TYPE_OBJECT: b.set_meta("chain_lightning_arc_timer", arc_timer)
+				elif typeof(b) == TYPE_DICTIONARY: b["chain_lightning_arc_timer"] = arc_timer
+
 GAME_MODES = {
+	"chain_lightning_event": ChainLightningEventMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
     "ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),
