@@ -46659,7 +46659,85 @@ class MirrorArenaMode extends GameMode:
 		for np in new_projectiles:
 			projectiles.append(np)
 
-GAME_MODES = {
+class NemesisVampireMode extends GameMode:
+	var tick_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Nemesis Vampire"
+		description = "Dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+	func tick(world, balls, delta = 0.016):
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.has("dead_balls"): world["dead_balls"] = []
+		elif typeof(world) == TYPE_OBJECT and world.has_method("set"):
+			if world.get("dead_balls") == null: world.set("dead_balls", [])
+
+		apply_dynamic_traits(world, balls, delta)
+
+		tick_timer += delta
+		if tick_timer >= 1.0:
+			tick_timer = 0.0
+			for b in balls:
+				var is_alive = false
+				if "alive" in b: is_alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: is_alive = b.get("alive")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+
+				var btype = ""
+				if "ball_type" in b: btype = b.ball_type
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("ball_type") != null: btype = b.get("ball_type")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): btype = b["ball_type"]
+
+				if is_alive and btype != "spectator":
+					var hp = 100
+					if "hp" in b: hp = b.hp
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("hp") != null: hp = b.get("hp")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): hp = b["hp"]
+
+					hp = max(0, hp - 3.0)
+
+					if "hp" in b: b.hp = hp
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("hp", hp)
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): b["hp"] = hp
+
+					if hp <= 0:
+						if "alive" in b: b.alive = false
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("alive", false)
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b["alive"] = false
+
+	func check_winner(world, balls):
+		var alive = []
+		for b in balls:
+			var is_alive = false
+			if "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: is_alive = b.get("alive")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+
+			var btype = ""
+			if "ball_type" in b: btype = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("ball_type") != null: btype = b.get("ball_type")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): btype = b["ball_type"]
+
+			if is_alive and btype != "spectator" and btype != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0: return "Draw"
+		if alive.size() == 1:
+			var b = alive[0]
+			if "team" in b: return b.team
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("team") != null: return b.get("team")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("team"): return b["team"]
+
+			if "ball_type" in b: return b.ball_type
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("ball_type") != null: return b.get("ball_type")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): return b["ball_type"]
+
+		return null
+
+var GAME_MODES = {
+	"nemesis_vampire": NemesisVampireMode.new(),
+
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
