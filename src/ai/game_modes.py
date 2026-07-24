@@ -37829,3 +37829,12 @@ class HugeTornadosMode(GameMode):
                                             b.alive = False
 
 GAME_MODES['huge_tornados'] = HugeTornadosMode()
+
+
+class NemesisVampireMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nemesis Vampire"
+        self.description = "Dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+GAME_MODES['nemesis_vampire'] = NemesisVampireMode()

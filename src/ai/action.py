@@ -1025,6 +1025,13 @@ class Action:
                                         if hasattr(other, 'hp') and other.hp <= 0:
                                             other.alive = False
             else:
+
+                is_nv_mode = hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "name", "") == "Nemesis Vampire"
+                if is_nv_mode and is_nemesis_active:
+                    attacker.hp = min(getattr(attacker, 'hp', 100.0) + original_damage, getattr(attacker, 'max_hp', 100.0))
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("visual_effect", {"type": "heal", "x": getattr(attacker, "x", 0), "y": getattr(attacker, "y", 0)})
+                    original_damage = 0.0
                 if hasattr(self.world, "_deal_damage"):
                     old_dmg = getattr(attacker, "damage", 10.0)
                     try:

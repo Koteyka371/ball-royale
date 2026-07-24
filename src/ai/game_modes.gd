@@ -58665,3 +58665,12 @@ class HugeTornadosMode extends GameMode:
 											b.alive = false
 
 GAME_MODES['huge_tornados'] = HugeTornadosMode.new()
+
+
+class NemesisVampireMode extends GameMode:
+	func _init() -> void:
+		super._init()
+		name = "Nemesis Vampire"
+		description = "Dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+GAME_MODES["nemesis_vampire"] = NemesisVampireMode.new()

@@ -1961,6 +1961,42 @@ func _attempt_damage_internal(attacker, target) -> void:
 										if "alive" in other: other.alive = false
 										elif other.has_method("set_meta"): other.set_meta("alive", false)
 		else:
+			var is_nv_mode = false
+			if self.world != null and typeof(self.world) == TYPE_OBJECT and "game_mode" in self.world and self.world.game_mode != null:
+				var gm_name = ""
+				if typeof(self.world.game_mode) == TYPE_OBJECT and "name" in self.world.game_mode:
+					gm_name = self.world.game_mode.name
+				elif typeof(self.world.game_mode) == TYPE_DICTIONARY and self.world.game_mode.has("name"):
+					gm_name = self.world.game_mode.name
+				if gm_name == "Nemesis Vampire":
+					is_nv_mode = true
+			elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("game_mode") and self.world.game_mode != null:
+				var gm_name = ""
+				if typeof(self.world.game_mode) == TYPE_OBJECT and "name" in self.world.game_mode:
+					gm_name = self.world.game_mode.name
+				elif typeof(self.world.game_mode) == TYPE_DICTIONARY and self.world.game_mode.has("name"):
+					gm_name = self.world.game_mode.name
+				if gm_name == "Nemesis Vampire":
+					is_nv_mode = true
+
+			if is_nv_mode and is_nemesis_active:
+				var att_max_hp = 100.0
+				if "max_hp" in attacker: att_max_hp = float(attacker.max_hp)
+				var att_hp = 100.0
+				if "hp" in attacker: att_hp = float(attacker.hp)
+
+				if typeof(attacker) == TYPE_DICTIONARY:
+					attacker["hp"] = min(att_hp + original_damage, att_max_hp)
+				else:
+					attacker.hp = min(att_hp + original_damage, att_max_hp)
+
+				if self.world != null and typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+					var a_x = attacker.get("x") if typeof(attacker) == TYPE_DICTIONARY else attacker.x
+					var a_y = attacker.get("y") if typeof(attacker) == TYPE_DICTIONARY else attacker.y
+					self.world.events.append({"type": "visual_effect", "data": {"type": "heal", "x": a_x, "y": a_y}})
+
+				original_damage = 0.0
+
 			if self.world != null and self.world.has_method("_deal_damage"):
 				var old_dmg_final = 10.0
 				if "damage" in attacker:
