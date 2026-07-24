@@ -24852,7 +24852,7 @@
     },
     {
       "id": "idea-1451",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Elemental Decoys",
@@ -36610,6 +36610,41 @@
         "src/ai/comeback_aura.py",
         "src/ai/comeback_aura.gd",
         "tests/test_comeback_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2142",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Wars",
+      "description": "Introduce clan vs clan battles with weekly rewards.",
+      "allowed_paths": [
+        "src/ui/guild_wars.py",
+        "src/ui/guild_wars.gd",
+        "src/ai/guild_wars.py",
+        "tests/test_guild_wars.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2143",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mounts",
+      "description": "Introduce mounts that increase movement speed.",
+      "allowed_paths": [
+        "src/ai/mounts.py",
+        "src/ai/mounts.gd",
+        "tests/test_mounts.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

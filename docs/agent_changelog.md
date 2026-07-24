@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1451] Elemental Decoys — *2026-07-24 22:20:06 UTC*
+
+Decoys can spawn with an element (fire, ice, lightning) which triggers a secondary status effect on explosion.
+
+---
+
 ## [idea-1430] Daily Token Scratchcards — *2026-07-24 22:08:43 UTC*
 
 Players receive one free scratchcard per day that guarantees a small reward, with a rare chance to unveil prestige tokens, encouraging daily logins beyond standard streaks.
