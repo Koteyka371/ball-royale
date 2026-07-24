@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zones",
+  "description": "Instead of a static ring, multiple smaller safe zones appear and randomly move or shrink across the arena, forcing dynamic movement and localized firefights rather than a central clash."
+}

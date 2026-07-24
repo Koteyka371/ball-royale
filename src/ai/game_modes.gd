@@ -31564,6 +31564,30 @@ class ReverseGravityEventMode extends GameMode:
 							else:
 								b.y += force_mag * direction_mult
 
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena: hazards = world.arena.hazards
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena: hazards = world.arena.hazards
+
+			for h in hazards:
+				var h_mass = 0.0
+				var h_kind = ""
+
+				if typeof(h) == TYPE_DICTIONARY:
+					if "mass" in h: h_mass = h.mass
+					if "kind" in h: h_kind = h.kind
+				elif typeof(h) == TYPE_OBJECT:
+					if "mass" in h: h_mass = h.mass
+					if "kind" in h: h_kind = h.kind
+
+				if h_mass >= 50.0 or h_kind in ["rolling_boulder", "rock", "heavy_crate"]:
+					var hazard_force = force_mag * 1.5 if event_active else force_mag * 0.5
+					if typeof(h) == TYPE_DICTIONARY:
+						if h.has("vy"): h["vy"] += hazard_force * direction_mult
+						else: h["y"] += hazard_force * direction_mult
+					elif typeof(h) == TYPE_OBJECT:
+						if "vy" in h: h.vy += hazard_force * direction_mult
+						else: h.y += hazard_force * direction_mult
+
 
 class InvisibleDecoysMode extends GameMode:
 	func _init() -> void:
