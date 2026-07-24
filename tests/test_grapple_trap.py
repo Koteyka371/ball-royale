@@ -12,13 +12,12 @@ class MockArena:
         self.hazards = []
 
 class MockHazard:
-    def __init__(self, id, x, y, kind, radius=40.0, damage=10.0, owner_id=1):
+    def __init__(self, id, x, y, kind, radius=40.0, owner_id=1):
         self.id = id
         self.x = x
         self.y = y
         self.kind = kind
         self.radius = radius
-        self.damage = damage
         self.owner_id = owner_id
         self.duration = 10.0
 
@@ -28,12 +27,8 @@ class MockBall:
         self.x = x
         self.y = y
         self.radius = 10.0
-        self.hp = 100.0
-        self.alive = True
-        self.inventory = []
-        self.damage = 10.0
         self.stun_timer = 0.0
-        self.speed = 0.0
+        self.speed = 100.0
         self.vx = 0.0
         self.vy = 0.0
         self.is_intangible = False
@@ -42,29 +37,27 @@ class MockBall:
 
 def test_grapple_trap():
     world = MockWorld()
-    ball1 = MockBall(2, 50, 50)
-    world.balls = [ball1]
+    ball = MockBall(2, 100, 100)
+    world.balls = [ball]
 
-    trap = MockHazard(1, 10, 10, "grapple_trap", radius=20.0, damage=10.0, owner_id=1)
+    trap = MockHazard(1, 0, 0, "grapple_trap", radius=40.0, owner_id=1)
     world.arena.hazards.append(trap)
 
-    action = Action(ball1, world)
+    action = Action(ball, world)
+    action.execute("idle", 0.1)
 
-    # Trigger the pull
-    action.execute("idle", 0.016)
-
-    assert ball1.x < 50.0 and ball1.y < 50.0
+    assert ball.x < 100
+    assert ball.y < 100
     assert trap.duration == 10.0
-    assert ball1.stun_timer == 0.0
+    assert ball.stun_timer == 0.0
 
-    # Center triggers stun
-    ball1.x = 10.0
-    ball1.y = 15.0
+    ball.x = 10
+    ball.y = 10
 
-    action.execute("idle", 0.016)
+    action.execute("idle", 0.1)
 
-    assert ball1.stun_timer >= 2.0
+    assert ball.stun_timer == 2.0
     assert trap.duration == 0.0
 
 if __name__ == "__main__":
-    pytest.main(["-v", "src/ai/test_grapple_trap.py"])
+    pytest.main(["-v", "tests/test_grapple_trap.py"])

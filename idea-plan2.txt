@@ -1,3 +1,0 @@
-1. The code review says: "The patch only implements the first half of the feature. It successfully adds the logic to spawn a grapple_trap hazard when the trap is triggered by a player. However, it completely lacks the implementation for the grapple_trap hazard itself—there is no code that actually pulls the player toward the center or applies the 2-second stun/root effect."
-2. But wait, I DID search for `grapple_trap` and found it.
-Let's see what happens if I look closer at `action.py:19964`.
