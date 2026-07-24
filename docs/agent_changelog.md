@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1439] Synergistic Trait Combos — *2026-07-24 04:56:09 UTC*
+
+Create synergies when different traits are combined on the same team. For instance, pairing a 'water' trait unit with a 'lightning' trait unit triggers an 'electrified water' area of effect buff.
+
+---
+
 ## [idea-1403] Entanglement Chain — *2026-07-24 04:56:04 UTC*
 
 A new mutator where entanglement can spread from two players to up to four if they remain in close proximity.
