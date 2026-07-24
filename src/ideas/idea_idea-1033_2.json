@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Mimic Event",
-  "description": "Periodically, all players swap positions with their mimic clones (or a temporary mimic is spawned if they don't have one). While swapped, players' inputs are inverted, and they gain a temporary shield. Lasts for 5 seconds."
-}

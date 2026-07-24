@@ -16124,18 +16124,47 @@ func execute(strategy: String, delta: float):
                             elif self.world != null and "arena" in self.world and self.world.arena != null and "weather" in self.world.arena:
                                 weather = self.world.arena.weather
 
+                            var theme = "Genesis"
+                            var season_num = 1
+                            var lbm = null
+                            if self.world != null:
+                                if typeof(self.world) == TYPE_DICTIONARY:
+                                    if self.world.has("leaderboard_manager"): lbm = self.world["leaderboard_manager"]
+                                    elif self.world.has("profile_manager") and typeof(self.world["profile_manager"]) == TYPE_OBJECT and "leaderboard_manager" in self.world["profile_manager"]:
+                                        lbm = self.world["profile_manager"].leaderboard_manager
+                                elif typeof(self.world) == TYPE_OBJECT:
+                                    if "leaderboard_manager" in self.world: lbm = self.world.leaderboard_manager
+                                    elif "profile_manager" in self.world and self.world.profile_manager != null and "leaderboard_manager" in self.world.profile_manager:
+                                        lbm = self.world.profile_manager.leaderboard_manager
+
+                            if lbm != null:
+                                if typeof(lbm) == TYPE_OBJECT and "data" in lbm and typeof(lbm.data) == TYPE_DICTIONARY:
+                                    season_num = lbm.data.get("current_season", 1)
+                                elif typeof(lbm) == TYPE_DICTIONARY and lbm.has("data") and typeof(lbm["data"]) == TYPE_DICTIONARY:
+                                    season_num = lbm["data"].get("current_season", 1)
+
+                                if typeof(lbm) == TYPE_OBJECT and lbm.has_method("get_theme"):
+                                    theme = lbm.get_theme(season_num)
+                                elif typeof(lbm) == TYPE_DICTIONARY and lbm.has("get_theme") and lbm["get_theme"] != null and lbm["get_theme"].has_method("call"):
+                                    theme = lbm["get_theme"].call(season_num)
+
                             if trap_variant == "normal":
-                                if weather == "blizzard" or weather == "snow" or weather == "ice":
+                                if weather == "blizzard" or weather == "snow" or weather == "ice" or theme == "Frost":
                                     trap_variant = "freeze"
                                     hazard.kind = "ice_patch"
                                 elif weather == "thunderstorm":
                                     trap_variant = "emp_trap"
                                 elif weather == "sandstorm" or weather == "desert":
                                     hazard.kind = "quicksand"
-                                elif weather == "rain":
+                                elif weather == "rain" or theme == "Abyssal":
+                                    if theme == "Abyssal":
+                                        trap_variant = "pull"
                                     hazard.kind = "mud_puddle"
-                                elif weather == "heatwave":
+                                elif weather == "heatwave" or theme == "Inferno":
                                     hazard.kind = "lava_pool"
+                                elif theme == "Void":
+                                    trap_variant = "black_hole"
+                                    hazard.kind = "black_hole"
 
                             if trap_variant == "poison":
                                 var poison_damage = 5.0 * delta

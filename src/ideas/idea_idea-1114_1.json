@@ -1,4 +1,0 @@
-{
-  "title": "Chain Lightning Modifier",
-  "description": "A new mutator where any damage dealt to an enemy has a 25% chance to trigger chain lightning, damaging up to 3 nearby enemies for a portion of the original damage."
-}

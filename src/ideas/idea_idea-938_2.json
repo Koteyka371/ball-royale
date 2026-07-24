@@ -1,4 +1,0 @@
-{
-  "title": "Time Loop Mutator",
-  "description": "Every 30 seconds, all players are reverted back to the position, HP, and stamina they had 5 seconds ago, forcing them to rethink their engagements."
-}

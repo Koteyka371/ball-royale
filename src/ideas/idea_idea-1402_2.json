@@ -1,4 +1,0 @@
-{
-  "title": "Bounty Target Chain Explosion",
-  "description": "A new mutator where if multiple fake bounties are spawned, destroying one causes a chain reaction that detonates all other fake bounties currently on the map, creating massive hazard zones."
-}
