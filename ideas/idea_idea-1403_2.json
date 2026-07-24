@@ -1,4 +1,0 @@
-{
-    "title": "Infected Shadows",
-    "description": "One random player starts with an 'Infection' aura. Any player who comes too close for more than 2 seconds gets infected as well. Infected players take low continuous damage over time, and the last surviving player wins."
-}

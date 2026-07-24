@@ -36274,6 +36274,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2122",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wormhole portals mode",
+      "description": "Portals spawn randomly across the map, allowing players to quickly traverse large distances, or shoot projectiles through them to attack unsuspecting enemies.",
+      "allowed_paths": [
+        "src/ai/wormhole_portals.py",
+        "src/ai/wormhole_portals.gd",
+        "tests/test_wormhole_portals.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2123",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Spectral Phantom Tag",
+      "description": "A new game mode where one player becomes the Spectral Phantom. The Phantom can pass through walls and leaves a trail of slowing ectoplasm. Other players must use special flashbang skills to reveal and tag the Phantom.",
+      "allowed_paths": [
+        "src/ai/spectral_phantom_tag.py",
+        "src/ai/spectral_phantom_tag.gd",
+        "tests/test_spectral_phantom_tag.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2124",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Solar flare event mode",
+      "description": "Periodically, a massive solar flare covers the arena, dealing damage to all players not hiding behind indestructible terrain or temporary shields.",
+      "allowed_paths": [
+        "src/ai/solar_flare.py",
+        "src/ai/solar_flare.gd",
+        "tests/test_solar_flare.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
