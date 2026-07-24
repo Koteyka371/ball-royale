@@ -1,0 +1,4 @@
+{
+    "title": "Comet Tail Particle Effect",
+    "description": "Balls moving over a certain speed threshold leave a damaging, slowly fading trail of particles that apply burn stacks to enemies who cross them."
+}

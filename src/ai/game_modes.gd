@@ -580,14 +580,14 @@ class GameMode:
 								var e_alive = false
 								if typeof(enemy) == TYPE_DICTIONARY:
 									e_alive = enemy.get("alive", false)
-								else:
+							else:
 									e_alive = enemy.get("alive") if "alive" in enemy else false
 
 								if enemy != b and e_alive:
 									var e_team = null
 									if typeof(enemy) == TYPE_DICTIONARY:
 										e_team = enemy.get("team")
-									else:
+								else:
 										e_team = enemy.get("team") if "team" in enemy else null
 
 									if e_team != b_team:
@@ -596,7 +596,7 @@ class GameMode:
 										if typeof(enemy) == TYPE_DICTIONARY:
 											e_x = enemy.get("x", 0.0)
 											e_y = enemy.get("y", 0.0)
-										else:
+									else:
 											e_x = enemy.get("x") if "x" in enemy else 0.0
 											e_y = enemy.get("y") if "y" in enemy else 0.0
 
@@ -604,14 +604,14 @@ class GameMode:
 										if dist_sq <= pow(magma_radius, 2):
 											if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
 												world._deal_damage(b, enemy, magma_damage)
-											else:
+										else:
 												var e_hp = 100.0
 												if typeof(enemy) == TYPE_DICTIONARY:
 													e_hp = enemy.get("hp", 100.0) - magma_damage
 													enemy["hp"] = e_hp
 													if e_hp <= 0:
 														enemy["alive"] = false
-												else:
+											else:
 													e_hp = (enemy.get("hp") if "hp" in enemy else 100.0) - magma_damage
 													if "hp" in enemy:
 														enemy.hp = e_hp
@@ -623,7 +623,7 @@ class GameMode:
 											if typeof(enemy) == TYPE_DICTIONARY:
 												var base_e_speed = enemy.get("base_speed", enemy.get("speed", 100.0))
 												enemy["speed"] = min(enemy.get("speed", 100.0), base_e_speed * 0.7)
-											else:
+										else:
 												var base_e_speed = 100.0
 												if "base_speed" in enemy:
 													base_e_speed = enemy.base_speed
@@ -664,14 +664,14 @@ class GameMode:
 										var enemy_alive = false
 										if typeof(enemy) == TYPE_DICTIONARY:
 											enemy_alive = enemy.get("alive", false)
-										else:
+									else:
 											enemy_alive = enemy.get("alive") if "alive" in enemy else false
 
 										if enemy_alive:
 											var enemy_team = null
 											if typeof(enemy) == TYPE_DICTIONARY:
 												enemy_team = enemy.get("team")
-											else:
+										else:
 												enemy_team = enemy.get("team") if "team" in enemy else null
 
 											if enemy_team != b_team:
@@ -680,7 +680,7 @@ class GameMode:
 												if typeof(enemy) == TYPE_DICTIONARY:
 													e_x = enemy.get("x", 0.0)
 													e_y = enemy.get("y", 0.0)
-												else:
+											else:
 													e_x = enemy.get("x") if "x" in enemy else 0.0
 													e_y = enemy.get("y") if "y" in enemy else 0.0
 
@@ -688,7 +688,7 @@ class GameMode:
 												if dist_sq <= shock_radius * shock_radius:
 													if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
 														world._deal_damage(b, enemy, shock_damage)
-													else:
+												else:
 														if typeof(enemy) == TYPE_DICTIONARY:
 															enemy["hp"] = enemy.get("hp", 100.0) - shock_damage
 															if enemy["hp"] <= 0:
@@ -727,14 +727,14 @@ class GameMode:
 										var enemy_alive = false
 										if typeof(enemy) == TYPE_DICTIONARY:
 											enemy_alive = enemy.get("alive", false)
-										else:
+									else:
 											enemy_alive = enemy.get("alive") if "alive" in enemy else false
 
 										if enemy_alive:
 											var enemy_team = null
 											if typeof(enemy) == TYPE_DICTIONARY:
 												enemy_team = enemy.get("team")
-											else:
+										else:
 												enemy_team = enemy.get("team") if "team" in enemy else null
 
 											if enemy_team != b_team:
@@ -743,7 +743,7 @@ class GameMode:
 												if typeof(enemy) == TYPE_DICTIONARY:
 													e_x = enemy.get("x", 0.0)
 													e_y = enemy.get("y", 0.0)
-												else:
+											else:
 													e_x = enemy.get("x") if "x" in enemy else 0.0
 													e_y = enemy.get("y") if "y" in enemy else 0.0
 
@@ -751,7 +751,7 @@ class GameMode:
 												if dist_sq <= shock_radius * shock_radius:
 													if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
 														world._deal_damage(b, enemy, shock_damage)
-													else:
+												else:
 														if typeof(enemy) == TYPE_DICTIONARY:
 															enemy["hp"] = enemy.get("hp", 100.0) - shock_damage
 															if enemy["hp"] <= 0:
@@ -1223,11 +1223,11 @@ class GameMode:
 
 								if "control_target_x" in h: t_x = float(h.control_target_x)
 								elif h.has_method("get_meta") and h.has_meta("control_target_x"): t_x = float(h.get_meta("control_target_x"))
-								else: t_x = h_x
+							else: t_x = h_x
 
 								if "control_target_y" in h: t_y = float(h.control_target_y)
 								elif h.has_method("get_meta") and h.has_meta("control_target_y"): t_y = float(h.get_meta("control_target_y"))
-								else: t_y = h_y
+							else: t_y = h_y
 
 							var dx = t_x - h_x
 							var dy = t_y - h_y
@@ -1306,13 +1306,13 @@ class GameMode:
 													frag.set_meta("owner_team", h_team)
 													frag.set_meta("vx", cos(angle) * 300.0)
 													frag.set_meta("vy", sin(angle) * 300.0)
-												else:
+											else:
 													frag.duration = 2.0
 													frag.owner_team = h_team
 													frag.vx = cos(angle) * 300.0
 													frag.vy = sin(angle) * 300.0
 												new_fragments.append(frag)
-											else:
+										else:
 												var frag = {
 													"id": frag_id, "x": h_x, "y": h_y, "radius": 15.0, "kind": "bone_fragment", "damage": 30.0,
 													"duration": 2.0, "owner_team": h_team, "vx": cos(angle) * 300.0, "vy": sin(angle) * 300.0
@@ -1373,13 +1373,13 @@ class GameMode:
 
 										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 											b.take_damage(h_damage)
-										else:
+									else:
 											var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.hp
 											bhp -= h_damage
-											if typeof(b) == TYPE_DICTIONARY:
+										if typeof(b) == TYPE_DICTIONARY:
 												b["hp"] = bhp
 												if bhp <= 0: b["alive"] = false
-											else:
+										else:
 												b.hp = bhp
 												if bhp <= 0: b.alive = false
 
@@ -1388,10 +1388,10 @@ class GameMode:
 										st = max(cur_st, 3.0)
 										var base_sp = b.get("base_speed", b.get("speed", 100.0)) if typeof(b) == TYPE_DICTIONARY else (b.base_speed if "base_speed" in b else (b.get_meta("base_speed") if b.has_method("get_meta") and b.has_meta("base_speed") else b.speed))
 
-										if typeof(b) == TYPE_DICTIONARY:
+									if typeof(b) == TYPE_DICTIONARY:
 											b["slow_timer"] = st
 											b["speed"] = base_sp * 0.5
-										else:
+									else:
 											if "slow_timer" in b: b.slow_timer = st
 											elif b.has_method("set_meta"): b.set_meta("slow_timer", st)
 											b.speed = base_sp * 0.5
@@ -1469,7 +1469,7 @@ class GameMode:
 								for b in pull_targets:
 									var bx = 0.0
 									var by = 0.0
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										if b.has("x"): bx = b["x"]
 										if b.has("y"): by = b["y"]
 									elif typeof(b) == TYPE_OBJECT:
@@ -1481,17 +1481,17 @@ class GameMode:
 									var dist_sq = dx*dx + dy*dy
 									if dist_sq < 90000: # 300 radius squared
 										var dist = sqrt(dist_sq)
-										if dist > 0:
-											var pull_strength = 200.0 * (1.0 - dist/300.0)
+									if dist > 0:
+										var pull_strength = 200.0 * (1.0 - dist/300.0)
 											var bvx = 0.0
 											var bvy = 0.0
-											if typeof(b) == TYPE_DICTIONARY:
+										if typeof(b) == TYPE_DICTIONARY:
 												if b.has("vx"): bvx = b["vx"]
 												if b.has("vy"): bvy = b["vy"]
 												b["vx"] = bvx + (dx/dist) * pull_strength * delta
 												b["vy"] = bvy + (dy/dist) * pull_strength * delta
 											elif typeof(b) == TYPE_OBJECT:
-												if "vx" in b: bvx = b.vx
+											if "vx" in b: bvx = b.vx
 												if "vy" in b: bvy = b.vy
 												b.vx = bvx + (dx/dist) * pull_strength * delta
 												b.vy = bvy + (dy/dist) * pull_strength * delta
@@ -1516,7 +1516,7 @@ class GameMode:
 									if alive:
 										var bx = 0.0
 										var by = 0.0
-										if typeof(b) == TYPE_DICTIONARY:
+									if typeof(b) == TYPE_DICTIONARY:
 											if b.has("x"): bx = b["x"]
 											if b.has("y"): by = b["y"]
 										elif typeof(b) == TYPE_OBJECT:
@@ -1527,19 +1527,19 @@ class GameMode:
 										if dx*dx + dy*dy < 40000: # 200 radius squared
 											if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 												b.take_damage(50.0)
-											else:
+										else:
 												var bhp = 100.0
 												if typeof(b) == TYPE_DICTIONARY and b.has("hp"): bhp = b["hp"]
 												elif typeof(b) == TYPE_OBJECT and "hp" in b: bhp = b.hp
 												bhp -= 50.0
-												if typeof(b) == TYPE_DICTIONARY:
+											if typeof(b) == TYPE_DICTIONARY:
 													b["hp"] = bhp
 													if bhp <= 0: b["alive"] = false
 												elif typeof(b) == TYPE_OBJECT:
 													if "hp" in b: b.hp = bhp
 													if bhp <= 0 and "alive" in b: b.alive = false
 
-											if typeof(b) == TYPE_DICTIONARY:
+										if typeof(b) == TYPE_DICTIONARY:
 												b["skill_timer"] = max(b.get("skill_timer", 0.0), 5.0)
 												b["silence_timer"] = max(b.get("silence_timer", 0.0), 5.0)
 												b["attack_timer"] = max(b.get("attack_timer", 0.0), 5.0)
@@ -1658,14 +1658,14 @@ class GameMode:
 								hp -= 50.0
 								if hp <= 0.0:
 									hp = 0.0
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										b.hp = hp
 										b.alive = false
 									elif typeof(b) == TYPE_OBJECT:
 										if "hp" in b: b.hp = hp
 										if "alive" in b: b.alive = false
-								else:
-									if typeof(b) == TYPE_DICTIONARY:
+							else:
+								if typeof(b) == TYPE_DICTIONARY:
 										b.hp = hp
 										b.overcharge_timer = 5.0
 										var is_overcharged = false
@@ -1814,7 +1814,7 @@ class GameMode:
 
 								mhp += 20
 								chp += 20
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["max_hp"] = mhp
 									b["hp"] = chp
 								elif typeof(b) == TYPE_OBJECT:
@@ -1825,7 +1825,7 @@ class GameMode:
 								if typeof(b) == TYPE_DICTIONARY and b.has("base_speed"): bs = b.base_speed
 								elif typeof(b) == TYPE_OBJECT and "base_speed" in b: bs = b.base_speed
 								bs += 15
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["base_speed"] = bs
 									b["speed"] = bs
 								elif typeof(b) == TYPE_OBJECT:
@@ -1836,7 +1836,7 @@ class GameMode:
 								if typeof(b) == TYPE_DICTIONARY and b.has("base_damage"): bd = b.base_damage
 								elif typeof(b) == TYPE_OBJECT and "base_damage" in b: bd = b.base_damage
 								bd += 5
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["base_damage"] = bd
 									b["damage"] = bd
 								elif typeof(b) == TYPE_OBJECT:
@@ -1945,7 +1945,7 @@ class GameMode:
 							if new_hazard != null:
 								if typeof(arena_ref) == TYPE_DICTIONARY:
 									arena_ref["hazards"].append(new_hazard)
-								else:
+							else:
 									arena_ref.hazards.append(new_hazard)
 
 		if typeof(world) == TYPE_DICTIONARY:
@@ -2764,9 +2764,9 @@ class GameMode:
 									var bdx = bx - mid_x
 									var bdy = by - mid_y
 									if sqrt(bdx*bdx + bdy*bdy) < 150.0:
-										if typeof(b) == TYPE_DICTIONARY:
+									if typeof(b) == TYPE_DICTIONARY:
 											b["aura_booster_timer"] = 5.0
-										else:
+									else:
 											if "aura_booster_timer" in b: b.aura_booster_timer = 5.0
 											elif b.has_method("set_meta"): b.set_meta("aura_booster_timer", 5.0)
 							break
@@ -2963,7 +2963,7 @@ class GameMode:
 									elif typeof(d) == TYPE_DICTIONARY and d.has("damage"): d_dmg = d["damage"]
 									if typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("take_damage"):
 										nemesis.take_damage(d_dmg)
-									else:
+								else:
 										var nhp = 100.0
 										if "hp" in nemesis: nhp = nemesis.hp
 										elif typeof(nemesis) == TYPE_OBJECT and nemesis.has_method("get") and nemesis.get("hp") != null: nhp = nemesis.get("hp")
@@ -3986,7 +3986,7 @@ class BattleRoyaleMode extends GameMode:
 							else:
 								if b.has_method("take_damage"):
 									b.take_damage(damage)
-								else:
+							else:
 									b.hp -= damage
 									if b.hp <= 0:
 										b.hp = 0
@@ -4040,12 +4040,12 @@ class BattleRoyaleMode extends GameMode:
 								if dist < h.radius + b_rad:
 									h.set_meta("visible", true)
 									h.set_meta("reveal_timer", 2.0)
-									if dist > 0:
+								if dist > 0:
 										var nx = dx / dist
 										var ny = dy / dist
 										b.x = h.x + nx * (h.radius + b_rad)
 										b.y = h.y + ny * (h.radius + b_rad)
-										if "vx" in b and "vy" in b:
+									if "vx" in b and "vy" in b:
 											var dot = b.vx * nx + b.vy * ny
 											if dot < 0:
 												b.vx -= 2 * dot * nx
@@ -4116,9 +4116,9 @@ class BattleRoyaleMode extends GameMode:
 								hp = b.get("hp", 100.0)
 								max_hp = b.get("max_hp", 100.0)
 							if hp < max_hp:
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["hp"] = min(max_hp, hp + 5.0 * delta)
-								else:
+							else:
 									b.hp = min(max_hp, hp + 5.0 * delta)
 						elif b.alive and b_team != cp["captured_by"]:
 							if typeof(b) == TYPE_DICTIONARY:
@@ -4207,7 +4207,7 @@ class BattleRoyaleMode extends GameMode:
 							if not "killer" in b or b.killer == null or b.killer == "":
 								if b.has_method("set_meta"):
 									b.set_meta("killer", "safe_zone")
-								else:
+							else:
 									b.killer = "safe_zone"
 
 					if typeof(b) == TYPE_OBJECT:
@@ -4407,7 +4407,7 @@ class BattleRoyaleMode extends GameMode:
 								var b_rad = b.radius if "radius" in b else 20.0
 
 								if dist < h_radius + b_rad:
-									if dist > 0:
+								if dist > 0:
 										var nx = dx / dist
 										var ny = dy / dist
 
@@ -4429,7 +4429,7 @@ class BattleRoyaleMode extends GameMode:
 											b_vx -= 2 * dot * nx
 											b_vy -= 2 * dot * ny
 											var ks_active = false
-											if typeof(b) == TYPE_DICTIONARY:
+										if typeof(b) == TYPE_DICTIONARY:
 												ks_active = b.get("kinetic_shield_active", false)
 											elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("kinetic_shield_active"):
 												ks_active = b.get_meta("kinetic_shield_active")
@@ -4446,7 +4446,7 @@ class BattleRoyaleMode extends GameMode:
 												var new_sp = max(cur_sp, 3.0)
 												if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
 													if "speed_boost_timer" in b: b.speed_boost_timer = new_sp
-													else: b.set_meta("speed_boost_timer", new_sp)
+												else: b.set_meta("speed_boost_timer", new_sp)
 												elif "speed_boost_timer" in b: b.speed_boost_timer = new_sp
 												elif typeof(b) == TYPE_DICTIONARY: b["speed_boost_timer"] = new_sp
 
@@ -4457,11 +4457,11 @@ class BattleRoyaleMode extends GameMode:
 												var new_sh = cur_sh + (2000.0 * 0.016 * 0.5 * 0.05)
 												if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
 													if "shielding" in b: b.shielding = new_sh
-													else: b.set_meta("shielding", new_sh)
+												else: b.set_meta("shielding", new_sh)
 												elif "shielding" in b: b.shielding = new_sh
 												elif typeof(b) == TYPE_DICTIONARY: b["shielding"] = new_sh
 
-											if "vx" in b: b.vx = b_vx
+										if "vx" in b: b.vx = b_vx
 											elif b.has_method("set_meta"): b.set_meta("vx", b_vx)
 											if "vy" in b: b.vy = b_vy
 											elif b.has_method("set_meta"): b.set_meta("vy", b_vy)
@@ -4619,7 +4619,7 @@ class BattleRoyaleMode extends GameMode:
 
 								base_s *= 1.5
 
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["base_speed"] = base_s
 									b["speed"] = base_s
 								elif "base_speed" in b:
@@ -4639,7 +4639,7 @@ class BattleRoyaleMode extends GameMode:
 								elif "shield" in b: cur_sh = b.shield
 								elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("shield"): cur_sh = b.get_meta("shield")
 
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["max_shield"] = max_sh
 									b["shield"] = cur_sh
 								elif "max_shield" in b:
@@ -4774,13 +4774,13 @@ class BattleRoyaleMode extends GameMode:
 									var dist_sq = dx*dx + dy*dy
 									if dist_sq > 0 and dist_sq <= 300.0 * 300.0:
 										var dist = sqrt(dist_sq)
-										var pull_strength = 50.0 * delta
+									var pull_strength = 50.0 * delta
 										px += (dx / dist) * pull_strength
 										py += (dy / dist) * pull_strength
 										if typeof(p) == TYPE_DICTIONARY:
 											p["x"] = px
 											p["y"] = py
-										else:
+									else:
 											if "x" in p: p.x = px
 											if "y" in p: p.y = py
 
@@ -5051,12 +5051,12 @@ class BattleRoyaleMode extends GameMode:
 							for b in balls_inside:
 								var reward = artifacts[rng.randi() % artifacts.size()]
 								if reward == "full_heal":
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										b["hp"] = b.get("max_hp", 100.0)
-									else:
-										if "hp" in b: b.hp = b.get("max_hp") if "max_hp" in b else 100.0
 								else:
-									if typeof(b) == TYPE_DICTIONARY:
+										if "hp" in b: b.hp = b.get("max_hp") if "max_hp" in b else 100.0
+							else:
+								if typeof(b) == TYPE_DICTIONARY:
 										var inv = b.get("inventory", [])
 										inv.append(reward)
 										b["inventory"] = inv
@@ -5067,7 +5067,7 @@ class BattleRoyaleMode extends GameMode:
 										elif reward == "artifact_of_vitality":
 											b["max_hp"] = b.get("max_hp", 100.0) + 50.0
 											b["hp"] = b.get("hp", 100.0) + 50.0
-									else:
+								else:
 										if b.has_method("has_meta") and b.has_meta("inventory"):
 											var inv = b.get_meta("inventory")
 											inv.append(reward)
@@ -5346,7 +5346,7 @@ class BattleRoyaleMode extends GameMode:
 								var dy = b.y - m["y"]
 								if sqrt(dx*dx + dy*dy) <= m["radius"]:
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
-									else: b.hp -= 200.0
+								else: b.hp -= 200.0
 					else:
 						still_active.append(m)
 				self.set_meta("active_meteors", still_active)
@@ -5367,7 +5367,7 @@ class BattleRoyaleMode extends GameMode:
 									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
 									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
-									else: b.hp -= 10.0 * delta
+								else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
 
 				if world != null and "arena" in world and world.arena != null:
@@ -6098,11 +6098,11 @@ class BattleRoyaleMode extends GameMode:
 								elif typeof(b) == TYPE_OBJECT and "_low_grav_applied" in b: has_applied = b._low_grav_applied
 
 								if not has_applied:
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										b._low_grav_applied = true
 										b.original_mass = b_mass
 										b.mass = b.original_mass * 0.5
-									else:
+								else:
 										b._low_grav_applied = true
 										b.original_mass = b_mass
 										b.mass = b.original_mass * 0.5
@@ -6122,9 +6122,9 @@ class BattleRoyaleMode extends GameMode:
 										# Can't erase easily from objects, but we can set to false
 										b._low_grav_applied = false
 
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										b.mass = orig_mass
-									else:
+								else:
 										b.mass = orig_mass
 
 			for h in hazards_to_remove:
@@ -6235,7 +6235,7 @@ class BattleRoyaleMode extends GameMode:
 								if dist <= max_rad:
 									if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 										b.take_damage(40.0)
-									else:
+								else:
 										if typeof(b) == TYPE_OBJECT and "hp" in b:
 											b.hp -= 40.0
 											if b.hp <= 0:
@@ -6272,7 +6272,7 @@ class BattleRoyaleMode extends GameMode:
 								if dist <= r:
 									if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 										b.take_damage(15.0 * delta)
-									else:
+								else:
 										if typeof(b) == TYPE_OBJECT and "hp" in b:
 											b.hp -= 15.0 * delta
 											if b.hp <= 0:
@@ -6320,13 +6320,13 @@ class BattleRoyaleMode extends GameMode:
 						var is_alive = b.get("alive") if typeof(b) == TYPE_OBJECT else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else false)
 						var b_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else (b["ball_type"] if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") else null)
 						if is_alive and b_type != "spectator":
-							var bx = b.get("x") if typeof(b) == TYPE_OBJECT else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
-							var by = b.get("y") if typeof(b) == TYPE_OBJECT else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
+						var bx = b.get("x") if typeof(b) == TYPE_OBJECT else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
+						var by = b.get("y") if typeof(b) == TYPE_OBJECT else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
 							var dist = sqrt((bx - mx)*(bx - mx) + (by - my)*(by - my))
 							if dist <= 80.0:
 								if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 									b.take_damage(50.0)
-								else:
+							else:
 									if typeof(b) == TYPE_OBJECT:
 										b.hp -= 50.0
 										if b.hp <= 0:
@@ -8300,7 +8300,7 @@ class ReverseDualPayloadMode extends GameMode:
 							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("visual_effect", {"type": "massive_explosion", "x": payload_red.x, "y": payload_red.y, "radius": 500.0})
 							for b in balls:
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									if b.get("team", "") == "Red" and b.get("alive", false) and b.get("ball_type", "") != "spectator" and not b.get("is_payload", false):
 										var bdx = b.get("x", 0) - payload_red.x
 										var bdy = b.get("y", 0) - payload_red.y
@@ -8308,7 +8308,7 @@ class ReverseDualPayloadMode extends GameMode:
 											b["hp"] = b.get("hp", 100.0) - 500.0
 											if b["hp"] <= 0:
 												b["alive"] = false
-								else:
+							else:
 									if b.get("team") == "Red" and b.get("alive") and b.get("ball_type") != "spectator" and not b.get("is_payload"):
 										var bdx = b.get("x") - payload_red.x
 										var bdy = b.get("y") - payload_red.y
@@ -8367,7 +8367,7 @@ class ReverseDualPayloadMode extends GameMode:
 							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("visual_effect", {"type": "massive_explosion", "x": payload_blue.x, "y": payload_blue.y, "radius": 500.0})
 							for b in balls:
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									if b.get("team", "") == "Blue" and b.get("alive", false) and b.get("ball_type", "") != "spectator" and not b.get("is_payload", false):
 										var bdx = b.get("x", 0) - payload_blue.x
 										var bdy = b.get("y", 0) - payload_blue.y
@@ -8375,7 +8375,7 @@ class ReverseDualPayloadMode extends GameMode:
 											b["hp"] = b.get("hp", 100.0) - 500.0
 											if b["hp"] <= 0:
 												b["alive"] = false
-								else:
+							else:
 									if b.get("team") == "Blue" and b.get("alive") and b.get("ball_type") != "spectator" and not b.get("is_payload"):
 										var bdx = b.get("x") - payload_blue.x
 										var bdy = b.get("y") - payload_blue.y
@@ -8806,14 +8806,14 @@ class DualPayloadMode extends GameMode:
 							if dist_to_enemy <= 200.0:
 								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
 								var new_hp = max(0.0, bhp - 10.0 * delta)
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["hp"] = new_hp
 									if new_hp <= 0:
 										b["alive"] = false
 									if dist_to_enemy > 0:
 										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
 										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
-								else:
+							else:
 									b.set("hp", new_hp)
 									if new_hp <= 0:
 										b.set("alive", false)
@@ -8941,14 +8941,14 @@ class DualPayloadMode extends GameMode:
 							if dist_to_enemy <= 200.0:
 								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
 								var new_hp = max(0.0, bhp - 10.0 * delta)
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["hp"] = new_hp
 									if new_hp <= 0:
 										b["alive"] = false
 									if dist_to_enemy > 0:
 										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
 										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
-								else:
+							else:
 									b.set("hp", new_hp)
 									if new_hp <= 0:
 										b.set("alive", false)
@@ -9591,16 +9591,16 @@ class EscortMode extends GameMode:
 							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
 							var new_hp = bhp + 15.0 * delta
 							if bhp >= bmax_hp:
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
-								else:
+							else:
 									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
 									b.set("shield", curr_shield + 15.0 * delta)
 							else:
 								new_hp = min(bmax_hp, new_hp)
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["hp"] = new_hp
-								else:
+							else:
 									b.set("hp", new_hp)
 
 				var nearby_teammates = 0
@@ -9683,14 +9683,14 @@ class EscortMode extends GameMode:
 							if dist_to_enemy <= 200.0:
 								var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
 								var new_hp = max(0.0, bhp - 10.0 * delta)
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["hp"] = new_hp
 									if new_hp <= 0:
 										b["alive"] = false
 									if dist_to_enemy > 0:
 										b["x"] += (bdx / dist_to_enemy) * 150.0 * delta
 										b["y"] += (bdy / dist_to_enemy) * 150.0 * delta
-								else:
+							else:
 									b.set("hp", new_hp)
 									if new_hp <= 0:
 										b.set("alive", false)
@@ -9832,10 +9832,10 @@ class EscortMode extends GameMode:
 
 									var b_vx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vx", 0.0)
 									var b_vy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vy", 0.0)
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										b["vx"] = b_vx + nvx
 										b["vy"] = b_vy + nvy
-									else:
+								else:
 										b.set("vx", b_vx + nvx)
 										b.set("vy", b_vy + nvy)
 
@@ -12062,7 +12062,7 @@ class WeatherChaosMode extends GameMode:
 								var dy = b.y - m["y"]
 								if sqrt(dx*dx + dy*dy) <= m["radius"]:
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
-									else: b.hp -= 200.0
+								else: b.hp -= 200.0
 					else:
 						still_active.append(m)
 				self.set_meta("active_meteors", still_active)
@@ -12083,7 +12083,7 @@ class WeatherChaosMode extends GameMode:
 									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
 									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
-									else: b.hp -= 10.0 * delta
+								else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
 
 				if world != null and "arena" in world and world.arena != null:
@@ -12316,7 +12316,7 @@ class WeatherChaosMode extends GameMode:
 										if "y" in h: hy = h.y
 										if "radius" in h: hrad = h.radius
 									var bx = 0.0; var by = 0.0
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										if b.has("x"): bx = b["x"]
 										if b.has("y"): by = b["y"]
 									elif typeof(b) == TYPE_OBJECT:
@@ -12413,14 +12413,14 @@ class WeatherChaosMode extends GameMode:
 											if typeof(b) == TYPE_OBJECT:
 												b.x += (odx/odist) * force_mag * delta
 												b.y += (ody/odist) * force_mag * delta
-											else:
+										else:
 												b["x"] += (odx/odist) * force_mag * delta
 												b["y"] += (ody/odist) * force_mag * delta
-										else:
+									else:
 											if typeof(b) == TYPE_OBJECT:
 												b.x -= (odx/odist) * force_mag * delta
 												b.y -= (ody/odist) * force_mag * delta
-											else:
+										else:
 												b["x"] -= (odx/odist) * force_mag * delta
 												b["y"] -= (ody/odist) * force_mag * delta
 
@@ -12452,14 +12452,14 @@ class WeatherChaosMode extends GameMode:
 										if typeof(b) == TYPE_OBJECT:
 											b.x += (dx/dist) * force_mag * delta
 											b.y += (dy/dist) * force_mag * delta
-										else:
+									else:
 											b["x"] += (dx/dist) * force_mag * delta
 											b["y"] += (dy/dist) * force_mag * delta
-									else:
+								else:
 										if typeof(b) == TYPE_OBJECT:
 											b.x -= (dx/dist) * force_mag * delta
 											b.y -= (dy/dist) * force_mag * delta
-										else:
+									else:
 											b["x"] -= (dx/dist) * force_mag * delta
 											b["y"] -= (dy/dist) * force_mag * delta
 				elif weather == "heatwave" and not is_imm:
@@ -17806,7 +17806,7 @@ class CloneTrailMode extends GameMode:
 								if dist_sq <= 10000.0: # 100^2
 									if typeof(e) == TYPE_DICTIONARY:
 										e["hp"] -= 30.0
-									else:
+								else:
 										e.hp -= 30.0
 				else:
 					var lifespan = b.get("trail_lifespan") if typeof(b) == TYPE_DICTIONARY else b.get("trail_lifespan", 10.0)
@@ -19973,8 +19973,8 @@ class WindstormMode extends GameMode:
 
 						for b in balls:
 							if b.alive and b.ball_type != "spectator":
-								var bx = b.get("x") if b.get("x") != null else 0.0
-								var by = b.get("y") if b.get("y") != null else 0.0
+							var bx = b.get("x") if b.get("x") != null else 0.0
+							var by = b.get("y") if b.get("y") != null else 0.0
 								var dx = hx - bx
 								var dy = hy - by
 								var dist = sqrt(dx*dx + dy*dy)
@@ -19982,14 +19982,14 @@ class WindstormMode extends GameMode:
 									var md = max(0.1, dist)
 									var nx = dx / md
 									var ny = dy / md
-									var pull_strength = (hr * 2.0 / max(10.0, dist)) * 200.0 * delta
+								var pull_strength = (hr * 2.0 / max(10.0, dist)) * 200.0 * delta
 
 									if "x" in b and "y" in b:
 										b.x += nx * pull_strength
 										b.y += ny * pull_strength
 
 									if dist < hr:
-										if "vx" in b and "vy" in b:
+									if "vx" in b and "vy" in b:
 											b.vx = randf_range(-300.0, 300.0)
 											b.vy = randf_range(-300.0, 300.0)
 
@@ -20756,7 +20756,7 @@ class BodyguardBountyMode extends GameMode:
 									target.set_meta("high_threat", true)
 									target.set_meta("bodyguard_original_max_hp", t_max_hp)
 									target.set_meta("bodyguard_original_base_damage", t_base_damage)
-								else:
+							else:
 									target["is_bodyguard_bounty"] = true
 									target["high_threat"] = true
 									target["bodyguard_original_max_hp"] = t_max_hp
@@ -20912,8 +20912,8 @@ class DynamicBountyMode extends GameMode:
 					if b.alive:
 						var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
 						if b_id == new_bounty_id:
-							var bx = b.get("x") if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
-							var by = b.get("y") if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+						var bx = b.get("x") if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+						var by = b.get("y") if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
 							world.add_event("visual_effect", {
 								"type": "bounty_mark",
 								"x": float(bx),
@@ -22045,7 +22045,7 @@ class DayNightMode extends GameMode:
 									hx = hazard.get("x", 0.0)
 									hy = hazard.get("y", 0.0)
 									hr = hazard.get("radius", 10.0)
-								else:
+							else:
 									hk = hazard.get("kind", "")
 									hx = hazard.get("x", 0.0)
 									hy = hazard.get("y", 0.0)
@@ -22058,7 +22058,7 @@ class DayNightMode extends GameMode:
 
 							if not behind_cover:
 								var inv = []
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									inv = b.get("inventory", [])
 								elif "inventory" in b:
 									inv = b.inventory
@@ -22078,9 +22078,9 @@ class DayNightMode extends GameMode:
 								elif not has_daylight_buff or is_supercharged:
 									var actual_damage = beam_damage
 									var is_supercharged_local = false
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										is_supercharged_local = b.get("supercharge_timer", 0.0) > 0.0
-									else:
+								else:
 										var s_timer_local = b.get("supercharge_timer") if "supercharge_timer" in b else (b.get_meta("supercharge_timer") if b.has_method("has_meta") and b.has_meta("supercharge_timer") else 0.0)
 										is_supercharged_local = s_timer_local > 0.0
 									if is_supercharged_local:
@@ -22088,13 +22088,13 @@ class DayNightMode extends GameMode:
 
 									if b.has_method("take_damage"):
 										b.take_damage(actual_damage)
-									else:
-										if typeof(b) == TYPE_DICTIONARY:
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
 											var hp = b.get("hp", 100.0)
 											b["hp"] = hp - actual_damage
 											if b.get("hp", 100.0) <= 0:
 												b["alive"] = false
-										else:
+									else:
 											var hp = (b.get("hp") if "hp" in b else 100.0)
 											b.set("hp", hp - actual_damage)
 											if (b.get("hp") if "hp" in b else 100.0) <= 0:
@@ -22265,9 +22265,9 @@ class DayNightMode extends GameMode:
 
 							if world != null and world.has_method("add_event"):
 								var bid = 0
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									bid = b.get("id", 0)
-								else:
+							else:
 									bid = b.get("id", 0) if "id" in b else 0
 								world.add_event("visual_effect", {"type": "solar_flare_supercharge", "ball_id": bid})
 
@@ -22702,7 +22702,7 @@ class MagneticCollisionsMode extends GameMode:
 								var dy = b.y - m["y"]
 								if sqrt(dx*dx + dy*dy) <= m["radius"]:
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
-									else: b.hp -= 200.0
+								else: b.hp -= 200.0
 					else:
 						still_active.append(m)
 				self.set_meta("active_meteors", still_active)
@@ -22723,7 +22723,7 @@ class MagneticCollisionsMode extends GameMode:
 									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
 									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
-									else: b.hp -= 10.0 * delta
+								else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
 
 				if world != null and "arena" in world and world.arena != null:
@@ -22888,7 +22888,7 @@ class MagneticCollisionsMode extends GameMode:
 								if is_dict:
 									b["x"] = bx + (dx / dist) * force
 									b["y"] = by + (dy / dist) * force
-								else:
+							else:
 									b.x += (dx / dist) * force
 									b.y += (dy / dist) * force
 							else:
@@ -22896,7 +22896,7 @@ class MagneticCollisionsMode extends GameMode:
 								if is_dict:
 									b["x"] = bx - (dx / dist) * force
 									b["y"] = by - (dy / dist) * force
-								else:
+							else:
 									b.x -= (dx / dist) * force
 									b.y -= (dy / dist) * force
 
@@ -23379,7 +23379,7 @@ class PinballMode extends GameMode:
 								var dy = b.y - m["y"]
 								if sqrt(dx*dx + dy*dy) <= m["radius"]:
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
-									else: b.hp -= 200.0
+								else: b.hp -= 200.0
 					else:
 						still_active.append(m)
 				self.set_meta("active_meteors", still_active)
@@ -23400,7 +23400,7 @@ class PinballMode extends GameMode:
 									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
 									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
-									else: b.hp -= 10.0 * delta
+								else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
 
 				if world != null and "arena" in world and world.arena != null:
@@ -23841,12 +23841,12 @@ class InvisibleWallsMode extends GameMode:
 									h.set_meta("visible", true)
 									h.set_meta("reveal_timer", 2.0)
 
-									if dist > 0:
+								if dist > 0:
 										var nx = dx / dist
 										var ny = dy / dist
 										b.x = h.x + nx * (h.radius + b_rad)
 										b.y = h.y + ny * (h.radius + b_rad)
-										if "vx" in b and "vy" in b:
+									if "vx" in b and "vy" in b:
 											var dot = b.vx * nx + b.vy * ny
 											if dot < 0:
 												b.vx -= 2 * dot * nx
@@ -24851,7 +24851,7 @@ class UnstablePortalsEventMode extends GameMode:
 						else:
 							if b_id != -1:
 								p["sucked_balls"].append(b_id)
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									pass
 								elif "visible" in b:
 									b.visible = false
@@ -24902,18 +24902,18 @@ class UnstablePortalsEventMode extends GameMode:
 										exit_p["sucked_balls"].append(b_id)
 										if typeof(b) != TYPE_DICTIONARY and "visible" in b:
 											b.visible = false
-								else:
+							else:
 									bx = p["x"] + cos(angle) * 30.0
 									by = p["y"] + sin(angle) * 30.0
 
 								bx = max(0.0, min(arena_w, bx))
 								by = max(0.0, min(arena_h, by))
 
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["x"] = bx
 									b["y"] = by
 									if b.has("hp"): b["hp"] -= 20.0
-								else:
+							else:
 									b.x = bx
 									b.y = by
 									if b.has_method("take_damage"): b.take_damage(20.0)
@@ -24972,10 +24972,10 @@ class UnstablePortalsEventMode extends GameMode:
 								var new_x = max(0.0, min(arena_w, bx + nx * knockback * delta))
 								var new_y = max(0.0, min(arena_h, by + ny * knockback * delta))
 
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["x"] = new_x
 									b["y"] = new_y
-								else:
+							else:
 									b.x = new_x
 									b.y = new_y
 				else:
@@ -26119,22 +26119,22 @@ class HazardBilliardsMode extends GameMode:
 							var bdist = sqrt(bdx * bdx + bdy * bdy)
 
 							if bdist < h1r + h2r + 100.0:
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["reflect_shield_active"] = false
-								else:
+							else:
 									if b.has_method("set_meta"): b.set_meta("reflect_shield_active", false)
 									if "reflect_shield_active" in b: b.reflect_shield_active = false
 
 								var damage = (impact_speed / 100.0) * 20.0
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									if b.has("hp"): b["hp"] -= damage
-								else:
+							else:
 									if b.has_method("take_damage"): b.take_damage(damage)
 									elif "hp" in b: b.hp -= damage
 
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["reflect_shield_active"] = true
-								else:
+							else:
 									if b.has_method("set_meta"): b.set_meta("reflect_shield_active", true)
 									if "reflect_shield_active" in b: b.reflect_shield_active = true
 
@@ -28000,7 +28000,7 @@ class BlackMarketMode extends GameMode:
 										o_x = float(other.get("x", 0.0))
 										o_y = float(other.get("y", 0.0))
 										o_rad = float(other.get("radius", 10.0))
-									else:
+								else:
 										o_alive = other.get("alive")
 										o_spec = (other.get("ball_type") == "spectator")
 										o_x = float(other.get("x"))
@@ -28017,7 +28017,7 @@ class BlackMarketMode extends GameMode:
 											if typeof(other) == TYPE_DICTIONARY:
 												other["hp"] = o_new_hp
 												if o_new_hp <= 0: other["alive"] = false
-											else:
+										else:
 												other.set("hp", o_new_hp)
 												if o_new_hp <= 0: other.set("alive", false)
 
@@ -28388,7 +28388,7 @@ class MeteorShowerMode extends GameMode:
 								if typeof(b) != TYPE_DICTIONARY:
 									b.vx = (b.get("vx") if b.get("vx") != null else 0.0) + (dx / dist) * push_force
 									b.vy = (b.get("vy") if b.get("vy") != null else 0.0) + (dy / dist) * push_force
-								else:
+							else:
 									b["vx"] = b.get("vx", 0.0) + (dx / dist) * push_force
 									b["vy"] = b.get("vy", 0.0) + (dy / dist) * push_force
 			else:
@@ -28423,21 +28423,21 @@ class MeteorShowerMode extends GameMode:
 								b.speed = base_speed * 0.2
 							elif c["kind"] == "ice_patch":
 								b.speed = base_speed * 1.5
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["friction_multiplier"] = 0.2
-								else:
+							else:
 									b.set_meta("friction_multiplier", 0.2)
 							elif c["kind"] == "lava_pit":
 								b.speed = base_speed * 0.5
 								if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(20.0 * delta)
-								else: b.hp -= 20.0 * delta
+							else: b.hp -= 20.0 * delta
 							else:
 								b.speed = base_speed * 0.5
 								if typeof(b) == TYPE_OBJECT and "slow_timer" in b: b.slow_timer = max(b.slow_timer if b.slow_timer != null else 0.0, 2.0)
 								elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
 								elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 								if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
-								else: b.hp -= 10.0 * delta
+							else: b.hp -= 10.0 * delta
 
 		craters = still_craters
 
@@ -28754,7 +28754,7 @@ class SoulLinkMode extends GameMode:
 								target.alive = false
 								if "killer" in b:
 									target.killer = b.killer
-								else:
+							else:
 									target.killer = "soul_link"
 						else:
 							target["hp"] = target_curr_hp - damage
@@ -28763,7 +28763,7 @@ class SoulLinkMode extends GameMode:
 								target["alive"] = false
 								if "killer" in b:
 									target["killer"] = b["killer"]
-								else:
+							else:
 									target["killer"] = "soul_link"
 
 				if eff_diffs.has(b_id):
@@ -29821,10 +29821,10 @@ class LunarEclipseEventMode extends GameMode:
 								var dist = sqrt(pow(b_x - h.x, 2) + pow(b_y - h.y, 2))
 
 								if dist < h.radius + b_r:
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										b["team"] = "Shadow"
 										if b.has("hp"): b["hp"] = b.get("max_hp", 100.0)
-									else:
+								else:
 										if "team" in b: b.team = "Shadow"
 										if "hp" in b: b.hp = b.get("max_hp", 100.0)
 
@@ -30978,7 +30978,7 @@ class SweepingPaddlesMode extends GameMode:
 								var dy = b.y - m["y"]
 								if sqrt(dx*dx + dy*dy) <= m["radius"]:
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(200.0)
-									else: b.hp -= 200.0
+								else: b.hp -= 200.0
 					else:
 						still_active.append(m)
 				self.set_meta("active_meteors", still_active)
@@ -30999,7 +30999,7 @@ class SweepingPaddlesMode extends GameMode:
 									elif typeof(b) == TYPE_DICTIONARY and b.has("slow_timer"): b["slow_timer"] = max(b["slow_timer"] if b["slow_timer"] != null else 0.0, 2.0)
 									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 2.0))
 									if typeof(b) != TYPE_DICTIONARY and b.has_method("take_damage"): b.take_damage(10.0 * delta)
-									else: b.hp -= 10.0 * delta
+								else: b.hp -= 10.0 * delta
 				self.set_meta("craters", still_craters)
 
 				if world != null and "arena" in world and world.arena != null:
@@ -31147,7 +31147,7 @@ class SweepingLasersMode extends GameMode:
 								var dmg = laser_damage_per_second * delta
 								if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 									b.take_damage(dmg)
-								else:
+							else:
 									if "hp" in b:
 										b.hp -= dmg
 									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_meta("hp"):
@@ -31894,7 +31894,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "gravity_vortex"]
 	var flood_level: float = 0.0
 
 	func _init():
@@ -31992,6 +31992,7 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
 			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
 			elif current_weather == "celestial_alignment": booster_kind = "starlight_booster"
+				elif current_weather == "gravity_vortex": booster_kind = "heavy_anchor_booster"
 
 			if current_weather == "acid_rain" and world != null and "boosters" in world:
 				var arena_w = 1000
@@ -32230,6 +32231,29 @@ class ExtremeWeatherMode extends GameMode:
 						b.perception_radius = 50.0
 			elif current_weather == "celestial_alignment":
 				pass
+			elif current_weather == "gravity_vortex":
+				var is_anchored = (b.has_meta("heavy_anchor_booster_timer") and b.get_meta("heavy_anchor_booster_timer") > 0.0) or (b.has_meta("mega_heavy_anchor_booster_timer") and b.get_meta("mega_heavy_anchor_booster_timer") > 0.0)
+				if not is_immune and not is_anchored:
+					var cx = 500.0
+					var cy = 500.0
+					if world != null and "arena" in world and world.arena != null:
+						cx = (world.arena.width if "width" in world.arena else 1000) / 2.0
+						cy = (world.arena.height if "height" in world.arena else 1000) / 2.0
+					var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+					var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+					var dx = cx - bx
+					var dy = cy - by
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist > 0:
+						var pull_strength = 200.0
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("vx") and b.has("vy"):
+								b["vx"] += (dx / dist) * pull_strength * delta
+								b["vy"] += (dy / dist) * pull_strength * delta
+						else:
+							if "vx" in b and "vy" in b:
+								b.vx += (dx / dist) * pull_strength * delta
+								b.vy += (dy / dist) * pull_strength * delta
 
 		if current_weather == "tsunami":
 			var spawned = false
@@ -32425,14 +32449,14 @@ class ExtremeWeatherMode extends GameMode:
 							var dx = tx - hx
 							var dy = ty - hy
 							var dist = sqrt(dx*dx + dy*dy)
-							if dist > 0:
+						if dist > 0:
 								var move_dist = 200.0 * delta
 								hx += (dx/dist) * move_dist
 								hy += (dy/dist) * move_dist
 								if typeof(h) == TYPE_DICTIONARY:
 									h["x"] = hx
 									h["y"] = hy
-								else:
+							else:
 									if "x" in h: h.x = hx
 									if "y" in h: h.y = hy
 
@@ -33181,13 +33205,13 @@ class ReverseTugOfWarMode extends GameMode:
 							if typeof(b) == TYPE_DICTIONARY:
 								if hp >= max_hp:
 									b["shield"] = b.get("shield", 0.0) + 15.0 * delta
-								else:
+							else:
 									b["hp"] = min(max_hp, hp + 15.0 * delta)
 							else:
 								if hp >= max_hp:
 									var curr_shield = b.get("shield") if b.get("shield") != null else 0.0
 									b.shield = curr_shield + 15.0 * delta
-								else:
+							else:
 									b.hp = min(max_hp, hp + 15.0 * delta)
 
 				var move_speed = 50.0
@@ -33808,12 +33832,12 @@ class TickingPayloadMode extends GameMode:
 							var p_y = payload.get("y", 0)
 							var dx = b_x - p_x
 							var dy = b_y - p_y
-							var dist = sqrt(dx * dx + dy * dy)
+						var dist = sqrt(dx * dx + dy * dy)
 							if dist <= explosion_radius:
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["hp"] = 0
 									b["alive"] = false
-								else:
+							else:
 									b.set("hp", 0)
 									b.set("alive", false)
 								if typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
@@ -35150,8 +35174,8 @@ class CenterBlackHoleMode extends GameMode:
 						if b.has_method("get"):
 							var r = b.get("radius")
 							if r != null: radius = r
-							var bx = b.get("x")
-							var by = b.get("y")
+						var bx = b.get("x")
+						var by = b.get("y")
 							if bx != null and bx > new_w - radius: b.set("x", new_w - radius)
 							if by != null and by > new_h - radius: b.set("y", new_h - radius)
 
@@ -36717,7 +36741,7 @@ class SpreadingEntanglementMutatorMode extends GameMode:
 								if target_curr_hp > 0:
 									if typeof(target) == TYPE_OBJECT and target.has_method("take_damage"):
 										target.take_damage(damage)
-									else:
+								else:
 										target.hp = target_curr_hp - damage
 										if target.hp <= 0:
 											target.hp = 0
@@ -36755,7 +36779,7 @@ class SpreadingEntanglementMutatorMode extends GameMode:
 								if target_curr_hp > 0 and target_curr_hp < target_max_hp:
 									if typeof(target) == TYPE_OBJECT and target.has_method("heal"):
 										target.heal(healing)
-									else:
+								else:
 										target.hp = min(target_curr_hp + healing, target_max_hp)
 
 									target_state.hp += healing
@@ -37522,7 +37546,7 @@ class LavaRoyaleMode extends GameMode:
 							if not "killer" in b or b.killer == null or b.killer == "":
 								if b.has_method("set_meta"):
 									b.set_meta("killer", "lava_zone")
-								else:
+							else:
 									b.killer = "lava_zone"
 
 					if "burn_timer" in b:
@@ -38156,7 +38180,7 @@ class ElementalAurasMode extends GameMode:
 									auras = b.elemental_auras
 								elif typeof(b) != TYPE_DICTIONARY and "elemental_auras" in b:
 									auras = b.elemental_auras
-								else:
+							else:
 									auras = {"fire": 0, "water": 0, "earth": 0, "lightning": 0}
 
 								var has_other = false
@@ -38284,7 +38308,7 @@ class ElementalAurasMode extends GameMode:
 
 									if typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
 										world.add_event("hybrid_crafted", {"id": bid, "elements": combo, "x": hx, "y": hy})
-								else:
+							else:
 									if not auras.has(element): auras[element] = 0
 									auras[element] += 1
 
@@ -40264,16 +40288,16 @@ class TickingBombMode extends GameMode:
 
 							for b in balls:
 								var b_alive = false
-								if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
-								else: b_alive = b.get("alive") if "alive" in b else false
+							if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+							else: b_alive = b.get("alive") if "alive" in b else false
 
 								if b_alive:
 									var bx = 0.0
 									var by = 0.0
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										bx = b.get("x", 0.0)
 										by = b.get("y", 0.0)
-									else:
+								else:
 										if "x" in b: bx = b.x
 										elif b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
 										if "y" in b: by = b.y
@@ -40285,7 +40309,7 @@ class TickingBombMode extends GameMode:
 									if dist <= explosion_radius:
 										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 											b.take_damage(explosion_damage)
-										else:
+									else:
 											var hp = 100.0
 											if typeof(b) == TYPE_DICTIONARY and b.has("hp"): hp = b.hp
 											elif typeof(b) == TYPE_OBJECT and "hp" in b: hp = b.hp
@@ -40294,7 +40318,7 @@ class TickingBombMode extends GameMode:
 											hp -= explosion_damage
 											if hp <= 0:
 												hp = 0
-												if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+											if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
 												elif typeof(b) == TYPE_OBJECT:
 													if "alive" in b: b.alive = false
 													elif b.has_method("set_meta"): b.set_meta("alive", false)
@@ -40313,7 +40337,7 @@ class TickingBombMode extends GameMode:
 													elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
 													if not world.dead_balls.has(b_id): world.dead_balls.append(b_id)
 
-											if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
+										if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
 											elif typeof(b) == TYPE_OBJECT:
 												if "hp" in b: b.hp = hp
 												elif b.has_method("set_meta"): b.set_meta("hp", hp)
@@ -40403,16 +40427,16 @@ class TickingBombMode extends GameMode:
 
 							for b in balls:
 								var b_alive = false
-								if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
-								else: b_alive = b.get("alive") if "alive" in b else false
+							if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+							else: b_alive = b.get("alive") if "alive" in b else false
 
 								if b_alive:
 									var bx = 0.0
 									var by = 0.0
-									if typeof(b) == TYPE_DICTIONARY:
+								if typeof(b) == TYPE_DICTIONARY:
 										bx = b.get("x", 0.0)
 										by = b.get("y", 0.0)
-									else:
+								else:
 										if "x" in b: bx = b.x
 										elif b.has_method("has_meta") and b.has_meta("x"): bx = b.get_meta("x")
 										if "y" in b: by = b.y
@@ -40424,7 +40448,7 @@ class TickingBombMode extends GameMode:
 									if dist <= explosion_radius:
 										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 											b.take_damage(explosion_damage)
-										else:
+									else:
 											var hp = 100.0
 											if typeof(b) == TYPE_DICTIONARY and b.has("hp"): hp = b.hp
 											elif typeof(b) == TYPE_OBJECT and "hp" in b: hp = b.hp
@@ -40433,7 +40457,7 @@ class TickingBombMode extends GameMode:
 											hp -= explosion_damage
 											if hp <= 0:
 												hp = 0
-												if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+											if typeof(b) == TYPE_DICTIONARY: b["alive"] = false
 												elif typeof(b) == TYPE_OBJECT:
 													if "alive" in b: b.alive = false
 													elif b.has_method("set_meta"): b.set_meta("alive", false)
@@ -40452,7 +40476,7 @@ class TickingBombMode extends GameMode:
 													elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
 													if not world.dead_balls.has(b_id): world.dead_balls.append(b_id)
 
-											if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
+										if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp
 											elif typeof(b) == TYPE_OBJECT:
 												if "hp" in b: b.hp = hp
 												elif b.has_method("set_meta"): b.set_meta("hp", hp)
@@ -42883,9 +42907,9 @@ class SpectatorHologramsMode extends GameMode:
 								world.add_event("hologram_blocked_projectile", {"x": hx, "y": hy})
 						else:
 							if b_type != "spectator":
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["speed_buff_timer"] = b.get("speed_buff_timer", 0.0) + 3.0
-								else:
+							else:
 									if "speed_buff_timer" in b:
 										b.speed_buff_timer += 3.0
 									elif b.has_method("set_meta"):
@@ -42898,7 +42922,7 @@ class SpectatorHologramsMode extends GameMode:
 
 								if typeof(h) == TYPE_DICTIONARY:
 									h["active"] = false
-								else:
+							else:
 									if "active" in h:
 										h.active = false
 
@@ -43583,18 +43607,18 @@ class SlimeBossMode extends GameMode:
 									var slow_t = 3.0
 									if "slow_timer" in b:
 										if b.slow_timer < 3.0: slow_t = 3.0
-										else: slow_t = b.slow_timer
+									else: slow_t = b.slow_timer
 										b.slow_timer = slow_t
 									elif b.has_method("set_meta"):
 										if b.has_meta("slow_timer"):
 											if b.get_meta("slow_timer") < 3.0: slow_t = 3.0
-											else: slow_t = b.get_meta("slow_timer")
+										else: slow_t = b.get_meta("slow_timer")
 										b.set_meta("slow_timer", slow_t)
 								elif typeof(b) == TYPE_DICTIONARY:
 									if b.has("hp"): b["hp"] -= h_dmg
 									if b.has("slow_timer"):
 										if b["slow_timer"] < 3.0: b["slow_timer"] = 3.0
-									else:
+								else:
 										b["slow_timer"] = 3.0
 								hit = true
 								break
@@ -43668,7 +43692,7 @@ class SlimeBossMode extends GameMode:
 									if b.has("hp"): b["hp"] -= h_dmg
 									if b.has("slow_timer"):
 										if b["slow_timer"] < 3.0: b["slow_timer"] = 3.0
-									else:
+								else:
 										b["slow_timer"] = 3.0
 								hit = true
 								break
@@ -43735,7 +43759,7 @@ class SlimeBossMode extends GameMode:
 							elif typeof(b) == TYPE_DICTIONARY:
 								if b.has("slow_timer"):
 									if b["slow_timer"] < 1.0: b["slow_timer"] = 1.0
-								else:
+							else:
 									b["slow_timer"] = 1.0
 
 		for p in projectiles_to_remove:
@@ -43944,8 +43968,8 @@ class SlimeBossMode extends GameMode:
 						if closest_enemy != null:
 							var cx = closest_enemy.x if typeof(closest_enemy) == TYPE_OBJECT else closest_enemy["x"]
 							var cy = closest_enemy.y if typeof(closest_enemy) == TYPE_OBJECT else closest_enemy["y"]
-							var dx = cx - bx
-							var dy = cy - by
+						var dx = cx - bx
+						var dy = cy - by
 							var mag = sqrt(dx*dx + dy*dy)
 							if mag > 0:
 								var vx = (dx / mag) * 300.0
@@ -43960,12 +43984,12 @@ class SlimeBossMode extends GameMode:
 										proj.set_meta("vx", vx)
 										proj.set_meta("vy", vy)
 										proj.set_meta("duration", 2.0)
-									else:
+								else:
 										proj["vx"] = vx
 										proj["vy"] = vy
 										proj["duration"] = 2.0
 									arena.hazards.append(proj)
-								else:
+							else:
 									var proj = {
 										"id": arena.hazards.size() + 9000,
 										"x": bx,
@@ -46010,7 +46034,7 @@ class AuraPulseEventMode extends GameMode:
 											target.set_meta(key, new_scale)
 										elif key in target:
 											target.set(key, new_scale)
-								else:
+							else:
 									var cur_val = 0.0
 									if typeof(target) == TYPE_DICTIONARY:
 										if target.has(key):
@@ -47867,7 +47891,7 @@ class TagTeamMode extends GameMode:
 									other.set("y", m_y + 20.0)
 									other.set("vx", 0.0)
 									other.set("vy", 0.0)
-								else:
+							else:
 									other["ball_type"] = other.get("tag_original_ball_type", "player")
 									other["team"] = other.get("tag_original_team", "players")
 									other["x"] = m_x + 20.0
@@ -47918,7 +47942,7 @@ class TagTeamMode extends GameMode:
 									downed.set("team", "spectator")
 									downed.set("x", -1000.0)
 									downed.set("y", -1000.0)
-								else:
+							else:
 									downed.set_meta("revive_progress", rp)
 							else:
 								var rp = downed.get("revive_progress", 0.0)
@@ -47932,7 +47956,7 @@ class TagTeamMode extends GameMode:
 									downed["team"] = "spectator"
 									downed["x"] = -1000.0
 									downed["y"] = -1000.0
-								else:
+							else:
 									downed["revive_progress"] = rp
 						else:
 							if typeof(downed) == TYPE_OBJECT:
@@ -48483,11 +48507,11 @@ class RubberBandMode extends GameMode:
 									var damage_val = damage * delta * 60.0
 									if world and world.has_method("_deal_damage"):
 										world._deal_damage(b1, other, damage_val)
-									else:
+								else:
 										if typeof(other) == TYPE_OBJECT:
 											var hp = other.get("hp") if "hp" in other else 100.0
 											other.set("hp", hp - damage_val)
-										else:
+									else:
 											var hp = other["hp"] if other.has("hp") else 100.0
 											other["hp"] = hp - damage_val
 class RiftRouletteMode extends GameMode:
@@ -53772,7 +53796,7 @@ class ChainReactionMode extends GameMode:
 							else:
 								if b.has_method("take_damage"):
 									b.take_damage(explosion["damage"], null)
-								else:
+							else:
 									b.hp -= explosion["damage"]
 									if b.hp <= 0.0:
 										b.alive = false
@@ -53958,7 +53982,7 @@ class KillstreakExplosionMode extends GameMode:
 							else:
 								if b.has_method("take_damage"):
 									b.take_damage(explosion["damage"], null)
-								else:
+							else:
 									b.hp -= explosion["damage"]
 									if b.hp <= 0.0:
 										b.alive = false
@@ -54434,14 +54458,14 @@ class TornadoSwarmEventMode extends GameMode:
 									if typeof(h) == TYPE_DICTIONARY:
 										h["kind"] = "mini_firenado"
 										h["damage"] = 30.0
-									else:
+								else:
 										h.kind = "mini_firenado"
 										if "damage" in h: h.damage = 30.0
 								elif other_kind in ["poison_cloud", "poison_nova"]:
 									if typeof(h) == TYPE_DICTIONARY:
 										h["kind"] = "mini_poison_tornado"
 										h["damage"] = 25.0
-									else:
+								else:
 										h.kind = "mini_poison_tornado"
 										if "damage" in h: h.damage = 25.0
 								break
@@ -54548,7 +54572,7 @@ class DynamicDangerZonesMode extends GameMode:
 										var damage = 50.0 * delta
 										if b.has_method("take_damage"):
 											b.take_damage(damage)
-										else:
+									else:
 											b.hp -= damage
 											if b.hp <= 0:
 												b.alive = false
@@ -55332,9 +55356,9 @@ class SpectatorHologramsMode extends GameMode:
 								world.add_event("hologram_blocked_projectile", {"x": hx, "y": hy})
 						else:
 							if b_type != "spectator":
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									b["speed_buff_timer"] = b.get("speed_buff_timer", 0.0) + 3.0
-								else:
+							else:
 									if "speed_buff_timer" in b:
 										b.speed_buff_timer += 3.0
 									elif b.has_method("set_meta"):
@@ -55347,7 +55371,7 @@ class SpectatorHologramsMode extends GameMode:
 
 								if typeof(h) == TYPE_DICTIONARY:
 									h["active"] = false
-								else:
+							else:
 									if "active" in h:
 										h.active = false
 
@@ -55594,7 +55618,7 @@ class ZeroGravityMeteorShowerMode extends GameMode:
 									if h.has_method("set_meta"):
 										h.set_meta("vx", vx)
 										h.set_meta("vy", vy)
-									else:
+								else:
 										h.vx = vx
 										h.vy = vy
 
@@ -56699,7 +56723,7 @@ class VolcanicEruptionEventMode extends GameMode:
 							var dist: float = sqrt(dx * dx + dy * dy)
 							var speed: float = 800.0
 
-							if dist > 0:
+						if dist > 0:
 								projectile.set_meta("vx", (dx / dist) * speed)
 								projectile.set_meta("vy", (dy / dist) * speed)
 								projectile.set_meta("duration", dist / speed)
@@ -58272,9 +58296,9 @@ class TornadoHazardMode extends GameMode:
 								var nx = dx / dist
 								var ny = dy / dist
 
-								var pull_strength = (1.0 - (dist / pull_radius)) * 300.0 * delta
+							var pull_strength = (1.0 - (dist / pull_radius)) * 300.0 * delta
 
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									if b.has("x"): b["x"] = b["x"] + nx * pull_strength
 									if b.has("y"): b["y"] = b["y"] + ny * pull_strength
 								elif typeof(b) == TYPE_OBJECT:
@@ -58417,7 +58441,7 @@ class AuraBombEventMode extends GameMode:
 								var ohp = 0.0
 								if typeof(other) == TYPE_DICTIONARY:
 									ohp = other.get("hp", 100.0)
-								else:
+							else:
 									ohp = other.get("hp") if "hp" in other else 100.0
 									if ohp == null: ohp = 100.0
 
@@ -58427,10 +58451,10 @@ class AuraBombEventMode extends GameMode:
 									if new_hp <= 0:
 										other["hp"] = 0
 										other["alive"] = false
-								else:
+							else:
 									if other.has_method("take_damage"):
 										other.take_damage(total_dmg)
-									else:
+								else:
 										other.set("hp", new_hp)
 										if new_hp <= 0:
 											other.set("hp", 0)
@@ -58649,7 +58673,7 @@ class HugeTornadosMode extends GameMode:
 
 							if dist < h_r * 0.5:
 								var damage = h_dmg * delta
-								if typeof(b) == TYPE_DICTIONARY:
+							if typeof(b) == TYPE_DICTIONARY:
 									if b.has("hp"):
 										b.hp -= damage
 										if b.hp <= 0:
