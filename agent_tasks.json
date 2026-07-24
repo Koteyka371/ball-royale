@@ -24988,7 +24988,7 @@
     },
     {
       "id": "idea-1459",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Stronghold Upgrade",
@@ -36405,6 +36405,40 @@
         "src/ai/decoy_flare_item.py",
         "src/ai/decoy_flare_item.gd",
         "tests/test_decoy_flare_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2130",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Currency Item: Overcharged Coin",
+      "description": "Introduces a rare currency pickup called 'Overcharged Coin' that drops from elite enemies. Collecting it grants 5 regular currency points instantly but applies a short temporary speed debuff due to its immense weight.",
+      "allowed_paths": [
+        "src/ai/new_currency_item_overcharged_coin.py",
+        "src/ai/new_currency_item_overcharged_coin.gd",
+        "tests/test_new_currency_item_overcharged_coin.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2131",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Market Loyalty Card",
+      "description": "Players can purchase a 'Loyalty Card' from the Black Market using a high amount of currency. Once acquired, all future upgrades from any Black Market node will cost 1 less currency, incentivizing early hoarding and late-game spending sprees.",
+      "allowed_paths": [
+        "src/ai/black_market_loyalty_card.py",
+        "src/ai/black_market_loyalty_card.gd",
+        "tests/test_black_market_loyalty_card.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
