@@ -29440,7 +29440,47 @@ class BlackHoleWeatherMode(GameMode):
                     if hasattr(b, 'vy'):
                         b.vy += pull_y * 5
 
+class PeriodicGravityFlipMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Periodic Gravity Flip"
+        self.description = "Periodically flips the gravity of the arena, sending heavy objects flying and altering player momentum."
+        self.flip_timer = 0.0
+        self.flip_interval = 5.0
+        self.gravity_direction = 1.0
+        self.gravity_strength = 200.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+        self.flip_timer += delta
+        if self.flip_timer >= self.flip_interval:
+            self.flip_timer = 0.0
+            self.gravity_direction *= -1.0
+            dir_str = "Up" if self.gravity_direction < 0 else "Down"
+            if hasattr(world, 'add_event'):
+                world.add_event("gravity_flip", {"message": f"Gravity flipped {dir_str}!"})
+
+        # Apply global gravity force
+        for b in balls:
+            if getattr(b, "alive", False):
+                mass = getattr(b, "mass", 1.0)
+                if not hasattr(b, "vy"):
+                    b.vy = 0.0
+                b.vy += self.gravity_strength * self.gravity_direction * mass * delta
+
+        if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+            for h in world.arena.hazards:
+                mass = getattr(h, "mass", 3.0)  # Heavy objects
+                if not hasattr(h, "vy"):
+                    h.vy = 0.0
+                if not hasattr(h, "vx"):
+                    h.vx = 0.0
+                h.vy += self.gravity_strength * self.gravity_direction * mass * delta
+                if hasattr(h, "y"):
+                    h.y += h.vy * delta
+
 GAME_MODES = {
+    'periodic_gravity_flip': PeriodicGravityFlipMode(),
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
