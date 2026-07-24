@@ -1,12 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import math
-import sys
 import pytest
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 class MockArena:
     def __init__(self):
@@ -22,7 +17,6 @@ class MockWorld:
 
     def add_event(self, kind, data):
         self.events.append({"type": kind, "data": data})
-
 
 def test_global_hazard_vote():
     from system.crowd_system import CrowdSystem

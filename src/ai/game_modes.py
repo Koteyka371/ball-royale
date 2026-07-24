@@ -37605,9 +37605,10 @@ class MirrorArenaMode(GameMode):
         arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
         center_x = arena_width / 2.0
 
-        if hasattr(world, "projectiles"):
-            new_projectiles = []
-            for p in world.projectiles:
+        # Helper to mirror a list of objects
+        def mirror_objects(obj_list):
+            new_objs = []
+            for p in obj_list:
                 if not getattr(p, "has_mirrored", False) and not getattr(p, "is_mirrored_phantom", False):
                     p.has_mirrored = True
 
@@ -37617,29 +37618,45 @@ class MirrorArenaMode(GameMode):
                         phantom = copy.copy(p)
                     except TypeError:
                         # Fallback for mock objects
-                        phantom = type(p)(p.x, p.y, p.vx, p.vy)
-                        for k, v in vars(p).items():
-                            setattr(phantom, k, v)
+                        try:
+                            phantom = type(p)(p.x, p.y, p.vx, p.vy)
+                        except TypeError:
+                            try:
+                                phantom = type(p)(p.x, p.y)
+                            except TypeError:
+                                phantom = type(p)()
+                        if hasattr(p, '__dict__'):
+                            for k, v in vars(p).items():
+                                setattr(phantom, k, v)
 
                     phantom.is_mirrored_phantom = True
 
                     # Mirror position and velocity horizontally
-                    phantom.x = center_x + (center_x - p.x)
+                    if hasattr(phantom, "x"):
+                        phantom.x = center_x + (center_x - p.x)
                     if hasattr(phantom, "vx"):
                         phantom.vx = -p.vx
 
                     # Also need to make sure the target coordinates are mirrored if they exist
                     if hasattr(phantom, "target_x"):
-                        phantom.target_x = center_x + (center_x - p.target_x)
+                        phantom.target_x = center_x + (center_x - getattr(p, "target_x", center_x))
 
                     # Slightly visually distinct or same? The prompt says "spawns a 'phantom' projectile"
                     if not hasattr(phantom, "cosmetic_aura_color"):
                         phantom.cosmetic_aura_color = [1.0, 1.0, 1.0, 0.5] # White spectral
 
-                    new_projectiles.append(phantom)
+                    new_objs.append(phantom)
+            if new_objs:
+                obj_list.extend(new_objs)
 
-            if new_projectiles:
-                world.projectiles.extend(new_projectiles)
+        if hasattr(world, "projectiles"):
+            mirror_objects(world.projectiles)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            mirror_objects(world.arena.hazards)
+
+        if hasattr(world, "boosters"):
+            mirror_objects(world.boosters)
 
 GAME_MODES['mirror_arena'] = MirrorArenaMode()
 

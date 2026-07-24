@@ -46573,91 +46573,109 @@ class MirrorArenaMode extends GameMode:
 
 		var center_x = arena_width / 2.0
 
-		var projectiles = []
+		var lists_to_mirror = []
+
 		if typeof(world) == TYPE_DICTIONARY and world.has("projectiles"):
-			projectiles = world.projectiles
+			lists_to_mirror.append(world.projectiles)
 		elif typeof(world) == TYPE_OBJECT and "projectiles" in world and world.projectiles != null:
-			projectiles = world.projectiles
+			lists_to_mirror.append(world.projectiles)
 
-		var new_projectiles = []
-		for p in projectiles:
-			var has_mirrored = false
-			var is_mirrored_phantom = false
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				lists_to_mirror.append(world.arena.hazards)
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena and world.arena.hazards != null:
+				lists_to_mirror.append(world.arena.hazards)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				lists_to_mirror.append(world.arena.hazards)
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena and world.arena.hazards != null:
+				lists_to_mirror.append(world.arena.hazards)
 
-			if typeof(p) == TYPE_DICTIONARY:
-				has_mirrored = p.get("has_mirrored", false)
-				is_mirrored_phantom = p.get("is_mirrored_phantom", false)
-			elif typeof(p) == TYPE_OBJECT:
-				if p.has_method("has_meta") and p.has_meta("has_mirrored"):
-					has_mirrored = p.get_meta("has_mirrored")
-				elif "has_mirrored" in p:
-					has_mirrored = p.has_mirrored
+		if typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+			lists_to_mirror.append(world.boosters)
+		elif typeof(world) == TYPE_OBJECT and "boosters" in world and world.boosters != null:
+			lists_to_mirror.append(world.boosters)
 
-				if p.has_method("has_meta") and p.has_meta("is_mirrored_phantom"):
-					is_mirrored_phantom = p.get_meta("is_mirrored_phantom")
-				elif "is_mirrored_phantom" in p:
-					is_mirrored_phantom = p.is_mirrored_phantom
+		for obj_list in lists_to_mirror:
+			var new_objs = []
+			for p in obj_list:
+				var has_mirrored = false
+				var is_mirrored_phantom = false
 
-			if not has_mirrored and not is_mirrored_phantom:
 				if typeof(p) == TYPE_DICTIONARY:
-					p["has_mirrored"] = true
+					has_mirrored = p.get("has_mirrored", false)
+					is_mirrored_phantom = p.get("is_mirrored_phantom", false)
 				elif typeof(p) == TYPE_OBJECT:
-					if p.has_method("set_meta"):
-						p.set_meta("has_mirrored", true)
+					if p.has_method("has_meta") and p.has_meta("has_mirrored"):
+						has_mirrored = p.get_meta("has_mirrored")
 					elif "has_mirrored" in p:
-						p.has_mirrored = true
+						has_mirrored = p.has_mirrored
 
-				# Use duplicate() if available, otherwise fallback
-				var phantom = null
-				if typeof(p) == TYPE_DICTIONARY:
-					phantom = p.duplicate(true)
-				elif typeof(p) == TYPE_OBJECT and p.has_method("duplicate"):
-					phantom = p.duplicate()
+					if p.has_method("has_meta") and p.has_meta("is_mirrored_phantom"):
+						is_mirrored_phantom = p.get_meta("is_mirrored_phantom")
+					elif "is_mirrored_phantom" in p:
+						is_mirrored_phantom = p.is_mirrored_phantom
 
-				if phantom != null:
-					if typeof(phantom) == TYPE_DICTIONARY:
-						phantom["is_mirrored_phantom"] = true
-					elif typeof(phantom) == TYPE_OBJECT:
-						if phantom.has_method("set_meta"):
-							phantom.set_meta("is_mirrored_phantom", true)
-						elif "is_mirrored_phantom" in phantom:
-							phantom.is_mirrored_phantom = true
-
-					var px = 0.0
-					var pvx = 0.0
+				if not has_mirrored and not is_mirrored_phantom:
 					if typeof(p) == TYPE_DICTIONARY:
-						px = p.get("x", 0.0)
-						pvx = p.get("vx", 0.0)
+						p["has_mirrored"] = true
 					elif typeof(p) == TYPE_OBJECT:
-						px = p.x if "x" in p else 0.0
-						pvx = p.vx if "vx" in p else 0.0
+						if p.has_method("set_meta"):
+							p.set_meta("has_mirrored", true)
+						elif "has_mirrored" in p:
+							p.has_mirrored = true
 
-					var nx = center_x + (center_x - px)
-					var nvx = -pvx
+					# Use duplicate() if available, otherwise fallback
+					var phantom = null
+					if typeof(p) == TYPE_DICTIONARY:
+						phantom = p.duplicate(true)
+					elif typeof(p) == TYPE_OBJECT and p.has_method("duplicate"):
+						phantom = p.duplicate()
 
-					if typeof(phantom) == TYPE_DICTIONARY:
-						phantom["x"] = nx
-						phantom["vx"] = nvx
-					elif typeof(phantom) == TYPE_OBJECT:
-						if "x" in phantom: phantom.x = nx
-						if "vx" in phantom: phantom.vx = nvx
-
-					# Target x if any
-					var target_x = null
-					if typeof(p) == TYPE_DICTIONARY and p.has("target_x"):
-						target_x = p.target_x
-					elif typeof(p) == TYPE_OBJECT and "target_x" in p:
-						target_x = p.target_x
-					if target_x != null:
+					if phantom != null:
 						if typeof(phantom) == TYPE_DICTIONARY:
-							phantom["target_x"] = center_x + (center_x - target_x)
-						elif typeof(phantom) == TYPE_OBJECT and "target_x" in phantom:
-							phantom.target_x = center_x + (center_x - target_x)
+							phantom["is_mirrored_phantom"] = true
+						elif typeof(phantom) == TYPE_OBJECT:
+							if phantom.has_method("set_meta"):
+								phantom.set_meta("is_mirrored_phantom", true)
+							elif "is_mirrored_phantom" in phantom:
+								phantom.is_mirrored_phantom = true
 
-					new_projectiles.append(phantom)
+						var px = 0.0
+						var pvx = 0.0
+						if typeof(p) == TYPE_DICTIONARY:
+							px = p.get("x", 0.0)
+							pvx = p.get("vx", 0.0)
+						elif typeof(p) == TYPE_OBJECT:
+							px = p.x if "x" in p else 0.0
+							pvx = p.vx if "vx" in p else 0.0
 
-		for np in new_projectiles:
-			projectiles.append(np)
+						var nx = center_x + (center_x - px)
+						var nvx = -pvx
+
+						if typeof(phantom) == TYPE_DICTIONARY:
+							phantom["x"] = nx
+							phantom["vx"] = nvx
+						elif typeof(phantom) == TYPE_OBJECT:
+							if "x" in phantom: phantom.x = nx
+							if "vx" in phantom: phantom.vx = nvx
+
+						# Target x if any
+						var target_x = null
+						if typeof(p) == TYPE_DICTIONARY and p.has("target_x"):
+							target_x = p.target_x
+						elif typeof(p) == TYPE_OBJECT and "target_x" in p:
+							target_x = p.target_x
+						if target_x != null:
+							if typeof(phantom) == TYPE_DICTIONARY:
+								phantom["target_x"] = center_x + (center_x - target_x)
+							elif typeof(phantom) == TYPE_OBJECT and "target_x" in phantom:
+								phantom.target_x = center_x + (center_x - target_x)
+
+						new_objs.append(phantom)
+
+			for np in new_objs:
+				obj_list.append(np)
 
 GAME_MODES = {
 	"mirror_arena": MirrorArenaMode.new(),
