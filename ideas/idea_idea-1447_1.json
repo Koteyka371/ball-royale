@@ -1,0 +1,4 @@
+{
+    "title": "Weather-Adaptive Hazards",
+    "description": "Hazards on the map dynamically change their behavior based on the current weather. For instance, basic spike traps become slippery in 'snow' weather, and fire traps deal extra damage in 'heatwave' or 'sandstorm' weather."
+}
