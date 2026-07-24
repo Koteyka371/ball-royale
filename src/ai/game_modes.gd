@@ -3394,7 +3394,7 @@ class DraftRoyaleMode extends GameMode:
 
 		return null
 
-class ShadowMonster:
+class ShadowMonster extends RefCounted:
 	var x = 0.0
 	var y = 0.0
 	var vx = 0.0
@@ -22305,6 +22305,222 @@ class DayNightMode extends GameMode:
 
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
+
+			if is_night:
+				var shadow_monsters = []
+				for b in balls:
+					var balive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						balive = b.get("alive", false)
+					else:
+						balive = b.get("alive") if "alive" in b else false
+					var btype = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						btype = b.get("ball_type", "")
+					else:
+						btype = b.get("ball_type", "") if "ball_type" in b else ""
+
+					if balive and btype == "shadow_monster":
+						shadow_monsters.append(b)
+
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
+				elif world != null and "arena" in world and world.arena != null:
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
+
+				while shadow_monsters.size() < 3:
+					var spawn_x = randf_range(50.0, arena_width - 50.0)
+					var spawn_y = randf_range(50.0, arena_height - 50.0)
+					var valid_spawn = true
+
+					for b in balls:
+						var balive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							balive = b.get("alive", false)
+						else:
+							balive = b.get("alive") if "alive" in b else false
+						var btype = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							btype = b.get("ball_type", "")
+						else:
+							btype = b.get("ball_type", "") if "ball_type" in b else ""
+						if balive and btype != "spectator" and btype != "shadow_monster":
+							var perc_rad = 250.0
+							if typeof(b) == TYPE_DICTIONARY:
+								perc_rad = b.get("perception_radius", 250.0)
+							else:
+								perc_rad = b.get("perception_radius") if "perception_radius" in b else 250.0
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.get("x") if "x" in b else 0.0
+								by = b.get("y") if "y" in b else 0.0
+							var dx = bx - spawn_x
+							var dy = by - spawn_y
+							var dist = sqrt(dx * dx + dy * dy)
+							if dist <= perc_rad + 50.0:
+								valid_spawn = false
+								break
+
+					if valid_spawn or randf() < 0.1:
+						var monster = ShadowMonster.new()
+						monster.x = spawn_x
+						monster.y = spawn_y
+
+						# Default physics attributes necessary for engine loop
+						if typeof(monster) == TYPE_DICTIONARY:
+							pass
+						else:
+							if not "stamina" in monster and monster.has_method("set_meta"): monster.set_meta("stamina", 100.0)
+							if not "base_speed" in monster and monster.has_method("set_meta"): monster.set_meta("base_speed", 180.0)
+
+						balls.append(monster)
+						shadow_monsters.append(monster)
+
+				for monster in shadow_monsters:
+					var nearest = null
+					var min_dist = 9999999.0
+					for b in balls:
+						var balive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							balive = b.get("alive", false)
+						else:
+							balive = b.get("alive") if "alive" in b else false
+						var btype = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							btype = b.get("ball_type", "")
+						else:
+							btype = b.get("ball_type", "") if "ball_type" in b else ""
+						if balive and btype != "spectator" and btype != "shadow_monster":
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.get("x") if "x" in b else 0.0
+								by = b.get("y") if "y" in b else 0.0
+
+							var mx = 0.0
+							var my = 0.0
+							if typeof(monster) == TYPE_DICTIONARY:
+								mx = monster.get("x", 0.0)
+								my = monster.get("y", 0.0)
+							else:
+								mx = monster.get("x") if "x" in monster else 0.0
+								my = monster.get("y") if "y" in monster else 0.0
+
+							var dx = bx - mx
+							var dy = by - my
+							var dist = sqrt(dx * dx + dy * dy)
+							if dist < min_dist:
+								min_dist = dist
+								nearest = b
+
+					if nearest != null:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(nearest) == TYPE_DICTIONARY:
+							bx = nearest.get("x", 0.0)
+							by = nearest.get("y", 0.0)
+						else:
+							bx = nearest.get("x") if "x" in nearest else 0.0
+							by = nearest.get("y") if "y" in nearest else 0.0
+
+						var mx = 0.0
+						var my = 0.0
+						if typeof(monster) == TYPE_DICTIONARY:
+							mx = monster.get("x", 0.0)
+							my = monster.get("y", 0.0)
+						else:
+							mx = monster.get("x") if "x" in monster else 0.0
+							my = monster.get("y") if "y" in monster else 0.0
+
+						var mspeed = 180.0
+						if typeof(monster) == TYPE_DICTIONARY:
+							mspeed = monster.get("speed", 180.0)
+						else:
+							mspeed = monster.get("speed") if "speed" in monster else 180.0
+
+						var dx = bx - mx
+						var dy = by - my
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist > 0:
+							if typeof(monster) == TYPE_DICTIONARY:
+								monster["vx"] = (dx / dist) * mspeed
+								monster["vy"] = (dy / dist) * mspeed
+							else:
+								monster.set("vx", (dx / dist) * mspeed)
+								monster.set("vy", (dy / dist) * mspeed)
+						else:
+							if typeof(monster) == TYPE_DICTIONARY:
+								monster["vx"] = 0.0
+								monster["vy"] = 0.0
+							else:
+								monster.set("vx", 0.0)
+								monster.set("vy", 0.0)
+
+						var n_radius = 15.0
+						if typeof(nearest) == TYPE_DICTIONARY:
+							n_radius = nearest.get("radius", 15.0)
+						else:
+							n_radius = nearest.get("radius") if "radius" in nearest else 15.0
+
+						var m_radius = 15.0
+						if typeof(monster) == TYPE_DICTIONARY:
+							m_radius = monster.get("radius", 15.0)
+						else:
+							m_radius = monster.get("radius") if "radius" in monster else 15.0
+
+						if dist < m_radius + n_radius + 5.0:
+							if typeof(nearest) == TYPE_DICTIONARY:
+								if nearest.has("stamina"):
+									nearest["stamina"] = max(0.0, nearest["stamina"] - 20.0 * delta)
+								if nearest.has("speed"):
+									var base_s = nearest.get("base_speed", 100.0)
+									nearest["speed"] = min(nearest["speed"], base_s * 0.5)
+							else:
+								if "stamina" in nearest:
+									nearest.stamina = max(0.0, nearest.stamina - 20.0 * delta)
+								elif nearest.has_method("set_meta") and nearest.has_meta("stamina"):
+									nearest.set_meta("stamina", max(0.0, nearest.get_meta("stamina") - 20.0 * delta))
+								if "speed" in nearest:
+									var base_s = nearest.get("base_speed") if "base_speed" in nearest else 100.0
+									nearest.speed = min(nearest.speed, base_s * 0.5)
+
+					if typeof(monster) == TYPE_DICTIONARY:
+						monster["x"] = monster["x"] + monster["vx"] * delta
+						monster["y"] = monster["y"] + monster["vy"] * delta
+					else:
+						monster.set("x", monster.get("x") + monster.get("vx") * delta)
+						monster.set("y", monster.get("y") + monster.get("vy") * delta)
+			else:
+				for b in balls:
+					var balive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						balive = b.get("alive", false)
+					else:
+						balive = b.get("alive") if "alive" in b else false
+					var btype = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						btype = b.get("ball_type", "")
+					else:
+						btype = b.get("ball_type", "") if "ball_type" in b else ""
+
+					if balive and btype == "shadow_monster":
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+							b["hp"] = 0.0
+						else:
+							b.set("alive", false)
+							b.set("hp", 0.0)
 
 			if not is_night:
 				if not is_solar_flare:

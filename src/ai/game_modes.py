@@ -14467,6 +14467,124 @@ class DayNightMode(GameMode):
                         world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
             # Sunlight beams only during the day spawn
+
+            # Manage shadow monsters during night
+            if is_night:
+                # Count current shadow monsters in balls
+                shadow_monsters = [b for b in balls if getattr(b, "ball_type", "") == "shadow_monster" and getattr(b, "alive", False)]
+
+                # Spawn logic: Keep a few monsters alive
+                while len(shadow_monsters) < 3:
+                    arena_width = getattr(world.arena, "width", 1000)
+                    arena_height = getattr(world.arena, "height", 1000)
+
+                    spawn_x = random.uniform(50, arena_width - 50)
+                    spawn_y = random.uniform(50, arena_height - 50)
+
+                    valid_spawn = True
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
+                            perc_rad = getattr(b, "perception_radius", 250.0)
+                            if not isinstance(perc_rad, (int, float)):
+                                perc_rad = 250.0
+                            dist = math.hypot(b.x - spawn_x, b.y - spawn_y)
+                            if dist <= perc_rad + 50.0:
+                                valid_spawn = False
+                                break
+
+                    if valid_spawn or random.random() < 0.1:
+                        monster_id = getattr(world, "next_id", random.randint(100000, 999999))
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+                        try:
+                            # Avoid circular import issues if ShadowMonster is down below or we use it directly
+                            from ai.game_modes import ShadowMonster
+                            monster = ShadowMonster(monster_id, spawn_x, spawn_y)
+                        except Exception:
+                            class _InlineShadowMonster:
+                                def __init__(self, _id, _x, _y):
+                                    self.id = _id
+                                    self.x = _x
+                                    self.y = _y
+                                    self.vx = 0.0
+                                    self.vy = 0.0
+                                    self.radius = 15.0
+                                    self.speed = 180.0
+                                    self.damage = 30.0
+                                    self.hp = 100.0
+                                    self.max_hp = 100.0
+                                    self.alive = True
+                                    self.ball_type = "shadow_monster"
+                                    self.team = "ShadowMonsters"
+
+                                    # Fallbacks for entity loop
+                                    self.stamina = 100.0
+                                    self.base_speed = 180.0
+                                    self.max_stamina = 100.0
+                                    self.base_damage = 30.0
+                                    self.original_base_damage = 30.0
+                                    self.traits = []
+                                    self.weather_immunity_timer = 0.0
+                                    self.in_mirror_dimension = False
+                                    self.intangible = False
+                            monster = _InlineShadowMonster(monster_id, spawn_x, spawn_y)
+
+                        # Properly integrate it into the game's ball list so physics engines handle it
+                        balls.append(monster)
+                        shadow_monsters.append(monster)
+
+                # Update monsters and chase nearest player
+                for monster in shadow_monsters:
+                    nearest = None
+                    min_dist = float('inf')
+
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]:
+                            dist = math.hypot(b.x - monster.x, b.y - monster.y)
+                            if dist < min_dist:
+                                min_dist = dist
+                                nearest = b
+
+                    if nearest:
+                        dx = nearest.x - monster.x
+                        dy = nearest.y - monster.y
+                        dist = math.hypot(dx, dy)
+                        if dist > 0:
+                            monster.vx = (dx / dist) * monster.speed
+                            monster.vy = (dy / dist) * monster.speed
+                        else:
+                            monster.vx = 0
+                            monster.vy = 0
+
+                        n_radius = getattr(nearest, "radius", 15.0)
+                        if not isinstance(n_radius, (int, float)):
+                            n_radius = 15.0
+                        # Buffer added for collision to match test tick
+                        if dist < monster.radius + n_radius + 5.0:
+                            # Drain stamina
+                            if hasattr(nearest, "stamina"):
+                                nearest.stamina = max(0, nearest.stamina - 20.0 * delta)
+                            # Apply slow
+                            if hasattr(nearest, "speed"):
+                                # Fallback base_speed if missing
+                                base_s = getattr(nearest, "base_speed", 100.0)
+                                if not isinstance(base_s, (int, float)):
+                                    base_s = 100.0
+                                c_speed = nearest.speed
+                                if not isinstance(c_speed, (int, float)):
+                                    c_speed = 100.0
+                                nearest.speed = min(c_speed, base_s * 0.5)
+
+                    monster.x += monster.vx * delta
+                    monster.y += monster.vy * delta
+
+            else:
+                # If day phase starts, kill remaining monsters
+                for b in balls:
+                    if getattr(b, "ball_type", "") == "shadow_monster" and getattr(b, "alive", False):
+                        b.alive = False
+                        b.hp = 0.0
+
             if not is_night:
                 if not getattr(self, "is_solar_flare", False):
                     if random.random() < 0.02 * delta:
