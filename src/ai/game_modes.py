@@ -20193,6 +20193,7 @@ class ExtremeWeatherMode(GameMode):
         self.weather_timer = 0.0
         self.current_weather = "clear"
         self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+        self.flood_level = 0.0
         import random
         self.random = random
 
@@ -20208,6 +20209,10 @@ class ExtremeWeatherMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         self.weather_timer += delta
+        if self.current_weather == "giant_flood":
+            self.flood_level = min(1.0, self.flood_level + delta * 0.1)
+        else:
+            self.flood_level = max(0.0, self.flood_level - delta * 0.2)
 
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
@@ -20463,9 +20468,14 @@ class ExtremeWeatherMode(GameMode):
                     if hasattr(b, "y"): b.y += math.sin(angle) * 300.0 * delta
                     b.steering_mult = 0.0
             elif self.current_weather == "giant_flood":
-                if not has_life_jacket:
-                    b.speed = b.base_speed * 0.3
-                    b.steering_mult = getattr(b, "steering_mult", 1.0) * 0.5
+                b_type = getattr(b, "ball_type", "").lower()
+                traits = getattr(b, "traits", [])
+                is_aquatic = "water" in b_type or "swamp" in b_type or "hover" in b_type or "floating" in b_type or "aquatic" in b_type or any(t.lower() in ["water", "swamp", "hover", "floating", "aquatic"] for t in [str(t) for t in traits])
+                if not has_life_jacket and not is_aquatic:
+                    b.speed = b.base_speed * (1.0 - 0.7 * self.flood_level)
+                    b.steering_mult = getattr(b, "steering_mult", 1.0) * (1.0 - 0.5 * self.flood_level)
+                    if self.flood_level > 0.8:
+                        b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 20.0 * delta)
             elif self.current_weather == "solar_eclipse":
                 if not getattr(b, "vision_booster_timer", 0.0) > 0 and not getattr(b, "mega_vision_booster_timer", 0.0) > 0:
                     b.perception_radius = 50.0

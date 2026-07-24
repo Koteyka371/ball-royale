@@ -225,21 +225,48 @@ def test_giant_flood_effects():
     b1 = MockBall()
     b2 = MockBall()
     b2.life_jacket_booster_timer = 10.0
-    balls = [b1, b2]
+    b3 = MockBall()
+    b3.ball_type = "water_ball" # Aquatic trait
+
+    balls = [b1, b2, b3]
 
     b1.steering_mult = 1.0
     b2.steering_mult = 1.0
+    b3.steering_mult = 1.0
+
+    b1.stamina = 100.0
+    b2.stamina = 100.0
+    b3.stamina = 100.0
 
     mode.setup(world, balls)
     mode.current_weather = "giant_flood"
+    mode.flood_level = 0.5
 
     mode.tick(world, balls, 1.0)
 
-    assert b1.speed == b1.base_speed * 0.3
-    assert getattr(b1, "steering_mult", 1.0) == 0.5
+    # After tick with delta 1.0, flood_level becomes min(1.0, 0.5 + 1.0 * 0.1) = 0.6
+    expected_speed = b1.base_speed * (1.0 - 0.7 * 0.6)
+    expected_steering = 1.0 * (1.0 - 0.5 * 0.6)
+
+    # Allow float precision
+    assert abs(b1.speed - expected_speed) < 0.01
+    assert abs(getattr(b1, "steering_mult", 1.0) - expected_steering) < 0.01
+    assert getattr(b1, "stamina", 100.0) == 100.0
 
     assert b2.speed == b2.base_speed
     assert b2.steering_mult == 1.0
+
+    assert b3.speed == b3.base_speed
+    assert b3.steering_mult == 1.0
+
+    # Test deep flood (stamina drain)
+    mode.flood_level = 0.9
+    mode.tick(world, balls, 1.0)
+
+    assert getattr(b1, "stamina", 100.0) < 100.0 # drained
+    assert getattr(b2, "stamina", 100.0) == 100.0 # safe
+    assert getattr(b3, "stamina", 100.0) == 100.0 # safe
+
 
 def test_solar_eclipse_effects():
     from ai.game_modes import ExtremeWeatherMode
