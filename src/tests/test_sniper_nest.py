@@ -18,6 +18,7 @@ class MockHazard:
         self.x = 0
         self.y = 0
         self.radius = 50.0
+        self.active = True
 
 class MockArena:
     def __init__(self):
@@ -26,6 +27,7 @@ class MockArena:
 class MockWorld:
     def __init__(self):
         self.arena = MockArena()
+        self.events = []
 
 def test_sniper_nest_active():
     b = MockBall()
@@ -55,3 +57,45 @@ def test_sniper_nest_inactive():
     assert math.isclose(b.perception_radius, 100.0)
     assert math.isclose(b.damage_multiplier, 1.0)
     assert b.show_sniper_nest_indicator == False
+
+def test_sniper_nest_camouflage_active():
+    b = MockBall()
+    w = MockWorld()
+    h = MockHazard('sniper_nest')
+    c = MockHazard('sniper_nest_camouflage')
+    w.arena.hazards.extend([h, c])
+
+    a = Action(b, w)
+    a.execute("none", 0.1)
+
+    assert b.in_sniper_nest == True
+    assert b.show_sniper_nest_indicator == False
+    assert c.active == True
+
+def test_sniper_nest_camouflage_destroyed_by_wind():
+    b = MockBall()
+    w = MockWorld()
+    h = MockHazard('sniper_nest')
+    c = MockHazard('sniper_nest_camouflage')
+    w.arena.hazards.extend([h, c])
+    w.arena.weather = "wind"
+
+    a = Action(b, w)
+    a.execute("none", 0.1)
+
+    assert c.active == False
+    assert b.show_sniper_nest_indicator == True
+
+def test_sniper_nest_camouflage_destroyed_by_explosion():
+    b = MockBall()
+    w = MockWorld()
+    h = MockHazard('sniper_nest')
+    c = MockHazard('sniper_nest_camouflage')
+    w.arena.hazards.extend([h, c])
+    w.events.append(["explosion", {"x": 0.0, "y": 0.0, "radius": 100.0}])
+
+    a = Action(b, w)
+    a.execute("none", 0.1)
+
+    assert c.active == False
+    assert b.show_sniper_nest_indicator == True

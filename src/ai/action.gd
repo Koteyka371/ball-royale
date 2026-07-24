@@ -5180,9 +5180,107 @@ func execute(strategy: String, delta: float):
 
 	if world != null and typeof(world) == TYPE_OBJECT and "arena" in world:
 		var arena = world.get("arena")
+		if typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+			for camo_hazard in arena.hazards:
+				var c_kind = ""
+				if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("kind"): c_kind = camo_hazard["kind"]
+				elif typeof(camo_hazard) == TYPE_OBJECT and "kind" in camo_hazard: c_kind = camo_hazard.kind
+
+				if c_kind == "sniper_nest_camouflage":
+					var weather = ""
+					if "weather" in arena: weather = arena.weather
+
+					var is_destroyed = false
+					if weather == "wind" or weather == "windstorm" or weather == "hurricane" or weather == "tornado" or weather == "sandstorm":
+						is_destroyed = true
+
+					var hazard_x = 0.0
+					if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("x"): hazard_x = camo_hazard["x"]
+					elif typeof(camo_hazard) == TYPE_OBJECT and "x" in camo_hazard: hazard_x = camo_hazard.x
+					var hazard_y = 0.0
+					if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("y"): hazard_y = camo_hazard["y"]
+					elif typeof(camo_hazard) == TYPE_OBJECT and "y" in camo_hazard: hazard_y = camo_hazard.y
+					var hazard_r = 50.0
+					if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("radius"): hazard_r = camo_hazard["radius"]
+					elif typeof(camo_hazard) == TYPE_OBJECT and "radius" in camo_hazard: hazard_r = camo_hazard.radius
+
+					if not is_destroyed:
+						for other_hazard in arena.hazards:
+							var o_kind = ""
+							if typeof(other_hazard) == TYPE_DICTIONARY and other_hazard.has("kind"): o_kind = other_hazard["kind"]
+							elif typeof(other_hazard) == TYPE_OBJECT and "kind" in other_hazard: o_kind = other_hazard.kind
+							if o_kind == "explosion" or o_kind == "bomb" or o_kind == "mine" or o_kind == "volatile_barrel" or o_kind == "explosive_barrel" or o_kind == "fire_zone":
+								var o_active = true
+								if typeof(other_hazard) == TYPE_DICTIONARY and other_hazard.has("active"): o_active = other_hazard["active"]
+								elif typeof(other_hazard) == TYPE_OBJECT and "active" in other_hazard: o_active = other_hazard.active
+								var o_exploded = false
+								if typeof(other_hazard) == TYPE_DICTIONARY and other_hazard.has("is_exploded"): o_exploded = other_hazard["is_exploded"]
+								elif typeof(other_hazard) == TYPE_OBJECT and "is_exploded" in other_hazard: o_exploded = other_hazard.is_exploded
+
+								if o_active and (o_exploded or o_kind == "explosion" or o_kind == "fire_zone"):
+									var ox = 0.0
+									if typeof(other_hazard) == TYPE_DICTIONARY and other_hazard.has("x"): ox = other_hazard["x"]
+									elif typeof(other_hazard) == TYPE_OBJECT and "x" in other_hazard: ox = other_hazard.x
+									var oy = 0.0
+									if typeof(other_hazard) == TYPE_DICTIONARY and other_hazard.has("y"): oy = other_hazard["y"]
+									elif typeof(other_hazard) == TYPE_OBJECT and "y" in other_hazard: oy = other_hazard.y
+									var orad = 100.0
+									if typeof(other_hazard) == TYPE_DICTIONARY and other_hazard.has("radius"): orad = other_hazard["radius"]
+									elif typeof(other_hazard) == TYPE_OBJECT and "radius" in other_hazard: orad = other_hazard.radius
+
+									var dx2 = hazard_x - ox
+									var dy2 = hazard_y - oy
+									if sqrt(dx2*dx2 + dy2*dy2) <= orad + hazard_r:
+										is_destroyed = true
+										break
+
+						if not is_destroyed and "events" in world:
+							for ev in world.events:
+								if typeof(ev) == TYPE_ARRAY and ev.size() > 0:
+									if ev[0] == "explosion":
+										var ex = 0.0
+										var ey = 0.0
+										var erad = 100.0
+										if ev.size() > 1 and typeof(ev[1]) == TYPE_DICTIONARY:
+											if ev[1].has("x"): ex = ev[1]["x"]
+											if ev[1].has("y"): ey = ev[1]["y"]
+											if ev[1].has("radius"): erad = ev[1]["radius"]
+										var dx2 = hazard_x - ex
+										var dy2 = hazard_y - ey
+										if sqrt(dx2*dx2 + dy2*dy2) <= erad + hazard_r:
+											is_destroyed = true
+											break
+								elif typeof(ev) == TYPE_DICTIONARY:
+									if ev.has("type") and ev["type"] == "explosion":
+										var ex = ev.get("x", 0.0)
+										var ey = ev.get("y", 0.0)
+										var erad = ev.get("radius", 100.0)
+										var dx2 = hazard_x - ex
+										var dy2 = hazard_y - ey
+										if sqrt(dx2*dx2 + dy2*dy2) <= erad + hazard_r:
+											is_destroyed = true
+											break
+									elif ev.has("type") and ev["type"] == "visual_effect" and ev.has("data") and typeof(ev["data"]) == TYPE_DICTIONARY and ev["data"].has("type") and ev["data"]["type"] == "explosion":
+										var ex = ev["data"].get("x", 0.0)
+										var ey = ev["data"].get("y", 0.0)
+										var erad = ev["data"].get("radius", 100.0)
+										var dx2 = hazard_x - ex
+										var dy2 = hazard_y - ey
+										if sqrt(dx2*dx2 + dy2*dy2) <= erad + hazard_r:
+											is_destroyed = true
+											break
+
+					if is_destroyed:
+						if typeof(camo_hazard) == TYPE_DICTIONARY:
+							camo_hazard["active"] = false
+							camo_hazard["duration"] = 0.0
+						elif typeof(camo_hazard) == TYPE_OBJECT:
+							if "active" in camo_hazard: camo_hazard.active = false
+							if "duration" in camo_hazard: camo_hazard.duration = 0.0
 
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		self.ball["in_sniper_nest"] = false
+		self.ball["show_sniper_nest_indicator"] = false
 
 		var base_dmg = 1.0
 		if self.ball.has("base_damage_multiplier"): base_dmg = self.ball["base_damage_multiplier"]
@@ -5202,6 +5300,10 @@ func execute(strategy: String, delta: float):
 			self.ball.set_meta("in_sniper_nest", false)
 		if "in_sniper_nest" in self.ball:
 			self.ball.in_sniper_nest = false
+		if self.ball.has_method("set_meta"):
+			self.ball.set_meta("show_sniper_nest_indicator", false)
+		if "show_sniper_nest_indicator" in self.ball:
+			self.ball.show_sniper_nest_indicator = false
 
 		var base_dmg = 1.0
 		if "base_damage_multiplier" in self.ball: base_dmg = self.ball.base_damage_multiplier
@@ -5486,17 +5588,47 @@ func execute(strategy: String, delta: float):
 							self.ball["in_sniper_nest"] = true
 							self.ball["perception_radius"] = base_p * 1.25
 							self.ball["damage_multiplier"] = base_dmg * 1.15
-							self.ball["show_sniper_nest_indicator"] = true
 						else:
 							if self.ball.has_method("set_meta"):
 								self.ball.set_meta("in_sniper_nest", true)
 								self.ball.set_meta("perception_radius", base_p * 1.25)
 								self.ball.set_meta("damage_multiplier", base_dmg * 1.15)
-								self.ball.set_meta("show_sniper_nest_indicator", true)
 							if "in_sniper_nest" in self.ball: self.ball.in_sniper_nest = true
 							if "perception_radius" in self.ball: self.ball.perception_radius = base_p * 1.25
 							if "damage_multiplier" in self.ball: self.ball.damage_multiplier = base_dmg * 1.15
-							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = true
+
+						var is_camouflaged = false
+						for camo_hazard in arena.hazards:
+							var c_kind = ""
+							if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("kind"): c_kind = camo_hazard["kind"]
+							elif typeof(camo_hazard) == TYPE_OBJECT and "kind" in camo_hazard: c_kind = camo_hazard.kind
+							var c_active = true
+							if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("active"): c_active = camo_hazard["active"]
+							elif typeof(camo_hazard) == TYPE_OBJECT and "active" in camo_hazard: c_active = camo_hazard.active
+
+							if c_kind == "sniper_nest_camouflage" and c_active:
+								var cx = 0.0
+								if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("x"): cx = camo_hazard["x"]
+								elif typeof(camo_hazard) == TYPE_OBJECT and "x" in camo_hazard: cx = camo_hazard.x
+								var cy = 0.0
+								if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("y"): cy = camo_hazard["y"]
+								elif typeof(camo_hazard) == TYPE_OBJECT and "y" in camo_hazard: cy = camo_hazard.y
+								var crad = 50.0
+								if typeof(camo_hazard) == TYPE_DICTIONARY and camo_hazard.has("radius"): crad = camo_hazard["radius"]
+								elif typeof(camo_hazard) == TYPE_OBJECT and "radius" in camo_hazard: crad = camo_hazard.radius
+
+								var cdx = cx - hx
+								var cdy = cy - hy
+								if sqrt(cdx*cdx + cdy*cdy) <= rad + crad:
+									is_camouflaged = true
+									break
+
+						if not is_camouflaged:
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["show_sniper_nest_indicator"] = true
+							else:
+								if self.ball.has_method("set_meta"): self.ball.set_meta("show_sniper_nest_indicator", true)
+								if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = true
 
 							if typeof(world) == TYPE_OBJECT and "events" in world:
 								var bx2 = 0.0
@@ -5512,15 +5644,12 @@ func execute(strategy: String, delta: float):
 										"target_y": by2
 									}
 								})
-
-
-					else:
-						if typeof(self.ball) == TYPE_DICTIONARY:
-							self.ball["show_sniper_nest_indicator"] = false
 						else:
-							if self.ball.has_method("set_meta"):
-								self.ball.set_meta("show_sniper_nest_indicator", false)
-							if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = false
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["show_sniper_nest_indicator"] = false
+							else:
+								if self.ball.has_method("set_meta"): self.ball.set_meta("show_sniper_nest_indicator", false)
+								if "show_sniper_nest_indicator" in self.ball: self.ball.show_sniper_nest_indicator = false
 
 
 
