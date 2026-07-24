@@ -29608,6 +29608,27 @@ func _use_skill():
             else:
                 self.ball.skill_timer = 10.0
 
+        elif skill_name == "recoil_blanks":
+            _spawn_skill_particles("recoil_blanks")
+
+            var b_vx = ball.get("vx") if ball.get("vx") != null else 0.0
+            var b_vy = ball.get("vy") if ball.get("vy") != null else 0.0
+
+            if b_vx != 0.0 or b_vy != 0.0:
+                var mag = sqrt(b_vx * b_vx + b_vy * b_vy)
+                if mag > 0:
+                    var nx = b_vx / mag
+                    var ny = b_vy / mag
+
+                    var speed = ball.get("speed") if ball.get("speed") != null else 200.0
+                    var thrust = speed * 5.0
+
+                    ball.vx = b_vx - nx * thrust
+                    ball.vy = b_vy - ny * thrust
+
+            var cooldown = ball.get("SKILL_COOLDOWN") if ball.get("SKILL_COOLDOWN") != null else 3.0
+            ball.skill_timer = cooldown
+
         elif skill_name == "clone":
             var num_clones = randi() % 3 + 2 # 2 to 4 clones
             for i in range(num_clones):
