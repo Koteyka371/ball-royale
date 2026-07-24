@@ -50864,6 +50864,66 @@ class MeteorBombardmentMode extends GameMode:
 				world.arena.hazards.append(HazardObj.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
 
+
+class NemesisVampireMode extends GameMode:
+	var heal_percentage: float = 1.0
+
+	func _init() -> void:
+		super._init()
+		name = "Nemesis Vampire"
+		description = "Dealing damage to your nemesis heals you instead of them, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+	func on_damage_dealt(world, attacker, target, damage: float) -> void:
+		if typeof(world) != TYPE_DICTIONARY or not world.has("profile_manager"):
+			if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+				var pm = world.get("profile_manager")
+				if pm != null and pm.has_method("is_nemesis"):
+					var a_type = ""
+					var t_type = ""
+					if typeof(attacker) == TYPE_DICTIONARY:
+						a_type = attacker.get("ball_type", "")
+					elif typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker:
+						a_type = attacker.ball_type
+
+					if typeof(target) == TYPE_DICTIONARY:
+						t_type = target.get("ball_type", "")
+					elif typeof(target) == TYPE_OBJECT and "ball_type" in target:
+						t_type = target.ball_type
+
+					if pm.is_nemesis(a_type, t_type):
+						var heal_amount = damage * heal_percentage
+						if typeof(attacker) == TYPE_DICTIONARY:
+							if attacker.has("hp") and attacker.has("max_hp"):
+								attacker["hp"] = min(attacker["hp"] + heal_amount, attacker["max_hp"])
+						elif typeof(attacker) == TYPE_OBJECT:
+							if "hp" in attacker and "max_hp" in attacker:
+								attacker.hp = min(attacker.hp + heal_amount, attacker.max_hp)
+			return
+
+		var pm = world.get("profile_manager")
+		if typeof(pm) == TYPE_OBJECT and pm.has_method("is_nemesis"):
+			var a_type = ""
+			var t_type = ""
+			if typeof(attacker) == TYPE_DICTIONARY:
+				a_type = attacker.get("ball_type", "")
+			elif typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker:
+				a_type = attacker.ball_type
+
+			if typeof(target) == TYPE_DICTIONARY:
+				t_type = target.get("ball_type", "")
+			elif typeof(target) == TYPE_OBJECT and "ball_type" in target:
+				t_type = target.ball_type
+
+			if pm.is_nemesis(a_type, t_type):
+				var heal_amount = damage * heal_percentage
+				if typeof(attacker) == TYPE_DICTIONARY:
+					if attacker.has("hp") and attacker.has("max_hp"):
+						attacker["hp"] = min(attacker["hp"] + heal_amount, attacker["max_hp"])
+				elif typeof(attacker) == TYPE_OBJECT:
+					if "hp" in attacker and "max_hp" in attacker:
+						attacker.hp = min(attacker.hp + heal_amount, attacker.max_hp)
+
+
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
@@ -58889,3 +58949,5 @@ class BlackHoleWeatherMode extends GameMode:
 
 GAME_MODES['huge_tornados'] = HugeTornadosMode.new()
 GAME_MODES['black_hole_weather'] = BlackHoleWeatherMode.new()
+
+GAME_MODES['nemesis_vampire'] = NemesisVampireMode.new()

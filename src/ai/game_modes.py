@@ -37946,3 +37946,25 @@ class HugeTornadosMode(GameMode):
 
 GAME_MODES['huge_tornados'] = HugeTornadosMode()
 GAME_MODES['black_hole_weather'] = BlackHoleWeatherMode()
+
+
+class NemesisVampireMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nemesis Vampire"
+        self.description = "Dealing damage to your nemesis heals you instead of them, encouraging players to hunt down their rivals to sustain themselves in battle."
+        self.heal_percentage = 1.0 # 100% of damage dealt is healed
+
+    def on_damage_dealt(self, world, attacker, target, damage):
+        # We need a way to check if target is a nemesis of attacker
+        if not hasattr(world, 'profile_manager'):
+            return
+
+        if hasattr(world.profile_manager, 'is_nemesis'):
+            if world.profile_manager.is_nemesis(attacker.ball_type, target.ball_type):
+                # Target is a nemesis of attacker
+                heal_amount = damage * self.heal_percentage
+                if hasattr(attacker, "hp") and hasattr(attacker, "max_hp"):
+                    attacker.hp = min(attacker.hp + heal_amount, attacker.max_hp)
+
+GAME_MODES['nemesis_vampire'] = NemesisVampireMode()
