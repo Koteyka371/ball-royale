@@ -20962,65 +20962,87 @@ class BodyguardBountyMode extends GameMode:
 
 class DynamicBountyMode extends GameMode:
 	var vfx_timer = 0.0
-	var current_bounty_id = null
+	var current_bounty_team = null
 
 	func _init() -> void:
 		name = "Dynamic Bounty"
-		description = "The player with the most kills is marked as a bounty for everyone to see. Defeating them grants special buffs and loadout fragments."
+		description = "The player or team with the highest score or highest streak automatically becomes a 'Bounty Target', visually highlighted on the map. Killing them grants bonus points and temporary buffs to the killer, encouraging dynamic comebacks."
 
 	func tick(world, balls: Array, delta: float) -> void:
 		super.tick(world, balls, delta)
 
+		var team_stats = {}
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var team = b.get("team") if "team" in b else (b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b.get("id") if "id" in b else "unknown"))
+				if not team_stats.has(team):
+					team_stats[team] = {"score": 0, "killstreak": 0, "kills": 0}
+
+				var score = 0
+				if "score" in b: score = b.score
+				elif b.has_method("get_meta") and b.has_meta("score"): score = b.get_meta("score")
+
+				var killstreak = 0
+				if "killstreak" in b: killstreak = b.killstreak
+				elif b.has_method("get_meta") and b.has_meta("killstreak"): killstreak = b.get_meta("killstreak")
+
+				var kills = 0
+				if "kills" in b: kills = b.kills
+				elif b.has_method("get_meta") and b.has_meta("kills"): kills = b.get_meta("kills")
+
+				team_stats[team]["score"] += score
+				team_stats[team]["killstreak"] += killstreak
+				team_stats[team]["kills"] += kills
+
 		var highest_score = -1
+		var highest_streak = -1
 		var highest_kills = -1
 		var bounty_candidates = []
 
-		for b in balls:
-			if b.alive and b.ball_type != "spectator":
-				var score = 0
-				if "score" in b:
-					score = b.score
-				elif b.has_method("get_meta") and b.has_meta("score"):
-					score = b.get_meta("score")
+		for team in team_stats.keys():
+			var stats = team_stats[team]
+			var score = stats["score"]
+			var streak = stats["killstreak"]
+			var kills = stats["kills"]
 
-				var kills = 0
-				if "kills" in b:
-					kills = b.kills
-				elif b.has_method("get_meta") and b.has_meta("kills"):
-					kills = b.get_meta("kills")
-
-				if score > highest_score:
-					highest_score = score
+			if score > highest_score:
+				highest_score = score
+				highest_streak = streak
+				highest_kills = kills
+				bounty_candidates = [team]
+			elif score == highest_score and score > 0:
+				if streak > highest_streak:
+					highest_streak = streak
 					highest_kills = kills
-					bounty_candidates = [b]
-				elif score == highest_score and score > 0:
+					bounty_candidates = [team]
+				elif streak == highest_streak:
 					if kills > highest_kills:
 						highest_kills = kills
-						bounty_candidates = [b]
+						bounty_candidates = [team]
 					elif kills == highest_kills:
-						bounty_candidates.append(b)
-				elif score == 0 and highest_score <= 0:
+						bounty_candidates.append(team)
+			elif score == 0 and highest_score <= 0:
+				if streak > highest_streak:
+					highest_streak = streak
+					highest_kills = kills
+					bounty_candidates = [team]
+				elif streak == highest_streak:
 					if kills > highest_kills:
 						highest_kills = kills
-						bounty_candidates = [b]
+						bounty_candidates = [team]
 					elif kills == highest_kills and kills > 0:
-						bounty_candidates.append(b)
+						bounty_candidates.append(team)
 
-		var new_bounty_id = null
-		if (highest_score > 0 or highest_kills > 0) and bounty_candidates.size() > 0:
-			var selected = bounty_candidates[0]
-			if current_bounty_id != null:
-				for b in bounty_candidates:
-					var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
-					if b_id == current_bounty_id:
-						selected = b
-						break
-			new_bounty_id = selected.get("id") if "id" in selected else (selected.get_meta("id") if selected.has_method("get_meta") and selected.has_meta("id") else null)
+		var new_bounty_team = null
+		if (highest_score > 0 or highest_streak > 0 or highest_kills > 0) and bounty_candidates.size() > 0:
+			new_bounty_team = bounty_candidates[0]
+			if current_bounty_team != null and bounty_candidates.has(current_bounty_team):
+				new_bounty_team = current_bounty_team
 
 		for b in balls:
 			if b.alive:
-				var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
-				if b_id == new_bounty_id and new_bounty_id != null:
+				var b_team = b.get("team") if "team" in b else (b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b.get("id") if "id" in b else "unknown"))
+				if b_team == new_bounty_team and new_bounty_team != null:
 					if "is_dynamic_bounty" in b:
 						b.is_dynamic_bounty = true
 					elif b.has_method("set_meta"):
@@ -21031,16 +21053,16 @@ class DynamicBountyMode extends GameMode:
 					elif b.has_method("set_meta"):
 						b.set_meta("is_dynamic_bounty", false)
 
-		current_bounty_id = new_bounty_id
+		current_bounty_team = new_bounty_team
 
 		vfx_timer += delta
 		if vfx_timer >= 1.0:
 			vfx_timer = 0.0
-			if new_bounty_id != null and world.has_method("add_event"):
+			if new_bounty_team != null and world.has_method("add_event"):
 				for b in balls:
 					if b.alive:
-						var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
-						if b_id == new_bounty_id:
+						var b_team = b.get("team") if "team" in b else (b.get_meta("team") if b.has_method("get_meta") and b.has_meta("team") else (b.get("id") if "id" in b else "unknown"))
+						if b_team == new_bounty_team:
 							var bx = b.get("x") if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
 							var by = b.get("y") if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
 							world.add_event("visual_effect", {

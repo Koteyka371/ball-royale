@@ -13615,70 +13615,86 @@ class DynamicBountyMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Dynamic Bounty"
-        self.description = "The player with the most kills is marked as a bounty for everyone to see. Defeating them grants special buffs and loadout fragments."
+        self.description = "The player or team with the highest score or highest streak automatically becomes a 'Bounty Target', visually highlighted on the map. Killing them grants bonus points and temporary buffs to the killer, encouraging dynamic comebacks."
         self.vfx_timer = 0.0
-        self.current_bounty_id = None
+        self.current_bounty_team = None
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
         super().tick(world, balls, delta)
 
+        team_stats = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                team = getattr(b, "team", getattr(b, "id", "unknown"))
+                if team not in team_stats:
+                    team_stats[team] = {"score": 0, "killstreak": 0, "kills": 0}
+                team_stats[team]["score"] += getattr(b, "score", 0)
+                team_stats[team]["killstreak"] += getattr(b, "killstreak", 0)
+                team_stats[team]["kills"] += getattr(b, "kills", 0)
+
         highest_score = -1
+        highest_streak = -1
         highest_kills = -1
         bounty_candidates = []
 
-        for b in balls:
-            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                score = getattr(b, "score", 0)
-                kills = getattr(b, "kills", 0)
-                # Use score as primary, kills as secondary (fallback)
-                if score > highest_score:
-                    highest_score = score
-                    highest_kills = kills
-                    bounty_candidates = [b]
-                elif score == highest_score and score > 0:
-                    if kills > highest_kills:
-                        highest_kills = kills
-                        bounty_candidates = [b]
-                    elif kills == highest_kills:
-                        bounty_candidates.append(b)
-                elif score == 0 and highest_score <= 0:
-                    # Fallback if no one has a score yet
-                    if kills > highest_kills:
-                        highest_kills = kills
-                        bounty_candidates = [b]
-                    elif kills == highest_kills and kills > 0:
-                        bounty_candidates.append(b)
+        for team, stats in team_stats.items():
+            score = stats["score"]
+            streak = stats["killstreak"]
+            kills = stats["kills"]
 
-        # Only assign bounty if someone has a score or kills
-        new_bounty_id = None
-        if (highest_score > 0 or highest_kills > 0) and bounty_candidates:
-            # If multiple people have the same highest kills, pick the first one (or keep the existing if tied)
-            selected = bounty_candidates[0]
-            if self.current_bounty_id is not None:
-                for b in bounty_candidates:
-                    if getattr(b, "id", None) == self.current_bounty_id:
-                        selected = b
-                        break
-            new_bounty_id = getattr(selected, "id", None)
+            if score > highest_score:
+                highest_score = score
+                highest_streak = streak
+                highest_kills = kills
+                bounty_candidates = [team]
+            elif score == highest_score and score > 0:
+                if streak > highest_streak:
+                    highest_streak = streak
+                    highest_kills = kills
+                    bounty_candidates = [team]
+                elif streak == highest_streak:
+                    if kills > highest_kills:
+                        highest_kills = kills
+                        bounty_candidates = [team]
+                    elif kills == highest_kills:
+                        bounty_candidates.append(team)
+            elif score == 0 and highest_score <= 0:
+                if streak > highest_streak:
+                    highest_streak = streak
+                    highest_kills = kills
+                    bounty_candidates = [team]
+                elif streak == highest_streak:
+                    if kills > highest_kills:
+                        highest_kills = kills
+                        bounty_candidates = [team]
+                    elif kills == highest_kills and kills > 0:
+                        bounty_candidates.append(team)
+
+        new_bounty_team = None
+        if (highest_score > 0 or highest_streak > 0 or highest_kills > 0) and bounty_candidates:
+            new_bounty_team = bounty_candidates[0]
+            if self.current_bounty_team is not None and self.current_bounty_team in bounty_candidates:
+                new_bounty_team = self.current_bounty_team
 
         # Update markers
         for b in balls:
             if getattr(b, "alive", False):
-                b_id = getattr(b, "id", None)
-                if b_id == new_bounty_id and new_bounty_id is not None:
+                b_team = getattr(b, "team", getattr(b, "id", "unknown"))
+                if b_team == new_bounty_team and new_bounty_team is not None:
                     b.is_dynamic_bounty = True
                 else:
                     b.is_dynamic_bounty = False
 
-        self.current_bounty_id = new_bounty_id
+        self.current_bounty_team = new_bounty_team
 
         # Emit visual effect periodically for the marked player
         self.vfx_timer += delta
         if self.vfx_timer >= 1.0:
             self.vfx_timer = 0.0
-            if new_bounty_id is not None and hasattr(world, "add_event"):
+            if new_bounty_team is not None and hasattr(world, "add_event"):
                 for b in balls:
-                    if getattr(b, "id", None) == new_bounty_id and getattr(b, "alive", False):
+                    b_team = getattr(b, "team", getattr(b, "id", "unknown"))
+                    if b_team == new_bounty_team and getattr(b, "alive", False):
                         world.add_event("visual_effect", {
                             "type": "bounty_mark",
                             "x": getattr(b, "x", 0.0),

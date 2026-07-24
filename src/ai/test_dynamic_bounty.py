@@ -2,11 +2,12 @@ from ai.game_modes import DynamicBountyMode
 from ai.action import Action
 
 class MockEntity:
-    def __init__(self, entity_id, kills=0):
+    def __init__(self, entity_id, kills=0, team="Neutral"):
         self.id = entity_id
         self.alive = True
         self.ball_type = "warrior"
         self.kills = kills
+        self.killstreak = 0
         self.x = 100.0
         self.y = 100.0
         self.damage = 10.0
@@ -16,7 +17,7 @@ class MockEntity:
         self.loadout_fragments = 0
         self.is_dynamic_bounty = False
         self.is_minor_bounty = False
-        self.team = "Red"
+        self.team = team
         self.stun_timer = 0.0
         self.charge_level = 0.0
         self.score = 0
@@ -45,9 +46,9 @@ def test_dynamic_bounty_assignment():
     mode = DynamicBountyMode()
     world = MockWorld()
 
-    b1 = MockEntity(1, kills=0)
-    b2 = MockEntity(2, kills=2)
-    b3 = MockEntity(3, kills=1)
+    b1 = MockEntity(1, kills=0, team="Red")
+    b2 = MockEntity(2, kills=2, team="Blue")
+    b3 = MockEntity(3, kills=1, team="Green")
 
     balls = [b1, b2, b3]
 
@@ -69,9 +70,9 @@ def test_dynamic_bounty_assignment_fallback_kills():
     mode = DynamicBountyMode()
     world = MockWorld()
 
-    b1 = MockEntity(1, kills=0)
-    b2 = MockEntity(2, kills=2)
-    b3 = MockEntity(3, kills=1)
+    b1 = MockEntity(1, kills=0, team="Red")
+    b2 = MockEntity(2, kills=2, team="Blue")
+    b3 = MockEntity(3, kills=1, team="Green")
 
     balls = [b1, b2, b3]
 
@@ -81,6 +82,44 @@ def test_dynamic_bounty_assignment_fallback_kills():
     assert b1.is_dynamic_bounty is False
     assert b2.is_dynamic_bounty is True
     assert b3.is_dynamic_bounty is False
+
+def test_dynamic_bounty_team_assignment():
+    mode = DynamicBountyMode()
+    world = MockWorld()
+
+    b1 = MockEntity(1, kills=0, team="Red")
+    b2 = MockEntity(2, kills=0, team="Red")
+    b3 = MockEntity(3, kills=0, team="Blue")
+    b4 = MockEntity(4, kills=0, team="Blue")
+
+    b1.score = 50
+    b2.score = 60 # Red total = 110
+    b3.score = 100 # Blue total = 100
+
+    balls = [b1, b2, b3, b4]
+
+    mode.tick(world, balls, delta=0.5)
+
+    assert b1.is_dynamic_bounty is True
+    assert b2.is_dynamic_bounty is True
+    assert b3.is_dynamic_bounty is False
+    assert b4.is_dynamic_bounty is False
+
+def test_dynamic_bounty_killstreak():
+    mode = DynamicBountyMode()
+    world = MockWorld()
+
+    b1 = MockEntity(1, kills=5, team="Red") # High kills but 0 killstreak
+    b2 = MockEntity(2, kills=3, team="Blue")
+    b2.killstreak = 3
+
+    balls = [b1, b2]
+
+    # Team Blue has 0 score, 3 killstreak. Team Red has 0 score, 0 killstreak. Team Blue wins.
+    mode.tick(world, balls, delta=0.5)
+
+    assert b1.is_dynamic_bounty is False
+    assert b2.is_dynamic_bounty is True
 
 def test_dynamic_bounty_buffs_on_kill():
     world = MockWorld()
