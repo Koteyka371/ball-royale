@@ -178,3 +178,32 @@ def test_synergy_water_lightning_electrified_water():
     # and distance ~56 from lightning (r=150) -> hit
     # Damage is 15 per hit. 100 - 15 - 15 = 70
     assert enemy1.hp == 70.0
+
+def test_synergy_fire_earth_magma():
+    mode = MockTraitsMode()
+    world = MockWorld()
+
+    b_fire = MockBall(ball_type="fire")
+    b_fire.team = 1
+
+    b_earth = MockBall(ball_type="earth")
+    b_earth.team = 1
+
+    enemy1 = MockBall(ball_type="base", hp=100.0, speed=100.0)
+    enemy1.team = 2
+    enemy1.x = 10.0
+    enemy1.y = 10.0
+
+    b_fire.x = 0.0
+    b_fire.y = 0.0
+    b_earth.x = 50.0
+    b_earth.y = 50.0
+
+    # Initial timer is 0. Delta of 2.0 should trigger the 1.5 check
+    mode.apply_dynamic_traits(world, [b_fire, b_earth, enemy1], 2.0)
+
+    # Enemy should take damage from both fire and earth pulsing magma auras
+    # Each does 20 damage. 100 - 20 - 20 = 60.0
+    assert enemy1.hp == 60.0
+    # Enemy speed should be reduced
+    assert enemy1.speed == 70.0
