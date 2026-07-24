@@ -41608,6 +41608,16 @@ class FloodingArenaMode extends GameMode:
 						base_speed = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
 						if "speed" in b: b.speed = base_speed * 0.5
 
+						var deep_radius = flood_radius * 0.5
+						if distance_to_center > deep_radius:
+							var stamina = 100.0
+							if typeof(b) == TYPE_DICTIONARY:
+								stamina = b.get("stamina", 100.0)
+								b["stamina"] = max(0.0, stamina - 10.0 * delta)
+							else:
+								if "stamina" in b:
+									b.stamina = max(0.0, b.stamina - 10.0 * delta)
+
 					if hp <= 0.0:
 						if typeof(b) == TYPE_DICTIONARY:
 							b["alive"] = false
