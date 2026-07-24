@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1421] Decoy Mimic Mastery — *2026-07-24 04:49:07 UTC*
+
+A new passive skill where decoys deployed by the player not only copy their appearance, but occasionally mimic casting harmless visual versions of their current active skill.
+
+---
+
 ## [idea-1432] Aura Syphon Field Trap — *2026-07-24 04:49:03 UTC*
 
 A trap that creates an aura siphon field. Any enemy caught inside has their positive aura buffs (speed, healing, etc.) constantly transferred to the trap owner, turning enemy team coordination into an advantage for the individual.
