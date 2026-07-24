@@ -1,0 +1,4 @@
+{
+  "title": "Black Hole Hazard",
+  "description": "A hazard that slowly sucks in nearby balls and hazards. Balls get slowed as they approach the center, and take heavy continuous damage if they touch the event horizon. It can be triggered by a specific booster item or naturally spawned."
+}
