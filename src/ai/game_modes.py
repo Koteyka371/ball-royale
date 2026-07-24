@@ -29125,6 +29125,51 @@ class ChainLightningEventMode(GameMode):
                             })
                 b.chain_lightning_arc_timer = arc_timer
 
+
+class BlackHoleWeatherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole Weather"
+        self.description = "A weather event that slowly pulls everyone towards the center of the arena."
+        self.weather = "black_hole_storm"
+        self.pull_strength = 20.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        center_x = arena_width / 2.0
+        center_y = arena_height / 2.0
+
+        for b in balls:
+            if getattr(b, "alive", True) and getattr(b, "ball_type", "") != "spectator":
+                # Do not pull if immune to weather
+                w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+                is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+                if is_immune:
+                    continue
+
+                dx = center_x - b.x
+                dy = center_y - b.y
+                dist_sq = dx*dx + dy*dy
+                if dist_sq > 0.0001:
+                    dist = math.sqrt(dist_sq)
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    pull_x = nx * self.pull_strength * delta
+                    pull_y = ny * self.pull_strength * delta
+
+                    b.x += pull_x
+                    b.y += pull_y
+
+                    if hasattr(b, 'vx'):
+                        b.vx += pull_x * 5
+                    if hasattr(b, 'vy'):
+                        b.vy += pull_y * 5
+
 GAME_MODES = {
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),
@@ -37847,3 +37892,4 @@ class HugeTornadosMode(GameMode):
                                             b.alive = False
 
 GAME_MODES['huge_tornados'] = HugeTornadosMode()
+GAME_MODES['black_hole_weather'] = BlackHoleWeatherMode()
