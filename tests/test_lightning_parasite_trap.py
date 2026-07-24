@@ -1,10 +1,9 @@
 import sys
 import os
 import pytest
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src/ai')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from src.ai.action import Action
+from ai.action import Action
 
 class MockWorld:
     def __init__(self):
