@@ -36701,6 +36701,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2147",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather System Expansion",
+      "description": "Add 5 new dynamic weather conditions like hail and acid rain, changing ball physics slightly.",
+      "allowed_paths": [
+        "src/ai/expansion.py",
+        "src/ai/expansion.gd",
+        "tests/test_expansion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2148",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Boots Item",
+      "description": "A new booster item that negates knockback and makes the ball stick to its path, ignoring gravity hazards.",
+      "allowed_paths": [
+        "src/ai/gravity_boots_item.py",
+        "src/ai/gravity_boots_item.gd",
+        "tests/test_gravity_boots_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

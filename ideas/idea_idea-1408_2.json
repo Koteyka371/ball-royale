@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Swap Hazard",
-  "description": "A hazard that doesn't deal damage, but instantly swaps the positions of any two entities that touch it within a short timeframe."
-}
