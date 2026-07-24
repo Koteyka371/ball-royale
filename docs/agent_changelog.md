@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1443] Black Hole Weather — *2026-07-24 21:01:59 UTC*
+
+Weather event that slowly pulls everyone towards center.
+
+---
+
 ## [idea-1459] Guild Stronghold Upgrade — *2026-07-24 21:01:53 UTC*
 
 Winning territory battles grants a guild a 'Stronghold Upgrade'. They can fortify their base with better automated defenses, traps, or aura buffs for members while fighting in adjacent territories.
