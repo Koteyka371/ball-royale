@@ -222,24 +222,72 @@ def test_giant_flood_effects():
 
     mode = ExtremeWeatherMode()
     world = MockWorld()
-    b1 = MockBall()
-    b2 = MockBall()
-    b2.life_jacket_booster_timer = 10.0
-    balls = [b1, b2]
 
+    # Not aquatic, in deep water
+    b1 = MockBall()
+    b1.x = 900.0
+    b1.y = 900.0
+    b1.ball_type = "basic"
+    b1.stamina = 100.0
     b1.steering_mult = 1.0
+
+    # Has life jacket
+    b2 = MockBall()
+    b2.x = 900.0
+    b2.y = 900.0
+    b2.life_jacket_booster_timer = 10.0
+    b2.stamina = 100.0
     b2.steering_mult = 1.0
+
+    # Aquatic ball
+    b3 = MockBall()
+    b3.x = 900.0
+    b3.y = 900.0
+    b3.ball_type = "aquatic_drone"
+    b3.stamina = 100.0
+    b3.steering_mult = 1.0
+
+    # Not aquatic, in safe center
+    b4 = MockBall()
+    b4.x = 500.0
+    b4.y = 500.0
+    b4.ball_type = "basic"
+    b4.stamina = 100.0
+    b4.steering_mult = 1.0
+
+    balls = [b1, b2, b3, b4]
 
     mode.setup(world, balls)
     mode.current_weather = "giant_flood"
 
+    # Tick to increase flood level
     mode.tick(world, balls, 1.0)
+
+    # b1 is far from center (dist = ~565), arena 1000x1000
+    # giant_flood_level = 30.0, flood_start = 500 - 30 = 470
+    # b1 dist > 470, so in water. dist > 470 + 150 ? No, 470+150=620, dist=565. Not deep water yet.
+    # Let's tick more to make it deep water
+    for _ in range(10):
+        mode.tick(world, balls, 1.0)
+
+    # flood_level = 330.0, flood_start = 170.
+    # dist 565 > 170 + 150 = 320 -> Deep water!
 
     assert b1.speed == b1.base_speed * 0.3
     assert getattr(b1, "steering_mult", 1.0) == 0.5
+    assert b1.stamina < 100.0
 
     assert b2.speed == b2.base_speed
     assert b2.steering_mult == 1.0
+    assert b2.stamina == 100.0
+
+    assert b3.speed == b3.base_speed
+    assert b3.steering_mult == 1.0
+    assert b3.stamina == 100.0
+
+    assert b4.speed == b4.base_speed
+    assert b4.steering_mult == 1.0
+    assert b4.stamina == 100.0
 
 def test_solar_eclipse_effects():
     from ai.game_modes import ExtremeWeatherMode

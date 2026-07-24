@@ -31548,6 +31548,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
+	var giant_flood_level: float = 0.0
 	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
 
 	func _init():
@@ -31569,6 +31570,8 @@ class ExtremeWeatherMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016):
 		super.tick(world, balls, delta)
 		weather_timer += delta
+		if current_weather == "giant_flood":
+			giant_flood_level += 30.0 * delta
 
 		for b in balls:
 			var is_active = false
@@ -31591,6 +31594,7 @@ class ExtremeWeatherMode extends GameMode:
 			weather_timer = 0.0
 			var old_weather = current_weather
 			current_weather = weathers[randi() % weathers.size()]
+			giant_flood_level = 0.0
 
 			for b in balls:
 				if "forecast_booster_active" in b and b.forecast_booster_active:
@@ -31849,12 +31853,66 @@ class ExtremeWeatherMode extends GameMode:
 					elif b.has_method("set_meta"):
 						b.set_meta("steering_mult", 0.0)
 			elif current_weather == "giant_flood":
-				if not has_life_jacket:
-					b.speed = b.get_meta("base_speed") * 0.3
-					if "steering_mult" in b:
-						b.steering_mult = b.steering_mult * 0.5
-					elif b.has_meta("steering_mult"):
-						b.set_meta("steering_mult", b.get_meta("steering_mult") * 0.5)
+				var arena_w = 1000.0
+				var arena_h = 1000.0
+				if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+					arena_w = world.arena.get("width", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else (world.arena.width if "width" in world.arena else 1000.0)
+					arena_h = world.arena.get("height", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else (world.arena.height if "height" in world.arena else 1000.0)
+				elif world != null and typeof(world) == TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					arena_w = world.arena.get("width", 1000.0)
+					arena_h = world.arena.get("height", 1000.0)
+
+				var center_x = arena_w / 2.0
+				var center_y = arena_h / 2.0
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+
+				var dist = sqrt(pow(bx - center_x, 2) + pow(by - center_y, 2))
+				var flood_start_radius = max(0.0, (min(arena_w, arena_h) / 2.0) - giant_flood_level)
+
+				var bt = ball_type.to_lower()
+				var is_aquatic = false
+				if "water" in bt or "swamp" in bt or "hover" in bt or "floating" in bt or "aquatic" in bt:
+					is_aquatic = true
+				if typeof(b) == TYPE_DICTIONARY and "traits" in b:
+					for t in b["traits"]:
+						var ts = str(t).to_lower()
+						if ts in ["water", "swamp", "hover", "floating", "aquatic"]:
+							is_aquatic = true
+				elif typeof(b) == TYPE_OBJECT and "traits" in b:
+					for t in b.traits:
+						var ts = str(t).to_lower()
+						if ts in ["water", "swamp", "hover", "floating", "aquatic"]:
+							is_aquatic = true
+
+				if dist > flood_start_radius:
+					if not has_life_jacket and not is_aquatic:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["speed"] = b.get("base_speed", 100.0) * 0.3
+							b["steering_mult"] = b.get("steering_mult", 1.0) * 0.5
+						else:
+							b.speed = b.get_meta("base_speed") * 0.3 if b.has_meta("base_speed") else (b.base_speed if "base_speed" in b else 100.0) * 0.3
+							if "steering_mult" in b:
+								b.steering_mult = b.steering_mult * 0.5
+							elif b.has_meta("steering_mult"):
+								b.set_meta("steering_mult", b.get_meta("steering_mult") * 0.5)
+
+						if dist > flood_start_radius + 150.0:
+							var stam = 100.0
+							if typeof(b) == TYPE_DICTIONARY:
+								stam = b.get("stamina", 100.0)
+								b["stamina"] = max(0.0, stam - 20.0 * delta)
+							else:
+								stam = b.stamina if "stamina" in b else 100.0
+								if "stamina" in b:
+									b.stamina = max(0.0, stam - 20.0 * delta)
 			elif current_weather == "solar_eclipse":
 				var has_vision = (b.has_meta("vision_booster_timer") and b.get_meta("vision_booster_timer") > 0.0) or (b.has_meta("mega_vision_booster_timer") and b.get_meta("mega_vision_booster_timer") > 0.0)
 				if not has_vision:

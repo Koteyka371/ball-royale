@@ -10245,6 +10245,7 @@ class PortalNodeMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import math
+        import math
         import random
 
         self.portal_timer += delta
@@ -10433,6 +10434,7 @@ class PoisonGasZoneMode(MovingSafeZoneMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         # Add visual poison gas effect via events if we can, or modify balls
         import math
         for b in balls:
@@ -11048,6 +11050,7 @@ class SnakeSafeZoneMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import math
         self.time += delta
 
@@ -12035,6 +12038,7 @@ class PacifistKnockoutMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "width", 1000)
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else getattr(world, "height", 1000)
 
@@ -12082,6 +12086,7 @@ class RadiationWindstormMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.angle_timer -= delta
         if self.angle_timer <= 0:
             self.wind_angle = self.random.uniform(0, 2 * 3.14159)
@@ -13604,6 +13609,7 @@ class ShiftingMazeMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         if self.maze_scale > 0.2:
             self.maze_scale -= self.shrink_rate * delta
@@ -16906,6 +16912,7 @@ class MutantSafeZoneMode(SafeZoneMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
         import math
 
@@ -16938,6 +16945,7 @@ class MinefieldSafeZoneMode(SafeZoneMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import math
         import random
 
@@ -17091,6 +17099,7 @@ class MicroSafeZonesMode(SafeZoneMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import math
         import random
 
@@ -20214,10 +20223,14 @@ class ExtremeWeatherMode(GameMode):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not getattr(b, "base_damage", None):
                 b.base_damage = getattr(b, "damage", 10.0)
+        self.giant_flood_level = 0.0
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.weather_timer += delta
+        if self.current_weather == "giant_flood":
+            self.giant_flood_level += 30.0 * delta
 
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
@@ -20233,6 +20246,7 @@ class ExtremeWeatherMode(GameMode):
             self.weather_timer = 0.0
             old_weather = self.current_weather
             self.current_weather = self.random.choice(self.weathers)
+            self.giant_flood_level = 0.0
 
             for b in balls:
                 if getattr(b, "forecast_booster_active", False):
@@ -20473,9 +20487,23 @@ class ExtremeWeatherMode(GameMode):
                     if hasattr(b, "y"): b.y += math.sin(angle) * 300.0 * delta
                     b.steering_mult = 0.0
             elif self.current_weather == "giant_flood":
-                if not has_life_jacket:
-                    b.speed = b.base_speed * 0.3
-                    b.steering_mult = getattr(b, "steering_mult", 1.0) * 0.5
+                arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+                center_x = arena_w / 2.0
+                center_y = arena_h / 2.0
+                dist = math.hypot(getattr(b, "x", 0.0) - center_x, getattr(b, "y", 0.0) - center_y)
+                flood_start_radius = max(0.0, (min(arena_w, arena_h) / 2.0) - getattr(self, "giant_flood_level", 0.0))
+
+                b_type = getattr(b, "ball_type", "").lower()
+                traits = getattr(b, "traits", [])
+                is_aquatic = "water" in b_type or "swamp" in b_type or "hover" in b_type or "floating" in b_type or "aquatic" in b_type or any(t.lower() in ["water", "swamp", "hover", "floating", "aquatic"] for t in [str(t) for t in traits])
+
+                if dist > flood_start_radius:
+                    if not has_life_jacket and not is_aquatic:
+                        b.speed = b.base_speed * 0.3
+                        b.steering_mult = getattr(b, "steering_mult", 1.0) * 0.5
+                        if dist > flood_start_radius + 150.0:
+                                b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 20.0 * delta)
             elif self.current_weather == "solar_eclipse":
                 if not getattr(b, "vision_booster_timer", 0.0) > 0 and not getattr(b, "mega_vision_booster_timer", 0.0) > 0:
                     b.perception_radius = 50.0
@@ -21136,6 +21164,7 @@ class HexGridRoyaleMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.tick_timer += delta
         self.drop_timer += delta
 
@@ -21501,6 +21530,7 @@ class HauntedEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         if hasattr(world, "arena"):
             world.arena.is_night = True
 
@@ -21573,6 +21603,7 @@ class BlackoutEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.timer += delta
 
         if self.timer >= 5.0:
@@ -22500,6 +22531,7 @@ class EntangledArenaMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         for b in balls:
             if not getattr(b, "alive", False):
@@ -22634,6 +22666,7 @@ class EntangledSwapHazardMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         # Track massive damage events
         pending_swaps = []
@@ -22729,6 +22762,7 @@ class EntanglementMutatorMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         for b in balls:
             if not getattr(b, "alive", False):
@@ -23573,6 +23607,7 @@ class ElementalAurasMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import math
+        import math
         import random
 
         for b in balls:
@@ -24190,6 +24225,7 @@ class StationaryTurretsMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
 
         self.spawn_timer += delta
@@ -24411,6 +24447,7 @@ class MassiveBlackHoleEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
         import math
 
@@ -24492,6 +24529,7 @@ class RotatingLasersMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         if not hasattr(world, "arena"): return
 
         if not self.lasers_spawned:
@@ -25625,6 +25663,7 @@ class SweepingRotatingLasersMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"): return
 
         import math
@@ -25662,6 +25701,7 @@ class HealingZoneMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import math
 
         self.zone_radius += self.expand_rate * delta
@@ -26377,6 +26417,7 @@ class VoidTilesMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.tick_timer += delta
         self.safe_radius = max(0.0, 1000.0 - self.tick_timer * 10.0)
 
@@ -27009,6 +27050,7 @@ class EntangledHazardsMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         if not hasattr(world, "arena") or not world.arena:
             return
 
@@ -27176,6 +27218,7 @@ class RoamingDoppelgangerMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import math
+        import math
         import copy
         import random
 
@@ -27309,6 +27352,7 @@ class RandomTeleportDashMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
         import math
 
@@ -27616,6 +27660,7 @@ class RandomQuantumTunnelsMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
         import math
 
@@ -27698,6 +27743,7 @@ class GuildStormMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         if not self.storm_active:
             return
@@ -30381,6 +30427,7 @@ class ItemMorphMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.morph_timer += delta
         while self.morph_timer >= self.morph_interval:
             self.morph_timer -= self.morph_interval
@@ -30594,6 +30641,7 @@ class SolarFlareMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.flare_timer += delta
 
         if not self.is_flaring and self.flare_timer >= self.flare_interval:
@@ -30672,6 +30720,7 @@ class UndergroundTunnelMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import math
 
         for b in balls:
@@ -31201,6 +31250,7 @@ class DisguisedTrapsMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
         from arena.procedural_arena import Hazard
 
@@ -31596,6 +31646,7 @@ class SectorCollapseMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
         import math
 
@@ -31721,6 +31772,7 @@ class ConstrictingBoundaryTrapMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
 
         if not self.trap_active:
@@ -33201,6 +33253,7 @@ class GrappleNodeMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.spawn_timer -= delta
         if self.spawn_timer <= 0:
             self.spawn_timer = 15.0
@@ -33945,6 +33998,7 @@ class BountyContractEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
 
         alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
@@ -34303,6 +34357,7 @@ class EyeOfTheStormMode(SafeZoneMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import math
+        import math
         import random
 
         dx = self.eye_target_x - self.eye_x
@@ -34493,6 +34548,7 @@ class FactionWarMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         if not self.season_ended:
             self.season_timer -= delta
             if self.season_timer <= 0:
@@ -34560,6 +34616,7 @@ class ChainReactionMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         remaining_explosions = []
         new_explosions = [] # explosions added during this tick
@@ -34630,6 +34687,7 @@ class KillstreakExplosionMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         remaining_explosions = []
         current_explosions = list(self.pending_explosions)
@@ -34670,6 +34728,7 @@ class MimicCloneSwapMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import copy
         import random
 
@@ -34761,6 +34820,7 @@ class TornadoSwarmEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         self.event_timer -= delta
         if self.event_timer <= 0.0:
@@ -35526,6 +35586,7 @@ class LinkedPortalsMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") and world.arena else 800
         arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") and world.arena else 600
@@ -35758,6 +35819,7 @@ class VIPProtectionMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         # Group balls by team
         teams = {}
@@ -35960,6 +36022,7 @@ class FallingTilesRoyaleMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         self.timer -= delta
 
         if self.phase == "wait":
@@ -36046,6 +36109,7 @@ class QuadrantRoyaleMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import random
         import math
 
@@ -36169,6 +36233,7 @@ class VolcanicEruptionEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         arena_width = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
         arena_height = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
@@ -36336,6 +36401,7 @@ class ItemJammerEventMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
 
         if not self.is_jamming:
             self.jammer_timer -= delta
@@ -36428,6 +36494,7 @@ class HiveDefenseMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         if self.match_over or not hasattr(world, "arena") or world.arena is None:
             return
 
@@ -36837,6 +36904,7 @@ class VampiricZoneMode(GameMode):
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
+        import math
         import math
 
         for b in balls:
