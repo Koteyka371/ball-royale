@@ -23164,7 +23164,7 @@
     },
     {
       "id": "idea-1352",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Pet System",
@@ -35775,6 +35775,23 @@
         "src/ai/kinetic_feedback_booster.py",
         "src/ai/kinetic_feedback_booster.gd",
         "tests/test_kinetic_feedback_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2093",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time Loop Zone",
+      "description": "A hazard zone where any projectile that passes through it has its trajectory recorded and periodically replayed for the next 15 seconds, creating a dense bullet-hell area.",
+      "allowed_paths": [
+        "src/ai/time_loop_zone.py",
+        "src/ai/time_loop_zone.gd",
+        "tests/test_time_loop_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1352] Pet System — *2026-07-24 00:21:38 UTC*
+
+Allow players to find, tame, and equip mini-balls as pets that follow them around, providing minor stat boosts or utility skills like auto-looting.
+
+---
+
 ## [idea-1287] Emotion Synergy: Courage — *2026-07-24 00:10:21 UTC*
 
 Introduce a new emotion 'courage' that can randomly proc on balls that successfully defeat an enemy that was under the 'fear' effect. Courage grants immunity to fear and a 15% bonus to attack power for 10 seconds.
