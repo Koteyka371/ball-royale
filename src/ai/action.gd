@@ -21108,19 +21108,39 @@ func execute(strategy: String, delta: float):
                         self.ball.set("bounces_left", 5)
 
 
-    if bounced_wall:
+    var vx_val = 0.0
+    var vy_val = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        if self.ball.has("vx"): vx_val = self.ball["vx"]
+        if self.ball.has("vy"): vy_val = self.ball["vy"]
+    elif typeof(self.ball) == TYPE_OBJECT:
+        if "vx" in self.ball: vx_val = self.ball.vx
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"): vx_val = self.ball.get_meta("vx")
+        if "vy" in self.ball: vy_val = self.ball.vy
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): vy_val = self.ball.get_meta("vy")
+
+    if bounced_wall and (pow(vx_val, 2) + pow(vy_val, 2) > 1.0):
         if typeof(self.ball) == TYPE_DICTIONARY:
-            if not (self.ball.has("wall_stick_timer") and self.ball["wall_stick_timer"] > 0.0):
-                self.ball["wall_stick_timer"] = 2.0
+            var has_sticky = self.ball.get("has_sticky_boots", false)
+            if has_sticky or not (self.ball.has("wall_stick_timer") and self.ball["wall_stick_timer"] > 0.0):
+                var ws_dur = self.ball.get("wall_stick_duration", 2.0)
+                if has_sticky: ws_dur = max(ws_dur, 3.0)
+                self.ball["wall_stick_timer"] = ws_dur
                 self.ball["is_stunned"] = true
         elif "wall_stick_timer" in self.ball:
-            if not self.ball.wall_stick_timer > 0.0:
-                self.ball.wall_stick_timer = 2.0
+            var has_sticky = self.ball.get("has_sticky_boots") if "has_sticky_boots" in self.ball else false
+            if has_sticky or not self.ball.wall_stick_timer > 0.0:
+                var ws_dur = self.ball.get("wall_stick_duration") if "wall_stick_duration" in self.ball else 2.0
+                if has_sticky: ws_dur = max(ws_dur, 3.0)
+                self.ball.wall_stick_timer = ws_dur
                 if "is_stunned" in self.ball: self.ball.is_stunned = true
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", true)
         elif self.ball.has_method("set_meta"):
-            if not (self.ball.has_meta("wall_stick_timer") and self.ball.get_meta("wall_stick_timer") > 0.0):
-                self.ball.set_meta("wall_stick_timer", 2.0)
+            var has_sticky = self.ball.has_meta("has_sticky_boots") and self.ball.get_meta("has_sticky_boots")
+            if has_sticky or not (self.ball.has_meta("wall_stick_timer") and self.ball.get_meta("wall_stick_timer") > 0.0):
+                var ws_dur = self.ball.get_meta("wall_stick_duration") if self.ball.has_meta("wall_stick_duration") else 2.0
+                if has_sticky: ws_dur = max(ws_dur, 3.0)
+                self.ball.set_meta("wall_stick_timer", ws_dur)
                 self.ball.set_meta("is_stunned", true)
 
     if bounced_wall:
@@ -25106,6 +25126,20 @@ func _collect_booster(delta: float):
                                         ob.set_meta("ghost_mode_active", true)
                                         if "ghost_mode_active" in ob: ob.ghost_mode_active = true
 
+                if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                    var h_idx = self.world.arena.hazards.find(nearest)
+                    if h_idx >= 0:
+                        self.world.arena.hazards.remove_at(h_idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0:
+                        self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "sticky_boots_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["has_sticky_boots"] = true
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_sticky_boots", true)
+                    if "has_sticky_boots" in self.ball: self.ball.has_sticky_boots = true
                 if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
                     var h_idx = self.world.arena.hazards.find(nearest)
                     if h_idx >= 0:
