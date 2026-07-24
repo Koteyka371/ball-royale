@@ -32,6 +32,33 @@ class GameMode:
         self.description = "Base game mode"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        weather = getattr(world, "arena", None) and getattr(world.arena, "weather", "") or getattr(world, "game_mode", None) and getattr(world.game_mode, "weather", "")
+
+        for b in balls:
+            if getattr(b, "alive", True):
+                b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
+                if b_type == "snowball":
+                    if weather in ["blizzard", "snow"]:
+                        b.speed = getattr(b, "base_speed", 2.0) * 1.5
+                        b.damage = getattr(b, "base_damage", 10.0) * 1.5
+                    else:
+                        if hasattr(b, "base_speed"): b.speed = b.base_speed
+                        if hasattr(b, "base_damage"): b.damage = b.base_damage
+                elif b_type == "sandball":
+                    if weather in ["sandstorm", "wind", "windstorm", "hurricane"]:
+                        b.speed = getattr(b, "base_speed", 2.0) * 1.5
+                        b.damage = getattr(b, "base_damage", 10.0) * 1.5
+                    else:
+                        if hasattr(b, "base_speed"): b.speed = b.base_speed
+                        if hasattr(b, "base_damage"): b.damage = b.base_damage
+                elif b_type == "thunderball":
+                    if weather == "thunderstorm":
+                        b.speed = getattr(b, "base_speed", 2.0) * 1.5
+                        b.damage = getattr(b, "base_damage", 10.0) * 1.5
+                    else:
+                        if hasattr(b, "base_speed"): b.speed = b.base_speed
+                        if hasattr(b, "base_damage"): b.damage = b.base_damage
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards[:]:
                 if getattr(hazard, "kind", "") == "high_risk_nuke_mine":
@@ -238,7 +265,7 @@ class GameMode:
                     b.speed = cur_speed * 0.5 if b.internal_temperature >= -10.0 else 0.0
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -301,7 +328,7 @@ class GameMode:
                     if b_team not in team_traits:
                         team_traits[b_team] = set()
 
-                    b_type = getattr(b, "ball_type", "").lower()
+                    b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
                     traits = getattr(b, "traits", [])
 
                     if "water" in b_type or "water" in traits:
@@ -317,7 +344,7 @@ class GameMode:
         for b in balls:
             if getattr(b, "alive", False):
                 b_team = getattr(b, "team", None)
-                b_type = getattr(b, "ball_type", "").lower()
+                b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
                 traits = getattr(b, "traits", [])
 
                 if b_team is not None and b_team in team_traits:
@@ -1570,7 +1597,7 @@ class DraftRoyaleMode(GameMode):
             "elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
             "monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone", "shield_drone",
             "scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
-            "warlock", "warrior"
+        "warlock", "warrior", "snowball", "sandball", "thunderball"
         ]
         self.team_rosters = {}
         self.teams = ["Team A", "Team B"]
@@ -1634,7 +1661,7 @@ class DraftRoyaleMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -1936,7 +1963,7 @@ class BattleRoyaleMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -4287,7 +4314,7 @@ class TeamDeathmatchMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -4424,7 +4451,7 @@ class ZombieInfectionMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -4606,7 +4633,7 @@ class GuildBossFightMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -4808,7 +4835,7 @@ class BossFightMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -4876,7 +4903,7 @@ class BossFightMode(GameMode):
 
         boss = valid_balls[0]
         for b in valid_balls:
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
             if is_night and b_type in diurnal_types:
                 continue
             if not is_night and b_type in nocturnal_types:
@@ -5162,7 +5189,7 @@ class DualPayloadMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -5666,7 +5693,7 @@ class EscortMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -6295,7 +6322,7 @@ class VIPDefenseMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -6439,7 +6466,7 @@ class SurvivalMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -6652,7 +6679,7 @@ class CaptureTheFlagMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -6811,7 +6838,7 @@ class EvolutionarySimulationMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -7089,7 +7116,7 @@ class MassiveGravityWellMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -7321,7 +7348,7 @@ class KingOfTheHillMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -7520,7 +7547,7 @@ class SweepingBlackHoleMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -7896,7 +7923,7 @@ class WeatherChaosMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -8788,7 +8815,7 @@ class DominationMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -9112,7 +9139,7 @@ class MemoryTrapsMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -9296,7 +9323,7 @@ class CustomMatchMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -9441,7 +9468,7 @@ class CustomMatchMode(GameMode):
                         for b in balls:
                             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                                 continue
-                            b_type = getattr(b, "ball_type", "").lower()
+                            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
                             if is_night and b_type in diurnal_types:
                                 continue
                             if not is_night and b_type in nocturnal_types:
@@ -9580,7 +9607,7 @@ class EcholocationMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -9767,7 +9794,7 @@ class PitchBlackMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -9939,7 +9966,7 @@ class VisionReducedMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -10121,7 +10148,7 @@ class EMPBurstMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -10274,7 +10301,7 @@ class DynamicHazardsMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -11627,7 +11654,7 @@ class MirrorMatchMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -11774,7 +11801,7 @@ class VolatileClonesMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -12031,7 +12058,7 @@ class CloneChaosMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -12362,7 +12389,7 @@ class BumperBallsMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -12672,7 +12699,7 @@ class ModifierZonesMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -12908,7 +12935,7 @@ class WindstormMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -13353,7 +13380,7 @@ class BountyHuntMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -13920,7 +13947,7 @@ class GravityWellMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -14979,7 +15006,7 @@ class MagneticCollisionsMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -15427,7 +15454,7 @@ class PinballMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -16836,7 +16863,7 @@ class StaminaSpeedMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -17018,7 +17045,7 @@ class HazardBilliardsMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -17811,7 +17838,7 @@ class DailyMutatorMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -17985,7 +18012,7 @@ class BlackMarketMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -18457,7 +18484,7 @@ class BlizzardMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -18678,7 +18705,7 @@ class MeteorShowerMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -18919,7 +18946,7 @@ class CursedBuffZoneMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -19108,7 +19135,7 @@ class RhythmPanelsMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -19659,7 +19686,7 @@ class ArtifactUpgraderMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -19905,7 +19932,7 @@ class SweepingPaddlesMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -20488,7 +20515,7 @@ class InvisibleDecoysMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -20821,7 +20848,7 @@ class ExtremeWeatherMode(GameMode):
 
                 if not has_hazmat:
                     b.damage = b.base_damage * 1.5
-                    b_type = getattr(b, "ball_type", "").lower()
+                    b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
                     traits = getattr(b, "traits", [])
                     if "metal" in b_type or "armor" in b_type or "metal" in traits or "armor" in traits:
                         if not hasattr(b, "base_max_hp"):
@@ -20865,7 +20892,7 @@ class ExtremeWeatherMode(GameMode):
                     if hasattr(b, "y"): b.y += math.sin(angle) * 300.0 * delta
                     b.steering_mult = 0.0
             elif self.current_weather == "giant_flood":
-                b_type = getattr(b, "ball_type", "").lower()
+                b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
                 traits = getattr(b, "traits", [])
                 is_aquatic = "water" in b_type or "swamp" in b_type or "hover" in b_type or "floating" in b_type or "aquatic" in b_type or any(t.lower() in ["water", "swamp", "hover", "floating", "aquatic"] for t in [str(t) for t in traits])
                 if not has_life_jacket and not is_aquatic:
@@ -21215,7 +21242,7 @@ class JuggernautMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -21664,7 +21691,7 @@ class TickingPayloadMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -22184,7 +22211,7 @@ class WeaponCollectionMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -22656,7 +22683,7 @@ class CenterBlackHoleMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -25734,7 +25761,7 @@ class FloodingArenaMode(GameMode):
 
             # If outside the dry center, ball is in the flood
             if distance_to_center > self.flood_radius:
-                b_type = getattr(b, "ball_type", "").lower()
+                b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
                 traits = getattr(b, "traits", [])
 
                 # Check for aquatic trait
@@ -29708,7 +29735,7 @@ class RollingBouldersMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -30011,7 +30038,7 @@ class SoulLinkMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -30341,7 +30368,7 @@ class TagTeamMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -30611,7 +30638,7 @@ class CrossfireMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -30778,7 +30805,7 @@ class TeleporterHubMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits
@@ -31555,7 +31582,7 @@ class FreezeTagMode(GameMode):
                 continue
 
             traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
+            b_type = getattr(b, "ball_type", getattr(b, "BALL_TYPE", "")).lower()
 
             # Trait: Fire
             is_fire = "fire" in b_type or "fire" in traits

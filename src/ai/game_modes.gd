@@ -10,6 +10,86 @@ class GameMode:
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		if world != null:
+			var weather = ""
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "weather" in world.arena:
+				weather = world.arena.weather
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "weather" in world.arena:
+				weather = world.arena.weather
+			elif typeof(world) == TYPE_DICTIONARY and "game_mode" in world and typeof(world.game_mode) == TYPE_DICTIONARY and "weather" in world.game_mode:
+				weather = world.game_mode.weather
+			elif typeof(world) == TYPE_OBJECT and "game_mode" in world and world.game_mode != null and "weather" in world.game_mode:
+				weather = world.game_mode.weather
+
+			for b in balls:
+				var b_alive = true
+				if "alive" in b: b_alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: b_alive = b.get("alive")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+
+				if b_alive:
+					var b_type = ""
+					if "ball_type" in b: b_type = b.ball_type
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("ball_type") != null: b_type = b.get("ball_type")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+
+					b_type = str(b_type).to_lower()
+
+					var base_speed = 2.0
+					if "base_speed" in b: base_speed = b.base_speed
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("base_speed") != null: base_speed = b.get("base_speed")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("base_speed"): base_speed = b["base_speed"]
+
+					var base_damage = 10.0
+					if "base_damage" in b: base_damage = b.base_damage
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("base_damage") != null: base_damage = b.get("base_damage")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("base_damage"): base_damage = b["base_damage"]
+
+					if b_type == "snowball":
+						if weather == "blizzard" or weather == "snow":
+							if "speed" in b: b.speed = base_speed * 1.5
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("speed", base_speed * 1.5)
+							elif typeof(b) == TYPE_DICTIONARY: b["speed"] = base_speed * 1.5
+							if "damage" in b: b.damage = base_damage * 1.5
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("damage", base_damage * 1.5)
+							elif typeof(b) == TYPE_DICTIONARY: b["damage"] = base_damage * 1.5
+						else:
+							if "speed" in b: b.speed = base_speed
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("speed", base_speed)
+							elif typeof(b) == TYPE_DICTIONARY: b["speed"] = base_speed
+							if "damage" in b: b.damage = base_damage
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("damage", base_damage)
+							elif typeof(b) == TYPE_DICTIONARY: b["damage"] = base_damage
+					elif b_type == "sandball":
+						if weather == "sandstorm" or weather == "wind" or weather == "windstorm" or weather == "hurricane":
+							if "speed" in b: b.speed = base_speed * 1.5
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("speed", base_speed * 1.5)
+							elif typeof(b) == TYPE_DICTIONARY: b["speed"] = base_speed * 1.5
+							if "damage" in b: b.damage = base_damage * 1.5
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("damage", base_damage * 1.5)
+							elif typeof(b) == TYPE_DICTIONARY: b["damage"] = base_damage * 1.5
+						else:
+							if "speed" in b: b.speed = base_speed
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("speed", base_speed)
+							elif typeof(b) == TYPE_DICTIONARY: b["speed"] = base_speed
+							if "damage" in b: b.damage = base_damage
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("damage", base_damage)
+							elif typeof(b) == TYPE_DICTIONARY: b["damage"] = base_damage
+					elif b_type == "thunderball":
+						if weather == "thunderstorm":
+							if "speed" in b: b.speed = base_speed * 1.5
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("speed", base_speed * 1.5)
+							elif typeof(b) == TYPE_DICTIONARY: b["speed"] = base_speed * 1.5
+							if "damage" in b: b.damage = base_damage * 1.5
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("damage", base_damage * 1.5)
+							elif typeof(b) == TYPE_DICTIONARY: b["damage"] = base_damage * 1.5
+						else:
+							if "speed" in b: b.speed = base_speed
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("speed", base_speed)
+							elif typeof(b) == TYPE_DICTIONARY: b["speed"] = base_speed
+							if "damage" in b: b.damage = base_damage
+							elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("damage", base_damage)
+							elif typeof(b) == TYPE_DICTIONARY: b["damage"] = base_damage
+
 			var hazards = []
 			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
 				hazards = world.arena.hazards
@@ -3072,7 +3152,7 @@ class DraftRoyaleMode extends GameMode:
 		"elementalist", "guardian", "healer", "juggernaut", "king", "mage", "mimic",
 		"monk", "necromancer", "ninja", "paladin", "phantom", "ranger", "rogue", "drone", "shield_drone",
 		"scout", "sniper", "swarm", "tank", "templar", "trickster", "vampire",
-		"warlock", "warrior"
+		"warlock", "warrior", "snowball", "sandball", "thunderball"
 	]
 	var team_rosters: Dictionary = {"Team A": [], "Team B": []}
 	var teams: Array = ["Team A", "Team B"]
