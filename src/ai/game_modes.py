@@ -32320,6 +32320,93 @@ GAME_MODES['massive_black_hole_event'] = MassiveBlackHoleEventMode()
 GAME_MODES['paint_splatter'] = PaintSplatterMode()
 GAME_MODES['ticking_bomb'] = TickingBombMode()
 
+class AuraBombEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Aura Bomb Event"
+        self.description = "Random players receive a ticking Aura Bomb that explodes after a short delay, damaging all nearby players."
+        self.assign_timer = 10.0
+        self.assign_interval = 15.0
+        self.bomb_duration = 5.0
+        self.explosion_radius = 250.0
+        self.explosion_damage = 50.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.assign_timer = 10.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        self.assign_timer -= delta
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+
+        if self.assign_timer <= 0:
+            self.assign_timer = self.assign_interval
+            if alive_balls:
+                num_to_assign = min(len(alive_balls), max(1, len(alive_balls) // 4))
+                targets = random.sample(alive_balls, num_to_assign)
+                for t in targets:
+                    t.aura_bomb_timer = self.bomb_duration
+                    if hasattr(world, "events"):
+                        world.events.append({'type': 'aura_bomb_assigned', 'data': {'ball_id': getattr(t, "id", None)}})
+
+        new_explosions = []
+        for b in alive_balls:
+            if hasattr(b, "aura_bomb_timer") and b.aura_bomb_timer > 0:
+                b.aura_bomb_timer -= delta
+                if b.aura_bomb_timer <= 0:
+                    b.aura_bomb_timer = 0.0
+
+                    if hasattr(world, "events"):
+                        world.events.append({'type': 'chain_explosion', 'data': {
+                            "x": b.x,
+                            "y": b.y,
+                            "radius": self.explosion_radius
+                        }})
+
+                    class _ExplosionVisual:
+                        def __init__(self, x, y, r):
+                            self.id = random.randint(100000, 999999)
+                            self.x = x
+                            self.y = y
+                            self.radius = r
+                            self.kind = "explosion"
+                            self.duration = 0.5
+                            self.damage = 0.0
+                            self.active = True
+                    new_explosions.append(_ExplosionVisual(b.x, b.y, self.explosion_radius))
+
+                    for other in alive_balls:
+                        if other != b:
+                            dist = math.hypot(other.x - b.x, other.y - b.y)
+                            if dist <= self.explosion_radius:
+                                if getattr(other, "team", -1) != getattr(b, "team", -1):
+                                    # Enemy - take damage
+                                    if hasattr(other, "take_damage"):
+                                        other.take_damage(self.explosion_damage)
+                                    else:
+                                        other.hp = getattr(other, "hp", 100) - self.explosion_damage
+                                        if other.hp <= 0:
+                                            other.alive = False
+                                else:
+                                    # Teammate - take more damage? The prompt says "rush away from their teammates to avoid wiping them out"
+                                    # It also says "rushing towards enemies will damage them."
+                                    if hasattr(other, "take_damage"):
+                                        other.take_damage(self.explosion_damage * 2)
+                                    else:
+                                        other.hp = getattr(other, "hp", 100) - (self.explosion_damage * 2)
+                                        if other.hp <= 0:
+                                            other.alive = False
+
+        if new_explosions and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards.extend(new_explosions)
+
+GAME_MODES['aura_bomb_event'] = AuraBombEventMode()
+
 class StatsDecayMode(GameMode):
     def __init__(self):
         super().__init__()
