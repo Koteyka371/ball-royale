@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1438] Day/Night Cycle Effect on Traits — *2026-07-24 05:14:38 UTC*
+
+Introduce a day/night cycle that dynamically affects traits. Nighttime could boost 'vampire' or 'stealth' traits, while daytime enhances 'solar' or 'radiant' units.
+
+---
+
 ## [idea-1441] Lightning Storm Arena Event — *2026-07-24 05:14:32 UTC*
 
 An arena event where chain lightning periodically strikes the center of the arena, and any entity caught in it becomes a conduit, rapidly spreading smaller, low-damage chain lightnings to anyone nearby for 10 seconds.
