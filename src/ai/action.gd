@@ -34533,6 +34533,18 @@ func _use_skill():
                         mine.orbit_radius = 60.0
                         mine.mine_state = "orbiting"
                     self.world.arena.hazards.append(mine)
+        elif skill_name == "kinetic_conversion":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("kinetic_conversion_active", true)
+                self.ball.set_meta("kinetic_conversion_timer", 5.0)
+            else:
+                self.ball.kinetic_conversion_active = true
+                self.ball.kinetic_conversion_timer = 5.0
+            if self.has_method("_spawn_skill_particles"):
+                _spawn_skill_particles("kinetic_conversion")
+            if "events" in self.world:
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_conversion_activated', 'x': self.ball.x, 'y': self.ball.y}})
+
         elif skill_name == "target_strong":
             var enemies = _get_enemies()
             if enemies.size() > 0:
@@ -36786,6 +36798,78 @@ func _update_skill_timer(delta: float):
                 var bx = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
                 var by = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_shockwave', 'x': bx, 'y': by, 'radius': shockwave_radius, 'force': shockwave_force}})
+
+    var kct = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_conversion_timer"):
+        kct = float(self.ball.get_meta("kinetic_conversion_timer"))
+    elif "kinetic_conversion_timer" in self.ball:
+        kct = float(self.ball.kinetic_conversion_timer)
+
+    if kct > 0.0:
+        var new_kct = kct - delta
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("kinetic_conversion_timer", new_kct)
+        elif "kinetic_conversion_timer" in self.ball:
+            self.ball.kinetic_conversion_timer = new_kct
+
+        var cur_vx = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): cur_vx = float(self.ball.get_meta("vx"))
+        elif "vx" in self.ball: cur_vx = float(self.ball.vx)
+        var cur_vy = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vy"): cur_vy = float(self.ball.get_meta("vy"))
+        elif "vy" in self.ball: cur_vy = float(self.ball.vy)
+
+        var prev_vx = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_prev_vx_for_kinetic"): prev_vx = float(self.ball.get_meta("_prev_vx_for_kinetic"))
+        elif "_prev_vx_for_kinetic" in self.ball: prev_vx = float(self.ball._prev_vx_for_kinetic)
+        var prev_vy = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("_prev_vy_for_kinetic"): prev_vy = float(self.ball.get_meta("_prev_vy_for_kinetic"))
+        elif "_prev_vy_for_kinetic" in self.ball: prev_vy = float(self.ball._prev_vy_for_kinetic)
+
+        var dvx = cur_vx - prev_vx
+        var dvy = cur_vy - prev_vy
+
+        if abs(dvx) > 50.0 or abs(dvy) > 50.0:
+            var final_vx = cur_vx - dvx * 0.5
+            var final_vy = cur_vy - dvy * 0.5
+
+            var sct = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("supercharge_timer"): sct = float(self.ball.get_meta("supercharge_timer"))
+            elif "supercharge_timer" in self.ball: sct = float(self.ball.supercharge_timer)
+            var sbt = 0.0
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): sbt = float(self.ball.get_meta("speed_boost_timer"))
+            elif "speed_boost_timer" in self.ball: sbt = float(self.ball.speed_boost_timer)
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("vx", final_vx)
+                self.ball.set_meta("vy", final_vy)
+                self.ball.set_meta("supercharge_timer", sct + 3.0)
+                self.ball.set_meta("speed_boost_timer", sbt + 3.0)
+                self.ball.set_meta("kinetic_conversion_timer", 0.0)
+            else:
+                self.ball.vx = final_vx
+                self.ball.vy = final_vy
+                self.ball.supercharge_timer = sct + 3.0
+                self.ball.speed_boost_timer = sbt + 3.0
+                self.ball.kinetic_conversion_timer = 0.0
+
+            if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                var bx = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x
+                var by = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_conversion_proc', 'x': bx, 'y': by}})
+
+    var c_vx = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): c_vx = float(self.ball.get_meta("vx"))
+    elif "vx" in self.ball: c_vx = float(self.ball.vx)
+    var c_vy = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vy"): c_vy = float(self.ball.get_meta("vy"))
+    elif "vy" in self.ball: c_vy = float(self.ball.vy)
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+        self.ball.set_meta("_prev_vx_for_kinetic", c_vx)
+        self.ball.set_meta("_prev_vy_for_kinetic", c_vy)
+    else:
+        self.ball._prev_vx_for_kinetic = c_vx
+        self.ball._prev_vy_for_kinetic = c_vy
 
     if cur_skill == "kinetic_echo":
         var current_st = 0.0

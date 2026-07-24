@@ -17981,6 +17981,14 @@ class Action:
                         setattr(mine, 'mine_state', "orbiting")
                         self.world.arena.hazards.append(mine)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
+            elif skill_name == "kinetic_conversion":
+                self.ball.kinetic_conversion_active = True
+                self.ball.kinetic_conversion_timer = 5.0
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("kinetic_conversion")
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_conversion_activated', 'x': self.ball.x, 'y': self.ball.y}})
+
             elif skill_name == "target_strong":
                 import math
                 enemies = self._get_enemies()
@@ -18950,6 +18958,25 @@ class Action:
 
                 if hasattr(self.world, "events"):
                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_absorber_shockwave', 'x': self.ball.x, 'y': self.ball.y, 'radius': shockwave_radius, 'force': shockwave_force}})
+        kct = getattr(self.ball, "kinetic_conversion_timer", 0.0)
+        if kct > 0.0:
+            self.ball.kinetic_conversion_timer = kct - delta
+
+            dvx = getattr(self.ball, "vx", 0.0) - getattr(self.ball, "_prev_vx_for_kinetic", getattr(self.ball, "vx", 0.0))
+            dvy = getattr(self.ball, "vy", 0.0) - getattr(self.ball, "_prev_vy_for_kinetic", getattr(self.ball, "vy", 0.0))
+
+            if abs(dvx) > 50.0 or abs(dvy) > 50.0:
+                self.ball.vx -= dvx * 0.5
+                self.ball.vy -= dvy * 0.5
+                self.ball.supercharge_timer = getattr(self.ball, "supercharge_timer", 0.0) + 3.0
+                self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_conversion_proc', 'x': self.ball.x, 'y': self.ball.y}})
+                self.ball.kinetic_conversion_timer = 0.0
+
+        self.ball._prev_vx_for_kinetic = getattr(self.ball, "vx", 0.0)
+        self.ball._prev_vy_for_kinetic = getattr(self.ball, "vy", 0.0)
+
         if getattr(self.ball, "skill", "") == "kinetic_echo":
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)
