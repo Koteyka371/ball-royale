@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1436] Kinetic Rebound Shield — *2026-07-24 23:44:19 UTC*
+
+A temporary shield that converts a portion of absorbed projectile damage into raw movement speed for a short duration.
+
+---
+
 ## [idea-1453] Gravity Inversion Mutator — *2026-07-24 23:15:19 UTC*
 
 Periodically flips the gravity of the arena, sending heavy objects flying and altering player momentum.
