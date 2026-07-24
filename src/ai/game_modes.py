@@ -37642,3 +37642,119 @@ class MirrorArenaMode(GameMode):
                 world.projectiles.extend(new_projectiles)
 
 GAME_MODES['mirror_arena'] = MirrorArenaMode()
+
+
+class HugeTornadosMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Huge Tornados"
+        self.description = "The arena has multiple huge tornados slowly moving around, constantly sucking players in and dealing damage."
+        self.tornado_spawn_timer = 0.0
+        self.tornado_spawn_interval = 10.0
+        self.max_tornados = 3
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        # Spawn initial tornados
+        for _ in range(self.max_tornados):
+            self._spawn_tornado(world)
+
+    def _spawn_tornado(self, world):
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            hazard_class = None
+
+        if hazard_class is None or not hasattr(hazard_class, "__init__"):
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+            hazard_class = FallbackHazard
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        tx = random.uniform(200.0, arena_width - 200.0)
+        ty = random.uniform(200.0, arena_height - 200.0)
+
+        t_id = f"huge_tornado_{random.randint(1000, 9999)}"
+        tornado = hazard_class(t_id, tx, ty, 250.0, "huge_tornado", 25.0)
+        setattr(tornado, "vx", random.uniform(-50.0, 50.0))
+        setattr(tornado, "vy", random.uniform(-50.0, 50.0))
+        setattr(tornado, "duration", 9999.0)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards.append(tornado)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            import math
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "huge_tornado":
+                    h.x += getattr(h, "vx", 0.0) * delta
+                    h.y += getattr(h, "vy", 0.0) * delta
+
+                    # Bounce off walls
+                    if h.x < getattr(h, "radius", 250):
+                        h.x = getattr(h, "radius", 250)
+                        h.vx = abs(getattr(h, "vx", 0.0))
+                    elif h.x > arena_width - getattr(h, "radius", 250):
+                        h.x = arena_width - getattr(h, "radius", 250)
+                        h.vx = -abs(getattr(h, "vx", 0.0))
+
+                    if h.y < getattr(h, "radius", 250):
+                        h.y = getattr(h, "radius", 250)
+                        h.vy = abs(getattr(h, "vy", 0.0))
+                    elif h.y > arena_height - getattr(h, "radius", 250):
+                        h.y = arena_height - getattr(h, "radius", 250)
+                        h.vy = -abs(getattr(h, "vy", 0.0))
+
+                    # Apply strong pulling force and collision damage to nearby balls
+                    for b in balls:
+                        if getattr(b, "alive", True) and getattr(b, "ball_type", "") != "spectator":
+                            dx = h.x - getattr(b, "x", 0.0)
+                            dy = h.y - getattr(b, "y", 0.0)
+                            dist_sq = dx * dx + dy * dy
+
+                            pull_radius = 500.0
+                            if dist_sq < pull_radius * pull_radius and dist_sq > 0.0001:
+                                dist = math.sqrt(dist_sq)
+                                nx, ny = dx / dist, dy / dist
+
+                                # Pull strength increases closer to the center
+                                pull_strength = (1.0 - (dist / pull_radius)) * 400.0 * delta
+
+                                # Apply pull
+                                b.x = getattr(b, "x", 0.0) + nx * pull_strength
+                                b.y = getattr(b, "y", 0.0) + ny * pull_strength
+                                if hasattr(b, "vx"): b.vx += nx * pull_strength * 10
+                                if hasattr(b, "vy"): b.vy += ny * pull_strength * 10
+
+                                # Collision damage at the center
+                                if dist < getattr(h, "radius", 250) * 0.5:
+                                    damage = getattr(h, "damage", 25.0) * delta
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(damage)
+                                    else:
+                                        b.hp = getattr(b, "hp", 100.0) - damage
+                                        if getattr(b, "hp", 0) <= 0:
+                                            b.alive = False
+
+GAME_MODES['huge_tornados'] = HugeTornadosMode()
