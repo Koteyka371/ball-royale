@@ -17188,6 +17188,25 @@ func execute(strategy: String, delta: float):
                                     hazard.duration = 0.0
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
+                            elif trap_variant == "heavy_gravity_well":
+                                var current_heavy = 0.0
+                                if "heavy_gravity_timer" in self.ball: current_heavy = self.ball.heavy_gravity_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("heavy_gravity_timer"): current_heavy = self.ball.get_meta("heavy_gravity_timer")
+                                if "heavy_gravity_timer" in self.ball: self.ball.heavy_gravity_timer = max(current_heavy, 3.0)
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("heavy_gravity_timer", max(current_heavy, 3.0))
+
+                                var current_anchor_hg = 0.0
+                                if "anchor_trap_timer" in self.ball: current_anchor_hg = self.ball.anchor_trap_timer
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("anchor_trap_timer"): current_anchor_hg = self.ball.get_meta("anchor_trap_timer")
+                                if "anchor_trap_timer" in self.ball: self.ball.anchor_trap_timer = max(current_anchor_hg, 3.0)
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("anchor_trap_timer", max(current_anchor_hg, 3.0))
+
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "jump_pad":
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
@@ -35838,6 +35857,17 @@ func _resolve_collisions() -> bool:
                         self.ball.kinetic_absorbed_energy = new_ka
                         self.ball.speed_boost_timer = new_sbt
 
+            var hgt = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("heavy_gravity_timer"):
+                hgt = float(self.ball["heavy_gravity_timer"])
+            elif typeof(self.ball) == TYPE_OBJECT and "heavy_gravity_timer" in self.ball:
+                hgt = float(self.ball.heavy_gravity_timer)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("heavy_gravity_timer"):
+                hgt = float(self.ball.get_meta("heavy_gravity_timer"))
+
+            if hgt > 0.0:
+                knockback_multiplier = 0.0
+
             self.ball.x += nx * overlap * knockback_multiplier
             self.ball.y += ny * overlap * knockback_multiplier
 
@@ -37131,6 +37161,15 @@ func _apply_friendly_aura(delta: float):
         if anchor_trap_timer < 0: anchor_trap_timer = 0.0
         if "anchor_trap_timer" in self.ball: self.ball.anchor_trap_timer = anchor_trap_timer
         elif self.ball.has_method("set_meta"): self.ball.set_meta("anchor_trap_timer", anchor_trap_timer)
+
+    var heavy_gravity_timer = 0.0
+    if "heavy_gravity_timer" in self.ball: heavy_gravity_timer = self.ball.heavy_gravity_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("heavy_gravity_timer"): heavy_gravity_timer = self.ball.get_meta("heavy_gravity_timer")
+    if heavy_gravity_timer > 0:
+        heavy_gravity_timer -= delta
+        if heavy_gravity_timer < 0: heavy_gravity_timer = 0.0
+        if "heavy_gravity_timer" in self.ball: self.ball.heavy_gravity_timer = heavy_gravity_timer
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("heavy_gravity_timer", heavy_gravity_timer)
 
 func _update_skill_timer(delta: float):
     var cur_skill = ""
