@@ -3490,6 +3490,21 @@ class Action:
                     setattr(bh, 'owner_id', getattr(self.ball, 'id', None))
                     self.world.arena.hazards.append(bh)
                 self.ball.inventory.remove("deployable_black_hole")
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "sunlight_mirror" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    pass
+                else:
+                    import random
+                    sm_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                    sm = Hazard(sm_id, self.ball.x, self.ball.y, 25.0, "sunlight_mirror", 0.0)
+                    setattr(sm, 'duration', 10.0)
+                    setattr(sm, 'reflect_cooldown', 0.0)
+                    setattr(sm, 'owner_id', getattr(self.ball, 'id', None))
+                    self.world.arena.hazards.append(sm)
+                self.ball.inventory.remove("sunlight_mirror")
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "lightning_rod_item" in self.ball.inventory:
             weather_is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
@@ -14533,6 +14548,15 @@ class Action:
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
                     self.ball.inventory.append("deployable_black_hole")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "sunlight_mirror_booster":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("sunlight_mirror")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

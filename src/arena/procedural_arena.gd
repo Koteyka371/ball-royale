@@ -207,6 +207,8 @@ func generate():
             kind = "stamina_booster"
         elif r < 0.55:
             kind = "weather_booster"
+        elif r < 0.58:
+            kind = "sunlight_mirror_booster"
         elif r < 0.75:
             kind = "proximity_trap"
         elif r < 0.9:

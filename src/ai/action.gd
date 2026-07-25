@@ -8419,6 +8419,19 @@ func execute(strategy: String, delta: float):
 					arena.hazards.append(bh)
 					inv.erase("deployable_black_hole")
 					self.ball.set_meta("inventory", inv)
+		if inv.has("sunlight_mirror"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var sm_id = arena.hazards.size() + randi() % 10000
+				var sm = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					sm = load("res://src/arena/procedural_arena.gd").Hazard.new(sm_id, self.ball.x, self.ball.y, 25.0, "sunlight_mirror", 0.0)
+					sm.set_meta("duration", 10.0)
+					sm.set_meta("reflect_cooldown", 0.0)
+					if "id" in self.ball: sm.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(sm)
+					inv.erase("sunlight_mirror")
+					self.ball.set_meta("inventory", inv)
 
 		if inv.has("lightning_rod_item"):
 			var is_ts = false
@@ -28418,6 +28431,21 @@ func _collect_booster(delta: float):
                 if "inventory" in self.ball: inv = self.ball.inventory
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
                 inv.append("deployable_black_hole")
+                if "inventory" in self.ball: self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "sunlight_mirror_booster":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                inv.append("sunlight_mirror")
                 if "inventory" in self.ball: self.ball.inventory = inv
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:

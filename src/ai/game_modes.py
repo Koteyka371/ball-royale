@@ -14325,6 +14325,17 @@ class DayNightMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         import math
         import random
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if (isinstance(h, dict) and h.get("kind", "") == "sunlight_mirror") or getattr(h, "kind", "") == "sunlight_mirror":
+                    cooldown = h.get("reflect_cooldown", 0.0) if isinstance(h, dict) else getattr(h, "reflect_cooldown", 0.0)
+                    if cooldown > 0:
+                        new_cooldown = max(0.0, cooldown - delta)
+                        if isinstance(h, dict):
+                            h["reflect_cooldown"] = new_cooldown
+                        else:
+                            setattr(h, "reflect_cooldown", new_cooldown)
+
         if hasattr(world, "arena"):
             self.timer += delta
             if self.timer >= self.phase_duration:
@@ -14370,6 +14381,32 @@ class DayNightMode(GameMode):
                 beam_damage = 50.0 * delta # rapid damage per frame (50 per second)
                 fx, fy = beam['x'], beam['y']
                 beam_radius = beam['radius']
+
+                # Check for sunlight mirrors reflecting the beam
+                for hazard in getattr(world.arena, "hazards", []):
+                    hk = hazard.get("kind", "") if isinstance(hazard, dict) else getattr(hazard, "kind", "")
+                    if hk == "sunlight_mirror":
+                        hx = hazard.get("x", 0.0) if isinstance(hazard, dict) else getattr(hazard, "x", 0.0)
+                        hy = hazard.get("y", 0.0) if isinstance(hazard, dict) else getattr(hazard, "y", 0.0)
+                        hr = hazard.get("radius", 25.0) if isinstance(hazard, dict) else getattr(hazard, "radius", 25.0)
+
+                        dist_sq_h = (hx - fx)**2 + (hy - fy)**2
+                        if dist_sq_h < (beam_radius + hr)**2:
+                            cooldown = hazard.get("reflect_cooldown", 0.0) if isinstance(hazard, dict) else getattr(hazard, "reflect_cooldown", 0.0)
+                            if cooldown <= 0:
+                                import random
+                                import math
+                                angle = random.uniform(0, 2 * math.pi)
+                                new_x = hx + math.cos(angle) * 150.0
+                                new_y = hy + math.sin(angle) * 150.0
+                                self.active_sunlight_beams.append({'x': new_x, 'y': new_y, 'radius': beam_radius * 0.75, 'duration': 1.5})
+                                if hasattr(world, "add_event"):
+                                    world.add_event("visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.75, "duration": 1.5, "source_x": hx, "source_y": hy})
+
+                                if isinstance(hazard, dict):
+                                    hazard["reflect_cooldown"] = 1.0
+                                else:
+                                    setattr(hazard, "reflect_cooldown", 1.0)
 
                 for b in balls:
                     if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":

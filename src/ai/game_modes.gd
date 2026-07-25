@@ -22131,6 +22131,24 @@ class DayNightMode extends GameMode:
 		return dist_sq <= radius * radius
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and "arena" in world and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var hk = ""
+				var cd = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					hk = h.get("kind", "")
+					cd = h.get("reflect_cooldown", 0.0)
+				else:
+					hk = h.get("kind") if "kind" in h else ""
+					cd = h.get("reflect_cooldown") if "reflect_cooldown" in h else (h.get_meta("reflect_cooldown") if h.has_method("has_meta") and h.has_meta("reflect_cooldown") else 0.0)
+
+				if hk == "sunlight_mirror" and cd > 0.0:
+					var new_cd = max(0.0, cd - delta)
+					if typeof(h) == TYPE_DICTIONARY:
+						h["reflect_cooldown"] = new_cd
+					else:
+						if "reflect_cooldown" in h: h.reflect_cooldown = new_cd
+						elif h.has_method("set_meta"): h.set_meta("reflect_cooldown", new_cd)
 		if world != null and "arena" in world:
 			timer += delta
 			if timer >= phase_duration:
@@ -22191,6 +22209,48 @@ class DayNightMode extends GameMode:
 				var fx = beam["x"]
 				var fy = beam["y"]
 				var beam_radius = beam["radius"]
+
+				if "hazards" in world.arena:
+					for hazard in world.arena.hazards:
+						var hk = ""
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hk = hazard.get("kind", "")
+						else:
+							hk = hazard.get("kind") if "kind" in hazard else ""
+
+						if hk == "sunlight_mirror":
+							var hx = 0.0
+							var hy = 0.0
+							var hr = 25.0
+							var cd = 0.0
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hx = hazard.get("x", 0.0)
+								hy = hazard.get("y", 0.0)
+								hr = hazard.get("radius", 25.0)
+								cd = hazard.get("reflect_cooldown", 0.0)
+							else:
+								hx = hazard.get("x") if "x" in hazard else 0.0
+								hy = hazard.get("y") if "y" in hazard else 0.0
+								hr = hazard.get("radius") if "radius" in hazard else 25.0
+								cd = hazard.get("reflect_cooldown") if "reflect_cooldown" in hazard else (hazard.get_meta("reflect_cooldown") if hazard.has_method("has_meta") and hazard.has_meta("reflect_cooldown") else 0.0)
+
+							var dist_sq_h = (hx - fx) * (hx - fx) + (hy - fy) * (hy - fy)
+							if dist_sq_h < (beam_radius + hr) * (beam_radius + hr):
+								if cd <= 0.0:
+									var angle = randf() * 2.0 * PI
+									var new_x = hx + cos(angle) * 150.0
+									var new_y = hy + sin(angle) * 150.0
+									active_sunlight_beams.append({"x": new_x, "y": new_y, "radius": beam_radius * 0.75, "duration": 1.5})
+									if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+										world.call("add_event", "visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.75, "duration": 1.5, "source_x": hx, "source_y": hy})
+									elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.75, "duration": 1.5, "source_x": hx, "source_y": hy})
+
+									if typeof(hazard) == TYPE_DICTIONARY:
+										hazard["reflect_cooldown"] = 1.0
+									else:
+										if "reflect_cooldown" in hazard: hazard.reflect_cooldown = 1.0
+										elif hazard.has_method("set_meta"): hazard.set_meta("reflect_cooldown", 1.0)
 
 				for b in balls:
 					if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
