@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1466] Anti-Gravity Boots — *2026-07-25 21:15:04 UTC*
+
+An item that makes the ball float slightly, giving immunity to ground hazards like mud or spikes but increased knockback from attacks.
+
+---
+
 ## [idea-1498] Guild Leaderboards for Boss Tiers — *2026-07-25 20:48:42 UTC*
 
 Add a new leaderboard that specifically tracks which guilds have cleared the highest tiers of guild bosses each week, rewarding the top 3 guilds with exclusive cosmetic auras.

@@ -25108,7 +25108,7 @@
     },
     {
       "id": "idea-1466",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Anti-Gravity Boots",
@@ -37325,6 +37325,42 @@
         "src/arena/sticky_wall_traps.py",
         "src/arena/sticky_wall_traps.gd",
         "tests/test_sticky_wall_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2184",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters Customizable Training Dummies",
+      "description": "Allow guilds to place customizable training dummies in their headquarters. Players can select different boss types or enemy ball types to practice against, configuring their health, damage, and movement patterns to prepare for specific encounters.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_customizable_training_dummies.py",
+        "src/ui/guild_headquarters_customizable_training_dummies.gd",
+        "src/ai/guild_headquarters_customizable_training_dummies.py",
+        "tests/test_guild_headquarters_customizable_training_dummies.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2185",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Invasions",
+      "description": "Introduce a game mode where guilds can trigger an invasion event on their headquarters. Waves of AI-controlled enemies and bosses will attack, and guild members must work together in real-time to defend their statues and banners for unique weekly rewards.",
+      "allowed_paths": [
+        "src/ui/guild_invasions.py",
+        "src/ui/guild_invasions.gd",
+        "src/ai/guild_invasions.py",
+        "tests/test_guild_invasions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
