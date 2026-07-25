@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1506] Wind Tunnels — *2026-07-25 22:04:56 UTC*
+
+Periodic powerful gusts of wind that push balls into obstacles or speed them up tremendously if they ride the tailwind.
+
+---
+
 ## [idea-1454] Kinetic Absorber Skill — *2026-07-25 22:04:50 UTC*
 
 An active skill that absorbs a percentage of incoming kinetic knockback and converts it into a temporary speed boost or supercharge timer increase, allowing the ball to counter-attack aggressively after being struck.
