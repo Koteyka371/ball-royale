@@ -25567,7 +25567,7 @@
     },
     {
       "id": "idea-1493",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Moonlight Mirage Mode",
@@ -37497,6 +37497,40 @@
         "src/arena/sticky_floor_traps.py",
         "src/arena/sticky_floor_traps.gd",
         "tests/test_sticky_floor_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2194",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Alliance Headquarters Customization",
+      "description": "Allow alliances to build a shared headquarters. Members can contribute resources to construct defense mechanisms and cosmetic structures.",
+      "allowed_paths": [
+        "src/ai/alliance_headquarters_customization.py",
+        "src/ai/alliance_headquarters_customization.gd",
+        "tests/test_alliance_headquarters_customization.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2195",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Alliance Faction Wars",
+      "description": "Create seasonal events where different alliances battle over control of a global world map, conquering zones and earning faction-specific cosmetics.",
+      "allowed_paths": [
+        "src/ai/alliance_faction_wars.py",
+        "src/ai/alliance_faction_wars.gd",
+        "tests/test_alliance_faction_wars.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

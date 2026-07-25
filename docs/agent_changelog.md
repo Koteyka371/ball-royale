@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1493] Moonlight Mirage Mode — *2026-07-25 22:33:27 UTC*
+
+During the night cycle, active moonlight shadows will occasionally spawn illusory copies of balls standing inside them. These 'Mirages' only take 1 damage to destroy but perfectly mimic the player's movements, confusing enemies and auto-targeting abilities.
+
+---
+
 ## [idea-1499] Cross-Guild Alliance System — *2026-07-25 22:16:56 UTC*
 
 Enable up to 3 guilds to form an alliance, sharing a unified chat channel, combined leaderboard presence, and access to massive 50v50 multi-guild events.
