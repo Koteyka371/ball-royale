@@ -966,7 +966,7 @@ class ProceduralArena:
 
                     if getattr(self, "weather", "") == "sandstorm":
                         qs_id = 8100 + len(self.hazards) + random.randint(0, 1000)
-                        qs = Hazard(id=qs_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(40.0, 80.0), kind="quicksand", damage=5.0)
+                        qs = Hazard(id=qs_id, x=random.uniform(50, self.width - 50), y=random.uniform(50, self.height - 50), radius=random.uniform(40.0, 80.0), kind="quicksand", damage=0.0)
                         setattr(qs, 'duration', 15.0)
                         self.hazards.append(qs)
                     if getattr(self, "weather", "") == "acid_rain":
@@ -1345,7 +1345,7 @@ class ProceduralArena:
                     damage = 0.0
                 elif random.random() < 0.15:
                     kind = "quicksand"
-                    damage = 10.0
+                    damage = 0.0
                 elif random.random() < 0.10:
                     kind = "sinkhole"
                     damage = 5.0
