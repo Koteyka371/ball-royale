@@ -37245,6 +37245,823 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "bugfix-FAILED",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Fix failing test FAILED",
+      "description": "The test FAILED is failing. Investigate and fix the logic so that it passes.\n\nSpecific Pytest Traceback:\n```\n_________\ntests/test_confusion_zone.py:53: in test_confusion_zone_effect\n    assert ball.confusion_zone_timer == 4.0\nE   assert 0.0 == 4.0\nE    +  where 0.0 = <tests.test_confusion_zone.MockBall object at 0x7fdd08919190>.confusion_zone_timer\n=========================== short test summary info ============================\nFAILED tests/test_confusion_zone.py::test_confusion_zone_effect - assert 0.0 == 4.0\n +  where 0.0 = <tests.test_confusion_zone.MockBall object at 0x7fdd08919190>.confusion_zone_timer\n================== 1 failed, 1962 passed, 3 skipped in 19.76s ==================\n```",
+      "allowed_paths": [
+        "FAILED",
+        "src/ai/**",
+        "src/arena/**"
+      ],
+      "acceptance": [
+        "Test FAILED passes successfully"
+      ]
+    },
+    {
+      "id": "balance-nerf-payload",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'payload'",
+      "description": "The 'payload' class is winning 10.0% of the time (expected ~2.6%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_payload.py",
+        "src/ai/balance_nerf_overpowered_payload.gd",
+        "tests/test_balance_nerf_overpowered_payload.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-necromancer",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'necromancer'",
+      "description": "The 'necromancer' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_necromancer.py",
+        "src/ai/balance_buff_underpowered_necromancer.gd",
+        "tests/test_balance_buff_underpowered_necromancer.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-void_mage",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'void_mage'",
+      "description": "The 'void_mage' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_voidmage.py",
+        "src/ai/balance_buff_underpowered_voidmage.gd",
+        "tests/test_balance_buff_underpowered_voidmage.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-warrior",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'warrior'",
+      "description": "The 'warrior' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_warrior.py",
+        "src/ai/balance_buff_underpowered_warrior.gd",
+        "tests/test_balance_buff_underpowered_warrior.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-entangler",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'entangler'",
+      "description": "The 'entangler' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_entangler.py",
+        "src/ai/balance_buff_underpowered_entangler.gd",
+        "tests/test_balance_buff_underpowered_entangler.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-tank",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'tank'",
+      "description": "The 'tank' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_tank.py",
+        "src/ai/balance_buff_underpowered_tank.gd",
+        "tests/test_balance_buff_underpowered_tank.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-assassin",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'assassin'",
+      "description": "The 'assassin' class is winning 10.0% of the time (expected ~2.6%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_assassin.py",
+        "src/ai/balance_nerf_overpowered_assassin.gd",
+        "tests/test_balance_nerf_overpowered_assassin.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-mirage",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'mirage'",
+      "description": "The 'mirage' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_mirage.py",
+        "src/ai/balance_buff_underpowered_mirage.gd",
+        "tests/test_balance_buff_underpowered_mirage.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-nemesis_bomber",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'nemesis_bomber'",
+      "description": "The 'nemesis_bomber' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_nemesisbomber.py",
+        "src/ai/balance_buff_underpowered_nemesisbomber.gd",
+        "tests/test_balance_buff_underpowered_nemesisbomber.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-broodmother",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'broodmother'",
+      "description": "The 'broodmother' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_broodmother.py",
+        "src/ai/balance_buff_underpowered_broodmother.gd",
+        "tests/test_balance_buff_underpowered_broodmother.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-broodling",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'broodling'",
+      "description": "The 'broodling' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_broodling.py",
+        "src/ai/balance_buff_underpowered_broodling.gd",
+        "tests/test_balance_buff_underpowered_broodling.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-sniper",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'sniper'",
+      "description": "The 'sniper' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_sniper.py",
+        "src/ai/balance_buff_underpowered_sniper.gd",
+        "tests/test_balance_buff_underpowered_sniper.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-bomber",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'bomber'",
+      "description": "The 'bomber' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_bomber.py",
+        "src/ai/balance_buff_underpowered_bomber.gd",
+        "tests/test_balance_buff_underpowered_bomber.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-berserker",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'berserker'",
+      "description": "The 'berserker' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_berserker.py",
+        "src/ai/balance_buff_underpowered_berserker.gd",
+        "tests/test_balance_buff_underpowered_berserker.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-juggernaut",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'juggernaut'",
+      "description": "The 'juggernaut' class is winning 10.0% of the time (expected ~2.6%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_juggernaut.py",
+        "src/ai/balance_nerf_overpowered_juggernaut.gd",
+        "tests/test_balance_nerf_overpowered_juggernaut.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-gladiator",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'gladiator'",
+      "description": "The 'gladiator' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_gladiator.py",
+        "src/ai/balance_buff_underpowered_gladiator.gd",
+        "tests/test_balance_buff_underpowered_gladiator.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-phantom",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'phantom'",
+      "description": "The 'phantom' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_phantom.py",
+        "src/ai/balance_buff_underpowered_phantom.gd",
+        "tests/test_balance_buff_underpowered_phantom.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-scout",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'scout'",
+      "description": "The 'scout' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_scout.py",
+        "src/ai/balance_buff_underpowered_scout.gd",
+        "tests/test_balance_buff_underpowered_scout.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-king",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'king'",
+      "description": "The 'king' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_king.py",
+        "src/ai/balance_buff_underpowered_king.gd",
+        "tests/test_balance_buff_underpowered_king.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-ninja",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'ninja'",
+      "description": "The 'ninja' class is winning 10.0% of the time (expected ~2.6%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_ninja.py",
+        "src/ai/balance_nerf_overpowered_ninja.gd",
+        "tests/test_balance_nerf_overpowered_ninja.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-paladin",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'paladin'",
+      "description": "The 'paladin' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_paladin.py",
+        "src/ai/balance_buff_underpowered_paladin.gd",
+        "tests/test_balance_buff_underpowered_paladin.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-mage",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'mage'",
+      "description": "The 'mage' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_mage.py",
+        "src/ai/balance_buff_underpowered_mage.gd",
+        "tests/test_balance_buff_underpowered_mage.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-warlock",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'warlock'",
+      "description": "The 'warlock' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_warlock.py",
+        "src/ai/balance_buff_underpowered_warlock.gd",
+        "tests/test_balance_buff_underpowered_warlock.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-druid",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'druid'",
+      "description": "The 'druid' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ui/balance_buff_underpowered_druid.py",
+        "src/ui/balance_buff_underpowered_druid.gd",
+        "src/ai/balance_buff_underpowered_druid.py",
+        "tests/test_balance_buff_underpowered_druid.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-monk",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'monk'",
+      "description": "The 'monk' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_monk.py",
+        "src/ai/balance_buff_underpowered_monk.gd",
+        "tests/test_balance_buff_underpowered_monk.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-brawler",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'brawler'",
+      "description": "The 'brawler' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_brawler.py",
+        "src/ai/balance_buff_underpowered_brawler.gd",
+        "tests/test_balance_buff_underpowered_brawler.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-trickster",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'trickster'",
+      "description": "The 'trickster' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_trickster.py",
+        "src/ai/balance_buff_underpowered_trickster.gd",
+        "tests/test_balance_buff_underpowered_trickster.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-elementalist",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'elementalist'",
+      "description": "The 'elementalist' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_elementalist.py",
+        "src/ai/balance_buff_underpowered_elementalist.gd",
+        "tests/test_balance_buff_underpowered_elementalist.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-vampire",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'vampire'",
+      "description": "The 'vampire' class is winning 10.0% of the time (expected ~2.6%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_vampire.py",
+        "src/ai/balance_nerf_overpowered_vampire.gd",
+        "tests/test_balance_nerf_overpowered_vampire.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-templar",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'templar'",
+      "description": "The 'templar' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_templar.py",
+        "src/ai/balance_buff_underpowered_templar.gd",
+        "tests/test_balance_buff_underpowered_templar.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-ranger",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'ranger'",
+      "description": "The 'ranger' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_ranger.py",
+        "src/ai/balance_buff_underpowered_ranger.gd",
+        "tests/test_balance_buff_underpowered_ranger.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-spectator",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'spectator'",
+      "description": "The 'spectator' class is winning 40.0% of the time (expected ~2.6%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_spectator.py",
+        "src/ai/balance_nerf_overpowered_spectator.gd",
+        "tests/test_balance_nerf_overpowered_spectator.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-nerf-mimic",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Nerf overpowered 'mimic'",
+      "description": "The 'mimic' class is winning 10.0% of the time (expected ~2.6%). It is overpowered. Please reduce its HP, damage, speed, or increase skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_nerf_overpowered_mimic.py",
+        "src/ai/balance_nerf_overpowered_mimic.gd",
+        "tests/test_balance_nerf_overpowered_mimic.py"
+      ],
+      "acceptance": [
+        "Win rate reduced in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-chaos",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'chaos'",
+      "description": "The 'chaos' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_chaos.py",
+        "src/ai/balance_buff_underpowered_chaos.gd",
+        "tests/test_balance_buff_underpowered_chaos.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "balance-buff-hard",
+      "status": "todo",
+      "area": "meta",
+      "risk": "medium",
+      "title": "Balance: Buff underpowered 'hard'",
+      "description": "The 'hard' class is winning only 0.0% of the time (expected ~2.6%). It is severely underpowered. Please increase its survivability, damage, speed, or decrease skill cooldown.",
+      "allowed_paths": [
+        "src/ai/balance_buff_underpowered_hard.py",
+        "src/ai/balance_buff_underpowered_hard.gd",
+        "tests/test_balance_buff_underpowered_hard.py"
+      ],
+      "acceptance": [
+        "Win rate increased in simulations"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_reflector-attack",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'attack' in ball_types_reflector.gd",
+      "description": "The Python class in ball_types_reflector.py implements 'attack', but the GDScript counterpart ball_types_reflector.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_reflector.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_reflector-collect-booster",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'collect_booster' in ball_types_reflector.gd",
+      "description": "The Python class in ball_types_reflector.py implements 'collect_booster', but the GDScript counterpart ball_types_reflector.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_reflector.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_reflector-defend",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'defend' in ball_types_reflector.gd",
+      "description": "The Python class in ball_types_reflector.py implements 'defend', but the GDScript counterpart ball_types_reflector.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_reflector.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_reflector-get-hp-percent",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'get_hp_percent' in ball_types_reflector.gd",
+      "description": "The Python class in ball_types_reflector.py implements 'get_hp_percent', but the GDScript counterpart ball_types_reflector.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_reflector.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_reflector-idle",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'idle' in ball_types_reflector.gd",
+      "description": "The Python class in ball_types_reflector.py implements 'idle', but the GDScript counterpart ball_types_reflector.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_reflector.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_reflector-take-damage",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'take_damage' in ball_types_reflector.gd",
+      "description": "The Python class in ball_types_reflector.py implements 'take_damage', but the GDScript counterpart ball_types_reflector.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_reflector.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_reflector-flee",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'flee' in ball_types_reflector.gd",
+      "description": "The Python class in ball_types_reflector.py implements 'flee', but the GDScript counterpart ball_types_reflector.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_reflector.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_skeletal_archer-tick",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'tick' in ball_types_skeletal_archer.gd",
+      "description": "The Python class in ball_types_skeletal_archer.py implements 'tick', but the GDScript counterpart ball_types_skeletal_archer.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_skeletal_archer.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_broodmother-tick",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'tick' in ball_types_broodmother.gd",
+      "description": "The Python class in ball_types_broodmother.py implements 'tick', but the GDScript counterpart ball_types_broodmother.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_broodmother.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-game_modes-apply",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'apply' in game_modes.gd",
+      "description": "The Python class in game_modes.py implements 'apply', but the GDScript counterpart game_modes.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/game_modes.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-action--get-allies",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement '_get_allies' in action.gd",
+      "description": "The Python class in action.py implements '_get_allies', but the GDScript counterpart action.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/action.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-action--get-perception-radius",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement '_get_perception_radius' in action.gd",
+      "description": "The Python class in action.py implements '_get_perception_radius', but the GDScript counterpart action.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/action.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "sync-gd-ball_types_broodling-tick",
+      "status": "todo",
+      "area": "content",
+      "risk": "medium",
+      "title": "Sync GDScript: Implement 'tick' in ball_types_broodling.gd",
+      "description": "The Python class in ball_types_broodling.py implements 'tick', but the GDScript counterpart ball_types_broodling.gd is missing it. Please implement the same logic in GDScript.",
+      "allowed_paths": [
+        "src/ai/ball_types_broodling.gd"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize-run",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize 'run' in simulate_battle.py",
+      "description": "The function 'run' in simulate_battle.py is causing a performance bottleneck. During a 100-tick stress test, it was called 1 times and took 455.79 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "simulate_battle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize--tick",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize '_tick' in simulate_battle.py",
+      "description": "The function '_tick' in simulate_battle.py is causing a performance bottleneck. During a 100-tick stress test, it was called 100 times and took 455.76 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "simulate_battle.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "perf-optimize-process",
+      "status": "todo",
+      "area": "meta",
+      "risk": "high",
+      "title": "Performance: Optimize 'process' in ball_brain.py",
+      "description": "The function 'process' in ball_brain.py is causing a performance bottleneck. During a 100-tick stress test, it was called 11587 times and took 193.49 seconds total. Please optimize this function to reduce its execution time (e.g., use better data structures, caching, or spatial hashing).",
+      "allowed_paths": [
+        "ball_brain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
