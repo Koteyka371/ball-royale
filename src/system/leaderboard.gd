@@ -249,3 +249,71 @@ func get_viewer_badge(viewer_id: String) -> String:
     elif points >= 20:
         return "⭐"
     return ""
+
+
+func process_guild_boss_leaderboard(guild_manager: Object, week_id: String, tier_requirements: Dictionary):
+    if not data.has("guild_boss_leaderboard"):
+        data["guild_boss_leaderboard"] = {}
+
+    var guild_scores = []
+
+    if not guild_manager.data.has("guilds"):
+        return
+
+    for guild_name in guild_manager.data["guilds"].keys():
+        var max_tier = 0
+        var tiebreaker_damage = 0.0
+
+        for tier_key in tier_requirements.keys():
+            var tier_str = str(tier_key)
+            var tier_int = int(tier_key)
+            var required_damage = tier_requirements[tier_key]
+
+            var damage = 0.0
+            if guild_manager.has_method("_get_alliance_boss_damage"):
+                damage = guild_manager.call("_get_alliance_boss_damage", guild_name, week_id, tier_str)
+
+            if damage >= required_damage:
+                if tier_int > max_tier:
+                    max_tier = tier_int
+                    tiebreaker_damage = damage
+
+        if max_tier > 0:
+            guild_scores.append({
+                "guild_name": guild_name,
+                "max_tier": max_tier,
+                "damage": tiebreaker_damage
+            })
+
+    guild_scores.sort_custom(func(a, b):
+        if a["max_tier"] != b["max_tier"]:
+            return a["max_tier"] > b["max_tier"]
+        return a["damage"] > b["damage"]
+    )
+
+    data["guild_boss_leaderboard"][week_id] = guild_scores
+
+    var rewards = ["Boss Slayer Gold Aura", "Boss Slayer Silver Aura", "Boss Slayer Bronze Aura"]
+
+    for i in range(min(3, guild_scores.size())):
+        var g_name = guild_scores[i]["guild_name"]
+        var guild = guild_manager.data["guilds"][g_name]
+        if not guild.has("cosmetic_auras"):
+            guild["cosmetic_auras"] = []
+
+        var aura = rewards[i]
+        if not guild["cosmetic_auras"].has(aura):
+            guild["cosmetic_auras"].append(aura)
+
+    save_leaderboard()
+    if guild_manager.has_method("save_guilds"):
+        guild_manager.call("save_guilds")
+    elif guild_manager.has_method("save"):
+        guild_manager.call("save")
+
+func get_guild_boss_leaderboard(week_id: String) -> Array:
+    if not data.has("guild_boss_leaderboard"):
+        return []
+    if not data["guild_boss_leaderboard"].has(week_id):
+        return []
+    return data["guild_boss_leaderboard"][week_id]
