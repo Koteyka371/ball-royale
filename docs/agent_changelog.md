@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1485] Kinetic Overload Mutator — *2026-07-25 20:26:08 UTC*
+
+A new mutator/buff that accumulates kinetic energy based on distance traveled. The more a player moves without stopping, the higher their next collision or attack damage becomes, culminating in an AoE kinetic blast if they maintain maximum speed for over 5 seconds.
+
+---
+
 ## [idea-1483] Quantum Recall Beacon — *2026-07-25 20:24:13 UTC*
 
 Players can deploy a beacon that saves their current HP, shield state, and position. After 5 seconds, or upon reactivation, they are teleported back to the beacon and their state is restored. This allows for risky plays or escaping dangerous AoE zones like explosions.
