@@ -3006,6 +3006,43 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var is_quantum_echo = false
+	if typeof(self.ball) == TYPE_OBJECT:
+		if "is_quantum_echo" in self.ball:
+			is_quantum_echo = bool(self.ball.is_quantum_echo)
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("is_quantum_echo"):
+			is_quantum_echo = bool(self.ball.get_meta("is_quantum_echo"))
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_quantum_echo"):
+		is_quantum_echo = bool(self.ball["is_quantum_echo"])
+
+	if is_quantum_echo:
+		var qtimer = 0.0
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "quantum_echo_ghost_timer" in self.ball:
+				qtimer = float(self.ball.quantum_echo_ghost_timer)
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghost_timer"):
+				qtimer = float(self.ball.get_meta("quantum_echo_ghost_timer"))
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghost_timer"):
+			qtimer = float(self.ball["quantum_echo_ghost_timer"])
+
+		qtimer -= delta
+		if qtimer <= 0:
+			qtimer = 3.0
+			var ghost = {}
+			if typeof(self.ball) == TYPE_OBJECT:
+				ghost = {"x": float(self.ball.get("x") if "x" in self.ball else 0.0), "y": float(self.ball.get("y") if "y" in self.ball else 0.0), "hp": float(self.ball.get("hp") if "hp" in self.ball else 0.0)}
+				if "quantum_echo_ghost" in self.ball: self.ball.quantum_echo_ghost = ghost
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_ghost", ghost)
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				ghost = {"x": float(self.ball.get("x", 0.0)), "y": float(self.ball.get("y", 0.0)), "hp": float(self.ball.get("hp", 0.0))}
+				self.ball["quantum_echo_ghost"] = ghost
+
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "quantum_echo_ghost_timer" in self.ball: self.ball.quantum_echo_ghost_timer = qtimer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("quantum_echo_ghost_timer", qtimer)
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["quantum_echo_ghost_timer"] = qtimer
+
 	var c_timer = 0.0
 	if typeof(self.ball) == TYPE_OBJECT:
 		if "courage_timer" in self.ball:
@@ -29511,6 +29548,35 @@ func _use_skill():
 
     if "active_skill" in self.ball and self.ball.active_skill != "":
         skill_name = self.ball.active_skill
+
+    if skill_timer <= 0:
+        var is_quantum_echo = false
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "is_quantum_echo" in self.ball: is_quantum_echo = bool(self.ball.is_quantum_echo)
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("is_quantum_echo"): is_quantum_echo = bool(self.ball.get_meta("is_quantum_echo"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_quantum_echo"):
+            is_quantum_echo = bool(self.ball["is_quantum_echo"])
+
+        if is_quantum_echo:
+            var ghost = null
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "quantum_echo_ghost" in self.ball: ghost = self.ball.quantum_echo_ghost
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("quantum_echo_ghost"): ghost = self.ball.get_meta("quantum_echo_ghost")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("quantum_echo_ghost"):
+                ghost = self.ball["quantum_echo_ghost"]
+
+            if ghost != null:
+                if typeof(self.ball) == TYPE_OBJECT:
+                    if "x" in self.ball: self.ball.x = float(ghost["x"])
+                    if "y" in self.ball: self.ball.y = float(ghost["y"])
+                    if "hp" in self.ball: self.ball.hp = float(ghost["hp"])
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["x"] = float(ghost["x"])
+                    self.ball["y"] = float(ghost["y"])
+                    self.ball["hp"] = float(ghost["hp"])
+
+                if self.world != null and "events" in self.world:
+                    self.world.events.append(["visual_effect", {"type": "quantum_echo_teleport", "x": float(ghost["x"]), "y": float(ghost["y"])}])
 
     var can_recast = false
     if skill_name == "glitch_teleport":

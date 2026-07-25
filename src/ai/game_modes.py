@@ -462,6 +462,8 @@ class GameMode:
                         b.base_damage *= 0.95
                 elif trait == "quantum_entangled":
                     b.is_quantum_entangled = True
+                elif trait == "quantum_echo":
+                    b.is_quantum_echo = True
 
         """Called at the start of the battle to initialize mode-specific rules/teams."""
 
@@ -12589,6 +12591,8 @@ class BumperBallsMode(GameMode):
                         b.base_damage *= 0.95
                 elif trait == "quantum_entangled":
                     b.is_quantum_entangled = True
+                elif trait == "quantum_echo":
+                    b.is_quantum_echo = True
 
         for b in balls:
 

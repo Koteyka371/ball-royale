@@ -1625,6 +1625,14 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_quantum_echo", False):
+            if not hasattr(self.ball, "quantum_echo_ghost_timer"):
+                self.ball.quantum_echo_ghost_timer = 0.0
+            self.ball.quantum_echo_ghost_timer -= delta
+            if self.ball.quantum_echo_ghost_timer <= 0:
+                self.ball.quantum_echo_ghost_timer = 3.0
+                self.ball.quantum_echo_ghost = {"x": self.ball.x, "y": self.ball.y, "hp": self.ball.hp}
+
         if getattr(self.ball, "courage_timer", 0.0) > 0:
             self.ball.courage_timer -= delta
             if getattr(self.ball, "emotion", "") == "fear":
@@ -15211,6 +15219,15 @@ class Action:
         skill_name = getattr(self.ball, "skill", getattr(self.ball, "SKILL", ""))
         if hasattr(self.ball, "active_skill"):
             skill_name = self.ball.active_skill
+
+        if skill_timer <= 0:
+            if getattr(self.ball, "is_quantum_echo", False) and getattr(self.ball, "quantum_echo_ghost", None):
+                ghost = self.ball.quantum_echo_ghost
+                self.ball.x = ghost["x"]
+                self.ball.y = ghost["y"]
+                self.ball.hp = ghost["hp"]
+                if hasattr(self.world, "events"):
+                    self.world.events.append(("visual_effect", {"type": "quantum_echo_teleport", "x": self.ball.x, "y": self.ball.y}))
 
         if getattr(self.ball, "anchor_trap_timer", 0.0) > 0.0 and skill_name in ["dash", "stamina_dash", "phantom_stride", "glitch_teleport", "glitch_teleport_v2", "teleport"]:
             return
