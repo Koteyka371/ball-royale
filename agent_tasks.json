@@ -25722,7 +25722,7 @@
     },
     {
       "id": "idea-1502",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sun God's Wrath Day Event",
@@ -37412,6 +37412,23 @@
         "src/ai/flame_trail_boots.py",
         "src/ai/flame_trail_boots.gd",
         "tests/test_flame_trail_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2189",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Reassignment Token",
+      "description": "A token that allows a team to manually assign the bounty to a specific player.",
+      "allowed_paths": [
+        "src/ai/bounty_reassignment_token.py",
+        "src/ai/bounty_reassignment_token.gd",
+        "tests/test_bounty_reassignment_token.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

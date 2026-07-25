@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1502] Sun God's Wrath Day Event — *2026-07-25 21:39:25 UTC*
+
+Similar to the Lunar Eclipse, randomly trigger a blinding solar flare event during the day that causes the arena walls to slowly close in and deals continuous minor burn damage to all players caught in the direct sunlight.
+
+---
+
 ## [idea-1471] Bounty Hunter Tracking Drone — *2026-07-25 21:36:35 UTC*
 
 Add a deployable tracking drone for Bounty Hunters that patrols the map, seeking out the current high-value bounty target and constantly revealing their location while the drone remains intact.
