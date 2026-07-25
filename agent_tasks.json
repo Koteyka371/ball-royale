@@ -25312,7 +25312,7 @@
     },
     {
       "id": "idea-1478",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Decay Hazard",
@@ -36985,6 +36985,23 @@
         "src/ai/stamina_transfer_link.py",
         "src/ai/stamina_transfer_link.gd",
         "tests/test_stamina_transfer_link.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2164",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Event Horizon Field",
+      "description": "A zone where projectiles are rapidly sucked towards the center, altering their trajectory based on proximity to the field.",
+      "allowed_paths": [
+        "src/ai/horizon_field.py",
+        "src/ai/horizon_field.gd",
+        "tests/test_horizon_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

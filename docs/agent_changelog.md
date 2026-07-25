@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1478] Quantum Decay Hazard — *2026-07-25 06:09:45 UTC*
+
+A hazard zone that doesn't damage players directly, but rapidly drains their cooldown timers, making their abilities recharge much faster, at the cost of draining their current stamina or slightly slowing them down. It creates risk/reward spots on the map.
+
+---
+
 ## [idea-1442] Black Hole Vacuum Item — *2026-07-25 05:32:48 UTC*
 
 A consumable item that drops a miniature black hole. It slowly pulls in hazards and projectiles, effectively clearing the area, before violently exploding and throwing all collected hazards back out in random directions.
