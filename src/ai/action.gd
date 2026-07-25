@@ -2451,6 +2451,19 @@ func _attempt_damage_internal(attacker, target) -> void:
 			elif attacker.has_method("set_meta"):
 				attacker.set_meta("is_minor_bounty", true)
 
+			# Bonus points and temporary speed buff
+			if "score" in attacker:
+				attacker.score += 150
+			elif attacker.has_method("set_meta"):
+				var score = attacker.get_meta("score") if attacker.has_meta("score") else 0
+				attacker.set_meta("score", score + 150)
+
+			if "speed_boost_timer" in attacker:
+				attacker.speed_boost_timer += 5.0
+			elif attacker.has_method("set_meta"):
+				var sbt = attacker.get_meta("speed_boost_timer") if attacker.has_meta("speed_boost_timer") else 0.0
+				attacker.set_meta("speed_boost_timer", sbt + 5.0)
+
 			if self.world != null and self.world.has_method("add_event"):
 				self.world.add_event("dynamic_bounty_claimed", {"message": "Dynamic Bounty claimed!"})
 
