@@ -40449,6 +40449,33 @@ func _update_skill_timer(delta: float):
                             if self.world != null and self.world.has_method("add_event"):
                                 self.world.add_event("explosion", {"x": h_x, "y": h_y, "radius": stun_radius, "damage": 0.0})
 
+                if h_kind == "volcanic_fissure":
+                    var h_radius = float(hazard.radius) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (float(hazard.get_meta("radius")) if hazard.has_method("has_meta") and hazard.has_meta("radius") else (float(hazard.radius) if "radius" in hazard else 100.0))
+                    var h_x = float(hazard.x) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (float(hazard.get_meta("x")) if hazard.has_method("has_meta") and hazard.has_meta("x") else (float(hazard.x) if "x" in hazard else 0.0))
+                    var h_y = float(hazard.y) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (float(hazard.get_meta("y")) if hazard.has_method("has_meta") and hazard.has_meta("y") else (float(hazard.y) if "y" in hazard else 0.0))
+                    var h_duration = float(hazard.duration) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration") else (float(hazard.get_meta("duration")) if hazard.has_method("has_meta") and hazard.has_meta("duration") else (float(hazard.duration) if "duration" in hazard else 0.0))
+                    var h_max_duration = float(hazard.max_duration) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("max_duration") else (float(hazard.get_meta("max_duration")) if hazard.has_method("has_meta") and hazard.has_meta("max_duration") else (float(hazard.max_duration) if "max_duration" in hazard else 10.0))
+                    var h_damage = float(hazard.damage) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("damage") else (float(hazard.get_meta("damage")) if hazard.has_method("has_meta") and hazard.has_meta("damage") else (float(hazard.damage) if "damage" in hazard else 15.0))
+                    var dist_sq = (self.ball.x - h_x)*(self.ball.x - h_x) + (self.ball.y - h_y)*(self.ball.y - h_y)
+
+                    var progress = 1.0 - (h_duration / h_max_duration) if h_max_duration > 0.0 else 1.0
+                    progress = max(0.0, min(1.0, progress))
+
+                    var open_threshold = 0.3
+                    if progress >= open_threshold:
+                        if dist_sq <= h_radius * h_radius:
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["hp"] = self.ball.get("hp", 10.0) - h_damage * delta
+                                self.ball["smokescreen_timer"] = self.ball.get("smokescreen_timer", 0.0) + delta * 2.0
+
+                                self.ball["fire_timer"] = self.ball.get("fire_timer", 0.0) + delta * 2.0
+                            else:
+                                if "hp" in self.ball: self.ball.hp -= h_damage * delta
+                                if "smokescreen_timer" in self.ball: self.ball.smokescreen_timer += delta * 2.0
+                                elif self.ball.has_method("set"): self.ball.set("smokescreen_timer", self.ball.get("smokescreen_timer") + delta * 2.0 if self.ball.get("smokescreen_timer") != null else delta * 2.0)
+
+                                if "fire_timer" in self.ball: self.ball.fire_timer += delta * 2.0
+
                 if h_kind == "time_anomaly_field":
                     var h_radius = float(hazard.radius) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (float(hazard.get_meta("radius")) if hazard.has_method("has_meta") and hazard.has_meta("radius") else (float(hazard.radius) if "radius" in hazard else 150.0))
                     var h_x = float(hazard.x) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (float(hazard.get_meta("x")) if hazard.has_method("has_meta") and hazard.has_meta("x") else (float(hazard.x) if "x" in hazard else 0.0))
