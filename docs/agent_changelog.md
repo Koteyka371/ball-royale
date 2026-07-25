@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1464] Dynamic Bounty Targets based on Score — *2026-07-25 04:41:55 UTC*
+
+Introduce a system where the player or team with the highest score or highest streak automatically becomes a 'Bounty Target', visually highlighted on the map. Killing them grants bonus points and temporary buffs to the killer, encouraging dynamic comebacks.
+
+---
+
 ## [idea-1480] Skill Morphing — *2026-07-25 01:07:52 UTC*
 
 If two projectable skills (like fireball and tornado) collide, they morph into a 'Firestorm' hazard that inherits properties of both and deals massive AOE damage.
