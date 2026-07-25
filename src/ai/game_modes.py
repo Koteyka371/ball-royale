@@ -2896,7 +2896,8 @@ class BattleRoyaleMode(GameMode):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "tornado":
                     if hasattr(h, "vx") and hasattr(h, "vy"):
-                        speed_mult = 1.5 if getattr(self, "weather", "") == "thunderstorm" else 1.0
+                        is_ts = getattr(self, "weather", "") == "thunderstorm" or (hasattr(world, "arena") and getattr(world.arena, "weather", "") == "thunderstorm")
+                        speed_mult = 1.5 if is_ts else 1.0
                         h.x += h.vx * speed_mult * delta
                         h.y += h.vy * speed_mult * delta
                         # Bounce off walls
@@ -12925,8 +12926,12 @@ class WindstormMode(GameMode):
                         h.vx = self.random.uniform(-100.0, 100.0)
                     if not hasattr(h, "vy"):
                         h.vy = self.random.uniform(-100.0, 100.0)
-                    h.x += getattr(h, "vx", 0.0) * delta
-                    h.y += getattr(h, "vy", 0.0) * delta
+
+                    is_ts = getattr(self, "weather", "") == "thunderstorm" or (hasattr(world, "arena") and getattr(world.arena, "weather", "") == "thunderstorm")
+                    speed_mult = 1.5 if is_ts else 1.0
+
+                    h.x += getattr(h, "vx", 0.0) * speed_mult * delta
+                    h.y += getattr(h, "vy", 0.0) * speed_mult * delta
 
                     # Bounce off walls
                     arena_width = getattr(world.arena, "width", 1000)
