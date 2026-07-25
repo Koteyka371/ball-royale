@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1414] Nemesis Reversal Mode — *2026-07-25 00:40:35 UTC*
+
+A game mode where dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle.
+
+---
+
 ## [idea-1447] Weather-Adaptive Balls — *2026-07-25 00:40:30 UTC*
 
 Introduce new ball variants whose stats dynamically buff when specific weather events are active (e.g. Snowball gets faster during blizzards).
