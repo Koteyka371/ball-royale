@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1499] Cross-Guild Alliance System — *2026-07-25 22:16:56 UTC*
+
+Enable up to 3 guilds to form an alliance, sharing a unified chat channel, combined leaderboard presence, and access to massive 50v50 multi-guild events.
+
+---
+
 ## [idea-1506] Wind Tunnels — *2026-07-25 22:04:56 UTC*
 
 Periodic powerful gusts of wind that push balls into obstacles or speed them up tremendously if they ride the tailwind.

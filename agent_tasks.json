@@ -25670,7 +25670,7 @@
     },
     {
       "id": "idea-1499",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cross-Guild Alliance System",
@@ -37446,6 +37446,57 @@
         "src/ai/slime_trail_trait.py",
         "src/ai/slime_trail_trait.gd",
         "tests/test_slime_trail_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2191",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Airborne Evasion Core",
+      "description": "A new cosmetic/booster item that allows balls to briefly hop over ground hazards and projectiles when double-tapping the dash action. Landing on a hazard after a hop creates a small shockwave.",
+      "allowed_paths": [
+        "src/ai/airborne_evasion_core.py",
+        "src/ai/airborne_evasion_core.gd",
+        "tests/test_airborne_evasion_core.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2192",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tornado Alley Game Mode",
+      "description": "A variant of WindstormMode where roaming tornadoes sweep across the arena instead of a global directional push. Tornadoes suck balls into the air, randomize their velocity, and drop them down, causing a momentary stun.",
+      "allowed_paths": [
+        "src/ai/tornado_alley_game.py",
+        "src/ai/tornado_alley_game.gd",
+        "tests/test_tornado_alley_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2193",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Floor Traps",
+      "description": "Zones that significantly reduce movement speed of any ball entering them.",
+      "allowed_paths": [
+        "src/arena/sticky_floor_traps.py",
+        "src/arena/sticky_floor_traps.gd",
+        "tests/test_sticky_floor_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
