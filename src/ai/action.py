@@ -10130,18 +10130,28 @@ class Action:
                             continue
                         elif hazard.kind == "personal_safe_zone":
                             continue
-                        elif hazard.kind == "healing_spring":
+                        elif getattr(hazard, "kind", "") == "healing_spring":
                             # In Siege mode, attackers can capture and destroy healing springs
-                            if getattr(self.world.arena, "__class__", None).__name__ == "SiegeArena" and getattr(self.ball, "team", "") == "Attackers":
+                            arena_name = getattr(self.world.arena, "__class__", None)
+                            if arena_name is not None:
+                                arena_name = getattr(arena_name, "__name__", "")
+                            if not arena_name:
+                                arena_name = type(self.world.arena).__name__
+                            if arena_name == "SiegeArena" and getattr(self.ball, "team", "") == "Attackers":
                                 capture_progress = getattr(hazard, "capture_progress", 0.0)
                                 capture_progress += 20.0 * delta # 5 seconds to capture
                                 setattr(hazard, "capture_progress", capture_progress)
                                 if capture_progress >= 100.0:
-                                    hazard.active = False
+                                    if type(hazard).__name__ == "Hazard":
+                                        hazard.active = False
+                                    elif hasattr(hazard, "active"): hazard.active = False
+                                    elif isinstance(hazard, dict): hazard["active"] = False
+                                    else: setattr(hazard, "active", False)
+                                    setattr(hazard, "active", False)
                                 continue
 
                             # Regenerate HP over time
-                            heal_amount = abs(hazard.damage) * delta
+                            heal_amount = abs(getattr(hazard, "damage", 20.0)) * delta
                             if hasattr(self.ball, "hp") and hasattr(self.ball, "max_hp"):
                                 self.ball.hp += heal_amount
                                 if self.ball.hp > self.ball.max_hp:
@@ -19888,55 +19898,57 @@ class Action:
                                 dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
                                 if dist_sq <= h_radius**2:
                                     # Detonate
-                                    if hazard in getattr(getattr(self.world, "arena", None), "hazards", []):
-                                        self.world.arena.hazards.remove(hazard)
+                                    if getattr(hazard, "active", True):
+                                        hazard.active = False
+                                        if hazard in getattr(getattr(self.world, "arena", None), "hazards", []):
+                                            self.world.arena.hazards.remove(hazard)
 
-                                    if hasattr(self.world, "add_event"):
-                                        self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": 400.0, "damage": 10.0, "type": "shockwave"})
-                                    elif hasattr(self.world, "events"):
-                                        self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': 400.0}})
+                                        if hasattr(self.world, "add_event"):
+                                            self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": 400.0, "damage": 10.0, "type": "shockwave"})
+                                        elif hasattr(self.world, "events"):
+                                            self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': 400.0}})
 
-                                    shockwave_radius = 400.0
-                                    shockwave_damage = 10.0
-                                    for b in getattr(self.world, "balls", []):
-                                        if not getattr(b, "alive", True):
-                                            continue
+                                        shockwave_radius = 400.0
+                                        shockwave_damage = 10.0
+                                        for b in getattr(self.world, "balls", []):
+                                            if not getattr(b, "alive", True):
+                                                continue
 
-                                        # only affect enemies
-                                        b_is_enemy = False
-                                        bb_team = getattr(b, "team", getattr(b, "ball_type", ""))
-                                        if getattr(b, "id", None) != h_owner_id:
-                                            if not bb_team or not h_team or bb_team != h_team:
-                                                b_is_enemy = True
+                                            # only affect enemies
+                                            b_is_enemy = False
+                                            bb_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                            if getattr(b, "id", None) != h_owner_id:
+                                                if not bb_team or not h_team or bb_team != h_team:
+                                                    b_is_enemy = True
 
-                                        if b_is_enemy:
-                                            dx = b.x - hazard.x
-                                            dy = b.y - hazard.y
-                                            dist = __import__("math").hypot(dx, dy)
-                                            if dist <= shockwave_radius:
-                                                # Deal damage
-                                                if hasattr(b, "take_damage"):
-                                                    b.take_damage(shockwave_damage)
-                                                elif hasattr(b, "hp"):
-                                                    b.hp -= shockwave_damage
-                                                    if b.hp <= 0:
-                                                        b.alive = False
-                                                        b.killer = h_owner_id
+                                            if b_is_enemy:
+                                                dx = b.x - hazard.x
+                                                dy = b.y - hazard.y
+                                                dist = __import__("math").hypot(dx, dy)
+                                                if dist <= shockwave_radius:
+                                                    # Deal damage
+                                                    if hasattr(b, "take_damage"):
+                                                        b.take_damage(shockwave_damage)
+                                                    elif hasattr(b, "hp"):
+                                                        b.hp -= shockwave_damage
+                                                        if b.hp <= 0:
+                                                            b.alive = False
+                                                            b.killer = h_owner_id
 
-                                                # Massive pushback and movement disable
-                                                if dist > 0.001:
-                                                    nx, ny = dx/dist, dy/dist
-                                                else:
-                                                    nx, ny = 1.0, 0.0
+                                                    # Massive pushback and movement disable
+                                                    if dist > 0.001:
+                                                        nx, ny = dx/dist, dy/dist
+                                                    else:
+                                                        nx, ny = 1.0, 0.0
 
-                                                # Pushback significantly far away
-                                                # Applying a massive velocity spike that engine physics will process
-                                                push_force = 1500.0
-                                                if hasattr(b, "vx"): b.vx += nx * push_force
-                                                if hasattr(b, "vy"): b.vy += ny * push_force
+                                                    # Pushback significantly far away
+                                                    # Applying a massive velocity spike that engine physics will process
+                                                    push_force = 1500.0
+                                                    if hasattr(b, "vx"): b.vx += nx * push_force
+                                                    if hasattr(b, "vy"): b.vy += ny * push_force
 
-                                                # Disable movement abilities
-                                                b.anchor_trap_timer = max(getattr(b, "anchor_trap_timer", 0.0), 1.5)
+                                                    # Disable movement abilities
+                                                    b.anchor_trap_timer = max(getattr(b, "anchor_trap_timer", 0.0), 1.5)
 
                 if getattr(hazard, "kind", "") == "time_anomaly_field":
                     dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
