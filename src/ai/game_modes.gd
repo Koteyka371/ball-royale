@@ -47012,6 +47012,136 @@ class SpawningSafeZonesMode extends GameMode:
 
 
 
+class KineticMomentumMutatorMode extends GameMode:
+	var max_kinetic_time = 5.0
+	var max_bonus_multiplier = 3.0
+	var blast_radius = 200.0
+	var blast_damage = 50.0
+
+	func _init():
+		name = "Kinetic Momentum Mutator"
+		description = "A mutator that accumulates kinetic energy based on distance traveled. The more a player moves without stopping, the higher their next collision or attack damage becomes, culminating in an AoE kinetic blast if they maintain maximum speed for over 5 seconds."
+
+	func tick(world, balls, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		for ball in balls:
+			if typeof(ball) == TYPE_DICTIONARY:
+				var b_alive = ball.get("alive", true)
+				if not b_alive:
+					continue
+				var vx = ball.get("vx", 0.0)
+				var vy = ball.get("vy", 0.0)
+				var base_speed = ball.get("base_speed", 100.0)
+				var speed_val = sqrt(vx * vx + vy * vy)
+
+				if speed_val > base_speed * 0.9:
+					ball["kinetic_momentum_time"] = ball.get("kinetic_momentum_time", 0.0) + delta
+				else:
+					ball["kinetic_momentum_time"] = 0.0
+			else:
+				var b_alive = ball.alive if "alive" in ball else true
+				if not b_alive:
+					continue
+				var vx = ball.vx if "vx" in ball else 0.0
+				var vy = ball.vy if "vy" in ball else 0.0
+				var base_speed = ball.base_speed if "base_speed" in ball else 100.0
+				var speed_val = sqrt(vx * vx + vy * vy)
+
+				if speed_val > base_speed * 0.9:
+					if "kinetic_momentum_time" in ball:
+						ball.kinetic_momentum_time += delta
+					elif ball.has_method("set_meta"):
+						ball.set_meta("kinetic_momentum_time", ball.get_meta("kinetic_momentum_time", 0.0) + delta)
+				else:
+					if "kinetic_momentum_time" in ball:
+						ball.kinetic_momentum_time = 0.0
+					elif ball.has_method("set_meta"):
+						ball.set_meta("kinetic_momentum_time", 0.0)
+
+	func on_damage_dealt(world, attacker, target, damage: float) -> void:
+		var k_time = 0.0
+		var attacker_team = null
+		var attacker_x = 0.0
+		var attacker_y = 0.0
+
+		if typeof(attacker) == TYPE_DICTIONARY:
+			k_time = attacker.get("kinetic_momentum_time", 0.0)
+			attacker_team = attacker.get("team", null)
+			attacker_x = attacker.get("x", 0.0)
+			attacker_y = attacker.get("y", 0.0)
+		else:
+			if "kinetic_momentum_time" in attacker:
+				k_time = attacker.kinetic_momentum_time
+			elif attacker.has_method("get_meta") and attacker.has_meta("kinetic_momentum_time"):
+				k_time = attacker.get_meta("kinetic_momentum_time")
+			if "team" in attacker:
+				attacker_team = attacker.team
+			if "x" in attacker:
+				attacker_x = attacker.x
+			if "y" in attacker:
+				attacker_y = attacker.y
+
+		if k_time > 0.0:
+			var ratio = min(k_time / max_kinetic_time, 1.0)
+			var bonus_damage = damage * (max_bonus_multiplier - 1.0) * ratio
+
+			if typeof(target) == TYPE_DICTIONARY:
+				if "hp" in target:
+					target["hp"] -= bonus_damage
+			else:
+				if "hp" in target:
+					target.hp -= bonus_damage
+
+			if k_time >= max_kinetic_time:
+				if typeof(world) == TYPE_DICTIONARY:
+					if "events" in world:
+						world["events"].append({"type": "kinetic_blast", "data": {"x": attacker_x, "y": attacker_y, "radius": blast_radius}})
+				elif world.has_method("add_event"):
+					world.add_event("kinetic_blast", {"x": attacker_x, "y": attacker_y, "radius": blast_radius})
+
+				if typeof(world) == TYPE_DICTIONARY and "balls" in world:
+					for b in world["balls"]:
+						var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+						if b != attacker and b != target and b_alive:
+							var b_team = b.get("team", null) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else null)
+							if b_team != attacker_team or b_team == null:
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+								var dx = bx - attacker_x
+								var dy = by - attacker_y
+								var dist = sqrt(dx * dx + dy * dy)
+								if dist <= blast_radius:
+									if typeof(b) == TYPE_DICTIONARY and "hp" in b:
+										b["hp"] -= blast_damage
+									elif "hp" in b:
+										b.hp -= blast_damage
+				elif "balls" in world:
+					for b in world.balls:
+						var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+						if b != attacker and b != target and b_alive:
+							var b_team = b.get("team", null) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else null)
+							if b_team != attacker_team or b_team == null:
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+								var dx = bx - attacker_x
+								var dy = by - attacker_y
+								var dist = sqrt(dx * dx + dy * dy)
+								if dist <= blast_radius:
+									if typeof(b) == TYPE_DICTIONARY and "hp" in b:
+										b["hp"] -= blast_damage
+									elif "hp" in b:
+										b.hp -= blast_damage
+
+			if typeof(attacker) == TYPE_DICTIONARY:
+				attacker["kinetic_momentum_time"] = 0.0
+			else:
+				if "kinetic_momentum_time" in attacker:
+					attacker.kinetic_momentum_time = 0.0
+				elif attacker.has_method("set_meta"):
+					attacker.set_meta("kinetic_momentum_time", 0.0)
+
+
 class FakeBountyMutatorMode extends GameMode:
     var spawn_timer = 0.0
     var spawn_interval = 15.0
@@ -47645,6 +47775,7 @@ var GAME_MODES = {
 	"chain_lightning_mutator": ChainLightningMutatorMode.new(),
     "ricochet_arena": RicochetArenaMode.new(),
     "fake_bounties_mutator": FakeBountyMutatorMode.new(),
+	"kinetic_momentum_mutator": KineticMomentumMutatorMode.new(),
 	"snake_safe_zone": SnakeSafeZoneMode.new(),
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),

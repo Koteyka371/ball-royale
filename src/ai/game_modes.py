@@ -29268,6 +29268,69 @@ class SpawningSafeZonesMode(GameMode):
 
 
 
+
+class KineticMomentumMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Kinetic Momentum Mutator"
+        self.description = "A mutator that accumulates kinetic energy based on distance traveled. The more a player moves without stopping, the higher their next collision or attack damage becomes, culminating in an AoE kinetic blast if they maintain maximum speed for over 5 seconds."
+        self.max_kinetic_time = 5.0
+        self.max_bonus_multiplier = 3.0
+        self.blast_radius = 200.0
+        self.blast_damage = 50.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        import math
+
+        for ball in balls:
+            if not getattr(ball, "is_alive", True):
+                continue
+
+            vx = getattr(ball, "vx", 0.0)
+            vy = getattr(ball, "vy", 0.0)
+            base_speed = getattr(ball, "base_speed", 100.0)
+            speed_val = math.hypot(vx, vy)
+
+            # Use a threshold (e.g., 90% of base speed) to consider them moving at "maximum speed" or fast enough
+            if speed_val > base_speed * 0.9:
+                ball.kinetic_momentum_time = getattr(ball, "kinetic_momentum_time", 0.0) + delta
+            else:
+                # If they stop or slow down significantly, they lose their accumulated energy
+                ball.kinetic_momentum_time = 0.0
+
+    def on_damage_dealt(self, world, attacker, target, damage):
+        import math
+        # Apply bonus damage based on kinetic_momentum_time
+        k_time = getattr(attacker, "kinetic_momentum_time", 0.0)
+        if k_time > 0.0:
+            ratio = min(k_time / self.max_kinetic_time, 1.0)
+            bonus_damage = damage * (self.max_bonus_multiplier - 1.0) * ratio
+
+            if hasattr(target, "hp"):
+                target.hp -= bonus_damage
+
+            if k_time >= self.max_kinetic_time:
+                # AoE blast
+                if hasattr(world, "add_event"):
+                    world.add_event("kinetic_blast", {"x": attacker.x, "y": attacker.y, "radius": self.blast_radius})
+
+                if hasattr(world, "balls"):
+                    for b in world.balls:
+                        if b != attacker and b != target and getattr(b, "alive", True):
+                            b_team = getattr(b, "team", None)
+                            if b_team != getattr(attacker, "team", None) or b_team is None:
+                                dx = getattr(b, "x", 0.0) - getattr(attacker, "x", 0.0)
+                                dy = getattr(b, "y", 0.0) - getattr(attacker, "y", 0.0)
+                                dist = math.hypot(dx, dy)
+                                if dist <= self.blast_radius:
+                                    if hasattr(b, "hp"):
+                                        b.hp -= self.blast_damage
+
+            # Reset after attack
+            attacker.kinetic_momentum_time = 0.0
+
+
 class FakeBountyMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -29642,6 +29705,7 @@ GAME_MODES = {
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),
     "fake_bounties_mutator": FakeBountyMutatorMode(),
+    "kinetic_momentum_mutator": KineticMomentumMutatorMode(),
     "snake_safe_zone": SnakeSafeZoneMode(),
     'lava_eruption_event': LavaEruptionEventMode(),
     "aura_siphon": AuraSiphonMode(),
