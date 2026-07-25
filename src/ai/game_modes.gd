@@ -60652,3 +60652,143 @@ class BountyExtractionMode extends GameMode:
 
 
 GAME_MODES['bounty_extraction'] = BountyExtractionMode.new()
+
+class FloorPaintMode extends GameMode:
+	var splats: Array = []
+
+	func _init() -> void:
+		name = "Floor Paint"
+		description = "Players shoot paint that stays on the floor, providing a movement speed boost to allies and a slow debuff to enemies traversing over it."
+
+	func setup(world, balls: Array) -> void:
+		splats.clear()
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("base_speed"):
+					b["base_speed"] = b.get("speed", 100.0)
+				b["_paint_cd"] = 0.0
+			else:
+				var sp = b.get("speed")
+				if sp == null: sp = 100.0
+				var bs = b.get("base_speed")
+				if bs == null:
+					b.set("base_speed", sp)
+				b.set("_paint_cd", 0.0)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		var attacks = null
+		if typeof(world) == TYPE_DICTIONARY and world.has("attacks"):
+			attacks = world["attacks"]
+		elif typeof(world) == TYPE_OBJECT and 'attacks' in world:
+			attacks = world.get("attacks")
+
+		if attacks != null and typeof(attacks) == TYPE_ARRAY:
+			for pair in attacks:
+				if pair != null and pair.size() >= 2:
+					var atk = pair[0]
+					var victim = pair[1]
+					var atk_team = "Neutral"
+					if typeof(atk) == TYPE_DICTIONARY and atk.has("team"): atk_team = atk["team"]
+					elif typeof(atk) == TYPE_OBJECT and 'team' in atk: atk_team = atk.get("team")
+
+					var vx = 0.0
+					var vy = 0.0
+					if typeof(victim) == TYPE_DICTIONARY:
+						if victim.has("x"): vx = victim["x"]
+						if victim.has("y"): vy = victim["y"]
+					elif typeof(victim) == TYPE_OBJECT:
+						var tmp = victim.get("x")
+						if tmp != null: vx = tmp
+						tmp = victim.get("y")
+						if tmp != null: vy = tmp
+					splats.append({"x": vx, "y": vy, "team": atk_team, "radius": 40.0})
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT and 'alive' in b:
+				var tmp = b.get("alive")
+				if tmp != null: is_alive = tmp
+			if not is_alive: continue
+
+			var b_team = "Neutral"
+			if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+			elif typeof(b) == TYPE_OBJECT and 'team' in b:
+				var tmp = b.get("team")
+				if tmp != null: b_team = tmp
+
+			var paint_cd = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.has("_paint_cd"): b["_paint_cd"] = 0.0
+				paint_cd = b["_paint_cd"]
+			else:
+				var tmp = b.get("_paint_cd")
+				if tmp == null:
+					b.set("_paint_cd", 0.0)
+				else:
+					paint_cd = tmp
+
+			paint_cd -= delta
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("x"): bx = b["x"]
+				if b.has("y"): by = b["y"]
+			else:
+				var tx = b.get("x")
+				if tx != null: bx = tx
+				var ty = b.get("y")
+				if ty != null: by = ty
+
+			if paint_cd <= 0.0:
+				var sx = bx + randf_range(-50, 50)
+				var sy = by + randf_range(-50, 50)
+				splats.append({"x": sx, "y": sy, "team": b_team, "radius": 40.0})
+				paint_cd = randf_range(0.5, 1.5)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_paint_cd"] = paint_cd
+			else:
+				b.set("_paint_cd", paint_cd)
+
+			if splats.size() > 200:
+				splats.pop_front()
+
+			var on_ally = false
+			var on_enemy = false
+
+			var br = 10.0
+			if typeof(b) == TYPE_DICTIONARY and b.has("radius"): br = b["radius"]
+			elif typeof(b) == TYPE_OBJECT and 'radius' in b:
+				var tr = b.get("radius")
+				if tr != null: br = tr
+
+			for splat in splats:
+				var dx = bx - splat["x"]
+				var dy = by - splat["y"]
+				var dist_sq = dx*dx + dy*dy
+				if dist_sq < (br + splat["radius"])*(br + splat["radius"]):
+					if splat["team"] == b_team:
+						on_ally = true
+					elif splat["team"] != "Neutral":
+						on_enemy = true
+
+			var base_speed = 100.0
+			if typeof(b) == TYPE_DICTIONARY and b.has("base_speed"): base_speed = b["base_speed"]
+			elif typeof(b) == TYPE_OBJECT and 'base_speed' in b:
+				var tb = b.get("base_speed")
+				if tb != null: base_speed = tb
+
+			var target_speed = base_speed
+			if on_ally and not on_enemy:
+				target_speed = base_speed * 1.5
+			elif on_enemy and not on_ally:
+				target_speed = base_speed * 0.5
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["speed"] = target_speed
+			else:
+				b.set("speed", target_speed)
+
+GAME_MODES['floor_paint'] = FloorPaintMode.new()
