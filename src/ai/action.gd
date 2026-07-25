@@ -11613,6 +11613,39 @@ func execute(strategy: String, delta: float):
         elif my_ball.has_method("get_meta") and my_ball.has_meta("decoy_type"):
             decoy_type = my_ball.get_meta("decoy_type")
 
+        if decoy_type == "hologram":
+            var d_timer = 0.0
+            if "decoy_timer" in my_ball:
+                d_timer = my_ball.decoy_timer
+            elif my_ball.has_method("get_meta") and my_ball.has_meta("decoy_timer"):
+                d_timer = my_ball.get_meta("decoy_timer")
+
+            d_timer -= delta
+            if d_timer <= 0:
+                if "alive" in my_ball: my_ball.alive = false
+                elif my_ball.has_method("set_meta"): my_ball.set_meta("alive", false)
+                if "hp" in my_ball: my_ball.hp = 0
+                elif my_ball.has_method("set_meta"): my_ball.set_meta("hp", 0)
+            else:
+                if "decoy_timer" in my_ball: my_ball.decoy_timer = d_timer
+                elif my_ball.has_method("set_meta"): my_ball.set_meta("decoy_timer", d_timer)
+
+                var vx = 0.0
+                if "vx" in my_ball: vx = my_ball.vx
+                elif my_ball.has_method("get_meta") and my_ball.has_meta("vx"): vx = my_ball.get_meta("vx")
+
+                var vy = 0.0
+                if "vy" in my_ball: vy = my_ball.vy
+                elif my_ball.has_method("get_meta") and my_ball.has_meta("vy"): vy = my_ball.get_meta("vy")
+
+                if "x" in my_ball: my_ball.x += vx * delta
+                elif my_ball.has_method("set_meta"): my_ball.set_meta("x", my_ball.get_meta("x") + vx * delta)
+
+                if "y" in my_ball: my_ball.y += vy * delta
+                elif my_ball.has_method("set_meta"): my_ball.set_meta("y", my_ball.get_meta("y") + vy * delta)
+
+                return
+
         if decoy_type == "siren":
             var pt = 1.0
             if "siren_ping_timer" in my_ball:
@@ -25344,6 +25377,60 @@ func _collect_booster(delta: float):
                 var inv = self.ball.get_meta("inventory")
                 inv.append("grapple_hook")
                 self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "holo_decoy_booster":
+                var decoy = null
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    decoy = self.ball.duplicate()
+                elif self.ball.has_method("duplicate"):
+                    decoy = self.ball.duplicate()
+
+                if decoy != null:
+                    if "id" in decoy:
+                        decoy.id = randi() % 90000 + 10000
+
+                    var vx = self.ball.vx if "vx" in self.ball else (self.ball.get("vx", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("vx") if self.ball.has_method("get_meta") and self.ball.has_meta("vx") else 0.0))
+                    var vy = self.ball.vy if "vy" in self.ball else (self.ball.get("vy", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("vy") if self.ball.has_method("get_meta") and self.ball.has_meta("vy") else 0.0))
+                    var speed = sqrt(vx*vx + vy*vy)
+
+                    if speed < 0.001:
+                        var angle = randf() * PI * 2.0
+                        var b_speed = self.ball.speed if "speed" in self.ball else (self.ball.get("speed", 100.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("speed") if self.ball.has_method("get_meta") and self.ball.has_meta("speed") else 100.0))
+                        vx = cos(angle) * b_speed
+                        vy = sin(angle) * b_speed
+
+                    if typeof(decoy) == TYPE_DICTIONARY:
+                        decoy["is_decoy"] = true
+                        decoy["decoy_type"] = "hologram"
+                        decoy["decoy_timer"] = 5.0
+                        decoy["hp"] = 1.0
+                        decoy["vx"] = vx
+                        decoy["vy"] = vy
+                        if "id" in self.ball:
+                            decoy["owner_id"] = self.ball.id
+                    elif decoy.has_method("set_meta"):
+                        decoy.set_meta("is_decoy", true)
+                        decoy.set_meta("decoy_type", "hologram")
+                        decoy.set_meta("decoy_timer", 5.0)
+                        if "hp" in decoy:
+                            decoy.hp = 1.0
+                        else:
+                            decoy.set_meta("hp", 1.0)
+                        if "vx" in decoy:
+                            decoy.vx = vx
+                            decoy.vy = vy
+                        else:
+                            decoy.set_meta("vx", vx)
+                            decoy.set_meta("vy", vy)
+                        if "id" in self.ball:
+                            decoy.set_meta("owner_id", self.ball.id)
+
+                    if self.world != null and "balls" in self.world:
+                        self.world.balls.append(decoy)
+
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
