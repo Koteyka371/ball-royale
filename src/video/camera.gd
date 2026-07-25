@@ -11,7 +11,15 @@ var activity_scores: Dictionary = {}
 var smoothing: float = 0.1
 var shake_intensity: float = 0.0
 
+var ball_emblems: Array = []
+var gm = null
+var pm = null
+
 func _init(_width: int = 800, _height: int = 600):
+    if ResourceLoader.exists("res://src/system/guild.gd"):
+        gm = load("res://src/system/guild.gd").new()
+    if ResourceLoader.exists("res://src/system/profile.gd"):
+        pm = load("res://src/system/profile.gd").new()
     width = _width
     height = _height
     x = width / 2.0
@@ -78,6 +86,48 @@ func update(balls: Array, events: Array) -> void:
 
     bounty_indicator.update(events, target_id)
 
+    ball_emblems = []
+    if gm != null:
+        for ball in balls:
+            var hp = 0
+            if typeof(ball) == TYPE_DICTIONARY:
+                hp = ball.get("hp", 0)
+            else:
+                hp = ball.hp if "hp" in ball else 0
+
+            if hp <= 0:
+                continue
+
+            var guild_name = null
+            if typeof(ball) == TYPE_DICTIONARY:
+                guild_name = ball.get("guild_name", null)
+                if guild_name == null and ball.get("is_local_player", false) and pm != null:
+                    guild_name = pm.data.get("guild_name", null)
+            else:
+                guild_name = ball.guild_name if "guild_name" in ball else null
+                if guild_name == null and ("is_local_player" in ball and ball.is_local_player) and pm != null:
+                    if pm.data.has("guild_name"):
+                        guild_name = pm.data["guild_name"]
+
+            if guild_name != null and guild_name != "":
+                var guild = gm.get_guild(guild_name)
+                if guild != null and typeof(guild) == TYPE_DICTIONARY and guild.has("emblem"):
+                    var bx = 0.0
+                    var by = 0.0
+                    if typeof(ball) == TYPE_DICTIONARY:
+                        bx = ball.get("x", 0.0)
+                        by = ball.get("y", 0.0)
+                    else:
+                        bx = ball.x if "x" in ball else 0.0
+                        by = ball.y if "y" in ball else 0.0
+
+                    ball_emblems.append({
+                        "type": "guild_emblem",
+                        "x": bx,
+                        "y": by - 30.0,
+                        "emblem_data": guild["emblem"]
+                    })
+
     var best_score = -1.0
     var best_id = null
     for ball in balls:
@@ -134,10 +184,14 @@ func get_state() -> Dictionary:
     if shake_intensity > 0:
         ox = randf_range(-shake_intensity, shake_intensity)
         oy = randf_range(-shake_intensity, shake_intensity)
+    var ui_elements = bounty_indicator.get_render_data(x + ox, y + oy, zoom)
+    for emblem in ball_emblems:
+        ui_elements.append(emblem)
+
     return {
         "x": x + ox,
         "y": y + oy,
         "zoom": zoom,
         "target_id": target_id,
-        "ui_elements": bounty_indicator.get_render_data(x + ox, y + oy, zoom)
+        "ui_elements": ui_elements
     }
