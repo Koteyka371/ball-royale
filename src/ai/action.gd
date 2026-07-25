@@ -36731,6 +36731,14 @@ func _resolve_collisions() -> bool:
             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"):
                 cosmetic_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
 
+            var has_kin_abs_skill = false
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("has_kinetic_absorber"):
+                has_kin_abs_skill = self.ball.get_meta("has_kinetic_absorber")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("has_kinetic_absorber"):
+                has_kin_abs_skill = self.ball.get("has_kinetic_absorber")
+            elif typeof(self.ball) == TYPE_OBJECT and "has_kinetic_absorber" in self.ball:
+                has_kin_abs_skill = self.ball.has_kinetic_absorber
+
             if cosmetic_val == "magnetic_boots":
                 knockback_multiplier *= 0.5
             elif cosmetic_val == "grounded_boots":
@@ -36739,7 +36747,7 @@ func _resolve_collisions() -> bool:
                 knockback_multiplier *= 0.05
             elif cosmetic_val == "hover_boots":
                 knockback_multiplier *= 1.5
-            elif cosmetic_val == "kinetic_absorber":
+            elif cosmetic_val == "kinetic_absorber" or has_kin_abs_skill:
                 var o_team = null
                 if typeof(other) == TYPE_DICTIONARY and other.has("team"):
                     o_team = other["team"]
@@ -36757,7 +36765,11 @@ func _resolve_collisions() -> bool:
                     b_team = self.ball.get_meta("team")
 
                 if o_team != b_team:
-                    knockback_multiplier = 0.0
+                    if cosmetic_val == "kinetic_absorber":
+                        knockback_multiplier = 0.0
+                    else:
+                        knockback_multiplier *= 0.5
+
                     var current_ka = 0.0
                     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kinetic_absorbed_energy"):
                         current_ka = float(self.ball["kinetic_absorbed_energy"])
@@ -36777,6 +36789,24 @@ func _resolve_collisions() -> bool:
                         current_sbt = float(self.ball.get_meta("speed_boost_timer"))
 
                     var new_sbt = min(3.0, current_sbt + (overlap * 0.1))
+
+                    var current_sup = 0.0
+                    if has_kin_abs_skill:
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("supercharge_timer"):
+                            current_sup = float(self.ball["supercharge_timer"])
+                        elif typeof(self.ball) == TYPE_OBJECT and "supercharge_timer" in self.ball:
+                            current_sup = float(self.ball.supercharge_timer)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("supercharge_timer"):
+                            current_sup = float(self.ball.get_meta("supercharge_timer"))
+
+                        var new_sup = min(5.0, current_sup + (overlap * 0.1))
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["supercharge_timer"] = new_sup
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                            self.ball.set_meta("supercharge_timer", new_sup)
+                        else:
+                            self.ball.supercharge_timer = new_sup
 
                     if typeof(self.ball) == TYPE_DICTIONARY:
                         self.ball["kinetic_absorbed_energy"] = new_ka
