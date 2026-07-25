@@ -37211,6 +37211,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2177",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Floor Trap",
+      "description": "A hazard that applies a massive friction modifier to any ball that enters it, severely reducing movement speed without entirely stopping them.",
+      "allowed_paths": [
+        "src/arena/sticky_floor_trap.py",
+        "src/arena/sticky_floor_trap.gd",
+        "tests/test_sticky_floor_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
