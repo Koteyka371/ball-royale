@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1483] Quantum Recall Beacon — *2026-07-25 20:24:13 UTC*
+
+Players can deploy a beacon that saves their current HP, shield state, and position. After 5 seconds, or upon reactivation, they are teleported back to the beacon and their state is restored. This allows for risky plays or escaping dangerous AoE zones like explosions.
+
+---
+
 ## [idea-1475] Sector Control Mode — *2026-07-25 20:21:46 UTC*
 
 Players capture sections of the map by remaining inside them. Captured sections periodically drop boosters or spawn defensive hazards against enemies.
