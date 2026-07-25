@@ -20570,6 +20570,21 @@ class Action:
                             if hasattr(self.world, "add_event"):
                                 self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": stun_radius, "damage": 0.0})
 
+                if getattr(hazard, "kind", "") == "volcanic_fissure":
+                    dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
+                    duration = getattr(hazard, "duration", 0.0)
+                    max_duration = getattr(hazard, "max_duration", 10.0)
+                    progress = 1.0 - (duration / max_duration) if max_duration > 0 else 1.0
+                    progress = max(0.0, min(1.0, progress))
+
+                    open_threshold = 0.3
+                    if progress >= open_threshold:
+                        if dist_sq <= getattr(hazard, "radius", 100.0)**2:
+                            self.ball.hp -= getattr(hazard, "damage", 15.0) * delta
+                            self.ball.smokescreen_timer = getattr(self.ball, "smokescreen_timer", 0.0) + delta * 2.0
+                            # smokescreen visibility effect applies naturally with smokescreen_timer
+                            self.ball.fire_timer = getattr(self.ball, "fire_timer", 0.0) + delta * 2.0
+
                 if getattr(hazard, "kind", "") == "time_anomaly_field":
                     dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
                     if dist_sq <= getattr(hazard, "radius", 150.0)**2:
