@@ -52763,6 +52763,61 @@ class TimeDilationZoneMode extends GameMode:
 									if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
 										h.set(attr, val + delta * 0.5)
 
+class OverdriveZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 200.0
+
+	func _init():
+		super._init()
+		name = "Overdrive Zone"
+		description = "A localized zone that speeds up ability cooldowns but drains stamina."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			if typeof(world.arena) == TYPE_OBJECT:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+			arena_width = float(world["arena"].get("width", 1000.0))
+			arena_height = float(world["arena"].get("height", 1000.0))
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+
+		var next_id = 10000
+		if typeof(world) == TYPE_OBJECT and "next_id" in world:
+			next_id = world.next_id
+			world.next_id += 1
+		elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+			next_id = world["next_id"]
+			world["next_id"] += 1
+
+		var hazard = {
+			"id": next_id,
+			"x": zone_x,
+			"y": zone_y,
+			"radius": zone_radius,
+			"kind": "overdrive_zone",
+			"damage": 0.0,
+			"active": true
+		}
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				world.arena.hazards.append(hazard)
+			elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				world.arena["hazards"].append(hazard)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+			world["arena"]["hazards"].append(hazard)
+
 class InverseControlsZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -53256,6 +53311,7 @@ class AuraInversionZoneMode extends GameMode:
 						elif "hp" in b: b.hp -= 20.0 * delta
 
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode.new()
+GAME_MODES["overdrive_zone"] = OverdriveZoneMode.new()
 GAME_MODES["aura_inversion_zone"] = AuraInversionZoneMode.new()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode.new()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode.new()
