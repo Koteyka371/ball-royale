@@ -34,6 +34,7 @@ def test_tornado_roam_thunderstorm():
     t.y = 500
     t.vx = 100
     t.vy = 0
+    mode.weather = "clear"
     mode.tick(world, [], delta=0.1)
     # distance moved: 10
     dist1 = abs(t.x - 510)
