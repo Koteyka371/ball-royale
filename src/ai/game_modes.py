@@ -3724,7 +3724,7 @@ class BattleRoyaleMode(GameMode):
         self.random_event_timer += delta
         if self.random_event_timer >= 25.0:
             self.random_event_timer = 0.0
-            event_type = self.random.choice(["loot_goblin", "low_gravity_zone", "meteor_shower"])
+            event_type = self.random.choice(["loot_goblin", "low_gravity_zone", "meteor_shower", "delayed_clones"])
 
             if event_type == "loot_goblin":
                 class LootGoblin:
@@ -3758,6 +3758,34 @@ class BattleRoyaleMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("loot_goblin_spawn", {"message": "A Loot Goblin has appeared! Catch it for rare boosters!"})
 
+
+            elif event_type == "delayed_clones":
+                for p in list(balls):
+                    if getattr(p, "alive", False) and getattr(p, "ball_type", None) not in ["spectator", "loot_goblin"] and not getattr(p, "is_delayed_clone", False):
+                        import copy
+                        try:
+                            clone = copy.copy(p)
+                        except Exception:
+                            class DummyClone: pass
+                            clone = DummyClone()
+                            for k in ["x", "y", "vx", "vy", "radius", "speed", "damage", "hp", "max_hp", "alive", "ball_type", "team", "mass"]:
+                                if hasattr(p, k):
+                                    setattr(clone, k, getattr(p, k))
+
+                        clone.id = 97000 + getattr(self, "random", __import__("random")).randint(0, 9999)
+                        clone.is_delayed_clone = True
+                        clone.owner_id = getattr(p, "id", -1)
+                        # Optionally disable AI so it doesn't think on its own
+                        clone.brain = None
+
+                        if hasattr(world, "balls"):
+                            world.balls.append(clone)
+                            if hasattr(world, "entities") and world.balls is not world.entities:
+                                world.entities.append(clone)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("delayed_clones", {"message": "Delayed clones have appeared! They mimic your movements."})
+
             elif event_type == "low_gravity_zone":
                 arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
                 arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -3782,6 +3810,32 @@ class BattleRoyaleMode(GameMode):
                 self.weather_timer = 0.0
                 if hasattr(world, "add_event"):
                     world.add_event("weather_change", {"weather": "meteor_shower", "message": "A sudden Meteor Shower has begun!"})
+
+
+        # Update Delayed Clones
+        for b in list(balls):
+            if not getattr(b, "is_delayed_clone", False):
+                if not hasattr(b, "action_history"):
+                    b.action_history = []
+                b.action_history.append((getattr(b, "vx", 0.0), getattr(b, "vy", 0.0)))
+                if len(b.action_history) > 30:  # ~0.5 sec delay
+                    b.action_history.pop(0)
+
+        for b in list(balls):
+            if getattr(b, "is_delayed_clone", False) and getattr(b, "alive", False):
+                owner = next((p for p in balls if getattr(p, "id", None) == getattr(b, "owner_id", -1)), None)
+                if owner and getattr(owner, "alive", False):
+                    if hasattr(owner, "action_history") and len(owner.action_history) > 0:
+                        b.vx = owner.action_history[0][0]
+                        b.vy = owner.action_history[0][1]
+
+                    # Apply physics if not done by engine for clones without brain
+                    if not getattr(b, "brain", None):
+                        b.x += getattr(b, "vx", 0.0) * delta
+                        b.y += getattr(b, "vy", 0.0) * delta
+                else:
+                    b.hp = 0
+                    b.alive = False
 
         # Update Loot Goblin Movement
         for b in list(balls):
