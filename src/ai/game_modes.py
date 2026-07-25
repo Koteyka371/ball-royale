@@ -38222,3 +38222,74 @@ class HugeTornadosMode(GameMode):
 GAME_MODES['huge_tornados'] = HugeTornadosMode()
 GAME_MODES['black_hole_weather'] = BlackHoleWeatherMode()
 GAME_MODES['black_hole_safe_zone'] = BlackHoleSafeZoneMode()
+
+
+class AuctionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hidden Item Auction"
+        self.description = "Periodically, a hidden artifact goes up for auction among alive players. They can bid their gold to win the artifact, which grants permanent buffs."
+        self.auction_timer = 20.0
+        self.auction_active = False
+        self.auction_duration = 5.0
+        self.current_bid = 0
+        self.highest_bidder = None
+        self.artifact_stats = {"max_hp": 50.0, "base_speed": 20.0, "base_damage": 10.0}
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+        if not alive_balls:
+            return
+
+        if not self.auction_active:
+            self.auction_timer -= delta
+            if self.auction_timer <= 0:
+                self.auction_active = True
+                self.auction_duration = 5.0
+                self.current_bid = 10
+                self.highest_bidder = None
+                # Create random stats for the artifact
+                self.artifact_stats = {
+                    "max_hp": random.randint(20, 100),
+                    "base_speed": random.randint(10, 40),
+                    "base_damage": random.randint(5, 25)
+                }
+                if hasattr(world, "add_event"):
+                    world.add_event("auction_started", {"starting_bid": self.current_bid})
+        else:
+            self.auction_duration -= delta
+
+            # Simulated AI bidding logic: balls bid if they have enough gold
+            for b in alive_balls:
+                gold = getattr(b, "gold", 0)
+                if gold > self.current_bid and self.highest_bidder != b and random.random() < 2.0 * delta:
+                    bid_amount = self.current_bid + max(1, int((gold - self.current_bid) * random.random() * 0.5))
+                    self.current_bid = bid_amount
+                    self.highest_bidder = b
+                    if hasattr(world, "add_event"):
+                        world.add_event("auction_bid", {"bidder_id": getattr(b, "id", None), "amount": bid_amount})
+
+            if self.auction_duration <= 0:
+                self.auction_active = False
+                self.auction_timer = random.uniform(20.0, 40.0)
+                if self.highest_bidder:
+                    # Deduct gold and award stats
+                    self.highest_bidder.gold -= self.current_bid
+                    self.highest_bidder.max_hp = getattr(self.highest_bidder, "max_hp", 100.0) + self.artifact_stats["max_hp"]
+                    self.highest_bidder.hp = getattr(self.highest_bidder, "hp", 100.0) + self.artifact_stats["max_hp"]
+                    self.highest_bidder.base_speed = getattr(self.highest_bidder, "base_speed", 100.0) + self.artifact_stats["base_speed"]
+                    self.highest_bidder.base_damage = getattr(self.highest_bidder, "base_damage", 10.0) + self.artifact_stats["base_damage"]
+                    if hasattr(world, "add_event"):
+                        world.add_event("auction_won", {
+                            "winner_id": getattr(self.highest_bidder, "id", None),
+                            "cost": self.current_bid,
+                            "stats": self.artifact_stats
+                        })
+                else:
+                    if hasattr(world, "add_event"):
+                        world.add_event("auction_failed", {})
+
+GAME_MODES['auction_event'] = AuctionEventMode()
