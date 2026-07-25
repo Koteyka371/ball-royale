@@ -25261,7 +25261,7 @@
     },
     {
       "id": "idea-1475",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sector Control Mode",
@@ -37240,6 +37240,40 @@
         "src/ai/eclipse_assasin.py",
         "src/ai/eclipse_assasin.gd",
         "tests/test_eclipse_assasin.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2179",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Event",
+      "description": "A random event where all players randomly swap positions with another player on the map. Creates chaos and forces quick reaction times.",
+      "allowed_paths": [
+        "src/ai/quantum_swap.py",
+        "src/ai/quantum_swap.gd",
+        "tests/test_quantum_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2180",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Weather",
+      "description": "A new weather condition that completely turns off all lighting and reduces player vision radius severely. Players can only see things immediately next to them or when explosions happen.",
+      "allowed_paths": [
+        "src/ai/blackout.py",
+        "src/ai/blackout.gd",
+        "tests/test_blackout.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

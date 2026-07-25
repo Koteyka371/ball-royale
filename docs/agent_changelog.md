@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1475] Sector Control Mode — *2026-07-25 20:21:46 UTC*
+
+Players capture sections of the map by remaining inside them. Captured sections periodically drop boosters or spawn defensive hazards against enemies.
+
+---
+
 ## [idea-1489] Mirror Match Event — *2026-07-25 20:19:09 UTC*
 
 An event that spawns identical clones of all players that mimic their inputs with a slight delay.
