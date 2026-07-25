@@ -25688,7 +25688,7 @@
     },
     {
       "id": "idea-1500",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Smoke Bomb",
@@ -37599,6 +37599,40 @@
         "src/ai/magnetic_boots.py",
         "src/ai/magnetic_boots.gd",
         "tests/test_magnetic_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2200",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Interactive Emblem Taunt",
+      "description": "Players can press a dedicated key to perform an emblem taunt, which temporarily enlarges their guild emblem and plays an animation, useful for celebrating a kill or challenging a nearby opponent.",
+      "allowed_paths": [
+        "src/ai/interactive_emblem_taunt.py",
+        "src/ai/interactive_emblem_taunt.gd",
+        "tests/test_interactive_emblem_taunt.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2201",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Emblem Glow Effect Based on Streak",
+      "description": "If a ball goes on a kill streak, their floating guild emblem will start to glow intensely, radiating light and indicating to other players that they are highly dangerous.",
+      "allowed_paths": [
+        "src/ai/emblem_glow_effect_based_on_streak.py",
+        "src/ai/emblem_glow_effect_based_on_streak.gd",
+        "tests/test_emblem_glow_effect_based_on_streak.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
