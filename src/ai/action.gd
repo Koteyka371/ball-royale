@@ -2874,6 +2874,17 @@ func _attempt_damage_internal(attacker, target) -> void:
 							var n_x = next_entity.get("x") if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("x") else (next_entity.x if typeof(next_entity) == TYPE_OBJECT and "x" in next_entity else 0.0)
 							var n_y = next_entity.get("y") if typeof(next_entity) == TYPE_DICTIONARY and next_entity.has("y") else (next_entity.y if typeof(next_entity) == TYPE_OBJECT and "y" in next_entity else 0.0)
 
+							# Mirages take 1 damage to destroy
+							if n_kind == "mirage_decoy":
+								var dmg = 10.0
+								if typeof(attacker) == TYPE_DICTIONARY: dmg = attacker.get("damage", 10.0)
+								elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("damage"): dmg = attacker.get_meta("damage")
+								elif typeof(attacker) == TYPE_OBJECT and "damage" in attacker: dmg = attacker.damage
+
+								if dmg >= 1.0:
+									if typeof(next_entity) == TYPE_DICTIONARY: next_entity["duration"] = 0.0
+									elif typeof(next_entity) == TYPE_OBJECT and "duration" in next_entity: next_entity.duration = 0.0
+
 							var emp = {
 								"id": 21000 + self.world.arena.hazards.size(),
 								"x": n_x,
@@ -3279,6 +3290,54 @@ func execute(strategy: String, delta: float):
 
                     var owner_id = h.get("owner_id") if typeof(h) == TYPE_DICTIONARY and h.has("owner_id") else (h.owner_id if typeof(h) == TYPE_OBJECT and "owner_id" in h else null)
                     var team = h.get("team") if typeof(h) == TYPE_DICTIONARY and h.has("team") else (h.team if typeof(h) == TYPE_OBJECT and "team" in h else null)
+
+                    var owner = null
+                    if owner_id != null and self.world != null and "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_id = b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else 0))
+                            if b_id == owner_id:
+                                owner = b
+                                break
+
+                    if owner != null:
+                        var o_alive = false
+                        if typeof(owner) == TYPE_DICTIONARY: o_alive = owner.get("alive", false)
+                        else: o_alive = owner.get("alive") if "alive" in owner else false
+
+                        var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY and h.has("kind") else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+                        if o_alive and h_kind == "mirage_decoy":
+                            var vx = 0.0
+                            if typeof(owner) == TYPE_DICTIONARY: vx = owner.get("vx", 0.0)
+                            elif typeof(owner) == TYPE_OBJECT and owner.has_method("get_meta") and owner.has_meta("vx"): vx = owner.get_meta("vx")
+                            elif typeof(owner) == TYPE_OBJECT and "vx" in owner: vx = owner.vx
+
+                            var vy = 0.0
+                            if typeof(owner) == TYPE_DICTIONARY: vy = owner.get("vy", 0.0)
+                            elif typeof(owner) == TYPE_OBJECT and owner.has_method("get_meta") and owner.has_meta("vy"): vy = owner.get_meta("vy")
+                            elif typeof(owner) == TYPE_OBJECT and "vy" in owner: vy = owner.vy
+
+                            if vx != 0.0 or vy != 0.0:
+                                var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+                                var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+                                hx += vx * delta
+                                hy += vy * delta
+
+                                var arena_w = 1000.0
+                                if self.world != null and "arena" in self.world and "width" in self.world.arena: arena_w = self.world.arena.width
+                                var arena_h = 1000.0
+                                if self.world != null and "arena" in self.world and "height" in self.world.arena: arena_h = self.world.arena.height
+                                var hr = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
+
+                                hx = max(hr, min(arena_w - hr, hx))
+                                hy = max(hr, min(arena_h - hr, hy))
+
+                                if typeof(h) == TYPE_DICTIONARY:
+                                    h["x"] = hx
+                                    h["y"] = hy
+                                else:
+                                    h.x = hx
+                                    h.y = hy
+
                     var h_rad = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
                     var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
                     var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
@@ -21658,6 +21717,54 @@ func execute(strategy: String, delta: float):
 
                     var owner_id = h.get("owner_id") if typeof(h) == TYPE_DICTIONARY and h.has("owner_id") else (h.owner_id if typeof(h) == TYPE_OBJECT and "owner_id" in h else null)
                     var team = h.get("team") if typeof(h) == TYPE_DICTIONARY and h.has("team") else (h.team if typeof(h) == TYPE_OBJECT and "team" in h else null)
+
+                    var owner = null
+                    if owner_id != null and self.world != null and "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_id = b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else 0))
+                            if b_id == owner_id:
+                                owner = b
+                                break
+
+                    if owner != null:
+                        var o_alive = false
+                        if typeof(owner) == TYPE_DICTIONARY: o_alive = owner.get("alive", false)
+                        else: o_alive = owner.get("alive") if "alive" in owner else false
+
+                        var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY and h.has("kind") else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+                        if o_alive and h_kind == "mirage_decoy":
+                            var vx = 0.0
+                            if typeof(owner) == TYPE_DICTIONARY: vx = owner.get("vx", 0.0)
+                            elif typeof(owner) == TYPE_OBJECT and owner.has_method("get_meta") and owner.has_meta("vx"): vx = owner.get_meta("vx")
+                            elif typeof(owner) == TYPE_OBJECT and "vx" in owner: vx = owner.vx
+
+                            var vy = 0.0
+                            if typeof(owner) == TYPE_DICTIONARY: vy = owner.get("vy", 0.0)
+                            elif typeof(owner) == TYPE_OBJECT and owner.has_method("get_meta") and owner.has_meta("vy"): vy = owner.get_meta("vy")
+                            elif typeof(owner) == TYPE_OBJECT and "vy" in owner: vy = owner.vy
+
+                            if vx != 0.0 or vy != 0.0:
+                                var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+                                var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+                                hx += vx * delta
+                                hy += vy * delta
+
+                                var arena_w = 1000.0
+                                if self.world != null and "arena" in self.world and "width" in self.world.arena: arena_w = self.world.arena.width
+                                var arena_h = 1000.0
+                                if self.world != null and "arena" in self.world and "height" in self.world.arena: arena_h = self.world.arena.height
+                                var hr = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
+
+                                hx = max(hr, min(arena_w - hr, hx))
+                                hy = max(hr, min(arena_h - hr, hy))
+
+                                if typeof(h) == TYPE_DICTIONARY:
+                                    h["x"] = hx
+                                    h["y"] = hy
+                                else:
+                                    h.x = hx
+                                    h.y = hy
+
                     var h_rad = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
                     var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
                     var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
@@ -21709,6 +21816,54 @@ func execute(strategy: String, delta: float):
 
                     var owner_id = h.get("owner_id") if typeof(h) == TYPE_DICTIONARY and h.has("owner_id") else (h.owner_id if typeof(h) == TYPE_OBJECT and "owner_id" in h else null)
                     var team = h.get("team") if typeof(h) == TYPE_DICTIONARY and h.has("team") else (h.team if typeof(h) == TYPE_OBJECT and "team" in h else null)
+
+                    var owner = null
+                    if owner_id != null and self.world != null and "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_id = b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id") else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else (b.id if typeof(b) == TYPE_OBJECT and "id" in b else 0))
+                            if b_id == owner_id:
+                                owner = b
+                                break
+
+                    if owner != null:
+                        var o_alive = false
+                        if typeof(owner) == TYPE_DICTIONARY: o_alive = owner.get("alive", false)
+                        else: o_alive = owner.get("alive") if "alive" in owner else false
+
+                        var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY and h.has("kind") else (h.kind if typeof(h) == TYPE_OBJECT and "kind" in h else "")
+                        if o_alive and h_kind == "mirage_decoy":
+                            var vx = 0.0
+                            if typeof(owner) == TYPE_DICTIONARY: vx = owner.get("vx", 0.0)
+                            elif typeof(owner) == TYPE_OBJECT and owner.has_method("get_meta") and owner.has_meta("vx"): vx = owner.get_meta("vx")
+                            elif typeof(owner) == TYPE_OBJECT and "vx" in owner: vx = owner.vx
+
+                            var vy = 0.0
+                            if typeof(owner) == TYPE_DICTIONARY: vy = owner.get("vy", 0.0)
+                            elif typeof(owner) == TYPE_OBJECT and owner.has_method("get_meta") and owner.has_meta("vy"): vy = owner.get_meta("vy")
+                            elif typeof(owner) == TYPE_OBJECT and "vy" in owner: vy = owner.vy
+
+                            if vx != 0.0 or vy != 0.0:
+                                var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
+                                var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
+                                hx += vx * delta
+                                hy += vy * delta
+
+                                var arena_w = 1000.0
+                                if self.world != null and "arena" in self.world and "width" in self.world.arena: arena_w = self.world.arena.width
+                                var arena_h = 1000.0
+                                if self.world != null and "arena" in self.world and "height" in self.world.arena: arena_h = self.world.arena.height
+                                var hr = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
+
+                                hx = max(hr, min(arena_w - hr, hx))
+                                hy = max(hr, min(arena_h - hr, hy))
+
+                                if typeof(h) == TYPE_DICTIONARY:
+                                    h["x"] = hx
+                                    h["y"] = hy
+                                else:
+                                    h.x = hx
+                                    h.y = hy
+
                     var h_rad = h.get("radius") if typeof(h) == TYPE_DICTIONARY and h.has("radius") else (h.radius if typeof(h) == TYPE_OBJECT and "radius" in h else 10.0)
                     var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY and h.has("x") else (h.x if typeof(h) == TYPE_OBJECT and "x" in h else 0.0)
                     var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY and h.has("y") else (h.y if typeof(h) == TYPE_OBJECT and "y" in h else 0.0)
