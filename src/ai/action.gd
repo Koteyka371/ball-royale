@@ -25793,7 +25793,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_shockwave_mine']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -34045,6 +34045,27 @@ func _use_skill():
 
                 self.world.arena.hazards.append(trap)
 
+        elif skill_name == "deploy_shockwave_mine":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var mine_id = self.world.get("next_id", 99999) + randi() % 10000
+                var my_team = ""
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball.team
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_team = self.ball.ball_type
+                elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: my_team = self.ball.ball_type
+                var mine = {
+                    "id": mine_id,
+                    "x": self.ball.x,
+                    "y": self.ball.y,
+                    "radius": 20.0,
+                    "kind": "shockwave_mine",
+                    "damage": 0.0,
+                    "duration": 60.0,
+                    "team": my_team,
+                    "owner_id": self.ball.id if "id" in self.ball else self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else -1
+                }
+                self.world.arena.hazards.append(mine)
         elif skill_name == "deploy_time_anomaly_field":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var field_id = self.world.get("next_id", 99999) + randi() % 10000
@@ -39127,6 +39148,101 @@ func _update_skill_timer(delta: float):
                                 hazard["active"] = false
                             elif hazard.has_method("set"):
                                 hazard.set("active", false)
+
+                if h_kind == "shockwave_mine":
+                    var h_dur = float(hazard.duration) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration") else (float(hazard.get_meta("duration")) if hazard.has_method("has_meta") and hazard.has_meta("duration") else (float(hazard.duration) if "duration" in hazard else 0.0))
+                    if h_dur > 0:
+                        h_dur -= delta
+                        if typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = h_dur
+                        elif hazard.has_method("set_meta"): hazard.set_meta("duration", h_dur)
+                        elif "duration" in hazard: hazard.duration = h_dur
+
+                        if h_dur <= 0:
+                            if typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif "duration" in hazard: hazard.duration = 0.0
+                            var h_idx = self.world.arena.hazards.find(hazard)
+                            if h_idx != -1:
+                                self.world.arena.hazards.remove_at(h_idx)
+                        else:
+                            var h_owner_id = hazard.owner_id if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.get_meta("owner_id") if hazard.has_method("has_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else -1))
+                            var h_team = hazard.team if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team") else (hazard.get_meta("team") if hazard.has_method("has_meta") and hazard.has_meta("team") else (hazard.team if "team" in hazard else ""))
+
+                            var b_id = self.ball.id if "id" in self.ball else self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else -1
+                            var b_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else (self.ball.ball_type if "ball_type" in self.ball else ""))
+
+                            var is_enemy = false
+                            if h_owner_id != -1 and b_id != h_owner_id:
+                                if b_team == "" or h_team == "" or b_team != h_team:
+                                    is_enemy = true
+
+                            if is_enemy:
+                                var h_radius = float(hazard.radius) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (float(hazard.get_meta("radius")) if hazard.has_method("has_meta") and hazard.has_meta("radius") else (float(hazard.radius) if "radius" in hazard else 20.0))
+                                var h_x = float(hazard.x) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (float(hazard.get_meta("x")) if hazard.has_method("has_meta") and hazard.has_meta("x") else (float(hazard.x) if "x" in hazard else 0.0))
+                                var h_y = float(hazard.y) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (float(hazard.get_meta("y")) if hazard.has_method("has_meta") and hazard.has_meta("y") else (float(hazard.y) if "y" in hazard else 0.0))
+                                var dist_sq = (self.ball.x - h_x)*(self.ball.x - h_x) + (self.ball.y - h_y)*(self.ball.y - h_y)
+
+                                if dist_sq <= h_radius * h_radius:
+                                    var h_idx = self.world.arena.hazards.find(hazard)
+                                    if h_idx != -1:
+                                        self.world.arena.hazards.remove_at(h_idx)
+
+                                    if self.world.has_method("add_event"):
+                                        self.world.add_event("explosion", {"x": h_x, "y": h_y, "radius": 400.0, "damage": 10.0, "type": "shockwave"})
+                                    elif "events" in self.world:
+                                        self.world.events.append({'type': 'explosion', 'data': {'x': h_x, 'y': h_y, 'radius': 400.0}})
+
+                                    if "balls" in self.world:
+                                        for b in self.world.balls:
+                                            var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive") else true)
+                                            if not b_alive: continue
+
+                                            var bb_id = b.id if "id" in b else (b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id") else -1)
+                                            var bb_team = b.team if "team" in b else (b.get_meta("team") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team") else (b.ball_type if "ball_type" in b else ""))
+
+                                            var bb_is_enemy = false
+                                            if bb_id != h_owner_id:
+                                                if bb_team == "" or h_team == "" or bb_team != h_team:
+                                                    bb_is_enemy = true
+
+                                            if bb_is_enemy:
+                                                var b_xx = float(b.x) if "x" in b else (float(b.get_meta("x")) if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x") else 0.0)
+                                                var b_yy = float(b.y) if "y" in b else (float(b.get_meta("y")) if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y") else 0.0)
+
+                                                var dx = b_xx - h_x
+                                                var dy = b_yy - h_y
+                                                var dist = sqrt(dx*dx + dy*dy)
+
+                                                if dist <= 400.0:
+                                                    if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                        b.take_damage(10.0)
+                                                    elif "hp" in b:
+                                                        b.hp -= 10.0
+                                                        if b.hp <= 0:
+                                                            if "alive" in b: b.alive = false
+                                                            if "killer" in b: b.killer = h_owner_id
+
+                                                    var nx = 1.0
+                                                    var ny = 0.0
+                                                    if dist > 0.001:
+                                                        nx = dx/dist
+                                                        ny = dy/dist
+
+                                                    var push_force = 1500.0
+                                                    if typeof(b) == TYPE_OBJECT and "vx" in b:
+                                                        b.vx += nx * push_force
+                                                    elif typeof(b) == TYPE_DICTIONARY and b.has("vx"):
+                                                        b["vx"] += nx * push_force
+
+                                                    if typeof(b) == TYPE_OBJECT and "vy" in b:
+                                                        b.vy += ny * push_force
+                                                    elif typeof(b) == TYPE_DICTIONARY and b.has("vy"):
+                                                        b["vy"] += ny * push_force
+
+                                                    var at_timer = float(b.anchor_trap_timer) if "anchor_trap_timer" in b else (float(b.get_meta("anchor_trap_timer")) if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("anchor_trap_timer") else 0.0)
+                                                    if 1.5 > at_timer:
+                                                        if "anchor_trap_timer" in b: b.anchor_trap_timer = 1.5
+                                                        elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("anchor_trap_timer", 1.5)
 
                 if h_kind == "time_anomaly_field":
                     var h_radius = float(hazard.radius) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (float(hazard.get_meta("radius")) if hazard.has_method("has_meta") and hazard.has_meta("radius") else (float(hazard.radius) if "radius" in hazard else 150.0))

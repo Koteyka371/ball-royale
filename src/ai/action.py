@@ -13089,7 +13089,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_shockwave_mine']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -17969,6 +17969,15 @@ class Action:
                         pass
 
 
+            elif skill_name == "deploy_shockwave_mine":
+                from arena.procedural_arena import Hazard
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    field_id = getattr(self.world, "next_id", 99999) + __import__("random").randint(1000, 9999)
+                    mine = Hazard(field_id, self.ball.x, self.ball.y, 20.0, "shockwave_mine", 0.0)
+                    mine.duration = 60.0
+                    mine.owner_id = getattr(self.ball, "id", None)
+                    mine.team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                    self.world.arena.hazards.append(mine)
             elif skill_name == "deploy_time_anomaly_field":
                 from arena.procedural_arena import Hazard
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -19857,6 +19866,77 @@ class Action:
                                                 if hasattr(b, "vy"): b.vy += random.uniform(-10.0, 10.0) * delta
                         else:
                             hazard.active = False
+
+                if getattr(hazard, "kind", "") == "shockwave_mine":
+                    if getattr(hazard, "duration", 0.0) > 0:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            hazard.duration = 0.0
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+                        else:
+                            is_enemy = False
+                            h_owner_id = getattr(hazard, "owner_id", None)
+                            h_team = getattr(hazard, "team", "")
+                            b_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                            if h_owner_id is not None and self.ball.id != h_owner_id:
+                                if not b_team or not h_team or b_team != h_team:
+                                    is_enemy = True
+
+                            if is_enemy:
+                                h_radius = getattr(hazard, "radius", 20.0)
+                                dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
+                                if dist_sq <= h_radius**2:
+                                    # Detonate
+                                    if hazard in getattr(getattr(self.world, "arena", None), "hazards", []):
+                                        self.world.arena.hazards.remove(hazard)
+
+                                    if hasattr(self.world, "add_event"):
+                                        self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": 400.0, "damage": 10.0, "type": "shockwave"})
+                                    elif hasattr(self.world, "events"):
+                                        self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': 400.0}})
+
+                                    shockwave_radius = 400.0
+                                    shockwave_damage = 10.0
+                                    for b in getattr(self.world, "balls", []):
+                                        if not getattr(b, "alive", True):
+                                            continue
+
+                                        # only affect enemies
+                                        b_is_enemy = False
+                                        bb_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                        if getattr(b, "id", None) != h_owner_id:
+                                            if not bb_team or not h_team or bb_team != h_team:
+                                                b_is_enemy = True
+
+                                        if b_is_enemy:
+                                            dx = b.x - hazard.x
+                                            dy = b.y - hazard.y
+                                            dist = __import__("math").hypot(dx, dy)
+                                            if dist <= shockwave_radius:
+                                                # Deal damage
+                                                if hasattr(b, "take_damage"):
+                                                    b.take_damage(shockwave_damage)
+                                                elif hasattr(b, "hp"):
+                                                    b.hp -= shockwave_damage
+                                                    if b.hp <= 0:
+                                                        b.alive = False
+                                                        b.killer = h_owner_id
+
+                                                # Massive pushback and movement disable
+                                                if dist > 0.001:
+                                                    nx, ny = dx/dist, dy/dist
+                                                else:
+                                                    nx, ny = 1.0, 0.0
+
+                                                # Pushback significantly far away
+                                                # Applying a massive velocity spike that engine physics will process
+                                                push_force = 1500.0
+                                                if hasattr(b, "vx"): b.vx += nx * push_force
+                                                if hasattr(b, "vy"): b.vy += ny * push_force
+
+                                                # Disable movement abilities
+                                                b.anchor_trap_timer = max(getattr(b, "anchor_trap_timer", 0.0), 1.5)
 
                 if getattr(hazard, "kind", "") == "time_anomaly_field":
                     dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2

@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Mine",
+  "description": "A new deployable trap that, instead of dealing damage, swaps the positions of the owner and the enemy that triggered it, temporarily granting the owner a movement speed buff and applying confusion to the enemy."
+}
