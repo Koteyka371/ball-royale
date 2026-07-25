@@ -30029,7 +30029,72 @@ class CaptureZonesMode(GameMode):
                         if hasattr(world, "add_event"):
                             world.add_event("zone_spawned_hazard", {"zone": zone})
 
+
+class ExpandingHazardBubblesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Expanding Hazard Bubbles"
+        self.description = "The entire map is safe initially, but expanding hazard bubbles randomly spawn. Players must avoid the growing hazard zones."
+        self.bubbles = []
+        self.bubble_spawn_timer = 0.0
+        self.bubble_spawn_interval = 6.0
+        self.max_radius = 250.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.bubbles = []
+        self.bubble_spawn_timer = 2.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+        self.bubble_spawn_timer -= delta
+
+        if self.bubble_spawn_timer <= 0:
+            self.bubble_spawn_timer = self.bubble_spawn_interval
+
+            arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+            arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+            x = random.uniform(50.0, arena_width - 50.0)
+            y = random.uniform(50.0, arena_height - 50.0)
+
+            self.bubbles.append({
+                "x": x,
+                "y": y,
+                "radius": 20.0,
+                "timer": 15.0 # Max lifespan
+            })
+
+            if hasattr(world, "add_event"):
+                world.add_event("hazard_bubble_spawned", {"x": x, "y": y, "message": "Hazard bubble spawned!"})
+
+        active_bubbles = []
+        for bubble in self.bubbles:
+            bubble["timer"] -= delta
+            if bubble["timer"] > 0:
+                if bubble["radius"] < self.max_radius:
+                    bubble["radius"] += 15.0 * delta
+                active_bubbles.append(bubble)
+
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        dist = math.hypot(b.x - bubble["x"], b.y - bubble["y"])
+                        if dist <= bubble["radius"]:
+                            damage = 25.0 * delta
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(damage)
+                            else:
+                                b.hp = getattr(b, "hp", 100) - damage
+                                if b.hp <= 0:
+                                    b.alive = False
+
+        self.bubbles = active_bubbles
+
+
 GAME_MODES = {
+    'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
     'capture_zones': CaptureZonesMode(),
     "nemesis_sustain": NemesisSustainMode(),
     "moving_walls": MovingWallsMode(),
