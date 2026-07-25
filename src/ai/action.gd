@@ -9708,6 +9708,91 @@ func execute(strategy: String, delta: float):
 							hazard.vx *= (1.0 - 2.0 * delta)
 							hazard.vy *= (1.0 - 2.0 * delta)
 
+			elif hazard.get("kind") == "thrown_purge_bomb" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_purge_bomb"):
+				var h_dur = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+				elif "duration" in hazard: h_dur = float(hazard.duration)
+
+				if h_dur > 0:
+					h_dur -= delta
+					if h_dur <= 0:
+						h_dur = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = 0.0
+						else: hazard.duration = 0.0
+
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.active = false
+						else: hazard.active = false
+
+						if "hazards" in world.arena and world.arena.hazards.has(hazard):
+							world.arena.hazards.erase(hazard)
+
+						if "events" in world:
+							world.events.append({"type": "visual_effect", "data": {"type": "purge_explosion", "x": hazard.x if "x" in hazard else hazard["x"], "y": hazard.y if "y" in hazard else hazard["y"], "radius": 150.0}})
+
+						var h_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+						elif "team" in hazard: h_team = hazard.team
+
+						if "balls" in world:
+							for b in world.balls:
+								var alive = true
+								if "alive" in b: alive = b.alive
+								var b_team = null
+								if "team" in b: b_team = b.team
+
+								if alive and b_team != h_team:
+									var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+									var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+									var hx = hazard.x if "x" in hazard else hazard["x"]
+									var hy = hazard.y if "y" in hazard else hazard["y"]
+									var dx = hx - bx
+									var dy = hy - by
+
+									if dx*dx + dy*dy <= 150.0*150.0:
+										b.supercharge_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("supercharge_timer", 0.0)
+
+										b.overcharged_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("overcharged_timer", 0.0)
+
+										if "overclock_timer" in b: b.overclock_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("overclock_timer", 0.0)
+
+										if "damage_buff_timer" in b: b.damage_buff_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("damage_buff_timer", 0.0)
+
+										if "stamina_booster_timer" in b: b.stamina_booster_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("stamina_booster_timer", 0.0)
+
+										if "shield_timer" in b: b.shield_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("shield_timer", 0.0)
+
+										if "energy_shield_timer" in b: b.energy_shield_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("energy_shield_timer", 0.0)
+
+										if "invulnerable_timer" in b: b.invulnerable_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("invulnerable_timer", 0.0)
+
+										b.speed_boost_timer = 2.0
+										if b.has_method("set_meta"): b.set_meta("speed_boost_timer", 2.0)
+
+					else:
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = h_dur
+						else: hazard.duration = h_dur
+
+						var vx = hazard.vx if "vx" in hazard else hazard["vx"]
+						var vy = hazard.vy if "vy" in hazard else hazard["vy"]
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["x"] += vx * delta
+							hazard["y"] += vy * delta
+							hazard["vx"] *= (1.0 - 2.0 * delta)
+							hazard["vy"] *= (1.0 - 2.0 * delta)
+						else:
+							hazard.x += vx * delta
+							hazard.y += vy * delta
+							hazard.vx *= (1.0 - 2.0 * delta)
+							hazard.vy *= (1.0 - 2.0 * delta)
+
 			elif hazard.get("kind") == "thrown_emp" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_emp"):
 				var h_dur = 0.0
 				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
@@ -9813,6 +9898,91 @@ func execute(strategy: String, delta: float):
 							hazard.vy *= (1.0 - 2.0 * delta)
 						else:
 							hazard.duration = h_dur
+							hazard.x += vx * delta
+							hazard.y += vy * delta
+							hazard.vx *= (1.0 - 2.0 * delta)
+							hazard.vy *= (1.0 - 2.0 * delta)
+
+			elif hazard.get("kind") == "thrown_purge_bomb" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_purge_bomb"):
+				var h_dur = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+				elif "duration" in hazard: h_dur = float(hazard.duration)
+
+				if h_dur > 0:
+					h_dur -= delta
+					if h_dur <= 0:
+						h_dur = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = 0.0
+						else: hazard.duration = 0.0
+
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.active = false
+						else: hazard.active = false
+
+						if "hazards" in world.arena and world.arena.hazards.has(hazard):
+							world.arena.hazards.erase(hazard)
+
+						if "events" in world:
+							world.events.append({"type": "visual_effect", "data": {"type": "purge_explosion", "x": hazard.x if "x" in hazard else hazard["x"], "y": hazard.y if "y" in hazard else hazard["y"], "radius": 150.0}})
+
+						var h_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+						elif "team" in hazard: h_team = hazard.team
+
+						if "balls" in world:
+							for b in world.balls:
+								var alive = true
+								if "alive" in b: alive = b.alive
+								var b_team = null
+								if "team" in b: b_team = b.team
+
+								if alive and b_team != h_team:
+									var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+									var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+									var hx = hazard.x if "x" in hazard else hazard["x"]
+									var hy = hazard.y if "y" in hazard else hazard["y"]
+									var dx = hx - bx
+									var dy = hy - by
+
+									if dx*dx + dy*dy <= 150.0*150.0:
+										b.supercharge_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("supercharge_timer", 0.0)
+
+										b.overcharged_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("overcharged_timer", 0.0)
+
+										if "overclock_timer" in b: b.overclock_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("overclock_timer", 0.0)
+
+										if "damage_buff_timer" in b: b.damage_buff_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("damage_buff_timer", 0.0)
+
+										if "stamina_booster_timer" in b: b.stamina_booster_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("stamina_booster_timer", 0.0)
+
+										if "shield_timer" in b: b.shield_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("shield_timer", 0.0)
+
+										if "energy_shield_timer" in b: b.energy_shield_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("energy_shield_timer", 0.0)
+
+										if "invulnerable_timer" in b: b.invulnerable_timer = 0.0
+										if b.has_method("set_meta"): b.set_meta("invulnerable_timer", 0.0)
+
+										b.speed_boost_timer = 2.0
+										if b.has_method("set_meta"): b.set_meta("speed_boost_timer", 2.0)
+
+					else:
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = h_dur
+						else: hazard.duration = h_dur
+
+						var vx = hazard.vx if "vx" in hazard else hazard["vx"]
+						var vy = hazard.vy if "vy" in hazard else hazard["vy"]
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["x"] += vx * delta
+							hazard["y"] += vy * delta
+							hazard["vx"] *= (1.0 - 2.0 * delta)
+							hazard["vy"] *= (1.0 - 2.0 * delta)
+						else:
 							hazard.x += vx * delta
 							hazard.y += vy * delta
 							hazard.vx *= (1.0 - 2.0 * delta)
@@ -25844,7 +26014,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -34488,6 +34658,70 @@ func _use_skill():
                 var cd = 5.0
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd
+        elif skill_name == "throw_purge_bomb":
+            var closest_enemy = null
+            var min_d_sq = 9999999.0
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var alive = true
+                    if "alive" in b: alive = b.alive
+
+                    var b_team = null
+                    if "team" in b: b_team = b.team
+
+                    var my_team = null
+                    if "team" in self.ball: my_team = self.ball.team
+
+                    if alive and b != self.ball and b_team != my_team:
+                        var dx = b.x - self.ball.x
+                        var dy = b.y - self.ball.y
+                        var d_sq = dx*dx + dy*dy
+                        if d_sq < min_d_sq:
+                            min_d_sq = d_sq
+                            closest_enemy = b
+
+            var nx = 1.0
+            var ny = 0.0
+            if closest_enemy != null:
+                var dx = closest_enemy.x - self.ball.x
+                var dy = closest_enemy.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+
+            var hazards = []
+            if "hazards" in self.world.arena:
+                hazards = self.world.arena.hazards
+            else:
+                self.world.arena.hazards = hazards
+
+            var team_val = null
+            if "team" in self.ball: team_val = self.ball.team
+
+            var r_val = 10.0
+            if "radius" in self.ball: r_val = self.ball.radius
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): r_val = self.ball.get_meta("radius")
+
+            var thrown_bomb = {
+                "kind": "thrown_purge_bomb",
+                "x": self.ball.x + nx * (r_val + 5.0),
+                "y": self.ball.y + ny * (r_val + 5.0),
+                "radius": 20.0,
+                "damage": 0.0,
+                "vx": nx * 400.0,
+                "vy": ny * 400.0,
+                "duration": 2.0,
+                "team": team_val,
+                "owner_id": self.ball.id if "id" in self.ball else null,
+                "active": true
+            }
+            hazards.append(thrown_bomb)
+
+            var cd = 5.0
+            if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+            self.ball.skill_timer = cd
+
         elif skill_name == "throw_emp":
             var closest_enemy = null
             var min_d_sq = 9999999.0
