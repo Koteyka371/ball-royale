@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1460] Thunderstorm Lightning Chain Damage — *2026-07-25 06:42:25 UTC*
+
+During thunderstorm weather events, lightning strikes could chain to nearby players if they are too close to the primary target, encouraging spacing out.
+
+---
+
 ## [idea-1476] Moving Walls Hazard — *2026-07-25 06:42:21 UTC*
 
 Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage.
