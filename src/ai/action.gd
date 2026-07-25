@@ -25831,7 +25831,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'quantum_echo', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -29825,6 +29825,36 @@ func _use_skill():
                     if "poison_timer" in my_ball: my_ball.poison_timer = 0.0
                     if "state_history" in my_ball: my_ball.state_history = []
                     elif my_ball.has_method("set_meta"): my_ball.set_meta("state_history", [])
+
+        elif skill_name == "quantum_echo":
+            var ghosts = []
+            if typeof(my_ball) == TYPE_DICTIONARY:
+                ghosts = my_ball.get("quantum_ghosts", [])
+            else:
+                if my_ball.has_method("has_meta") and my_ball.has_meta("quantum_ghosts"):
+                    ghosts = my_ball.get_meta("quantum_ghosts")
+                elif "quantum_ghosts" in my_ball:
+                    ghosts = my_ball.quantum_ghosts
+
+            if ghosts.size() > 0:
+                var most_recent = ghosts[0]
+                ghosts.remove_at(0)
+                if typeof(my_ball) == TYPE_DICTIONARY:
+                    my_ball["x"] = most_recent["x"]
+                    my_ball["y"] = most_recent["y"]
+                    my_ball["hp"] = most_recent["hp"]
+                else:
+                    if "x" in my_ball: my_ball.x = most_recent["x"]
+                    elif my_ball.has_method("set_meta"): my_ball.set_meta("x", most_recent["x"])
+                    if "y" in my_ball: my_ball.y = most_recent["y"]
+                    elif my_ball.has_method("set_meta"): my_ball.set_meta("y", most_recent["y"])
+                    if "hp" in my_ball: my_ball.hp = most_recent["hp"]
+                    elif my_ball.has_method("set_meta"): my_ball.set_meta("hp", most_recent["hp"])
+
+                if typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                    self.world.events.append({"type": "quantum_echo_teleport"})
+                elif typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                    self.world.events.append({"type": "quantum_echo_teleport"})
 
         elif skill_name == "time_rewind_self":
             var history = []

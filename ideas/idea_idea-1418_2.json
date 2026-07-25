@@ -1,0 +1,4 @@
+{
+    "title": "Paradox Trap",
+    "description": "A deployable hazard that, when stepped on, forces all units within a large radius to swap positions with their own 'quantum ghost' from 4 seconds ago. Units that do not have a recorded history take massive disruption damage instead."
+}

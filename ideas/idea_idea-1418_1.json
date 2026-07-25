@@ -1,0 +1,4 @@
+{
+    "title": "Chrono Shift Status Effect",
+    "description": "A new status effect 'chrono_shift' that periodically saves a unit's position and health every 1.5 seconds. Upon taking fatal damage, the unit is instead rewound to the state of their most recent chrono snapshot, and the effect is consumed. Highly valuable for squishy priority targets."
+}
