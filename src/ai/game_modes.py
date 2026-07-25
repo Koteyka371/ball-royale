@@ -34493,12 +34493,13 @@ class ChronosphereEventMode(GameMode):
 class TimeDilationZoneMode(GameMode):
     """
     An anomalous zone in the arena where the flow of time slows down drastically.
-    Entities, projectiles, and status effects within the field move and expire at half their normal rate.
+    Entities and status effects within the field move and expire at half their normal rate.
+    Projectiles and hazards passing through it, however, are sped up, forcing players to perfectly time their dodges.
     """
     def __init__(self):
         super().__init__()
         self.name = "Time Dilation Zone"
-        self.description = "A localized zone that slows down time for entities and projectiles inside it."
+        self.description = "A localized hazard zone that sporadically slows down time for entities inside it but speeds up projectiles and hazards passing through it."
         self.zone_x = 500.0
         self.zone_y = 500.0
         self.zone_radius = 200.0
@@ -34549,6 +34550,7 @@ class TimeDilationZoneMode(GameMode):
                     if attr.endswith("_timer") or attr.endswith("_duration") or attr.endswith("_cooldown"):
                         val = getattr(b, attr)
                         if isinstance(val, (int, float)) and not isinstance(val, bool):
+                            if attr == "confusion_zone_timer": continue
                             setattr(b, attr, val + delta * 0.5)
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -34567,14 +34569,41 @@ class TimeDilationZoneMode(GameMode):
                     h_vx = getattr(h, "vx", 0.0)
                     h_vy = getattr(h, "vy", 0.0)
 
-                    if hasattr(h, "x"): h.x -= h_vx * delta * 0.5
-                    if hasattr(h, "y"): h.y -= h_vy * delta * 0.5
+                    # Speed up hazards instead of slowing down
+                    if hasattr(h, "x"): h.x += h_vx * delta * 0.5
+                    if hasattr(h, "y"): h.y += h_vy * delta * 0.5
 
                     for attr in dir(h):
-                        if attr.endswith("_timer") or attr.endswith("_duration") or attr.endswith("_cooldown"):
+                        if attr.endswith("_timer") or attr.endswith("_duration") or attr.endswith("_cooldown") or attr == "duration" or attr == "lifetime":
                             val = getattr(h, attr)
                             if isinstance(val, (int, float)) and not isinstance(val, bool):
-                                setattr(h, attr, val + delta * 0.5)
+                                setattr(h, attr, max(0.0, val - delta * 0.5))
+
+        if hasattr(world, "projectiles"):
+            for p in world.projectiles:
+                if not getattr(p, "active", True):
+                    continue
+
+                p_x = getattr(p, "x", 0.0)
+                p_y = getattr(p, "y", 0.0)
+
+                dx = p_x - self.zone_x
+                dy = p_y - self.zone_y
+                dist = math.hypot(dx, dy)
+
+                if dist <= self.zone_radius:
+                    p_vx = getattr(p, "vx", 0.0)
+                    p_vy = getattr(p, "vy", 0.0)
+
+                    # Speed up projectiles
+                    if hasattr(p, "x"): p.x += p_vx * delta * 0.5
+                    if hasattr(p, "y"): p.y += p_vy * delta * 0.5
+
+                    for attr in dir(p):
+                        if attr.endswith("_timer") or attr.endswith("_duration") or attr.endswith("_cooldown") or attr == "duration":
+                            val = getattr(p, attr)
+                            if isinstance(val, (int, float)) and not isinstance(val, bool):
+                                setattr(p, attr, max(0.0, val - delta * 0.5))
 
 class OverdriveZoneMode(GameMode):
     """
