@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1447] Weather-Adaptive Balls — *2026-07-25 00:40:30 UTC*
+
+Introduce new ball variants whose stats dynamically buff when specific weather events are active (e.g. Snowball gets faster during blizzards).
+
+---
+
 ## [idea-1473] Mirror World — *2026-07-25 00:03:40 UTC*
 
 Creates a temporary mirror version of the map.

@@ -24784,7 +24784,7 @@
     },
     {
       "id": "idea-1447",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Adaptive Balls",
@@ -36815,6 +36815,23 @@
         "src/ai/grapple_hook_item.py",
         "src/ai/grapple_hook_item.gd",
         "tests/test_grapple_hook_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2154",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Invisible Walls Mode",
+      "description": "An arena mutator where the physical walls of the map are invisible, forcing players to rely on memory and trial-and-error to know where boundaries lie.",
+      "allowed_paths": [
+        "src/ai/invisible_walls.py",
+        "src/ai/invisible_walls.gd",
+        "tests/test_invisible_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
