@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1508] Shatter Mine — *2026-07-25 22:33:32 UTC*
+
+A deployable hazard that mimics a reflect shield visually but shatters immediately upon contact, stunning all nearby enemies without dealing damage.
+
+---
+
 ## [idea-1493] Moonlight Mirage Mode — *2026-07-25 22:33:27 UTC*
 
 During the night cycle, active moonlight shadows will occasionally spawn illusory copies of balls standing inside them. These 'Mirages' only take 1 damage to destroy but perfectly mimic the player's movements, confusing enemies and auto-targeting abilities.
