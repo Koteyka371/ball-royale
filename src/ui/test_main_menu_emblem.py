@@ -36,14 +36,14 @@ def test_main_menu_emblem_editor(mock_files, monkeypatch):
     profile_file, guild_file, leaderboard_file = mock_files
 
     # Need to override paths in managers
-    import system.profile
-    import system.leaderboard
-    import system.guild
+    from system import profile
+    from system import leaderboard
+    from system import guild
     import ui.guild_emblem_editor.guild_emblem_editor
 
-    original_profile_init = system.profile.ProfileManager.__init__
-    original_leaderboard_init = system.leaderboard.LeaderboardManager.__init__
-    original_guild_init = system.guild.GuildManager.__init__
+    original_profile_init = profile.ProfileManager.__init__
+    original_leaderboard_init = leaderboard.LeaderboardManager.__init__
+    original_guild_init = guild.GuildManager.__init__
 
     def mock_profile_init(self, filename="profile.json"):
         original_profile_init(self, profile_file)

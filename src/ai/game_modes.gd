@@ -48331,7 +48331,85 @@ class CaptureZonesMode extends GameMode:
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							world.add_event("zone_spawned_hazard", {"zone": zone})
 
+
+class ExpandingHazardBubblesMode extends GameMode:
+	var bubbles = []
+	var bubble_spawn_timer = 0.0
+	var bubble_spawn_interval = 6.0
+	var max_radius = 250.0
+
+	func _init():
+		super._init()
+		name = "Expanding Hazard Bubbles"
+		description = "The entire map is safe initially, but expanding hazard bubbles randomly spawn. Players must avoid the growing hazard zones."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		bubbles.clear()
+		bubble_spawn_timer = 2.0
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		bubble_spawn_timer -= delta
+
+		if bubble_spawn_timer <= 0:
+			bubble_spawn_timer = bubble_spawn_interval
+
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world.get("arena") != null:
+				arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+				arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+			var x = randf_range(50.0, arena_width - 50.0)
+			var y = randf_range(50.0, arena_height - 50.0)
+
+			bubbles.append({
+				"x": x,
+				"y": y,
+				"radius": 20.0,
+				"timer": 15.0
+			})
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("hazard_bubble_spawned", {"x": x, "y": y, "message": "Hazard bubble spawned!"})
+
+		var active_bubbles = []
+		for bubble in bubbles:
+			bubble["timer"] -= delta
+			if bubble["timer"] > 0:
+				if bubble["radius"] < max_radius:
+					bubble["radius"] += 15.0 * delta
+				active_bubbles.append(bubble)
+
+				for b in balls:
+					if (typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type") != "spectator") or (typeof(b) == TYPE_OBJECT and b.get("alive") == true and b.get("ball_type") != "spectator"):
+						var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+						var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+						var dx = b_x - bubble["x"]
+						var dy = b_y - bubble["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= bubble["radius"]:
+							var damage = 25.0 * delta
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(damage)
+							elif typeof(b) == TYPE_OBJECT:
+								var hp = b.get("hp") if b.get("hp") != null else 100.0
+								b.set("hp", hp - damage)
+								if b.get("hp") <= 0:
+									b.set("alive", false)
+							elif typeof(b) == TYPE_DICTIONARY:
+								var hp = b.get("hp", 100.0)
+								b["hp"] = hp - damage
+								if b["hp"] <= 0:
+									b["alive"] = false
+
+		bubbles = active_bubbles
+
+
 var GAME_MODES = {
+	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),
 	"capture_zones": CaptureZonesMode.new(),
 	"nemesis_sustain": NemesisSustainMode.new(),
 	"moving_walls": MovingWallsMode.new(),
