@@ -13472,7 +13472,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_tracker_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -18573,6 +18573,14 @@ class Action:
                     self.world.arena.hazards.append(node)
 
 
+            elif skill_name == "deploy_glass_shield":
+                from arena.procedural_arena import Hazard
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    shield_id = getattr(self.world, "next_id", 99999) + __import__("random").randint(1000, 9999)
+                    shield = Hazard(shield_id, self.ball.x, self.ball.y, 40.0, "glass_shield", 0.0)
+                    shield.duration = 10.0
+                    shield.owner_id = getattr(self.ball, "id", None)
+                    self.world.arena.hazards.append(shield)
             elif skill_name == "deploy_sunlight_reflector":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class SunlightReflectorNode:
@@ -20513,6 +20521,54 @@ class Action:
 
                             if hazard in self.world.arena.hazards:
                                 self.world.arena.hazards.remove(hazard)
+
+                if getattr(hazard, "kind", "") == "glass_shield":
+                    # Only process this if we are the owner or if the owner is dead
+                    owner_id = getattr(hazard, "owner_id", None)
+                    is_owner = (owner_id == getattr(self.ball, "id", None))
+
+                    owner_alive = False
+                    if owner_id is not None and hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if getattr(b, "id", None) == owner_id and getattr(b, "alive", True):
+                                owner_alive = True
+                                break
+
+                    if is_owner or not owner_alive:
+                        # Find all enemies
+                        all_balls = getattr(self.world, "balls", [])
+                        enemies = []
+                        for b in all_balls:
+                            if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
+                                enemies.append(b)
+
+                        contact = False
+
+                        if enemies:
+                            for enemy in enemies:
+                                dist_sq = (enemy.x - hazard.x)**2 + (enemy.y - hazard.y)**2
+                                combined_radius = getattr(enemy, "radius", 20.0) + getattr(hazard, "radius", 40.0)
+                                if dist_sq <= combined_radius**2:
+                                    contact = True
+                                    break
+
+                        if contact:
+                            stun_radius = 150.0
+                            if enemies:
+                                for enemy in enemies:
+                                    dist_sq = (enemy.x - hazard.x)**2 + (enemy.y - hazard.y)**2
+                                    if dist_sq <= stun_radius**2:
+                                        enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 3.0)
+                                        if hasattr(self.world, "add_event"):
+                                            self.world.add_event("stun", {"id": getattr(enemy, "id", None), "duration": 3.0})
+                                        if hasattr(self, "_spawn_directed_particles"):
+                                            self._spawn_directed_particles(self.ball, enemy, "glass_shatter")
+
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
+
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("explosion", {"x": hazard.x, "y": hazard.y, "radius": stun_radius, "damage": 0.0})
 
                 if getattr(hazard, "kind", "") == "time_anomaly_field":
                     dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
