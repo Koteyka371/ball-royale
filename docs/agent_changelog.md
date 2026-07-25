@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1454] Kinetic Absorber Skill — *2026-07-25 22:04:50 UTC*
+
+An active skill that absorbs a percentage of incoming kinetic knockback and converts it into a temporary speed boost or supercharge timer increase, allowing the ball to counter-attack aggressively after being struck.
+
+---
+
 ## [idea-1490] Black Hole Traps — *2026-07-25 21:50:37 UTC*
 
 Hazards that slowly suck in players within a certain radius, dealing no damage but making movement very difficult.

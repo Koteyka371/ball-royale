@@ -24903,7 +24903,7 @@
     },
     {
       "id": "idea-1454",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Absorber Skill",
@@ -37429,6 +37429,23 @@
         "src/ai/bounty_reassignment_token.py",
         "src/ai/bounty_reassignment_token.gd",
         "tests/test_bounty_reassignment_token.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2190",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slime Trail Trait",
+      "description": "A new trait for balls that leaves a slippery slime trail behind them as they move. Any other ball crossing the trail loses traction and slides out of control for a few seconds.",
+      "allowed_paths": [
+        "src/ai/slime_trail_trait.py",
+        "src/ai/slime_trail_trait.gd",
+        "tests/test_slime_trail_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
