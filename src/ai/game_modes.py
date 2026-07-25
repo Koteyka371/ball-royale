@@ -13622,71 +13622,81 @@ class DynamicBountyMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.0) -> None:
         super().tick(world, balls, delta)
 
+        team_scores = {}
+        team_kills = {}
+        team_members = {}
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                team = getattr(b, "team", getattr(b, "id", None))
+                if team not in team_scores:
+                    team_scores[team] = 0
+                    team_kills[team] = 0
+                    team_members[team] = []
+
+                team_scores[team] += getattr(b, "score", 0)
+                team_kills[team] += getattr(b, "kills", 0)
+                team_members[team].append(b)
+
         highest_score = -1
         highest_kills = -1
         bounty_candidates = []
 
-        for b in balls:
-            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                score = getattr(b, "score", 0)
-                kills = getattr(b, "kills", 0)
-                # Use score as primary, kills as secondary (fallback)
-                if score > highest_score:
-                    highest_score = score
-                    highest_kills = kills
-                    bounty_candidates = [b]
-                elif score == highest_score and score > 0:
-                    if kills > highest_kills:
-                        highest_kills = kills
-                        bounty_candidates = [b]
-                    elif kills == highest_kills:
-                        bounty_candidates.append(b)
-                elif score == 0 and highest_score <= 0:
-                    # Fallback if no one has a score yet
-                    if kills > highest_kills:
-                        highest_kills = kills
-                        bounty_candidates = [b]
-                    elif kills == highest_kills and kills > 0:
-                        bounty_candidates.append(b)
+        for team, members in team_members.items():
+            score = team_scores[team]
+            kills = team_kills[team]
 
-        # Only assign bounty if someone has a score or kills
-        new_bounty_id = None
+            if score > highest_score:
+                highest_score = score
+                highest_kills = kills
+                bounty_candidates = [team]
+            elif score == highest_score and score > 0:
+                if kills > highest_kills:
+                    highest_kills = kills
+                    bounty_candidates = [team]
+                elif kills == highest_kills:
+                    bounty_candidates.append(team)
+            elif score == 0 and highest_score <= 0:
+                if kills > highest_kills:
+                    highest_kills = kills
+                    bounty_candidates = [team]
+                elif kills == highest_kills and kills > 0:
+                    bounty_candidates.append(team)
+
+        new_bounty_target = None
         if (highest_score > 0 or highest_kills > 0) and bounty_candidates:
-            # If multiple people have the same highest kills, pick the first one (or keep the existing if tied)
-            selected = bounty_candidates[0]
-            if self.current_bounty_id is not None:
-                for b in bounty_candidates:
-                    if getattr(b, "id", None) == self.current_bounty_id:
-                        selected = b
-                        break
-            new_bounty_id = getattr(selected, "id", None)
+            selected_target = bounty_candidates[0]
+            if self.current_bounty_id in bounty_candidates:
+                selected_target = self.current_bounty_id
+            new_bounty_target = selected_target
 
         # Update markers
         for b in balls:
             if getattr(b, "alive", False):
-                b_id = getattr(b, "id", None)
-                if b_id == new_bounty_id and new_bounty_id is not None:
+                team = getattr(b, "team", getattr(b, "id", None))
+                if team == new_bounty_target and new_bounty_target is not None:
                     b.is_dynamic_bounty = True
                 else:
                     b.is_dynamic_bounty = False
 
-        self.current_bounty_id = new_bounty_id
+        self.current_bounty_id = new_bounty_target
 
-        # Emit visual effect periodically for the marked player
+        # Emit visual effect periodically for the marked player/team
         self.vfx_timer += delta
         if self.vfx_timer >= 1.0:
             self.vfx_timer = 0.0
-            if new_bounty_id is not None and hasattr(world, "add_event"):
+            if new_bounty_target is not None and hasattr(world, "add_event"):
                 for b in balls:
-                    if getattr(b, "id", None) == new_bounty_id and getattr(b, "alive", False):
-                        world.add_event("visual_effect", {
-                            "type": "bounty_mark",
-                            "x": getattr(b, "x", 0.0),
-                            "y": getattr(b, "y", 0.0),
-                            "radius": 50.0,
-                            "color": "red"
-                        })
-                        break
+                    if getattr(b, "alive", False):
+                        team = getattr(b, "team", getattr(b, "id", None))
+                        if team == new_bounty_target:
+                            world.add_event("visual_effect", {
+                                "type": "bounty_mark",
+                                "x": getattr(b, "x", 0.0),
+                                "y": getattr(b, "y", 0.0),
+                                "radius": 50.0,
+                                "color": "red"
+                            })
 
 class EarthquakeMode(GameMode):
     def __init__(self):

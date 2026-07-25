@@ -20971,78 +20971,128 @@ class DynamicBountyMode extends GameMode:
 	func tick(world, balls: Array, delta: float) -> void:
 		super.tick(world, balls, delta)
 
-		var highest_score = -1
-		var highest_kills = -1
-		var bounty_candidates = []
+		var team_scores = {}
+		var team_kills = {}
+		var team_members = {}
 
 		for b in balls:
-			if b.alive and b.ball_type != "spectator":
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			var btype = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if alive and btype != "spectator":
+				var team = null
+				if typeof(b) == TYPE_DICTIONARY:
+					team = b.get("team", b.get("id", null))
+				else:
+					team = b.team if "team" in b else (b.id if "id" in b else null)
+
+				if team == null:
+					continue
+
+				if not team_scores.has(team):
+					team_scores[team] = 0
+					team_kills[team] = 0
+					team_members[team] = []
+
 				var score = 0
-				if "score" in b:
+				if typeof(b) == TYPE_DICTIONARY:
+					score = b.get("score", 0)
+				elif "score" in b:
 					score = b.score
 				elif b.has_method("get_meta") and b.has_meta("score"):
 					score = b.get_meta("score")
 
 				var kills = 0
-				if "kills" in b:
+				if typeof(b) == TYPE_DICTIONARY:
+					kills = b.get("kills", 0)
+				elif "kills" in b:
 					kills = b.kills
 				elif b.has_method("get_meta") and b.has_meta("kills"):
 					kills = b.get_meta("kills")
 
-				if score > highest_score:
-					highest_score = score
-					highest_kills = kills
-					bounty_candidates = [b]
-				elif score == highest_score and score > 0:
-					if kills > highest_kills:
-						highest_kills = kills
-						bounty_candidates = [b]
-					elif kills == highest_kills:
-						bounty_candidates.append(b)
-				elif score == 0 and highest_score <= 0:
-					if kills > highest_kills:
-						highest_kills = kills
-						bounty_candidates = [b]
-					elif kills == highest_kills and kills > 0:
-						bounty_candidates.append(b)
+				team_scores[team] += score
+				team_kills[team] += kills
+				team_members[team].append(b)
 
-		var new_bounty_id = null
+		var highest_score = -1
+		var highest_kills = -1
+		var bounty_candidates = []
+
+		for team in team_members.keys():
+			var score = team_scores[team]
+			var kills = team_kills[team]
+
+			if score > highest_score:
+				highest_score = score
+				highest_kills = kills
+				bounty_candidates = [team]
+			elif score == highest_score and score > 0:
+				if kills > highest_kills:
+					highest_kills = kills
+					bounty_candidates = [team]
+				elif kills == highest_kills:
+					bounty_candidates.append(team)
+			elif score == 0 and highest_score <= 0:
+				if kills > highest_kills:
+					highest_kills = kills
+					bounty_candidates = [team]
+				elif kills == highest_kills and kills > 0:
+					bounty_candidates.append(team)
+
+		var new_bounty_target = null
 		if (highest_score > 0 or highest_kills > 0) and bounty_candidates.size() > 0:
 			var selected = bounty_candidates[0]
-			if current_bounty_id != null:
-				for b in bounty_candidates:
-					var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
-					if b_id == current_bounty_id:
-						selected = b
-						break
-			new_bounty_id = selected.get("id") if "id" in selected else (selected.get_meta("id") if selected.has_method("get_meta") and selected.has_meta("id") else null)
+			if current_bounty_id != null and bounty_candidates.has(current_bounty_id):
+				selected = current_bounty_id
+			new_bounty_target = selected
 
 		for b in balls:
-			if b.alive:
-				var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
-				if b_id == new_bounty_id and new_bounty_id != null:
-					if "is_dynamic_bounty" in b:
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			if alive:
+				var team = null
+				if typeof(b) == TYPE_DICTIONARY:
+					team = b.get("team", b.get("id", null))
+				else:
+					team = b.team if "team" in b else (b.id if "id" in b else null)
+
+				if team == new_bounty_target and new_bounty_target != null:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["is_dynamic_bounty"] = true
+					elif "is_dynamic_bounty" in b:
 						b.is_dynamic_bounty = true
 					elif b.has_method("set_meta"):
 						b.set_meta("is_dynamic_bounty", true)
 				else:
-					if "is_dynamic_bounty" in b:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["is_dynamic_bounty"] = false
+					elif "is_dynamic_bounty" in b:
 						b.is_dynamic_bounty = false
 					elif b.has_method("set_meta"):
 						b.set_meta("is_dynamic_bounty", false)
 
-		current_bounty_id = new_bounty_id
+		current_bounty_id = new_bounty_target
 
 		vfx_timer += delta
 		if vfx_timer >= 1.0:
 			vfx_timer = 0.0
-			if new_bounty_id != null and world.has_method("add_event"):
+			if new_bounty_target != null and (typeof(world) == TYPE_OBJECT and world.has_method("add_event")):
 				for b in balls:
-					if b.alive:
-						var b_id = b.get("id") if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
-						if b_id == new_bounty_id:
-							var bx = b.get("x") if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
-							var by = b.get("y") if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
+					var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+					if alive:
+						var team = null
+						if typeof(b) == TYPE_DICTIONARY:
+							team = b.get("team", b.get("id", null))
+						else:
+							team = b.team if "team" in b else (b.id if "id" in b else null)
+
+						if team == new_bounty_target:
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.get("x") if "x" in b else (b.get_meta("x") if b.has_method("get_meta") and b.has_meta("x") else 0.0)
+								by = b.get("y") if "y" in b else (b.get_meta("y") if b.has_method("get_meta") and b.has_meta("y") else 0.0)
 							world.add_event("visual_effect", {
 								"type": "bounty_mark",
 								"x": float(bx),
@@ -21050,7 +21100,6 @@ class DynamicBountyMode extends GameMode:
 								"radius": 50.0,
 								"color": "red"
 							})
-							break
 
 class EarthquakeMode extends GameMode:
 	var timer: float = 0.0

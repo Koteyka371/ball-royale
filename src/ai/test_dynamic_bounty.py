@@ -16,7 +16,7 @@ class MockEntity:
         self.loadout_fragments = 0
         self.is_dynamic_bounty = False
         self.is_minor_bounty = False
-        self.team = "Red"
+        self.team = f"Team_{entity_id}"
         self.stun_timer = 0.0
         self.charge_level = 0.0
         self.score = 0
