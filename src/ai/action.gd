@@ -32015,6 +32015,17 @@ func _use_skill():
                                 self.ball.skill_timer = 0.5
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("skill_timer", 0.5)
+        elif skill_name == "trickster_smoke_bomb":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+                var smoke_id = self.world.arena.hazards.size() + randi() % 10000 + 20000
+                var smoke = ProceduralArena.Hazard.new(smoke_id, self.ball.x, self.ball.y, 120.0, "smoke_zone", 0.0)
+                smoke.set_meta("duration", 10.0)
+                if typeof(self.ball) == TYPE_OBJECT and "id" in self.ball:
+                    smoke.set_meta("owner_id", self.ball.id)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"):
+                    smoke.set_meta("owner_id", self.ball["id"])
+                self.world.arena.hazards.append(smoke)
         elif skill_name == "trickster_clone":
             if "balls" in self.world:
                 var clone = null
