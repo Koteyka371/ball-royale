@@ -37228,6 +37228,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2178",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Assasin",
+      "description": "A new ball type that gains stealth and increased speed when inside moonlight shadows, and takes less damage from sunlight beams.",
+      "allowed_paths": [
+        "src/ai/eclipse_assasin.py",
+        "src/ai/eclipse_assasin.gd",
+        "tests/test_eclipse_assasin.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
