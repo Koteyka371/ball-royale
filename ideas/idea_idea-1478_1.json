@@ -1,4 +1,4 @@
 {
-    "title": "Stamina Transfer Link",
-    "description": "A new 'stamina_transfer_link' booster that when applied allows a ball to drain stamina from a linked enemy and add it to themselves, reducing the enemy's ability to use movement abilities."
+  "title": "Reverse Entropy Field",
+  "description": "A hazard that slowly heals the player, but makes their active cooldowns go backwards, meaning if they just used an ability, the cooldown duration will increase up to the maximum instead of recovering."
 }

@@ -34465,6 +34465,44 @@ class TimeDilationZoneMode(GameMode):
                             if isinstance(val, (int, float)) and not isinstance(val, bool):
                                 setattr(h, attr, val + delta * 0.5)
 
+class OverdriveZoneMode(GameMode):
+    """
+    A risk/reward hazard zone that rapidly drains cooldown timers to make abilities recharge faster,
+    but drains the player's stamina or slows them down.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Overdrive Zone"
+        self.description = "A localized zone that speeds up ability cooldowns but drains stamina."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 200.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            next_id = getattr(world, "next_id", 10000)
+            zone_hazard = hazard_class(next_id, self.zone_x, self.zone_y, self.zone_radius, "overdrive_zone", 0.0)
+            world.arena.hazards.append(zone_hazard)
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+
 class InverseControlsZoneMode(GameMode):
     """
     A localized zone that inverses the movement controls of any entity inside it.
@@ -34749,6 +34787,7 @@ class AuraInversionZoneMode(GameMode):
                         b.hp -= 20.0 * delta # 20 damage per second
 
 GAME_MODES["time_dilation_zone"] = TimeDilationZoneMode()
+GAME_MODES["overdrive_zone"] = OverdriveZoneMode()
 GAME_MODES["aura_inversion_zone"] = AuraInversionZoneMode()
 GAME_MODES["inverse_controls_zone"] = InverseControlsZoneMode()
 GAME_MODES["edge_slingshots"] = EdgeSlingshotsMode()
