@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1477] Wind Tunnel Hazard — *2026-07-25 12:07:36 UTC*
+
+A hazard that blows a strong, concentrated gust of wind in one direction across the map. Balls entering it gain massive speed in that direction, which can be used to traverse quickly or escape bad situations, but can also fling them into traps.
+
+---
+
 ## [idea-1487] Time Distortion Hazard — *2026-07-25 07:54:18 UTC*
 
 A hazard zone that sporadically slows down time for entities inside it but speeds up projectiles and hazards passing through it, forcing players to perfectly time their dodges.
