@@ -26064,7 +26064,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -34316,6 +34316,30 @@ func _use_skill():
 
                 self.world.arena.hazards.append(trap)
 
+        elif skill_name == "deploy_cluster_mines":
+            if "arena" in self.world and "hazards" in self.world.arena:
+                var num_mines = 5
+                var radius_spread = 60.0
+                for i in range(num_mines):
+                    var angle = (2 * PI / num_mines) * i
+                    var mx = self.ball.x + cos(angle) * radius_spread
+                    var my = self.ball.y + sin(angle) * radius_spread
+                    var mine_id = self.world.get("next_id", 99999) + randi() % 10000 + i
+                    var mine = {
+                        "id": mine_id,
+                        "x": mx,
+                        "y": my,
+                        "radius": 20.0,
+                        "kind": "cluster_mine",
+                        "damage": 25.0,
+                        "duration": 30.0,
+                        "owner_id": self.ball.id if "id" in self.ball else self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else -1,
+                        "arming_timer": 3.0,
+                        "state": "arming",
+                        "active": true
+                    }
+                    self.world.arena.hazards.append(mine)
+
         elif skill_name == "deploy_time_anomaly_field":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var field_id = self.world.get("next_id", 99999) + randi() % 10000
@@ -39464,6 +39488,121 @@ func _update_skill_timer(delta: float):
                                 hazard["active"] = false
                             elif hazard.has_method("set"):
                                 hazard.set("active", false)
+
+                if h_kind == "cluster_mine" and h_active:
+                    var h_x = float(h.x) if typeof(h) == TYPE_DICTIONARY and h.has("x") else (float(h.get_meta("x")) if h.has_method("has_meta") and h.has_meta("x") else (float(h.x) if "x" in h else 0.0))
+                    var h_y = float(h.y) if typeof(h) == TYPE_DICTIONARY and h.has("y") else (float(h.get_meta("y")) if h.has_method("has_meta") and h.has_meta("y") else (float(h.y) if "y" in h else 0.0))
+                    var state = h.get("state", "")
+
+                    if state == "armed":
+                        var dist_sq = pow(self.ball.x - h_x, 2) + pow(self.ball.y - h_y, 2)
+                        var h_r = h.get("radius", 20.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 20.0)
+                        if dist_sq <= pow(h_r, 2):
+                            if typeof(h) == TYPE_DICTIONARY:
+                                h["state"] = "detonating"
+                                state = "detonating"
+                            elif typeof(h) == TYPE_OBJECT and h.has_method("set"):
+                                h.set("state", "detonating")
+                                state = "detonating"
+
+                    var h_owner_id = h.get("owner_id", null) if typeof(h) == TYPE_DICTIONARY else (h.owner_id if "owner_id" in h else null)
+                    var b_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else null)
+
+                    if h_owner_id == b_id:
+                        if typeof(h) == TYPE_DICTIONARY:
+                            var at = h.get("arming_timer", 0.0)
+                            if at > 0:
+                                at -= delta
+                                h["arming_timer"] = at
+                                if at <= 0:
+                                    h["state"] = "armed"
+                                    h["arming_timer"] = 0.0
+                                    state = "armed"
+                        elif typeof(h) == TYPE_OBJECT and "arming_timer" in h:
+                            if h.arming_timer > 0:
+                                h.arming_timer -= delta
+                                if h.arming_timer <= 0:
+                                    if h.has_method("set"):
+                                        h.set("state", "armed")
+                                        h.set("arming_timer", 0.0)
+                                    elif "state" in h:
+                                        h.state = "armed"
+                                        h.arming_timer = 0.0
+                                    state = "armed"
+
+                        if state == "armed":
+                            if "arena" in self.world and "hazards" in self.world.arena:
+                                for other_h in self.world.arena.hazards:
+                                    if typeof(other_h) != TYPE_DICTIONARY and typeof(other_h) != TYPE_OBJECT: continue
+                                    var oh_active = other_h.get("active", true) if typeof(other_h) == TYPE_DICTIONARY else (other_h.active if "active" in other_h else true)
+                                    if other_h == h or not oh_active: continue
+                                    var oh_kind = other_h.get("kind", "") if typeof(other_h) == TYPE_DICTIONARY else (other_h.kind if "kind" in other_h else "")
+
+                                    if "projectile" in oh_kind or "bomb" in oh_kind or "grenade" in oh_kind or "laser" in oh_kind or "fireball" in oh_kind or "flare" in oh_kind or "thrown" in oh_kind:
+                                        var oh_x = other_h.get("x", 0.0) if typeof(other_h) == TYPE_DICTIONARY else (other_h.x if "x" in other_h else 0.0)
+                                        var oh_y = other_h.get("y", 0.0) if typeof(other_h) == TYPE_DICTIONARY else (other_h.y if "y" in other_h else 0.0)
+                                        var oh_r = other_h.get("radius", 15.0) if typeof(other_h) == TYPE_DICTIONARY else (other_h.radius if "radius" in other_h else 15.0)
+                                        var hr = h.get("radius", 20.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 20.0)
+
+                                        var d_sq = pow(h_x - oh_x, 2) + pow(h_y - oh_y, 2)
+                                        if d_sq <= pow(hr + oh_r, 2):
+                                            if typeof(h) == TYPE_DICTIONARY:
+                                                h["state"] = "detonating"
+                                                state = "detonating"
+                                            elif typeof(h) == TYPE_OBJECT and h.has_method("set"):
+                                                h.set("state", "detonating")
+                                                state = "detonating"
+                                            break
+
+                        if state == "detonating":
+                            if typeof(h) == TYPE_DICTIONARY:
+                                h["active"] = false
+                                h["duration"] = 0.0
+                            elif typeof(h) == TYPE_OBJECT:
+                                if h.has_method("set"):
+                                    h.set("active", false)
+                                    h.set("duration", 0.0)
+                                elif "active" in h:
+                                    h.active = false
+                                    h.duration = 0.0
+
+                            var r = 120.0
+                            var dmg = h.get("damage", 25.0) if typeof(h) == TYPE_DICTIONARY else (h.damage if "damage" in h else 25.0)
+
+                            if "balls" in self.world:
+                                for b in self.world.balls:
+                                    var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+                                    if not alive: continue
+                                    var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+                                    var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+                                    var d_sq = pow(h_x - b_x, 2) + pow(h_y - b_y, 2)
+                                    if d_sq <= pow(r, 2):
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            b["hp"] = b.get("hp", 100) - dmg
+                                        elif typeof(b) == TYPE_OBJECT:
+                                            if b.has_method("set"): b.set("hp", b.get("hp", 100) - dmg)
+                                            elif "hp" in b: b.hp -= dmg
+
+                            if "arena" in self.world and "hazards" in self.world.arena:
+                                for other_h in self.world.arena.hazards:
+                                    if typeof(other_h) != TYPE_DICTIONARY and typeof(other_h) != TYPE_OBJECT: continue
+                                    var oh_active = other_h.get("active", true) if typeof(other_h) == TYPE_DICTIONARY else (other_h.active if "active" in other_h else true)
+                                    if other_h == h or not oh_active: continue
+                                    var oh_kind = other_h.get("kind", "") if typeof(other_h) == TYPE_DICTIONARY else (other_h.kind if "kind" in other_h else "")
+
+                                    if oh_kind == "cluster_mine":
+                                        var oh_x = other_h.get("x", 0.0) if typeof(other_h) == TYPE_DICTIONARY else (other_h.x if "x" in other_h else 0.0)
+                                        var oh_y = other_h.get("y", 0.0) if typeof(other_h) == TYPE_DICTIONARY else (other_h.y if "y" in other_h else 0.0)
+                                        var d_sq = pow(h_x - oh_x, 2) + pow(h_y - oh_y, 2)
+                                        if d_sq <= pow(r, 2):
+                                            if typeof(other_h) == TYPE_DICTIONARY:
+                                                other_h["state"] = "detonating"
+                                            elif typeof(other_h) == TYPE_OBJECT and other_h.has_method("set"):
+                                                other_h.set("state", "detonating")
+
+                            if "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+                                self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": h_x, "y": h_y, "radius": r}})
+
 
                 if h_kind == "time_anomaly_field":
                     var h_radius = float(hazard.radius) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (float(hazard.get_meta("radius")) if hazard.has_method("has_meta") and hazard.has_meta("radius") else (float(hazard.radius) if "radius" in hazard else 150.0))
