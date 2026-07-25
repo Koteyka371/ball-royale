@@ -15,6 +15,15 @@ class CameraSystem:
         self.shake_intensity = 0.0
         self.bounty_indicator = BountyIndicatorUI(width, height)
         self.render_data = {}
+        self.ball_emblems = []
+        try:
+            from system.guild import GuildManager
+            from system.profile import ProfileManager
+            self.gm = GuildManager("guilds.json")
+            self.pm = ProfileManager("profile.json")
+        except Exception:
+            self.gm = None
+            self.pm = None
 
     def update(self, balls: List[Dict[str, Any]], events: List[Dict[str, Any]]):
         # Calculate activity score for each ball
@@ -75,6 +84,37 @@ class CameraSystem:
 
         self.bounty_indicator.update(events, self.target_id)
 
+        self.ball_emblems = []
+        try:
+            if getattr(self, "gm", None) is not None:
+                for ball in balls:
+                    hp = ball.get("hp", 0) if isinstance(ball, dict) else getattr(ball, "hp", 0)
+                    if hp <= 0:
+                        continue
+
+                    guild_name = ball.get("guild_name") if isinstance(ball, dict) else getattr(ball, "guild_name", None)
+                    if not guild_name:
+                        is_local = ball.get("is_local_player") if isinstance(ball, dict) else getattr(ball, "is_local_player", False)
+                        if is_local and getattr(self, "pm", None) is not None:
+                            guild_name = self.pm.data.get("guild_name")
+
+                    if guild_name:
+                        try:
+                            guild = self.gm.get_guild(guild_name)
+                            if guild and "emblem" in guild:
+                                bx = ball.get("x", 0) if isinstance(ball, dict) else getattr(ball, "x", 0)
+                                by = ball.get("y", 0) if isinstance(ball, dict) else getattr(ball, "y", 0)
+                                self.ball_emblems.append({
+                                    "type": "guild_emblem",
+                                    "x": bx,
+                                    "y": by - 30.0,
+                                    "emblem_data": guild["emblem"]
+                                })
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+
         # Find most active ball
         best_score = -1.0
         best_id = None
@@ -114,11 +154,15 @@ class CameraSystem:
         import random
         ox = random.uniform(-self.shake_intensity, self.shake_intensity) if self.shake_intensity > 0 else 0.0
         oy = random.uniform(-self.shake_intensity, self.shake_intensity) if self.shake_intensity > 0 else 0.0
+        ui_elements = self.bounty_indicator.get_render_data(self.x + ox, self.y + oy, self.zoom)
+        if hasattr(self, 'ball_emblems'):
+            ui_elements.extend(self.ball_emblems)
+
         state = {
             "x": self.x + ox,
             "y": self.y + oy,
             "zoom": self.zoom,
             "target_id": self.target_id,
-            "ui_elements": self.bounty_indicator.get_render_data(self.x + ox, self.y + oy, self.zoom)
+            "ui_elements": ui_elements
         }
         return state
