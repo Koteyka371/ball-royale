@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Singularity Trap",
+  "description": "A deployable trap that, when triggered, creates a miniature black hole that slowly pulls all nearby entities (balls, boosters, hazards) towards its center for 4 seconds, dealing constant tick damage to anything caught inside the event horizon."
+}

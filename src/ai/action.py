@@ -3130,7 +3130,7 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             hazards_to_remove = []
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -3166,7 +3166,7 @@ class Action:
                     self.world.arena.hazards.remove(h)
 
             # Check slime hazards
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -4181,7 +4181,7 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
             self.ball.in_bush = False
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -4866,7 +4866,7 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
             self.ball.in_bush = False
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -4904,7 +4904,7 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
             self.ball.in_bush = False
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -5638,7 +5638,7 @@ class Action:
         # Gravity Well and Repulsor Hazard Logic
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             current_tick = getattr(self.world, "tick", 0)
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -5717,7 +5717,7 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
             self.ball.in_bush = False
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -15933,6 +15933,46 @@ class Action:
                                     if hasattr(enemy, "take_damage"):
                                         enemy.take_damage(explosion_damage)
 
+
+            elif skill_name == "deploy_beacon":
+                active_beacon = getattr(self.ball, "active_beacon_id", None)
+                if active_beacon is not None:
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        for h in self.world.arena.hazards:
+                            if getattr(h, "id", None) == active_beacon and getattr(h, "kind", "") == "recall_beacon":
+                                h.duration = 0.0
+                                break
+                    self.ball.active_beacon_id = None
+                else:
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        from arena.procedural_arena import Hazard
+                        import random
+                        b_id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999)
+                        beacon = Hazard(b_id, self.ball.x, self.ball.y, 15.0, "recall_beacon", 0.0)
+                        beacon.duration = 5.0
+                        beacon.owner_id = self.ball.id
+
+                        beacon.saved_hp = self.ball.hp
+                        beacon.saved_shields = {
+                            "aegis_shield_active_timer": getattr(self.ball, "aegis_shield_active_timer", 0.0),
+                            "bounce_shield_active": getattr(self.ball, "bounce_shield_active", False),
+                            "kinetic_shield_active": getattr(self.ball, "kinetic_shield_active", False),
+                            "kinetic_shield_stored_damage": getattr(self.ball, "kinetic_shield_stored_damage", 0.0),
+                            "half_reflect_shield_active": getattr(self.ball, "half_reflect_shield_active", False),
+                            "surge_shield_active": getattr(self.ball, "surge_shield_active", False),
+                            "velocity_shield_active": getattr(self.ball, "velocity_shield_active", False),
+                            "energy_shield_active": getattr(self.ball, "energy_shield_active", False),
+                            "energy_shield_hp": getattr(self.ball, "energy_shield_hp", 0.0),
+                            "reflect_shield_active": getattr(self.ball, "reflect_shield_active", False),
+                            "reflect_shield_capacity": getattr(self.ball, "reflect_shield_capacity", 0.0),
+                            "reflect_shield_timer": getattr(self.ball, "reflect_shield_timer", 0.0),
+                            "reflect_shield_current_layers": getattr(self.ball, "reflect_shield_current_layers", 1),
+                            "reflect_shield_initial_capacity": getattr(self.ball, "reflect_shield_initial_capacity", 0.0)
+                        }
+                        self.world.arena.hazards.append(beacon)
+                        self.ball.active_beacon_id = beacon.id
+                        self.ball.skill_timer = 0.5
+
             elif skill_name == "deploy_decoy_beacon":
                 import copy
                 import random
@@ -20214,7 +20254,7 @@ class Action:
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
             self.ball.in_bush = False
-            for hazard in self.world.arena.hazards:
+            for hazard in list(self.world.arena.hazards):
                 if getattr(hazard, "emp_disabled_timer", 0.0) > 0:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
@@ -20300,6 +20340,29 @@ class Action:
 
                             if hasattr(self.world, "events"):
                                 self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": hazard.x, "y": hazard.y, "radius": r}})
+
+
+                if getattr(hazard, "kind", "") == "recall_beacon":
+                    # Only owner ticks the timer to avoid multiple ticks per frame
+                    if getattr(hazard, "owner_id", None) == self.ball.id:
+                        hazard.duration -= delta
+                        if hazard.duration <= 0:
+                            self.ball.x = hazard.x
+                            self.ball.y = hazard.y
+                            self.ball.hp = getattr(hazard, "saved_hp", self.ball.hp)
+
+                            saved_shields = getattr(hazard, "saved_shields", {})
+                            for k, v in saved_shields.items():
+                                setattr(self.ball, k, v)
+
+                            self.ball.active_beacon_id = None
+                            self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 15.0)
+
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({"type": "visual_effect", "data": {"x": self.ball.x, "y": self.ball.y, "kind": "teleport"}})
+
+                            if hazard in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(hazard)
 
                 if getattr(hazard, "kind", "") == "time_anomaly_field":
                     dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
