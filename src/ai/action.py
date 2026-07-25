@@ -9707,6 +9707,30 @@ class Action:
                                     else:
                                         self.ball.stutter_timer = 1.0 # Stun
                                         self.ball.pending_supercharge = True
+
+                                is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
+                                if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm":
+                                    is_ts = True
+
+                                if is_ts:
+                                    if hasattr(self.world, "balls"):
+                                        for other in getattr(self.world, "balls", []):
+                                            if other != self.ball and getattr(other, "alive", True):
+                                                dist_sq = (other.x - self.ball.x)**2 + (other.y - self.ball.y)**2
+                                                if dist_sq < 150.0**2:
+                                                    chain_dmg = hazard.damage * 0.5
+                                                    if hasattr(other, "take_damage"):
+                                                        other.take_damage(chain_dmg)
+                                                    elif hasattr(other, "hp"):
+                                                        other.hp -= chain_dmg
+                                                        if other.hp <= 0:
+                                                            other.alive = False
+                                                    if hasattr(other, "stun_timer"):
+                                                        other.stun_timer = max(getattr(other, "stun_timer", 0.0), 0.5)
+                                                    else:
+                                                        other.stun_timer = 0.5
+                                                    if hasattr(self.world, "events"):
+                                                        self.world.events.append(('visual_effect', {'type': 'lightning', 'x': self.ball.x, 'y': self.ball.y, 'tx': other.x, 'ty': other.y}))
                             continue
                         elif hazard.kind == "slow_wall":
                             dx = self.ball.x - hazard.x

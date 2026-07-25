@@ -18440,6 +18440,70 @@ func execute(strategy: String, delta: float):
                                     else:
                                         self.ball["stutter_timer"] = 1.0
                                         self.ball["pending_supercharge"] = true
+
+                                var is_ts = false
+                                if typeof(self.world) == TYPE_OBJECT:
+                                    if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "weather" in self.world.arena and self.world.arena.weather == "thunderstorm":
+                                        is_ts = true
+                                    elif "game_mode" in self.world and typeof(self.world.game_mode) == TYPE_OBJECT and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm":
+                                        is_ts = true
+                                elif typeof(self.world) == TYPE_DICTIONARY:
+                                    if self.world.has("arena") and typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].get("weather") == "thunderstorm":
+                                        is_ts = true
+                                    elif self.world.has("game_mode") and typeof(self.world["game_mode"]) == TYPE_DICTIONARY and self.world["game_mode"].get("weather") == "thunderstorm":
+                                        is_ts = true
+
+                                if is_ts:
+                                    var w_balls = []
+                                    if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                                        w_balls = self.world.balls
+                                    elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                                        w_balls = self.world["balls"]
+
+                                    for other in w_balls:
+                                        if other != self.ball:
+                                            var is_alive = true
+                                            if typeof(other) == TYPE_OBJECT and "alive" in other: is_alive = other.alive
+                                            elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): is_alive = other["alive"]
+
+                                            if is_alive:
+                                                var o_x = 0.0
+                                                var o_y = 0.0
+                                                if typeof(other) == TYPE_OBJECT and "x" in other and "y" in other:
+                                                    o_x = other.x
+                                                    o_y = other.y
+                                                elif typeof(other) == TYPE_DICTIONARY and other.has("x") and other.has("y"):
+                                                    o_x = other["x"]
+                                                    o_y = other["y"]
+
+                                                var dx_c = o_x - b_x
+                                                var dy_c = o_y - b_y
+                                                if (dx_c*dx_c + dy_c*dy_c) < (150.0 * 150.0):
+                                                    var chain_dmg = hazard.damage * 0.5
+                                                    if typeof(other) == TYPE_OBJECT and other.has_method("take_damage"):
+                                                        other.take_damage(chain_dmg)
+                                                    elif typeof(other) == TYPE_OBJECT and "hp" in other:
+                                                        other.hp -= chain_dmg
+                                                        if other.hp <= 0: other.alive = false
+                                                    elif typeof(other) == TYPE_DICTIONARY and other.has("hp"):
+                                                        other["hp"] -= chain_dmg
+                                                        if other["hp"] <= 0: other["alive"] = false
+
+                                                    if typeof(other) == TYPE_OBJECT:
+                                                        if "stun_timer" in other:
+                                                            other.stun_timer = max(other.stun_timer, 0.5)
+                                                        else:
+                                                            other["stun_timer"] = 0.5
+                                                    elif typeof(other) == TYPE_DICTIONARY:
+                                                        if other.has("stun_timer"):
+                                                            other["stun_timer"] = max(other["stun_timer"], 0.5)
+                                                        else:
+                                                            other["stun_timer"] = 0.5
+
+                                                    if typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                                                        self.world.events.append(["visual_effect", {"type": "lightning", "x": b_x, "y": b_y, "tx": o_x, "ty": o_y}])
+                                                    elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                                                        self.world["events"].append(["visual_effect", {"type": "lightning", "x": b_x, "y": b_y, "tx": o_x, "ty": o_y}])
                         continue
                     elif hazard.kind == "phylactery_hazard":
                         var dx = b_x - h_x
