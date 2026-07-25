@@ -13233,6 +13233,16 @@ class WindstormMode(GameMode):
                     b.vx += self.push_dir_x * strength * delta
                     b.vy += self.push_dir_y * strength * delta
 
+                    # Tailwind logic
+                    import math
+                    v_mag = math.hypot(b.vx, b.vy)
+                    if v_mag > 0.01:
+                        dot = (b.vx / v_mag) * self.push_dir_x + (b.vy / v_mag) * self.push_dir_y
+                        if dot > 0.3:  # Riding the tailwind
+                            b.vx += self.push_dir_x * strength * dot * 2.0 * delta
+                            b.vy += self.push_dir_y * strength * dot * 2.0 * delta
+                            b.speed_boost_timer = getattr(b, "speed_boost_timer", 0.0) + delta * 2.0
+
             if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
                 for h in world.arena.hazards:
                     if hasattr(h, 'vx') and hasattr(h, 'vy'):
@@ -37686,6 +37696,15 @@ class WindstormEventMode(GameMode):
                                 b.vy = 0.0
                             b.vx += self.push_dir_x * self.push_strength * delta
                             b.vy += self.push_dir_y * self.push_strength * delta
+
+                            import math
+                            v_mag = math.hypot(b.vx, b.vy)
+                            if v_mag > 0.01:
+                                dot = (b.vx / v_mag) * self.push_dir_x + (b.vy / v_mag) * self.push_dir_y
+                                if dot > 0.3:
+                                    b.vx += self.push_dir_x * self.push_strength * dot * 2.0 * delta
+                                    b.vy += self.push_dir_y * self.push_strength * dot * 2.0 * delta
+                                    b.speed_boost_timer = getattr(b, "speed_boost_timer", 0.0) + delta * 2.0
 
                     if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
                         for h in world.arena.hazards:
