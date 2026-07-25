@@ -5806,12 +5806,14 @@ class BattleRoyaleMode extends GameMode:
 		random_event_timer += delta
 		if random_event_timer >= 25.0:
 			random_event_timer = 0.0
-			var event_type_idx = rng.randi() % 3
+			var event_type_idx = rng.randi() % 4
 			var event_type = "loot_goblin"
 			if event_type_idx == 1:
 				event_type = "low_gravity_zone"
 			elif event_type_idx == 2:
 				event_type = "meteor_shower"
+			elif event_type_idx == 3:
+				event_type = "delayed_clones"
 
 			if event_type == "loot_goblin":
 				var new_goblin = {}
@@ -5845,6 +5847,38 @@ class BattleRoyaleMode extends GameMode:
 
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("loot_goblin_spawn", {"message": "A Loot Goblin has appeared! Catch it for rare boosters!"})
+			elif event_type == "delayed_clones":
+				for p in balls:
+					var p_is_alive = p.get("alive") if typeof(p) == TYPE_DICTIONARY else p.alive
+					var p_type = p.get("ball_type") if typeof(p) == TYPE_DICTIONARY else p.ball_type
+					var p_is_clone = false
+					if typeof(p) == TYPE_DICTIONARY and p.has("is_delayed_clone"): p_is_clone = p.is_delayed_clone
+					elif typeof(p) == TYPE_OBJECT and "is_delayed_clone" in p: p_is_clone = p.is_delayed_clone
+
+					if p_is_alive and p_type != "spectator" and p_type != "loot_goblin" and not p_is_clone:
+						var clone = {}
+						if typeof(p) == TYPE_DICTIONARY:
+							clone = p.duplicate()
+						else:
+							var props = ["x", "y", "vx", "vy", "radius", "speed", "damage", "hp", "max_hp", "alive", "ball_type", "team", "mass"]
+							for k in props:
+								if k in p: clone[k] = p.get(k)
+
+						clone["id"] = 97000 + rng.randi() % 10000
+						clone["is_delayed_clone"] = true
+						var owner_id = -1
+						if typeof(p) == TYPE_DICTIONARY and p.has("id"): owner_id = p.id
+						elif typeof(p) == TYPE_OBJECT and "id" in p: owner_id = p.id
+						clone["owner_id"] = owner_id
+						clone["brain"] = null
+
+						if ("balls" in world) and typeof(world.balls) == TYPE_ARRAY:
+							world.balls.append(clone)
+							if world.has("entities") and typeof(world.entities) == TYPE_ARRAY and world.balls != world.entities:
+								world.entities.append(clone)
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("delayed_clones", {"message": "Delayed clones have appeared! They mimic your movements."})
 			elif event_type == "low_gravity_zone":
 				var arena_width = 1000.0
 				var arena_height = 1000.0
@@ -5881,6 +5915,80 @@ class BattleRoyaleMode extends GameMode:
 				weather_timer = 0.0
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 					world.add_event("weather_change", {"weather": "meteor_shower", "message": "A sudden Meteor Shower has begun!"})
+
+		# Update Delayed Clones
+		for b in balls:
+			var is_clone = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("is_delayed_clone"): is_clone = b.is_delayed_clone
+			elif typeof(b) == TYPE_OBJECT and "is_delayed_clone" in b: is_clone = b.is_delayed_clone
+
+			if not is_clone:
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.has("action_history"): b["action_history"] = []
+					b["action_history"].append([b.get("vx", 0.0), b.get("vy", 0.0)])
+					if b["action_history"].size() > 30: b["action_history"].pop_front()
+				elif typeof(b) == TYPE_OBJECT:
+					if not "action_history" in b: b.set_meta("action_history", []) if b.has_method("set_meta") else null
+					var hist = []
+					if "action_history" in b: hist = b.action_history
+					elif b.has_method("get_meta") and b.has_meta("action_history"): hist = b.get_meta("action_history")
+					hist.append([b.get("vx") if "vx" in b else 0.0, b.get("vy") if "vy" in b else 0.0])
+					if hist.size() > 30: hist.pop_front()
+					if "action_history" in b: b.action_history = hist
+					elif b.has_method("set_meta"): b.set_meta("action_history", hist)
+
+		for b in balls:
+			var is_clone = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("is_delayed_clone"): is_clone = b.is_delayed_clone
+			elif typeof(b) == TYPE_OBJECT and "is_delayed_clone" in b: is_clone = b.is_delayed_clone
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+
+			if is_clone and is_alive:
+				var owner_id = b.get("owner_id", -1) if typeof(b) == TYPE_DICTIONARY else b.owner_id
+				var owner = null
+				for p in balls:
+					var p_id = p.get("id") if typeof(p) == TYPE_DICTIONARY else p.id
+					if p_id == owner_id:
+						owner = p
+						break
+
+				var owner_alive = false
+				if owner != null:
+					owner_alive = owner.get("alive") if typeof(owner) == TYPE_DICTIONARY else owner.alive
+
+				if owner != null and owner_alive:
+					var hist = []
+					if typeof(owner) == TYPE_DICTIONARY and owner.has("action_history"): hist = owner.action_history
+					elif typeof(owner) == TYPE_OBJECT:
+						if "action_history" in owner: hist = owner.action_history
+						elif owner.has_method("get_meta") and owner.has_meta("action_history"): hist = owner.get_meta("action_history")
+
+					if hist.size() > 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = hist[0][0]
+							b["vy"] = hist[0][1]
+						else:
+							if "vx" in b: b.vx = hist[0][0]
+							if "vy" in b: b.vy = hist[0][1]
+
+					var has_brain = false
+					if typeof(b) == TYPE_DICTIONARY: has_brain = b.has("brain") and b.brain != null
+					elif typeof(b) == TYPE_OBJECT: has_brain = "brain" in b and b.brain != null
+
+					if not has_brain:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] += b.get("vx", 0.0) * delta
+							b["y"] += b.get("vy", 0.0) * delta
+						else:
+							if "x" in b and "vx" in b: b.x += b.vx * delta
+							if "y" in b and "vy" in b: b.y += b.vy * delta
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = 0
+						b["alive"] = false
+					else:
+						if "hp" in b: b.hp = 0
+						if "alive" in b: b.alive = false
 
 		# Update Loot Goblin Movement
 		for b in balls:
