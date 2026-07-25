@@ -711,6 +711,64 @@ func update_zone(current_tick: int, delta: float) -> void:
             is_acid_raining = weather == "acid_rain"
             is_gravity_storm = weather == "gravity_storm"
 
+
+        # Firestorm morph: if fireball and tornado collide
+        if "hazards" in self:
+            var to_remove = []
+            var new_hazards = []
+            for i in range(hazards.size()):
+                var h1 = hazards[i]
+                if h1 in to_remove: continue
+                for j in range(i + 1, hazards.size()):
+                    var h2 = hazards[j]
+                    if h2 in to_remove: continue
+                    if (h1.kind == "fireball" and h2.kind == "tornado") or (h1.kind == "tornado" and h2.kind == "fireball"):
+                        var dist_sq = (h1.x - h2.x)*(h1.x - h2.x) + (h1.y - h2.y)*(h1.y - h2.y)
+                        if dist_sq < (h1.radius + h2.radius)*(h1.radius + h2.radius):
+                            to_remove.append(h1)
+                            to_remove.append(h2)
+                            var h1_damage = h1.damage if "damage" in h1 else 10.0
+                            if h1.has_method("has_meta") and h1.has_meta("damage"): h1_damage = h1.get_meta("damage")
+                            var h2_damage = h2.damage if "damage" in h2 else 10.0
+                            if h2.has_method("has_meta") and h2.has_meta("damage"): h2_damage = h2.get_meta("damage")
+
+                            var firestorm = Hazard.new(str(h1.id) + "_firestorm", (h1.x + h2.x)/2.0, (h1.y + h2.y)/2.0, (h1.radius + h2.radius) * 1.5, "firestorm", max(h1_damage, h2_damage) * 2.0)
+                            var h1_vx = 0.0
+                            var h1_vy = 0.0
+                            if "vx" in h1: h1_vx = h1.vx
+                            if "vy" in h1: h1_vy = h1.vy
+                            if h1.has_method("has_meta") and h1.has_meta("vx"): h1_vx = h1.get_meta("vx")
+                            if h1.has_method("has_meta") and h1.has_meta("vy"): h1_vy = h1.get_meta("vy")
+
+                            var h2_vx = 0.0
+                            var h2_vy = 0.0
+                            if "vx" in h2: h2_vx = h2.vx
+                            if "vy" in h2: h2_vy = h2.vy
+                            if h2.has_method("has_meta") and h2.has_meta("vx"): h2_vx = h2.get_meta("vx")
+                            if h2.has_method("has_meta") and h2.has_meta("vy"): h2_vy = h2.get_meta("vy")
+
+                            firestorm.set_meta("vx", h1_vx + h2_vx)
+                            firestorm.set_meta("vy", h1_vy + h2_vy)
+
+                            var h1_owner = null
+                            if "owner_id" in h1: h1_owner = h1.owner_id
+                            if h1.has_method("has_meta") and h1.has_meta("owner_id"): h1_owner = h1.get_meta("owner_id")
+                            if h1_owner == null:
+                                if "owner_id" in h2: h1_owner = h2.owner_id
+                                if h2.has_method("has_meta") and h2.has_meta("owner_id"): h1_owner = h2.get_meta("owner_id")
+                            if h1_owner != null:
+                                firestorm.set_meta("owner_id", h1_owner)
+
+                            firestorm.duration = 10.0
+                            new_hazards.append(firestorm)
+                            break
+
+            for h in to_remove:
+                if h in hazards:
+                    hazards.erase(h)
+            for h in new_hazards:
+                hazards.append(h)
+
         # Update platforms
         for p in platforms:
             p.x += p.vx * delta
