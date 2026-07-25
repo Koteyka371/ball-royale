@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1473] Mirror World — *2026-07-25 00:03:40 UTC*
+
+Creates a temporary mirror version of the map.
+
+---
+
 ## [idea-1436] Kinetic Rebound Shield — *2026-07-24 23:44:19 UTC*
 
 A temporary shield that converts a portion of absorbed projectile damage into raw movement speed for a short duration.

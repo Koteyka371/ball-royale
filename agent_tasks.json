@@ -25227,7 +25227,7 @@
     },
     {
       "id": "idea-1473",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror World",
@@ -36781,6 +36781,40 @@
         "src/ai/black_hole_spawner.py",
         "src/ai/black_hole_spawner.gd",
         "tests/test_black_hole_spawner.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2152",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Image Decoy",
+      "description": "An active skill that creates a perfect visual copy of the player that mirrors their inputs but in reverse.",
+      "allowed_paths": [
+        "src/ai/mirror_image_decoy.py",
+        "src/ai/mirror_image_decoy.gd",
+        "tests/test_mirror_image_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2153",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook Item",
+      "description": "A consumable item that lets players shoot a grapple hook to pull themselves towards walls or enemies, closing the distance quickly.",
+      "allowed_paths": [
+        "src/ai/grapple_hook_item.py",
+        "src/ai/grapple_hook_item.gd",
+        "tests/test_grapple_hook_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
