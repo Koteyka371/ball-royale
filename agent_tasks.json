@@ -24580,7 +24580,7 @@
     },
     {
       "id": "idea-1435",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Overload",
@@ -36934,6 +36934,23 @@
         "src/ai/double_jeopardy_bounty.py",
         "src/ai/double_jeopardy_bounty.gd",
         "tests/test_double_jeopardy_bounty.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2161",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gold Rush event",
+      "description": "Periodically, gold coins spawn across the arena. Players must race to collect them, increasing their purchasing power but making them targets.",
+      "allowed_paths": [
+        "src/ai/gold_rush.py",
+        "src/ai/gold_rush.gd",
+        "tests/test_gold_rush.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

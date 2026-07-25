@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1435] EMP Overload — *2026-07-25 04:54:22 UTC*
+
+A new hazard that detonates and strips all buffs (like supercharge and overcharge) from enemies in the blast radius, but gives them a small speed burst for fleeing.
+
+---
+
 ## [idea-1484] Black Market Auction — *2026-07-25 04:49:47 UTC*
 
 Periodically during a match, a hidden item (like a legendary artifact) goes up for auction among alive players. They can bid the gold they have earned to win the item, causing a bidding war.
