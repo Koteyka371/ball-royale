@@ -1,0 +1,4 @@
+{
+  "title": "Asteroid Field Arena Event",
+  "description": "A random arena event that periodically spawns indestructible, fast-moving asteroid hazards that criss-cross the map linearly. They deal massive kinetic damage and heavy knockback. The asteroids act as dynamic terrain blockers, forcing balls to constantly reposition and providing opportunities for clever tricksters to knock enemies into the asteroid paths."
+}
