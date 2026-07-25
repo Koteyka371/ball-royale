@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1470] Sunlight Reflector Hazard — *2026-07-25 16:20:39 UTC*
+
+A deployable hazard that can bounce active sunlight beams in new directions, creating dynamic, shifting danger zones during the day cycle.
+
+---
+
 ## [idea-1477] Wind Tunnel Hazard — *2026-07-25 12:07:36 UTC*
 
 A hazard that blows a strong, concentrated gust of wind in one direction across the map. Balls entering it gain massive speed in that direction, which can be used to traverse quickly or escape bad situations, but can also fling them into traps.
