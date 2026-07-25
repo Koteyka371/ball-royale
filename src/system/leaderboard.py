@@ -229,3 +229,62 @@ class LeaderboardManager:
         elif points >= 20:
             return "⭐"
         return ""
+
+    def process_guild_boss_leaderboard(self, guild_manager, week_id: str, tier_requirements: dict):
+        if "guild_boss_leaderboard" not in self.data:
+            self.data["guild_boss_leaderboard"] = {}
+
+        guild_scores = []
+
+        # Evaluate all guilds
+        for guild_name in guild_manager.data.get("guilds", {}).keys():
+            max_tier = 0
+            tiebreaker_damage = 0.0
+
+            # Iterate through tiers to find the max cleared tier
+            for tier, required_damage in tier_requirements.items():
+                tier_str = str(tier)
+                tier_int = int(tier)
+                damage = guild_manager._get_alliance_boss_damage(guild_name, week_id, tier_str)
+
+                if damage >= required_damage:
+                    if tier_int > max_tier:
+                        max_tier = tier_int
+                        tiebreaker_damage = damage
+                elif tier_int == max_tier and damage > tiebreaker_damage:
+                    # If they didn't clear the next tier but did some damage, we don't count it as a clear
+                    pass
+
+            if max_tier > 0:
+                guild_scores.append({
+                    "guild_name": guild_name,
+                    "max_tier": max_tier,
+                    "damage": tiebreaker_damage
+                })
+
+        # Sort guilds by max tier (descending) then damage in that tier (descending)
+        guild_scores.sort(key=lambda x: (x["max_tier"], x["damage"]), reverse=True)
+
+        self.data["guild_boss_leaderboard"][week_id] = guild_scores
+
+        # Reward top 3 guilds
+        rewards = ["Boss Slayer Gold Aura", "Boss Slayer Silver Aura", "Boss Slayer Bronze Aura"]
+
+        for i, score in enumerate(guild_scores[:3]):
+            g_name = score["guild_name"]
+            guild = guild_manager.data["guilds"][g_name]
+            if "cosmetic_auras" not in guild:
+                guild["cosmetic_auras"] = []
+
+            aura = rewards[i]
+            if aura not in guild["cosmetic_auras"]:
+                guild["cosmetic_auras"].append(aura)
+
+        # Save both
+        self.save()
+        guild_manager.save()
+
+    def get_guild_boss_leaderboard(self, week_id: str):
+        if "guild_boss_leaderboard" not in self.data:
+            return []
+        return self.data["guild_boss_leaderboard"].get(week_id, [])
