@@ -478,3 +478,38 @@ def test_guild_perk_currency_and_level(temp_guild_file):
     assert gm.unlock_perk("AdvancedGuild", "hp_10_percent", 50, required_perk="hp_5_percent", required_level=2, currency="gvg_points") == True
     assert guild["gvg_points"] == 50
     assert "hp_10_percent" in gm.get_guild_perks("AdvancedGuild")
+
+def test_alliance_size_limit_and_chat(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("G1", "p1")
+    gm.create_guild("G2", "p2")
+    gm.create_guild("G3", "p3")
+    gm.create_guild("G4", "p4")
+
+    # Form alliance of 2
+    assert gm.form_alliance("G1", "G2") == True
+    # Form alliance of 3
+    assert gm.form_alliance("G2", "G3") == True
+    # Form alliance of 4 (should fail)
+    assert gm.form_alliance("G3", "G4") == False
+
+    # Check cluster
+    cluster = gm.get_alliance_cluster("G1")
+    assert sorted(list(cluster)) == ["G1", "G2", "G3"]
+
+    # Check chat
+    gm.send_alliance_chat_message("G1", "p1", "Hello Alliance")
+    chat3 = gm.get_alliance_chat_history("G3")
+    assert len(chat3) == 1
+    assert chat3[0]["message"] == "Hello Alliance"
+    assert chat3[0]["alliance"] == True
+
+    # Check leaderboard
+    gm.record_gvg_match("G1", "G4", "G1") # G1 wins, 10 pts
+    gm.record_gvg_match("G2", "G4", "G2") # G2 wins, 10 pts
+    lb = gm.get_alliance_leaderboard()
+    assert lb[0]["alliance_members"] == ["G1", "G2", "G3"]
+    assert lb[0]["gvg_points"] == 20
+
+    # Check multiguild event
+    assert gm.join_multiguild_event("G2") == True

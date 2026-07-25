@@ -681,8 +681,43 @@ func end_war(winner_name: String, loser_name: String) -> bool:
             return true
     return false
 
+
+func get_alliance_cluster(guild_name: String) -> Array:
+    var cluster = []
+    if data["guilds"].has(guild_name):
+        var queue = [guild_name]
+        var visited = {}
+        while queue.size() > 0:
+            var current = queue.pop_front()
+            if not visited.has(current):
+                visited[current] = true
+                cluster.append(current)
+                if data["guilds"].has(current):
+                    var allies = []
+                    if data["guilds"][current].has("allies"):
+                        allies = data["guilds"][current]["allies"]
+                    for ally in allies:
+                        if not visited.has(ally):
+                            queue.append(ally)
+    return cluster
+
 func form_alliance(guild1_name: String, guild2_name: String) -> bool:
     if data["guilds"].has(guild1_name) and data["guilds"].has(guild2_name) and guild1_name != guild2_name:
+        var cluster1 = get_alliance_cluster(guild1_name)
+        var cluster2 = get_alliance_cluster(guild2_name)
+
+        if cluster2.has(guild1_name) or cluster1.has(guild2_name):
+            return false
+
+        var union_set = {}
+        for g in cluster1:
+            union_set[g] = true
+        for g in cluster2:
+            union_set[g] = true
+
+        if union_set.keys().size() > 3:
+            return false
+
         var guild1 = data["guilds"][guild1_name]
         var guild2 = data["guilds"][guild2_name]
 
@@ -694,6 +729,17 @@ func form_alliance(guild1_name: String, guild2_name: String) -> bool:
         if not guild1["allies"].has(guild2_name) and not guild2["allies"].has(guild1_name):
             guild1["allies"].append(guild2_name)
             guild2["allies"].append(guild1_name)
+
+            var all_guilds = union_set.keys()
+            for g1 in all_guilds:
+                for g2 in all_guilds:
+                    if g1 != g2:
+                        var g1_data = data["guilds"][g1]
+                        if not g1_data.has("allies"):
+                            g1_data["allies"] = []
+                        if not g1_data["allies"].has(g2):
+                            g1_data["allies"].append(g2)
+
             save_guilds()
             return true
     return false
@@ -1005,3 +1051,58 @@ func get_hall_of_fame(guild_name: String) -> Array:
         if guild.has("hq") and guild["hq"].has("hall_of_fame"):
             return guild["hq"]["hall_of_fame"]
     return []
+
+func get_alliance_leaderboard() -> Array:
+    var visited = {}
+    var alliances = []
+
+    for guild_name in data["guilds"].keys():
+        if not visited.has(guild_name):
+            var cluster = get_alliance_cluster(guild_name)
+            for c in cluster:
+                visited[c] = true
+
+            var total_points = 0
+            for g in cluster:
+                if data["guilds"][g].has("gvg_points"):
+                    total_points += data["guilds"][g]["gvg_points"]
+
+            cluster.sort()
+            alliances.append({
+                "alliance_members": cluster,
+                "gvg_points": total_points
+            })
+
+    alliances.sort_custom(func(a, b): return a["gvg_points"] > b["gvg_points"])
+    return alliances
+
+func send_alliance_chat_message(guild_name: String, sender_id: String, message: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var cluster = get_alliance_cluster(guild_name)
+        for g in cluster:
+            if not data["guilds"][g].has("chat_history"):
+                data["guilds"][g]["chat_history"] = []
+            data["guilds"][g]["chat_history"].append({
+                "sender": sender_id,
+                "message": message,
+                "alliance": true
+            })
+        save_guilds()
+        return true
+    return false
+
+func get_alliance_chat_history(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name) and data["guilds"][guild_name].has("chat_history"):
+        return data["guilds"][guild_name]["chat_history"]
+    return []
+
+func join_multiguild_event(guild_name: String) -> bool:
+    if data["guilds"].has(guild_name):
+        var cluster = get_alliance_cluster(guild_name)
+        var total_members = 0
+        for g in cluster:
+            if data["guilds"][g].has("members"):
+                total_members += data["guilds"][g]["members"].size()
+        if total_members <= 50:
+            return true
+    return false
