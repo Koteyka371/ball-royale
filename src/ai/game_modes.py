@@ -12864,8 +12864,14 @@ class WindstormMode(GameMode):
                         h.vx = self.random.uniform(-100.0, 100.0)
                     if not hasattr(h, "vy"):
                         h.vy = self.random.uniform(-100.0, 100.0)
-                    h.x += getattr(h, "vx", 0.0) * delta
-                    h.y += getattr(h, "vy", 0.0) * delta
+
+                    # Apply thunderstorm speed boost
+                    speed_multiplier = 1.0
+                    if getattr(self, "weather", "") == "thunderstorm":
+                        speed_multiplier = 1.5
+
+                    h.x += getattr(h, "vx", 0.0) * speed_multiplier * delta
+                    h.y += getattr(h, "vy", 0.0) * speed_multiplier * delta
 
                     # Bounce off walls
                     arena_width = getattr(world.arena, "width", 1000)
