@@ -1053,6 +1053,66 @@ class GameMode:
                             b.x = getattr(b, "x", 0.0) + (dx / dist) * overlap * 0.5
                             b.y = getattr(b, "y", 0.0) + (dy / dist) * overlap * 0.5
 
+
+            bounty_tracker_drones = [h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "bounty_tracker_drone"]
+            for d in bounty_tracker_drones:
+                owner = next((b for b in balls if getattr(b, "id", None) == getattr(d, "owner_id", None)), None)
+                if owner:
+                    target = None
+                    min_dist_sq = 999999.0
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(owner, "id", None):
+                            if getattr(b, "is_bounty_target", False) or getattr(b, "is_bounty", False) or getattr(b, "high_threat", False):
+                                bx, by = getattr(b, "x", 0), getattr(b, "y", 0)
+                                dist_sq = (bx - getattr(d, "x", 0))**2 + (by - getattr(d, "y", 0))**2
+                                if dist_sq < min_dist_sq:
+                                    min_dist_sq, target = dist_sq, b
+                    if target:
+                        nx, ny = getattr(target, "x", 0), getattr(target, "y", 0)
+                        dx, dy = nx - getattr(d, "x", 0), ny - getattr(d, "y", 0)
+                        dist = (dx**2 + dy**2)**0.5
+                        if dist > 0.0001:
+                            speed = 100.0 * delta
+                            if isinstance(d, dict):
+                                d["x"] = d.get("x", 0) + (dx / dist) * speed
+                                d["y"] = d.get("y", 0) + (dy / dist) * speed
+                                if "ping_timer" not in d: d["ping_timer"] = 0.0
+                                d["ping_timer"] += delta
+                                if d["ping_timer"] >= 1.5:
+                                    d["ping_timer"] = 0.0
+                                    if hasattr(world, "events"):
+                                        world.events.append({"type": "bounty_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
+                                        world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d["x"]), "y": float(d["y"]), "tx": float(nx), "ty": float(ny), "color": "orange"}})
+                            else:
+                                d.x = getattr(d, "x", 0) + (dx / dist) * speed
+                                d.y = getattr(d, "y", 0) + (dy / dist) * speed
+                                d.ping_timer = getattr(d, "ping_timer", 0.0) + delta
+                                if d.ping_timer >= 1.5:
+                                    d.ping_timer = 0.0
+                                    if hasattr(world, "events"):
+                                        world.events.append({"type": "bounty_compass", "data": {"target_x": float(nx), "target_y": float(ny), "owner_id": getattr(owner, "id", None)}})
+                                        world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(d.x), "y": float(d.y), "tx": float(nx), "ty": float(ny), "color": "orange"}})
+
+                # Damage from overlapping balls
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                        if getattr(b, "id", None) != getattr(d, "owner_id", None):
+                            b_x, b_y = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                            d_x, d_y = getattr(d, "x", 0.0) if not isinstance(d, dict) else d.get("x", 0.0), getattr(d, "y", 0.0) if not isinstance(d, dict) else d.get("y", 0.0)
+                            dist = ((b_x - d_x)**2 + (b_y - d_y)**2)**0.5
+                            if dist <= (getattr(d, "radius", 15.0) if not isinstance(d, dict) else d.get("radius", 15.0)) + getattr(b, "radius", 15.0):
+                                if isinstance(d, dict):
+                                    d["hp"] = d.get("hp", 100.0) - getattr(b, "damage", 10.0) * delta
+                                else:
+                                    d.hp = getattr(d, "hp", 100.0) - getattr(b, "damage", 10.0) * delta
+
+                if isinstance(d, dict):
+                    if d.get("hp", 0.0) <= 0:
+                        d["duration"] = 0
+                else:
+                    if getattr(d, "hp", 0.0) <= 0:
+                        d.duration = 0
+
             drones = [h for h in world.arena.hazards if getattr(h, "kind", "") == "nemesis_drone"]
             for d in drones:
                 owner = next((b for b in balls if getattr(b, "id", None) == getattr(d, "owner_id", None)), None)
