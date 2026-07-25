@@ -36888,6 +36888,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2158",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Electric Storm Weather Hazard",
+      "description": "Weather hazard that targets the fastest moving entity.",
+      "allowed_paths": [
+        "src/arena/electric_storm.py",
+        "src/arena/electric_storm.gd",
+        "tests/test_electric_storm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2159",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole and Gravity Well Synergy",
+      "description": "When a black hole and a gravity well hazard are close, they merge into an ultra-dense singularity.",
+      "allowed_paths": [
+        "src/ai/black_hole_and_gravity_well_synergy.py",
+        "src/ai/black_hole_and_gravity_well_synergy.gd",
+        "tests/test_black_hole_and_gravity_well_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
