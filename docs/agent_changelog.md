@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1492] Volcanic Fissures — *2026-07-25 23:01:53 UTC*
+
+Create a new arena hazard type called 'volcanic_fissure' that slowly opens up over time. Once fully opened, it deals continuous fire damage and creates a smokescreen effect, reducing visibility for players inside.
+
+---
+
 ## [idea-1500] Trickster Smoke Bomb — *2026-07-25 22:55:09 UTC*
 
 Trickster can drop a smoke bomb that creates a large fog zone, blinding enemies.

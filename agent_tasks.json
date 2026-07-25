@@ -25550,7 +25550,7 @@
     },
     {
       "id": "idea-1492",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Volcanic Fissures",
@@ -37633,6 +37633,40 @@
         "src/ai/emblem_glow_effect_based_on_streak.py",
         "src/ai/emblem_glow_effect_based_on_streak.gd",
         "tests/test_emblem_glow_effect_based_on_streak.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2202",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Smoke Teleport",
+      "description": "When standing inside a smoke zone, Trickster can teleport to any other active smoke zone in the arena, allowing for quick ambushes and escapes.",
+      "allowed_paths": [
+        "src/ai/trickster_smoke_teleport.py",
+        "src/ai/trickster_smoke_teleport.gd",
+        "tests/test_trickster_smoke_teleport.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2203",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Fake Booster Drop",
+      "description": "Trickster can place fake boosters around the arena that explode into smaller, blinding smoke clouds when collected by enemies, punishing greedy players.",
+      "allowed_paths": [
+        "src/ai/trickster_fake_booster_drop.py",
+        "src/ai/trickster_fake_booster_drop.gd",
+        "tests/test_trickster_fake_booster_drop.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
