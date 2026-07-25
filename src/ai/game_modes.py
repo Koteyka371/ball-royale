@@ -29496,8 +29496,119 @@ class NemesisSustainMode(GameMode):
         self.description = "Dealing damage to your nemesis heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
 
 
+
+class MovingWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Moving Walls"
+        self.description = "Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage."
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 5.0
+            wall_types = ["horizontal", "vertical"]
+            wall_type = random.choice(wall_types)
+            speed = 50.0
+
+            if wall_type == "horizontal":
+                if random.random() < 0.5:
+                    x = 0
+                    vx = speed
+                else:
+                    x = world.arena.width
+                    vx = -speed
+                y = random.uniform(0, world.arena.height)
+                w = 20
+                h = random.uniform(100, 300)
+                vy = 0.0
+            else:
+                if random.random() < 0.5:
+                    y = 0
+                    vy = speed
+                else:
+                    y = world.arena.height
+                    vy = -speed
+                x = random.uniform(0, world.arena.width)
+                w = random.uniform(100, 300)
+                h = 20
+                vx = 0.0
+
+            wall_hazard = {
+                "kind": "moving_wall",
+                "x": x,
+                "y": y,
+                "width": w,
+                "height": h,
+                "vx": vx,
+                "vy": vy,
+                "damage": 20.0,
+                "duration": 15.0,
+                "id": f"moving_wall_{getattr(world, 'tick_count', random.randint(0, 10000))}"
+            }
+            if isinstance(world.arena.hazards, list):
+                world.arena.hazards.append(wall_hazard)
+
+        to_remove = []
+        for hazard in world.arena.hazards:
+            if isinstance(hazard, dict) and hazard.get("kind") == "moving_wall":
+                hazard["duration"] -= delta
+                if hazard["duration"] <= 0:
+                    to_remove.append(hazard)
+                    continue
+
+                hazard["x"] += hazard.get("vx", 0) * delta
+                hazard["y"] += hazard.get("vy", 0) * delta
+
+                hx = hazard["x"]
+                hy = hazard["y"]
+                hw = hazard["width"]
+                hh = hazard["height"]
+                hdmg = hazard.get("damage", 20.0)
+
+                for b in balls:
+                    if getattr(b, "alive", True) and not getattr(b, "is_intangible", False):
+                        bx = b.x
+                        by = b.y
+                        br = getattr(b, "radius", 20.0)
+
+                        closest_x = max(hx - hw/2, min(bx, hx + hw/2))
+                        closest_y = max(hy - hh/2, min(by, hy + hh/2))
+
+                        dist_sq = (bx - closest_x)**2 + (by - closest_y)**2
+                        if dist_sq <= br*br:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(hdmg * delta)
+                            else:
+                                b.hp -= hdmg * delta
+                                if b.hp <= 0:
+                                    b.alive = False
+
+                            b.x += hazard.get("vx", 0) * delta * 1.5
+                            b.y += hazard.get("vy", 0) * delta * 1.5
+                            b.vx = hazard.get("vx", 0) * 1.5
+                            b.vy = hazard.get("vy", 0) * 1.5
+
+                            if hasattr(world, "events"):
+                                if getattr(world, "tick_count", 0) % 10 == 0:
+                                    world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': bx, 'y': by, 'radius': 10.0, 'color': 'gray'}})
+
+        if hasattr(world.arena.hazards, "remove"):
+            for r in to_remove:
+                if r in world.arena.hazards:
+                    world.arena.hazards.remove(r)
+
 GAME_MODES = {
     "nemesis_sustain": NemesisSustainMode(),
+    "moving_walls": MovingWallsMode(),
     'periodic_gravity_flip': PeriodicGravityFlipMode(),
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),
