@@ -141,6 +141,23 @@ class BallBrain:
             self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.25
             self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.30
 
+                # Weather-specific ball variants
+        if skin == "snowball" and current_weather in ["snow", "blizzard"]:
+            self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.30
+            self.ball.damage = getattr(self.ball, "damage", 10.0) * 1.10
+
+        if skin == "fireball" and current_weather == "heatwave":
+            self.ball.damage = getattr(self.ball, "damage", 10.0) * 1.25
+            self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.15
+
+        if skin == "thunderball" and current_weather == "thunderstorm":
+            self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.40
+            self.ball.damage = getattr(self.ball, "damage", 10.0) * 1.20
+
+        if skin == "sandball" and current_weather == "sandstorm":
+            self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.40
+            self.ball.speed = getattr(self.ball, "speed", 100.0) * 1.10
+
         if skin == "veteran":
             self.ball.status_resistance = getattr(self.ball, "status_resistance", 0.0) + 0.02
         elif skin == "legendary":
