@@ -1187,6 +1187,16 @@ class Action:
                 if actual_damage_dealt > 0:
                     attacker.hp = min(getattr(attacker, 'hp', 100.0) + actual_damage_dealt * 0.3, getattr(attacker, 'max_hp', 100.0))
 
+        if new_hp < old_hp:
+            # Nemesis Sustain game mode logic
+            is_nemesis_sustain = getattr(self.world, "current_mode_name", "") == "Nemesis Sustain"
+            if is_nemesis_sustain:
+                pm = getattr(self.world, "profile_manager", None)
+                if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
+                    if pm.is_nemesis(target.ball_type, attacker.ball_type):
+                        dmg_dealt = old_hp - new_hp
+                        attacker.hp = min(getattr(attacker, "hp", 100.0) + dmg_dealt, getattr(attacker, "max_hp", 100.0))
+
         # Award XP for damage dealt and kills
         if new_hp < old_hp:
             self._award_xp(attacker, 10.0, self.world)
