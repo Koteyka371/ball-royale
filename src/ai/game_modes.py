@@ -34550,10 +34550,6 @@ class TimeDilationZoneMode(GameMode):
                     if attr.endswith("_timer") or attr.endswith("_duration") or attr.endswith("_cooldown"):
                         val = getattr(b, attr)
                         if isinstance(val, (int, float)) and not isinstance(val, bool):
-                            # The ball is artificially slowed, but confusion zone timer counts UP to trigger an event,
-                            # so if it's confusion_zone_timer we should not mess with it here, or we'd make it expire faster/slower inconsistently.
-                            # But wait, `confusion_zone_timer` counts time spent. If we add `delta * 0.5`, we are essentially making it count SLOWER (it takes longer to trigger).
-                            # Oh, I see the test failed because `confusion_zone_timer` was affected. Let's explicitly exclude `confusion_zone_timer`.
                             if attr == "confusion_zone_timer": continue
                             setattr(b, attr, val + delta * 0.5)
 

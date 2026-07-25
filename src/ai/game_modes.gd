@@ -52815,7 +52815,8 @@ class TimeDilationZoneMode extends GameMode:
 					var keys = b.keys()
 					for k in keys:
 						if typeof(k) == TYPE_STRING and (k.ends_with("_timer") or k.ends_with("_duration") or k.ends_with("_cooldown")):
-							if k == "confusion_zone_timer": continue
+							if k == "confusion_zone_timer":
+								continue
 							var val = b[k]
 							if typeof(val) == TYPE_INT or typeof(val) == TYPE_FLOAT:
 								b[k] = val + delta * 0.5
