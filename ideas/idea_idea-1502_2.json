@@ -1,4 +1,0 @@
-{
-  "title": "Magnetic Minefield Hazard",
-  "description": "Scattered magnetic mines that slowly pull in nearby players when triggered. If a player touches a mine, it explodes and deals damage in a small radius, adding a tactical element to positioning."
-}

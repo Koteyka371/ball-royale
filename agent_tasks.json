@@ -37672,6 +37672,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2204",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Volcanic Eruption Mode",
+      "description": "A new game mode where the entire arena slowly fills with volcanic fissures that randomly open and close. Players must navigate safely between them while dealing with continuous smoke and reduced visibility.",
+      "allowed_paths": [
+        "src/ai/volcanic_eruption.py",
+        "src/ai/volcanic_eruption.gd",
+        "tests/test_volcanic_eruption.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2205",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ash Cloud Debuff",
+      "description": "An environmental weather effect that coats balls in ash. Movement speed is slowly reduced the longer a player stays in an ash cloud, but it can be washed off in water zones.",
+      "allowed_paths": [
+        "src/ai/ash_cloud_debuff.py",
+        "src/ai/ash_cloud_debuff.gd",
+        "tests/test_ash_cloud_debuff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2206",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Resonance",
+      "description": "A new mode where all players are paired with an entangled partner. When one takes damage, the other heals, and if one gets a kill, the other receives a temporary speed and damage boost.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_resonance.py",
+        "src/ai/quantum_entanglement_resonance.gd",
+        "tests/test_quantum_entanglement_resonance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
