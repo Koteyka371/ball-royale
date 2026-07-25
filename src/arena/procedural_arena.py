@@ -632,6 +632,31 @@ class ProceduralArena:
             import math
             # Process hazard-to-hazard combos
 
+            # Firestorm morph: if fireball and tornado collide
+            if hasattr(self, "hazards"):
+                to_remove = []
+                new_hazards = []
+                for i, h1 in enumerate(self.hazards):
+                    if h1 in to_remove: continue
+                    for j, h2 in enumerate(self.hazards[i+1:]):
+                        if h2 in to_remove: continue
+                        if (h1.kind == "fireball" and h2.kind == "tornado") or (h1.kind == "tornado" and h2.kind == "fireball"):
+                            dist_sq = (h1.x - h2.x)**2 + (h1.y - h2.y)**2
+                            if dist_sq < (h1.radius + h2.radius)**2:
+                                to_remove.extend([h1, h2])
+                                # Create firestorm
+                                firestorm = Hazard(str(h1.id) + "_firestorm", (h1.x + h2.x)/2, (h1.y + h2.y)/2, (h1.radius + h2.radius) * 1.5, "firestorm", max(h1.damage, h2.damage) * 2.0)
+                                firestorm.vx = getattr(h1, 'vx', 0.0) + getattr(h2, 'vx', 0.0)
+                                firestorm.vy = getattr(h1, 'vy', 0.0) + getattr(h2, 'vy', 0.0)
+                                firestorm.owner_id = getattr(h1, 'owner_id', getattr(h2, 'owner_id', None))
+                                firestorm.duration = 10.0
+                                new_hazards.append(firestorm)
+                                break
+                for h in to_remove:
+                    if h in self.hazards:
+                        self.hazards.remove(h)
+                self.hazards.extend(new_hazards)
+
             # Update platforms
             if hasattr(self, "platforms"):
                 for p in self.platforms:
@@ -1220,7 +1245,7 @@ class ProceduralArena:
             import random
 
             # Clear old dynamic hazards
-            self.hazards = [h for h in self.hazards if getattr(h, 'id', 9999) < 1000]
+            self.hazards = [h for h in self.hazards if isinstance(getattr(h, 'id', 9999), int) and getattr(h, 'id', 9999) < 1000]
 
             # Process seasonal modifiers for hazards
             seasonal_modifier = getattr(self, "seasonal_modifier", "none")
