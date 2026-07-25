@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A hazard zone that sporadically swaps the positions of the closest entity inside it with another random entity, projectile, or hazard anywhere in the arena. A visual cue indicates who is about to swap, creating a brief window for players to strategize around being forcefully repositioned."
+}
