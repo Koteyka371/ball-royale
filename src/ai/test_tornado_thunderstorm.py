@@ -30,6 +30,8 @@ def test_tornado_roam_thunderstorm():
     assert len(tornados) >= 1
     t = tornados[0]
 
+    mode.weather_timer = 0.0
+    mode.weather = "clear"
     t.x = 500
     t.y = 500
     t.vx = 100
@@ -40,6 +42,7 @@ def test_tornado_roam_thunderstorm():
     assert dist1 < 0.1
 
     # In thunderstorm
+    mode.weather_timer = 0.0
     mode.weather = "thunderstorm"
     t.x = 500
     t.y = 500
