@@ -25652,7 +25652,7 @@
     },
     {
       "id": "idea-1498",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Leaderboards for Boss Tiers",
@@ -37274,6 +37274,57 @@
         "src/ai/blackout.py",
         "src/ai/blackout.gd",
         "tests/test_blackout.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2181",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Glitch Dash Skill",
+      "description": "A new active skill that allows players to instantly teleport a short distance forward, ignoring all obstacles and hazards in their path. Upon arrival, it leaves behind a temporary static field that disorients and slows any enemies that pass through it.",
+      "allowed_paths": [
+        "src/ai/glitch_dash_skill.py",
+        "src/ai/glitch_dash_skill.gd",
+        "tests/test_glitch_dash_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2182",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Web",
+      "description": "A web that not only slows balls but also suspends them in zero gravity, removing friction.",
+      "allowed_paths": [
+        "src/ai/anti_gravity_web.py",
+        "src/ai/anti_gravity_web.gd",
+        "tests/test_anti_gravity_web.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2183",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sticky Wall Traps",
+      "description": "Traps that can be attached to walls and ensnare passing balls.",
+      "allowed_paths": [
+        "src/arena/sticky_wall_traps.py",
+        "src/arena/sticky_wall_traps.gd",
+        "tests/test_sticky_wall_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1498] Guild Leaderboards for Boss Tiers — *2026-07-25 20:48:42 UTC*
+
+Add a new leaderboard that specifically tracks which guilds have cleared the highest tiers of guild bosses each week, rewarding the top 3 guilds with exclusive cosmetic auras.
+
+---
+
 ## [idea-1457] Sticky web traps — *2026-07-25 20:26:12 UTC*
 
 New trap variant that slows balls within a web-like radius.
