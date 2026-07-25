@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1391] Guild Emblem In-game Display — *2026-07-25 22:53:51 UTC*
+
+Display the guild emblem near the player's ball or health bar during gameplay.
+
+---
+
 ## [idea-1508] Shatter Mine — *2026-07-25 22:33:32 UTC*
 
 A deployable hazard that mimics a reflect shield visually but shatters immediately upon contact, stunning all nearby enemies without dealing damage.
