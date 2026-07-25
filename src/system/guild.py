@@ -526,8 +526,34 @@ class GuildManager:
                 return True
         return False
 
+
+    def get_alliance_cluster(self, guild_name):
+        cluster = set()
+        if guild_name in self.data["guilds"]:
+            queue = [guild_name]
+            while queue:
+                current = queue.pop(0)
+                if current not in cluster:
+                    cluster.add(current)
+                    if current in self.data["guilds"]:
+                        allies = self.data["guilds"][current].get("allies", [])
+                        for ally in allies:
+                            if ally not in cluster:
+                                queue.append(ally)
+        return cluster
+
     def form_alliance(self, guild1_name, guild2_name):
         if guild1_name in self.data["guilds"] and guild2_name in self.data["guilds"] and guild1_name != guild2_name:
+            cluster1 = self.get_alliance_cluster(guild1_name)
+            cluster2 = self.get_alliance_cluster(guild2_name)
+
+            if guild1_name in cluster2 or guild2_name in cluster1:
+                return False  # Already allied
+
+            combined_size = len(cluster1.union(cluster2))
+            if combined_size > 3:
+                return False
+
             guild1 = self.data["guilds"][guild1_name]
             guild2 = self.data["guilds"][guild2_name]
 
@@ -539,6 +565,18 @@ class GuildManager:
             if guild2_name not in guild1["allies"] and guild1_name not in guild2["allies"]:
                 guild1["allies"].append(guild2_name)
                 guild2["allies"].append(guild1_name)
+
+                # Make it a clique
+                all_guilds = list(cluster1.union(cluster2))
+                for g1 in all_guilds:
+                    for g2 in all_guilds:
+                        if g1 != g2:
+                            g1_data = self.data["guilds"][g1]
+                            if "allies" not in g1_data:
+                                g1_data["allies"] = []
+                            if g2 not in g1_data["allies"]:
+                                g1_data["allies"].append(g2)
+
                 self.save()
                 return True
         return False
@@ -811,5 +849,54 @@ class GuildManager:
             if shape in unlocked.get("shapes", []) and color in unlocked.get("colors", []) and symbol in unlocked.get("symbols", []):
                 guild["emblem"] = {"shape": shape, "color": color, "symbol": symbol}
                 self.save()
+                return True
+        return False
+
+    def get_alliance_leaderboard(self):
+        visited = set()
+        alliances = []
+
+        for guild_name in self.data["guilds"]:
+            if guild_name not in visited:
+                cluster = self.get_alliance_cluster(guild_name)
+                visited.update(cluster)
+
+                total_points = sum(self.data["guilds"][g].get("gvg_points", 0) for g in cluster)
+                cluster_names = sorted(list(cluster))
+
+                alliances.append({
+                    "alliance_members": cluster_names,
+                    "gvg_points": total_points
+                })
+
+        alliances.sort(key=lambda x: x["gvg_points"], reverse=True)
+        return alliances
+
+    def send_alliance_chat_message(self, guild_name, sender_id, message):
+        if guild_name in self.data["guilds"]:
+            cluster = self.get_alliance_cluster(guild_name)
+            for g in cluster:
+                self.data["guilds"][g].setdefault("chat_history", []).append({
+                    "sender": sender_id,
+                    "message": message,
+                    "alliance": True
+                })
+            self.save()
+            return True
+        return False
+
+    def get_alliance_chat_history(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            # Returns the unified chat which we stored duplicated on members
+            # OR we can aggregate on the fly. Since we duplicated, we just return the local one.
+            return self.data["guilds"][guild_name].get("chat_history", [])
+        return []
+
+    def join_multiguild_event(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            cluster = self.get_alliance_cluster(guild_name)
+            total_members = sum(len(self.data["guilds"][g].get("members", [])) for g in cluster)
+            if total_members <= 50:
+                # Event queuing logic placeholder
                 return True
         return False
