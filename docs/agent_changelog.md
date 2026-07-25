@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1517] Reverse Bubbles — *2026-07-25 23:58:14 UTC*
+
+The entire map is safe, but expanding hazard bubbles randomly spawn. Players must avoid the growing hazard zones.
+
+---
+
 ## [idea-1418] Quantum Echo Trait — *2026-07-25 23:01:58 UTC*
 
 Balls with the Quantum Echo trait leave behind a faint ghost of their past position every 3 seconds. Pressing their active skill immediately teleports them back to their most recent ghost, resetting their health to whatever it was at that exact moment. A high-skill mobility and sustain option.
