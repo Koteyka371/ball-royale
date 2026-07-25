@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1434] Tesla Chain Trap — *2026-07-25 07:15:51 UTC*
+
+A player-deployable trap that connects to nearby traps to form a continuous electric beam that deals low damage but rapidly drains stamina.
+
+---
+
 ## [idea-1482] Bounty Hunter Progression — *2026-07-25 06:47:28 UTC*
 
 Players collect bounty tags from fallen enemies. Bringing bounty tags to safe extraction zones gives currency that can be spent on persistent upgrades during the match, rather than relying solely on random item drops.

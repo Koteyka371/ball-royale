@@ -24563,7 +24563,7 @@
     },
     {
       "id": "idea-1434",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tesla Chain Trap",
@@ -37121,6 +37121,40 @@
         "src/ai/black_hole_core.py",
         "src/ai/black_hole_core.gd",
         "tests/test_black_hole_core.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2172",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Trap Decoys",
+      "description": "Players can deploy fake bounty tags that explode when enemies try to collect them, dealing massive damage and knocking them back.",
+      "allowed_paths": [
+        "src/arena/bounty_trap_decoys.py",
+        "src/arena/bounty_trap_decoys.gd",
+        "tests/test_bounty_trap_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2173",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Extraction Zone Ambush Mod",
+      "description": "A new mutator where extraction zones periodically spawn hazardous turrets to defend the area, forcing players to clear the zone before they can extract their bounties.",
+      "allowed_paths": [
+        "src/ai/extraction_zone_ambush_mod.py",
+        "src/ai/extraction_zone_ambush_mod.gd",
+        "tests/test_extraction_zone_ambush_mod.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
