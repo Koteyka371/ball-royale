@@ -27438,6 +27438,126 @@ class SlimeBossMode(GameMode):
                                     proj.duration = 2.0
                                     world.arena.hazards.append(proj)
 
+
+class MovingWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Moving Walls"
+        self.description = "Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage."
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+        aw = getattr(world.arena, "width", 1000.0)
+        ah = getattr(world.arena, "height", 1000.0)
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 4.0:
+            self.spawn_timer = 0.0
+            import random
+
+            # Determine spawn side (0: top, 1: bottom, 2: left, 3: right)
+            side = random.randint(0, 3)
+
+            radius = 60.0
+            x, y = 0.0, 0.0
+            vx, vy = 0.0, 0.0
+
+            speed = random.uniform(50.0, 150.0)
+
+            if side == 0: # Top, move down
+                x = random.uniform(0, aw)
+                y = -radius
+                vy = speed
+            elif side == 1: # Bottom, move up
+                x = random.uniform(0, aw)
+                y = ah + radius
+                vy = -speed
+            elif side == 2: # Left, move right
+                x = -radius
+                y = random.uniform(0, ah)
+                vx = speed
+            elif side == 3: # Right, move left
+                x = aw + radius
+                y = random.uniform(0, ah)
+                vx = -speed
+
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            wall = Hazard(id=f"moving_wall_{random.randint(1000, 9999)}", x=x, y=y, radius=radius, kind="moving_wall", damage=30.0)
+            wall.vx = vx
+            wall.vy = vy
+            world.arena.hazards.append(wall)
+
+        # Update existing moving walls and check collisions
+        hazards_to_remove = []
+        import math
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "moving_wall":
+                hx = getattr(h, "x", 0.0)
+                hy = getattr(h, "y", 0.0)
+                hvx = getattr(h, "vx", 0.0)
+                hvy = getattr(h, "vy", 0.0)
+                hr = getattr(h, "radius", 50.0)
+
+                h.x = hx + hvx * delta
+                h.y = hy + hvy * delta
+
+                # Despawn if out of bounds + margin
+                margin = hr * 2.0
+                if h.x < -margin or h.x > aw + margin or h.y < -margin or h.y > ah + margin:
+                    hazards_to_remove.append(h)
+                    continue
+
+                # Collision with balls
+                h_damage = getattr(h, "damage", 20.0)
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    br = getattr(b, "radius", 20.0)
+
+                    dist_sq = (h.x - bx)**2 + (h.y - by)**2
+                    if dist_sq < (hr + br)**2:
+                        world._deal_damage(h, b, h_damage * delta) # Apply damage over time or continuously while touching
+
+                        # Push back logic
+                        dist = math.sqrt(dist_sq)
+                        if dist > 0.001:
+                            nx, ny = (bx - h.x) / dist, (by - h.y) / dist
+                            overlap = (hr + br) - dist
+                            b.x = bx + nx * overlap
+                            b.y = by + ny * overlap
+
+                            # Add some velocity to bounce them off
+                            if hasattr(b, "vx") and hasattr(b, "vy"):
+                                b.vx += nx * 50.0
+                                b.vy += ny * 50.0
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
 class BouncingProjectilesMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -29506,7 +29626,10 @@ GAME_MODES = {
     'entangled_hazards_mode': EntangledHazardsMode(),
 
 
+
     "bouncing_projectiles_mutator": BouncingProjectilesMutatorMode(),
+    "moving_walls": MovingWallsMode(),
+
     "wrap_around": WrapAroundMode(),
     "slime_boss": SlimeBossMode(),
     "explosive_meteors": ExplosiveMeteorsMode(),

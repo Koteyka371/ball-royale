@@ -47573,7 +47573,10 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"entangled_hazards_mode": EntangledHazardsMode.new(),
 
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
+
+	"moving_walls": MovingWallsMode.new(),
 	"bouncing_projectiles_mutator": BouncingProjectilesMutatorMode.new(),
+
 	"wrap_around": WrapAroundMode.new(),
 
 	"slime_boss": SlimeBossMode.new(),
@@ -56198,6 +56201,166 @@ class CursedBoosterMode extends GameMode:
 		super._init()
 		self.name = "Cursed Boosters"
 		self.description = "All boosters collected have the opposite of their intended effect, forcing players to avoid items they usually collect."
+
+
+class MovingWallsMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		name = "Moving Walls"
+		description = "Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		spawn_timer = 0.0
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not world.has("arena") or not world.arena:
+			return
+
+		var arena_ref = world.arena
+		var has_hazards = false
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
+		elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: has_hazards = true
+
+		if not has_hazards:
+			if typeof(arena_ref) == TYPE_DICTIONARY:
+				arena_ref["hazards"] = []
+			else:
+				arena_ref.hazards = []
+
+		var aw = 1000.0
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("width"): aw = arena_ref["width"]
+		elif typeof(arena_ref) == TYPE_OBJECT and "width" in arena_ref: aw = arena_ref.width
+
+		var ah = 1000.0
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("height"): ah = arena_ref["height"]
+		elif typeof(arena_ref) == TYPE_OBJECT and "height" in arena_ref: ah = arena_ref.height
+
+		var hazards_list = []
+		if typeof(arena_ref) == TYPE_DICTIONARY: hazards_list = arena_ref["hazards"]
+		else: hazards_list = arena_ref.hazards
+
+		spawn_timer += delta
+		if spawn_timer >= 4.0:
+			spawn_timer = 0.0
+			var side = randi() % 4
+
+			var r = 60.0
+			var hx = 0.0
+			var hy = 0.0
+			var hvx = 0.0
+			var hvy = 0.0
+
+			var speed = randf_range(50.0, 150.0)
+
+			if side == 0:
+				hx = randf_range(0, aw)
+				hy = -r
+				hvy = speed
+			elif side == 1:
+				hx = randf_range(0, aw)
+				hy = ah + r
+				hvy = -speed
+			elif side == 2:
+				hx = -r
+				hy = randf_range(0, ah)
+				hvx = speed
+			elif side == 3:
+				hx = aw + r
+				hy = randf_range(0, ah)
+				hvx = -speed
+
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+			var wall = null
+			if ProceduralArenaScript and "Hazard" in ProceduralArenaScript:
+				wall = ProceduralArenaScript.Hazard.new("moving_wall_" + str(randi() % 10000), hx, hy, r, "moving_wall", 30.0)
+				if wall.has_method("set_meta"):
+					wall.set_meta("vx", hvx)
+					wall.set_meta("vy", hvy)
+			else:
+				wall = {"id": "moving_wall_" + str(randi() % 10000), "x": hx, "y": hy, "radius": r, "kind": "moving_wall", "damage": 30.0, "active": true}
+				wall["vx"] = hvx
+				wall["vy"] = hvy
+
+			hazards_list.append(wall)
+
+		var hazards_to_remove = []
+		for h in hazards_list:
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+			elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+
+			if kind == "moving_wall":
+				var hx = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("x"): hx = h["x"]
+				elif typeof(h) == TYPE_OBJECT and "x" in h: hx = h.x
+
+				var hy = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("y"): hy = h["y"]
+				elif typeof(h) == TYPE_OBJECT and "y" in h: hy = h.y
+
+				var hr = 50.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("radius"): hr = h["radius"]
+				elif typeof(h) == TYPE_OBJECT and "radius" in h: hr = h.radius
+
+				var hvx = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("vx"): hvx = h["vx"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("vx"): hvx = h.get_meta("vx")
+
+				var hvy = 0.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("vy"): hvy = h["vy"]
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("vy"): hvy = h.get_meta("vy")
+
+				var h_damage = 20.0
+				if typeof(h) == TYPE_DICTIONARY and h.has("damage"): h_damage = h["damage"]
+				elif typeof(h) == TYPE_OBJECT and "damage" in h: h_damage = h.damage
+
+				var new_x = hx + hvx * delta
+				var new_y = hy + hvy * delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = new_x
+					h["y"] = new_y
+				else:
+					if "x" in h: h.x = new_x
+					elif h.has_method("set"): h.set("x", new_x)
+					if "y" in h: h.y = new_y
+					elif h.has_method("set"): h.set("y", new_y)
+
+				var margin = hr * 2.0
+				if new_x < -margin or new_x > aw + margin or new_y < -margin or new_y > ah + margin:
+					hazards_to_remove.append(h)
+					continue
+
+				for b in balls:
+					if not b.alive:
+						continue
+
+					var bx = b.x
+					var by = b.y
+					var br = b.radius
+
+					var dist_sq = (new_x - bx) * (new_x - bx) + (new_y - by) * (new_y - by)
+					if dist_sq < (hr + br) * (hr + br):
+						if world.has("_deal_damage"):
+							world._deal_damage(h, b, h_damage * delta)
+
+						var dist = sqrt(dist_sq)
+						if dist > 0.001:
+							var nx = (bx - new_x) / dist
+							var ny = (by - new_y) / dist
+							var overlap = (hr + br) - dist
+							b.x = bx + nx * overlap
+							b.y = by + ny * overlap
+
+							if "vx" in b and "vy" in b:
+								b.vx += nx * 50.0
+								b.vy += ny * 50.0
+
+		for h in hazards_to_remove:
+			hazards_list.erase(h)
 
 class BouncingProjectilesMutatorMode extends GameMode:
 	func _init():
