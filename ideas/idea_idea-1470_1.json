@@ -1,0 +1,4 @@
+{
+  "title": "Sunlight Collector Core",
+  "description": "An interactive arena object that absorbs active sunlight beams, converting their energy to periodically heal all nearby balls or buffing their next attacks."
+}

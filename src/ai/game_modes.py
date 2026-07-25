@@ -14371,6 +14371,52 @@ class DayNightMode(GameMode):
                 fx, fy = beam['x'], beam['y']
                 beam_radius = beam['radius']
 
+                # Check interaction with sunlight prisms
+                if 'bounced_prisms' not in beam:
+                    beam['bounced_prisms'] = set()
+
+                prism_bounced = False
+                for hazard in getattr(world.arena, "hazards", []):
+                    hk = getattr(hazard, "kind", "") if not isinstance(hazard, dict) else hazard.get("kind", "")
+                    if hk == "deployable_sunlight_prism":
+                        hx = getattr(hazard, "x", 0.0) if not isinstance(hazard, dict) else hazard.get("x", 0.0)
+                        hy = getattr(hazard, "y", 0.0) if not isinstance(hazard, dict) else hazard.get("y", 0.0)
+                        hr = getattr(hazard, "radius", 25.0) if not isinstance(hazard, dict) else hazard.get("radius", 25.0)
+                        hid = id(hazard) if not isinstance(hazard, dict) else str(hazard)
+
+                        dist_sq = (fx - hx)**2 + (fy - hy)**2
+                        if dist_sq < (beam_radius + hr)**2 and hid not in beam['bounced_prisms']:
+                            beam['bounced_prisms'].add(hid)
+                            prism_bounced = True
+
+                            # Split beam into two smaller beams
+                            import random
+                            import math
+                            angle1 = random.uniform(0, 2 * math.pi)
+                            angle2 = angle1 + math.pi + random.uniform(-0.5, 0.5)
+
+                            new_r = max(10.0, beam_radius * 0.7)
+                            new_x1 = hx + math.cos(angle1) * (hr + new_r + 5.0)
+                            new_y1 = hy + math.sin(angle1) * (hr + new_r + 5.0)
+                            new_x2 = hx + math.cos(angle2) * (hr + new_r + 5.0)
+                            new_y2 = hy + math.sin(angle2) * (hr + new_r + 5.0)
+
+                            b1 = {'x': new_x1, 'y': new_y1, 'radius': new_r, 'duration': beam['duration'], 'bounced_prisms': set([hid])}
+                            b2 = {'x': new_x2, 'y': new_y2, 'radius': new_r, 'duration': beam['duration'], 'bounced_prisms': set([hid])}
+
+                            self.active_sunlight_beams.append(b1)
+                            self.active_sunlight_beams.append(b2)
+
+                            # End current beam early to simulate splitting
+                            beam['duration'] = 0.0
+
+                            if hasattr(world, "add_event"):
+                                world.add_event("visual_effect", {"type": "sunlight_prism_split", "x": hx, "y": hy, "radius": hr})
+                            break
+
+                if prism_bounced:
+                    continue
+
                 for b in balls:
                     if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                         continue

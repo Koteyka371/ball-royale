@@ -22192,6 +22192,68 @@ class DayNightMode extends GameMode:
 				var fy = beam["y"]
 				var beam_radius = beam["radius"]
 
+				if not beam.has("bounced_prisms"):
+					beam["bounced_prisms"] = []
+
+				var prism_bounced = false
+				var hazards = []
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					hazards = world.arena.hazards
+				elif typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+					hazards = world.arena.hazards
+
+				for hazard in hazards:
+					var hk = ""
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hk = hazard.get("kind", "")
+					elif typeof(hazard) == TYPE_OBJECT:
+						hk = hazard.get("kind") if "kind" in hazard else ""
+
+					if hk == "deployable_sunlight_prism":
+						var hx = 0.0
+						var hy = 0.0
+						var hr = 25.0
+						var hid = str(hazard)
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hx = hazard.get("x", 0.0)
+							hy = hazard.get("y", 0.0)
+							hr = hazard.get("radius", 25.0)
+							if hazard.has("id"): hid = str(hazard.id)
+						elif typeof(hazard) == TYPE_OBJECT:
+							hx = hazard.get("x") if "x" in hazard else 0.0
+							hy = hazard.get("y") if "y" in hazard else 0.0
+							hr = hazard.get("radius") if "radius" in hazard else 25.0
+							if "id" in hazard: hid = str(hazard.id)
+
+						var dist_sq = (fx - hx) * (fx - hx) + (fy - hy) * (fy - hy)
+						if dist_sq < (beam_radius + hr) * (beam_radius + hr) and not beam["bounced_prisms"].has(hid):
+							beam["bounced_prisms"].append(hid)
+							prism_bounced = true
+
+							var angle1 = randf() * 2.0 * PI
+							var angle2 = angle1 + PI + randf() * 1.0 - 0.5
+
+							var new_r = max(10.0, beam_radius * 0.7)
+							var new_x1 = hx + cos(angle1) * (hr + new_r + 5.0)
+							var new_y1 = hy + sin(angle1) * (hr + new_r + 5.0)
+							var new_x2 = hx + cos(angle2) * (hr + new_r + 5.0)
+							var new_y2 = hy + sin(angle2) * (hr + new_r + 5.0)
+
+							var b1 = {"x": new_x1, "y": new_y1, "radius": new_r, "duration": beam["duration"], "bounced_prisms": [hid]}
+							var b2 = {"x": new_x2, "y": new_y2, "radius": new_r, "duration": beam["duration"], "bounced_prisms": [hid]}
+
+							active_sunlight_beams.append(b1)
+							active_sunlight_beams.append(b2)
+
+							beam["duration"] = 0.0
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("visual_effect", {"type": "sunlight_prism_split", "x": hx, "y": hy, "radius": hr})
+							break
+
+				if prism_bounced:
+					continue
+
 				for b in balls:
 					if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
 						continue

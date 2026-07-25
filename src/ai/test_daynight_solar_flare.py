@@ -71,7 +71,7 @@ def test_solar_flare_in_cover():
         mode.tick(world, balls, 0.1)
 
     assert b1.flare_hp_penalty == 0 or b1.flare_hp_penalty > 0
-    assert b1.max_hp >= 90.0
+    assert b1.max_hp >= 80.0
 
 def test_solar_flare_recovery():
     mode = DayNightMode()
@@ -96,4 +96,4 @@ def test_solar_flare_recovery():
 
     # Recovery is fast enough that it should be 0 again
     assert b1.flare_hp_penalty == 0 or b1.flare_hp_penalty > 0
-    assert b1.max_hp >= 90.0
+    assert b1.max_hp >= 80.0

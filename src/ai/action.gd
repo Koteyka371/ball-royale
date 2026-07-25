@@ -8512,6 +8512,24 @@ func execute(strategy: String, delta: float):
 							if "id" in self.ball: p_puddle.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_puddle)
 
+		if inv.has("deployable_sunlight_prism"):
+			var nearest = _get_nearest_enemy()
+			if nearest != null:
+				var dist = sqrt(pow(self.ball.x - nearest.x, 2) + pow(self.ball.y - nearest.y, 2))
+				if dist < 400:
+					inv.erase("deployable_sunlight_prism")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+					elif "inventory" in self.ball: self.ball.inventory = inv
+					if world != null and "arena" in world and "hazards" in world.arena:
+						var arena = world.arena
+						var prism_id = str(arena.hazards.size()) + "_" + str(world.tick if "tick" in world else 0) + "_prism"
+						var prism = null
+						if load("res://src/arena/procedural_arena.gd") != null:
+							prism = load("res://src/arena/procedural_arena.gd").Hazard.new(prism_id, self.ball.x, self.ball.y, 25.0, "deployable_sunlight_prism", 0.0)
+							prism.set_meta("duration", 20.0)
+							if "id" in self.ball: prism.set_meta("owner_id", self.ball.id)
+							arena.hazards.append(prism)
+
 
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
@@ -8553,6 +8571,24 @@ func execute(strategy: String, delta: float):
 							p_puddle.set_meta("duration", 10.0)
 							if "id" in self.ball: p_puddle.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_puddle)
+
+		if inv.has("deployable_sunlight_prism"):
+			var nearest = _get_nearest_enemy()
+			if nearest != null:
+				var dist = sqrt(pow(self.ball.x - nearest.x, 2) + pow(self.ball.y - nearest.y, 2))
+				if dist < 400:
+					inv.erase("deployable_sunlight_prism")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+					elif "inventory" in self.ball: self.ball.inventory = inv
+					if world != null and "arena" in world and "hazards" in world.arena:
+						var arena = world.arena
+						var prism_id = str(arena.hazards.size()) + "_" + str(world.tick if "tick" in world else 0) + "_prism"
+						var prism = null
+						if load("res://src/arena/procedural_arena.gd") != null:
+							prism = load("res://src/arena/procedural_arena.gd").Hazard.new(prism_id, self.ball.x, self.ball.y, 25.0, "deployable_sunlight_prism", 0.0)
+							prism.set_meta("duration", 20.0)
+							if "id" in self.ball: prism.set_meta("owner_id", self.ball.id)
+							arena.hazards.append(prism)
 
 
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
@@ -25844,7 +25880,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_sunlight_prism']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
