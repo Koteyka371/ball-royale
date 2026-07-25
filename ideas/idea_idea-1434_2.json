@@ -1,0 +1,4 @@
+{
+  "title": "Chain Lightning Trap",
+  "description": "A trap that connects not only to other traps, but also cascades to nearby enemies within a short radius, dealing stacking damage for each connected entity."
+}
