@@ -25329,7 +25329,7 @@
     },
     {
       "id": "idea-1479",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Mines",
@@ -37002,6 +37002,40 @@
         "src/ai/horizon_field.py",
         "src/ai/horizon_field.gd",
         "tests/test_horizon_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2165",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Mirage Booster",
+      "description": "A consumable booster that gives the player a 'Mirror Mirage' buff. When taking fatal damage, the damage is negated, a decoy is spawned, and the player is teleported to a random location in the arena.",
+      "allowed_paths": [
+        "src/ai/mirror_mirage_booster.py",
+        "src/ai/mirror_mirage_booster.gd",
+        "tests/test_mirror_mirage_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2166",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Entropy Field",
+      "description": "A hazard that slowly heals the player, but makes their active cooldowns go backwards, meaning if they just used an ability, the cooldown duration will increase up to the maximum instead of recovering.",
+      "allowed_paths": [
+        "src/ai/reverse_entropy_field.py",
+        "src/ai/reverse_entropy_field.gd",
+        "tests/test_reverse_entropy_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

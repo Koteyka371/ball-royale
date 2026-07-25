@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1479] Chain Reaction Mines — *2026-07-25 06:25:45 UTC*
+
+A cluster of proximity mines that arm over 3 seconds. When one mine detonates, it triggers an explosion that forces nearby mines to detonate as well, creating a cascading blast effect that covers a huge area. Players can trigger it intentionally by throwing items or using ranged attacks.
+
+---
+
 ## [idea-1478] Quantum Decay Hazard — *2026-07-25 06:09:45 UTC*
 
 A hazard zone that doesn't damage players directly, but rapidly drains their cooldown timers, making their abilities recharge much faster, at the cost of draining their current stamina or slightly slowing them down. It creates risk/reward spots on the map.
