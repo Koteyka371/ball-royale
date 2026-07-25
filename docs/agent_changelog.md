@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1476] Moving Walls Hazard — *2026-07-25 06:42:21 UTC*
+
+Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage.
+
+---
+
 ## [idea-1479] Chain Reaction Mines — *2026-07-25 06:25:45 UTC*
 
 A cluster of proximity mines that arm over 3 seconds. When one mine detonates, it triggers an explosion that forces nearby mines to detonate as well, creating a cascading blast effect that covers a huge area. Players can trigger it intentionally by throwing items or using ranged attacks.

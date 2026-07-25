@@ -25278,7 +25278,7 @@
     },
     {
       "id": "idea-1476",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Moving Walls Hazard",
@@ -37036,6 +37036,23 @@
         "src/ai/reverse_entropy_field.py",
         "src/ai/reverse_entropy_field.gd",
         "tests/test_reverse_entropy_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2167",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Healing Clusters",
+      "description": "Instead of explosive mines, the player can deploy a cluster of healing orbs that arm over time and restore health to allies who touch them or pass near them.",
+      "allowed_paths": [
+        "src/ai/healing_clusters.py",
+        "src/ai/healing_clusters.gd",
+        "tests/test_healing_clusters.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
