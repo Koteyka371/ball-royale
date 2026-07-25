@@ -1502,6 +1502,15 @@ class Action:
                                     self.radius = radius
                                     self.kind = kind
                                     self.damage = damage
+
+                            # Check if the decoy was killed (takes 1 damage)
+                            if getattr(next_entity, "kind", "") == "mirage_decoy":
+                                duration = getattr(next_entity, "duration", 0.0)
+                                damage = getattr(self.ball, "damage", 10.0)
+                                # Mirage decoys instantly die if they take any damage >= 1.0
+                                if damage >= 1.0:
+                                    next_entity.duration = 0.0 # Force destroy
+
                             emp = Hazard(
                                 id=21000 + len(self.world.arena.hazards),
                                 x=next_entity.x,
@@ -1763,6 +1772,30 @@ class Action:
                         # Check collision with enemies
                         owner_id = getattr(h, "owner_id", None)
                         team = getattr(h, "team", None)
+
+                        # Find owner to mimic their movements
+                        owner = None
+                        if owner_id is not None and hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "id", None) == owner_id:
+                                    owner = b
+                                    break
+
+                        if getattr(h, "kind", "") == "mirage_decoy" and owner is not None and getattr(owner, "alive", False):
+                            # Mimic owner's movement
+                            vx = getattr(owner, "vx", 0.0)
+                            vy = getattr(owner, "vy", 0.0)
+                            if vx != 0.0 or vy != 0.0:
+                                h.x += vx * delta
+                                h.y += vy * delta
+
+                                # Keep within bounds
+                                arena_width = getattr(self.world.arena, "width", 1000.0)
+                                arena_height = getattr(self.world.arena, "height", 1000.0)
+                                r = getattr(h, "radius", 10.0)
+                                h.x = max(r, min(arena_width - r, h.x))
+                                h.y = max(r, min(arena_height - r, h.y))
+
                         if hasattr(self.world, "balls"):
                             for b in getattr(self.world, "balls", []):
                                 if getattr(b, "id", None) != owner_id and getattr(b, "team", None) != team and getattr(b, "alive", True):

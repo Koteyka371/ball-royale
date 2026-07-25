@@ -22694,6 +22694,46 @@ class DayNightMode extends GameMode:
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
+					for b in balls:
+						var balive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							balive = b.get("alive", false)
+						else:
+							balive = b.get("alive") if "alive" in b else false
+						var btype = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							btype = b.get("ball_type", "")
+						else:
+							btype = b.get_meta("ball_type") if b.has_method("get_meta") and b.has_meta("ball_type") else (b.ball_type if "ball_type" in b else "")
+
+						if balive and btype != "spectator":
+							var b_x = b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x") else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else (b.x if typeof(b) == TYPE_OBJECT and "x" in b else 0.0))
+							var b_y = b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y") else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else (b.y if typeof(b) == TYPE_OBJECT and "y" in b else 0.0))
+
+							var dx = b_x - fx
+							var dy = b_y - fy
+							var dist_sq = dx * dx + dy * dy
+
+							if dist_sq <= shadow_radius * shadow_radius:
+								var target_b = b
+								var b_id = target_b.get_meta("id") if typeof(target_b) == TYPE_OBJECT and target_b.has_method("get_meta") and target_b.has_meta("id") else (target_b["id"] if typeof(target_b) == TYPE_DICTIONARY and target_b.has("id") else (target_b.id if typeof(target_b) == TYPE_OBJECT and "id" in target_b else 0))
+								var b_team = target_b.get_meta("team") if typeof(target_b) == TYPE_OBJECT and target_b.has_method("get_meta") and target_b.has_meta("team") else (target_b["team"] if typeof(target_b) == TYPE_DICTIONARY and target_b.has("team") else (target_b.team if typeof(target_b) == TYPE_OBJECT and "team" in target_b else ""))
+								var b_radius = target_b.get_meta("radius") if typeof(target_b) == TYPE_OBJECT and target_b.has_method("get_meta") and target_b.has_meta("radius") else (target_b["radius"] if typeof(target_b) == TYPE_DICTIONARY and target_b.has("radius") else (target_b.radius if typeof(target_b) == TYPE_OBJECT and "radius" in target_b else 10.0))
+
+								var mirage = {
+									"id": 20000 + world.arena.hazards.size(),
+									"x": fx,
+									"y": fy,
+									"radius": b_radius,
+									"kind": "mirage_decoy",
+									"damage": 0.0,
+									"duration": 4.0,
+									"owner_id": b_id,
+									"team": b_team
+								}
+								if "hazards" in world.arena:
+									world.arena.hazards.append(mirage)
+
 			if is_night:
 				var shadow_monsters = []
 				for b in balls:

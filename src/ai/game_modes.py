@@ -14619,6 +14619,34 @@ class DayNightMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("visual_effect", {"type": "moonlight_shadow", "x": fx, "y": fy, "radius": shadow_radius, "duration": 4.0})
 
+                    # Spawn a mirage of players inside the shadow
+                    if getattr(world, "balls", []):
+                        for target in world.balls:
+                            if getattr(target, "alive", False) and getattr(target, "ball_type", None) != "spectator":
+                                dist_sq = (target.x - fx)**2 + (target.y - fy)**2
+                                if dist_sq <= shadow_radius**2:
+                                    class Hazard:
+                                        def __init__(self, id, x, y, radius, kind, damage):
+                                            self.id = id
+                                            self.x = x
+                                            self.y = y
+                                            self.radius = radius
+                                            self.kind = kind
+                                            self.damage = damage
+                                    if hasattr(world.arena, "hazards"):
+                                        mirage = Hazard(
+                                            id=20000 + len(world.arena.hazards),
+                                            x=fx,
+                                            y=fy,
+                                            radius=getattr(target, "radius", 10.0),
+                                            kind="mirage_decoy",
+                                            damage=0.0
+                                        )
+                                        setattr(mirage, "duration", 4.0)
+                                        setattr(mirage, "owner_id", getattr(target, "id", None))
+                                        setattr(mirage, "team", getattr(target, "team", None))
+                                        world.arena.hazards.append(mirage)
+
             # Sunlight beams only during the day spawn
 
             # Manage shadow monsters during night
