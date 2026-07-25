@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Singularity Trap",
+  "description": "A new hazard that occasionally spawns in the arena. It sucks nearby players towards its center, slowing them down. If a player is pulled into the singularity, they are teleported to a random location in the arena, potentially right next to a high-damage hazard or an aggressive enemy."
+}
