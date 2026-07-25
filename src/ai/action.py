@@ -7285,6 +7285,50 @@ class Action:
                                                     other_hazard.vx = (dx / dist) * speed
                                                     other_hazard.vy = (dy / dist) * speed
 
+
+                    elif hazard.kind == "electric_beam_trap":
+                        hazard_is_active = getattr(hazard, "active", True)
+                        hazard_team = getattr(hazard, "team", "")
+                        my_team = getattr(self.ball, "team", "")
+
+                        if hazard_is_active and hazard_team != my_team:
+                            # 1. Direct collision with trap node deals tiny damage and drain
+                            dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                            if dist_sq < (getattr(hazard, "radius", 20.0) + self.ball.radius)**2:
+                                drain_rate = 50.0 * delta
+                                if hasattr(self.ball, "stamina"):
+                                    self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+                                if hasattr(self.ball, "hp"):
+                                    self.ball.hp -= 2.0 * delta
+
+                            # 2. Line collision between connected nodes
+                            for other_h in getattr(self.world.arena, "hazards", []):
+                                if other_h != hazard and getattr(other_h, "kind", "") == "electric_beam_trap":
+                                    if getattr(other_h, "team", "") == hazard_team:
+                                        # Max connection distance
+                                        node_dist_sq = (other_h.x - hazard.x)**2 + (other_h.y - hazard.y)**2
+                                        if node_dist_sq < 90000: # 300^2
+                                            # Line segment distance
+                                            x1, y1 = hazard.x, hazard.y
+                                            x2, y2 = other_h.x, other_h.y
+                                            px, py = self.ball.x, self.ball.y
+
+                                            l2 = (x1 - x2)**2 + (y1 - y2)**2
+                                            if l2 == 0:
+                                                dist = math.hypot(px - x1, py - y1)
+                                            else:
+                                                t = max(0, min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2))
+                                                proj_x = x1 + t * (x2 - x1)
+                                                proj_y = y1 + t * (y2 - y1)
+                                                dist = math.hypot(px - proj_x, py - proj_y)
+
+                                            if dist < self.ball.radius + 5.0: # beam width
+                                                drain_rate = 40.0 * delta
+                                                if hasattr(self.ball, "stamina"):
+                                                    self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+                                                if hasattr(self.ball, "hp"):
+                                                    self.ball.hp -= 5.0 * delta
+
                     elif hazard.kind == "bounty_trap":
                         hazard_is_active = getattr(hazard, "active", True)
                         hazard_team = getattr(hazard, "team", "")
@@ -13273,7 +13317,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -18288,6 +18332,24 @@ class Action:
                     node.pulse_active_timer = 0.0
                     node.owner_id = self.ball.id
                     self.world.arena.hazards.append(node)
+
+
+            elif skill_name == "deploy_electric_beam_trap":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class ElectricBeamTrapNode:
+                        pass
+                    node = ElectricBeamTrapNode()
+                    node.id = f"electric_beam_trap_{self.ball.id}_{getattr(self.world, 'tick', 0)}"
+                    node.kind = "electric_beam_trap"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 20.0
+                    node.owner_id = getattr(self.ball, "id", None)
+                    node.team = getattr(self.ball, "team", "")
+                    node.duration = 15.0
+                    node.active = True
+                    self.world.arena.hazards.append(node)
+                self.ball.skill_timer = 15.0
 
             elif skill_name == "bounty_trap":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):

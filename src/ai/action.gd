@@ -13778,6 +13778,53 @@ func execute(strategy: String, delta: float):
                                                     other_hazard.set("vx", (dx / dist) * speed)
                                                     other_hazard.set("vy", (dy / dist) * speed)
 
+
+                elif hazard.kind == "electric_beam_trap":
+                    var hazard_is_active = hazard.get("active", true)
+                    var hazard_team = hazard.get("team", "")
+                    var my_team = self.ball.get("team", "")
+
+                    if hazard_is_active and hazard_team != my_team:
+                        var dist_sq = pow(hazard.x - self.ball.x, 2) + pow(hazard.y - self.ball.y, 2)
+                        var h_rad = hazard.get("radius", 20.0)
+                        if dist_sq < pow(h_rad + self.ball.get("radius", 10.0), 2):
+                            var drain_rate = 50.0 * delta
+                            if self.ball.has("stamina"):
+                                self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+                            if self.ball.has("hp"):
+                                self.ball.hp -= 2.0 * delta
+
+                        var arena = self.world.get("arena", {})
+                        var haz_arr = arena.get("hazards", [])
+                        for other_h in haz_arr:
+                            if typeof(other_h) == TYPE_DICTIONARY and other_h != hazard and other_h.get("kind", "") == "electric_beam_trap":
+                                if other_h.get("team", "") == hazard_team:
+                                    var node_dist_sq = pow(other_h.x - hazard.x, 2) + pow(other_h.y - hazard.y, 2)
+                                    if node_dist_sq < 90000.0:
+                                        var x1 = hazard.x
+                                        var y1 = hazard.y
+                                        var x2 = other_h.x
+                                        var y2 = other_h.y
+                                        var px = self.ball.x
+                                        var py = self.ball.y
+
+                                        var l2 = pow(x1 - x2, 2) + pow(y1 - y2, 2)
+                                        var dist = 0.0
+                                        if l2 == 0.0:
+                                            dist = sqrt(pow(px - x1, 2) + pow(py - y1, 2))
+                                        else:
+                                            var t = max(0.0, min(1.0, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2))
+                                            var proj_x = x1 + t * (x2 - x1)
+                                            var proj_y = y1 + t * (y2 - y1)
+                                            dist = sqrt(pow(px - proj_x, 2) + pow(py - proj_y, 2))
+
+                                        if dist < self.ball.get("radius", 10.0) + 5.0:
+                                            var drain_rate = 40.0 * delta
+                                            if self.ball.has("stamina"):
+                                                self.ball.stamina = max(0.0, self.ball.stamina - drain_rate)
+                                            if self.ball.has("hp"):
+                                                self.ball.hp -= 5.0 * delta
+
                 elif hazard.kind == "bounty_trap":
                     var is_active = true
                     if typeof(hazard) == TYPE_DICTIONARY:
@@ -34456,6 +34503,22 @@ func _use_skill():
                     "owner_id": bid
                 }
                 self.world.arena.hazards.append(node)
+
+
+        elif skill_name == "deploy_electric_beam_trap":
+            if self.world.has("arena") and self.world.arena.has("hazards"):
+                var node = {}
+                node["id"] = "electric_beam_trap_" + str(self.ball.get("id", "")) + "_" + str(self.world.get("tick", 0))
+                node["kind"] = "electric_beam_trap"
+                node["x"] = self.ball.x
+                node["y"] = self.ball.y
+                node["radius"] = 20.0
+                node["owner_id"] = self.ball.get("id", null)
+                node["team"] = self.ball.get("team", "")
+                node["duration"] = 15.0
+                node["active"] = true
+                self.world.arena.hazards.append(node)
+            self.ball.skill_timer = 15.0
 
         elif skill_name == "bounty_trap":
             if typeof(self.world) == TYPE_OBJECT and self.world.has("arena") and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
