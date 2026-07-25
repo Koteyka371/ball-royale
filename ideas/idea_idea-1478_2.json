@@ -1,0 +1,4 @@
+{
+    "title": "Gravity Mine Trap",
+    "description": "A deployable 'gravity_mine_trap' that stays invisible until an enemy is near, at which point it activates a temporary intense gravity well that pulls enemies in rapidly and deals damage."
+}

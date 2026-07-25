@@ -1,0 +1,4 @@
+{
+    "title": "Stamina Transfer Link",
+    "description": "A new 'stamina_transfer_link' booster that when applied allows a ball to drain stamina from a linked enemy and add it to themselves, reducing the enemy's ability to use movement abilities."
+}
