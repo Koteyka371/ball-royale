@@ -24699,7 +24699,7 @@
     },
     {
       "id": "idea-1442",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Vacuum Item",
@@ -36951,6 +36951,40 @@
         "src/ai/gold_rush.py",
         "src/ai/gold_rush.gd",
         "tests/test_gold_rush.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2162",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Singularity Trap",
+      "description": "A stationary trap that periodically pulses and pulls all enemies towards its center with increasing gravitational force. If an enemy stays in the center for too long, they are crushed for massive damage.",
+      "allowed_paths": [
+        "src/arena/black_hole_singularity_trap.py",
+        "src/arena/black_hole_singularity_trap.gd",
+        "tests/test_black_hole_singularity_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2163",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Stamina Transfer Link",
+      "description": "A new 'stamina_transfer_link' booster that when applied allows a ball to drain stamina from a linked enemy and add it to themselves, reducing the enemy's ability to use movement abilities.",
+      "allowed_paths": [
+        "src/ai/stamina_transfer_link.py",
+        "src/ai/stamina_transfer_link.gd",
+        "tests/test_stamina_transfer_link.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1442] Black Hole Vacuum Item — *2026-07-25 05:32:48 UTC*
+
+A consumable item that drops a miniature black hole. It slowly pulls in hazards and projectiles, effectively clearing the area, before violently exploding and throwing all collected hazards back out in random directions.
+
+---
+
 ## [idea-1435] EMP Overload — *2026-07-25 04:54:22 UTC*
 
 A new hazard that detonates and strips all buffs (like supercharge and overcharge) from enemies in the blast radius, but gives them a small speed burst for fleeing.
