@@ -25414,7 +25414,7 @@
     },
     {
       "id": "idea-1484",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Market Auction",
@@ -36917,6 +36917,23 @@
         "src/ai/black_hole_and_gravity_well_synergy.py",
         "src/ai/black_hole_and_gravity_well_synergy.gd",
         "tests/test_black_hole_and_gravity_well_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2160",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Double Jeopardy Bounty",
+      "description": "If a bounty target manages to kill 3 other players while the bounty is active, the bounty is removed and they receive a massive burst of healing, score, and skill points as a reward for surviving the manhunt.",
+      "allowed_paths": [
+        "src/ai/double_jeopardy_bounty.py",
+        "src/ai/double_jeopardy_bounty.gd",
+        "tests/test_double_jeopardy_bounty.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
