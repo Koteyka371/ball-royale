@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1457] Sticky web traps — *2026-07-25 20:26:12 UTC*
+
+New trap variant that slows balls within a web-like radius.
+
+---
+
 ## [idea-1485] Kinetic Overload Mutator — *2026-07-25 20:26:08 UTC*
 
 A new mutator/buff that accumulates kinetic energy based on distance traveled. The more a player moves without stopping, the higher their next collision or attack damage becomes, culminating in an AoE kinetic blast if they maintain maximum speed for over 5 seconds.
