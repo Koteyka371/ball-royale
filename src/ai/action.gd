@@ -5225,15 +5225,18 @@ func execute(strategy: String, delta: float):
 		self.ball["slow_motion_zone_active"] = false
 		self.ball["fast_motion_zone_active"] = false
 		self.ball["time_bubble_active"] = false
+		self.ball["overdrive_zone_active"] = false
 	else:
 		if self.ball.has_method("set_meta"):
 			self.ball.set_meta("slow_motion_zone_active", false)
 			self.ball.set_meta("fast_motion_zone_active", false)
 			self.ball.set_meta("time_bubble_active", false)
+			self.ball.set_meta("overdrive_zone_active", false)
 		else:
 			self.ball.slow_motion_zone_active = false
 			self.ball.fast_motion_zone_active = false
 			self.ball.time_bubble_active = false
+			self.ball.overdrive_zone_active = false
 
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		c_active = self.ball.get("charging_shockwave_shield_active", false)
@@ -5884,7 +5887,54 @@ func execute(strategy: String, delta: float):
 							else:
 								self.ball.speed_multiplier = cur_speed_mult * 0.25
 
-				if kind == "slow_motion_zone":
+				if kind == "overdrive_zone":
+					var hx = hazard.x if "x" in hazard else (hazard["x"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("x"))
+					var hy = hazard.y if "y" in hazard else (hazard["y"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("y"))
+					var h_rad = hazard.radius if "radius" in hazard else (hazard["radius"] if typeof(hazard) == TYPE_DICTIONARY else (hazard.get_meta("radius") if hazard.has_method("get_meta") and hazard.has_meta("radius") else 50.0))
+					var h_active = hazard.active if "active" in hazard else (hazard["active"] if typeof(hazard) == TYPE_DICTIONARY else (hazard.get_meta("active") if hazard.has_method("get_meta") and hazard.has_meta("active") else true))
+					var dx = hx - self.ball.x
+					var dy = hy - self.ball.y
+					if sqrt(dx*dx + dy*dy) <= h_rad and h_active:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["overdrive_zone_active"] = true
+						else:
+							if self.ball.has_method("set_meta"):
+								self.ball.set_meta("overdrive_zone_active", true)
+							else:
+								self.ball.overdrive_zone_active = true
+
+						var current_stam = 0.0
+						var has_stam = false
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("stamina"):
+							current_stam = self.ball["stamina"]
+							has_stam = true
+						elif typeof(self.ball) == TYPE_OBJECT:
+							if "stamina" in self.ball:
+								current_stam = self.ball.stamina
+								has_stam = true
+							elif self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+								current_stam = self.ball.get_meta("stamina")
+								has_stam = true
+
+						if has_stam:
+							var new_stam = max(0.0, current_stam - 20.0 * delta)
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["stamina"] = new_stam
+							else:
+								if "stamina" in self.ball:
+									self.ball.stamina = new_stam
+								elif self.ball.has_method("set_meta"):
+									self.ball.set_meta("stamina", new_stam)
+
+							if new_stam <= 0.0:
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"):
+									var base_speed = self.ball.get("base_speed", 100.0)
+									self.ball["speed"] = base_speed * 0.75
+								elif typeof(self.ball) == TYPE_OBJECT:
+									if "speed" in self.ball:
+										var base_speed = self.ball.base_speed if "base_speed" in self.ball else 100.0
+										self.ball.speed = base_speed * 0.75
+				elif kind == "slow_motion_zone":
 					var hx = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = hazard["x"]
 					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: hx = hazard.x
@@ -41023,11 +41073,22 @@ func _update_skill_timer(delta: float):
     elif typeof(self.ball) == TYPE_OBJECT and "time_bubble_active" in self.ball:
         tba_active = self.ball.time_bubble_active
 
+    var odz_active = false
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("overdrive_zone_active"):
+        odz_active = self.ball.get("overdrive_zone_active", false)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("overdrive_zone_active"):
+        odz_active = self.ball.get_meta("overdrive_zone_active")
+    elif typeof(self.ball) == TYPE_OBJECT and "overdrive_zone_active" in self.ball:
+        odz_active = self.ball.overdrive_zone_active
+
     if tba_active:
         cooldown_mult *= 0.25
 
     if smz_active:
         cooldown_mult *= 0.5
+
+    if odz_active:
+        cooldown_mult *= 3.0
 
     var ignores_snow_ice = false
     var cosmetic = str(self.ball.get("cosmetic") if typeof(self.ball) == TYPE_OBJECT else self.ball.get("cosmetic", "")).to_lower().replace(" ", "_")

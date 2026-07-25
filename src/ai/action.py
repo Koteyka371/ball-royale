@@ -2524,6 +2524,7 @@ class Action:
         self.ball.slow_motion_zone_active = False
         self.ball.fast_motion_zone_active = False
         self.ball.time_bubble_active = False
+        self.ball.overdrive_zone_active = False
 
         # Sniper Nest
         self.ball.in_sniper_nest = False
@@ -2623,7 +2624,16 @@ class Action:
             # Bush stealth state
             self.ball.in_bush = False
             for hazard in self.world.arena.hazards:
-                if getattr(hazard, "kind", "") == "slow_motion_zone":
+                if getattr(hazard, "kind", "") == "overdrive_zone":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
+                        self.ball.overdrive_zone_active = True
+                        if hasattr(self.ball, "stamina"):
+                            self.ball.stamina = max(0.0, getattr(self.ball, "stamina", 0.0) - 20.0 * delta)
+                            if self.ball.stamina <= 0.0 and hasattr(self.ball, "speed"):
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.75
+                elif getattr(hazard, "kind", "") == "slow_motion_zone":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
                     if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0):
@@ -20916,6 +20926,8 @@ class Action:
             cooldown_mult *= 0.5
         elif getattr(self.ball, "fast_motion_zone_active", False):
             cooldown_mult *= 1.5
+        if getattr(self.ball, "overdrive_zone_active", False):
+            cooldown_mult *= 3.0
         ignores_snow_ice = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
         if is_snowing and not ignores_snow_ice:
             cooldown_mult *= 0.5  # Snow slows down cooldowns (longer wait)
