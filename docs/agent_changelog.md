@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1418] Quantum Echo Trait — *2026-07-25 23:01:58 UTC*
+
+Balls with the Quantum Echo trait leave behind a faint ghost of their past position every 3 seconds. Pressing their active skill immediately teleports them back to their most recent ghost, resetting their health to whatever it was at that exact moment. A high-skill mobility and sustain option.
+
+---
+
 ## [idea-1492] Volcanic Fissures — *2026-07-25 23:01:53 UTC*
 
 Create a new arena hazard type called 'volcanic_fissure' that slowly opens up over time. Once fully opened, it deals continuous fire damage and creates a smokescreen effect, reducing visibility for players inside.
