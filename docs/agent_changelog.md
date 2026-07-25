@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1487] Time Distortion Hazard — *2026-07-25 07:54:18 UTC*
+
+A hazard zone that sporadically slows down time for entities inside it but speeds up projectiles and hazards passing through it, forcing players to perfectly time their dodges.
+
+---
+
 ## [idea-1491] Geyser Jumping Boots — *2026-07-25 07:44:08 UTC*
 
 Add an item called 'Geyser Boots' that grants immunity to geyser damage and stun, but instead launches the player far across the map when standing on an erupting geyser.

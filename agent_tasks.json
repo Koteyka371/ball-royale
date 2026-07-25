@@ -25465,7 +25465,7 @@
     },
     {
       "id": "idea-1487",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Distortion Hazard",
@@ -37189,6 +37189,23 @@
         "src/ai/decoy_shield_swap.py",
         "src/ai/decoy_shield_swap.gd",
         "tests/test_decoy_shield_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2176",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Controller Item",
+      "description": "An extremely rare item that allows a player to instantly change the current arena weather condition to a random extreme weather type (like thunderstorm or tornado) upon activation.",
+      "allowed_paths": [
+        "src/ai/controller_item.py",
+        "src/ai/controller_item.gd",
+        "tests/test_controller_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
