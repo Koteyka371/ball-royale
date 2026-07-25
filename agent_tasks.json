@@ -25346,7 +25346,7 @@
     },
     {
       "id": "idea-1480",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skill Morphing",
@@ -36832,6 +36832,57 @@
         "src/ai/invisible_walls.py",
         "src/ai/invisible_walls.gd",
         "tests/test_invisible_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2155",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tracker Drone",
+      "description": "An active ability that deploys a small tracking drone which flies toward your current nemesis, highlighting them on the map and slightly slowing them when in range.",
+      "allowed_paths": [
+        "src/ai/nemesis_tracker_drone.py",
+        "src/ai/nemesis_tracker_drone.gd",
+        "tests/test_nemesis_tracker_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2156",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Trap Decoy",
+      "description": "A deployable decoy that appears on the map as a high-value bounty target, but detonates into an EMP explosion if attacked.",
+      "allowed_paths": [
+        "src/arena/bounty_trap_decoy.py",
+        "src/arena/bounty_trap_decoy.gd",
+        "tests/test_bounty_trap_decoy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2157",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather-Adaptive Maps",
+      "description": "Introduce dynamic weather-adaptive maps where the environment changes based on the current weather. For example, during a blizzard, lakes could freeze over, allowing balls to slide across them for increased speed, while heatwaves could dry up rivers, creating new pathways or hazards.",
+      "allowed_paths": [
+        "src/ai/adaptive_maps.py",
+        "src/ai/adaptive_maps.gd",
+        "tests/test_adaptive_maps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

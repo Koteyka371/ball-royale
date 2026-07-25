@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1480] Skill Morphing — *2026-07-25 01:07:52 UTC*
+
+If two projectable skills (like fireball and tornado) collide, they morph into a 'Firestorm' hazard that inherits properties of both and deals massive AOE damage.
+
+---
+
 ## [idea-1414] Nemesis Reversal Mode — *2026-07-25 00:40:35 UTC*
 
 A game mode where dealing damage to your nemesis actually heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle.
