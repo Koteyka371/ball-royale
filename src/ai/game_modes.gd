@@ -58167,10 +58167,35 @@ class WindstormEventMode extends GameMode:
 							if typeof(b) == TYPE_DICTIONARY:
 								b["vx"] = b.get("vx", 0.0) + push_dir_x * push_strength * delta
 								b["vy"] = b.get("vy", 0.0) + push_dir_y * push_strength * delta
+
+								var v_mag = sqrt(b["vx"] * b["vx"] + b["vy"] * b["vy"])
+								if v_mag > 0.01:
+									var dot = (b["vx"] / v_mag) * push_dir_x + (b["vy"] / v_mag) * push_dir_y
+									if dot > 0.3:
+										b["vx"] += push_dir_x * push_strength * dot * 2.0 * delta
+										b["vy"] += push_dir_y * push_strength * dot * 2.0 * delta
+										b["speed_boost_timer"] = b.get("speed_boost_timer", 0.0) + delta * 2.0
 							elif typeof(b) == TYPE_OBJECT:
 								if "vx" in b and "vy" in b:
 									b.vx += push_dir_x * push_strength * delta
 									b.vy += push_dir_y * push_strength * delta
+
+									var v_mag = sqrt(b.vx * b.vx + b.vy * b.vy)
+									if v_mag > 0.01:
+										var dot = (b.vx / v_mag) * push_dir_x + (b.vy / v_mag) * push_dir_y
+										if dot > 0.3:
+											b.vx += push_dir_x * push_strength * dot * 2.0 * delta
+											b.vy += push_dir_y * push_strength * dot * 2.0 * delta
+											var sbt = 0.0
+											if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("speed_boost_timer"):
+												sbt = b.get_meta("speed_boost_timer")
+											elif "speed_boost_timer" in b:
+												sbt = b.speed_boost_timer
+											sbt += delta * 2.0
+											if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+												b.set_meta("speed_boost_timer", sbt)
+											elif "speed_boost_timer" in b:
+												b.speed_boost_timer = sbt
 
 					if "arena" in world and world.arena != null:
 						var hazards_list = []
