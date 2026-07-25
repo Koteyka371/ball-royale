@@ -29479,7 +29479,15 @@ class PeriodicGravityFlipMode(GameMode):
                 if hasattr(h, "y"):
                     h.y += h.vy * delta
 
+class NemesisSustainMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Nemesis Sustain"
+        self.description = "Dealing damage to your nemesis heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+
 GAME_MODES = {
+    "nemesis_sustain": NemesisSustainMode(),
     'periodic_gravity_flip': PeriodicGravityFlipMode(),
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),

@@ -2301,6 +2301,44 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if "hp" in target: new_hp = float(target.hp)
 
 	if new_hp < old_hp:
+		var is_nemesis_sustain = false
+		if typeof(self.world) == TYPE_OBJECT and "current_mode_name" in self.world and self.world.current_mode_name == "Nemesis Sustain":
+			is_nemesis_sustain = true
+		elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("current_mode_name") and self.world.get("current_mode_name") == "Nemesis Sustain":
+			is_nemesis_sustain = true
+
+		if is_nemesis_sustain:
+			var mode_pm = null
+			if typeof(self.world) == TYPE_OBJECT and "profile_manager" in self.world: mode_pm = self.world.profile_manager
+			elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("profile_manager"): mode_pm = self.world.get("profile_manager")
+
+			var mode_atk_type = ""
+			if "ball_type" in attacker: mode_atk_type = str(attacker.ball_type).to_lower()
+			elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("ball_type"): mode_atk_type = str(attacker.get_meta("ball_type")).to_lower()
+
+			var mode_tgt_type = ""
+			if "ball_type" in target: mode_tgt_type = str(target.ball_type).to_lower()
+			elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("ball_type"): mode_tgt_type = str(target.get_meta("ball_type")).to_lower()
+
+			if mode_pm != null and typeof(mode_pm) == TYPE_OBJECT and mode_pm.has_method("is_nemesis") and mode_atk_type != "" and mode_tgt_type != "":
+				if mode_pm.is_nemesis(mode_tgt_type, mode_atk_type):
+					var dmg_dealt = old_hp - new_hp
+					var a_hp = 100.0
+					if "hp" in attacker: a_hp = float(attacker.hp)
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("hp"): a_hp = float(attacker.get_meta("hp"))
+
+					var a_max_hp = 100.0
+					if "max_hp" in attacker: a_max_hp = float(attacker.max_hp)
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta") and attacker.has_meta("max_hp"): a_max_hp = float(attacker.get_meta("max_hp"))
+
+					a_hp = min(a_hp + dmg_dealt, a_max_hp)
+
+					if "hp" in attacker:
+						attacker.hp = a_hp
+					elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+						attacker.set_meta("hp", a_hp)
+
+	if new_hp < old_hp:
 		self._award_xp(attacker, 10.0, self.world)
 		if new_hp <= 0 and old_hp > 0:
 			var base_xp = 50.0

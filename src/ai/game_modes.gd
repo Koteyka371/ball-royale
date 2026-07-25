@@ -47410,7 +47410,30 @@ class PeriodicGravityFlipMode extends GameMode:
 				elif h.has_method("set"):
 					h.set("y", new_y)
 
-GAME_MODES = {
+class NemesisSustainMode extends RefCounted:
+	var name = "Nemesis Sustain"
+	var description = "Dealing damage to your nemesis heals you instead, encouraging players to hunt down their rivals to sustain themselves in battle."
+
+	func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
+		pass
+
+	func get_booster_kinds(base_boosters: Array) -> Array:
+		return base_boosters
+
+	func get_hazard_exclusion_list(base_excluded: Array) -> Array:
+		return base_excluded
+
+	func init_arena(world: Variant) -> void:
+		pass
+
+	func handle_player_death(world: Variant, player: Variant) -> void:
+		pass
+
+	func handle_damage_event(world: Variant, attacker: Variant, target: Variant, damage: float) -> void:
+		pass
+
+var GAME_MODES = {
+	"nemesis_sustain": NemesisSustainMode.new(),
 	"periodic_gravity_flip": PeriodicGravityFlipMode.new(),
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
