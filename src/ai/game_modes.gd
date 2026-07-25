@@ -2831,6 +2831,197 @@ class GameMode:
 								if "y" in b: b.y = by
 								elif b.has_method("set_meta"): b.set_meta("y", by)
 
+
+		if "arena" in world and "hazards" in world.arena:
+			var tracker_drones = []
+			for h in world.arena.hazards:
+				var kind = ""
+				if "kind" in h: kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
+				if kind == "bounty_tracker_drone": tracker_drones.append(h)
+			for d in tracker_drones:
+				var d_owner_id = null
+				if "owner_id" in d: d_owner_id = d.owner_id
+				elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("owner_id"): d_owner_id = d.get_meta("owner_id")
+				elif typeof(d) == TYPE_DICTIONARY and d.has("owner_id"): d_owner_id = d["owner_id"]
+				var owner_ball = null
+				for b in balls:
+					var b_id = null
+					if "id" in b: b_id = b.id
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("id") != null: b_id = b.get("id")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+					if b_id != null and b_id == d_owner_id:
+						owner_ball = b
+						break
+				if owner_ball != null:
+					var target = null
+					var min_dist_sq = 999999.0
+					for b in balls:
+						var b_alive = false
+						if "alive" in b: b_alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: b_alive = b.get("alive")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+						var b_id = null
+						if "id" in b: b_id = b.id
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("id") != null: b_id = b.get("id")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+						if b_alive and b_id != d_owner_id:
+							var is_target = false
+							if "is_bounty_target" in b: is_target = b.is_bounty_target or is_target
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("is_bounty_target") != null: is_target = b.get("is_bounty_target") or is_target
+							elif typeof(b) == TYPE_DICTIONARY and b.has("is_bounty_target"): is_target = b["is_bounty_target"] or is_target
+
+							if "is_bounty" in b: is_target = b.is_bounty or is_target
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("is_bounty") != null: is_target = b.get("is_bounty") or is_target
+							elif typeof(b) == TYPE_DICTIONARY and b.has("is_bounty"): is_target = b["is_bounty"] or is_target
+
+							if "high_threat" in b: is_target = b.high_threat or is_target
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("high_threat") != null: is_target = b.get("high_threat") or is_target
+							elif typeof(b) == TYPE_DICTIONARY and b.has("high_threat"): is_target = b["high_threat"] or is_target
+
+							if is_target:
+								var bx = 0.0
+								var by = 0.0
+								if "x" in b: bx = b.x
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("x") != null: bx = b.get("x")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+								if "y" in b: by = b.y
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("y") != null: by = b.get("y")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+
+								var dx = 0.0
+								var dy = 0.0
+								if "x" in d: dx = d.x
+								elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("x") != null: dx = d.get("x")
+								elif typeof(d) == TYPE_DICTIONARY and d.has("x"): dx = d["x"]
+								if "y" in d: dy = d.y
+								elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("y") != null: dy = d.get("y")
+								elif typeof(d) == TYPE_DICTIONARY and d.has("y"): dy = d["y"]
+
+								var dist_sq = (bx - dx) * (bx - dx) + (by - dy) * (by - dy)
+								if dist_sq < min_dist_sq:
+									min_dist_sq = dist_sq
+									target = b
+					if target != null:
+						var nx = 0.0
+						var ny = 0.0
+						if "x" in target: nx = target.x
+						elif typeof(target) == TYPE_OBJECT and target.has_method("get") and target.get("x") != null: nx = target.get("x")
+						elif typeof(target) == TYPE_DICTIONARY and target.has("x"): nx = target["x"]
+						if "y" in target: ny = target.y
+						elif typeof(target) == TYPE_OBJECT and target.has_method("get") and target.get("y") != null: ny = target.get("y")
+						elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ny = target["y"]
+
+						var dx_val = 0.0
+						var dy_val = 0.0
+						if "x" in d: dx_val = d.x
+						elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("x") != null: dx_val = d.get("x")
+						elif typeof(d) == TYPE_DICTIONARY and d.has("x"): dx_val = d["x"]
+						if "y" in d: dy_val = d.y
+						elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("y") != null: dy_val = d.get("y")
+						elif typeof(d) == TYPE_DICTIONARY and d.has("y"): dy_val = d["y"]
+
+						var dx = nx - dx_val
+						var dy = ny - dy_val
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist > 0.0001:
+							var speed = 100.0 * delta
+							var new_x = dx_val + (dx / dist) * speed
+							var new_y = dy_val + (dy / dist) * speed
+							if "x" in d: d.x = new_x
+							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("x", new_x)
+							elif typeof(d) == TYPE_DICTIONARY: d["x"] = new_x
+
+							if "y" in d: d.y = new_y
+							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("y", new_y)
+							elif typeof(d) == TYPE_DICTIONARY: d["y"] = new_y
+
+							var ping = 0.0
+							if "ping_timer" in d: ping = d.ping_timer
+							elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("ping_timer"): ping = d.get_meta("ping_timer")
+							elif typeof(d) == TYPE_DICTIONARY and d.has("ping_timer"): ping = d["ping_timer"]
+
+							ping += delta
+							if ping >= 1.5:
+								ping = 0.0
+								if "events" in world:
+									world.events.append({"type": "bounty_compass", "data": {"target_x": nx, "target_y": ny, "owner_id": d_owner_id}})
+									world.events.append({"type": "visual_effect", "data": {"type": "line", "x": new_x, "y": new_y, "tx": nx, "ty": ny, "color": "orange"}})
+
+							if "ping_timer" in d: d.ping_timer = ping
+							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("ping_timer", ping)
+							elif typeof(d) == TYPE_DICTIONARY: d["ping_timer"] = ping
+
+				for b in balls:
+					var b_alive = false
+					if "alive" in b: b_alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: b_alive = b.get("alive")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+					var b_id = null
+					if "id" in b: b_id = b.id
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("id") != null: b_id = b.get("id")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+					var b_type = ""
+					if "ball_type" in b: b_type = b.ball_type
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("ball_type") != null: b_type = b.get("ball_type")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+
+					if b_alive and b_type != "spectator" and b_id != d_owner_id:
+						var bx = 0.0
+						var by = 0.0
+						if "x" in b: bx = b.x
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("x") != null: bx = b.get("x")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b["x"]
+						if "y" in b: by = b.y
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("y") != null: by = b.get("y")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b["y"]
+						var br = 15.0
+						if "radius" in b: br = b.radius
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("radius") != null: br = b.get("radius")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): br = b["radius"]
+
+						var dx = 0.0
+						var dy = 0.0
+						if "x" in d: dx = d.x
+						elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("x") != null: dx = d.get("x")
+						elif typeof(d) == TYPE_DICTIONARY and d.has("x"): dx = d["x"]
+						if "y" in d: dy = d.y
+						elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("y") != null: dy = d.get("y")
+						elif typeof(d) == TYPE_DICTIONARY and d.has("y"): dy = d["y"]
+						var dr = 15.0
+						if "radius" in d: dr = d.radius
+						elif typeof(d) == TYPE_OBJECT and d.has_method("get") and d.get("radius") != null: dr = d.get("radius")
+						elif typeof(d) == TYPE_DICTIONARY and d.has("radius"): dr = d["radius"]
+
+						var b_dmg = 10.0
+						if "damage" in b: b_dmg = b.damage
+						elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("damage") != null: b_dmg = b.get("damage")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("damage"): b_dmg = b["damage"]
+
+						var dist = sqrt((bx - dx)*(bx - dx) + (by - dy)*(by - dy))
+						if dist <= dr + br:
+							var hp = 100.0
+							if "hp" in d: hp = d.hp
+							elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("hp"): hp = d.get_meta("hp")
+							elif typeof(d) == TYPE_DICTIONARY and d.has("hp"): hp = d["hp"]
+
+							hp -= b_dmg * delta
+
+							if "hp" in d: d.hp = hp
+							elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("hp", hp)
+							elif typeof(d) == TYPE_DICTIONARY: d["hp"] = hp
+
+				var hp_check = 100.0
+				if "hp" in d: hp_check = d.hp
+				elif typeof(d) == TYPE_OBJECT and d.has_method("get_meta") and d.has_meta("hp"): hp_check = d.get_meta("hp")
+				elif typeof(d) == TYPE_DICTIONARY and d.has("hp"): hp_check = d["hp"]
+
+				if hp_check <= 0.0:
+					if "duration" in d: d.duration = 0.0
+					elif typeof(d) == TYPE_OBJECT and d.has_method("set_meta"): d.set_meta("duration", 0.0)
+					elif typeof(d) == TYPE_DICTIONARY: d["duration"] = 0.0
+
 		if "arena" in world and "hazards" in world.arena:
 			var drones = []
 			for h in world.arena.hazards:

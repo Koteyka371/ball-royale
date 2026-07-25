@@ -8,7 +8,7 @@ const RADIUS = 12.0
 const PERCEPTION_RADIUS = 300.0
 const AGGRESSION = 0.9
 const COLOR = "orange"
-const SKILL = "impostor_disguise"
+const SKILL = "deploy_tracker_drone"
 const SKILL_COOLDOWN = 12.0
 
 var id: int = 0

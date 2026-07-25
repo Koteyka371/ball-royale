@@ -9,7 +9,7 @@ class BountyHunter:
     PERCEPTION_RADIUS = 300
     AGGRESSION = 0.9
     COLOR = "orange"
-    SKILL = "impostor_disguise"
+    SKILL = "deploy_tracker_drone"
     SKILL_COOLDOWN = 12.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
