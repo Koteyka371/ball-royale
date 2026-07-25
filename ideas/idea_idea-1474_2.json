@@ -1,0 +1,4 @@
+{
+    "title": "Black Hole Trap",
+    "description": "Places a miniature black hole trap on the map. When triggered, it sucks in all nearby entities (balls, projectiles, items) for a few seconds."
+}
