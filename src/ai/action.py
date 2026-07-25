@@ -19032,12 +19032,19 @@ class Action:
                     knockback_multiplier *= 0.05
                 elif cosmetic == "hover_boots":
                     knockback_multiplier *= 1.5
-                elif cosmetic == "kinetic_absorber" and getattr(other, "team", None) != getattr(self.ball, "team", None):
-                    knockback_multiplier = 0.0
+                elif (cosmetic == "kinetic_absorber" or getattr(self.ball, "has_kinetic_absorber", False)) and getattr(other, "team", None) != getattr(self.ball, "team", None):
+                    if cosmetic == "kinetic_absorber":
+                        knockback_multiplier = 0.0
+                    else:
+                        knockback_multiplier *= 0.5
+
                     if not hasattr(self.ball, "kinetic_absorbed_energy"):
                         self.ball.kinetic_absorbed_energy = 0.0
                     self.ball.kinetic_absorbed_energy += overlap
                     self.ball.speed_boost_timer = min(3.0, getattr(self.ball, "speed_boost_timer", 0.0) + (overlap * 0.1))
+
+                    if getattr(self.ball, "has_kinetic_absorber", False):
+                        self.ball.supercharge_timer = min(5.0, getattr(self.ball, "supercharge_timer", 0.0) + (overlap * 0.1))
 
                 if getattr(self.ball, "heavy_gravity_timer", 0.0) > 0.0:
                     knockback_multiplier = 0.0
