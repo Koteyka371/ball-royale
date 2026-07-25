@@ -38332,3 +38332,103 @@ class AuctionEventMode(GameMode):
                         world.add_event("auction_failed", {})
 
 GAME_MODES['auction_event'] = AuctionEventMode()
+
+
+class BountyExtractionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bounty Extraction"
+        self.description = "Players collect bounty tags from fallen enemies. Bringing bounty tags to safe extraction zones gives currency that can be spent on persistent upgrades during the match."
+        self.extraction_zone_x = 500.0
+        self.extraction_zone_y = 500.0
+        self.extraction_zone_radius = 200.0
+        self.extraction_timer = 0.0
+        self.bounty_tags = []
+
+    def on_ball_died(self, world, ball, killer=None):
+        if hasattr(super(), "on_ball_died"):
+            super().on_ball_died(world, ball, killer)
+
+        # Spawn a bounty tag where the ball died
+        tag = {
+            "x": getattr(ball, "x", 0.0),
+            "y": getattr(ball, "y", 0.0),
+            "type": "bounty_tag",
+            "value": getattr(ball, "currency", 0) + 1  # Drop held currency + 1 for themselves
+        }
+        self.bounty_tags.append(tag)
+        if hasattr(world, "boosters"):
+            world.boosters.append(tag)
+        if hasattr(world, "add_event"):
+            world.add_event("tag_spawned", {"x": tag["x"], "y": tag["y"], "value": tag["value"]})
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        # Move extraction zone occasionally
+        self.extraction_timer -= delta
+        if self.extraction_timer <= 0:
+            self.extraction_timer = 30.0
+            import random
+            random.seed(int(getattr(world, "tick_timer", 0.0) * 1000) + len(self.bounty_tags))
+            # Just simple bounds for extraction zone
+            self.extraction_zone_x = random.uniform(200, 800)
+            self.extraction_zone_y = random.uniform(200, 800)
+            random.seed() # reset seed
+            if hasattr(world, "add_event"):
+                world.add_event("extraction_zone_moved", {"x": self.extraction_zone_x, "y": self.extraction_zone_y})
+
+        # Process tags and extraction for alive balls
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            # Decrement cooldown
+            cd = getattr(b, "purchase_cooldown", 0.0)
+            if cd > 0.0:
+                b.purchase_cooldown = cd - delta
+
+            # 1. Collect tags
+            b_x = getattr(b, "x", 0.0)
+            b_y = getattr(b, "y", 0.0)
+            b_r = getattr(b, "radius", 20.0)
+
+            remaining_tags = []
+            for tag in self.bounty_tags:
+                dx = tag["x"] - b_x
+                dy = tag["y"] - b_y
+                if dx*dx + dy*dy <= (b_r + 20.0)**2:  # 20.0 is tag pickup radius
+                    # Pick up tag
+                    b.currency = getattr(b, "currency", 0) + tag["value"]
+                    if hasattr(world, "add_event"):
+                        world.add_event("tag_collected", {"ball_id": getattr(b, "id", None), "value": tag["value"]})
+                else:
+                    remaining_tags.append(tag)
+            self.bounty_tags = remaining_tags
+
+            # 2. Extract and upgrade
+            # Check if in extraction zone
+            dist_sq = (self.extraction_zone_x - b_x)**2 + (self.extraction_zone_y - b_y)**2
+            if dist_sq <= self.extraction_zone_radius**2:
+                curr = getattr(b, "currency", 0)
+                # Spend 5 currency for an upgrade
+                if curr >= 5:
+                    if getattr(b, "purchase_cooldown", 0.0) <= 0.0:
+                        b.currency = curr - 5
+                        b.purchase_cooldown = 1.0  # Cooldown between purchases
+
+                        import random
+                        upgrade = random.choice(["hp", "speed", "damage"])
+                        if upgrade == "hp":
+                            b.max_hp = getattr(b, "max_hp", 100.0) + 20.0
+                            b.hp = getattr(b, "hp", 100.0) + 20.0
+                        elif upgrade == "speed":
+                            b.base_speed = getattr(b, "base_speed", 100.0) + 10.0
+                            b.speed = getattr(b, "speed", 100.0) + 10.0
+                        elif upgrade == "damage":
+                            b.base_damage = getattr(b, "base_damage", 10.0) + 2.0
+                            b.damage = getattr(b, "damage", 10.0) + 2.0
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade})
+
+
+GAME_MODES['bounty_extraction'] = BountyExtractionMode()
