@@ -30391,6 +30391,99 @@ class PolarityShiftMode extends GameMode:
 
 
 
+class SolarFlareEventMode extends GameMode:
+	var event_timer = 0.0
+	var event_active = false
+	var event_duration = 0.0
+	var original_w = 1000.0
+	var original_h = 1000.0
+
+	func _init():
+		name = "Solar Flare Event"
+		description = "A blinding solar flare randomly occurs during the day, slowly shrinking the arena bounds and dealing minor continuous burn damage to players in direct sunlight."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var is_day = false
+		if world != null and "arena" in world:
+			if not (world.arena.is_night if "is_night" in world.arena else false):
+				is_day = true
+
+		if not event_active:
+			if is_day:
+				event_timer += delta
+
+			if event_timer > 30.0:
+				if randf() < 0.2:
+					event_active = true
+					event_duration = 15.0
+					event_timer = 0.0
+					if world != null and "arena" in world:
+						original_w = float(world.arena.width if "width" in world.arena else 1000.0)
+						original_h = float(world.arena.height if "height" in world.arena else 1000.0)
+
+					if world != null and world.has_method("add_event"):
+						world.add_event("solar_flare_warning", {"type": "weather_warning", "message": "A SOLAR FLARE HAS BEGUN!"})
+						world.add_event("visual_effect", {"type": "solar_flare", "duration": 15.0})
+				else:
+					event_timer = 0.0
+		else:
+			event_duration -= delta
+
+			if world != null and "arena" in world:
+				var old_w = float(world.arena.width if "width" in world.arena else 1000.0)
+				var old_h = float(world.arena.height if "height" in world.arena else 1000.0)
+				var shrink_rate = 20.0 * delta
+				var new_w = max(200.0, old_w - shrink_rate)
+				var new_h = max(200.0, old_h - shrink_rate)
+				world.arena.width = new_w
+				world.arena.height = new_h
+
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else ("alive" in b and b.alive)
+					if is_alive:
+						var radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius") if "radius" in b else 15.0
+						var bx = float(b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x"))
+						var by = float(b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y"))
+
+						bx = max(radius, min(bx, new_w - radius))
+						by = max(radius, min(by, new_h - radius))
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = bx
+							b["y"] = by
+						else:
+							b.x = bx
+							b.y = by
+
+			for b in balls:
+				var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else ("alive" in b and b.alive)
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type") if "ball_type" in b else ""
+				if is_alive and b_type != "spectator":
+					var burn_damage = 5.0 * delta
+					if typeof(b) == TYPE_DICTIONARY:
+						var hp = b.get("hp", 100.0) - burn_damage
+						if hp <= 0:
+							b["hp"] = 0.0
+							b["alive"] = false
+						else:
+							b["hp"] = hp
+					else:
+						if b.has_method("take_damage"):
+							b.take_damage(burn_damage, null)
+						else:
+							var hp = b.hp - burn_damage
+							if hp <= 0:
+								b.hp = 0.0
+								b.alive = false
+							else:
+								b.hp = hp
+
+			if event_duration <= 0:
+				event_active = false
+				event_timer = 0.0
+				if world != null and world.has_method("add_event"):
+					world.add_event("solar_flare_end", {"type": "weather_warning", "message": "The Solar Flare has ended."})
+
 class LunarEclipseEventMode extends GameMode:
 	var event_timer = 0.0
 	var event_active = false
@@ -48302,6 +48395,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"chain_lightning_storm": ChainLightningStormMode.new(),
 	"weather_chaos": WeatherChaosMode.new(),
 	"prestige_weather_mutator": PrestigeWeatherMutatorMode.new(),
+	"solar_flare_event": SolarFlareEventMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"solar_eclipse_event": SolarEclipseEventMode.new(),
 	"domination": DominationMode.new(),

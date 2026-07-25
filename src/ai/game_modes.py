@@ -19476,6 +19476,78 @@ class PolarityShiftMode(GameMode):
                     h.x -= dir_x * force_mag * self.polarity_state
                     h.y -= dir_y * force_mag * self.polarity_state
 
+class SolarFlareEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Solar Flare Event"
+        self.description = "A blinding solar flare randomly occurs during the day, slowly shrinking the arena bounds and dealing minor continuous burn damage to players in direct sunlight."
+        self.event_timer = 0.0
+        self.event_active = False
+        self.event_duration = 0.0
+        self.original_w = 1000.0
+        self.original_h = 1000.0
+
+    def tick(self, world, balls, delta=0.016):
+        is_day = not getattr(getattr(world, "arena", None), "is_night", False)
+
+        if not self.event_active:
+            if is_day:
+                self.event_timer += delta
+
+            if self.event_timer > 30.0:
+                import random
+                if random.random() < 0.2:  # 20% chance
+                    self.event_active = True
+                    self.event_duration = 15.0
+                    self.event_timer = 0.0
+                    if hasattr(world, "arena"):
+                        self.original_w = getattr(world.arena, "width", 1000.0)
+                        self.original_h = getattr(world.arena, "height", 1000.0)
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("solar_flare_warning", {"type": "weather_warning", "message": "A SOLAR FLARE HAS BEGUN!"})
+                        world.add_event("visual_effect", {"type": "solar_flare", "duration": 15.0})
+                else:
+                    self.event_timer = 0.0
+        else:
+            self.event_duration -= delta
+
+            # Shrink Arena
+            if hasattr(world, "arena"):
+                old_w = getattr(world.arena, "width", 1000.0)
+                old_h = getattr(world.arena, "height", 1000.0)
+                shrink_rate = 20.0 * delta
+                new_w = max(200.0, old_w - shrink_rate)
+                new_h = max(200.0, old_h - shrink_rate)
+                world.arena.width = new_w
+                world.arena.height = new_h
+
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        radius = getattr(b, "radius", 15.0)
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        b.x = max(radius, min(bx, new_w - radius))
+                        b.y = max(radius, min(by, new_h - radius))
+
+            # Burn damage
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    burn_damage = 5.0 * delta # minor damage
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(burn_damage, source=None)
+                    else:
+                        b.hp = getattr(b, "hp", 100.0) - burn_damage
+                        if b.hp <= 0:
+                            b.hp = 0.0
+                            b.alive = False
+
+            if self.event_duration <= 0:
+                self.event_active = False
+                self.event_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("solar_flare_end", {"type": "weather_warning", "message": "The Solar Flare has ended."})
+
 class LunarEclipseEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -30003,6 +30075,7 @@ GAME_MODES = {
     "lightning_strike_event": LightningStrikeEventMode(),
     "weather_chaos": WeatherChaosMode(),
     "prestige_weather_mutator": PrestigeWeatherMutatorMode(),
+    "solar_flare_event": SolarFlareEventMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "solar_eclipse_event": SolarEclipseEventMode(),
     "domination": DominationMode(),
