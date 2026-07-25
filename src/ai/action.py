@@ -5555,7 +5555,7 @@ class Action:
         # Weather friction
         if hasattr(self.world, "arena") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
             cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-            ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
+            ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]
             ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (hasattr(self.ball, "inventory") and "thermal_boots" in getattr(self.ball, "inventory", [])) or (hasattr(self.ball, "inventory") and "snow_boots" in getattr(self.ball, "inventory", []))
             ignores_wind = cosmetic in ["heavy_boots", "lead_boots"] or (hasattr(self.ball, "inventory") and "gravity_boots" in getattr(self.ball, "inventory", []))
             is_kite = cosmetic == "kite"
@@ -7846,7 +7846,7 @@ class Action:
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
                             # Apply slow effect
-                            if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]:
+                            if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                     elif hazard.kind == "flood_zone":
                         dx = hazard.x - self.ball.x
@@ -8009,7 +8009,7 @@ class Action:
                                             self.ball.quicksand_debuff_timer = 2.0
 
                                     if getattr(self.ball, "quicksand_debuff_timer", 0.0) > 0:
-                                        if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]:
+                                        if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
                                             self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
                                         self.ball.quicksand_debuff_timer -= delta
 
@@ -11344,15 +11344,16 @@ class Action:
                 if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice" or is_pinball_mutator:
                     pass # Bouncy walls don't deal damage (abyss is already handled)
                 elif wall_state == "spikes":
-                    damage = 250.0
-                    setattr(self.ball, "is_bleeding", True)
+                    if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
+                        damage = 250.0
+                        setattr(self.ball, "is_bleeding", True)
 
-                    if hasattr(self.ball, "take_damage"):
-                        self.ball.take_damage(damage)
-                    elif hasattr(self.ball, "hp"):
-                        self.ball.hp -= damage
-                        if self.ball.hp <= 0:
-                            self.ball.alive = False
+                        if hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(damage)
+                        elif hasattr(self.ball, "hp"):
+                            self.ball.hp -= damage
+                            if self.ball.hp <= 0:
+                                self.ball.alive = False
                 elif speed > 500 and not is_mirror_walls and not is_agile_bouncer and not is_bouncy_terrain:
                     damage = speed * 0.05
 
@@ -18304,7 +18305,8 @@ class Action:
                         if h_dist <= explosion_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind"):
                                 if hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare", "fake_healing_orb"]:
-                                    hazards_to_remove.append(hazard)
+                                    if hazard.kind != "spikes" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
+                                        hazards_to_remove.append(hazard)
                                 elif hazard.kind in ["lava", "poison_cloud"] and getattr(hazard, "active", True):
                                     # Trigger secondary explosion: larger radius, hazard-specific effect
                                     explosion_radius = 200.0
@@ -18638,7 +18640,8 @@ class Action:
                         h_dist = math.sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + getattr(hazard, "radius", 0):
                             if hasattr(hazard, "kind") and hazard.kind in ["spikes", "fake_booster", "dummy_item", "fake_flare", "fake_healing_orb"]:
-                                hazards_to_remove.append(hazard)
+                                if hazard.kind != "spikes" or getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
+                                    hazards_to_remove.append(hazard)
                             elif hasattr(hazard, "kind") and hazard.kind in ["lava", "lava_puddle", "lava_pit"]:
                                 hazards_to_remove.append(hazard)
 
@@ -18961,6 +18964,8 @@ class Action:
                     knockback_multiplier *= 0.1
                 elif cosmetic == "rooted_boots":
                     knockback_multiplier *= 0.05
+                elif cosmetic == "hover_boots":
+                    knockback_multiplier *= 1.5
                 elif cosmetic == "kinetic_absorber" and getattr(other, "team", None) != getattr(self.ball, "team", None):
                     knockback_multiplier = 0.0
                     if not hasattr(self.ball, "kinetic_absorbed_energy"):

@@ -10811,7 +10811,7 @@ func execute(strategy: String, delta: float):
         var cosmetic = ""
         if "cosmetic" in my_ball:
             cosmetic = str(my_ball.cosmetic).to_lower().replace(" ", "_")
-        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]
+        var ignores_mud = cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]
         var ignores_snow_ice = cosmetic in ["snow_tires", "snow_boots", "spiked_tires", "snowshoes"] or (typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get") and my_ball.get("inventory") != null and typeof(my_ball.get("inventory")) == TYPE_ARRAY and my_ball.get("inventory").has("snow_boots")) or (typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("inventory") and typeof(my_ball["inventory"]) == TYPE_ARRAY and my_ball["inventory"].has("snow_boots"))
         if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("get") and my_ball.get("inventory") != null and typeof(my_ball.get("inventory")) == TYPE_ARRAY and my_ball.get("inventory").has("thermal_boots"):
             ignores_snow_ice = true
@@ -15187,7 +15187,7 @@ func execute(strategy: String, delta: float):
                                 debuff_timer -= delta
                                 var cos_str = ""
                                 if "cosmetic" in self.ball: cos_str = str(self.ball.cosmetic).to_lower().replace(" ", "_")
-                                if not cos_str in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots"]:
+                                if not cos_str in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
                                     var base_speed = 100.0
                                     if self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"):
                                         base_speed = self.ball.get_meta("base_speed")
@@ -22203,26 +22203,31 @@ func execute(strategy: String, delta: float):
             if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice":
                 pass
             elif wall_state == "spikes":
-                var dmg = 250.0
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                    self.ball.set_meta("is_bleeding", true)
-                elif typeof(self.ball) == TYPE_DICTIONARY:
-                    self.ball["is_bleeding"] = true
-                if "is_bleeding" in self.ball:
-                    self.ball.is_bleeding = true
+                var cosmetic_wall = ""
+                if "cosmetic" in self.ball: cosmetic_wall = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cosmetic"): cosmetic_wall = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic_wall = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                if cosmetic_wall != "hover_boots":
+                    var dmg = 250.0
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("is_bleeding", true)
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["is_bleeding"] = true
+                    if "is_bleeding" in self.ball:
+                        self.ball.is_bleeding = true
 
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
-                    self.ball.take_damage(dmg)
-                else:
-                    var cur_hp = 100.0
-                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): cur_hp = self.ball["hp"]
-                    elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: cur_hp = self.ball.hp
-                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): cur_hp = self.ball.get_meta("hp")
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+                        self.ball.take_damage(dmg)
+                    else:
+                        var cur_hp = 100.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): cur_hp = self.ball["hp"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: cur_hp = self.ball.hp
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"): cur_hp = self.ball.get_meta("hp")
 
-                    cur_hp -= dmg
-                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = cur_hp
-                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", cur_hp)
-                    elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = cur_hp
+                        cur_hp -= dmg
+                        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = cur_hp
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", cur_hp)
+                        elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = cur_hp
 
                     if cur_hp <= 0:
                         if typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
@@ -32652,7 +32657,12 @@ func _use_skill():
                         if h_dist <= explosion_radius + hazard.radius:
                             if "kind" in hazard:
                                 if hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare" or hazard.kind == "fake_healing_orb":
-                                    hazards_to_remove.append(hazard)
+                                    var cosmetic_haz = ""
+                                    if "cosmetic" in self.ball: cosmetic_haz = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cosmetic"): cosmetic_haz = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic_haz = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                                    if hazard.kind != "spikes" or cosmetic_haz != "hover_boots":
+                                        hazards_to_remove.append(hazard)
                                 elif (hazard.kind == "lava" or hazard.kind == "poison_cloud") and hazard.active:
                                     explosion_radius = 200.0
                                     if hazard.kind == "lava":
@@ -35037,7 +35047,12 @@ func _use_skill():
                         var h_dist = sqrt(hx*hx + hy*hy)
                         if h_dist <= pound_radius + (hazard.radius if "radius" in hazard else 0):
                             if "kind" in hazard and (hazard.kind == "spikes" or hazard.kind == "fake_booster" or hazard.kind == "dummy_item" or hazard.kind == "fake_flare" or hazard.kind == "fake_healing_orb"):
-                                hazards_to_remove.append(hazard)
+                                var cosmetic_haz_2 = ""
+                                if "cosmetic" in self.ball: cosmetic_haz_2 = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cosmetic"): cosmetic_haz_2 = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic_haz_2 = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                                if hazard.kind != "spikes" or cosmetic_haz_2 != "hover_boots":
+                                    hazards_to_remove.append(hazard)
                             elif "kind" in hazard and (hazard.kind == "lava" or hazard.kind == "lava_puddle" or hazard.kind == "lava_pit"):
                                 hazards_to_remove.append(hazard)
 
@@ -36590,6 +36605,8 @@ func _resolve_collisions() -> bool:
                 knockback_multiplier *= 0.1
             elif cosmetic_val == "rooted_boots":
                 knockback_multiplier *= 0.05
+            elif cosmetic_val == "hover_boots":
+                knockback_multiplier *= 1.5
             elif cosmetic_val == "kinetic_absorber":
                 var o_team = null
                 if typeof(other) == TYPE_DICTIONARY and other.has("team"):
