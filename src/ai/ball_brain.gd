@@ -201,6 +201,98 @@ func _init(ball_ref, world_ref):
         elif "status_resistance" in self.ball:
             self.ball.status_resistance = current_res + 0.30
 
+    if skin == "snowball" and (current_weather == "snow" or current_weather == "blizzard"):
+        var current_speed = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+            current_speed = self.ball.get_meta("speed")
+        elif "speed" in self.ball:
+            current_speed = self.ball.speed
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("speed", current_speed * 1.30)
+        elif "speed" in self.ball:
+            self.ball.speed = current_speed * 1.30
+
+        var current_dmg = 10.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("damage"):
+            current_dmg = self.ball.get_meta("damage")
+        elif "damage" in self.ball:
+            current_dmg = self.ball.damage
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("damage", current_dmg * 1.10)
+        elif "damage" in self.ball:
+            self.ball.damage = current_dmg * 1.10
+
+    if skin == "fireball" and current_weather == "heatwave":
+        var current_dmg = 10.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("damage"):
+            current_dmg = self.ball.get_meta("damage")
+        elif "damage" in self.ball:
+            current_dmg = self.ball.damage
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("damage", current_dmg * 1.25)
+        elif "damage" in self.ball:
+            self.ball.damage = current_dmg * 1.25
+
+        var current_speed = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+            current_speed = self.ball.get_meta("speed")
+        elif "speed" in self.ball:
+            current_speed = self.ball.speed
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("speed", current_speed * 1.15)
+        elif "speed" in self.ball:
+            self.ball.speed = current_speed * 1.15
+
+    if skin == "thunderball" and current_weather == "thunderstorm":
+        var current_speed = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+            current_speed = self.ball.get_meta("speed")
+        elif "speed" in self.ball:
+            current_speed = self.ball.speed
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("speed", current_speed * 1.40)
+        elif "speed" in self.ball:
+            self.ball.speed = current_speed * 1.40
+
+        var current_dmg = 10.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("damage"):
+            current_dmg = self.ball.get_meta("damage")
+        elif "damage" in self.ball:
+            current_dmg = self.ball.damage
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("damage", current_dmg * 1.20)
+        elif "damage" in self.ball:
+            self.ball.damage = current_dmg * 1.20
+
+    if skin == "sandball" and current_weather == "sandstorm":
+        var current_res = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("status_resistance"):
+            current_res = self.ball.get_meta("status_resistance")
+        elif "status_resistance" in self.ball:
+            current_res = self.ball.status_resistance
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("status_resistance", current_res + 0.40)
+        elif "status_resistance" in self.ball:
+            self.ball.status_resistance = current_res + 0.40
+
+        var current_speed = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed"):
+            current_speed = self.ball.get_meta("speed")
+        elif "speed" in self.ball:
+            current_speed = self.ball.speed
+
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("speed", current_speed * 1.10)
+        elif "speed" in self.ball:
+            self.ball.speed = current_speed * 1.10
+
     if skin == "veteran":
         var current_res = 0.0
         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("status_resistance"):
