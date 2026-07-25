@@ -16024,6 +16024,32 @@ class Action:
 
                         self.world.balls.append(decoy)
 
+            elif skill_name == "manual_detonate_decoy":
+                if hasattr(self.world, "balls"):
+                    active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+
+                    if active_decoys:
+                        for decoy in active_decoys:
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("explosion", {"x": decoy.x, "y": decoy.y, "radius": 150.0, "damage": 50.0})
+
+                            for b in getattr(self.world, "balls", []):
+                                if b != self.ball and getattr(b, "alive", True):
+                                    if getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                                        dx = b.x - decoy.x
+                                        dy = b.y - decoy.y
+                                        dist_sq = dx*dx + dy*dy
+                                        if dist_sq <= 150.0**2:
+                                            if hasattr(b, "take_damage"):
+                                                b.take_damage(50.0)
+                                            else:
+                                                b.hp = max(0, getattr(b, "hp", 100) - 50.0)
+
+                            decoy.hp = 0
+                            decoy.alive = False
+
+                        self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+
             elif skill_name == "decoy_swap_survival":
                 import copy
                 import random

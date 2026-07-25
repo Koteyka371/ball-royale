@@ -30997,6 +30997,93 @@ func _use_skill():
 
                         self.world.balls.append(decoy)
 
+        elif skill_name == "manual_detonate_decoy":
+            var active_decoys = []
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var is_d = false
+                    if "is_decoy" in b and b.is_decoy:
+                        is_d = true
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"):
+                        is_d = true
+
+                    if is_d:
+                        var owner = -1
+                        if "owner_id" in b: owner = b.owner_id
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("owner_id"): owner = b.get_meta("owner_id")
+
+                        var b_alive = true
+                        if "alive" in b: b_alive = b.alive
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                        var self_id = -2
+                        if "id" in self.ball: self_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        if owner == self_id and b_alive:
+                            active_decoys.append(b)
+
+            if active_decoys.size() > 0:
+                for decoy in active_decoys:
+                    var dx_pos = 0.0
+                    var dy_pos = 0.0
+                    if "x" in decoy: dx_pos = decoy.x
+                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("get_meta") and decoy.has_meta("x"): dx_pos = decoy.get_meta("x")
+
+                    if "y" in decoy: dy_pos = decoy.y
+                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("get_meta") and decoy.has_meta("y"): dy_pos = decoy.get_meta("y")
+
+                    if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                        self.world.add_event("explosion", {"x": dx_pos, "y": dy_pos, "radius": 150.0, "damage": 50.0})
+
+                    if "balls" in self.world:
+                        for b in self.world.balls:
+                            if b != self.ball:
+                                var b_alive = true
+                                if "alive" in b: b_alive = b.alive
+                                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                                if b_alive:
+                                    var b_team = ""
+                                    if "team" in b: b_team = b.team
+                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                                    var self_team = ""
+                                    if "team" in self.ball: self_team = self.ball.team
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team"): self_team = self.ball.get_meta("team")
+
+                                    if b_team != self_team:
+                                        var bx = 0.0
+                                        var by = 0.0
+                                        if "x" in b: bx = b.x
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                                        if "y" in b: by = b.y
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                                        var dx2 = bx - dx_pos
+                                        var dy2 = by - dy_pos
+                                        var dist_sq = dx2*dx2 + dy2*dy2
+                                        if dist_sq <= 150.0 * 150.0:
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                b.take_damage(50.0)
+                                            elif "hp" in b:
+                                                b.hp = max(0, b.hp - 50.0)
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta") and b.has_meta("hp"):
+                                                b.set_meta("hp", max(0, b.get_meta("hp") - 50.0))
+
+                    if "hp" in decoy: decoy.hp = 0.0
+                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("hp", 0.0)
+
+                    if "alive" in decoy: decoy.alive = false
+                    elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"): decoy.set_meta("alive", false)
+
+                var cd = 5.0
+                if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+                if "skill_timer" in self.ball: self.ball.skill_timer = cd
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+
         elif skill_name == "decoy_swap_survival":
             if "balls" in self.world:
                 var active_decoys = []
