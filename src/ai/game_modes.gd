@@ -59698,3 +59698,147 @@ class AuctionEventMode extends GameMode:
 						world.add_event("auction_failed", {})
 
 GAME_MODES['auction_event'] = AuctionEventMode.new()
+
+
+class BountyExtractionMode extends GameMode:
+	var extraction_zone_x: float = 500.0
+	var extraction_zone_y: float = 500.0
+	var extraction_zone_radius: float = 200.0
+	var extraction_timer: float = 0.0
+	var bounty_tags: Array = []
+
+	func _init() -> void:
+		name = "Bounty Extraction"
+		description = "Players collect bounty tags from fallen enemies. Bringing bounty tags to safe extraction zones gives currency that can be spent on persistent upgrades during the match."
+
+	func on_ball_died(world, ball, killer = null) -> void:
+		# Spawn a bounty tag where the ball died
+		var bx = ball.get("x") if typeof(ball) == TYPE_DICTIONARY else ball.x
+		var by = ball.get("y") if typeof(ball) == TYPE_DICTIONARY else ball.y
+		var val = ball.get("currency", 0) if typeof(ball) == TYPE_DICTIONARY else (ball.currency if "currency" in ball else 0)
+
+		var tag = {
+			"x": bx,
+			"y": by,
+			"type": "bounty_tag",
+			"value": val + 1  # Drop held currency + 1 for themselves
+		}
+		bounty_tags.append(tag)
+		if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+			var boosters = world.get("boosters")
+			if typeof(boosters) == TYPE_ARRAY:
+				boosters.append(tag)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+			world["boosters"].append(tag)
+
+		if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+			world.add_event("tag_spawned", {"x": tag["x"], "y": tag["y"], "value": tag["value"]})
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		# Move extraction zone occasionally
+		extraction_timer -= delta
+		if extraction_timer <= 0:
+			extraction_timer = 30.0
+			# Just simple bounds for extraction zone
+			var seed_val = 0
+			if typeof(world) == TYPE_OBJECT and "tick_timer" in world:
+				seed_val = int(world.tick_timer * 1000)
+			elif typeof(world) == TYPE_DICTIONARY and world.has("tick_timer"):
+				seed_val = int(world["tick_timer"] * 1000)
+			var rng = RandomNumberGenerator.new()
+			rng.seed = seed_val + bounty_tags.size()
+			extraction_zone_x = rng.randf_range(200.0, 800.0)
+			extraction_zone_y = rng.randf_range(200.0, 800.0)
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("extraction_zone_moved", {"x": extraction_zone_x, "y": extraction_zone_y})
+
+		# Process tags and extraction for alive balls
+		for b in balls:
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+			if not is_alive:
+				continue
+
+			# Decrement cooldown
+			var cd_b = b.get("purchase_cooldown", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.purchase_cooldown if "purchase_cooldown" in b else 0.0)
+			if cd_b > 0.0:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["purchase_cooldown"] = cd_b - delta
+				else:
+					b.purchase_cooldown = cd_b - delta
+
+			# 1. Collect tags
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+			var b_r = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else b.radius
+
+			var remaining_tags = []
+			for tag in bounty_tags:
+				var dx = tag["x"] - b_x
+				var dy = tag["y"] - b_y
+				if dx*dx + dy*dy <= (b_r + 20.0)*(b_r + 20.0):  # 20.0 is tag pickup radius
+					# Pick up tag
+					var curr = b.get("currency", 0) if typeof(b) == TYPE_DICTIONARY else (b.currency if "currency" in b else 0)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["currency"] = curr + tag["value"]
+					else:
+						b.currency = curr + tag["value"]
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var bid = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else b.id
+						world.add_event("tag_collected", {"ball_id": bid, "value": tag["value"]})
+				else:
+					remaining_tags.append(tag)
+			bounty_tags = remaining_tags
+
+			# 2. Extract and upgrade
+			# Check if in extraction zone
+			var dist_sq = (extraction_zone_x - b_x)*(extraction_zone_x - b_x) + (extraction_zone_y - b_y)*(extraction_zone_y - b_y)
+			if dist_sq <= extraction_zone_radius*extraction_zone_radius:
+				var curr = b.get("currency", 0) if typeof(b) == TYPE_DICTIONARY else (b.currency if "currency" in b else 0)
+				# Spend 5 currency for an upgrade
+				if curr >= 5:
+					var cd = b.get("purchase_cooldown", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.purchase_cooldown if "purchase_cooldown" in b else 0.0)
+					if cd <= 0.0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["currency"] = curr - 5
+							b["purchase_cooldown"] = 1.0  # Cooldown between purchases
+						else:
+							b.currency = curr - 5
+							b.purchase_cooldown = 1.0
+
+						var upgrades = ["hp", "speed", "damage"]
+						var upgrade = upgrades[randi() % upgrades.size()]
+
+						if upgrade == "hp":
+							var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.max_hp
+							var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.hp
+							if typeof(b) == TYPE_DICTIONARY:
+								b["max_hp"] = max_hp + 20.0
+								b["hp"] = hp + 20.0
+							else:
+								b.max_hp = max_hp + 20.0
+								b.hp = hp + 20.0
+						elif upgrade == "speed":
+							var base_speed = b.get("base_speed", 100.0) if typeof(b) == TYPE_DICTIONARY else b.base_speed
+							var speed = b.get("speed", 100.0) if typeof(b) == TYPE_DICTIONARY else b.speed
+							if typeof(b) == TYPE_DICTIONARY:
+								b["base_speed"] = base_speed + 10.0
+								b["speed"] = speed + 10.0
+							else:
+								b.base_speed = base_speed + 10.0
+								b.speed = speed + 10.0
+						elif upgrade == "damage":
+							var base_damage = b.get("base_damage", 10.0) if typeof(b) == TYPE_DICTIONARY else b.base_damage
+							var damage = b.get("damage", 10.0) if typeof(b) == TYPE_DICTIONARY else b.damage
+							if typeof(b) == TYPE_DICTIONARY:
+								b["base_damage"] = base_damage + 2.0
+								b["damage"] = damage + 2.0
+							else:
+								b.base_damage = base_damage + 2.0
+								b.damage = damage + 2.0
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("upgrade_purchased", {"ball": b, "upgrade": upgrade})
+
+
+GAME_MODES['bounty_extraction'] = BountyExtractionMode.new()
