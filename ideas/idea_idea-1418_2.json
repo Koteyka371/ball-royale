@@ -1,0 +1,4 @@
+{
+    "title": "Time Rift Hazard",
+    "description": "A new hazard that occasionally opens in the center of the arena. Entering it sends the player back in time, resetting their health, cooldowns, and position to what they were 10 seconds ago, but at a huge cost to stamina."
+}

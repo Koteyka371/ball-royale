@@ -25,7 +25,7 @@ class MockWorld:
 
 
 def test_global_hazard_vote():
-    from system.crowd_system import CrowdSystem
+    import sys; print('SYSTEM MODULE:', sys.modules.get('system')); from system.crowd_system import CrowdSystem
 
     world = MockWorld()
     system = CrowdSystem(world)

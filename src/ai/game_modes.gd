@@ -842,6 +842,10 @@ class GameMode:
 					if "base_damage" in b: b.base_damage *= 0.95
 					elif b.has_method("set_meta") and b.has_meta("base_damage"):
 						b.set_meta("base_damage", float(b.get_meta("base_damage")) * 0.95)
+				elif trait_name == "quantum_entangled":
+					b.is_quantum_entangled = true
+				elif trait_name == "quantum_echo":
+					b.is_quantum_echo = true
 
 		var season_num = 1
 		if "leaderboard_manager" in world and world.leaderboard_manager != null:
@@ -19327,6 +19331,10 @@ class BumperBallsMode extends GameMode:
 					if "base_damage" in b: b.base_damage *= 0.95
 					elif b.has_method("set_meta") and b.has_meta("base_damage"):
 						b.set_meta("base_damage", float(b.get_meta("base_damage")) * 0.95)
+				elif trait_name == "quantum_entangled":
+					b.is_quantum_entangled = true
+				elif trait_name == "quantum_echo":
+					b.is_quantum_echo = true
 		for b in balls:
 			b.damage = 0.0
 			if not b.has_meta("mutators"):

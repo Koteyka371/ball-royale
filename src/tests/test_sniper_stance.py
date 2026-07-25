@@ -71,5 +71,8 @@ def test_sniper_stance():
 
         assert second_damage == first_damage * 1.5
 
+    del sys.modules["system"]
+    del sys.modules["system.lobby"]
+
 if __name__ == "__main__":
     test_sniper_stance()
