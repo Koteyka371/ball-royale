@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1450] Decoy Remote Detonator — *2026-07-25 07:15:56 UTC*
+
+Players can manually detonate their own decoys by pressing a specific button, allowing for strategic ambushes.
+
+---
+
 ## [idea-1434] Tesla Chain Trap — *2026-07-25 07:15:51 UTC*
 
 A player-deployable trap that connects to nearby traps to form a continuous electric beam that deals low damage but rapidly drains stamina.
