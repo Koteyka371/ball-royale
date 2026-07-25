@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1491] Geyser Jumping Boots — *2026-07-25 07:44:08 UTC*
+
+Add an item called 'Geyser Boots' that grants immunity to geyser damage and stun, but instead launches the player far across the map when standing on an erupting geyser.
+
+---
+
 ## [idea-1450] Decoy Remote Detonator — *2026-07-25 07:15:56 UTC*
 
 Players can manually detonate their own decoys by pressing a specific button, allowing for strategic ambushes.

@@ -25533,7 +25533,7 @@
     },
     {
       "id": "idea-1491",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Geyser Jumping Boots",
@@ -37155,6 +37155,40 @@
         "src/ai/extraction_zone_ambush_mod.py",
         "src/ai/extraction_zone_ambush_mod.gd",
         "tests/test_extraction_zone_ambush_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2174",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Homing Decoys",
+      "description": "Decoys that slowly move towards the nearest enemy instead of remaining stationary, adding pressure.",
+      "allowed_paths": [
+        "src/ai/homing_decoys.py",
+        "src/ai/homing_decoys.gd",
+        "tests/test_homing_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2175",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Shield Swap",
+      "description": "When swapping with a decoy, the player gains a temporary shield equivalent to the remaining health of the decoy.",
+      "allowed_paths": [
+        "src/ai/decoy_shield_swap.py",
+        "src/ai/decoy_shield_swap.gd",
+        "tests/test_decoy_shield_swap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
