@@ -22192,6 +22192,46 @@ class DayNightMode extends GameMode:
 				var fy = beam["y"]
 				var beam_radius = beam["radius"]
 
+					var redirected = false
+					if typeof(world) == TYPE_OBJECT and world.has("arena") and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+						var hazards = world.arena.hazards
+						for hazard in hazards:
+							var hk = ""
+							if typeof(hazard) == TYPE_DICTIONARY:
+								hk = hazard.get("kind", "")
+							else:
+								hk = hazard.get("kind", "")
+							if hk == "sunlight_reflector":
+								var hx = 0.0
+								var hy = 0.0
+								var hr = 20.0
+								if typeof(hazard) == TYPE_DICTIONARY:
+									hx = hazard.get("x", 0.0)
+									hy = hazard.get("y", 0.0)
+									hr = hazard.get("radius", 20.0)
+								else:
+									hx = hazard.get("x", 0.0)
+									hy = hazard.get("y", 0.0)
+									hr = hazard.get("radius", 20.0)
+
+								var dist_sq = (hx - fx) * (hx - fx) + (hy - fy) * (hy - fy)
+								if dist_sq < (beam_radius + hr) * (beam_radius + hr) and not beam.get("bounced", false):
+									beam["duration"] = 0.0
+									for _i in range(3):
+										var angle = randf() * 2.0 * PI
+										var new_x = hx + cos(angle) * 150.0
+										var new_y = hy + sin(angle) * 150.0
+										active_sunlight_beams.append({"x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0, "bounced": true})
+										if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+											world.call("add_event", "visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0, "source_x": hx, "source_y": hy})
+										elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+											world.add_event("visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0, "source_x": hx, "source_y": hy})
+									redirected = true
+									break
+
+					if redirected:
+						continue
+
 				for b in balls:
 					if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
 						continue
