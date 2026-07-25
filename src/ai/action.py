@@ -13133,6 +13133,15 @@ class Action:
                         self.world.boosters.remove(nearest)
 
 
+                elif getattr(nearest, "kind", None) == "geyser_boots":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("geyser_boots")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "orbital_link_booster":
                     self.ball.orbital_link_timer = 10.0
                     if hasattr(self.world, "events"):
@@ -20356,34 +20365,39 @@ class Action:
                                 # Launch / Stun effect
                                 import random
                                 angle = random.uniform(0, 2 * math.pi)
-                                launch_force = 1500.0
+                                has_geyser_boots = "geyser_boots" in getattr(self.ball, "inventory", [])
+
+                                launch_force = 3500.0 if has_geyser_boots else 1500.0
                                 self.ball.vx = math.cos(angle) * launch_force
                                 self.ball.vy = math.sin(angle) * launch_force
 
-                                self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
+                                if not has_geyser_boots:
+                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
+
                                 self.ball.geyser_immunity_timer = 3.0 # Immunity to prevent multi-hit from same eruption
 
-                                if b_type in ["water_elemental", "earth_elemental"]:
-                                    # Buff instead of damage
-                                    self.ball.speed_buff_timer = max(getattr(self.ball, "speed_buff_timer", 0.0), 3.0)
-                                    # Heal a bit
-                                    heal_amount = getattr(hazard, "damage", 5.0) * 2.0
-                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + heal_amount)
-                                else:
-                                    # Apply minor water-elemental damage
-                                    class DummyGeyserAttacker:
-                                        pass
-                                    att = DummyGeyserAttacker()
-                                    att.damage = getattr(hazard, "damage", 5.0)
-                                    att.id = getattr(hazard, "id", None)
-                                    att.element = "water"
-
-                                    if hasattr(self.world, "_deal_damage"):
-                                        self.world._deal_damage(att, self.ball, dmg=att.damage)
-                                    elif hasattr(self.ball, "take_damage"):
-                                        self.ball.take_damage(att.damage)
+                                if not has_geyser_boots:
+                                    if b_type in ["water_elemental", "earth_elemental"]:
+                                        # Buff instead of damage
+                                        self.ball.speed_buff_timer = max(getattr(self.ball, "speed_buff_timer", 0.0), 3.0)
+                                        # Heal a bit
+                                        heal_amount = getattr(hazard, "damage", 5.0) * 2.0
+                                        self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + heal_amount)
                                     else:
-                                        self.ball.hp -= att.damage
+                                        # Apply minor water-elemental damage
+                                        class DummyGeyserAttacker:
+                                            pass
+                                        att = DummyGeyserAttacker()
+                                        att.damage = getattr(hazard, "damage", 5.0)
+                                        att.id = getattr(hazard, "id", None)
+                                        att.element = "water"
+
+                                        if hasattr(self.world, "_deal_damage"):
+                                            self.world._deal_damage(att, self.ball, dmg=att.damage)
+                                        elif hasattr(self.ball, "take_damage"):
+                                            self.ball.take_damage(att.damage)
+                                        else:
+                                            self.ball.hp -= att.damage
 
                 if getattr(hazard, "kind", "") == "healing_aura":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)

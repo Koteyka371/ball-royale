@@ -26443,6 +26443,27 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif (typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "geyser_boots") or (typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "geyser_boots"):
+                var inv = []
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"):
+                    inv = self.ball.inventory
+                elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+                    inv = self.ball.inventory
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"):
+                    inv = self.ball.get_meta("inventory")
+                if not inv.has("geyser_boots"):
+                    inv.append("geyser_boots")
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["inventory"] = inv
+                elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+                    self.ball.inventory = inv
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("inventory", inv)
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "cursed_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("slow_timer", 5.0)
@@ -39930,7 +39951,13 @@ func _update_skill_timer(delta: float):
                                 b_type = b_type.to_lower()
 
                                 var angle = randf() * 2.0 * PI
-                                var launch_force = 1500.0
+                                var b_inv = []
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"): b_inv = self.ball.inventory
+                                elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball: b_inv = self.ball.inventory
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): b_inv = self.ball.get_meta("inventory")
+                                var has_geyser_boots = b_inv.has("geyser_boots")
+
+                                var launch_force = 3500.0 if has_geyser_boots else 1500.0
                                 var new_vx = cos(angle) * launch_force
                                 var new_vy = sin(angle) * launch_force
 
@@ -39940,42 +39967,44 @@ func _update_skill_timer(delta: float):
                                 if "vy" in self.ball: self.ball.vy = new_vy
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", new_vy)
 
-                                var c_stun = self.ball.stun_timer if "stun_timer" in self.ball else (self.ball.get_meta("stun_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer") else 0.0)
-                                c_stun = max(c_stun, 1.0)
-                                if "stun_timer" in self.ball: self.ball.stun_timer = c_stun
-                                elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", c_stun)
+                                if not has_geyser_boots:
+                                    var c_stun = self.ball.stun_timer if "stun_timer" in self.ball else (self.ball.get_meta("stun_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer") else 0.0)
+                                    c_stun = max(c_stun, 1.0)
+                                    if "stun_timer" in self.ball: self.ball.stun_timer = c_stun
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", c_stun)
 
                                 if "geyser_immunity_timer" in self.ball: self.ball.geyser_immunity_timer = 3.0
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("geyser_immunity_timer", 3.0)
 
-                                if b_type == "water_elemental" or b_type == "earth_elemental":
-                                    var spd_buff = self.ball.speed_buff_timer if "speed_buff_timer" in self.ball else (self.ball.get_meta("speed_buff_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("speed_buff_timer") else 0.0)
-                                    spd_buff = max(spd_buff, 3.0)
-                                    if "speed_buff_timer" in self.ball: self.ball.speed_buff_timer = spd_buff
-                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_buff_timer", spd_buff)
+                                if not has_geyser_boots:
+                                    if b_type == "water_elemental" or b_type == "earth_elemental":
+                                        var spd_buff = self.ball.speed_buff_timer if "speed_buff_timer" in self.ball else (self.ball.get_meta("speed_buff_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("speed_buff_timer") else 0.0)
+                                        spd_buff = max(spd_buff, 3.0)
+                                        if "speed_buff_timer" in self.ball: self.ball.speed_buff_timer = spd_buff
+                                        elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_buff_timer", spd_buff)
 
-                                    var h_dmg = hazard.damage if "damage" in hazard else (hazard.get_meta("damage") if hazard.has_method("get_meta") and hazard.has_meta("damage") else 5.0)
-                                    var heal_amount = h_dmg * 2.0
+                                        var h_dmg = hazard.damage if "damage" in hazard else (hazard.get_meta("damage") if hazard.has_method("get_meta") and hazard.has_meta("damage") else 5.0)
+                                        var heal_amount = h_dmg * 2.0
 
-                                    var current_hp = self.ball.hp if "hp" in self.ball else (self.ball.get_meta("hp") if self.ball.has_method("get_meta") and self.ball.has_meta("hp") else 100.0)
-                                    var current_max_hp = self.ball.max_hp if "max_hp" in self.ball else (self.ball.get_meta("max_hp") if self.ball.has_method("get_meta") and self.ball.has_meta("max_hp") else 100.0)
-                                    current_hp += heal_amount
-                                    if current_hp > current_max_hp: current_hp = current_max_hp
+                                        var current_hp = self.ball.hp if "hp" in self.ball else (self.ball.get_meta("hp") if self.ball.has_method("get_meta") and self.ball.has_meta("hp") else 100.0)
+                                        var current_max_hp = self.ball.max_hp if "max_hp" in self.ball else (self.ball.get_meta("max_hp") if self.ball.has_method("get_meta") and self.ball.has_meta("max_hp") else 100.0)
+                                        current_hp += heal_amount
+                                        if current_hp > current_max_hp: current_hp = current_max_hp
 
-                                    if "hp" in self.ball: self.ball.hp = current_hp
-                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp)
-                                else:
-                                    var h_dmg = hazard.damage if "damage" in hazard else (hazard.get_meta("damage") if hazard.has_method("get_meta") and hazard.has_meta("damage") else 5.0)
-                                    if self.world != null and self.world.has_method("_deal_damage"):
-                                        var att = {"damage": h_dmg, "element": "water"}
-                                        self.world._deal_damage(att, self.ball, h_dmg)
-                                    elif self.ball.has_method("take_damage"):
-                                        self.ball.take_damage(h_dmg)
-                                    elif "hp" in self.ball:
-                                        self.ball.hp -= h_dmg
-                                    elif self.ball.has_method("set_meta"):
-                                        var chp = self.ball.get_meta("hp") if self.ball.has_meta("hp") else 100.0
-                                        self.ball.set_meta("hp", chp - h_dmg)
+                                        if "hp" in self.ball: self.ball.hp = current_hp
+                                        elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", current_hp)
+                                    else:
+                                        var h_dmg = hazard.damage if "damage" in hazard else (hazard.get_meta("damage") if hazard.has_method("get_meta") and hazard.has_meta("damage") else 5.0)
+                                        if self.world != null and self.world.has_method("_deal_damage"):
+                                            var att = {"damage": h_dmg, "element": "water"}
+                                            self.world._deal_damage(att, self.ball, h_dmg)
+                                        elif self.ball.has_method("take_damage"):
+                                            self.ball.take_damage(h_dmg)
+                                        elif "hp" in self.ball:
+                                            self.ball.hp -= h_dmg
+                                        elif self.ball.has_method("set_meta"):
+                                            var chp = self.ball.get_meta("hp") if self.ball.has_meta("hp") else 100.0
+                                            self.ball.set_meta("hp", chp - h_dmg)
 
                 if h_kind == "healing_aura":
                     var h_rad = hazard.radius if "radius" in hazard else (hazard.get_meta("radius") if hazard.has_method("get_meta") and hazard.has_meta("radius") else 150.0)
