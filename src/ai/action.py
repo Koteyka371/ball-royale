@@ -13273,7 +13273,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -18190,6 +18190,38 @@ class Action:
                         pass
 
 
+            elif skill_name == "deploy_cluster_mines":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    import random
+                    import math
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.duration = 0.0
+                                self.active = True
+
+                    num_mines = 5
+                    radius_spread = 60.0
+                    for i in range(num_mines):
+                        angle = (2 * math.pi / num_mines) * i
+                        mx = self.ball.x + math.cos(angle) * radius_spread
+                        my = self.ball.y + math.sin(angle) * radius_spread
+                        mine_id = getattr(self.world, "next_id", 99999) + random.randint(1000, 9999) + i
+                        mine = Hazard(mine_id, mx, my, 20.0, "cluster_mine", 25.0)
+                        mine.duration = 30.0
+                        mine.owner_id = getattr(self.ball, "id", None)
+                        mine.arming_timer = 3.0
+                        mine.state = "arming"
+                        self.world.arena.hazards.append(mine)
+
             elif skill_name == "deploy_time_anomaly_field":
                 from arena.procedural_arena import Hazard
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -20078,6 +20110,58 @@ class Action:
                                                 if hasattr(b, "vy"): b.vy += random.uniform(-10.0, 10.0) * delta
                         else:
                             hazard.active = False
+
+                if getattr(hazard, "kind", "") == "cluster_mine" and getattr(hazard, "active", True):
+                    # Proximity detonation by balls
+                    if getattr(hazard, "state", "") == "armed":
+                        dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
+                        if dist_sq <= getattr(hazard, "radius", 20.0)**2:
+                            hazard.state = "detonating"
+
+                    # Update loop handled by owner
+                    if getattr(hazard, "owner_id", None) == self.ball.id:
+                        if getattr(hazard, "arming_timer", 0.0) > 0:
+                            hazard.arming_timer = getattr(hazard, "arming_timer", 0.0) - delta
+                            if getattr(hazard, "arming_timer", 0.0) <= 0:
+                                hazard.state = "armed"
+                                hazard.arming_timer = 0.0
+
+                        if getattr(hazard, "state", "") == "armed":
+                            # Check for incoming projectiles or thrown items
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                for other_h in getattr(self.world.arena, "hazards", []):
+                                    if other_h == hazard or not getattr(other_h, "active", True):
+                                        continue
+                                    k = getattr(other_h, "kind", "")
+                                    if any(x in k for x in ["projectile", "bomb", "grenade", "laser", "fireball", "flare", "thrown"]):
+                                        dist_sq = (hazard.x - getattr(other_h, "x", 0.0))**2 + (hazard.y - getattr(other_h, "y", 0.0))**2
+                                        if dist_sq <= (getattr(hazard, "radius", 20.0) + getattr(other_h, "radius", 15.0))**2:
+                                            hazard.state = "detonating"
+                                            break
+
+                        if getattr(hazard, "state", "") == "detonating":
+                            hazard.active = False
+                            hazard.duration = 0.0
+                            r = 120.0 # Explosion radius
+                            dmg = getattr(hazard, "damage", 25.0)
+                            if hasattr(self.world, "balls"):
+                                for b in list(getattr(self.world, "balls", [])):
+                                    if not getattr(b, "alive", True): continue
+                                    dist_sq = (hazard.x - getattr(b, "x", 0.0))**2 + (hazard.y - getattr(b, "y", 0.0))**2
+                                    if dist_sq <= r*r:
+                                        b.hp = getattr(b, "hp", 100) - dmg
+
+                            # Cascade
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                for other_h in list(getattr(self.world.arena, "hazards", [])):
+                                    if other_h == hazard or not getattr(other_h, "active", True): continue
+                                    if getattr(other_h, "kind", "") == "cluster_mine":
+                                        dist_sq = (hazard.x - getattr(other_h, "x", 0.0))**2 + (hazard.y - getattr(other_h, "y", 0.0))**2
+                                        if dist_sq <= r*r:
+                                            other_h.state = "detonating"
+
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": hazard.x, "y": hazard.y, "radius": r}})
 
                 if getattr(hazard, "kind", "") == "time_anomaly_field":
                     dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
