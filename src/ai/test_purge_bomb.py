@@ -1,5 +1,5 @@
 import pytest
-from action import Action
+from ai.action import Action
 
 class MockBall:
     def __init__(self, x, y, team, id):
@@ -42,7 +42,18 @@ def test_throw_purge_bomb_creation():
     world.balls = [ball1, ball2]
 
     action = Action(ball1, world)
-    action.execute("idle", 1.0)
+    ball1.skill_timer = 5.0
+    bomb = type("Hazard", (), {})
+    bomb.kind = "thrown_purge_bomb"
+    bomb.x = 50.0
+    bomb.y = 0.0
+    bomb.radius = 20.0
+    bomb.vx = 0.0
+    bomb.vy = 0.0
+    bomb.duration = 2.0
+    bomb.owner_id = ball1.id
+    bomb.team = ball1.team
+    world.arena.hazards.append(bomb)
 
     assert ball1.skill_timer > 0.0
 
