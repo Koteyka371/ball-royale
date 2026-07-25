@@ -30771,6 +30771,73 @@ func _use_skill():
                         if dist <= explosion_radius:
                             if e.has_method("take_damage"):
                                 e.take_damage(explosion_damage)
+
+        elif skill_name == "deploy_beacon":
+            var active_beacon = null
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                if self.ball.has("active_beacon_id"): active_beacon = self.ball["active_beacon_id"]
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("active_beacon_id"):
+                active_beacon = self.ball.get_meta("active_beacon_id")
+            elif "active_beacon_id" in self.ball:
+                active_beacon = self.ball.active_beacon_id
+
+            if active_beacon != null:
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    for h in self.world.arena.hazards:
+                        var h_id = h["id"] if typeof(h) == TYPE_DICTIONARY and h.has("id") else (h.id if "id" in h else null)
+                        var h_kind_val = h["kind"] if typeof(h) == TYPE_DICTIONARY and h.has("kind") else (h.kind if "kind" in h else "")
+                        if h_id == active_beacon and h_kind_val == "recall_beacon":
+                            if typeof(h) == TYPE_DICTIONARY:
+                                h["duration"] = 0.0
+                            else:
+                                h.duration = 0.0
+                            break
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["active_beacon_id"] = null
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("active_beacon_id", null)
+                elif "active_beacon_id" in self.ball:
+                    self.ball.active_beacon_id = null
+            else:
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    var rng = RandomNumberGenerator.new()
+                    rng.randomize()
+                    var b_id = (self.world.next_id if "next_id" in self.world else 99999) + rng.randi_range(1000, 9999)
+                    var beacon = {}
+                    beacon["id"] = b_id
+                    beacon["x"] = self.ball.x
+                    beacon["y"] = self.ball.y
+                    beacon["radius"] = 15.0
+                    beacon["kind"] = "recall_beacon"
+                    beacon["damage"] = 0.0
+                    beacon["duration"] = 5.0
+                    beacon["owner_id"] = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else null)
+
+                    beacon["saved_hp"] = self.ball.hp if "hp" in self.ball else (self.ball.get_meta("hp") if self.ball.has_method("get_meta") and self.ball.has_meta("hp") else 100.0)
+                    var saved_shields = {}
+                    var shield_keys = ["aegis_shield_active_timer", "bounce_shield_active", "kinetic_shield_active", "kinetic_shield_stored_damage", "half_reflect_shield_active", "surge_shield_active", "velocity_shield_active", "energy_shield_active", "energy_shield_hp", "reflect_shield_active", "reflect_shield_capacity", "reflect_shield_timer", "reflect_shield_current_layers", "reflect_shield_initial_capacity"]
+                    for k in shield_keys:
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has(k):
+                            saved_shields[k] = self.ball[k]
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta(k):
+                            saved_shields[k] = self.ball.get_meta(k)
+                        elif k in self.ball:
+                            saved_shields[k] = self.ball.get(k)
+                    beacon["saved_shields"] = saved_shields
+
+                    self.world.arena.hazards.append(beacon)
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["active_beacon_id"] = b_id
+                        self.ball["skill_timer"] = 0.5
+                    else:
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("active_beacon_id", b_id)
+                        elif "active_beacon_id" in self.ball:
+                            self.ball.active_beacon_id = b_id
+                        if "skill_timer" in self.ball:
+                            self.ball.skill_timer = 0.5
+
         elif skill_name == "deploy_decoy_beacon":
             if "balls" in self.world:
                 var beacon = null
@@ -39852,6 +39919,61 @@ func _update_skill_timer(delta: float):
 
                             if "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
                                 self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": h_x, "y": h_y, "radius": r}})
+
+
+
+                if h_kind == "recall_beacon":
+                    var h_owner = hazard["owner_id"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
+                    var ball_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else null)
+
+                    if h_owner == ball_id:
+                        var h_duration = float(hazard.duration) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration") else (float(hazard.get_meta("duration")) if hazard.has_method("has_meta") and hazard.has_meta("duration") else (float(hazard.duration) if "duration" in hazard else 0.0))
+                        h_duration -= delta
+                        if h_duration <= 0:
+                            var h_x = float(hazard.x) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x") else (float(hazard.get_meta("x")) if hazard.has_method("has_meta") and hazard.has_meta("x") else (float(hazard.x) if "x" in hazard else 0.0))
+                            var h_y = float(hazard.y) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y") else (float(hazard.get_meta("y")) if hazard.has_method("has_meta") and hazard.has_meta("y") else (float(hazard.y) if "y" in hazard else 0.0))
+                            var h_hp = float(hazard.saved_hp) if typeof(hazard) == TYPE_DICTIONARY and hazard.has("saved_hp") else (float(hazard.get_meta("saved_hp")) if hazard.has_method("has_meta") and hazard.has_meta("saved_hp") else (float(hazard.saved_hp) if "saved_hp" in hazard else self.ball.hp))
+                            var h_shields = hazard.saved_shields if typeof(hazard) == TYPE_DICTIONARY and hazard.has("saved_shields") else (hazard.get_meta("saved_shields") if hazard.has_method("has_meta") and hazard.has_meta("saved_shields") else (hazard.saved_shields if "saved_shields" in hazard else {}))
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["x"] = h_x
+                                self.ball["y"] = h_y
+                                self.ball["hp"] = h_hp
+                                for k in h_shields.keys():
+                                    if h_shields[k] != null:
+                                        self.ball[k] = h_shields[k]
+                                self.ball["active_beacon_id"] = null
+                                var base_cooldown = self.ball["SKILL_COOLDOWN"] if self.ball.has("SKILL_COOLDOWN") else 15.0
+                                self.ball["skill_timer"] = base_cooldown
+                            else:
+                                self.ball.x = h_x
+                                self.ball.y = h_y
+                                self.ball.hp = h_hp
+                                for k in h_shields.keys():
+                                    if h_shields[k] != null:
+                                        if self.ball.has_method("set_meta"):
+                                            self.ball.set_meta(k, h_shields[k])
+                                        elif k in self.ball:
+                                            self.ball.set(k, h_shields[k])
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("active_beacon_id", null)
+                                elif "active_beacon_id" in self.ball:
+                                    self.ball.active_beacon_id = null
+                                var base_cooldown = self.ball.get_meta("SKILL_COOLDOWN") if self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN") else (self.ball.SKILL_COOLDOWN if "SKILL_COOLDOWN" in self.ball else 15.0)
+                                if "skill_timer" in self.ball:
+                                    self.ball.skill_timer = base_cooldown
+
+                            if "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+                                self.world.events.append({"type": "visual_effect", "data": {"x": h_x, "y": h_y, "kind": "teleport"}})
+
+                            hazards_to_remove.append(hazard)
+                        else:
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                hazard["duration"] = h_duration
+                            elif hazard.has_method("set_meta"):
+                                hazard.set_meta("duration", h_duration)
+                            elif "duration" in hazard:
+                                hazard.duration = h_duration
 
 
                 if h_kind == "time_anomaly_field":
