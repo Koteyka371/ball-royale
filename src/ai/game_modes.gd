@@ -59364,3 +59364,116 @@ class BlackHoleWeatherMode extends GameMode:
 
 GAME_MODES['huge_tornados'] = HugeTornadosMode.new()
 GAME_MODES['black_hole_weather'] = BlackHoleWeatherMode.new()
+
+
+class AuctionEventMode extends GameMode:
+	var auction_timer = 20.0
+	var auction_active = false
+	var auction_duration = 5.0
+	var current_bid = 0
+	var highest_bidder = null
+	var artifact_stats = {"max_hp": 50.0, "base_speed": 20.0, "base_damage": 10.0}
+
+	func _init():
+		super()
+		name = "Hidden Item Auction"
+		description = "Periodically, a hidden artifact goes up for auction among alive players. They can bid their gold to win the artifact, which grants permanent buffs."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			if (typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator") or (typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator"):
+				alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return
+
+		if not auction_active:
+			auction_timer -= delta
+			if auction_timer <= 0:
+				auction_active = true
+				auction_duration = 5.0
+				current_bid = 10
+				highest_bidder = null
+
+				artifact_stats = {
+					"max_hp": randi() % 81 + 20,
+					"base_speed": randi() % 31 + 10,
+					"base_damage": randi() % 21 + 5
+				}
+				if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+					world.add_event("auction_started", {"starting_bid": current_bid})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("auction_started", {"starting_bid": current_bid})
+		else:
+			auction_duration -= delta
+
+			for b in alive_balls:
+				var gold = 0
+				if typeof(b) == TYPE_DICTIONARY and b.has("gold"):
+					gold = b["gold"]
+				elif typeof(b) == TYPE_OBJECT and 'gold' in b:
+					gold = b.get("gold")
+
+				if gold > current_bid and highest_bidder != b and randf() < 2.0 * delta:
+					var extra_bid = max(1, int((gold - current_bid) * randf() * 0.5))
+					var bid_amount = current_bid + extra_bid
+					current_bid = bid_amount
+					highest_bidder = b
+
+					var b_id = null
+					if typeof(b) == TYPE_DICTIONARY and b.has("id"):
+						b_id = b["id"]
+					elif typeof(b) == TYPE_OBJECT and 'id' in b:
+						b_id = b.get("id")
+
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event("auction_bid", {"bidder_id": b_id, "amount": bid_amount})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("auction_bid", {"bidder_id": b_id, "amount": bid_amount})
+
+			if auction_duration <= 0:
+				auction_active = false
+				auction_timer = randf_range(20.0, 40.0)
+				if highest_bidder != null:
+					# Deduct gold and award stats
+					if typeof(highest_bidder) == TYPE_DICTIONARY:
+						highest_bidder["gold"] -= current_bid
+						highest_bidder["max_hp"] = highest_bidder.get("max_hp", 100.0) + artifact_stats["max_hp"]
+						highest_bidder["hp"] = highest_bidder.get("hp", 100.0) + artifact_stats["max_hp"]
+						highest_bidder["base_speed"] = highest_bidder.get("base_speed", 100.0) + artifact_stats["base_speed"]
+						highest_bidder["base_damage"] = highest_bidder.get("base_damage", 10.0) + artifact_stats["base_damage"]
+					else:
+						highest_bidder.set("gold", highest_bidder.get("gold") - current_bid)
+						highest_bidder.set("max_hp", highest_bidder.get("max_hp") + artifact_stats["max_hp"])
+						highest_bidder.set("hp", highest_bidder.get("hp") + artifact_stats["max_hp"])
+						highest_bidder.set("base_speed", highest_bidder.get("base_speed") + artifact_stats["base_speed"])
+						highest_bidder.set("base_damage", highest_bidder.get("base_damage") + artifact_stats["base_damage"])
+
+					var h_id = null
+					if typeof(highest_bidder) == TYPE_DICTIONARY and highest_bidder.has("id"):
+						h_id = highest_bidder["id"]
+					elif typeof(highest_bidder) == TYPE_OBJECT and 'id' in highest_bidder:
+						h_id = highest_bidder.get("id")
+
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event("auction_won", {
+							"winner_id": h_id,
+							"cost": current_bid,
+							"stats": artifact_stats
+						})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("auction_won", {
+							"winner_id": h_id,
+							"cost": current_bid,
+							"stats": artifact_stats
+						})
+				else:
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event("auction_failed", {})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("auction_failed", {})
+
+GAME_MODES['auction_event'] = AuctionEventMode.new()
