@@ -6173,6 +6173,8 @@ class Action:
                                                     self.world.events.append({"type": "visual_effect", "data": {"type": "emp_blast", "x": other.x, "y": other.y, "radius": radius}})
                                             elif decoy_type == "stun_trap":
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
+                                            elif decoy_type == "slow":
+                                                b.slow_timer = getattr(b, "slow_timer", 0.0) + 3.0
                                             elif decoy_type == "explosive":
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
@@ -16374,32 +16376,43 @@ class Action:
 
             elif skill_name == "trickster_clone":
                 import copy
+                import math
                 if hasattr(self.world, "balls"):
-                    clone = copy.copy(self.ball)
-                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
-                    if hasattr(self.world, "next_id"):
-                        self.world.next_id += 1
+                    angles = [0, 120, 240] # three different directions
+                    for i, angle_deg in enumerate(angles):
+                        clone = copy.copy(self.ball)
+                        clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
 
-                    clone.hp = getattr(self.ball, "max_hp", 100) * 0.5
-                    clone.max_hp = clone.hp
-                    clone.damage = 0.0
-                    clone.is_decoy_clone = True
-                    clone.is_illusion = True
-                    clone.mimic_owner = getattr(self.ball, "id", None)
-                    clone.mimic_timer = 15.0
+                        clone.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                        clone.max_hp = clone.hp
+                        clone.damage = 0.0
+                        clone.is_decoy_clone = True
+                        clone.is_illusion = True
+                        clone.mimic_owner = getattr(self.ball, "id", None)
+                        clone.mimic_timer = 15.0
 
-                    clone.skill = None
-                    clone.SKILL = None
-                    if hasattr(clone, "active_skill"):
-                        clone.active_skill = None
-                    clone.skill_timer = 9999.0
+                        clone.skill = None
+                        clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+                        clone.skill_timer = 9999.0
 
-                    clone.is_decoy = True
-                    clone.decoy_type = "explosive"
-                    clone.decoy_timer = 15.0
-                    clone.is_confetti_clone = True
+                        clone.is_decoy = True
+                        clone.decoy_type = "slow"
+                        clone.decoy_timer = 15.0
+                        clone.is_confetti_clone = True
 
-                    self.world.balls.append(clone)
+                        # Set initial velocity to run away
+                        speed = getattr(self.ball, "speed", 10.0)
+                        rad = math.radians(angle_deg)
+                        clone.vx = math.cos(rad) * speed
+                        clone.vy = math.sin(rad) * speed
+                        # Override current action so it just runs in that direction
+                        clone.current_action = "run_in_direction"
+
+                        self.world.balls.append(clone)
 
             elif skill_name == "decoy_clone":
                 import copy
