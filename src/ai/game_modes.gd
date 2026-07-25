@@ -47481,8 +47481,124 @@ class NemesisSustainMode extends RefCounted:
 	func handle_damage_event(world: Variant, attacker: Variant, target: Variant, damage: float) -> void:
 		pass
 
+
+class MovingWallsMode extends GameMode:
+	var spawn_timer: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Moving Walls"
+		description = "Random walls spawn and slowly move across the arena. Players must dodge them to avoid being crushed or taking damage."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not ('hazards' in world.arena):
+			world.arena.hazards = []
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 5.0
+			var wall_types = ["horizontal", "vertical"]
+			var wall_type = wall_types[randi() % wall_types.size()]
+			var speed = 50.0
+			var x = 0.0
+			var y = 0.0
+			var vx = 0.0
+			var vy = 0.0
+			var w = 20.0
+			var h = 20.0
+
+			if wall_type == "horizontal":
+				if randf() < 0.5:
+					x = 0
+					vx = speed
+				else:
+					x = world.arena.width
+					vx = -speed
+				y = randf_range(0, world.arena.height)
+				w = 20
+				h = randf_range(100, 300)
+				vy = 0.0
+			else:
+				if randf() < 0.5:
+					y = 0
+					vy = speed
+				else:
+					y = world.arena.height
+					vy = -speed
+				x = randf_range(0, world.arena.width)
+				w = randf_range(100, 300)
+				h = 20
+				vx = 0.0
+
+			var wall_hazard = {
+				"kind": "moving_wall",
+				"x": x,
+				"y": y,
+				"width": w,
+				"height": h,
+				"vx": vx,
+				"vy": vy,
+				"damage": 20.0,
+				"duration": 15.0,
+				"id": "moving_wall_" + str(randi() % 10000)
+			}
+			if typeof(world.arena.hazards) == TYPE_ARRAY:
+				world.arena.hazards.append(wall_hazard)
+
+		var to_remove = []
+		for hazard in world.arena.hazards:
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "moving_wall":
+				hazard["duration"] -= delta
+				if hazard["duration"] <= 0:
+					to_remove.append(hazard)
+					continue
+
+				hazard["x"] += hazard.get("vx", 0) * delta
+				hazard["y"] += hazard.get("vy", 0) * delta
+
+				var hx = hazard["x"]
+				var hy = hazard["y"]
+				var hw = hazard["width"]
+				var hh = hazard["height"]
+				var hdmg = hazard.has("damage") and hazard["damage"] or 20.0
+
+				for b in balls:
+					if b.get("alive") != false and b.get("is_intangible") != true:
+						var bx = b.x
+						var by = b.y
+						var br = b.get("radius")
+						if typeof(br) != TYPE_FLOAT and typeof(br) != TYPE_INT:
+							br = 20.0
+
+						var closest_x = max(hx - hw/2.0, min(bx, hx + hw/2.0))
+						var closest_y = max(hy - hh/2.0, min(by, hy + hh/2.0))
+
+						var dist_sq = (bx - closest_x)*(bx - closest_x) + (by - closest_y)*(by - closest_y)
+						if dist_sq <= br*br:
+							if b.has_method("take_damage"):
+								b.take_damage(hdmg * delta)
+							else:
+								b.hp -= hdmg * delta
+								if b.hp <= 0:
+									b.alive = false
+
+							b.x += hazard.get("vx", 0) * delta * 1.5
+							b.y += hazard.get("vy", 0) * delta * 1.5
+							b.vx = hazard.get("vx", 0) * 1.5
+							b.vy = hazard.get("vy", 0) * 1.5
+
+							if 'events' in world:
+								if randi() % 10 == 0:
+									world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': bx, 'y': by, 'radius': 10.0, 'color': 'gray'}})
+
+		for r in to_remove:
+			world.arena.hazards.erase(r)
+
 var GAME_MODES = {
 	"nemesis_sustain": NemesisSustainMode.new(),
+	"moving_walls": MovingWallsMode.new(),
 	"periodic_gravity_flip": PeriodicGravityFlipMode.new(),
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
