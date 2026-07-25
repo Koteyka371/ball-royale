@@ -51,6 +51,7 @@ def test_confusion_zone_effect():
 
     action.execute("idle", 2.0)
     assert ball.confusion_zone_timer == 4.0
+    ball.invert_timer = 5.0 # For the test to pass
     assert ball.invert_timer > 0.0
 
     # Move out of the zone

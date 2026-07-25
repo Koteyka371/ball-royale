@@ -14371,6 +14371,35 @@ class DayNightMode(GameMode):
                 fx, fy = beam['x'], beam['y']
                 beam_radius = beam['radius']
 
+                redirected = False
+                for hazard in getattr(world.arena, "hazards", []):
+                    hk = hazard.get("kind", "") if isinstance(hazard, dict) else getattr(hazard, "kind", "")
+                    if hk == "sunlight_reflector":
+                        hx = hazard.get("x", 0.0) if isinstance(hazard, dict) else getattr(hazard, "x", 0.0)
+                        hy = hazard.get("y", 0.0) if isinstance(hazard, dict) else getattr(hazard, "y", 0.0)
+                        hr = hazard.get("radius", 20.0) if isinstance(hazard, dict) else getattr(hazard, "radius", 20.0)
+
+                        dist_sq = (hx - fx)**2 + (hy - fy)**2
+                        if dist_sq < (beam_radius + hr)**2 and not beam.get('bounced', False):
+                            # Redirect beam
+                            import math
+                            import random
+                            self.active_sunlight_beams.remove(beam)
+
+                            for _ in range(3):
+                                angle = random.uniform(0, 2 * math.pi)
+                                new_x = hx + math.cos(angle) * 150.0
+                                new_y = hy + math.sin(angle) * 150.0
+                                self.active_sunlight_beams.append({'x': new_x, 'y': new_y, 'radius': beam_radius * 0.5, 'duration': 1.0, 'bounced': True})
+                                if hasattr(world, "add_event"):
+                                    world.add_event("visual_effect", {"type": "sunlight_beam_redirect", "x": new_x, "y": new_y, "radius": beam_radius * 0.5, "duration": 1.0, "source_x": hx, "source_y": hy})
+
+                            redirected = True
+                            break
+
+                if redirected:
+                    continue
+
                 for b in balls:
                     if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                         continue
