@@ -5981,6 +5981,19 @@ class Action:
                             b.hp = min(getattr(b, "max_hp", 100), getattr(b, "hp", 100) + heal_amount)
 
         if getattr(self.ball, "is_decoy", False):
+            if getattr(self.ball, "decoy_type", "") == "hologram":
+                self.ball.decoy_timer -= delta
+                if self.ball.decoy_timer <= 0:
+                    self.ball.alive = False
+                    self.ball.hp = 0
+                else:
+                    # Move hologram forward
+                    vx = getattr(self.ball, "vx", 0.0)
+                    vy = getattr(self.ball, "vy", 0.0)
+                    self.ball.x += vx * delta
+                    self.ball.y += vy * delta
+                    return
+
             if getattr(self.ball, "decoy_type", "") == "siren":
                 if not hasattr(self.ball, "siren_ping_timer"):
                     self.ball.siren_ping_timer = 1.0
@@ -13118,6 +13131,42 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "holo_decoy_booster":
+                    import copy
+                    decoy = copy.copy(self.ball)
+                    decoy.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+                    decoy.is_decoy = True
+                    decoy.decoy_type = "hologram"
+                    decoy.decoy_timer = 5.0
+                    decoy.owner_id = getattr(self.ball, "id", None)
+
+                    # Determine running direction (same as current velocity or random if stationary)
+                    vx = getattr(self.ball, "vx", 0.0)
+                    vy = getattr(self.ball, "vy", 0.0)
+                    import math
+                    speed = math.hypot(vx, vy)
+                    if speed > 0.001:
+                        decoy.vx = vx
+                        decoy.vy = vy
+                    else:
+                        angle = __import__('random').uniform(0, 2 * math.pi)
+                        b_speed = getattr(self.ball, "speed", 100.0)
+                        decoy.vx = math.cos(angle) * b_speed
+                        decoy.vy = math.sin(angle) * b_speed
+
+                    decoy.intangible = True # Cannot be hit physically? Or maybe just normal health
+                    decoy.hp = 1 # Dies in one hit
+
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(decoy)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "decoy_trap_booster":
                     self.ball.has_stealth_drone = True
                     self.ball.stealth_drone_timer = max(getattr(self.ball, 'stealth_drone_timer', 0.0), 3.0)
