@@ -15182,15 +15182,37 @@ func execute(strategy: String, delta: float):
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
-                    if dist_sq < hazard.radius * hazard.radius:
-                        var hd = hazard.damage * delta
-                        if self.ball.has_method("take_damage"):
-                            self.ball.take_damage(hd)
-                        elif "hp" in self.ball:
-                            self.ball.hp -= hd
-                            if self.ball.hp <= 0:
-                                self.ball.alive = false
+                    var dist = sqrt(dist_sq)
 
+                    if dist_sq < hazard.radius * hazard.radius:
+                        # Apply slow effect
+                        var cosmetic = ""
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cosmetic"):
+                            cosmetic = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+                        elif "cosmetic" in self.ball:
+                            cosmetic = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+
+                        var base_spd = 100.0
+                        if "base_speed" in self.ball: base_spd = self.ball.base_speed
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_speed"): base_spd = self.ball.get_meta("base_speed")
+
+                        if not cosmetic in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
+                            if "speed" in self.ball: self.ball.speed = base_spd * 0.3
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 0.3)
+
+                        # Quicksand sucks in players within a certain radius, dealing no damage but making movement very difficult
+                        if dist > 0.1:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var pull_strength = 20.0 * delta
+                            var anchor_booster_timer = 0.0
+                            if "anchor_booster_timer" in self.ball: anchor_booster_timer = self.ball.anchor_booster_timer
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("anchor_booster_timer"): anchor_booster_timer = self.ball.get_meta("anchor_booster_timer")
+                            if anchor_booster_timer <= 0:
+                                self.ball.x += nx * pull_strength
+                                self.ball.y += ny * pull_strength
+
+                        # Ensure quicksand does no damage
                         var has_wt = false
                         var bt = ""
                         if "ball_type" in self.ball: bt = str(self.ball.ball_type).to_lower()

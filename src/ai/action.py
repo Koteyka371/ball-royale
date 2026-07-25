@@ -7861,6 +7861,16 @@ class Action:
                             # Apply slow effect
                             if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
                                 self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+
+                            # Quicksand sucks in players within a certain radius, dealing no damage but making movement very difficult
+                            dist = dist_sq ** 0.5
+                            if dist > 0.1:
+                                nx = dx / dist
+                                ny = dy / dist
+                                pull_strength = 20.0 * delta
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
                     elif hazard.kind == "flood_zone":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -8001,14 +8011,19 @@ class Action:
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
                         if dist_sq < hazard.radius * hazard.radius:
-                            import random
-                            hazard_damage = hazard.damage * delta
-                            if hasattr(self.ball, "take_damage"):
-                                self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
-                                self.ball.hp -= hazard_damage
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = False
+                            # Apply slow effect
+                            if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") not in ["mud_tires", "spiked_tires", "rain_boots", "waterproof_boots", "hover_boots"]:
+                                self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.3
+
+                            # Quicksand sucks in players within a certain radius, dealing no damage but making movement very difficult
+                            dist = dist_sq ** 0.5
+                            if dist > 0.1:
+                                nx = dx / dist
+                                ny = dy / dist
+                                pull_strength = 20.0 * delta
+                                if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
+                                    self.ball.x += nx * pull_strength
+                                    self.ball.y += ny * pull_strength
 
                             # Occasional slow debuff that lingers
                             b_type = str(getattr(self.ball, "ball_type", "")).lower()
