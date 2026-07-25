@@ -25380,7 +25380,7 @@
     },
     {
       "id": "idea-1482",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Progression",
@@ -37053,6 +37053,74 @@
         "src/ai/healing_clusters.py",
         "src/ai/healing_clusters.gd",
         "tests/test_healing_clusters.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2168",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Grid Hazard",
+      "description": "Periodically spawn a grid of laser beams across the arena. The beams are harmless for a 3-second warning period, then activate and deal high damage to any player caught inside.",
+      "allowed_paths": [
+        "src/arena/laser_grid.py",
+        "src/arena/laser_grid.gd",
+        "tests/test_laser_grid.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2169",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "New Weapon: Tesla Coil Trap",
+      "description": "A deployable trap that does minor area damage. However, if struck by a lightning strike during a thunderstorm or hit by an EMP, the Tesla Coil becomes overcharged for 10 seconds, drastically increasing its radius and chaining massive damage to anyone caught inside.",
+      "allowed_paths": [
+        "src/arena/new_weapon_tesla_coil_trap.py",
+        "src/arena/new_weapon_tesla_coil_trap.gd",
+        "tests/test_new_weapon_tesla_coil_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2170",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Synergy: Blizzards & Wet Debuffs",
+      "description": "Players suffering from the 'wet' debuff (from crossing water or during rain) should instantly receive a massive speed penalty or become completely frozen for 1 second if the weather changes to a 'blizzard'. This rewards players who pay attention to weather forecasts and punishes those caught in environmental crossfires.",
+      "allowed_paths": [
+        "src/ai/synergy_blizzards_wet_debuffs.py",
+        "src/ai/synergy_blizzards_wet_debuffs.gd",
+        "tests/test_synergy_blizzards_wet_debuffs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2171",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Core Mode",
+      "description": "A massive, stationary black hole occupies the center of the arena. It slowly pulls all players and hazards towards it. Players must constantly use movement skills to avoid falling in and being instantly eliminated.",
+      "allowed_paths": [
+        "src/ai/black_hole_core.py",
+        "src/ai/black_hole_core.gd",
+        "tests/test_black_hole_core.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

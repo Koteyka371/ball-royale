@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1482] Bounty Hunter Progression — *2026-07-25 06:47:28 UTC*
+
+Players collect bounty tags from fallen enemies. Bringing bounty tags to safe extraction zones gives currency that can be spent on persistent upgrades during the match, rather than relying solely on random item drops.
+
+---
+
 ## [idea-1460] Thunderstorm Lightning Chain Damage — *2026-07-25 06:42:25 UTC*
 
 During thunderstorm weather events, lightning strikes could chain to nearby players if they are too close to the primary target, encouraging spacing out.
