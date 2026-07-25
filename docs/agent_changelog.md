@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1486] Holographic Projection Item — *2026-07-25 21:15:09 UTC*
+
+An item that players can pick up and use to create a holographic copy of themselves that runs in a straight line, distracting AI enemies or drawing their fire for a few seconds.
+
+---
+
 ## [idea-1466] Anti-Gravity Boots — *2026-07-25 21:15:04 UTC*
 
 An item that makes the ball float slightly, giving immunity to ground hazards like mud or spikes but increased knockback from attacks.
