@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1471] Bounty Hunter Tracking Drone — *2026-07-25 21:36:35 UTC*
+
+Add a deployable tracking drone for Bounty Hunters that patrols the map, seeking out the current high-value bounty target and constantly revealing their location while the drone remains intact.
+
+---
+
 ## [idea-1486] Holographic Projection Item — *2026-07-25 21:15:09 UTC*
 
 An item that players can pick up and use to create a holographic copy of themselves that runs in a straight line, distracting AI enemies or drawing their fire for a few seconds.

@@ -25193,7 +25193,7 @@
     },
     {
       "id": "idea-1471",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Tracking Drone",
@@ -37361,6 +37361,57 @@
         "src/ui/guild_invasions.gd",
         "src/ai/guild_invasions.py",
         "tests/test_guild_invasions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2186",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Boots",
+      "description": "A cosmetic item that allows players to bounce off walls with increased velocity instead of taking damage or slowing down.",
+      "allowed_paths": [
+        "src/ai/bouncy_boots.py",
+        "src/ai/bouncy_boots.gd",
+        "tests/test_bouncy_boots.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2187",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Field Generator",
+      "description": "A deployable hazard that drains HP from enemies inside its radius and redistributes it evenly to the owner and any nearby allies.",
+      "allowed_paths": [
+        "src/ai/vampiric_field_generator.py",
+        "src/ai/vampiric_field_generator.gd",
+        "tests/test_vampiric_field_generator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2188",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Flame Trail Boots",
+      "description": "A cosmetic item that leaves a temporary trail of fire behind the player, slightly damaging enemies that follow too closely.",
+      "allowed_paths": [
+        "src/ai/flame_trail_boots.py",
+        "src/ai/flame_trail_boots.gd",
+        "tests/test_flame_trail_boots.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
