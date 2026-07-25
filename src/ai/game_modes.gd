@@ -47744,7 +47744,133 @@ class MovingWallsMode extends GameMode:
 		for r in to_remove:
 			world.arena.hazards.erase(r)
 
+
+class CaptureZonesMode extends GameMode:
+	var zones: Array = []
+	var spawn_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Capture Zones"
+		description = "Players capture sections of the map by remaining inside them. Captured sections periodically drop boosters or spawn defensive hazards against enemies."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		# Initialize zones if none exist
+		if zones.size() == 0:
+			var seed_val = 0
+			if typeof(world) == TYPE_OBJECT and "tick_timer" in world:
+				seed_val = int(world.tick_timer * 1000) + 123
+			elif typeof(world) == TYPE_DICTIONARY and world.has("tick_timer"):
+				seed_val = int(world["tick_timer"] * 1000) + 123
+			var rng = RandomNumberGenerator.new()
+			rng.seed = seed_val
+			for i in range(3):
+				zones.append({
+					"x": rng.randf_range(200.0, 800.0),
+					"y": rng.randf_range(200.0, 800.0),
+					"radius": 150.0,
+					"owner": null,
+					"capture_progress": 0.0,
+					"capturing_team": null,
+					"reward_timer": 5.0
+				})
+
+		# Update capture progress
+		for zone in zones:
+			var occupants = []
+			for b in balls:
+				var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+				if not is_alive or b_type == "spectator":
+					continue
+
+				var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y
+				var br = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else b.radius
+
+				var dx = bx - zone["x"]
+				var dy = by - zone["y"]
+				if dx*dx + dy*dy <= (zone["radius"] + br)*(zone["radius"] + br):
+					occupants.append(b)
+
+			if occupants.size() == 0:
+				if zone["capture_progress"] > 0 and zone["owner"] == null:
+					zone["capture_progress"] = max(0.0, zone["capture_progress"] - delta * 10.0)
+			else:
+				var first_b = occupants[0]
+				var first_team = "unknown"
+				if typeof(first_b) == TYPE_DICTIONARY:
+					first_team = first_b.get("team", first_b.get("ball_type", "unknown"))
+				else:
+					first_team = first_b.team if "team" in first_b else (first_b.ball_type if "ball_type" in first_b else "unknown")
+
+				var same_team = true
+				for b in occupants:
+					var b_team = "unknown"
+					if typeof(b) == TYPE_DICTIONARY:
+						b_team = b.get("team", b.get("ball_type", "unknown"))
+					else:
+						b_team = b.team if "team" in b else (b.ball_type if "ball_type" in b else "unknown")
+					if b_team != first_team:
+						same_team = false
+						break
+
+				if same_team:
+					if zone["owner"] != first_team:
+						if zone["capturing_team"] == first_team:
+							zone["capture_progress"] += delta * 20.0
+							if zone["capture_progress"] >= 100.0:
+								zone["capture_progress"] = 100.0
+								zone["owner"] = first_team
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("zone_captured", {"team": first_team, "zone": zone})
+						else:
+							zone["capture_progress"] -= delta * 20.0
+							if zone["capture_progress"] <= 0:
+								var excess = abs(zone["capture_progress"])
+								zone["capture_progress"] = excess
+								zone["capturing_team"] = first_team
+
+			if zone["owner"] != null:
+				zone["reward_timer"] -= delta
+				if zone["reward_timer"] <= 0:
+					zone["reward_timer"] = 10.0
+					if randf() < 0.5:
+						var booster_types = ["hp", "speed", "damage"]
+						var b_type = booster_types[randi() % booster_types.size()]
+						var booster = {
+							"type": b_type,
+							"x": zone["x"] + randf_range(-50.0, 50.0),
+							"y": zone["y"] + randf_range(-50.0, 50.0)
+						}
+						if typeof(world) == TYPE_OBJECT and world.has_method("get"):
+							var boosters = world.get("boosters")
+							if typeof(boosters) == TYPE_ARRAY:
+								boosters.append(booster)
+						elif typeof(world) == TYPE_DICTIONARY and world.has("boosters"):
+							world["boosters"].append(booster)
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("zone_spawned_booster", {"zone": zone})
+					else:
+						var hazard = {
+							"type": "zone_defense",
+							"x": zone["x"] + randf_range(-50.0, 50.0),
+							"y": zone["y"] + randf_range(-50.0, 50.0),
+							"radius": 40.0,
+							"damage": 15.0,
+							"owner_team": zone["owner"],
+							"duration": 8.0
+						}
+						if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+							world.arena.hazards.append(hazard)
+						elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world["arena"].has("hazards"):
+							world["arena"]["hazards"].append(hazard)
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("zone_spawned_hazard", {"zone": zone})
+
 var GAME_MODES = {
+	"capture_zones": CaptureZonesMode.new(),
 	"nemesis_sustain": NemesisSustainMode.new(),
 	"moving_walls": MovingWallsMode.new(),
 	"periodic_gravity_flip": PeriodicGravityFlipMode.new(),

@@ -29689,7 +29689,111 @@ class MovingWallsMode(GameMode):
                 if r in world.arena.hazards:
                     world.arena.hazards.remove(r)
 
+
+class CaptureZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Capture Zones"
+        self.description = "Players capture sections of the map by remaining inside them. Captured sections periodically drop boosters or spawn defensive hazards against enemies."
+        self.zones = []
+        self.spawn_timer = 0.0
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        # Initialize zones if none exist
+        if not self.zones:
+            import random
+            random.seed(int(getattr(world, "tick_timer", 0.0) * 1000) + 123)
+            # Spawn 3 random zones
+            for _ in range(3):
+                self.zones.append({
+                    "x": random.uniform(200, 800),
+                    "y": random.uniform(200, 800),
+                    "radius": 150.0,
+                    "owner": None,
+                    "capture_progress": 0.0,
+                    "capturing_team": None,
+                    "reward_timer": 5.0
+                })
+            random.seed()
+
+        # Update capture progress
+        for zone in self.zones:
+            # Determine who is inside the zone
+            occupants = []
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                br = getattr(b, "radius", 20.0)
+                dx = bx - zone["x"]
+                dy = by - zone["y"]
+                if dx*dx + dy*dy <= (zone["radius"] + br)**2:
+                    occupants.append(b)
+
+            if not occupants:
+                # Decay progress if no one is in
+                if zone["capture_progress"] > 0 and zone["owner"] is None:
+                    zone["capture_progress"] = max(0.0, zone["capture_progress"] - delta * 10.0)
+            else:
+                # Only progress if all occupants are from the same team/owner (assuming free-for-all -> owner is ball_type or id, but team is better. Actually, balls don't always have teams. Let's use ball.id or ball_type)
+                # Let's use ball_type for ownership/team
+                first_occupant_team = getattr(occupants[0], "team", getattr(occupants[0], "ball_type", "unknown"))
+                same_team = all(getattr(b, "team", getattr(b, "ball_type", "unknown")) == first_occupant_team for b in occupants)
+
+                if same_team:
+                    if zone["owner"] != first_occupant_team:
+                        if zone["capturing_team"] == first_occupant_team:
+                            zone["capture_progress"] += delta * 20.0
+                            if zone["capture_progress"] >= 100.0:
+                                zone["capture_progress"] = 100.0
+                                zone["owner"] = first_occupant_team
+                                if hasattr(world, "add_event"):
+                                    world.add_event("zone_captured", {"team": first_occupant_team, "zone": zone})
+                        else:
+                            # Contested by another team, decay first
+                            zone["capture_progress"] -= delta * 20.0
+                            if zone["capture_progress"] <= 0:
+                                # Start capturing for the new team immediately
+                                excess = abs(zone["capture_progress"])
+                                zone["capture_progress"] = excess
+                                zone["capturing_team"] = first_occupant_team
+
+            # If owned, tick reward timer
+            if zone["owner"] is not None:
+                zone["reward_timer"] -= delta
+                if zone["reward_timer"] <= 0:
+                    zone["reward_timer"] = 10.0
+                    import random
+                    if random.random() < 0.5:
+                        # Spawn booster
+                        booster = {
+                            "type": random.choice(["hp", "speed", "damage"]),
+                            "x": zone["x"] + random.uniform(-50, 50),
+                            "y": zone["y"] + random.uniform(-50, 50)
+                        }
+                        if hasattr(world, "boosters"):
+                            world.boosters.append(booster)
+                        if hasattr(world, "add_event"):
+                            world.add_event("zone_spawned_booster", {"zone": zone})
+                    else:
+                        # Spawn defensive hazard
+                        hazard = {
+                            "type": "zone_defense",
+                            "x": zone["x"] + random.uniform(-50, 50),
+                            "y": zone["y"] + random.uniform(-50, 50),
+                            "radius": 40.0,
+                            "damage": 15.0,
+                            "owner_team": zone["owner"],
+                            "duration": 8.0
+                        }
+                        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            world.arena.hazards.append(hazard)
+                        if hasattr(world, "add_event"):
+                            world.add_event("zone_spawned_hazard", {"zone": zone})
+
 GAME_MODES = {
+    'capture_zones': CaptureZonesMode(),
     "nemesis_sustain": NemesisSustainMode(),
     "moving_walls": MovingWallsMode(),
     'periodic_gravity_flip': PeriodicGravityFlipMode(),
