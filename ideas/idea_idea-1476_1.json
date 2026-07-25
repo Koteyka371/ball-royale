@@ -1,4 +1,0 @@
-{
-  "title": "Laser Grid Hazard",
-  "description": "Periodically spawn a grid of laser beams across the arena. The beams are harmless for a 3-second warning period, then activate and deal high damage to any player caught inside."
-}

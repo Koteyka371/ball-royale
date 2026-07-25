@@ -1,4 +1,0 @@
-{
-  "title": "Kinetic Energy Battery",
-  "description": "A deployable node that charges up as projectiles or hazards pass through its area of effect. The faster or more damaging the projectile, the more it charges. Once fully charged, it unleashes a massive shockwave that roots enemies and heals the deployer based on the energy absorbed."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "Reverse Entropy Field",
-  "description": "A hazard that slowly heals the player, but makes their active cooldowns go backwards, meaning if they just used an ability, the cooldown duration will increase up to the maximum instead of recovering."
-}
