@@ -596,3 +596,43 @@ def test_player_bribe_vote_corruptibility():
     result = system.player_bribe_vote("player_c2", "cancel")
     assert result == True
     assert world.profile_manager.data["skill_points"] == 125 # 150 - 25 = 125
+
+def test_player_bribe_vote_hp_sacrifice():
+    world = MockWorld()
+    world.profile_manager.data["skill_points"] = 0
+    world.profile_manager.data["prestige_tokens"] = 0
+
+    b = MockBall("player1", "team1", "basic")
+    b.max_hp = 100.0
+    b.hp = 100.0
+    world.balls = [b]
+
+    system = CrowdSystem(world)
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 2, "spike": 0}
+    system.vote_timer = 100
+
+    result = system.player_bribe_vote("player1", "skew", "spike")
+    assert result == True
+    assert b.max_hp == 80.0
+    assert b.hp == 80.0
+
+def test_player_bribe_vote_insufficient_hp():
+    world = MockWorld()
+    world.profile_manager.data["skill_points"] = 0
+    world.profile_manager.data["prestige_tokens"] = 0
+
+    b = MockBall("player2", "team1", "basic")
+    b.max_hp = 10.0
+    b.hp = 10.0
+    world.balls = [b]
+
+    system = CrowdSystem(world)
+    system.active_vote = {"type": "spawn_hazard", "options": ["lava", "spike"]}
+    system.votes = {"lava": 2, "spike": 0}
+    system.vote_timer = 100
+
+    result = system.player_bribe_vote("player2", "skew", "spike")
+    assert result == False
+    assert b.max_hp == 10.0
+    assert b.hp == 10.0

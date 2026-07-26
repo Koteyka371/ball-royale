@@ -285,7 +285,22 @@ class CrowdSystem:
             bid_power = 100
             currency_type = "prestige_tokens"
         else:
-            return False
+            # Fallback to HP sacrifice
+            ball_found = None
+            if hasattr(self.world, 'balls'):
+                for b in self.world.balls:
+                    if str(getattr(b, 'id', '')) == str(player_id):
+                        ball_found = b
+                        break
+
+            if ball_found and getattr(ball_found, 'max_hp', 0) >= 20.0:
+                ball_found.max_hp -= 20.0
+                if getattr(ball_found, 'hp', 0) > ball_found.max_hp:
+                    ball_found.hp = ball_found.max_hp
+                bid_power = 50
+                currency_type = "max_hp_sacrifice"
+            else:
+                return False
 
         if not hasattr(self, 'vote_bids'):
             self.vote_bids = {}
