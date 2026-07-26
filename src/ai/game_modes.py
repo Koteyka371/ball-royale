@@ -39915,3 +39915,6 @@ class TelegraphedSupplyDropMode(GameMode):
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode()
 
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode()
+
+from ai.capture_the_flag_elements_in_battle_royale import CaptureTheFlagElementsInBattleRoyaleMode
+GAME_MODES['capture_the_flag_elements_in_battle_royale'] = CaptureTheFlagElementsInBattleRoyaleMode()
