@@ -60,6 +60,40 @@ def test_ticking_bomb_mode_explosion():
     assert b1.alive is True
     assert b2.hp == 100.0
 
+def test_ticking_bomb_mode_hazard_immunity():
+    mode = GAME_MODES["ticking_bomb"]
+    world = MagicMock()
+    world.arena = MagicMock()
+    world.dead_balls = []
+
+    class _MockHazard:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+            self.kind = "ticking_bomb"
+            self.active = True
+            self.duration = 0.1
+            self.radius = 30.0
+
+    bomb = _MockHazard(500, 500)
+    world.arena.hazards = [bomb]
+
+    class _MockBall:
+        def __init__(self, id, x, y):
+            self.id = id
+            self.x = x
+            self.y = y
+            self.alive = True
+            self.hp = 100.0
+            self.hazard_immunity_timer = 5.0
+
+    b1 = _MockBall(1, 500, 500)
+
+    mode.tick(world, [b1], delta=0.2)
+
+    assert b1.hp == 100.0
+    assert b1.alive is True
+
 def test_ticking_bomb_mode_death():
     mode = GAME_MODES["ticking_bomb"]
     world = MagicMock()

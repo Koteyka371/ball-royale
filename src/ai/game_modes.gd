@@ -41282,6 +41282,7 @@ class WatchtowerMode extends GameMode:
 class TickingBombMode extends GameMode:
 	var spawn_timer: float = 0.0
 	var bomb_interval: float = 10.0
+	var booster_kinds: Array = ["hazard_immunity_booster"]
 
 	func _init() -> void:
 		name = "Ticking Bomb Mode"
@@ -41456,6 +41457,14 @@ class TickingBombMode extends GameMode:
 									var dy = by - h.get("y", 0.0)
 									var dist = sqrt(dx*dx + dy*dy)
 									if dist <= explosion_radius:
+										var hz_imm = 0.0
+										if typeof(b) == TYPE_DICTIONARY and b.has("hazard_immunity_timer"): hz_imm = float(b.hazard_immunity_timer)
+										elif typeof(b) == TYPE_OBJECT and "hazard_immunity_timer" in b: hz_imm = float(b.hazard_immunity_timer)
+										elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hazard_immunity_timer"): hz_imm = float(b.get_meta("hazard_immunity_timer"))
+
+										if hz_imm > 0.0:
+											continue
+
 										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 											b.take_damage(explosion_damage)
 										else:
@@ -41595,6 +41604,14 @@ class TickingBombMode extends GameMode:
 									var dy = by - hy
 									var dist = sqrt(dx*dx + dy*dy)
 									if dist <= explosion_radius:
+										var hz_imm = 0.0
+										if typeof(b) == TYPE_DICTIONARY and b.has("hazard_immunity_timer"): hz_imm = float(b.hazard_immunity_timer)
+										elif typeof(b) == TYPE_OBJECT and "hazard_immunity_timer" in b: hz_imm = float(b.hazard_immunity_timer)
+										elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hazard_immunity_timer"): hz_imm = float(b.get_meta("hazard_immunity_timer"))
+
+										if hz_imm > 0.0:
+											continue
+
 										if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
 											b.take_damage(explosion_damage)
 										else:
