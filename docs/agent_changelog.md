@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1565] Echo Strike Passive — *2026-07-26 22:40:52 UTC*
+
+A passive ability that causes every third basic attack to echo, dealing an additional 50% damage in a small area of effect around the target, adding a rhythm-based combo mechanic to combat.
+
+---
+
 ## [idea-1551] Sticky Ceilings Modifier — *2026-07-26 22:40:48 UTC*
 
 An environmental hazard mutator where certain areas of the ceiling become extremely sticky during reverse gravity events, slowing down any ball that gets stuck to them and requiring a dash or explosive knockback to break free.
