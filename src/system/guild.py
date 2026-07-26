@@ -23,7 +23,8 @@ class GuildManager:
                             "backgrounds": [],
                             "announcer_voices": [],
                             "mini_games": {},
-                            "training_arena_unlocked": False
+                            "training_arena_unlocked": False,
+                            "pets": []
                         }
                     elif "mini_games" not in guild["hq"]:
                         guild["hq"]["mini_games"] = {}
@@ -132,7 +133,8 @@ class GuildManager:
                 "banners": [],
                 "cosmetics": [],
                 "mini_games": {},
-                "training_arena_unlocked": False
+                "training_arena_unlocked": False,
+                "pets": []
             },
             "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
             "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]},
@@ -912,3 +914,31 @@ class GuildManager:
                 # Event queuing logic placeholder
                 return True
         return False
+
+    def purchase_pet(self, guild_name, pet_id, cost):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get("guild_xp", 0) >= cost:
+                guild["guild_xp"] -= cost
+                hq = guild.setdefault("hq", {})
+                pets = hq.setdefault("pets", [])
+                pets.append({
+                    "id": pet_id,
+                    "status": "happy",
+                    "interactions": 0
+                })
+                self.save()
+                return True
+        return False
+
+    def interact_with_pet(self, guild_name, pet_index, action):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            hq = guild.get("hq", {})
+            pets = hq.get("pets", [])
+            if 0 <= pet_index < len(pets):
+                if action in ["pet", "feed"]:
+                    pets[pet_index]["interactions"] += 1
+                    self.save()
+                    return {"buff": "luck_boost", "duration": 3600}
+        return {}
