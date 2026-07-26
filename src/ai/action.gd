@@ -2389,6 +2389,38 @@ func _attempt_damage_internal(attacker, target) -> void:
 					pm_local.save()
 
 
+		var target_is_bounty_contract_target = false
+		if typeof(target) == TYPE_OBJECT:
+			if "is_bounty_contract_target" in target: target_is_bounty_contract_target = bool(target.is_bounty_contract_target)
+			elif target.has_method("get_meta") and target.has_meta("is_bounty_contract_target"): target_is_bounty_contract_target = bool(target.get_meta("is_bounty_contract_target"))
+		elif typeof(target) == TYPE_DICTIONARY and target.has("is_bounty_contract_target"):
+			target_is_bounty_contract_target = bool(target["is_bounty_contract_target"])
+
+		var b_hunter_id = null
+		if typeof(target) == TYPE_OBJECT:
+			if "bounty_contract_hunter_id" in target: b_hunter_id = target.bounty_contract_hunter_id
+			elif target.has_method("get_meta") and target.has_meta("bounty_contract_hunter_id"): b_hunter_id = target.get_meta("bounty_contract_hunter_id")
+		elif typeof(target) == TYPE_DICTIONARY and target.has("bounty_contract_hunter_id"):
+			b_hunter_id = target["bounty_contract_hunter_id"]
+
+		var attacker_id = null
+		if typeof(attacker) == TYPE_OBJECT:
+			if "id" in attacker: attacker_id = attacker.id
+			elif attacker.has_method("get_meta") and attacker.has_meta("id"): attacker_id = attacker.get_meta("id")
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("id"):
+			attacker_id = attacker["id"]
+
+		if target_is_bounty_contract_target and b_hunter_id != null and attacker_id != null and b_hunter_id == attacker_id:
+			self._award_xp(attacker, 1500.0, self.world)
+			if "damage" in attacker: attacker.damage = float(attacker.damage) * 1.5
+			if "base_damage" in attacker: attacker.base_damage = float(attacker.base_damage) * 1.5
+			if "max_hp" in attacker:
+				attacker.max_hp = float(attacker.max_hp) * 1.5
+				if "hp" in attacker: attacker.hp = float(attacker.max_hp)
+			if "speed" in attacker: attacker.speed = float(attacker.speed) * 1.25
+			if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+				self.world.add_event("bounty_contract_completed", {"message": "Bounty Contract Completed!"})
+
 		if target_is_bounty_target:
 			var owner_id = null
 			if typeof(target) == TYPE_DICTIONARY:
@@ -3017,6 +3049,30 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var is_bounty_contract_target = false
+	if typeof(self.ball) == TYPE_OBJECT:
+		if "is_bounty_contract_target" in self.ball: is_bounty_contract_target = bool(self.ball.is_bounty_contract_target)
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("is_bounty_contract_target"): is_bounty_contract_target = bool(self.ball.get_meta("is_bounty_contract_target"))
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_bounty_contract_target"):
+		is_bounty_contract_target = bool(self.ball["is_bounty_contract_target"])
+	if is_bounty_contract_target:
+		var bt_timer = 0.0
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "bounty_contract_timer" in self.ball: bt_timer = float(self.ball.bounty_contract_timer)
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("bounty_contract_timer"): bt_timer = float(self.ball.get_meta("bounty_contract_timer"))
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bounty_contract_timer"): bt_timer = float(self.ball["bounty_contract_timer"])
+		bt_timer -= delta
+		if bt_timer <= 0:
+			if typeof(self.ball) == TYPE_OBJECT:
+				if "is_bounty_contract_target" in self.ball: self.ball.is_bounty_contract_target = false
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("is_bounty_contract_target", false)
+			elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_bounty_contract_target"] = false
+		else:
+			if typeof(self.ball) == TYPE_OBJECT:
+				if "bounty_contract_timer" in self.ball: self.ball.bounty_contract_timer = bt_timer
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("bounty_contract_timer", bt_timer)
+			elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["bounty_contract_timer"] = bt_timer
+
 	var is_quantum_echo = false
 	if typeof(self.ball) == TYPE_OBJECT:
 		if "is_quantum_echo" in self.ball:
@@ -6634,7 +6690,17 @@ func execute(strategy: String, delta: float):
         elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"):
             b_type_ind = self.ball["ball_type"]
 
-        if b_type_ind == "bounty_hunter":
+        var has_bounty_contract = false
+        var my_id = self.ball.id if typeof(self.ball) == TYPE_OBJECT else self.ball.get("id", -1)
+        if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+            for b in self.world.balls:
+                var is_bc = b.get("is_bounty_contract_target", false) if typeof(b) == TYPE_DICTIONARY else b.get("is_bounty_contract_target", false) if "is_bounty_contract_target" in b else b.get_meta("is_bounty_contract_target") if b.has_method("get_meta") and b.has_meta("is_bounty_contract_target") else false
+                var hid = b.get("bounty_contract_hunter_id", null) if typeof(b) == TYPE_DICTIONARY else b.get("bounty_contract_hunter_id", null) if "bounty_contract_hunter_id" in b else b.get_meta("bounty_contract_hunter_id") if b.has_method("get_meta") and b.has_meta("bounty_contract_hunter_id") else null
+                if is_bc and hid == my_id:
+                    has_bounty_contract = true
+                    break
+
+        if b_type_ind == "bounty_hunter" or has_bounty_contract:
             var timer_val = 0.0
             if typeof(self.ball) == TYPE_OBJECT:
                 if not "bounty_indicator_timer" in self.ball:
@@ -6668,10 +6734,14 @@ func execute(strategy: String, delta: float):
                                 elif other.has_method("get_meta") and other.has_meta("high_threat") and other.get_meta("high_threat"): is_target = true
                                 if "is_bounty_target" in other and other.is_bounty_target: is_target = true
                                 elif other.has_method("get_meta") and other.has_meta("is_bounty_target") and other.get_meta("is_bounty_target"): is_target = true
+                                var is_bc = other.is_bounty_contract_target if "is_bounty_contract_target" in other else other.get_meta("is_bounty_contract_target") if other.has_method("get_meta") and other.has_meta("is_bounty_contract_target") else false
+                                var hid = other.bounty_contract_hunter_id if "bounty_contract_hunter_id" in other else other.get_meta("bounty_contract_hunter_id") if other.has_method("get_meta") and other.has_meta("bounty_contract_hunter_id") else null
+                                if is_bc and hid == self_id: is_target = true
                             else:
                                 if other.has("is_bounty") and other["is_bounty"]: is_target = true
                                 if other.has("high_threat") and other["high_threat"]: is_target = true
                                 if other.has("is_bounty_target") and other["is_bounty_target"]: is_target = true
+                                if other.has("is_bounty_contract_target") and other["is_bounty_contract_target"] and other.has("bounty_contract_hunter_id") and other["bounty_contract_hunter_id"] == self_id: is_target = true
 
                             if is_target:
                                 var is_disguised = false
@@ -25598,6 +25668,45 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "bounty_contract":
+                var enemies = self._get_enemies()
+                var valid_targets = []
+                for e in enemies:
+                    var e_alive = true
+                    if "alive" in e: e_alive = e.alive
+                    elif e.has_method("get_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+                    if e_alive:
+                        valid_targets.append(e)
+                if valid_targets.size() > 0:
+                    var target = valid_targets[randi() % valid_targets.size()]
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    if typeof(target) == TYPE_DICTIONARY:
+                        target["is_bounty_contract_target"] = true
+                        target["bounty_contract_timer"] = 60.0
+                        target["bounty_contract_hunter_id"] = b_id
+                    elif target.has_method("set_meta"):
+                        target.set_meta("is_bounty_contract_target", true)
+                        target.set_meta("bounty_contract_timer", 60.0)
+                        target.set_meta("bounty_contract_hunter_id", b_id)
+                        if "is_bounty_contract_target" in target: target.is_bounty_contract_target = true
+                        if "bounty_contract_timer" in target: target.bounty_contract_timer = 60.0
+                        if "bounty_contract_hunter_id" in target: target.bounty_contract_hunter_id = b_id
+                    else:
+                        target.is_bounty_contract_target = true
+                        target.bounty_contract_timer = 60.0
+                        target.bounty_contract_hunter_id = b_id
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "holo_decoy_booster":
                 var decoy = null
                 if typeof(self.ball) == TYPE_DICTIONARY:

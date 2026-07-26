@@ -1236,6 +1236,17 @@ class Action:
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("bounty_trap_claimed", {"message": "Bounty Trap claimed!"})
 
+            if getattr(target, "is_bounty_contract_target", False) and getattr(target, "bounty_contract_hunter_id", None) == getattr(attacker, "id", None):
+                self._award_xp(attacker, 1500.0, self.world)
+                attacker.damage = getattr(attacker, "damage", 10.0) * 1.5
+                if hasattr(attacker, "base_damage"):
+                    attacker.base_damage *= 1.5
+                attacker.max_hp = getattr(attacker, "max_hp", 100.0) * 1.5
+                attacker.hp = attacker.max_hp
+                attacker.speed = getattr(attacker, "speed", 2.0) * 1.25
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("bounty_contract_completed", {"message": "Bounty Contract Completed!"})
+
             if getattr(target, "is_dynamic_bounty", False):
                 attacker.damage = getattr(attacker, "damage", 10.0) * 1.5
                 if hasattr(attacker, "base_damage"):
@@ -1634,6 +1645,12 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_bounty_contract_target", False):
+            if hasattr(self.ball, "bounty_contract_timer"):
+                self.ball.bounty_contract_timer -= delta
+                if self.ball.bounty_contract_timer <= 0:
+                    self.ball.is_bounty_contract_target = False
+
         if getattr(self.ball, "is_quantum_echo", False):
             if not hasattr(self.ball, "quantum_echo_ghost_timer"):
                 self.ball.quantum_echo_ghost_timer = 0.0
@@ -3031,8 +3048,8 @@ class Action:
 
 
         # REPLACED
-        # Bounty Hunter target indicator
-        if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter":
+        # Bounty Hunter / Bounty Contract target indicator
+        if getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter" or any(getattr(b, "is_bounty_contract_target", False) and getattr(b, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None) for b in getattr(self.world, "balls", [])):
             if not hasattr(self.ball, "bounty_indicator_timer"):
                 self.ball.bounty_indicator_timer = 2.0
 
@@ -3057,7 +3074,7 @@ class Action:
                     if hasattr(self.world, "balls"):
                         for other in self.world.balls:
                             if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
-                                if getattr(other, "is_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False):
+                                if getattr(other, "is_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False) or (getattr(other, "is_bounty_contract_target", False) and getattr(other, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None)):
                                     if hasattr(self.world, "events"):
                                         self.world.events.append({"type": "bounty_compass", "data": {"target_x": float(other.x), "target_y": float(other.y), "owner_id": getattr(self.ball, "id", None)}})
                                         self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(self.ball.x), "y": float(self.ball.y), "tx": float(other.x), "ty": float(other.y), "color": "orange"}})
@@ -13532,6 +13549,20 @@ class Action:
                     self.ball.silencer_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
                         self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "bounty_contract":
+                    import random
+                    enemies = self._get_enemies()
+                    valid_targets = [e for e in enemies if getattr(e, "alive", True)]
+                    if valid_targets:
+                        target = random.choice(valid_targets)
+                        target.is_bounty_contract_target = True
+                        target.bounty_contract_timer = 60.0
+                        target.bounty_contract_hunter_id = getattr(self.ball, "id", None)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "laser_sight_attachment":
