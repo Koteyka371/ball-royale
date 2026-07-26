@@ -18684,6 +18684,8 @@ class Action:
                         if getattr(self.ball, "pinball_projectile_timer", 0.0) > 0:
                             setattr(fb, "is_ricochet_laser", True)
                             setattr(fb, "bounces_left", 5)
+                        else:
+                            setattr(fb, "bounces_left", 1)
                         self.world.arena.hazards.append(fb)
                         self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 4.5)
                         if hasattr(self, "_spawn_skill_particles"):
