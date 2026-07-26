@@ -26488,7 +26488,7 @@
     },
     {
       "id": "idea-1547",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Jumper Booster",
@@ -38656,6 +38656,23 @@
         "src/ai/weapon_randomizer.py",
         "src/ai/weapon_randomizer.gd",
         "tests/test_weapon_randomizer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2262",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Bomb",
+      "description": "Hazards that bounce off walls. They speed up each time they hit a wall, encouraging players to quickly dismantle them or face chaos.",
+      "allowed_paths": [
+        "src/ai/bouncing_bomb.py",
+        "src/ai/bouncing_bomb.gd",
+        "tests/test_bouncing_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

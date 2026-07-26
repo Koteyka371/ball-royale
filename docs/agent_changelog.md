@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1547] Jumper Booster — *2026-07-26 12:50:13 UTC*
+
+A booster that gives the user temporary invulnerability to ground hazards like ticking bombs.
+
+---
+
 ## [idea-1536] King of the Hill Escalation — *2026-07-26 12:37:34 UTC*
 
 A single control point grants increasing global buffs to the controlling player's faction, but they take exponentially more damage the longer they hold it.
