@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Mine Trap",
+  "description": "A stationary trap that, when triggered, creates a localized gravity well pulling in all nearby players for a short duration, making them vulnerable to area-of-effect attacks."
+}

@@ -1,3 +1,4 @@
+from ai.ghost_companion import GhostCompanionManager
 
 class WeekendBoss:
     def __init__(self, id_val, x, y):
@@ -1907,6 +1908,7 @@ class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
+        self.ghost_manager = GhostCompanionManager()
         self.description = "Last man standing. The safe zone shrinks and moves. Areas outside the safe zone turn into damaging lava, punishing displacement heavily. Periodically, global acid rain falls, dealing DoT unless shielded."
         self.dark_phase_timer = 0.0
         self.is_dark_phase = False
@@ -1945,6 +1947,8 @@ class BattleRoyaleMode(GameMode):
         self.behemoth_active = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if hasattr(self, 'ghost_manager'):
+            self.ghost_manager.update(delta, world)
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
