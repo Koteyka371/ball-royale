@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1556] Bouncy Castle Mode — *2026-07-26 22:40:56 UTC*
+
+The arena is super bouncy and balls bounce higher and further when hitting edges.
+
+---
+
 ## [idea-1565] Echo Strike Passive — *2026-07-26 22:40:52 UTC*
 
 A passive ability that causes every third basic attack to echo, dealing an additional 50% damage in a small area of effect around the target, adding a rhythm-based combo mechanic to combat.
