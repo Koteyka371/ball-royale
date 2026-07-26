@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1512] Airdrop Supply Packages — *2026-07-26 01:24:43 UTC*
+
+Periodically, high-value supply packages are dropped via parachute into the arena. They contain powerful one-time use items or strong temporary buffs, but their landing zone is telegraphed early, causing players to fight over the drop location.
+
+---
+
 ## [idea-1514] Weapon Durability and Overheat — *2026-07-26 01:23:20 UTC*
 
 Special weapons and abilities acquired from crates or drops have a durability or overheat mechanic. Players must manage their usage to avoid breaking the weapon or incurring a long cooldown, adding a layer of resource management to combat.

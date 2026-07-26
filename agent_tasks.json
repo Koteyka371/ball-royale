@@ -25892,7 +25892,7 @@
     },
     {
       "id": "idea-1512",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Airdrop Supply Packages",
@@ -38025,6 +38025,40 @@
         "src/ai/hack_drone.py",
         "src/ai/hack_drone.gd",
         "tests/test_hack_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2225",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blacksmith Station",
+      "description": "Add a new hazard/station type 'Blacksmith'. Players can bring broken/overheated weapons to this station, spend stamina or wait a channel duration, and receive an upgraded version of the weapon instead of losing it completely.",
+      "allowed_paths": [
+        "src/ai/blacksmith_station.py",
+        "src/ai/blacksmith_station.gd",
+        "tests/test_blacksmith_station.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2226",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon Perks",
+      "description": "Each time a player picks up a weapon crate, there is a small chance to get a 'Golden' version of the weapon which gives a passive perk like 'vampirism' or 'haste' while the weapon is held.",
+      "allowed_paths": [
+        "src/ai/weapon_perks.py",
+        "src/ai/weapon_perks.gd",
+        "tests/test_weapon_perks.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
