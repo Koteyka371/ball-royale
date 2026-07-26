@@ -25739,7 +25739,7 @@
     },
     {
       "id": "idea-1503",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shadow Form Booster",
@@ -37769,6 +37769,23 @@
         "src/ai/vampiric_fog.py",
         "src/ai/vampiric_fog.gd",
         "tests/test_vampiric_fog.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2210",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Shower Defense Mode",
+      "description": "A game mode where players must survive a continuous meteor shower by hiding under indestructible energy domes that appear randomly across the arena. Meteors instantly kill players caught outside.",
+      "allowed_paths": [
+        "src/ai/meteor_shower_defense.py",
+        "src/ai/meteor_shower_defense.gd",
+        "tests/test_meteor_shower_defense.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

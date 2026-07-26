@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1503] Shadow Form Booster — *2026-07-26 00:28:26 UTC*
+
+Add a new booster that temporarily grants players the Shadow form, increasing their speed and letting them steal HP from nearby enemies, but slowly draining their maximum stamina.
+
+---
+
 ## [idea-1507] Reflective Barriers — *2026-07-26 00:17:34 UTC*
 
 Barriers spawn in the arena that reflect projectiles and players at high speeds.
