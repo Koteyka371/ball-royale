@@ -27752,10 +27752,20 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "hazard_immunity_booster":
+                var curr_im = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hazard_immunity_timer"):
+                    curr_im = float(self.ball.hazard_immunity_timer)
+                elif typeof(self.ball) == TYPE_OBJECT and "hazard_immunity_timer" in self.ball:
+                    curr_im = float(self.ball.hazard_immunity_timer)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hazard_immunity_timer"):
+                    curr_im = float(self.ball.get_meta("hazard_immunity_timer"))
+
                 if "hazard_immunity_timer" in self.ball:
-                    self.ball.hazard_immunity_timer = 15.0
+                    self.ball.hazard_immunity_timer = curr_im + 15.0
                 elif self.ball.has_method("set_meta"):
-                    self.ball.set_meta("hazard_immunity_timer", 15.0)
+                    self.ball.set_meta("hazard_immunity_timer", curr_im + 15.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["hazard_immunity_timer"] = curr_im + 15.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:

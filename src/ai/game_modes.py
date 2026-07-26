@@ -33951,6 +33951,7 @@ class TickingBombMode(GameMode):
         self.description = "Bombs periodically spawn around the map, ticking down until they explode in a massive radius."
         self.spawn_timer = 0.0
         self.bomb_interval = 10.0
+        self.booster_kinds = ["hazard_immunity_booster"]
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         import random
@@ -34026,6 +34027,8 @@ class TickingBombMode(GameMode):
                                 dy = b.y - h.y
                                 dist = math.sqrt(dx*dx + dy*dy)
                                 if dist <= explosion_radius:
+                                    if getattr(b, "hazard_immunity_timer", 0.0) > 0:
+                                        continue
                                     if hasattr(b, "take_damage"):
                                         b.take_damage(explosion_damage)
                                     else:
