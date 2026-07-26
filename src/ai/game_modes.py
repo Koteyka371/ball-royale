@@ -30848,7 +30848,165 @@ class VampiricMutatorMode(GameMode):
 
 from ai.double_juggernaut import DoubleJuggernautMode
 
+class LaserGridSurvivalMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.description = "An intense game mode where a grid of static lasers slowly moves across the arena, forcing players to find safe pockets and navigate the grid while fighting enemies."
+        self.grid_offset_x = 0.0
+        self.grid_offset_y = 0.0
+        self.grid_speed = 50.0
+        self.grid_spacing = 400.0
+        self.laser_radius = 20.0
+        self.laser_damage_per_second = 300.0
+        self.lasers_spawned = False
+        self.node_spacing = 30.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.grid_offset_x = 0.0
+        self.grid_offset_y = 0.0
+        self.lasers_spawned = False
+
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            try:
+                from arena.procedural_arena import Hazard
+                def create_hazard(hid, hx, hy, r, k, dmg):
+                    return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=dmg)
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, hid, hx, hy, r, k, dmg):
+                        self.id = hid
+                        self.x = hx
+                        self.y = hy
+                        self.radius = r
+                        self.kind = k
+                        self.damage = dmg
+                def create_hazard(hid, hx, hy, r, k, dmg):
+                    return FallbackHazard(hid, hx, hy, r, k, dmg)
+
+            if not self.lasers_spawned:
+                self.lasers_spawned = True
+
+                # To prevent glitches, we need to span a bit wider than the arena, or handle wrapping gracefully.
+                # Actually, standardizing on a fixed grid size larger than max arena, e.g. 2000x2000 is easiest
+                grid_w = max(2000.0, arena_width * 2)
+                grid_h = max(2000.0, arena_height * 2)
+
+                num_v = int(grid_w / self.grid_spacing) + 1
+                num_h = int(grid_h / self.grid_spacing) + 1
+
+                # Vertical lines
+                for i in range(num_v):
+                    x_line = i * self.grid_spacing
+                    nodes = int(grid_h / self.node_spacing) + 1
+                    for j in range(nodes):
+                        y_node = j * self.node_spacing
+                        h_id = f"g_laser_v_{i}_{j}"
+                        h = create_hazard(h_id, x_line, y_node, self.laser_radius, "grid_laser", 0.0)
+                        setattr(h, "grid_type", "v")
+                        setattr(h, "grid_i", i)
+                        setattr(h, "grid_j", j)
+                        world.arena.hazards.append(h)
+
+                # Horizontal lines
+                for i in range(num_h):
+                    y_line = i * self.grid_spacing
+                    nodes = int(grid_w / self.node_spacing) + 1
+                    for j in range(nodes):
+                        x_node = j * self.node_spacing
+                        h_id = f"g_laser_h_{i}_{j}"
+                        h = create_hazard(h_id, x_node, y_line, self.laser_radius, "grid_laser", 0.0)
+                        setattr(h, "grid_type", "h")
+                        setattr(h, "grid_i", i)
+                        setattr(h, "grid_j", j)
+                        world.arena.hazards.append(h)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.grid_offset_x += self.grid_speed * delta
+        self.grid_offset_y += self.grid_speed * delta
+
+        if self.grid_offset_x > self.grid_spacing:
+            self.grid_offset_x -= self.grid_spacing
+        if self.grid_offset_y > self.grid_spacing:
+            self.grid_offset_y -= self.grid_spacing
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        grid_w = max(2000.0, arena_width * 2)
+        grid_h = max(2000.0, arena_height * 2)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "grid_laser":
+                    g_type = getattr(h, "grid_type", "")
+                    g_i = getattr(h, "grid_i", 0)
+                    g_j = getattr(h, "grid_j", 0)
+
+                    if g_type == "v":
+                        base_x = g_i * self.grid_spacing + self.grid_offset_x
+                        # center the grid over the arena and allow wrapping
+                        base_x = (base_x % grid_w) - (grid_w - arena_width) / 2.0
+
+                        base_y = g_j * self.node_spacing
+                        base_y = (base_y % grid_h) - (grid_h - arena_height) / 2.0
+
+                        h.x = base_x
+                        h.y = base_y
+                    elif g_type == "h":
+                        base_y = g_i * self.grid_spacing + self.grid_offset_y
+                        base_y = (base_y % grid_h) - (grid_h - arena_height) / 2.0
+
+                        base_x = g_j * self.node_spacing
+                        base_x = (base_x % grid_w) - (grid_w - arena_width) / 2.0
+
+                        h.x = base_x
+                        h.y = base_y
+
+            # Custom collision logic, we still check distance to line for efficiency, not each node
+            v_lines_x = []
+            num_v = int(grid_w / self.grid_spacing) + 1
+            for i in range(num_v):
+                base_x = i * self.grid_spacing + self.grid_offset_x
+                v_lines_x.append((base_x % grid_w) - (grid_w - arena_width) / 2.0)
+
+            h_lines_y = []
+            num_h = int(grid_h / self.grid_spacing) + 1
+            for i in range(num_h):
+                base_y = i * self.grid_spacing + self.grid_offset_y
+                h_lines_y.append((base_y % grid_h) - (grid_h - arena_height) / 2.0)
+
+            for b in balls:
+                if getattr(b, "alive", False):
+                    hit = False
+                    for lx in v_lines_x:
+                        if abs(b.x - lx) < self.laser_radius:
+                            hit = True
+                            break
+                    if not hit:
+                        for ly in h_lines_y:
+                            if abs(b.y - ly) < self.laser_radius:
+                                hit = True
+                                break
+
+                    if hit:
+                        dmg = self.laser_damage_per_second * delta
+                        b.hp = getattr(b, "hp", 100.0) - dmg
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(world, "add_event"):
+                                world.add_event("death", {"id": getattr(b, "id", None), "reason": "grid_laser"})
+
 GAME_MODES = {
+    'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
