@@ -88,3 +88,57 @@ def test_juggernaut_mode():
     b3.alive = True
     b2.alive = False
     assert mode.check_winner(world, balls) == "Hunters"
+
+
+def test_juggernaut_swap_timer():
+    world = MagicMock()
+    world.tick_timer = 1.0
+    world.leaderboard_manager = MagicMock()
+    world.leaderboard_manager.data.get.return_value = 1
+
+    class RealMock:
+        pass
+
+    def create_ball(id_name):
+        b = RealMock()
+        b.id = id_name
+        b.ball_type = "warrior"
+        b.alive = True
+        b.max_hp = 100
+        b.hp = 100
+        b.damage = 10
+        b.radius = 10
+        b.speed = 100
+        b.base_speed = 100
+        b.mass = 1
+        return b
+
+    b1 = create_ball("jugg1")
+    b2 = create_ball("hunt1")
+    b3 = create_ball("hunt2")
+
+    balls = [b1, b2, b3]
+
+    mode = GAME_MODES["juggernaut"]
+    mode.setup(world, balls)
+
+    jugg = [b for b in balls if getattr(b, "team", "") == "Juggernaut"][0]
+    assert jugg == b1
+
+    # Tick for 29 seconds, should not swap
+    for _ in range(290):
+        mode.tick(world, balls, 0.1)
+
+    jugg2 = [b for b in balls if getattr(b, "team", "") == "Juggernaut"][0]
+    assert jugg2 == b1
+
+    # Tick for 1 more second, should swap
+    for _ in range(11):
+        mode.tick(world, balls, 0.1)
+
+    # The old juggernaut should be hunter now
+    # The new juggernaut should be one of the hunters
+    juggernauts = [b for b in balls if getattr(b, "team", "") == "Juggernaut"]
+    assert len(juggernauts) == 1
+    assert juggernauts[0] != jugg
+    assert getattr(jugg, "team", "") == "Hunters"

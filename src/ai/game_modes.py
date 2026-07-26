@@ -21565,6 +21565,9 @@ class JuggernautMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
+        self.juggernaut_swap_timer = 0.0
+        if hasattr(world, "tick_timer"):
+            self.random = __import__("random").Random(int(world.tick_timer * 1000))
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 
@@ -21612,6 +21615,38 @@ class JuggernautMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
+
+        if not hasattr(self, "juggernaut_swap_timer"):
+            self.juggernaut_swap_timer = 0.0
+        if not hasattr(self, "random"):
+            self.random = __import__("random").Random(0)
+
+        self.juggernaut_swap_timer += delta
+        if self.juggernaut_swap_timer >= 30.0:
+            self.juggernaut_swap_timer = 0.0
+            alive_hunters = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", "") == "Hunters"]
+            if alive_hunters:
+                new_juggernaut = self.random.choice(alive_hunters)
+
+                # Make old juggernauts hunters
+                for b in balls:
+                    if getattr(b, "team", "") == "Juggernaut" and getattr(b, "alive", False):
+                        b.team = "Hunters"
+                        if hasattr(b, "base_max_hp"):
+                            b.max_hp = b.base_max_hp * 0.8
+                            b.hp = min(b.hp, b.max_hp)
+                        if hasattr(b, "base_damage"):
+                            b.damage = b.base_damage
+                        if hasattr(b, "base_radius"):
+                            b.radius = b.base_radius
+                        if hasattr(b, "base_speed"):
+                            b.speed = b.base_speed
+                        if hasattr(b, "base_mass"):
+                            b.mass = b.base_mass
+
+                self._make_juggernaut(world, new_juggernaut)
+                if hasattr(world, "add_event"):
+                    world.add_event("juggernaut_change", {"message": "A new Juggernaut has been randomly selected!"})
 
         # Check for Juggernaut death
         dead_juggernauts = [b for b in balls if getattr(b, "team", "") == "Juggernaut" and not getattr(b, "alive", False)]

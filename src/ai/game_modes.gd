@@ -33736,6 +33736,11 @@ class JuggernautMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
+		self.set_meta("juggernaut_swap_timer", 0.0)
+		var rng = RandomNumberGenerator.new()
+		if world != null and "tick_timer" in world:
+			rng.seed = int(world.tick_timer * 1000)
+		self.set_meta("rng", rng)
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 
@@ -33822,6 +33827,45 @@ class JuggernautMode extends GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
+
+		var timer = self.get_meta("juggernaut_swap_timer") if self.has_meta("juggernaut_swap_timer") else 0.0
+		timer += delta
+		if timer >= 30.0:
+			timer = 0.0
+			var alive_hunters = []
+			for b in balls:
+				if "team" in b and b.team == "Hunters" and b.alive:
+					alive_hunters.append(b)
+			if alive_hunters.size() > 0:
+				var rng = self.get_meta("rng") if self.has_meta("rng") else null
+				var new_juggernaut = null
+				if rng != null:
+					new_juggernaut = alive_hunters[rng.randi_range(0, alive_hunters.size() - 1)]
+				else:
+					new_juggernaut = alive_hunters[0]
+				for b in balls:
+					if "team" in b and b.team == "Juggernaut" and b.alive:
+						b.team = "Hunters"
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("base_max_hp"):
+								b["max_hp"] = b["base_max_hp"] * 0.8
+								b["hp"] = min(b["hp"], b["max_hp"])
+							if b.has("base_damage"): b["damage"] = b["base_damage"]
+							if b.has("base_radius"): b["radius"] = b["base_radius"]
+							if b.has("base_speed"): b["speed"] = b["base_speed"]
+							if b.has("base_mass"): b["mass"] = b["base_mass"]
+						else:
+							if b.has_meta("base_max_hp") and "max_hp" in b:
+								b.max_hp = b.get_meta("base_max_hp") * 0.8
+								if "hp" in b: b.hp = min(b.hp, b.max_hp)
+							if b.has_meta("base_damage") and "damage" in b: b.damage = b.get_meta("base_damage")
+							if b.has_meta("base_radius") and "radius" in b: b.radius = b.get_meta("base_radius")
+							if b.has_meta("base_speed") and "speed" in b: b.speed = b.get_meta("base_speed")
+							if b.has_meta("base_mass") and "mass" in b: b.mass = b.get_meta("base_mass")
+				_make_juggernaut(world, new_juggernaut)
+				if world != null and world.has_method("add_event"):
+					world.add_event("juggernaut_change", {"message": "A new Juggernaut has been randomly selected!"})
+		self.set_meta("juggernaut_swap_timer", timer)
 
 		var dead_juggernauts = []
 		for b in balls:
