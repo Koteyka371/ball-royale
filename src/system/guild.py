@@ -693,7 +693,7 @@ class GuildManager:
                         guild.setdefault("hq", {})["training_arena_unlocked"] = True
                         self.save()
                         return True
-                elif feature_type in ["statues", "banners", "cosmetics", "flags", "backgrounds", "announcer_voices"]:
+                elif feature_type in ["statues", "banners", "cosmetics", "flags", "backgrounds", "announcer_voices", "ambient_music"]:
                     if feature_id not in guild.setdefault("hq", {}).setdefault(feature_type, []):
                         guild[currency] -= cost
                         guild["hq"][feature_type].append(feature_id)
@@ -784,6 +784,8 @@ class GuildManager:
                 "flags": hq.get("flags", []),
                 "backgrounds": hq.get("backgrounds", []),
                 "announcer_voices": hq.get("announcer_voices", []),
+                "ambient_music": hq.get("ambient_music", []),
+                "active_ambient_music": hq.get("active_ambient_music", None),
                 "mini_games": hq.get("mini_games", {}),
                 "defenses": hq.get("defenses", {}),
                 "training_arena_unlocked": hq.get("training_arena_unlocked", False),
@@ -791,6 +793,16 @@ class GuildManager:
                 "hall_of_fame": hq.get("hall_of_fame", [])
             }
         return None
+    def set_hq_ambient_music(self, guild_name, track_id):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            hq = guild.setdefault("hq", {})
+            if track_id in hq.get("ambient_music", []):
+                hq["active_ambient_music"] = track_id
+                self.save()
+                return True
+        return False
+
     def arrange_hq_item(self, guild_name, item_type, item_id, position_x, position_y):
         if guild_name in self.data["guilds"]:
             guild = self.data["guilds"][guild_name]
