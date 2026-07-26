@@ -35597,6 +35597,40 @@ class WeaponCollectionMode extends GameMode:
 			hazards.append(weapon)
 
 		for b in balls:
+			var act_skill = b.get("active_skill") if typeof(b) == TYPE_DICTIONARY else (b.get("active_skill") if "active_skill" in b else null)
+			if act_skill != null:
+				var heat = b.get("weapon_heat", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("weapon_heat") if b.get("weapon_heat") != null else 0.0)
+				var last_timer = b.get("weapon_last_skill_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("weapon_last_skill_timer") if b.get("weapon_last_skill_timer") != null else 0.0)
+				var current_timer = b.get("skill_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("skill_timer") if b.get("skill_timer") != null else 0.0)
+
+				heat = max(0.0, heat - 10.0 * delta)
+
+				if current_timer > last_timer + 0.1:
+					heat += 40.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["weapon_last_skill_timer"] = current_timer
+				else:
+					b.set("weapon_last_skill_timer", current_timer)
+
+				if heat >= 100.0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["active_skill"] = null
+						b["skill_timer"] = 10.0
+						b["weapon_heat"] = 0.0
+					else:
+						b.set("active_skill", null)
+						b.set("skill_timer", 10.0)
+						b.set("weapon_heat", 0.0)
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+						world.add_event("weapon_overheated", {"ball_id": b_id})
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["weapon_heat"] = heat
+					else:
+						b.set("weapon_heat", heat)
+
 			var bx = b["x"] if typeof(b) == TYPE_DICTIONARY else b.get("x")
 			var by = b["y"] if typeof(b) == TYPE_DICTIONARY else b.get("y")
 			var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else (b.get("radius") if b.get("radius") != null else 10.0)
@@ -35633,10 +35667,14 @@ class WeaponCollectionMode extends GameMode:
 							b["active_skill"] = selected_ability
 							b["skill_cooldown"] = 5.0
 							b["skill_timer"] = 0.0
+							b["weapon_heat"] = 0.0
+							b["weapon_last_skill_timer"] = 0.0
 						else:
 							b.set("active_skill", selected_ability)
 							b.set("skill_cooldown", 5.0)
 							b.set("skill_timer", 0.0)
+							b.set("weapon_heat", 0.0)
+							b.set("weapon_last_skill_timer", 0.0)
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
 							world.add_event("weapon_collected", {"ball_id": b_id, "ability": selected_ability})

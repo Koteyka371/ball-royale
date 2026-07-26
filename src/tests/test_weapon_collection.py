@@ -85,3 +85,47 @@ def test_weapon_collection_pickup():
         "phase_through",
         "repel_burst"
     ]
+
+
+def test_weapon_overheat():
+    mode = WeaponCollectionMode()
+    world = MockWorld()
+
+    b1 = MockBall(1, 100, 100)
+    mode.setup(world, [b1])
+
+    # Manually simulate picking up a weapon
+    b1.active_skill = "fireball"
+    b1.skill_cooldown = 5.0
+    b1.skill_timer = 0.0
+    b1.weapon_heat = 0.0
+    b1.weapon_last_skill_timer = 0.0
+
+    # Simulate three rapid skill uses (40 heat each)
+
+    # First use
+    b1.skill_timer = 5.0
+    mode.tick(world, [b1], delta=0.016)
+    assert b1.weapon_heat >= 39.0
+
+    # Second use (simulate cooldown reset then cast again)
+    b1.skill_timer = 0.0
+    mode.tick(world, [b1], delta=0.016)
+    b1.skill_timer = 5.0
+    mode.tick(world, [b1], delta=0.016)
+    assert b1.weapon_heat >= 79.0
+
+    # Third use should break it
+    b1.skill_timer = 0.0
+    mode.tick(world, [b1], delta=0.016)
+    b1.skill_timer = 5.0
+    mode.tick(world, [b1], delta=0.016)
+
+    # Weapon breaks
+    assert b1.active_skill is None
+    assert b1.skill_timer == 10.0
+    assert b1.weapon_heat == 0.0
+
+    overheat_events = [e for e in world.events if e[0] == "weapon_overheated"]
+    assert len(overheat_events) == 1
+    assert overheat_events[0][1]["ball_id"] == 1

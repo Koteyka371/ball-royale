@@ -22547,6 +22547,30 @@ class WeaponCollectionMode(GameMode):
             world.arena.hazards.append(weapon)
 
         for b in balls:
+            if getattr(b, "active_skill", None) is not None:
+                # Handle weapon heat
+                heat = getattr(b, "weapon_heat", 0.0)
+                last_timer = getattr(b, "weapon_last_skill_timer", 0.0)
+                current_timer = getattr(b, "skill_timer", 0.0)
+
+                # Cooldown heat passively
+                heat = max(0.0, heat - 10.0 * delta)
+
+                # Check if skill was just cast (timer increased significantly)
+                if current_timer > last_timer + 0.1:
+                    heat += 40.0
+
+                b.weapon_last_skill_timer = current_timer
+
+                if heat >= 100.0:
+                    b.active_skill = None
+                    b.skill_timer = 10.0
+                    b.weapon_heat = 0.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("weapon_overheated", {"ball_id": getattr(b, "id", None)})
+                else:
+                    b.weapon_heat = heat
+
             for h in world.arena.hazards:
                 if getattr(h, "active", True) and getattr(h, "kind", "") == "weapon_crate":
                     dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
@@ -22568,6 +22592,8 @@ class WeaponCollectionMode(GameMode):
                         b.active_skill = random.choice(abilities)
                         b.skill_cooldown = 5.0
                         b.skill_timer = 0.0
+                        b.weapon_heat = 0.0
+                        b.weapon_last_skill_timer = 0.0
                         if hasattr(world, "add_event"):
                             world.add_event("weapon_collected", {"ball_id": getattr(b, "id", None), "ability": b.active_skill})
 
