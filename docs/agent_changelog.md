@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1504] Shifting Gravity Fields — *2026-07-26 07:06:36 UTC*
+
+A mode where gravity periodically shifts in random directions.
+
+---
+
 ## [idea-1541] Guild Headquarters Music Player — *2026-07-26 06:53:41 UTC*
 
 Allow guilds to spend their Guild XP on unlocking different ambient background music tracks for their HQ, allowing members to personalize the vibe of their headquarters lobby.
