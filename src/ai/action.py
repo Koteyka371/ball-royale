@@ -8563,6 +8563,8 @@ class Action:
                                     if hasattr(self.ball, 'status_effects'):
                                         self.ball.status_effects.append({"type": "slow", "duration": delta})
                     elif hazard.kind == "gravity_well":
+                        if getattr(self.ball, "gravity_well_immunity", False):
+                            continue
                         # Cosmetics: gravity anomaly already implemented
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -9909,6 +9911,8 @@ class Action:
                                 self.ball.skill_timer += delta * (1.0 - speed_mult)
                             continue
                         elif hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                            if getattr(self.ball, "hazard_push_pull_immunity", False):
+                                continue
                             # If glider active, immunity to tornado pull/damage
                             if getattr(self.ball, "glider_booster_timer", 0.0) > 0.0:
                                 continue

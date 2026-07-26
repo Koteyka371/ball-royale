@@ -16573,6 +16573,13 @@ func execute(strategy: String, delta: float):
                                 if "speed" in self.ball: self.ball.speed = base_spd * 0.5
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", base_spd * 0.5)
                 elif hazard.kind == "gravity_well":
+                    var gw_immunity = false
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("gravity_well_immunity") and self.ball.get_meta("gravity_well_immunity") == true:
+                        gw_immunity = true
+                    elif "gravity_well_immunity" in self.ball and self.ball.gravity_well_immunity == true:
+                        gw_immunity = true
+                    if gw_immunity:
+                        continue
                     # Cosmetics: gravity anomaly already implemented
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
@@ -18937,6 +18944,13 @@ func execute(strategy: String, delta: float):
                         if "skill_timer" in self.ball and self.ball.skill_timer > 0:
                             self.ball.skill_timer += delta * (1.0 - speed_mult)
                     elif hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                        var push_immunity = false
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hazard_push_pull_immunity") and self.ball.get_meta("hazard_push_pull_immunity") == true:
+                            push_immunity = true
+                        elif "hazard_push_pull_immunity" in self.ball and self.ball.hazard_push_pull_immunity == true:
+                            push_immunity = true
+                        if push_immunity:
+                            continue
                         var gbt = 0.0
                         if "glider_booster_timer" in self.ball: gbt = float(self.ball.glider_booster_timer)
                         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("glider_booster_timer"): gbt = float(self.ball.get_meta("glider_booster_timer"))
