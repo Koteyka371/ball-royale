@@ -1,0 +1,4 @@
+{
+  "title": "Gravity Swap Mutator",
+  "description": "Periodically swaps gravity direction, affecting projectile arcs."
+}
