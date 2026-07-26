@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1526] Bouncy Arena Walls — *2026-07-26 06:16:43 UTC*
+
+Players hitting the arena boundaries are bounced back at double speed, adding a chaotic pinball element to the game.
+
+---
+
 ## [idea-1488] Elemental Auras — *2026-07-26 05:51:55 UTC*
 
 Players can equip different elemental auras (fire, ice, lightning) that apply passive effects to nearby enemies or alter their own stats.

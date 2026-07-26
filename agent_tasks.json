@@ -26130,7 +26130,7 @@
     },
     {
       "id": "idea-1526",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Arena Walls",
@@ -38263,6 +38263,23 @@
         "src/ai/hologram_projection_drone.py",
         "src/ai/hologram_projection_drone.gd",
         "tests/test_hologram_projection_drone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2239",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage zone",
+      "description": "A zone where decoys spawn randomly to confuse enemies.",
+      "allowed_paths": [
+        "src/ai/mirage_zone.py",
+        "src/ai/mirage_zone.gd",
+        "tests/test_mirage_zone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
