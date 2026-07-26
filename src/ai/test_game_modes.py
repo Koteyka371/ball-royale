@@ -2294,9 +2294,21 @@ def test_winding_snake_path_logic():
     mode.setup(world, [b_in, b_out])
 
     # Overwrite points so it's predictable
-    mode.path_points = [{"x": 500, "y": 500}, {"x": 500, "y": 600}]
-    mode.path_width = 100.0
-    mode.shrink_rate = 0.0 # Don't shrink for this test
+    mode.snakes = [{
+        "path_points": [{"x": 500, "y": 500}, {"x": 500, "y": 600}],
+        "path_width": 100.0,
+        "shrink_rate": 0.0, # Don't shrink for this test
+        "min_path_width": 80.0,
+        "head_x": 500.0,
+        "head_y": 600.0,
+        "head_angle": 0.0,
+        "speed": 80.0,
+        "point_interval_timer": 0.0,
+        "point_interval": 0.5,
+        "max_points": 20,
+        "alive_time": 0.0,
+        "max_alive_time": 30.0
+    }]
 
     initial_out_hp = b_out.hp
     initial_in_hp = b_in.hp
