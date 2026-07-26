@@ -2100,6 +2100,31 @@ class Action:
                             b.alive = False
                             break
 
+
+        # Equipped Aura logic
+        equipped_aura = getattr(self.ball, "equipped_aura", None)
+        if equipped_aura == "lightning":
+            self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 1.5
+            self.ball.lightning_aura_active = True
+        elif equipped_aura in ("fire", "ice"):
+            aura_radius = 150.0
+            enemies_in_aura = [e for e in getattr(self.world, "balls", []) if e != self.ball and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]
+            for e in enemies_in_aura:
+                dist_sq = (self.ball.x - e.x)**2 + (self.ball.y - e.y)**2
+                if dist_sq <= aura_radius**2:
+                    if equipped_aura == "fire":
+                        damage = 5.0 * delta
+                        if hasattr(e, "take_damage"):
+                            e.take_damage(damage)
+                        elif hasattr(e, "hp"):
+                            e.hp -= damage
+                            if e.hp <= 0:
+                                e.hp = 0
+                                e.alive = False
+                        e.burn_timer = max(getattr(e, "burn_timer", 0.0), 2.0)
+                    elif equipped_aura == "ice":
+                        e.freeze_timer = getattr(e, "freeze_timer", 0.0) + delta
+
         # Necromancer aura logic
         if getattr(self.ball, 'ball_type', getattr(self.ball.__class__, 'BALL_TYPE', '')).lower() == 'necromancer':
             necro_aura_radius = 150.0
