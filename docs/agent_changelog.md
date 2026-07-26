@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1551] Sticky Ceilings Modifier — *2026-07-26 22:40:48 UTC*
+
+An environmental hazard mutator where certain areas of the ceiling become extremely sticky during reverse gravity events, slowing down any ball that gets stuck to them and requiring a dash or explosive knockback to break free.
+
+---
+
 ## [idea-1563] Laser Grid Survival Mode — *2026-07-26 22:09:15 UTC*
 
 An intense game mode where a grid of static lasers slowly moves across the arena, forcing players to find safe pockets and navigate the grid while fighting enemies.

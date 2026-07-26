@@ -26556,7 +26556,7 @@
     },
     {
       "id": "idea-1551",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Ceilings Modifier",
@@ -39050,6 +39050,40 @@
         "src/ai/echo_mirror_booster.py",
         "src/ai/echo_mirror_booster.gd",
         "tests/test_echo_mirror_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2285",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Well Roulette",
+      "description": "Random gravity wells spawn and pull players towards them with increasing force.",
+      "allowed_paths": [
+        "src/ai/gravity_well_roulette.py",
+        "src/ai/gravity_well_roulette.gd",
+        "tests/test_gravity_well_roulette.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2286",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Eclipse Mode",
+      "description": "A new weather event where both Day and Night traits are activated simultaneously for a short duration, causing extreme chaos.",
+      "allowed_paths": [
+        "src/ai/eclipse.py",
+        "src/ai/eclipse.gd",
+        "tests/test_eclipse.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
