@@ -30224,8 +30224,127 @@ class HighSpeedReflectiveBarriersMode(GameMode):
                             entity.reflect_barrier_cooldown = 0.5
 
 
+
+class SingularityBombEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Singularity Bomb Event"
+        self.description = "A massive singularity bomb spawns periodically. It slowly pulls in all nearby projectiles. If it absorbs enough projectiles or takes enough damage, it detonates in a massive AoE blast!"
+        self.event_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.event_timer += delta
+
+        if not hasattr(world, "arena"):
+            return
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        if self.event_timer >= 20.0:
+            self.event_timer = 0.0
+            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            cx = random.uniform(200, arena_width - 200)
+            cy = random.uniform(200, arena_height - 200)
+
+            try:
+                from arena.procedural_arena import Hazard
+                h = Hazard(id=len(world.arena.hazards) + 90000 + random.randint(0, 1000), x=cx, y=cy, radius=80.0, kind="singularity_bomb", damage=0.0)
+            except ImportError:
+                class DummyHazardSB:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                h = DummyHazardSB(len(world.arena.hazards) + 90000 + random.randint(0, 1000), cx, cy, 80.0, "singularity_bomb", 0.0)
+
+            setattr(h, "hp", 150.0)
+            setattr(h, "max_hp", 150.0)
+            setattr(h, "pull_radius", 400.0)
+            setattr(h, "pull_strength", 200.0)
+
+            world.arena.hazards.append(h)
+
+            if hasattr(world, "add_event"):
+                world.add_event("singularity_bomb_spawned", {"x": cx, "y": cy})
+
+        hazards_to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "singularity_bomb":
+                hx = getattr(h, "x", 0.0)
+                hy = getattr(h, "y", 0.0)
+                pull_radius = getattr(h, "pull_radius", 400.0)
+                pull_strength = getattr(h, "pull_strength", 200.0)
+
+                # Pull projectiles
+                if hasattr(world, "projectiles"):
+                    import math
+                    projs_to_remove = []
+                    for p in world.projectiles:
+                        px = getattr(p, "x", 0.0)
+                        py = getattr(p, "y", 0.0)
+                        dx = hx - px
+                        dy = hy - py
+                        dist = math.sqrt(dx*dx + dy*dy)
+
+                        if dist < pull_radius:
+                            if dist < getattr(h, "radius", 80.0):
+                                projs_to_remove.append(p)
+                            elif dist > 0.0001:
+                                nx = dx / dist
+                                ny = dy / dist
+
+                                p.vx = getattr(p, "vx", 0.0) + nx * pull_strength * delta
+                                p.vy = getattr(p, "vy", 0.0) + ny * pull_strength * delta
+                                p.x += nx * (pull_strength * 0.5) * delta
+                                p.y += ny * (pull_strength * 0.5) * delta
+
+                    for p in projs_to_remove:
+                        if p in world.projectiles:
+                            world.projectiles.remove(p)
+                        h.hp = getattr(h, "hp", 150.0) - getattr(p, "damage", 10.0)
+
+                if getattr(h, "hp", 150.0) <= 0.0:
+                    hazards_to_remove.append(h)
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
+            # Explode
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "singularity_bomb_explosion", "x": h.x, "y": h.y, "radius": 300.0})
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    import math
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= 300.0:
+                        damage = 100.0 * (1.0 - dist / 300.0)
+                        b.hp = getattr(b, "hp", 100.0) - damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            b.killer = "singularity_bomb"
+
+                        if dist > 0.0001:
+                            nx = dx / dist
+                            ny = dy / dist
+                            knockback = 500.0 * (1.0 - dist / 300.0)
+                            b.vx = getattr(b, "vx", 0.0) + nx * knockback
+                            b.vy = getattr(b, "vy", 0.0) + ny * knockback
+
+
 GAME_MODES = {
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
+    "singularity_bomb_event": SingularityBombEventMode(),
     'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
     'capture_zones': CaptureZonesMode(),
     "nemesis_sustain": NemesisSustainMode(),
