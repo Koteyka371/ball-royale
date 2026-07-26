@@ -33581,6 +33581,8 @@ func _use_skill():
                         if b_pinball > 0.0:
                             fb["is_ricochet_laser"] = true
                             fb["bounces_left"] = 5
+                        else:
+                            fb["bounces_left"] = 1
 
                         arena.hazards.append(fb)
 

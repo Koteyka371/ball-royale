@@ -719,6 +719,44 @@ class ProceduralArena:
                             if getattr(hazard, 'bounces_left', 0) <= 0:
                                 hazard.active = False
 
+                    elif hazard.kind in ("fireball", "fireball_projectile"):
+                        if hasattr(hazard, "vx") and hasattr(hazard, "vy"):
+                            hazard.x += hazard.vx * delta
+                            hazard.y += hazard.vy * delta
+
+                            bounced = False
+                            if hazard.x - getattr(hazard, "radius", 15.0) < 0:
+                                hazard.x = getattr(hazard, "radius", 15.0)
+                                hazard.vx = abs(hazard.vx)
+                                bounced = True
+                            elif getattr(self, "width", 2000.0) and hazard.x + getattr(hazard, "radius", 15.0) > self.width:
+                                hazard.x = self.width - getattr(hazard, "radius", 15.0)
+                                hazard.vx = -abs(hazard.vx)
+                                bounced = True
+
+                            if hazard.y - getattr(hazard, "radius", 15.0) < 0:
+                                hazard.y = getattr(hazard, "radius", 15.0)
+                                hazard.vy = abs(hazard.vy)
+                                bounced = True
+                            elif getattr(self, "height", 2000.0) and hazard.y + getattr(hazard, "radius", 15.0) > self.height:
+                                hazard.y = self.height - getattr(hazard, "radius", 15.0)
+                                hazard.vy = -abs(hazard.vy)
+                                bounced = True
+
+                            if bounced:
+                                if not hasattr(hazard, "bounces_left"):
+                                    setattr(hazard, "bounces_left", 1)
+
+                                hazard.bounces_left -= 1
+                                if hazard.bounces_left < 0:
+                                    # Explode!
+                                    hazard.duration = 0.0
+                                    hazard.radius = 100.0
+                                    hazard.damage = getattr(hazard, "damage", 25) * 1.5
+                                    hazard.kind = "fireball_explosion"
+                                    hazard.vx = 0
+                                    hazard.vy = 0
+
 
                     if hazard.kind in ("tornado", "local_tornado"):
                         for other_hazard in self.hazards:

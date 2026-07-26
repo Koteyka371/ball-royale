@@ -867,6 +867,94 @@ func update_zone(current_tick: int, delta: float) -> void:
                             elif typeof(hazard) == TYPE_DICTIONARY:
                                 hazard["active"] = false
 
+                elif hazard.kind == "fireball" or hazard.kind == "fireball_projectile":
+                    var vx = hazard.get_meta("vx") if hazard.has_method("has_meta") and hazard.has_meta("vx") else (hazard["vx"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vx") else (hazard.vx if "vx" in hazard else null))
+                    var vy = hazard.get_meta("vy") if hazard.has_method("has_meta") and hazard.has_meta("vy") else (hazard["vy"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("vy") else (hazard.vy if "vy" in hazard else null))
+
+                    if vx != null and vy != null:
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["x"] = hazard.get("x", 0.0) + vx * delta
+                            hazard["y"] = hazard.get("y", 0.0) + vy * delta
+                        else:
+                            hazard.x += vx * delta
+                            hazard.y += vy * delta
+
+                        var hx = hazard["x"] if typeof(hazard) == TYPE_DICTIONARY else hazard.x
+                        var hy = hazard["y"] if typeof(hazard) == TYPE_DICTIONARY else hazard.y
+                        var rad = hazard["radius"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else (hazard.radius if "radius" in hazard else 15.0)
+                        var bounced = false
+
+                        if hx - rad < 0:
+                            hx = rad
+                            vx = abs(vx)
+                            bounced = true
+                        elif hx + rad > width:
+                            hx = width - rad
+                            vx = -abs(vx)
+                            bounced = true
+
+                        if hy - rad < 0:
+                            hy = rad
+                            vy = abs(vy)
+                            bounced = true
+                        elif hy + rad > height:
+                            hy = height - rad
+                            vy = -abs(vy)
+                            bounced = true
+
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["x"] = hx
+                            hazard["y"] = hy
+                        else:
+                            hazard.x = hx
+                            hazard.y = hy
+
+                        if hazard.has_method("set_meta"):
+                            hazard.set_meta("vx", vx)
+                            hazard.set_meta("vy", vy)
+                        elif typeof(hazard) == TYPE_DICTIONARY:
+                            hazard["vx"] = vx
+                            hazard["vy"] = vy
+                        else:
+                            if "vx" in hazard: hazard.vx = vx
+                            if "vy" in hazard: hazard.vy = vy
+
+                        if bounced:
+                            var bl = 1
+                            if hazard.has_method("has_meta") and hazard.has_meta("bounces_left"): bl = hazard.get_meta("bounces_left")
+                            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("bounces_left"): bl = hazard["bounces_left"]
+                            elif "bounces_left" in hazard: bl = hazard.bounces_left
+
+                            bl -= 1
+
+                            if hazard.has_method("set_meta"): hazard.set_meta("bounces_left", bl)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["bounces_left"] = bl
+                            elif "bounces_left" in hazard: hazard.bounces_left = bl
+
+                            if bl < 0:
+                                var dmg = hazard.get_meta("damage") if hazard.has_method("has_meta") and hazard.has_meta("damage") else (hazard["damage"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("damage") else (hazard.damage if "damage" in hazard else 25.0))
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                    hazard.set_meta("radius", 100.0)
+                                    hazard.set_meta("damage", dmg * 1.5)
+                                    hazard.set_meta("kind", "fireball_explosion")
+                                    hazard.set_meta("vx", 0.0)
+                                    hazard.set_meta("vy", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY:
+                                    hazard["duration"] = 0.0
+                                    hazard["radius"] = 100.0
+                                    hazard["damage"] = dmg * 1.5
+                                    hazard["kind"] = "fireball_explosion"
+                                    hazard["vx"] = 0.0
+                                    hazard["vy"] = 0.0
+                                else:
+                                    if "duration" in hazard: hazard.duration = 0.0
+                                    if "radius" in hazard: hazard.radius = 100.0
+                                    if "damage" in hazard: hazard.damage = dmg * 1.5
+                                    if "kind" in hazard: hazard.kind = "fireball_explosion"
+                                    if "vx" in hazard: hazard.vx = 0.0
+                                    if "vy" in hazard: hazard.vy = 0.0
+
                     if hazard.has_method("set_meta"):
                         hazard.set_meta("vx", vx)
                         hazard.set_meta("vy", vy)
