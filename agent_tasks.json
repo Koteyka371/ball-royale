@@ -25807,7 +25807,7 @@
     },
     {
       "id": "idea-1507",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflective Barriers",
@@ -37752,6 +37752,23 @@
         "src/ai/color_changing_walls.py",
         "src/ai/color_changing_walls.gd",
         "tests/test_color_changing_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2209",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Vampiric Fog Weather",
+      "description": "A dense fog rolls in, reducing vision. Any damage dealt in the fog heals the attacker for 50% of the damage dealt.",
+      "allowed_paths": [
+        "src/ai/vampiric_fog.py",
+        "src/ai/vampiric_fog.gd",
+        "tests/test_vampiric_fog.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

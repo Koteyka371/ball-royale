@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1507] Reflective Barriers — *2026-07-26 00:17:34 UTC*
+
+Barriers spawn in the arena that reflect projectiles and players at high speeds.
+
+---
+
 ## [idea-1496] Phantom Spectator Intervention — *2026-07-26 00:06:58 UTC*
 
 Eliminated balls become 'Phantom Spectators' with limited ability to spawn minor hazards (like small ice patches) or toss tiny health packs to influence the match before it ends.
