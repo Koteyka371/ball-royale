@@ -11885,6 +11885,76 @@ class InverseMirrorArenaMode(GameMode):
                     clone.vx = -getattr(b, "vx", 0.0)
                     clone.vy = -getattr(b, "vy", 0.0)
 
+class MirrorIllusionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirror Illusion"
+        self.description = "Every ball has a harmless mirror illusion on the opposite side of the arena that moves symmetrically, confusing opponents and absorbing single-target projectiles."
+
+    class MirrorIllusionBall:
+        def __init__(self, owner_id, x, y, radius=15.0):
+            self.owner_id = owner_id
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.hp = 10.0
+            self.max_hp = 10.0
+            self.radius = radius
+            self.kind = "mirror_illusion"
+            self.alive = True
+            self.is_fake = True
+            self.invulnerable = False
+            self.id = 9000000 + (owner_id if isinstance(owner_id, int) else hash(owner_id) % 100000)
+            self.team = "mirror_team"
+            self.ball_type = "mirror_illusion"
+            self.is_harmless_illusion = True
+            self.respawn_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        illusions = [b for b in balls if getattr(b, "is_harmless_illusion", False)]
+        real_balls = [b for b in balls if not getattr(b, "is_harmless_illusion", False) and getattr(b, "ball_type", "") != "spectator"]
+
+        for rb in real_balls:
+            if not getattr(rb, "alive", True): continue
+
+            ill = next((i for i in illusions if getattr(i, "owner_id", None) == rb.id), None)
+
+            if not ill:
+                if not hasattr(self, "illusion_cooldowns"):
+                    self.illusion_cooldowns = {}
+
+                cooldown = self.illusion_cooldowns.get(rb.id, 0.0)
+                if cooldown > 0:
+                    self.illusion_cooldowns[rb.id] = cooldown - delta
+                else:
+                    ill = self.MirrorIllusionBall(rb.id, arena_width - rb.x, arena_height - rb.y, getattr(rb, "radius", 15.0))
+                    # Inherit team so it absorbs projectiles meant for opponents, or confusing enemies
+                    ill.team = getattr(rb, "team", "neutral")
+                    if hasattr(world, "balls"):
+                        world.balls.append(ill)
+            else:
+                if getattr(ill, "alive", True) and getattr(ill, "hp", 1.0) > 0:
+                    ill.x = arena_width - rb.x
+                    ill.y = arena_height - rb.y
+                    ill.vx = -getattr(rb, "vx", 0.0)
+                    ill.vy = -getattr(rb, "vy", 0.0)
+                    ill.radius = getattr(rb, "radius", 15.0)
+                else:
+                    if not hasattr(self, "illusion_cooldowns"):
+                        self.illusion_cooldowns = {}
+                    self.illusion_cooldowns[rb.id] = 3.0 # Cooldown
+
+        # Remove dead illusions
+        to_remove = [i for i in illusions if not getattr(i, "alive", True) or getattr(i, "hp", 1.0) <= 0]
+        for r in to_remove:
+            if r in world.balls:
+                world.balls.remove(r)
+
 class MirrorMatchMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -40627,3 +40697,4 @@ class StationaryBlackHoleMutatorMode(GameMode):
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
+GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
