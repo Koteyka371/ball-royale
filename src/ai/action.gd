@@ -4209,6 +4209,105 @@ func execute(strategy: String, delta: float):
         elif typeof(self.ball) == TYPE_DICTIONARY:
             self.ball["survival_swap_timer"] = swap_timer
 
+    # Equipped Aura logic
+    var equipped_aura = null
+    if typeof(self.ball) == TYPE_OBJECT and "equipped_aura" in self.ball:
+        equipped_aura = self.ball.equipped_aura
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("equipped_aura"):
+        equipped_aura = self.ball["equipped_aura"]
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("equipped_aura"):
+        equipped_aura = self.ball.get_meta("equipped_aura")
+
+    if equipped_aura == "lightning":
+        var base_speed = 100.0
+        if typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball: base_speed = float(self.ball.base_speed)
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): base_speed = float(self.ball["base_speed"])
+
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "speed" in self.ball: self.ball.speed = base_speed * 1.5
+            if "lightning_aura_active" in self.ball: self.ball.lightning_aura_active = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("lightning_aura_active", true)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["speed"] = base_speed * 1.5
+            self.ball["lightning_aura_active"] = true
+
+    elif equipped_aura == "fire" or equipped_aura == "ice":
+        var aura_radius = 150.0
+        var eq_team = ""
+        if typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: eq_team = str(self.ball.team)
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): eq_team = str(self.ball["team"])
+
+        var balls_list = []
+        if self.world != null and "balls" in self.world: balls_list = self.world.balls
+
+        for e in balls_list:
+            if typeof(e) == TYPE_OBJECT:
+                if e == self.ball: continue
+                var e_alive = true
+                if "alive" in e: e_alive = e.alive
+                elif e.has_method("has_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+                if not e_alive: continue
+
+                var e_team = ""
+                if "team" in e: e_team = str(e.team)
+                elif "ball_type" in e: e_team = str(e.ball_type)
+
+                if e_team != eq_team:
+                    var b_x = 0.0; var b_y = 0.0; var e_x = 0.0; var e_y = 0.0
+                    if "x" in self.ball: b_x = float(self.ball.x)
+                    if "y" in self.ball: b_y = float(self.ball.y)
+                    if "x" in e: e_x = float(e.x)
+                    if "y" in e: e_y = float(e.y)
+
+                    var dist_sq = (b_x - e_x)*(b_x - e_x) + (b_y - e_y)*(b_y - e_y)
+                    if dist_sq <= aura_radius * aura_radius:
+                        if equipped_aura == "fire":
+                            var damage = 5.0 * delta
+                            if e.has_method("take_damage"): e.take_damage(damage)
+                            elif "hp" in e:
+                                e.hp -= damage
+                                if e.hp <= 0:
+                                    e.hp = 0.0
+                                    e.alive = false
+
+                            var bt = 0.0
+                            if "burn_timer" in e: bt = float(e.burn_timer)
+                            elif e.has_method("has_meta") and e.has_meta("burn_timer"): bt = float(e.get_meta("burn_timer"))
+                            var new_bt = max(bt, 2.0)
+                            if "burn_timer" in e: e.burn_timer = new_bt
+                            elif e.has_method("set_meta"): e.set_meta("burn_timer", new_bt)
+                        elif equipped_aura == "ice":
+                            var ft = 0.0
+                            if "freeze_timer" in e: ft = float(e.freeze_timer)
+                            elif e.has_method("has_meta") and e.has_meta("freeze_timer"): ft = float(e.get_meta("freeze_timer"))
+                            ft += delta
+                            if "freeze_timer" in e: e.freeze_timer = ft
+                            elif e.has_method("set_meta"): e.set_meta("freeze_timer", ft)
+            elif typeof(e) == TYPE_DICTIONARY:
+                if e.has("id") and typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id") and e["id"] == self.ball["id"]: continue
+                if e.has("id") and typeof(self.ball) == TYPE_OBJECT and "id" in self.ball and e["id"] == self.ball.id: continue
+                var e_alive = e.get("alive", true)
+                if not e_alive: continue
+
+                var e_team = str(e.get("team", e.get("ball_type", "")))
+                if e_team != eq_team:
+                    var b_x = float(self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.x if "x" in self.ball else 0.0))
+                    var b_y = float(self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.y if "y" in self.ball else 0.0))
+                    var e_x = float(e.get("x", 0.0))
+                    var e_y = float(e.get("y", 0.0))
+                    var dist_sq = (b_x - e_x)*(b_x - e_x) + (b_y - e_y)*(b_y - e_y)
+                    if dist_sq <= aura_radius * aura_radius:
+                        if equipped_aura == "fire":
+                            var damage = 5.0 * delta
+                            e["hp"] = float(e.get("hp", 100.0)) - damage
+                            if e["hp"] <= 0.0:
+                                e["hp"] = 0.0
+                                e["alive"] = false
+                            e["burn_timer"] = max(float(e.get("burn_timer", 0.0)), 2.0)
+                        elif equipped_aura == "ice":
+                            e["freeze_timer"] = float(e.get("freeze_timer", 0.0)) + delta
+
+
     # Necromancer aura logic
     var b_type_aura = ""
     if typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball:
