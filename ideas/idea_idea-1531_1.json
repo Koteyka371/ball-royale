@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A hazard that randomly links two players and forces them to swap positions after a short delay, retaining their previous momentum."
+}
