@@ -21158,6 +21158,15 @@ class Action:
                                                     b.killer = "aura_inverter_trap"
 
                             hazard.duration = 0.0 # Destroy trap
+
+                if getattr(hazard, "kind", "") == "leech_seed_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < 10000: # 100 range to trigger the trap
+                            if getattr(self.ball, "leech_seed_timer", 0.0) <= 0:
+                                self.ball.leech_seed_timer = 10.0
+                                self.ball.leech_seed_attacker_id = getattr(hazard, "owner_id", None)
+                                hazard.duration = 0.0 # Destroy trap
                 if getattr(hazard, "kind", "") == "pull_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2

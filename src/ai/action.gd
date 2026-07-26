@@ -41750,6 +41750,32 @@ func _update_skill_timer(delta: float):
 
                             if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
                             elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                if h_kind == "leech_seed_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+                    if owner_id != null and owner_id != b_id:
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+                        var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                        if dist_sq < 10000:
+                            var current_timer = 0.0
+                            if "leech_seed_timer" in self.ball: current_timer = self.ball.leech_seed_timer
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("leech_seed_timer"): current_timer = self.ball.get_meta("leech_seed_timer")
+                            if current_timer <= 0:
+                                if "leech_seed_timer" in self.ball: self.ball.leech_seed_timer = 10.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("leech_seed_timer", 10.0)
+                                if "leech_seed_attacker_id" in self.ball: self.ball.leech_seed_attacker_id = owner_id
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("leech_seed_attacker_id", owner_id)
+                                if "duration" in hazard: hazard.duration = 0.0
+                                elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                 if h_kind == "pull_trap":
                     var owner_id = null
                     if "owner_id" in hazard: owner_id = hazard.owner_id
