@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1532] Sticky Mine — *2026-07-26 07:44:57 UTC*
+
+A deployable hazard that sticks to the first ball that approaches it, ticking down before exploding. Passing close to another ball transfers the mine.
+
+---
+
 ## [idea-1522] Shrinking Safe Zone Mod — *2026-07-26 07:29:42 UTC*
 
 A game mode where the safe area continuously shrinks over time, forcing players into closer proximity and increasing the frequency of encounters.

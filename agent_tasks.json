@@ -26232,7 +26232,7 @@
     },
     {
       "id": "idea-1532",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Mine",
@@ -38520,6 +38520,23 @@
         "src/ai/mobile_capture_zones.py",
         "src/ai/mobile_capture_zones.gd",
         "tests/test_mobile_capture_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2254",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Laser Beams Mode",
+      "description": "A chaotic game mode where indestructible laser beams ricochet around the arena continuously. Players must dodge the lasers while fighting each other. More lasers spawn as the match progresses.",
+      "allowed_paths": [
+        "src/ai/bouncing_laser_beams.py",
+        "src/ai/bouncing_laser_beams.gd",
+        "tests/test_bouncing_laser_beams.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
