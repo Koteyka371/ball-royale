@@ -25926,7 +25926,7 @@
     },
     {
       "id": "idea-1514",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weapon Durability and Overheat",
@@ -37991,6 +37991,40 @@
         "src/ai/bribe_resistance_trait.py",
         "src/ai/bribe_resistance_trait.gd",
         "tests/test_bribe_resistance_trait.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2223",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Network Overdrive",
+      "description": "If a player has multiple decoys active (e.g. from Trickster), they can activate a 'Network Overdrive' skill to instantly swap places with all decoys rapidly, confusing the enemy and dealing minor zap damage to enemies caught between the decoys during the swaps.",
+      "allowed_paths": [
+        "src/ai/decoy_network_overdrive.py",
+        "src/ai/decoy_network_overdrive.gd",
+        "tests/test_decoy_network_overdrive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2224",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hack Drone",
+      "description": "A new item/skill that allows a player to shoot a hacking dart at an enemy's drone (like a spotter drone or stealth drone). If it hits, the drone switches teams and provides benefits (like perception or stealth) to the hacker instead of the original owner.",
+      "allowed_paths": [
+        "src/ai/hack_drone.py",
+        "src/ai/hack_drone.gd",
+        "tests/test_hack_drone.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

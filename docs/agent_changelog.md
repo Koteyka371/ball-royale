@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1514] Weapon Durability and Overheat — *2026-07-26 01:23:20 UTC*
+
+Special weapons and abilities acquired from crates or drops have a durability or overheat mechanic. Players must manage their usage to avoid breaking the weapon or incurring a long cooldown, adding a layer of resource management to combat.
+
+---
+
 ## [idea-1412] Sniper Nest Spotter Drone — *2026-07-26 01:06:18 UTC*
 
 Balls in a sniper nest could periodically release a tiny spotter drone that orbits the nest, revealing the location of any enemies in an even larger radius to the sniper. The drone can be destroyed by enemies to deny vision.
