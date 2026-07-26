@@ -17988,6 +17988,201 @@ class InverseMirrorArenaMode extends GameMode:
 					if "vx" in b and "vx" in clone: clone.vx = -b.vx
 					if "vy" in b and "vy" in clone: clone.vy = -b.vy
 
+class MirrorIllusionMode extends GameMode:
+	var illusion_cooldowns = {}
+
+	func _init() -> void:
+		name = "Mirror Illusion"
+		description = "Every ball has a harmless mirror illusion on the opposite side of the arena that moves symmetrically, confusing opponents and absorbing single-target projectiles."
+
+	class MirrorIllusionBall extends RefCounted:
+		var id: int
+		var owner_id: int
+		var x: float
+		var y: float
+		var vx: float = 0.0
+		var vy: float = 0.0
+		var hp: float = 10.0
+		var max_hp: float = 10.0
+		var radius: float = 15.0
+		var kind: String = "mirror_illusion"
+		var alive: bool = true
+		var is_fake: bool = true
+		var invulnerable: bool = false
+		var team: String = "mirror_team"
+		var ball_type: String = "mirror_illusion"
+		var is_harmless_illusion: bool = true
+		var _metadata = {}
+
+		func _init(p_owner_id: int, p_x: float, p_y: float, p_radius: float):
+			owner_id = p_owner_id
+			x = p_x
+			y = p_y
+			radius = p_radius
+			id = 9000000 + (p_owner_id % 100000)
+
+		func set_meta(key: String, value) -> void:
+			_metadata[key] = value
+
+		func get_meta(key: String, default_val = null):
+			if _metadata.has(key):
+				return _metadata[key]
+			return default_val
+
+		func has_meta(key: String) -> bool:
+			return _metadata.has(key)
+
+	func tick(world: Variant, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif typeof(world.arena) == TYPE_OBJECT:
+				arena_width = float(world.arena.width)
+				arena_height = float(world.arena.height)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			elif typeof(world.arena) == TYPE_OBJECT:
+				arena_width = float(world.arena.width)
+				arena_height = float(world.arena.height)
+
+		var illusions = []
+		var real_balls = []
+
+		for b in balls:
+			var is_harmless = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_harmless = b.get("is_harmless_illusion", false)
+			elif typeof(b) == TYPE_OBJECT:
+				if "is_harmless_illusion" in b:
+					is_harmless = b.is_harmless_illusion
+				elif b.has_method("has_meta") and b.has_meta("is_harmless_illusion"):
+					is_harmless = b.get_meta("is_harmless_illusion")
+
+			if is_harmless:
+				illusions.append(b)
+			else:
+				var ball_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					ball_type = b.get("ball_type", "")
+				elif typeof(b) == TYPE_OBJECT:
+					if "ball_type" in b:
+						ball_type = b.ball_type
+					elif b.has_method("has_meta") and b.has_meta("ball_type"):
+						ball_type = b.get_meta("ball_type")
+				if ball_type != "spectator":
+					real_balls.append(b)
+
+		for rb in real_balls:
+			var rb_alive = true
+			var rb_id = 0
+			var rb_x = 0.0
+			var rb_y = 0.0
+			var rb_vx = 0.0
+			var rb_vy = 0.0
+			var rb_radius = 15.0
+			var rb_team = "neutral"
+
+			if typeof(rb) == TYPE_DICTIONARY:
+				rb_alive = rb.get("alive", true)
+				rb_id = rb.get("id", 0)
+				rb_x = rb.get("x", 0.0)
+				rb_y = rb.get("y", 0.0)
+				rb_vx = rb.get("vx", 0.0)
+				rb_vy = rb.get("vy", 0.0)
+				rb_radius = rb.get("radius", 15.0)
+				rb_team = rb.get("team", "neutral")
+			elif typeof(rb) == TYPE_OBJECT:
+				if "alive" in rb: rb_alive = rb.alive
+				elif rb.has_method("has_meta") and rb.has_meta("alive"): rb_alive = rb.get_meta("alive")
+				if "id" in rb: rb_id = rb.id
+				if "x" in rb: rb_x = rb.x
+				if "y" in rb: rb_y = rb.y
+				if "vx" in rb: rb_vx = rb.vx
+				if "vy" in rb: rb_vy = rb.vy
+				if "radius" in rb: rb_radius = rb.radius
+				if "team" in rb: rb_team = rb.team
+				elif rb.has_method("has_meta") and rb.has_meta("team"): rb_team = rb.get_meta("team")
+
+			if not rb_alive:
+				continue
+
+			var ill = null
+			for i in illusions:
+				var i_owner_id = -1
+				if typeof(i) == TYPE_DICTIONARY:
+					i_owner_id = i.get("owner_id", -1)
+				elif typeof(i) == TYPE_OBJECT:
+					if "owner_id" in i: i_owner_id = i.owner_id
+				if i_owner_id == rb_id:
+					ill = i
+					break
+
+			if ill == null:
+				var cooldown = 0.0
+				if illusion_cooldowns.has(rb_id):
+					cooldown = illusion_cooldowns[rb_id]
+				if cooldown > 0:
+					illusion_cooldowns[rb_id] = cooldown - delta
+				else:
+					var new_ill = MirrorIllusionBall.new(rb_id, arena_width - rb_x, arena_height - rb_y, rb_radius)
+					new_ill.team = rb_team
+					if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+						world.balls.append(new_ill)
+					elif typeof(world) == TYPE_OBJECT and "balls" in world:
+						world.balls.append(new_ill)
+			else:
+				var ill_alive = true
+				var ill_hp = 1.0
+				if typeof(ill) == TYPE_DICTIONARY:
+					ill_alive = ill.get("alive", true)
+					ill_hp = ill.get("hp", 1.0)
+				elif typeof(ill) == TYPE_OBJECT:
+					if "alive" in ill: ill_alive = ill.alive
+					if "hp" in ill: ill_hp = ill.hp
+
+				if ill_alive and ill_hp > 0:
+					if typeof(ill) == TYPE_DICTIONARY:
+						ill["x"] = arena_width - rb_x
+						ill["y"] = arena_height - rb_y
+						ill["vx"] = -rb_vx
+						ill["vy"] = -rb_vy
+						ill["radius"] = rb_radius
+					elif typeof(ill) == TYPE_OBJECT:
+						if "x" in ill: ill.x = arena_width - rb_x
+						if "y" in ill: ill.y = arena_height - rb_y
+						if "vx" in ill: ill.vx = -rb_vx
+						if "vy" in ill: ill.vy = -rb_vy
+						if "radius" in ill: ill.radius = rb_radius
+				else:
+					illusion_cooldowns[rb_id] = 3.0
+
+		var to_remove = []
+		for i in illusions:
+			var ill_alive = true
+			var ill_hp = 1.0
+			if typeof(i) == TYPE_DICTIONARY:
+				ill_alive = i.get("alive", true)
+				ill_hp = i.get("hp", 1.0)
+			elif typeof(i) == TYPE_OBJECT:
+				if "alive" in i: ill_alive = i.alive
+				if "hp" in i: ill_hp = i.hp
+
+			if not ill_alive or ill_hp <= 0:
+				to_remove.append(i)
+
+		for r in to_remove:
+			if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+				world.balls.erase(r)
+			elif typeof(world) == TYPE_OBJECT and "balls" in world:
+				world.balls.erase(r)
+
 class MirrorMatchMode extends GameMode:
 	func _init() -> void:
 		name = "Mirror Match"
@@ -50090,6 +50285,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"dynamic_bounty": DynamicBountyMode.new(),
 	"earthquake": EarthquakeMode.new(),
 	"inverse_mirror_arena": InverseMirrorArenaMode.new(),
+	"mirror_illusion": MirrorIllusionMode.new(),
 	"mirror_match": MirrorMatchMode.new(),
 	"clone_trail": CloneTrailMode.new(),
 	"clone_chaos": CloneChaosMode.new(),
