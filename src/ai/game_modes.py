@@ -39072,3 +39072,79 @@ class BountyExtractionMode(GameMode):
 
 
 GAME_MODES['bounty_extraction'] = BountyExtractionMode()
+
+class FloorPaintMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Floor Paint"
+        self.description = "Players shoot paint that stays on the floor, providing a movement speed boost to allies and a slow debuff to enemies traversing over it."
+        self.splats = []
+
+    class Splat:
+        def __init__(self, x, y, team, radius=40.0):
+            self.x = x
+            self.y = y
+            self.team = team
+            self.radius = radius
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.splats = []
+        for b in balls:
+            if not hasattr(b, "base_speed"):
+                b.base_speed = getattr(b, "speed", 100.0)
+            b._paint_cd = 0.0
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        # Handle attacks and convert them to splats
+        if hasattr(world, "attacks") and world.attacks:
+            for atk, victim in list(world.attacks):
+                atk_team = getattr(atk, "team", "Neutral")
+                # Drop splat where the attack hit
+                self.splats.append(self.Splat(victim.x, victim.y, atk_team))
+
+        # Splats when moving/attacking
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b_team = getattr(b, "team", "Neutral")
+
+            if not hasattr(b, "_paint_cd"):
+                b._paint_cd = 0.0
+
+            b._paint_cd -= delta
+            if b._paint_cd <= 0.0:
+                import random
+                sx = getattr(b, "x", 0.0) + random.uniform(-50, 50)
+                sy = getattr(b, "y", 0.0) + random.uniform(-50, 50)
+                self.splats.append(self.Splat(sx, sy, b_team))
+                b._paint_cd = random.uniform(0.5, 1.5)
+
+            if len(self.splats) > 200:
+                self.splats.pop(0)
+
+            on_ally = False
+            on_enemy = False
+
+            for splat in self.splats:
+                dx = getattr(b, "x", 0.0) - splat.x
+                dy = getattr(b, "y", 0.0) - splat.y
+                dist_sq = dx*dx + dy*dy
+                if dist_sq < (getattr(b, "radius", 10.0) + splat.radius)**2:
+                    if splat.team == b_team:
+                        on_ally = True
+                    elif splat.team != "Neutral":
+                        on_enemy = True
+
+            base = getattr(b, "base_speed", 100.0)
+            if on_ally and not on_enemy:
+                b.speed = base * 1.5
+            elif on_enemy and not on_ally:
+                b.speed = base * 0.5
+            else:
+                b.speed = base
+
+GAME_MODES['floor_paint'] = FloorPaintMode()
