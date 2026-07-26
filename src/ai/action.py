@@ -2004,7 +2004,7 @@ class Action:
             self.ball.trap_disarm_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in list(self.world.arena.hazards):
-                    if getattr(hazard, "kind", "") == "trap":
+                    if getattr(hazard, "kind", "") in ["trap", "sticky_bomb_trap"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         # 300 radius reveal = 90000 dist sq
                         if dist_sq < 90000:
@@ -2012,6 +2012,7 @@ class Action:
                                 hazard.active = True
                             if hasattr(hazard, "duration") and dist_sq < getattr(hazard, "radius", 20.0)**2:
                                 hazard.duration = 0.0
+
 
         flare_timer = getattr(self.world, 'flare_light_timer', 0.0)
         if isinstance(flare_timer, (int, float)) and flare_timer > 0.0:
@@ -18616,6 +18617,8 @@ class Action:
                     from system.lobby import lobby # type: ignore
                     trap_variant = lobby.get_trap_variant(self.ball.id)
                     trap_level = lobby.get_trap_level(self.ball.id)
+                    if trap_variant == "sticky_bomb":
+                        trap.kind = "sticky_bomb_trap"
                     setattr(trap, 'trap_variant', trap_variant)
                     setattr(trap, 'trap_level', trap_level)
                     trap.radius = 15.0 + (trap_level - 1) * 2.0

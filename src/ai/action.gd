@@ -3847,8 +3847,8 @@ func execute(strategy: String, delta: float):
             if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
                 for h in self.world.arena.hazards:
                     var is_trap = false
-                    if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "trap": is_trap = true
-                    elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "trap": is_trap = true
+                    if typeof(h) == TYPE_DICTIONARY and h.has("kind") and (h["kind"] == "trap" or h["kind"] == "sticky_bomb_trap"): is_trap = true
+                    elif typeof(h) == TYPE_OBJECT and "kind" in h and (h.kind == "trap" or h.kind == "sticky_bomb_trap"): is_trap = true
 
                     if is_trap:
                         var hx = 0.0
