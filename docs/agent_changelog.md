@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1534] Juggernaut Roulette Mode — *2026-07-26 06:50:25 UTC*
+
+Every 30 seconds, a new player is randomly selected as the Juggernaut regardless of who killed them, shifting alliances dynamically.
+
+---
+
 ## [idea-1526] Bouncy Arena Walls — *2026-07-26 06:16:43 UTC*
 
 Players hitting the arena boundaries are bounced back at double speed, adding a chaotic pinball element to the game.
