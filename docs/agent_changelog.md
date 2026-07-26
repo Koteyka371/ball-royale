@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1538] Vampiric Arena Mutator — *2026-07-26 16:05:28 UTC*
+
+A mutator where all balls passively lose health over time, but gain a massive lifesteal boost. It forces aggressive gameplay as hiding will result in death.
+
+---
+
 ## [idea-1547] Jumper Booster — *2026-07-26 12:50:13 UTC*
 
 A booster that gives the user temporary invulnerability to ground hazards like ticking bombs.
