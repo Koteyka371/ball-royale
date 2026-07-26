@@ -13873,6 +13873,19 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "blink_relic":
+                    self.ball.blink_relic_timer = 15.0
+                    self.ball.blink_relic_cooldown = 3.0
+                    if not getattr(self.ball, "blink_relic_applied", False):
+                        if not hasattr(self.ball, "base_max_hp_blink_relic"):
+                            self.ball.base_max_hp_blink_relic = getattr(self.ball, "max_hp", 100.0)
+                        self.ball.max_hp = self.ball.base_max_hp_blink_relic * 0.7
+                        self.ball.hp = min(getattr(self.ball, "hp", 100.0), self.ball.max_hp)
+                        self.ball.blink_relic_applied = True
+
+                    nearest.active = False
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cursed_relic":
                     self.ball.cursed_relic_timer = 10.0
                     self.ball.invert_timer = 10.0
@@ -22215,6 +22228,33 @@ class Action:
         if getattr(self.ball, "pierce_attachment_timer", 0.0) > 0:
             self.ball.pierce_attachment_timer -= delta
 
+
+        if getattr(self.ball, "blink_relic_timer", 0.0) > 0.0:
+            self.ball.blink_relic_timer -= delta
+
+            self.ball.blink_relic_cooldown -= delta
+            if self.ball.blink_relic_cooldown <= 0.0:
+                vx = getattr(self.ball, "vx", 0.0)
+                vy = getattr(self.ball, "vy", 0.0)
+                speed = (vx**2 + vy**2)**0.5
+                if speed > 0.1:
+                    nx, ny = vx / speed, vy / speed
+                else:
+                    nx, ny = 1.0, 0.0
+
+                self.ball.x += nx * 150.0
+                self.ball.y += ny * 150.0
+                self.ball.intangible = True
+                self.ball.intangible_timer = 0.5
+                self.ball.blink_relic_cooldown = 3.0
+
+            if self.ball.blink_relic_timer <= 0.0:
+                self.ball.blink_relic_timer = 0.0
+                if getattr(self.ball, "blink_relic_applied", False):
+                    if hasattr(self.ball, "base_max_hp_blink_relic"):
+                        self.ball.max_hp = self.ball.base_max_hp_blink_relic
+                        delattr(self.ball, "base_max_hp_blink_relic")
+                    self.ball.blink_relic_applied = False
 
         if getattr(self.ball, "cursed_relic_timer", 0.0) > 0.0:
             self.ball.cursed_relic_timer -= delta

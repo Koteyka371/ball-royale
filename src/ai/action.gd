@@ -27281,6 +27281,44 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.erase(nearest)
                 if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
                     self.world.boosters.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "blink_relic":
+                if "blink_relic_timer" in self.ball: self.ball.blink_relic_timer = 15.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_timer", 15.0)
+
+                if "blink_relic_cooldown" in self.ball: self.ball.blink_relic_cooldown = 3.0
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_cooldown", 3.0)
+
+                var blink_applied = false
+                if "blink_relic_applied" in self.ball: blink_applied = self.ball.blink_relic_applied
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_applied"): blink_applied = self.ball.get_meta("blink_relic_applied")
+
+                if not blink_applied:
+                    var base_mhp = 100.0
+                    if "max_hp" in self.ball: base_mhp = self.ball.max_hp
+
+                    if "base_max_hp_blink_relic" in self.ball: self.ball.base_max_hp_blink_relic = base_mhp
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("base_max_hp_blink_relic", base_mhp)
+
+                    var new_mhp = base_mhp * 0.7
+                    if "max_hp" in self.ball: self.ball.max_hp = new_mhp
+
+                    var cur_hp = 100.0
+                    if "hp" in self.ball: cur_hp = self.ball.hp
+
+                    if cur_hp > new_mhp:
+                        if "hp" in self.ball: self.ball.hp = new_mhp
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", new_mhp)
+
+                    if "blink_relic_applied" in self.ball: self.ball.blink_relic_applied = true
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_applied", true)
+
+                if typeof(nearest) == TYPE_DICTIONARY: nearest["active"] = false
+                else: nearest.active = false
+
+                if typeof(self.world) == TYPE_OBJECT and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove(idx)
             elif "kind" in nearest and nearest.kind == "cursed_relic":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("cursed_relic_timer", 10.0)
@@ -43556,6 +43594,78 @@ func _update_skill_timer(delta: float):
 
 
     var has_cr_timer = false
+    var has_brt_timer = false
+    var brt_timer_val = 0.0
+    if "blink_relic_timer" in self.ball:
+        has_brt_timer = true
+        brt_timer_val = float(self.ball.blink_relic_timer)
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_timer"):
+        has_brt_timer = true
+        brt_timer_val = float(self.ball.get_meta("blink_relic_timer"))
+
+    if has_brt_timer and brt_timer_val > 0.0:
+        brt_timer_val -= delta
+        if "blink_relic_timer" in self.ball: self.ball.blink_relic_timer = brt_timer_val
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_timer", brt_timer_val)
+
+        var b_cd = 0.0
+        if "blink_relic_cooldown" in self.ball: b_cd = self.ball.blink_relic_cooldown
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_cooldown"): b_cd = self.ball.get_meta("blink_relic_cooldown")
+
+        b_cd -= delta
+        if "blink_relic_cooldown" in self.ball: self.ball.blink_relic_cooldown = b_cd
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_cooldown", b_cd)
+
+        if b_cd <= 0.0:
+            var vx_val = 0.0
+            var vy_val = 0.0
+            if "vx" in self.ball: vx_val = self.ball.vx
+            if "vy" in self.ball: vy_val = self.ball.vy
+
+            var speed = sqrt(vx_val*vx_val + vy_val*vy_val)
+            var nx = 1.0
+            var ny = 0.0
+            if speed > 0.1:
+                nx = vx_val / speed
+                ny = vy_val / speed
+
+            if "x" in self.ball: self.ball.x += nx * 150.0
+            if "y" in self.ball: self.ball.y += ny * 150.0
+
+            if "intangible" in self.ball: self.ball.intangible = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", true)
+
+            if "intangible_timer" in self.ball: self.ball.intangible_timer = 0.5
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 0.5)
+
+            if "blink_relic_cooldown" in self.ball: self.ball.blink_relic_cooldown = 3.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_cooldown", 3.0)
+
+        if brt_timer_val <= 0.0:
+            if "blink_relic_timer" in self.ball: self.ball.blink_relic_timer = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_timer", 0.0)
+
+            var is_applied = false
+            if "blink_relic_applied" in self.ball: is_applied = self.ball.blink_relic_applied
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_applied"): is_applied = self.ball.get_meta("blink_relic_applied")
+
+            if is_applied:
+                var has_base = false
+                var base_val = 100.0
+                if "base_max_hp_blink_relic" in self.ball:
+                    has_base = true
+                    base_val = self.ball.base_max_hp_blink_relic
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("base_max_hp_blink_relic"):
+                    has_base = true
+                    base_val = self.ball.get_meta("base_max_hp_blink_relic")
+
+                if has_base:
+                    if "max_hp" in self.ball: self.ball.max_hp = base_val
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("max_hp", base_val)
+
+                if "blink_relic_applied" in self.ball: self.ball.blink_relic_applied = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_applied", false)
+
     var cr_timer_val = 0.0
     if "cursed_relic_timer" in self.ball:
         has_cr_timer = true
