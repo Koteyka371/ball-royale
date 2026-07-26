@@ -8750,6 +8750,66 @@ func execute(strategy: String, delta: float):
 					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
 					elif "inventory" in self.ball: self.ball.inventory = inv
 
+		if inv.has("deployable_shockwave_mine"):
+			var cd = 0.0
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("action_cooldown"): cd = self.ball.get_meta("action_cooldown")
+			elif "action_cooldown" in self.ball: cd = self.ball.action_cooldown
+
+			if cd <= 0.0:
+				var enemy = null
+				var min_dist = 999999
+				var b_team = ""
+				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"): b_team = self.ball.get_meta("team")
+				elif "team" in self.ball: b_team = self.ball.team
+
+				var b_id = -1
+				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+				elif "id" in self.ball: b_id = self.ball.id
+
+				var balls = []
+				if "balls" in world: balls = world.balls
+
+				for b in balls:
+					var ot = ""
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team"): ot = b.get_meta("team")
+					elif "team" in b: ot = b.team
+
+					var oa = true
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): oa = b.get_meta("alive")
+					elif "alive" in b: oa = b.alive
+
+					var oid = -2
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): oid = b.get_meta("id")
+					elif "id" in b: oid = b.id
+
+					if ot != b_team and oa and oid != b_id:
+						var bx = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0)
+						var by = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0)
+						var d = (bx - self.ball.x) * (bx - self.ball.x) + (by - self.ball.y) * (by - self.ball.y)
+						if d < min_dist:
+							min_dist = d
+							enemy = b
+
+				if enemy != null:
+					inv.erase("deployable_shockwave_mine")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("action_cooldown", 1.0)
+					elif "action_cooldown" in self.ball: self.ball.action_cooldown = 1.0
+
+					var mine_id = b_id * 10000 + int((world.tick_timer if "tick_timer" in world else 0) * 1000)
+					var p_mine = load("res://src/arena/procedural_arena.gd").Hazard.new(mine_id, self.ball.x, self.ball.y, 60.0, "deployable_shockwave_mine", 0.0)
+					if typeof(p_mine) == TYPE_OBJECT and p_mine.has_method("set_meta"):
+						p_mine.set_meta("owner_id", b_id)
+						p_mine.set_meta("duration", 30.0)
+						p_mine.set_meta("armed", false)
+						p_mine.set_meta("spawn_tick", world.tick if "tick" in world else 0)
+					else:
+						p_mine.owner_id = b_id
+						p_mine.duration = 30.0
+						p_mine.armed = false
+						p_mine.spawn_tick = world.tick if "tick" in world else 0
+
+					if "arena" in world and "hazards" in world.arena:
+						world.arena.hazards.append(p_mine)
 		if inv.has("deployable_acid_puddle"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -13780,6 +13840,140 @@ func execute(strategy: String, delta: float):
                                                 if "y" in b: b.y = past_state["y"]
                                                 if "hp" in b and past_state.has("hp"): b.hp = past_state["hp"]
                                                 if "stamina" in b and past_state.has("stamina"): b.stamina = past_state["stamina"]
+
+                elif hazard.kind == "deployable_shockwave_mine":
+                    var current_tick = world.tick if "tick" in world else 0
+                    var last_updated = -1
+                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("last_updated_tick"): last_updated = hazard.get_meta("last_updated_tick")
+                    elif "last_updated_tick" in hazard: last_updated = hazard.last_updated_tick
+
+                    if last_updated != current_tick:
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("last_updated_tick", current_tick)
+                        elif "last_updated_tick" in hazard: hazard.last_updated_tick = current_tick
+
+                        var h_dur = 30.0
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("duration"): h_dur = hazard.get_meta("duration")
+                        elif "duration" in hazard: h_dur = hazard.duration
+
+                        h_dur -= delta
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", h_dur)
+                        elif "duration" in hazard: hazard.duration = h_dur
+
+                        var spawn_tick = current_tick
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("spawn_tick"): spawn_tick = hazard.get_meta("spawn_tick")
+                        elif "spawn_tick" in hazard: spawn_tick = hazard.spawn_tick
+
+                        var armed = false
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("armed"): armed = hazard.get_meta("armed")
+                        elif "armed" in hazard: armed = hazard.armed
+
+                        if not armed:
+                            if current_tick - spawn_tick > 30:
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("armed", true)
+                                elif "armed" in hazard: hazard.armed = true
+                            else:
+                                continue
+
+                        if h_dur <= 0:
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            elif "active" in hazard: hazard.active = false
+                            continue
+
+                        var hx = hazard.x if typeof(hazard) == TYPE_OBJECT else hazard.get("x", 0)
+                        var hy = hazard.y if typeof(hazard) == TYPE_OBJECT else hazard.get("y", 0)
+                        var hr = 60.0
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("radius"): hr = hazard.get_meta("radius")
+                        elif "radius" in hazard: hr = hazard.radius
+
+                        var owner_id = -1
+                        if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+                        elif "owner_id" in hazard: owner_id = hazard.owner_id
+
+                        var detonated = false
+
+                        var balls = []
+                        if "balls" in world: balls = world.balls
+
+                        for b in balls:
+                            var b_alive = true
+                            if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                            elif "alive" in b: b_alive = b.alive
+
+                            var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id", -2)
+
+                            if b_alive and b_id != owner_id:
+                                var bx = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0)
+                                var by = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0)
+
+                                var dist_sq = (hx - bx) * (hx - bx) + (hy - by) * (hy - by)
+                                var b_rad = 20.0
+                                if typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+                                elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_rad = b.radius
+
+                                var rad_sum = hr + b_rad
+
+                                if dist_sq <= rad_sum * rad_sum:
+                                    detonated = true
+                                    break
+
+                        if detonated:
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("active", false)
+                            elif "active" in hazard: hazard.active = false
+
+                            var shockwave_radius = 200.0
+                            var push_force = 3000.0
+
+                            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                                world.add_event("visual_effect", {"type": "massive_shockwave", "x": hx, "y": hy, "radius": shockwave_radius})
+
+                            for b in balls:
+                                var b_alive = true
+                                if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                                elif "alive" in b: b_alive = b.alive
+
+                                if b_alive:
+                                    var bx = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0)
+                                    var by = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0)
+
+                                    var dist_sq = (hx - bx) * (hx - bx) + (hy - by) * (hy - by)
+
+                                    if dist_sq <= shockwave_radius * shockwave_radius:
+                                        var dist = sqrt(dist_sq) if dist_sq > 0 else 1.0
+                                        var push_factor = 1.0 - (dist / shockwave_radius)
+                                        push_factor = max(push_factor, 0.5)
+
+                                        var dx = bx - hx
+                                        var dy = by - hy
+
+                                        if dist > 0:
+                                            dx /= dist
+                                            dy /= dist
+                                        else:
+                                            dx = 1.0
+                                            dy = 0.0
+
+                                        if typeof(b) == TYPE_OBJECT:
+                                            b.x += dx * push_force * push_factor * delta
+                                            b.y += dy * push_force * push_factor * delta
+                                        elif typeof(b) == TYPE_DICTIONARY:
+                                            b.x += dx * push_force * push_factor * delta
+                                            b.y += dy * push_force * push_factor * delta
+
+                                        var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id", -2)
+                                        if b_id != owner_id:
+                                            var current_silence = 0.0
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("silence_timer"): current_silence = b.get_meta("silence_timer")
+                                            elif "silence_timer" in b: current_silence = b.silence_timer
+
+                                            var new_silence = max(current_silence, 1.5)
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("silence_timer", new_silence)
+                                            elif "silence_timer" in b: b.silence_timer = new_silence
+
+                                            if "hp" in b:
+                                                var chp = b.hp
+                                                b.hp = chp - 5.0
+                                                if typeof(world) == TYPE_OBJECT and world.has_method("add_combat_log"):
+                                                    world.add_combat_log(b_id, "hit by deployable_shockwave_mine", 5.0)
 
                 elif hazard.kind == "deployable_acid_puddle":
                     var current_tick = world.tick if "tick" in world else 0
@@ -29122,6 +29316,18 @@ func _collect_booster(delta: float):
                 if "inventory" in self.ball: inv = self.ball.inventory
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
                 inv.append("deployable_black_hole")
+            elif h_kind == "deployable_shockwave_mine":
+                var inv = []
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                elif "inventory" in self.ball: inv = self.ball.inventory
+                if typeof(inv) != TYPE_ARRAY: inv = []
+                inv.append("deployable_shockwave_mine")
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                elif "inventory" in self.ball: self.ball.inventory = inv
+                if "boosters" in world and nearest in world.boosters:
+                    world.boosters.erase(nearest)
+                if "arena" in world and "hazards" in world.arena and nearest in world.arena.hazards:
+                    world.arena.hazards.erase(nearest)
                 if "inventory" in self.ball: self.ball.inventory = inv
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:

@@ -3688,6 +3688,31 @@ class Action:
                         except ImportError:
                             pass
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_shockwave_mine" in self.ball.inventory:
+            # Simple cooldown to avoid spamming
+            if getattr(self.ball, "action_cooldown", 0.0) <= 0.0:
+                enemy = None
+                min_dist = 999999
+                for b in getattr(self.world, "balls", []):
+                    if getattr(b, "team", "") != getattr(self.ball, "team", "") and getattr(b, "alive", True) and getattr(b, "id", -2) != getattr(self.ball, "id", -1):
+                        d = (getattr(b, "x", 0) - self.ball.x)**2 + (getattr(b, "y", 0) - self.ball.y)**2
+                        if d < min_dist:
+                            min_dist = d
+                            enemy = b
+                if enemy:
+                    self.ball.inventory.remove("deployable_shockwave_mine")
+                    self.ball.action_cooldown = 1.0
+                    try:
+                        from arena.procedural_arena import Hazard
+                        mine_id = self.ball.id * 10000 + int(getattr(self.world, "tick_timer", 0) * 1000)
+                        mine = Hazard(mine_id, self.ball.x, self.ball.y, 60.0, "deployable_shockwave_mine", 0.0)
+                        mine.owner_id = self.ball.id
+                        mine.duration = 30.0
+                        mine.armed = False
+                        mine.spawn_tick = getattr(self.world, 'tick', 0)
+                        self.world.arena.hazards.append(mine)
+                    except ImportError:
+                        pass
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_acid_puddle" in self.ball.inventory:
             nearest = self._get_nearest_enemy()
             if nearest:
@@ -7290,6 +7315,97 @@ class Action:
                                                 b.hp = past_state["hp"]
                                             if "stamina" in past_state and hasattr(b, "stamina"):
                                                 b.stamina = past_state["stamina"]
+
+                    elif hazard.kind == "deployable_shockwave_mine":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+                            hazard.duration = getattr(hazard, "duration", 30.0) - delta
+
+                            # Handle arming delay (e.g. 1 second)
+                            spawn_tick = getattr(hazard, "spawn_tick", current_tick)
+                            # Assuming 60 ticks per second, wait 60 ticks to arm
+                            if not getattr(hazard, "armed", False):
+                                if current_tick - spawn_tick > 30: # 0.5s delay
+                                    hazard.armed = True
+                                else:
+                                    continue
+
+                            if hazard.duration <= 0:
+                                hazard.active = False
+                                continue
+
+                            # Check collision with enemies
+                            owner_id = getattr(hazard, "owner_id", -1)
+                            detonated = False
+
+                            hx = getattr(hazard, "x", 0)
+                            hy = getattr(hazard, "y", 0)
+                            hr = getattr(hazard, "radius", 60.0)
+
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "alive", True) and getattr(b, "id", -2) != owner_id:
+                                    # Detonate on enemy contact (not owner)
+                                    bx = getattr(b, "x", 0)
+                                    by = getattr(b, "y", 0)
+                                    dist_sq = (hx - bx)**2 + (hy - by)**2
+                                    rad_sum = hr + getattr(b, "radius", 20.0)
+
+                                    if dist_sq <= rad_sum * rad_sum:
+                                        detonated = True
+                                        break
+
+                            if detonated:
+                                import math
+                                hazard.active = False
+
+                                # Massive radial shockwave
+                                shockwave_radius = 200.0
+                                push_force = 3000.0
+
+                                # Visual/Audio effects could be added here
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("visual_effect", {"type": "massive_shockwave", "x": hx, "y": hy, "radius": shockwave_radius})
+
+                                for b in getattr(self.world, "balls", []):
+                                    if getattr(b, "alive", True):
+                                        bx = getattr(b, "x", 0)
+                                        by = getattr(b, "y", 0)
+                                        dist_sq = (hx - bx)**2 + (hy - by)**2
+
+                                        if dist_sq <= shockwave_radius * shockwave_radius:
+                                            # Apply push (inverse to distance)
+                                            dist = math.sqrt(dist_sq) if dist_sq > 0 else 1.0
+
+                                            # Avoid dividing by zero and provide a baseline push
+                                            push_factor = 1.0 - (dist / shockwave_radius)
+                                            # Minimum push factor to guarantee a significant knockback even at edge
+                                            push_factor = max(push_factor, 0.5)
+
+                                            dx = bx - hx
+                                            dy = by - hy
+
+                                            if dist > 0:
+                                                dx /= dist
+                                                dy /= dist
+                                            else:
+                                                dx = 1.0
+                                                dy = 0.0
+
+                                            # Update positions
+                                            b.x += dx * push_force * push_factor * delta
+                                            b.y += dy * push_force * push_factor * delta
+
+                                            # Disable movement abilities (silence) for 1.5s (only for enemies of the mine owner)
+                                            if getattr(b, "id", -2) != owner_id:
+                                                b.silence_timer = max(getattr(b, "silence_timer", 0.0), 1.5)
+
+                                                # Apply low damage
+                                                if hasattr(b, "hp"):
+                                                    b.hp -= 5.0
+                                                    if hasattr(self.world, "add_combat_log"):
+                                                        self.world.add_combat_log(getattr(b, "id", -1), "hit by deployable_shockwave_mine", 5.0)
 
                     elif hazard.kind == "deployable_acid_puddle":
                         current_tick = getattr(self.world, "tick", 0)
@@ -14935,6 +15051,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deployable_shockwave_mine":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_shockwave_mine")
+                    if nearest in getattr(self.world, "boosters", []):
+                        self.world.boosters.remove(nearest)
+                    if nearest in getattr(self.world.arena, "hazards", []):
+                        self.world.arena.hazards.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_acid_puddle":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
