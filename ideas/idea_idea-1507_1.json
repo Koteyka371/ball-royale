@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Swap Hazard",
+    "description": "A hazard that periodically swaps the positions of two randomly chosen balls inside its radius, applying a brief confusion effect that reverses their controls for 2 seconds."
+}
