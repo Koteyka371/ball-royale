@@ -400,7 +400,40 @@ func player_bribe_vote(player_id: String, action: String, option: String = "") -
         bid_power = 100
         currency_type = "prestige_tokens"
     else:
-        return false
+        var ball_found = null
+        if world != null and "balls" in world:
+            for b in world.balls:
+                var bid = ""
+                if typeof(b) == TYPE_OBJECT and "id" in b:
+                    bid = str(b.id)
+                elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                    bid = str(b["id"])
+
+                if bid == player_id:
+                    ball_found = b
+                    break
+
+        var b_max_hp = 0.0
+        if ball_found != null:
+            if typeof(ball_found) == TYPE_OBJECT and "max_hp" in ball_found:
+                b_max_hp = float(ball_found.max_hp)
+            elif typeof(ball_found) == TYPE_DICTIONARY and ball_found.has("max_hp"):
+                b_max_hp = float(ball_found["max_hp"])
+
+        if ball_found != null and b_max_hp >= 20.0:
+            if typeof(ball_found) == TYPE_OBJECT and "max_hp" in ball_found:
+                ball_found.max_hp -= 20.0
+                if "hp" in ball_found and ball_found.hp > ball_found.max_hp:
+                    ball_found.hp = ball_found.max_hp
+            elif typeof(ball_found) == TYPE_DICTIONARY and ball_found.has("max_hp"):
+                ball_found["max_hp"] -= 20.0
+                if ball_found.has("hp") and ball_found["hp"] > ball_found["max_hp"]:
+                    ball_found["hp"] = ball_found["max_hp"]
+
+            bid_power = 50
+            currency_type = "max_hp_sacrifice"
+        else:
+            return false
 
     if vote_bids.has(player_id):
         vote_bids[player_id]["amount"] += bid_power
