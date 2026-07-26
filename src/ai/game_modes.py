@@ -40080,3 +40080,6 @@ from ai.shared_health_pool import SharedHealthPoolMode
 GAME_MODES['shared_health_pool'] = SharedHealthPoolMode()
 
 GAME_MODES['exponential_control_point'] = ExponentialControlPointMode()
+
+from ai.mercenary_outposts import MercenaryOutpostsMode
+GAME_MODES['mercenary_outposts'] = MercenaryOutpostsMode()

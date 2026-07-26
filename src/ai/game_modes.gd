@@ -62247,3 +62247,6 @@ const SharedHealthPoolModeClass = preload("res://src/ai/shared_health_pool.gd")
 GAME_MODES['shared_health_pool'] = SharedHealthPoolModeClass.new()
 
 GAME_MODES['exponential_control_point'] = ExponentialControlPointMode.new()
+
+const MercenaryOutpostsModeClass = preload("res://src/ai/mercenary_outposts.gd")
+GAME_MODES["mercenary_outposts"] = MercenaryOutpostsModeClass.new()

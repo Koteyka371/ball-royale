@@ -1,0 +1,4 @@
+{
+  "title": "Sabotage Drone Hazard",
+  "description": "Drones that wander the map. If a player gets too close, it locks onto them and detonates, inflicting a temporary debuff that disables all of their active skills."
+}
