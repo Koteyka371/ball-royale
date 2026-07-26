@@ -40080,3 +40080,74 @@ from ai.shared_health_pool import SharedHealthPoolMode
 GAME_MODES['shared_health_pool'] = SharedHealthPoolMode()
 
 GAME_MODES['exponential_control_point'] = ExponentialControlPointMode()
+
+
+class StationaryBlackHoleMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Stationary Black Hole Mutator"
+        self.description = "A stationary black hole sits in the center of the arena, dragging balls towards it continuously."
+        self.mutators_active = True
+        self.mutators = ["stationary_black_hole"]
+        self.bh_id = 999998
+        self.pull_strength = 200.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        cx = getattr(world.arena, "width", 1000.0) / 2.0
+        cy = getattr(world.arena, "height", 1000.0) / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+                bh = Hazard(
+                    id=self.bh_id,
+                    x=cx,
+                    y=cy,
+                    radius=20.0,
+                    kind="black_hole",
+                    damage=10.0
+                )
+                world.arena.hazards.append(bh)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage, active=True):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = active
+                bh = DummyHazard(id=self.bh_id, x=cx, y=cy, radius=20.0, kind="black_hole", damage=10.0, active=True)
+                world.arena.hazards.append(bh)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not bh:
+            return
+
+        import math
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            dx = bh.x - b.x
+            dy = bh.y - b.y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 0:
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * self.pull_strength * delta
+                    b.vy += (dy / dist) * self.pull_strength * delta
+
+GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
