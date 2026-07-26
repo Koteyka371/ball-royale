@@ -25062,6 +25062,12 @@ class ExtremeBouncinessMode(GameMode):
         self.name = "Extreme Bounciness"
         self.description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging."
 
+class SuperBouncyArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Super Bouncy Arena"
+        self.description = "The arena is super bouncy and balls bounce higher and further when hitting edges."
+
 class JumpPadBoundariesMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -31222,6 +31228,7 @@ GAME_MODES = {
     "bouncy_terrain": BouncyTerrainMode(),
     "chaotic_pinball_machine": ChaoticPinballMachineMode(),
     "extreme_bounciness": ExtremeBouncinessMode(),
+    "super_bouncy_arena": SuperBouncyArenaMode(),
     "jump_pad_boundaries": JumpPadBoundariesMode(),
     "pinball": PinballMode(),
     "portal_node": PortalNodeMode(),
