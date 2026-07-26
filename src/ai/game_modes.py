@@ -30594,7 +30594,33 @@ class ExponentialControlPointMode(GameMode):
                         b.speed_multiplier = getattr(b, "speed_multiplier", 1.0) * multiplier_buff
                         b.damage_multiplier = getattr(b, "damage_multiplier", 1.0) * multiplier_buff
 
+class VampiricMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vampiric Mutator"
+        self.description = "All balls passively lose health over time, but gain a massive lifesteal boost. It forces aggressive gameplay as hiding will result in death."
+        self.health_drain_rate = 5.0
+        self.lifesteal_bonus = 2.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        for b in balls:
+            if getattr(b, "alive", False):
+                b.lifesteal = getattr(b, "lifesteal", 0.0) + self.lifesteal_bonus
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        drain_amount = self.health_drain_rate * delta
+        for b in balls:
+            if getattr(b, "alive", False):
+                b.hp = getattr(b, "hp", 100.0) - drain_amount
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("death", {"id": getattr(b, "id", None), "reason": "vampiric_drain"})
+
 GAME_MODES = {
+    'vampiric_mutator': VampiricMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),
