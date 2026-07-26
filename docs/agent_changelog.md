@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1552] Quantum Swap Bomb — *2026-07-26 21:40:25 UTC*
+
+A new deployable hazard that arms after 2 seconds. When triggered, it swaps the positions of the closest ally and the closest enemy within a massive radius, potentially throwing an enemy into a hazard while pulling an ally to safety.
+
+---
+
 ## [idea-1537] Leech Seed Trap — *2026-07-26 21:40:20 UTC*
 
 A new trap type that acts as a leech seed, attaching to the first ball that passes over it and slowly draining their HP while transferring the health to the ball that deployed the trap.
