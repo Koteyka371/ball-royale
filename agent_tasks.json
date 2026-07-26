@@ -38695,6 +38695,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2264",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Darkness Event Mode",
+      "description": "Periodically, the arena plunges into darkness, significantly reducing perception radius for all balls except for a small illuminated circle around themselves. Players must rely on quick reflexes when enemies suddenly appear out of the darkness.",
+      "allowed_paths": [
+        "src/ai/darkness.py",
+        "src/ai/darkness.gd",
+        "tests/test_darkness.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2265",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Borders Mutator",
+      "description": "A game mode where the arena borders become extremely bouncy. Colliding with the edge of the arena launches the ball at high speed towards the center, causing chaotic chain reactions.",
+      "allowed_paths": [
+        "src/ai/bouncy_borders_mutator.py",
+        "src/ai/bouncy_borders_mutator.gd",
+        "tests/test_bouncy_borders_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
