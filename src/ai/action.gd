@@ -27262,6 +27262,46 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.erase(nearest)
                 if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
                     self.world.boosters.erase(nearest)
+            elif "kind" in nearest and nearest.kind == "blink_relic":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("blink_relic_timer", 15.0)
+                if "blink_relic_timer" in self.ball:
+                    self.ball.blink_relic_timer = 15.0
+
+                var br_applied = false
+                if "blink_relic_applied" in self.ball: br_applied = self.ball.blink_relic_applied
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_applied"): br_applied = self.ball.get_meta("blink_relic_applied")
+
+                if not br_applied:
+                    var base_max_hp = 100.0
+                    if "max_hp" in self.ball: base_max_hp = self.ball.max_hp
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): base_max_hp = self.ball.get_meta("max_hp")
+
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("base_max_hp_blink_relic", base_max_hp)
+                        self.ball.set_meta("max_hp", base_max_hp * 0.7)
+                        self.ball.set_meta("blink_relic_applied", true)
+                        self.ball.set_meta("blink_relic_tick_timer", 2.0)
+
+                    if "base_max_hp_blink_relic" in self.ball: self.ball.base_max_hp_blink_relic = base_max_hp
+                    if "max_hp" in self.ball: self.ball.max_hp = base_max_hp * 0.7
+                    if "blink_relic_applied" in self.ball: self.ball.blink_relic_applied = true
+                    if "blink_relic_tick_timer" in self.ball: self.ball.blink_relic_tick_timer = 2.0
+
+                    var hp_val = 0.0
+                    if "hp" in self.ball: hp_val = self.ball.hp
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp_val = self.ball.get_meta("hp")
+
+                    if hp_val > base_max_hp * 0.7:
+                        if "hp" in self.ball: self.ball.hp = base_max_hp * 0.7
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", base_max_hp * 0.7)
+
+                if "arena" in self.world and "hazards" in self.world.arena:
+                    if nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.erase(nearest)
+                if "boosters" in self.world and nearest in self.world.boosters:
+                    self.world.boosters.erase(nearest)
+
             elif "kind" in nearest and nearest.kind == "cursed_relic":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("cursed_relic_timer", 10.0)
@@ -27536,7 +27576,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
-            elif "kind" in nearest and nearest.kind == "blink_booster":
+            elif "kind" in nearest and nearest.kind in ["blink_booster", "blink_relic"]:
                 var stamina_val = 0.0
                 if "stamina" in self.ball: stamina_val = self.ball.stamina
                 elif self.ball.has_method("has_meta") and self.ball.has_meta("stamina"): stamina_val = self.ball.get_meta("stamina")
@@ -36688,7 +36728,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "blink_relic", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel"]:
 
                         var hx = 0.0
                         var hy = 0.0
@@ -40569,7 +40609,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel"]
+                var pullable = ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "blink_relic", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -43525,6 +43565,86 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("stealth_booster_timer", stealth_booster_timer)
 
+
+    var has_br_timer = false
+    var br_timer_val = 0.0
+    if "blink_relic_timer" in self.ball:
+        has_br_timer = true
+        br_timer_val = float(self.ball.blink_relic_timer)
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_timer"):
+        has_br_timer = true
+        br_timer_val = float(self.ball.get_meta("blink_relic_timer"))
+
+    if has_br_timer and br_timer_val > 0:
+        br_timer_val -= delta
+        if "blink_relic_timer" in self.ball: self.ball.blink_relic_timer = br_timer_val
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_timer", br_timer_val)
+
+        var br_tick = 0.0
+        if "blink_relic_tick_timer" in self.ball: br_tick = float(self.ball.blink_relic_tick_timer)
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_tick_timer"): br_tick = float(self.ball.get_meta("blink_relic_tick_timer"))
+
+        br_tick -= delta
+
+        if br_tick <= 0.0:
+            var vx = 0.0
+            var vy = 0.0
+            if "vx" in self.ball: vx = float(self.ball.vx)
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("vx"): vx = float(self.ball.get_meta("vx"))
+            if "vy" in self.ball: vy = float(self.ball.vy)
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("vy"): vy = float(self.ball.get_meta("vy"))
+
+            var speed = sqrt(vx*vx + vy*vy)
+            var nx = 1.0
+            var ny = 0.0
+            if speed > 0.1:
+                nx = vx / speed
+                ny = vy / speed
+
+            var px = 0.0
+            var py = 0.0
+            if "x" in self.ball: px = float(self.ball.x)
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("x"): px = float(self.ball.get_meta("x"))
+            if "y" in self.ball: py = float(self.ball.y)
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("y"): py = float(self.ball.get_meta("y"))
+
+            px += nx * 100.0
+            py += ny * 100.0
+
+            if "x" in self.ball: self.ball.x = px
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("x", px)
+            if "y" in self.ball: self.ball.y = py
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("y", py)
+
+            if "intangible" in self.ball: self.ball.intangible = true
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", true)
+            if "intangible_timer" in self.ball: self.ball.intangible_timer = 0.5
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 0.5)
+
+            # Using global randf_range
+            br_tick = randf_range(2.0, 4.0)
+
+        if "blink_relic_tick_timer" in self.ball: self.ball.blink_relic_tick_timer = br_tick
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_tick_timer", br_tick)
+
+        if br_timer_val <= 0.0:
+            if "blink_relic_timer" in self.ball: self.ball.blink_relic_timer = 0.0
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_timer", 0.0)
+
+            var br_app = false
+            if "blink_relic_applied" in self.ball: br_app = self.ball.blink_relic_applied
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("blink_relic_applied"): br_app = self.ball.get_meta("blink_relic_applied")
+
+            if br_app:
+                var base_max = 100.0
+                if "base_max_hp_blink_relic" in self.ball: base_max = float(self.ball.base_max_hp_blink_relic)
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("base_max_hp_blink_relic"): base_max = float(self.ball.get_meta("base_max_hp_blink_relic"))
+
+                if "max_hp" in self.ball: self.ball.max_hp = base_max
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("max_hp", base_max)
+
+                if "blink_relic_applied" in self.ball: self.ball.blink_relic_applied = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("blink_relic_applied", false)
 
     var has_cr_timer = false
     var cr_timer_val = 0.0
