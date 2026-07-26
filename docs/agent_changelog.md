@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1511] Air Glider Booster — *2026-07-26 06:50:29 UTC*
+
+A booster item that grants temporary immunity to fall damage and hazard launch effects (like tornadoes), instead letting the ball gracefully glide over hazards with increased speed.
+
+---
+
 ## [idea-1534] Juggernaut Roulette Mode — *2026-07-26 06:50:25 UTC*
 
 Every 30 seconds, a new player is randomly selected as the Juggernaut regardless of who killed them, shifting alliances dynamically.
