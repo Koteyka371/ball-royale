@@ -237,7 +237,8 @@ class Perception:
                 if getattr(e, "ball_type", "") == "sand_elemental" and hasattr(self.world, "arena") and getattr(self.world.arena, "is_sandstorming", False):
                     is_sand_cloaked = True
 
-                if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility:
+                is_sk = getattr(e, "is_sun_kissed", False)
+                if (e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility) and not is_sk:
                     dist = math.sqrt((ex - bx_curr)**2 + (ey - by_curr)**2)
 
                     if has_thermal_vision:

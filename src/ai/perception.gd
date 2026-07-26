@@ -289,7 +289,13 @@ func scan() -> Dictionary:
             if "ball_type" in e and e.ball_type == "sand_elemental" and self.world != null and "arena" in self.world and "is_sandstorming" in self.world.arena and self.world.arena.is_sandstorming:
                 is_sand_cloaked = true
 
-            if e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility:
+            var is_e_sk = false
+            if typeof(e) == TYPE_DICTIONARY:
+                is_e_sk = e.get("is_sun_kissed", false)
+            else:
+                is_e_sk = e.get("is_sun_kissed") if "is_sun_kissed" in e else (e.get_meta("is_sun_kissed") if e.has_method("has_meta") and e.has_meta("is_sun_kissed") else false)
+
+            if (e_has_stealth or e_has_shadow or is_sand_cloaked or e_has_stealth_booster or e_has_ghost_mode_booster or e_has_invisibility) and not is_e_sk:
                 var dist = sqrt(pow(e.x - bx_curr, 2) + pow(e.y - by_curr, 2))
 
                 if ball_has_thermal_vision:
