@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1521] Bribe the Crowd — *2026-07-26 01:02:25 UTC*
+
+Players can use collected currency or sacrifice a portion of their max HP to bribe the crowd and artificially skew the vote towards a particular outcome, such as forcing a global heal if they are currently low on health.
+
+---
+
 ## [idea-1520] Vote Streaks — *2026-07-26 00:50:33 UTC*
 
 If the crowd consistently votes for global stat modifiers over hazard drops, a 'crowd mood' bar shifts. Hitting max mood unlocks a mega-vote where all balls receive a randomized legendary buff for a brief duration, accompanied by special visual fireworks and audio cheers.

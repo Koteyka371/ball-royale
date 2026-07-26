@@ -26045,7 +26045,7 @@
     },
     {
       "id": "idea-1521",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bribe the Crowd",
@@ -37923,6 +37923,40 @@
         "src/ai/quantum_resonance_item.py",
         "src/ai/quantum_resonance_item.gd",
         "tests/test_quantum_resonance_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2219",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Crowd Investment",
+      "description": "Allow viewers to invest their loyalty points into a specific ball during a match. If the invested ball wins, the viewer receives a multiplied payout and a special badge. The ball also gains a subtle visual 'hype' aura based on how many points are invested in it.",
+      "allowed_paths": [
+        "src/ai/crowd_investment.py",
+        "src/ai/crowd_investment.gd",
+        "tests/test_crowd_investment.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2220",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sabotage Vote",
+      "description": "Introduce a rare crowd vote type called 'Sabotage' where viewers vote on a negative mutator to be applied specifically to the leading player or team (e.g., 'half speed', 'no abilities'). This adds a catch-up mechanic driven directly by viewer engagement.",
+      "allowed_paths": [
+        "src/ai/sabotage_vote.py",
+        "src/ai/sabotage_vote.gd",
+        "tests/test_sabotage_vote.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
