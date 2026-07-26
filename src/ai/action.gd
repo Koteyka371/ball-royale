@@ -29960,6 +29960,63 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "quantum_swap_powerup":
+                var enemies_list = _get_enemies()
+                if enemies_list.size() > 0:
+                    var valid_enemies = []
+                    for e in enemies_list:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        if dx_e * dx_e + dy_e * dy_e <= 250000.0:
+                            valid_enemies.append(e)
+
+                    if valid_enemies.size() > 0:
+                        var rng = RandomNumberGenerator.new()
+                        rng.randomize()
+                        var target = valid_enemies[rng.randi() % valid_enemies.size()]
+
+                        var b_x_orig = self.ball.x
+                        var b_y_orig = self.ball.y
+                        var target_x = target.x
+                        var target_y = target.y
+
+                        self.ball.x = target_x
+                        self.ball.y = target_y
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("intangible", true)
+                            self.ball.set_meta("intangible_timer", 2.0)
+                        else:
+                            self.ball.intangible = true
+                            self.ball.intangible_timer = 2.0
+
+                        target.x = b_x_orig
+                        target.y = b_y_orig
+                        if target.has_method("set_meta"):
+                            target.set_meta("stun_timer", max(target.get_meta("stun_timer") if target.has_meta("stun_timer") else 0.0, 1.5))
+                            target.set_meta("confusion_timer", max(target.get_meta("confusion_timer") if target.has_meta("confusion_timer") else 0.0, 2.0))
+                        else:
+                            if "stun_timer" in target:
+                                target.stun_timer = max(target.stun_timer, 1.5)
+                            else:
+                                target.stun_timer = 1.5
+                            if "confusion_timer" in target:
+                                target.confusion_timer = max(target.confusion_timer, 2.0)
+                            else:
+                                target.confusion_timer = 2.0
+
+                        if "events" in self.world:
+                            self.world.events.append({"type": "quantum_swap", "x": b_x_orig, "y": b_y_orig, "target_x": target_x, "target_y": target_y})
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "silencer_attachment":
                 if self.ball.has_method("set_meta"): self.ball.set_meta("silencer_timer", 15.0)
                 else: self.ball.silencer_timer = 15.0

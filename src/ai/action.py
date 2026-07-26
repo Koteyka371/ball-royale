@@ -15398,6 +15398,36 @@ class Action:
                     # If it's stored in world.boosters, _collect_booster handles it, but just in case
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "quantum_swap_powerup":
+                    enemies = self._get_enemies()
+                    if enemies:
+                        # Find random enemy within a certain radius (e.g., 500 units)
+                        import random
+                        valid_enemies = [e for e in enemies if (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2 <= 500**2]
+                        if valid_enemies:
+                            target = random.choice(valid_enemies)
+
+                            # Swap positions
+                            temp_x, temp_y = self.ball.x, self.ball.y
+                            self.ball.x, self.ball.y = target.x, target.y
+                            target.x, target.y = temp_x, temp_y
+
+                            # Brief invulnerability for the player
+                            self.ball.intangible = True
+                            self.ball.intangible_timer = 2.0
+
+                            # Disorient the opponent (e.g., apply a confusion/stun effect)
+                            target.stun_timer = max(getattr(target, "stun_timer", 0.0), 1.5)
+                            target.confusion_timer = max(getattr(target, "confusion_timer", 0.0), 2.0)
+
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({"type": "quantum_swap", "x": self.ball.x, "y": self.ball.y, "target_x": target.x, "target_y": target.y})
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 else:
                     is_cursed_mode = hasattr(self.world, "mode") and getattr(self.world.mode, "name", "") == "Cursed Boosters"
                     pre_stats = {}
