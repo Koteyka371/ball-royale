@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1560] Mirror Illusion Mode — *2026-07-26 23:21:10 UTC*
+
+A game mode where every ball has a harmless mirror illusion on the opposite side of the arena that moves symmetrically, confusing opponents and absorbing single-target projectiles.
+
+---
+
 ## [idea-1524] Quantum Relic Modifier — *2026-07-26 22:52:10 UTC*
 
 A rare relic that causes the player to occasionally 'blink' a short distance in the direction they are moving, briefly becoming intangible, but lowering their max HP temporarily while held.

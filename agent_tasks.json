@@ -26710,7 +26710,7 @@
     },
     {
       "id": "idea-1560",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Illusion Mode",
@@ -39169,6 +39169,40 @@
         "src/arena/double_dash_arena.py",
         "src/arena/double_dash_arena.gd",
         "tests/test_double_dash_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2292",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phantom Dash Boot",
+      "description": "Boots that let the player dash through walls, breaking them.",
+      "allowed_paths": [
+        "src/ai/phantom_dash_boot.py",
+        "src/ai/phantom_dash_boot.gd",
+        "tests/test_phantom_dash_boot.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2293",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Gun Relic",
+      "description": "A relic that lets the player pick up hazards and throw them.",
+      "allowed_paths": [
+        "src/ai/gravity_gun_relic.py",
+        "src/ai/gravity_gun_relic.gd",
+        "tests/test_gravity_gun_relic.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
