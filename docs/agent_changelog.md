@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1529] Shrinking Modifiers Battle Royale — *2026-07-26 20:27:05 UTC*
+
+A battle royale mode where random modifiers (like double speed or zero gravity) trigger every 60 seconds, forcing players to adapt dynamically.
+
+---
+
 ## [idea-1553] Clan Emissary System — *2026-07-26 20:11:30 UTC*
 
 Allow clan leaders to designate 'Emissaries'. In Battle Royale modes, if an Emissary survives to the top 3, they claim bonus territory points or resources for their clan. This paints a target on their back during matches, creating emergent 'bounty' gameplay dynamics where other players can earn rewards for eliminating an Emissary.

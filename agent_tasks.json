@@ -26181,7 +26181,7 @@
     },
     {
       "id": "idea-1529",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Modifiers Battle Royale",
@@ -38724,6 +38724,74 @@
         "src/ai/bouncy_borders_mutator.py",
         "src/ai/bouncy_borders_mutator.gd",
         "tests/test_bouncy_borders_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2266",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wormhole Connector",
+      "description": "Linked black holes on opposite sides of the map teleport balls between them instantly.",
+      "allowed_paths": [
+        "src/ai/wormhole_connector.py",
+        "src/ai/wormhole_connector.gd",
+        "tests/test_wormhole_connector.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2267",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Emissary Escort Mode",
+      "description": "A new mode where each team has one designated 'Emissary' ball. The Emissary cannot attack but has high defense. Teams must protect their Emissary while trying to eliminate the opponent's Emissary to claim massive clan points and instant victory.",
+      "allowed_paths": [
+        "src/ai/clan_emissary_escort.py",
+        "src/ai/clan_emissary_escort.gd",
+        "tests/test_clan_emissary_escort.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2268",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Bounty Board",
+      "description": "A system where clans can place bounties (spending clan points) on players from rival clans. In any match, if a player kills a bountied target, they claim the bounty reward for their own clan.",
+      "allowed_paths": [
+        "src/ai/clan_bounty_board.py",
+        "src/ai/clan_bounty_board.gd",
+        "tests/test_clan_bounty_board.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2269",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Spawners",
+      "description": "Hazards can periodically emit smaller black holes that move across the map and explode.",
+      "allowed_paths": [
+        "src/ai/black_hole_spawners.py",
+        "src/ai/black_hole_spawners.gd",
+        "tests/test_black_hole_spawners.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
