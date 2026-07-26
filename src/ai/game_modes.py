@@ -30529,7 +30529,61 @@ class ReverseTimePenaltyMode(GameMode):
 
 
 
+class ChaosModifiersBattleRoyaleMode(BattleRoyaleMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chaos Modifiers Royale"
+        self.description = "A battle royale mode where random modifiers (like double speed or zero gravity) trigger every 60 seconds, forcing players to adapt dynamically."
+        self.modifier_timer = 60.0
+        self.active_modifier = None
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+        self.modifier_timer -= delta
+        if self.modifier_timer <= 0:
+            self.modifier_timer = 60.0
+            modifiers = ["double_speed", "zero_gravity", "half_speed", "high_damage", "low_friction"]
+            import random
+            self.active_modifier = random.choice(modifiers)
+            if hasattr(world, "add_event"):
+                world.add_event("system_message", {"text": f"Modifier active: {self.active_modifier}"})
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            base_speed = getattr(b, "base_speed_multiplier", getattr(b, "speed_multiplier", 1.0))
+            if not hasattr(b, "base_speed_multiplier"):
+                setattr(b, "base_speed_multiplier", base_speed)
+
+            base_drag = getattr(b, "base_drag", getattr(b, "drag", 0.1))
+            if not hasattr(b, "base_drag"):
+                setattr(b, "base_drag", base_drag)
+
+            if self.active_modifier == "double_speed":
+                b.speed_multiplier = base_speed * 2.0
+            elif self.active_modifier == "half_speed":
+                b.speed_multiplier = base_speed * 0.5
+            else:
+                b.speed_multiplier = base_speed
+
+            base_damage = getattr(b, "base_damage_multiplier", getattr(b, "damage_multiplier", 1.0))
+            if not hasattr(b, "base_damage_multiplier"):
+                setattr(b, "base_damage_multiplier", base_damage)
+            if self.active_modifier == "high_damage":
+                b.damage_multiplier = base_damage * 3.0
+            else:
+                b.damage_multiplier = base_damage
+
+            if self.active_modifier == "zero_gravity":
+                b.drag = 0.0
+            elif self.active_modifier == "low_friction":
+                b.drag = 0.05
+            else:
+                b.drag = base_drag
+
 GAME_MODES = {
+    'chaos_modifiers_royale': ChaosModifiersBattleRoyaleMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),

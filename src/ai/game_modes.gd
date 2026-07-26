@@ -49110,7 +49110,93 @@ class ReverseTimePenaltyMode extends GameMode:
 
 
 
+class ChaosModifiersBattleRoyaleMode extends BattleRoyaleMode:
+	var modifier_timer: float = 60.0
+	var active_modifier: String = ""
+
+	func _init().():
+		name = "Chaos Modifiers Royale"
+		description = "A battle royale mode where random modifiers (like double speed or zero gravity) trigger every 60 seconds, forcing players to adapt dynamically."
+
+	func apply_dynamic_traits(world, balls, delta: float) -> void:
+		.apply_dynamic_traits(world, balls, delta)
+		modifier_timer -= delta
+		if modifier_timer <= 0:
+			modifier_timer = 60.0
+			var modifiers = ["double_speed", "zero_gravity", "half_speed", "high_damage", "low_friction"]
+			var idx = randi() % modifiers.size()
+			active_modifier = modifiers[idx]
+			if world.has_method("add_event"):
+				world.add_event("system_message", {"text": "Modifier active: " + active_modifier})
+
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else true)
+			if not is_alive:
+				continue
+
+			var base_speed = b.get("base_speed_multiplier") if typeof(b) == TYPE_DICTIONARY else (b.get("base_speed_multiplier") if b.get("base_speed_multiplier") != null else (b.get("speed_multiplier") if b.get("speed_multiplier") != null else 1.0))
+			if typeof(b) == TYPE_DICTIONARY and not b.has("base_speed_multiplier"):
+				b["base_speed_multiplier"] = base_speed
+			elif typeof(b) != TYPE_DICTIONARY and b.get("base_speed_multiplier") == null:
+				b.set("base_speed_multiplier", base_speed)
+
+			var base_drag = b.get("base_drag") if typeof(b) == TYPE_DICTIONARY else (b.get("base_drag") if b.get("base_drag") != null else (b.get("drag") if b.get("drag") != null else 0.1))
+			if typeof(b) == TYPE_DICTIONARY and not b.has("base_drag"):
+				b["base_drag"] = base_drag
+			elif typeof(b) != TYPE_DICTIONARY and b.get("base_drag") == null:
+				b.set("base_drag", base_drag)
+
+			if active_modifier == "double_speed":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed_multiplier"] = base_speed * 2.0
+				else:
+					b.set("speed_multiplier", base_speed * 2.0)
+			elif active_modifier == "half_speed":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed_multiplier"] = base_speed * 0.5
+				else:
+					b.set("speed_multiplier", base_speed * 0.5)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed_multiplier"] = base_speed
+				else:
+					b.set("speed_multiplier", base_speed)
+
+			var base_damage = b.get("base_damage_multiplier") if typeof(b) == TYPE_DICTIONARY else (b.get("base_damage_multiplier") if b.get("base_damage_multiplier") != null else (b.get("damage_multiplier") if b.get("damage_multiplier") != null else 1.0))
+			if typeof(b) == TYPE_DICTIONARY and not b.has("base_damage_multiplier"):
+				b["base_damage_multiplier"] = base_damage
+			elif typeof(b) != TYPE_DICTIONARY and b.get("base_damage_multiplier") == null:
+				b.set("base_damage_multiplier", base_damage)
+
+			if active_modifier == "high_damage":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["damage_multiplier"] = base_damage * 3.0
+				else:
+					b.set("damage_multiplier", base_damage * 3.0)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["damage_multiplier"] = base_damage
+				else:
+					b.set("damage_multiplier", base_damage)
+
+			if active_modifier == "zero_gravity":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["drag"] = 0.0
+				else:
+					b.set("drag", 0.0)
+			elif active_modifier == "low_friction":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["drag"] = 0.05
+				else:
+					b.set("drag", 0.05)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["drag"] = base_drag
+				else:
+					b.set("drag", base_drag)
+
 var GAME_MODES = {
+	'chaos_modifiers_royale': ChaosModifiersBattleRoyaleMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
