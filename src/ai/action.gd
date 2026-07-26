@@ -9271,7 +9271,21 @@ func execute(strategy: String, delta: float):
 					inv.erase("exit_portal")
 					self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+	var hp_ratio = 1.0
+	if typeof(self.ball) == TYPE_DICTIONARY:
+		var hp_val = self.ball.get("hp", 100.0)
+		var max_hp_val = self.ball.get("max_hp", 100.0)
+		if max_hp_val > 0: hp_ratio = float(hp_val) / float(max_hp_val)
+	elif typeof(self.ball) == TYPE_OBJECT:
+		var hp_val = 100.0
+		var max_hp_val = 100.0
+		if "hp" in self.ball: hp_val = float(self.ball.hp)
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): hp_val = float(self.ball.get_meta("hp"))
+		if "max_hp" in self.ball: max_hp_val = float(self.ball.max_hp)
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): max_hp_val = float(self.ball.get_meta("max_hp"))
+		if max_hp_val > 0: hp_ratio = hp_val / max_hp_val
+
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack" or hp_ratio <= 0.25) and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("position_swap"):
 			var balls = []
@@ -9317,8 +9331,15 @@ func execute(strategy: String, delta: float):
 						enemy_targets.append(b)
 
 			var target = null
-			if valid_targets.size() > 0:
-				target = valid_targets[randi() % valid_targets.size()]
+			if enemy_targets.size() > 0:
+				var min_dist = INF
+				for e in enemy_targets:
+					var ex = e.x if "x" in e else e.position.x if "position" in e else 0.0
+					var ey = e.y if "y" in e else e.position.y if "position" in e else 0.0
+					var dist_sq = (ex - self.ball.x) * (ex - self.ball.x) + (ey - self.ball.y) * (ey - self.ball.y)
+					if dist_sq < min_dist:
+						min_dist = dist_sq
+						target = e
 
 			if target != null:
 				var t_x = 0.0

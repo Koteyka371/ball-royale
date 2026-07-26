@@ -4042,41 +4042,43 @@ class Action:
                 self.ball.inventory.remove("exit_portal")
 
         # Check inventory for position_swap
-        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "position_swap" in self.ball.inventory:
+        hp_ratio = getattr(self.ball, "hp", 100.0) / max(1.0, getattr(self.ball, "max_hp", 100.0))
+        if (strategy in ("flee", "defend", "attack") or hp_ratio <= 0.25) and hasattr(self.ball, "inventory") and "position_swap" in self.ball.inventory:
             balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
             valid_targets = [b for b in balls if getattr(b, "alive", True) and b != self.ball and not getattr(b, "is_decoy", False)]
 
             if valid_targets:
                 my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
-                import random
-                target = random.choice(valid_targets)
+                enemies = [b for b in valid_targets if getattr(b, "team", getattr(b, "ball_type", "")) != my_team]
+                target = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2) if enemies else None
 
-                # Use getattr to safely read x,y
-                t_x = getattr(target, 'x', getattr(target, 'position', type('obj', (object,), {'x': 0, 'y': 0})).x)
-                t_y = getattr(target, 'y', getattr(target, 'position', type('obj', (object,), {'x': 0, 'y': 0})).y)
+                if target:
+                    # Use getattr to safely read x,y
+                    t_x = getattr(target, 'x', getattr(target, 'position', type('obj', (object,), {'x': 0, 'y': 0})).x)
+                    t_y = getattr(target, 'y', getattr(target, 'position', type('obj', (object,), {'x': 0, 'y': 0})).y)
 
-                temp_x, temp_y = t_x, t_y
+                    temp_x, temp_y = t_x, t_y
 
-                if hasattr(target, 'x'):
-                    target.x, target.y = self.ball.x, self.ball.y
-                else:
-                    target.position.x, target.position.y = self.ball.x, self.ball.y
-
-                self.ball.x, self.ball.y = temp_x, temp_y
-                self.ball.inventory.remove("position_swap")
-
-                # Apply minor damage and slow effect if it is an enemy
-                target_team = getattr(target, "team", getattr(target, "ball_type", ""))
-                if target_team != my_team:
-                    if hasattr(target, "take_damage"):
-                        target.take_damage(5.0)
-                    elif hasattr(target, "hp"):
-                        target.hp -= 5.0
-
-                    if hasattr(target, 'slow_timer'):
-                        target.slow_timer += 2.0
+                    if hasattr(target, 'x'):
+                        target.x, target.y = self.ball.x, self.ball.y
                     else:
-                        target.slow_timer = 2.0
+                        target.position.x, target.position.y = self.ball.x, self.ball.y
+
+                    self.ball.x, self.ball.y = temp_x, temp_y
+                    self.ball.inventory.remove("position_swap")
+
+                    # Apply minor damage and slow effect if it is an enemy
+                    target_team = getattr(target, "team", getattr(target, "ball_type", ""))
+                    if target_team != my_team:
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(5.0)
+                        elif hasattr(target, "hp"):
+                            target.hp -= 5.0
+
+                        if hasattr(target, 'slow_timer'):
+                            target.slow_timer += 2.0
+                        else:
+                            target.slow_timer = 2.0
 
 
         # Check inventory for hookshot
