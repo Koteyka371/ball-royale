@@ -61774,5 +61774,77 @@ class TelegraphedSupplyDropMode extends GameMode:
 		return null
 
 
+
+class GravityInversionMode extends GameMode:
+    var inversion_timer = 0.0
+    var inversion_duration = 0.0
+    var inversion_strength = 300.0
+    var random = RandomNumberGenerator.new()
+
+    func _init():
+        id = "Gravity Inversion"
+        name = "Gravity Inversion"
+        description = "Periodically, gravity flips, pulling players to the walls instead of the ground or sending them flying."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        random.randomize()
+        inversion_timer = random.randf_range(10.0, 20.0)
+
+    func tick(world, balls, delta):
+        super.tick(world, balls, delta)
+
+        if inversion_duration > 0:
+            inversion_duration -= delta
+
+            for b in balls:
+                var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
+                var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
+                if not is_alive or not is_active:
+                    continue
+
+                var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if b.has_meta("ball_type") else ""
+                if b_type == "spectator":
+                    continue
+
+                var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
+                var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
+
+                var dist = sqrt(b_x*b_x + b_y*b_y)
+                if dist > 0:
+                    var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
+                    var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
+                    vx += (b_x/dist) * inversion_strength * delta
+                    vy += (b_y/dist) * inversion_strength * delta
+                    vy -= inversion_strength * 0.5 * delta
+
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["vx"] = vx
+                        b["vy"] = vy
+                    else:
+                        b.set_meta("vx", vx)
+                        b.set_meta("vy", vy)
+        else:
+            inversion_timer -= delta
+            if inversion_timer <= 0:
+                inversion_duration = random.randf_range(4.0, 8.0)
+                inversion_timer = random.randf_range(15.0, 25.0)
+
+                var world_has_event = false
+                if typeof(world) == TYPE_DICTIONARY:
+                    if world.has("add_event"):
+                        world_has_event = true
+                else:
+                    if world.has_method("add_event"):
+                        world_has_event = true
+
+                if world_has_event:
+                    var event_data = {"duration": inversion_duration}
+                    if typeof(world) == TYPE_DICTIONARY:
+                        world["add_event"].call("gravity_inversion", event_data)
+                    else:
+                        world.add_event("gravity_inversion", event_data)
+
+GAME_MODES['gravity_inversion'] = GravityInversionMode.new()
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode.new()
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()

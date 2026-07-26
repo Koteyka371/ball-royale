@@ -30342,7 +30342,49 @@ class SingularityBombEventMode(GameMode):
                             b.vy = getattr(b, "vy", 0.0) + ny * knockback
 
 
+
+class GravityInversionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.id = "Gravity Inversion"
+        self.name = "Gravity Inversion"
+        self.description = "Periodically, gravity flips, pulling players to the walls instead of the ground or sending them flying."
+        self.inversion_timer = 0.0
+        self.inversion_duration = 0.0
+        self.inversion_strength = 300.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]'):
+        super().setup(world, balls)
+        self.inversion_timer = getattr(self, "random", __import__("random")).uniform(10.0, 20.0)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if self.inversion_duration > 0:
+            self.inversion_duration -= delta
+
+            for b in balls:
+                if not getattr(b, 'alive', True) or not getattr(b, 'active', True): continue
+                if getattr(b, 'ball_type', None) == 'spectator': continue
+
+                # Push outwards from center (simulating pulling to walls)
+                dist = (b.x**2 + b.y**2)**0.5
+                if dist > 0:
+                    # Give them some upwards lift as well to simulate "flying"
+                    b.vx += (b.x/dist) * self.inversion_strength * delta
+                    b.vy += (b.y/dist) * self.inversion_strength * delta
+                    # Added lift to simulate flying to the ceiling if no walls
+                    b.vy -= self.inversion_strength * 0.5 * delta
+        else:
+            self.inversion_timer -= delta
+            if self.inversion_timer <= 0:
+                self.inversion_duration = getattr(self, "random", __import__("random")).uniform(4.0, 8.0)
+                self.inversion_timer = getattr(self, "random", __import__("random")).uniform(15.0, 25.0)
+                if hasattr(world, 'add_event'):
+                    world.add_event("gravity_inversion", {"duration": self.inversion_duration})
+
 GAME_MODES = {
+    'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     "singularity_bomb_event": SingularityBombEventMode(),
     'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
