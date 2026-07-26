@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tunnels Hazard",
+  "description": "Hazard zones that appear and disappear randomly. Entering one teleports the ball to another random active tunnel, but inverts their current status effects (e.g., speed buff becomes slow debuff)."
+}

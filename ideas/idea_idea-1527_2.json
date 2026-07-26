@@ -1,0 +1,4 @@
+{
+  "title": "Kinetic Amplifier Mutator",
+  "description": "A game mode where balls slowly lose movement speed over time, but colliding with walls or other balls significantly boosts their speed for a short duration, forcing constant interaction to maintain momentum."
+}
