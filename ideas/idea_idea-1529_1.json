@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zones with Multi-Biome Properties",
+  "description": "Introduce safe zones in Battle Royale that change their biome properties as they shrink (e.g., from 'Forest' which boosts stealth, to 'Volcanic' which gradually decreases HP but buffs attack)."
+}

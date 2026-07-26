@@ -1982,6 +1982,9 @@ class BattleRoyaleMode(GameMode):
         self.is_acid_rain_active = False
         self.supply_drop_timer = 0.0
 
+        self.modifier_timer = 0.0
+        self.current_modifier = None
+
         self.high_tier_supply_drop_timer = 0.0
         self.high_tier_drops = []
         self.zone_initialized = False
@@ -3840,6 +3843,14 @@ class BattleRoyaleMode(GameMode):
                             decoy.active_skill = None
                         world.balls.append(decoy)
 
+
+            if getattr(self, "current_modifier", None) == "double_speed":
+                b.speed = getattr(b, "base_speed", 100.0) * 2.0
+            elif getattr(self, "current_modifier", None) == "double_damage":
+                b.damage = getattr(b, "base_damage", 10.0) * 2.0
+            elif getattr(self, "current_modifier", None) == "half_speed":
+                b.speed = getattr(b, "base_speed", 100.0) * 0.5
+
         # Weekend Juggernaut Boss logic
         if not getattr(self, "_weekend_boss_checked", False):
             self._weekend_boss_checked = True
@@ -3921,6 +3932,16 @@ class BattleRoyaleMode(GameMode):
 
 
         self.match_time += delta
+
+        # Modifier logic
+        self.modifier_timer += delta
+        if self.modifier_timer >= 60.0:
+            self.modifier_timer = 0.0
+            import random
+            rnd = getattr(self, "random", random)
+            self.current_modifier = rnd.choice(["double_speed", "zero_gravity", "double_damage", "half_speed"])
+            if hasattr(world, "add_event"):
+                world.add_event("modifier_applied", {"modifier": self.current_modifier, "message": f"Global modifier {self.current_modifier.replace('_', ' ')} applied!"})
 
         # Loot Goblin Event
         self.random_event_timer += delta

@@ -3698,6 +3698,9 @@ class BattleRoyaleMode extends GameMode:
 	var is_acid_rain_active: bool = false
 	var supply_drop_timer: float = 0.0
 
+	var modifier_timer: float = 0.0
+	var current_modifier = null
+
 	var high_tier_supply_drop_timer: float = 0.0
 	var high_tier_drops: Array = []
 	var zone_initialized: bool = false
@@ -6058,6 +6061,17 @@ class BattleRoyaleMode extends GameMode:
 
 
 
+
+			if current_modifier == "double_speed":
+				if typeof(b) == TYPE_DICTIONARY: b["speed"] = b.get("base_speed", 100.0) * 2.0
+				else: b.speed = b.get("base_speed") * 2.0 if "base_speed" in b else 200.0
+			elif current_modifier == "double_damage":
+				if typeof(b) == TYPE_DICTIONARY: b["damage"] = b.get("base_damage", 10.0) * 2.0
+				else: b.damage = b.get("base_damage") * 2.0 if "base_damage" in b else 20.0
+			elif current_modifier == "half_speed":
+				if typeof(b) == TYPE_DICTIONARY: b["speed"] = b.get("base_speed", 100.0) * 0.5
+				else: b.speed = b.get("base_speed") * 0.5 if "base_speed" in b else 50.0
+
 		# Weekend Juggernaut Boss logic
 		var weekend_boss_checked = false
 		if self.has_meta("_weekend_boss_checked"):
@@ -6199,6 +6213,14 @@ class BattleRoyaleMode extends GameMode:
 
 
 		match_time += delta
+
+		modifier_timer += delta
+		if modifier_timer >= 60.0:
+			modifier_timer = 0.0
+			var mods = ["double_speed", "zero_gravity", "double_damage", "half_speed"]
+			current_modifier = mods[rng.randi() % mods.size()]
+			if world != null and world.has_method("add_event"):
+				world.add_event("modifier_applied", {"modifier": current_modifier, "message": "Global modifier applied!"})
 
 		# Loot Goblin Event
 		random_event_timer += delta
