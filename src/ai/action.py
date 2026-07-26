@@ -1883,13 +1883,14 @@ class Action:
         if hasattr(self.ball, "orbital_link_timer"):
             if getattr(self.ball, "orbital_link_timer", 0.0) > 0.0:
                 self.ball.orbital_link_timer -= delta
-        if not getattr(self.ball, "alive", True) and getattr(self.ball, "ball_type", "") == "ghost":
-            self._handle_ghost_behavior(delta)
+        if not getattr(self.ball, "alive", True) and getattr(self.ball, "ball_type", "") == "phantom":
+            self._handle_phantom_behavior(delta)
             return
 
         if not getattr(self.ball, "alive", True) and getattr(self.ball, "ball_type", "") != "spectator":
-            self.ball.ball_type = "ghost"
+            self.ball.ball_type = "phantom"
             self.ball.alive = False
+            self.ball.phantom_spawn_timer = 5.0
             if hasattr(self.ball, "speed"): self.ball.speed = 100.0
             if hasattr(self.ball, "hp"): self.ball.hp = 0.0
             return
@@ -22606,11 +22607,35 @@ class Action:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(self.ball, target)
 
-    def _handle_ghost_behavior(self, delta: float) -> None:
+    def _handle_phantom_behavior(self, delta: float) -> None:
         if not hasattr(self.world, "arena") or not hasattr(self.world.arena, "hazards"):
             return
 
         import math
+        import random
+
+        # Spawning logic
+        if not hasattr(self.ball, "phantom_spawn_timer"):
+            self.ball.phantom_spawn_timer = 5.0
+
+        self.ball.phantom_spawn_timer -= delta
+        if self.ball.phantom_spawn_timer <= 0:
+            self.ball.phantom_spawn_timer = 5.0
+            spawn_choice = random.choice(["ice_patch", "health_pack"])
+
+            if spawn_choice == "ice_patch":
+                if hasattr(self.world.arena, "hazards"):
+                    class FallbackHazard:
+                        def __init__(self, x, y, kind, radius, active=True):
+                            self.x = x
+                            self.y = y
+                            self.kind = kind
+                            self.radius = radius
+                            self.active = active
+                    self.world.arena.hazards.append(FallbackHazard(self.ball.x, self.ball.y, "ice_patch", 20.0, True))
+            else:
+                if hasattr(self.world, "boosters"):
+                    self.world.boosters.append({"x": self.ball.x, "y": self.ball.y, "kind": "health_pack", "radius": 15.0, "heal": 10.0})
 
         # Pushing force
         push_force = 20.0 * delta
