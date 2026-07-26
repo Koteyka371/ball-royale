@@ -7,6 +7,8 @@ class CrowdSystem:
         self.excitement_level = 0.0
         self.corruptibility_level = 0.5
         self.max_excitement = 100.0
+        self.crowd_mood = 0
+        self.max_crowd_mood = 3
         self.team_alive_counts = {}
         self.active_vote = None
         self.votes = {}
@@ -732,13 +734,17 @@ class CrowdSystem:
             })
 
     def _start_vote(self, balls: List[Any]):
-        vote_types = [
-            {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
-            {"type": "player_buff", "options": ["speed", "damage", "shield"]},
-            {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
-            {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
-        ]
-        chosen_vote = random.choice(vote_types)
+        if self.crowd_mood >= self.max_crowd_mood:
+            chosen_vote = {"type": "mega_buff", "options": ["legendary_speed", "legendary_damage", "legendary_shield"]}
+            self.crowd_mood = 0
+        else:
+            vote_types = [
+                {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
+                {"type": "player_buff", "options": ["speed", "damage", "shield"]},
+                {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
+                {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
+            ]
+            chosen_vote = random.choice(vote_types)
 
         self.active_vote = {
             "type": chosen_vote["type"],
@@ -785,6 +791,7 @@ class CrowdSystem:
 
         if alive_balls:
             if vote_type == "spawn_hazard":
+                self.crowd_mood = max(0, self.crowd_mood - 1)
                 target = random.choice(alive_balls)
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("spawn_hazard", {
@@ -803,10 +810,19 @@ class CrowdSystem:
                         "value": 50.0
                     })
             elif vote_type == "global_stat_modifier":
+                self.crowd_mood = min(self.max_crowd_mood, self.crowd_mood + 1)
                 self.active_global_modifier = winning_option
                 self.global_modifier_timer = 1800  # 30 seconds at 60 ticks/sec
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"The crowd activated a {winning_option} for 30 seconds!", "volume": 1.2})
+            elif vote_type == "mega_buff":
+                self.active_global_modifier = winning_option
+                self.global_modifier_timer = 900  # 15 seconds at 60 ticks/sec
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"MEGA VOTE SUCCESS! {winning_option} unleashed!", "volume": 2.0})
+                    self.world.add_event("audio_event", {"sound": "mega_cheer", "volume": 2.0})
+                    for b in alive_balls:
+                        self.world.add_event("visual_effect", {"type": "fireworks", "target_id": getattr(b, "id", -1)})
             elif vote_type == "global_hazard_zone":
                 # spawn a massive hazard covering the arena
                 if hasattr(self.world, 'add_event'):
@@ -923,4 +939,15 @@ class CrowdSystem:
                         b.shield = getattr(b, "shield", 0.0) + 0.1  # Passive shield regen
                         if b.shield > 50.0:
                             b.shield = 50.0
+                        b.crowd_global_shield = True
+                    elif self.active_global_modifier == "legendary_speed":
+                        b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 3.0
+                        b.crowd_global_speed = True
+                    elif self.active_global_modifier == "legendary_damage":
+                        b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 3.0
+                        b.crowd_global_damage = True
+                    elif self.active_global_modifier == "legendary_shield":
+                        b.shield = getattr(b, "shield", 0.0) + 3.0
+                        if b.shield > 150.0:
+                            b.shield = 150.0
                         b.crowd_global_shield = True

@@ -530,6 +530,45 @@ def test_spectator_control_hazard():
     assert hazard.y > 100
     assert getattr(hazard, "control_timer", 0) == 9.0
 
+def test_crowd_mood_and_mega_vote():
+    world = MockWorld()
+    system = CrowdSystem(world)
+    balls = [MockBall(1, 100, 100)]
+
+    # Start vote with 0 mood
+    system.excitement_level = 50.0
+    system.vote_cooldown = 0
+    system._start_vote(balls)
+    assert system.active_vote["type"] != "mega_buff"
+    assert system.crowd_mood == 0
+
+    # Resolve as global stat modifier -> mood +1
+    system.active_vote["type"] = "global_stat_modifier"
+    system.votes = {"global_speed_up": 1}
+    system._resolve_vote(balls)
+    assert system.crowd_mood == 1
+
+    # Artificially push mood to max
+    system.crowd_mood = 3
+    system.vote_cooldown = 0
+    system._start_vote(balls)
+
+    # Mega vote should trigger
+    assert system.active_vote["type"] == "mega_buff"
+    assert "legendary_speed" in system.active_vote["options"]
+    assert system.crowd_mood == 0  # reset
+
+    # Resolve mega vote
+    system.votes = {"legendary_speed": 1}
+    system._resolve_vote(balls)
+    assert system.active_global_modifier == "legendary_speed"
+
+    # Apply modifier
+    system._process_global_modifier(balls, 0)
+    assert getattr(balls[0], "crowd_global_speed", False) == True
+    assert balls[0].speed == 300.0
+
+
 def test_player_bribe_vote_corruptibility():
     world = MockWorld()
     system = CrowdSystem(world)
