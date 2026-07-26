@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1536] King of the Hill Escalation — *2026-07-26 12:37:34 UTC*
+
+A single control point grants increasing global buffs to the controlling player's faction, but they take exponentially more damage the longer they hold it.
+
+---
+
 ## [idea-1549] Shared Health Pool Mode — *2026-07-26 10:34:03 UTC*
 
 Teams share a single massive health pool. Taking damage drains from the collective pool. When it reaches 0, the entire team is eliminated simultaneously. Promotes extreme teamwork and protective strategies.
