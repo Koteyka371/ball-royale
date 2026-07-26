@@ -4828,6 +4828,7 @@ class GuildBossFightMode(GameMode):
         self.guild_manager = guild_manager
         self.week_id = week_id
         self.tier = tier
+        self.minion_timer = 5.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
@@ -4961,6 +4962,10 @@ class GuildBossFightMode(GameMode):
         boss.base_speed = float(getattr(boss, "base_speed", getattr(boss, "speed", 100.0))) * 0.5
         boss.mass = getattr(boss, "mass", 1.0) * 10.0
 
+        if getattr(self, "tier", 1) >= 2:
+            boss.damage_reflection_active = True
+            boss.damage_reflection_multiplier = 0.1
+
         # Position boss in center
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -4994,6 +4999,38 @@ class GuildBossFightMode(GameMode):
 
         if not boss:
             return
+
+        if getattr(self, "tier", 1) >= 3:
+            self.minion_timer = getattr(self, "minion_timer", 5.0) - delta
+            if self.minion_timer <= 0:
+                self.minion_timer = 10.0
+                import random
+                minion_class = type(balls[0]) if balls else type('MockBoss', (object,), {})
+                minion = minion_class()
+                minion.id = f"boss_minion_{random.randint(1000, 9999)}"
+                minion.team = "Boss"
+                minion.ball_type = "minion"
+                minion.alive = True
+                minion.hp = 100.0
+                minion.max_hp = 100.0
+                minion.radius = 15.0
+                minion.damage = 15.0
+                minion.speed = 100.0
+                minion.x = getattr(boss, "x", 500) + random.uniform(-30, 30)
+                minion.y = getattr(boss, "y", 500) + random.uniform(-30, 30)
+                minion.vx = random.uniform(-50, 50)
+                minion.vy = random.uniform(-50, 50)
+
+                def take_damage(self_minion, amount):
+                    self_minion.hp -= amount
+                    if self_minion.hp <= 0:
+                        self_minion.alive = False
+
+                # Bind the method if it's a dynamic class (python requires types.MethodType for instance binding)
+                import types
+                minion.take_damage = types.MethodType(take_damage, minion)
+
+                balls.append(minion)
 
         # Track damage taken and heal boss
         if boss.hp < boss.max_hp:

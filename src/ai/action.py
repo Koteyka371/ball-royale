@@ -706,7 +706,8 @@ class Action:
 
         if getattr(target, "damage_reflection_active", False):
             original_damage = getattr(attacker, "damage", 10.0)
-            refl_dmg = original_damage * 0.5
+            refl_multiplier = getattr(target, "damage_reflection_multiplier", 0.5)
+            refl_dmg = original_damage * refl_multiplier
             if hasattr(attacker, "take_damage"):
                 attacker.take_damage(refl_dmg)
             elif hasattr(attacker, "hp"):
