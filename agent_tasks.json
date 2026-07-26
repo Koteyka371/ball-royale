@@ -25363,7 +25363,7 @@
     },
     {
       "id": "idea-1481",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Projectiles",
@@ -38537,6 +38537,23 @@
         "src/ai/bouncing_laser_beams.py",
         "src/ai/bouncing_laser_beams.gd",
         "tests/test_bouncing_laser_beams.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2255",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Ray Booster",
+      "description": "A collectible booster that temporarily makes a player completely invisible and untargetable, but prevents them from dealing damage.",
+      "allowed_paths": [
+        "src/ai/cosmic_ray_booster.py",
+        "src/ai/cosmic_ray_booster.gd",
+        "tests/test_cosmic_ray_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1481] Bouncing Projectiles — *2026-07-26 08:11:10 UTC*
+
+Skills like fireball can bounce off walls once before exploding, adding a tactical element where players can hit opponents around corners.
+
+---
+
 ## [idea-1531] Ghost Companion — *2026-07-26 07:45:03 UTC*
 
 Eliminated players spawn as ghosts that can attach to living players, applying small buffs or debuffs.
