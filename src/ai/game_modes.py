@@ -39236,3 +39236,98 @@ class FloorPaintMode(GameMode):
                 b.speed = base
 
 GAME_MODES['floor_paint'] = FloorPaintMode()
+
+class DynamicCaptureZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Capture Zones"
+        self.description = "Dynamic capture zones move around the arena. Earn points by staying inside, but they are contested if multiple teams are present. The zone shrinks over time."
+        self.zone = None
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        if not self.zone:
+            self.zone = {
+                "x": 500.0,
+                "y": 500.0,
+                "vx": 50.0,
+                "vy": 30.0,
+                "radius": 300.0,
+                "min_radius": 50.0,
+                "shrink_rate": 2.0
+            }
+
+        self.zone["radius"] = max(self.zone["min_radius"], self.zone["radius"] - self.zone["shrink_rate"] * delta)
+        self.zone["x"] += self.zone["vx"] * delta
+        self.zone["y"] += self.zone["vy"] * delta
+
+        width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        if self.zone["x"] - self.zone["radius"] < 0:
+            self.zone["x"] = self.zone["radius"]
+            self.zone["vx"] *= -1
+        elif self.zone["x"] + self.zone["radius"] > width:
+            self.zone["x"] = width - self.zone["radius"]
+            self.zone["vx"] *= -1
+
+        if self.zone["y"] - self.zone["radius"] < 0:
+            self.zone["y"] = self.zone["radius"]
+            self.zone["vy"] *= -1
+        elif self.zone["y"] + self.zone["radius"] > height:
+            self.zone["y"] = height - self.zone["radius"]
+            self.zone["vy"] *= -1
+
+        occupants_by_team = {}
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 20.0)
+
+            dx = bx - self.zone["x"]
+            dy = by - self.zone["y"]
+            if dx*dx + dy*dy <= (self.zone["radius"] + br)**2:
+                team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                if team not in occupants_by_team:
+                    occupants_by_team[team] = []
+                occupants_by_team[team].append(b)
+
+        if len(occupants_by_team) == 1:
+            team = list(occupants_by_team.keys())[0]
+            for b in occupants_by_team[team]:
+                b.score = getattr(b, "score", 0) + delta * 10.0
+        elif len(occupants_by_team) > 1:
+            timer = getattr(self, "contested_timer", 0.0) + delta
+            if timer > 3.0:
+                if hasattr(world, "add_event"):
+                    world.add_event("zone_contested", {"message": "Zone is Contested!"})
+                timer = 0.0
+            self.contested_timer = timer
+
+    def check_winner(self, world, balls):
+        alive_teams = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                alive_teams[team] = True
+
+        if len(alive_teams) == 1:
+            return list(alive_teams.keys())[0]
+
+        best_score = -1
+        best_team = None
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                score = getattr(b, "score", 0)
+                if score >= 1000:
+                    return team
+                if score > best_score:
+                    best_score = score
+                    best_team = team
+
+        return None
+
+GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode()

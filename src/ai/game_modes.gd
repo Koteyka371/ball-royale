@@ -61082,3 +61082,102 @@ class FloorPaintMode extends GameMode:
 				b.set("speed", target_speed)
 
 GAME_MODES['floor_paint'] = FloorPaintMode.new()
+
+class DynamicCaptureZonesMode extends GameMode:
+	var zone = null
+	var contested_timer = 0.0
+
+	func _init():
+		name = "Dynamic Capture Zones"
+		description = "Dynamic capture zones move around the arena. Earn points by staying inside, but they are contested if multiple teams are present. The zone shrinks over time."
+
+	func apply_dynamic_traits(world, balls, delta: float) -> void:
+		if zone == null:
+			zone = {
+				"x": 500.0,
+				"y": 500.0,
+				"vx": 50.0,
+				"vy": 30.0,
+				"radius": 300.0,
+				"min_radius": 50.0,
+				"shrink_rate": 2.0
+			}
+
+		zone["radius"] = max(zone["min_radius"], zone["radius"] - zone["shrink_rate"] * delta)
+		zone["x"] += zone["vx"] * delta
+		zone["y"] += zone["vy"] * delta
+
+		var width = 1000
+		var height = 1000
+		if world.get("arena") != null:
+			width = world.arena.get("width", 1000)
+			height = world.arena.get("height", 1000)
+
+		if zone["x"] - zone["radius"] < 0:
+			zone["x"] = zone["radius"]
+			zone["vx"] *= -1
+		elif zone["x"] + zone["radius"] > width:
+			zone["x"] = width - zone["radius"]
+			zone["vx"] *= -1
+
+		if zone["y"] - zone["radius"] < 0:
+			zone["y"] = zone["radius"]
+			zone["vy"] *= -1
+		elif zone["y"] + zone["radius"] > height:
+			zone["y"] = height - zone["radius"]
+			zone["vy"] *= -1
+
+		var occupants_by_team = {}
+		for b in balls:
+			if not b.get("alive", false) or b.get("ball_type", "") == "spectator":
+				continue
+
+			var bx = b.get("x", 0.0)
+			var by = b.get("y", 0.0)
+			var br = b.get("radius", 20.0)
+
+			var dx = bx - zone["x"]
+			var dy = by - zone["y"]
+			if dx*dx + dy*dy <= (zone["radius"] + br)*(zone["radius"] + br):
+				var team = b.get("team", b.get("ball_type", "unknown"))
+				if not occupants_by_team.has(team):
+					occupants_by_team[team] = []
+				occupants_by_team[team].append(b)
+
+		if occupants_by_team.size() == 1:
+			var team = occupants_by_team.keys()[0]
+			for b in occupants_by_team[team]:
+				var s = b.get("score", 0)
+				b.set("score", s + delta * 10.0)
+		elif occupants_by_team.size() > 1:
+			contested_timer += delta
+			if contested_timer > 3.0:
+				if world.has_method("add_event"):
+					world.add_event("zone_contested", {"message": "Zone is Contested!"})
+				contested_timer = 0.0
+
+	func check_winner(world, balls):
+		var alive_teams = {}
+		for b in balls:
+			if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				var team = b.get("team", b.get("ball_type", "unknown"))
+				alive_teams[team] = true
+
+		if alive_teams.size() == 1:
+			return alive_teams.keys()[0]
+
+		var best_score = -1
+		var best_team = null
+		for b in balls:
+			if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+				var team = b.get("team", b.get("ball_type", "unknown"))
+				var score = b.get("score", 0)
+				if score >= 1000:
+					return team
+				if score > best_score:
+					best_score = score
+					best_team = team
+
+		return null
+
+GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()
