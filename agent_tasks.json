@@ -25091,7 +25091,7 @@
     },
     {
       "id": "idea-1465",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Contracts Item",
@@ -37872,6 +37872,40 @@
         "src/ai/alliance_emissary_boss_buff.py",
         "src/ai/alliance_emissary_boss_buff.gd",
         "tests/test_alliance_emissary_boss_buff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2216",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tunnels Network",
+      "description": "Pairs of quantum tunnels appear across the map. When a ball enters one, it instantly teleports to the other. However, these tunnels are unstable and have a chance to scramble the ball's stats or drop them off in a random location instead of the paired tunnel.",
+      "allowed_paths": [
+        "src/ai/quantum_tunnels_network.py",
+        "src/ai/quantum_tunnels_network.gd",
+        "tests/test_quantum_tunnels_network.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2217",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Hex Grid",
+      "description": "The arena is a grid of hexagonal tiles. Periodically, tiles at the edges of the grid fall away into the void. Balls must scramble to stay on the remaining tiles as the playable area becomes an ever-shrinking, irregularly shaped island.",
+      "allowed_paths": [
+        "src/ai/shrinking_hex_grid.py",
+        "src/ai/shrinking_hex_grid.gd",
+        "tests/test_shrinking_hex_grid.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
