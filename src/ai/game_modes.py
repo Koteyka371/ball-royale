@@ -31005,6 +31005,84 @@ class LaserGridSurvivalMode(GameMode):
                             if hasattr(world, "add_event"):
                                 world.add_event("death", {"id": getattr(b, "id", None), "reason": "grid_laser"})
 
+
+class StickyCeilingsMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sticky Ceilings Mutator"
+        self.description = "During reverse gravity events, certain areas of the ceiling become extremely sticky, slowing down any ball that gets stuck to them and requiring a dash or explosive knockback to break free."
+        self.mutators_active = True
+        self.mutators = ["sticky_ceilings"]
+        self.sticky_areas = []
+        self.setup_done = False
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena") or not world.arena:
+            return
+
+        import random
+        arena_w = getattr(world.arena, "width", 800)
+
+        num_areas = random.randint(3, 6)
+        for _ in range(num_areas):
+            x = random.uniform(50, arena_w - 50)
+            radius = random.uniform(40.0, 100.0)
+            self.sticky_areas.append({"x": x, "radius": radius})
+        self.setup_done = True
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not self.setup_done:
+            self.setup(world, balls)
+
+        is_reverse_gravity = False
+        if hasattr(world, "game_mode") and getattr(world.game_mode, "name", "") == "Reverse Gravity Event":
+            is_reverse_gravity = getattr(world.game_mode, "event_active", False)
+
+        if getattr(world, "gravity_reversal_active", False):
+            is_reverse_gravity = True
+
+        if not is_reverse_gravity:
+            return
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            b_y = getattr(b, "y", 0.0)
+            b_x = getattr(b, "x", 0.0)
+
+            # Assuming ceiling is at y=0 or close to it
+            # The exact boundary depends on the arena bounds, let's say y < 50 is near ceiling
+            if b_y < 50.0:
+                is_stuck = False
+                for area in self.sticky_areas:
+                    if abs(b_x - area["x"]) < area["radius"]:
+                        is_stuck = True
+                        break
+
+                if is_stuck:
+                    # Check if they are dashing or have high velocity
+                    vx = getattr(b, "vx", 0.0)
+                    vy = getattr(b, "vy", 0.0)
+                    speed_sq = vx**2 + vy**2
+
+                    skill_timer = getattr(b, "skill_timer", 0.0)
+                    is_dashing = skill_timer > 0.0 # Simplification, dashing usually has skill timer active
+
+                    if not is_dashing and speed_sq < 600000.0: # Need significant knockback or dash to break free
+                        b.vx = getattr(b, "vx", 0.0) * 0.1 # Heavily slow down
+                        b.vy = getattr(b, "vy", 0.0) * 0.1
+
+                        # Set a visual status
+                        if hasattr(world, "add_event"):
+                            # Only fire event occasionally to not spam
+                            if getattr(b, "last_stuck_event_time", 0.0) + 1.0 < getattr(world, "tick_timer", 0.0):
+                                world.add_event("visual_effect", {"type": "stuck_in_glue", "target": getattr(b, "id", None)})
+                                b.last_stuck_event_time = getattr(world, "tick_timer", 0.0)
+
 GAME_MODES = {
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
@@ -31077,6 +31155,7 @@ GAME_MODES = {
     "heavy_rain_mutator": HeavyRainMode(),
 
     'sticky_arena': StickyArenaMode(),
+    'sticky_ceilings_mutator': StickyCeilingsMutatorMode(),
     "falling_panels": FallingPanelsMode(),
     "decreasing_safe_zones": DecreasingSafeZonesMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
