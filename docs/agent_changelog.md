@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1535] Portal Bounce Challenge — *2026-07-26 08:18:07 UTC*
+
+Portals spawn on the map that reflect projectiles and players based on velocity and incidence angle, turning the arena into a bouncy chaos.
+
+---
+
 ## [idea-1481] Bouncing Projectiles — *2026-07-26 08:11:10 UTC*
 
 Skills like fireball can bounce off walls once before exploding, adding a tactical element where players can hit opponents around corners.

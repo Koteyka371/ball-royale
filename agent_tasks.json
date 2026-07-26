@@ -26283,7 +26283,7 @@
     },
     {
       "id": "idea-1535",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Bounce Challenge",
@@ -38554,6 +38554,40 @@
         "src/ai/cosmic_ray_booster.py",
         "src/ai/cosmic_ray_booster.gd",
         "tests/test_cosmic_ray_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2256",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Meteor Swarm Skill",
+      "description": "A new skill that allows the player to summon a barrage of miniature fireballs falling from the sky in a designated area. The impact zones would be telegraphed briefly before dealing area-of-effect damage. These meteors would ignore walls but deal reduced damage to balls hiding under covers or shields.",
+      "allowed_paths": [
+        "src/ai/meteor_swarm_skill.py",
+        "src/ai/meteor_swarm_skill.gd",
+        "tests/test_meteor_swarm_skill.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2257",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Bumper Hazard",
+      "description": "Introduce a new hazard type called 'bouncy_bumper' that actively moves around the arena and violently reflects any projectiles (like fireballs, bullets, lasers) that hit it, multiplying their speed and damage with each bounce. If a player hits it directly, they take heavy knockback but receive a temporary speed boost.",
+      "allowed_paths": [
+        "src/arena/bouncy_bumper.py",
+        "src/arena/bouncy_bumper.gd",
+        "tests/test_bouncy_bumper.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
