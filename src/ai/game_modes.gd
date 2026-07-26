@@ -48952,6 +48952,65 @@ class SingularityBombEventMode extends GameMode:
 								if "vy" in b: b.vy += ny * knockback
 
 
+
+class RandomGravityShiftMode extends GameMode:
+	var shift_timer = 0.0
+	var shift_interval = 5.0
+	var gravity_dir_x = 0.0
+	var gravity_dir_y = 1.0
+	var gravity_strength = 300.0
+	var random = RandomNumberGenerator.new()
+
+	func _init():
+		name = "Random Gravity Shift"
+		description = "A mode where gravity periodically shifts in random directions."
+		random.randomize()
+
+	func tick(world, balls, delta=0.016):
+		apply_dynamic_traits(world, balls, delta)
+		shift_timer -= delta
+		if shift_timer <= 0:
+			shift_timer = shift_interval
+			var angle = random.randf_range(0, 2 * PI)
+			gravity_dir_x = cos(angle)
+			gravity_dir_y = sin(angle)
+			if world != null and typeof(world) == TYPE_DICTIONARY and world.has("add_event") or (typeof(world) != TYPE_DICTIONARY and world.has_method("add_event")):
+				world.add_event("gravity_shift", {"message": "Gravity shifted!"})
+
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_meta("alive") else b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else true
+			var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if typeof(b) == TYPE_OBJECT and b.has_meta("active") else b.active if typeof(b) == TYPE_OBJECT and "active" in b else true
+			if not is_alive or not is_active:
+				continue
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if typeof(b) == TYPE_OBJECT and b.has_meta("ball_type") else b.ball_type if typeof(b) == TYPE_OBJECT and "ball_type" in b else ""
+			if b_type == "spectator":
+				continue
+
+			var mass = b.get("mass") if typeof(b) == TYPE_DICTIONARY else b.get_meta("mass") if typeof(b) == TYPE_OBJECT and b.has_meta("mass") else b.mass if typeof(b) == TYPE_OBJECT and "mass" in b else 1.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("vx"):
+					b["vx"] += gravity_strength * gravity_dir_x * mass * delta
+				if b.has("vy"):
+					b["vy"] += gravity_strength * gravity_dir_y * mass * delta
+			else:
+				if "vx" in b:
+					b.vx += gravity_strength * gravity_dir_x * mass * delta
+				elif b.has_meta("vx"):
+					b.set_meta("vx", b.get_meta("vx") + gravity_strength * gravity_dir_x * mass * delta)
+				if "vy" in b:
+					b.vy += gravity_strength * gravity_dir_y * mass * delta
+				elif b.has_meta("vy"):
+					b.set_meta("vy", b.get_meta("vy") + gravity_strength * gravity_dir_y * mass * delta)
+
+		if world != null and typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var mass = h.get("mass") if h.has("mass") else 1.0
+				if h.has("vx"):
+					h["vx"] += gravity_strength * gravity_dir_x * mass * delta
+				if h.has("vy"):
+					h["vy"] += gravity_strength * gravity_dir_y * mass * delta
+
 var GAME_MODES = {
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"singularity_bomb_event": SingularityBombEventMode.new(),

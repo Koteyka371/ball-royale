@@ -30428,6 +30428,52 @@ class GravityInversionMode(GameMode):
                 if hasattr(world, 'add_event'):
                     world.add_event("gravity_inversion", {"duration": self.inversion_duration})
 
+
+class RandomGravityShiftMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Random Gravity Shift"
+        self.description = "A mode where gravity periodically shifts in random directions."
+        self.shift_timer = 0.0
+        self.shift_interval = 5.0
+        self.gravity_dir_x = 0.0
+        self.gravity_dir_y = 1.0
+        self.gravity_strength = 300.0
+        import random
+        self.random = random
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+        self.shift_timer -= delta
+        if self.shift_timer <= 0:
+            self.shift_timer = self.shift_interval
+            import math
+            angle = self.random.uniform(0, 2 * math.pi)
+            self.gravity_dir_x = math.cos(angle)
+            self.gravity_dir_y = math.sin(angle)
+            if hasattr(world, 'add_event'):
+                world.add_event("gravity_shift", {"message": "Gravity shifted!"})
+
+        for b in balls:
+            if not getattr(b, 'alive', True) or not getattr(b, 'active', True):
+                continue
+            if getattr(b, 'ball_type', None) == 'spectator':
+                continue
+
+            mass = getattr(b, 'mass', 1.0)
+            if hasattr(b, 'vx'):
+                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta
+            if hasattr(b, 'vy'):
+                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
+
+        if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+            for h in world.arena.hazards:
+                mass = getattr(h, 'mass', 1.0)
+                if hasattr(h, 'vx'):
+                    h.vx += self.gravity_strength * self.gravity_dir_x * mass * delta
+                if hasattr(h, 'vy'):
+                    h.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
+
 GAME_MODES = {
     'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
@@ -37838,7 +37884,55 @@ class GravityShiftMode(GameMode):
             if hasattr(b, 'anchor_cooldown'):
                 b.anchor_cooldown -= delta
 
+
+class RandomGravityShiftMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Random Gravity Shift"
+        self.description = "A mode where gravity periodically shifts in random directions."
+        self.shift_timer = 0.0
+        self.shift_interval = 5.0
+        self.gravity_dir_x = 0.0
+        self.gravity_dir_y = 1.0
+        self.gravity_strength = 300.0
+        import random
+        self.random = random
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+        self.shift_timer -= delta
+        if self.shift_timer <= 0:
+            self.shift_timer = self.shift_interval
+            import math
+            angle = self.random.uniform(0, 2 * math.pi)
+            self.gravity_dir_x = math.cos(angle)
+            self.gravity_dir_y = math.sin(angle)
+            if hasattr(world, 'add_event'):
+                world.add_event("gravity_shift", {"message": "Gravity shifted!"})
+
+        for b in balls:
+            if not getattr(b, 'alive', True) or not getattr(b, 'active', True):
+                continue
+            if getattr(b, 'ball_type', None) == 'spectator':
+                continue
+
+            mass = getattr(b, 'mass', 1.0)
+            if hasattr(b, 'vx'):
+                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta
+            if hasattr(b, 'vy'):
+                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
+
+        if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+            for h in world.arena.hazards:
+                mass = getattr(h, 'mass', 1.0)
+                if hasattr(h, 'vx'):
+                    h.vx += self.gravity_strength * self.gravity_dir_x * mass * delta
+                if hasattr(h, 'vy'):
+                    h.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
+
+
 GAME_MODES['gravity_shift'] = GravityShiftMode()
+GAME_MODES['random_gravity_shift'] = RandomGravityShiftMode()
 
 
 class FallingTilesRoyaleMode(GameMode):

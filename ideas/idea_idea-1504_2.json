@@ -1,0 +1,4 @@
+{
+    "title": "Repulsion Walls Modifier",
+    "description": "The arena walls are highly magnetized to repel the balls instead of bouncing them. As players get closer to the walls, they are pushed back with increasing force, effectively shrinking the playable area organically without actually moving the physical boundaries."
+}
