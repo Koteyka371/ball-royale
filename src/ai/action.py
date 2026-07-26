@@ -4,6 +4,25 @@ import math
 from typing import Any
 
 
+class SpotterDrone:
+    def __init__(self, owner_id, team, x, y, id_val):
+        self.id = id_val
+        self.ball_type = "spotter_drone"
+        self.owner_id = owner_id
+        self.team = team
+        self.x = x
+        self.y = y
+        self.vx = 0.0
+        self.vy = 0.0
+        self.radius = 10.0
+        self.hp = 20.0
+        self.max_hp = 20.0
+        self.alive = True
+        self.orbit_angle = 0.0
+        self.is_flying = True
+        self.damage = 0.0
+        self.perception_radius = 0.0
+
 class CheerEffect:
     def __init__(self, x, y, kind, owner_id):
         self.x = x
@@ -2633,6 +2652,34 @@ class Action:
                         in_nest_flag = True
                         self.ball.perception_radius = self.ball.base_perception_radius * 1.25
                         self.ball.damage_multiplier = self.ball.base_damage_multiplier * 1.15
+
+                        has_drone = False
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if getattr(b, "ball_type", "") == "spotter_drone" and getattr(b, "owner_id", None) == getattr(self.ball, "id", None) and getattr(b, "alive", True):
+                                    has_drone = True
+                                    b.orbit_angle = getattr(b, "orbit_angle", 0.0) + delta * 2.0
+                                    b.x = getattr(hazard, "x", 0.0) + math.cos(b.orbit_angle) * (getattr(hazard, "radius", 50.0) + 20.0)
+                                    b.y = getattr(hazard, "y", 0.0) + math.sin(b.orbit_angle) * (getattr(hazard, "radius", 50.0) + 20.0)
+                                    if getattr(b, "hp", 1.0) > 0:
+                                        self.ball.perception_radius = self.ball.base_perception_radius * 2.0
+                                    break
+
+                            if not has_drone:
+                                self.ball.spotter_drone_timer = getattr(self.ball, "spotter_drone_timer", 0.0) + delta
+                                if self.ball.spotter_drone_timer > 5.0:
+                                    self.ball.spotter_drone_timer = 0.0
+                                    drone_id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                                    if hasattr(self.world, "next_id"):
+                                        self.world.next_id += 1
+                                    drone = SpotterDrone(
+                                        getattr(self.ball, "id", None),
+                                        getattr(self.ball, "team", getattr(self.ball, "ball_type", "")),
+                                        getattr(hazard, "x", 0.0) + getattr(hazard, "radius", 50.0) + 20.0,
+                                        getattr(hazard, "y", 0.0),
+                                        drone_id
+                                    )
+                                    self.world.balls.append(drone)
 
                         is_camouflaged = False
                         for camo_hazard in self.world.arena.hazards:

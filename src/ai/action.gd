@@ -1,6 +1,23 @@
 class_name ActionLayer
 extends RefCounted
 
+class SpotterDrone extends RefCounted:
+	var id = 0
+	var ball_type = "spotter_drone"
+	var owner_id = 0
+	var team = ""
+	var x = 0.0
+	var y = 0.0
+	var vx = 0.0
+	var vy = 0.0
+	var radius = 10.0
+	var hp = 20.0
+	var max_hp = 20.0
+	var alive = true
+	var orbit_angle = 0.0
+	var is_flying = true
+	var damage = 0.0
+	var perception_radius = 0.0
 
 func _award_xp(ball, amount: float, world=null) -> void:
 	var b_type = null
@@ -5796,6 +5813,96 @@ func execute(strategy: String, delta: float):
 								if sqrt(cdx*cdx + cdy*cdy) <= rad + crad:
 									is_camouflaged = true
 									break
+
+						var has_drone = false
+						if typeof(world) == TYPE_OBJECT and "balls" in world:
+							for b in world.balls:
+								var b_type = ""
+								if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+								elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+								var b_owner = null
+								if typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): b_owner = b["owner_id"]
+								elif typeof(b) == TYPE_OBJECT and "owner_id" in b: b_owner = b.owner_id
+
+								var b_alive = true
+								if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+								elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+
+								var my_id = null
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+								elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+
+								if b_type == "spotter_drone" and b_owner == my_id and b_alive:
+									has_drone = true
+									var o_angle = 0.0
+									if typeof(b) == TYPE_DICTIONARY and b.has("orbit_angle"): o_angle = b["orbit_angle"]
+									elif typeof(b) == TYPE_OBJECT and "orbit_angle" in b: o_angle = b.orbit_angle
+									o_angle += delta * 2.0
+
+									if typeof(b) == TYPE_DICTIONARY:
+										b["orbit_angle"] = o_angle
+										b["x"] = hx + cos(o_angle) * (rad + 20.0)
+										b["y"] = hy + sin(o_angle) * (rad + 20.0)
+									else:
+										b.orbit_angle = o_angle
+										b.x = hx + cos(o_angle) * (rad + 20.0)
+										b.y = hy + sin(o_angle) * (rad + 20.0)
+
+									var b_hp = 1.0
+									if typeof(b) == TYPE_DICTIONARY and b.has("hp"): b_hp = b["hp"]
+									elif typeof(b) == TYPE_OBJECT and "hp" in b: b_hp = b.hp
+
+									if b_hp > 0:
+										if typeof(self.ball) == TYPE_DICTIONARY:
+											self.ball["perception_radius"] = base_p * 2.0
+										else:
+											if self.ball.has_method("set_meta"): self.ball.set_meta("perception_radius", base_p * 2.0)
+											if "perception_radius" in self.ball: self.ball.perception_radius = base_p * 2.0
+									break
+
+							if not has_drone:
+								var timer_val = 0.0
+								if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("spotter_drone_timer"): timer_val = self.ball["spotter_drone_timer"]
+								elif typeof(self.ball) == TYPE_OBJECT:
+									if "spotter_drone_timer" in self.ball: timer_val = self.ball.spotter_drone_timer
+									elif self.ball.has_method("has_meta") and self.ball.has_meta("spotter_drone_timer"): timer_val = self.ball.get_meta("spotter_drone_timer")
+								timer_val += delta
+
+								if typeof(self.ball) == TYPE_DICTIONARY: self.ball["spotter_drone_timer"] = timer_val
+								elif typeof(self.ball) == TYPE_OBJECT:
+									if "spotter_drone_timer" in self.ball: self.ball.spotter_drone_timer = timer_val
+									if self.ball.has_method("set_meta"): self.ball.set_meta("spotter_drone_timer", timer_val)
+
+								if timer_val > 5.0:
+									if typeof(self.ball) == TYPE_DICTIONARY: self.ball["spotter_drone_timer"] = 0.0
+									elif typeof(self.ball) == TYPE_OBJECT:
+										if "spotter_drone_timer" in self.ball: self.ball.spotter_drone_timer = 0.0
+										if self.ball.has_method("set_meta"): self.ball.set_meta("spotter_drone_timer", 0.0)
+
+									var drone = SpotterDrone.new()
+									var next_id = randi() % 90000 + 10000
+									if "next_id" in world:
+										next_id = world.next_id
+										world.next_id += 1
+									drone.id = next_id
+
+									var my_id = null
+									if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+									elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+									drone.owner_id = my_id
+
+									var my_team = ""
+									if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+									elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+									elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_team = self.ball["ball_type"]
+									elif typeof(self.ball) == TYPE_OBJECT and "ball_type" in self.ball: my_team = self.ball.ball_type
+									drone.team = my_team
+
+									drone.x = hx + rad + 20.0
+									drone.y = hy
+
+									world.balls.append(drone)
 
 						if not is_camouflaged:
 							if typeof(self.ball) == TYPE_DICTIONARY:

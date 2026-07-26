@@ -99,3 +99,34 @@ def test_sniper_nest_camouflage_destroyed_by_explosion():
 
     assert c.active == False
     assert b.show_sniper_nest_indicator == True
+
+def test_spotter_drone_spawn():
+    b = MockBall()
+    b.id = 100
+    w = MockWorld()
+    w.balls = []
+    w.next_id = 500
+    h = MockHazard('sniper_nest')
+    h.x = 0
+    h.y = 0
+    w.arena.hazards.append(h)
+
+    a = Action(b, w)
+
+    # Needs > 5 seconds in total
+    a.execute("none", 5.1)
+
+    # Check that a spotter drone was spawned
+    assert len(w.balls) == 1
+    drone = w.balls[0]
+    assert drone.ball_type == "spotter_drone"
+    assert drone.owner_id == b.id
+
+    # Execute again to see perception boost
+    a.execute("none", 0.1)
+    assert b.perception_radius == b.base_perception_radius * 2.0
+
+    # If drone dies, boost is lost (back to 1.25 nest bonus)
+    drone.hp = 0
+    a.execute("none", 0.1)
+    assert math.isclose(b.perception_radius, b.base_perception_radius * 1.25)
