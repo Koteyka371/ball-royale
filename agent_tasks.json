@@ -512,7 +512,7 @@
         "Tests pass"
       ],
       "title": "Implement PERCEPTION skill",
-      "description": "Create PERCEPTION skill: \u0412\u043e\u0441\u043f\u0440\u0438\u044f\u0442\u0438\u0435"
+      "description": "Create PERCEPTION skill: Восприятие"
     },
     {
       "id": "auto-implement-emotion-skill",
@@ -528,7 +528,7 @@
         "Tests pass"
       ],
       "title": "Implement EMOTION skill",
-      "description": "Create EMOTION skill: \u042d\u043c\u043e\u0446\u0438\u0438"
+      "description": "Create EMOTION skill: Эмоции"
     },
     {
       "id": "auto-implement-decision-skill",
@@ -544,7 +544,7 @@
         "Tests pass"
       ],
       "title": "Implement DECISION skill",
-      "description": "Create DECISION skill: \u0420\u0435\u0448\u0435\u043d\u0438\u0435"
+      "description": "Create DECISION skill: Решение"
     },
     {
       "id": "auto-implement-action-skill",
@@ -560,10 +560,10 @@
         "Tests pass"
       ],
       "title": "Implement ACTION skill",
-      "description": "Create ACTION skill: \u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435"
+      "description": "Create ACTION skill: Действие"
     },
     {
-      "id": "auto-implement-**target-strong**-\u2014-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u0441\u0430\u043c\u043e\u0433\u043e-\u0441\u0438\u043b\u044c\u043d",
+      "id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -575,11 +575,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Target Strong** \u2014 \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u0441\u0430\u043c\u043e\u0433\u043e \u0441\u0438\u043b\u044c\u043d\u043e\u0433\u043e skill",
-      "description": "Create **Target Strong** \u2014 \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u0441\u0430\u043c\u043e\u0433\u043e \u0441\u0438\u043b\u044c\u043d\u043e\u0433\u043e skill: \u0434\u043b\u044f Tank"
+      "title": "Implement **Target Strong** — атакует самого сильного skill",
+      "description": "Create **Target Strong** — атакует самого сильного skill: для Tank"
     },
     {
-      "id": "auto-implement-**kite**-\u2014-\u0434\u0435\u0440\u0436\u0438\u0442-\u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e,-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u043f\u0440\u0438",
+      "id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -591,11 +591,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Kite** \u2014 \u0434\u0435\u0440\u0436\u0438\u0442 \u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e, \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u043f\u0440\u0438 \u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u0438 skill",
-      "description": "Create **Kite** \u2014 \u0434\u0435\u0440\u0436\u0438\u0442 \u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e, \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u043f\u0440\u0438 \u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u0438 skill: \u0434\u043b\u044f Sniper"
+      "title": "Implement **Kite** — держит дистанцию, атакует при приближении skill",
+      "description": "Create **Kite** — держит дистанцию, атакует при приближении skill: для Sniper"
     },
     {
-      "id": "auto-implement-**flank**-\u2014-\u043e\u0431\u0445\u043e\u0434\u0438\u0442-\u0441\u0437\u0430\u0434\u0438-\u0434\u043b\u044f-\u0443\u0434\u0430\u0440\u0430-skil",
+      "id": "auto-implement-**flank**-—-обходит-сзади-для-удара-skil",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -607,11 +607,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Flank** \u2014 \u043e\u0431\u0445\u043e\u0434\u0438\u0442 \u0441\u0437\u0430\u0434\u0438 \u0434\u043b\u044f \u0443\u0434\u0430\u0440\u0430 skill",
-      "description": "Create **Flank** \u2014 \u043e\u0431\u0445\u043e\u0434\u0438\u0442 \u0441\u0437\u0430\u0434\u0438 \u0434\u043b\u044f \u0443\u0434\u0430\u0440\u0430 skill: \u0434\u043b\u044f Ninja"
+      "title": "Implement **Flank** — обходит сзади для удара skill",
+      "description": "Create **Flank** — обходит сзади для удара skill: для Ninja"
     },
     {
-      "id": "auto-implement-spectator-mode-(\u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c)-game-mode",
+      "id": "auto-implement-spectator-mode-(наблюдатель)-game-mode",
       "status": "done",
       "area": "modes",
       "risk": "medium",
@@ -623,11 +623,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement Spectator Mode (\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c) game mode",
-      "description": "Create Spectator Mode (\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c) with full rules and mechanics"
+      "title": "Implement Spectator Mode (Наблюдатель) game mode",
+      "description": "Create Spectator Mode (Наблюдатель) with full rules and mechanics"
     },
     {
-      "id": "auto-implement-coach-mode-(\u0442\u0440\u0435\u043d\u0435\u0440)-game-mode",
+      "id": "auto-implement-coach-mode-(тренер)-game-mode",
       "status": "done",
       "area": "modes",
       "risk": "medium",
@@ -639,8 +639,8 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement Coach Mode (\u0422\u0440\u0435\u043d\u0435\u0440) game mode",
-      "description": "Create Coach Mode (\u0422\u0440\u0435\u043d\u0435\u0440) with full rules and mechanics"
+      "title": "Implement Coach Mode (Тренер) game mode",
+      "description": "Create Coach Mode (Тренер) with full rules and mechanics"
     },
     {
       "id": "idea-feature-033",
@@ -801,7 +801,7 @@
       "description": "Implement Procedural Arenas with unique mechanics"
     },
     {
-      "id": "auto-implement-**ball-genetics**-\u2014-balls-reproduce-afte",
+      "id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -813,11 +813,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Ball Genetics** \u2014 Balls reproduce after surviving N battles. Offspring inherit traits skill",
-      "description": "Create **Ball Genetics** \u2014 Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color"
+      "title": "Implement **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill",
+      "description": "Create **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color"
     },
     {
-      "id": "auto-implement-**neural-ball**-\u2014-a-ball-controlled-by-a",
+      "id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -829,11 +829,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Neural Ball** \u2014 A ball controlled by a simple neural network skill",
-      "description": "Create **Neural Ball** \u2014 A ball controlled by a simple neural network skill: numpy, no external libs"
+      "title": "Implement **Neural Ball** — A ball controlled by a simple neural network skill",
+      "description": "Create **Neural Ball** — A ball controlled by a simple neural network skill: numpy, no external libs"
     },
     {
-      "id": "auto-implement-**ball-relationships**-\u2014-balls-remember-",
+      "id": "auto-implement-**ball-relationships**-—-balls-remember-",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -845,8 +845,8 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Ball Relationships** \u2014 Balls remember each other. Rivalry skill",
-      "description": "Create **Ball Relationships** \u2014 Balls remember each other. Rivalry skill: attacked me before \u2192 attack on sight"
+      "title": "Implement **Ball Relationships** — Balls remember each other. Rivalry skill",
+      "description": "Create **Ball Relationships** — Balls remember each other. Rivalry skill: attacked me before → attack on sight"
     },
     {
       "id": "add-particle-effects",
@@ -7585,7 +7585,7 @@
       "area": "innovation",
       "risk": "medium",
       "title": "Tug-of-War Mode",
-      "description": "Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team\u2019s goal.",
+      "description": "Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team’s goal.",
       "allowed_paths": [
         "src/ai/tug_of_war.py",
         "src/ai/tug_of_war.gd",
@@ -17326,7 +17326,7 @@
       "area": "innovation",
       "risk": "medium",
       "title": "Engineer Synergies: Overclock",
-      "description": "If an Engineer is near one of their deployed turrets and activates their skill while it is on cooldown, the turret gets 'overclocked'\u2014firing twice as fast but slowly losing HP over time.",
+      "description": "If an Engineer is near one of their deployed turrets and activates their skill while it is on cooldown, the turret gets 'overclocked'—firing twice as fast but slowly losing HP over time.",
       "allowed_paths": [
         "src/ai/engineer_synergies_overclock.py",
         "src/ai/engineer_synergies_overclock.gd",
@@ -26317,7 +26317,7 @@
     },
     {
       "id": "idea-1537",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Leech Seed Trap",
@@ -27564,7 +27564,7 @@
       "status": "todo",
       "area": "innovation",
       "risk": "medium",
-      "title": "Quantum Doppelg\u00e4nger Event",
+      "title": "Quantum Doppelgänger Event",
       "description": "Using a quantum teleporter has a small chance to spawn an aggressive clone of the player at the exit point that mirrors their stats and attacks them.",
       "allowed_paths": [
         "src/ai/quantum_doppelgnger.py",
@@ -38792,6 +38792,213 @@
         "src/ai/black_hole_spawners.py",
         "src/ai/black_hole_spawners.gd",
         "tests/test_black_hole_spawners.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2270",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Emissary Seasonal Quests",
+      "description": "Expand the clan emissary quests to include seasonal goals that reward exclusive season-themed cosmetics.",
+      "allowed_paths": [
+        "src/ui/clan_emissary_seasonal_quests.py",
+        "src/ui/clan_emissary_seasonal_quests.gd",
+        "src/ai/clan_emissary_seasonal_quests.py",
+        "tests/test_clan_emissary_seasonal_quests.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2271",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Juggernaut Resurrection",
+      "description": "If the dead Juggernaut's dropped massive heal remains uncollected by Hunters for 30 seconds, it revives the fallen Juggernaut at half health.",
+      "allowed_paths": [
+        "src/ai/juggernaut_resurrection.py",
+        "src/ai/juggernaut_resurrection.gd",
+        "tests/test_juggernaut_resurrection.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2272",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Dynamic Alliance Mode",
+      "description": "Introduce a game mode where weaker teams or guilds can temporarily form dynamic alliances mid-match to defeat a dominating guild, which breaks automatically once the dominating guild is eliminated.",
+      "allowed_paths": [
+        "src/ai/dynamic_alliance.py",
+        "src/ai/dynamic_alliance.gd",
+        "tests/test_dynamic_alliance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2273",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trio Juggernaut Chaos",
+      "description": "Three Juggernauts start out, but as each dies, they enrage the remaining ones significantly and drop powerful debuff traps around their death area to deter Hunters from approaching the dropped loot.",
+      "allowed_paths": [
+        "src/ai/trio_juggernaut_chaos.py",
+        "src/ai/trio_juggernaut_chaos.gd",
+        "tests/test_trio_juggernaut_chaos.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2274",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Clan Emissary Shop Rotation",
+      "description": "Rotate the clan emissary shop items every week to encourage regular participation.",
+      "allowed_paths": [
+        "src/ai/clan_emissary_shop_rotation.py",
+        "src/ai/clan_emissary_shop_rotation.gd",
+        "tests/test_clan_emissary_shop_rotation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2275",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounce Pad Arena",
+      "description": "The arena walls are replaced with extreme bounce pads, causing balls to reflect at twice their normal speed, creating a pinball machine effect.",
+      "allowed_paths": [
+        "src/arena/bounce_pad_arena.py",
+        "src/arena/bounce_pad_arena.gd",
+        "tests/test_bounce_pad_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2276",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Pets Expansion - Evolving Pets",
+      "description": "Introduce a system where guild pets evolve into stronger variants based on how many times they are fed, providing greater luck boosts and unique cosmetic effects to the HQ.",
+      "allowed_paths": [
+        "src/ui/guild_pets_expansion_evolving_pets.py",
+        "src/ui/guild_pets_expansion_evolving_pets.gd",
+        "src/ai/guild_pets_expansion_evolving_pets.py",
+        "tests/test_guild_pets_expansion_evolving_pets.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2277",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Amplifier Mutator",
+      "description": "A game mode where balls slowly lose movement speed over time, but colliding with walls or other balls significantly boosts their speed for a short duration, forcing constant interaction to maintain momentum.",
+      "allowed_paths": [
+        "src/ai/kinetic_amplifier_mutator.py",
+        "src/ai/kinetic_amplifier_mutator.gd",
+        "tests/test_kinetic_amplifier_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2278",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Seasonal Boss Raids",
+      "description": "Introduce seasonal world bosses that roam across different game modes dynamically, requiring players to track them down across various arenas over the season to collect rare crafting materials.",
+      "allowed_paths": [
+        "src/ai/seasonal_boss_raids.py",
+        "src/ai/seasonal_boss_raids.gd",
+        "tests/test_seasonal_boss_raids.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2279",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones with Multi-Biome Properties",
+      "description": "Introduce safe zones in Battle Royale that change their biome properties as they shrink (e.g., from 'Forest' which boosts stealth, to 'Volcanic' which gradually decreases HP but buffs attack).",
+      "allowed_paths": [
+        "src/ai/shrinking_safe_zones_with_multi_biome_properties.py",
+        "src/ai/shrinking_safe_zones_with_multi_biome_properties.gd",
+        "tests/test_shrinking_safe_zones_with_multi_biome_properties.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2280",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Guild Headquarters - Mini-Game Machine",
+      "description": "Allow guilds to purchase mini-game machines for their HQ where players can wager small amounts of gold for a chance to win guild XP or exclusive cosmetics.",
+      "allowed_paths": [
+        "src/ui/guild_headquarters_mini_game_machine.py",
+        "src/ui/guild_headquarters_mini_game_machine.gd",
+        "src/ai/guild_headquarters_mini_game_machine.py",
+        "tests/test_guild_headquarters_mini_game_machine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2281",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Hovercraft Mode",
+      "description": "Friction is doubled, making balls barely move unless they use dash abilities, forcing a slower, more deliberate game pace.",
+      "allowed_paths": [
+        "src/ai/reverse_hovercraft.py",
+        "src/ai/reverse_hovercraft.gd",
+        "tests/test_reverse_hovercraft.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

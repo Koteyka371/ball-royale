@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1537] Leech Seed Trap — *2026-07-26 21:40:20 UTC*
+
+A new trap type that acts as a leech seed, attaching to the first ball that passes over it and slowly draining their HP while transferring the health to the ball that deployed the trap.
+
+---
+
 ## [idea-1529] Shrinking Modifiers Battle Royale — *2026-07-26 20:27:05 UTC*
 
 A battle royale mode where random modifiers (like double speed or zero gravity) trigger every 60 seconds, forcing players to adapt dynamically.
