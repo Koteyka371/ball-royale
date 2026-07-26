@@ -4,6 +4,8 @@ var world
 var excitement_level = 0.0
 var corruptibility_level = 0.5
 var max_excitement = 100.0
+var crowd_mood = 0
+var max_crowd_mood = 3
 var team_alive_counts = {}
 var last_kill_tick = 0
 var kill_streak = {}
@@ -1143,13 +1145,18 @@ func _process_spectator_signs(balls: Array, current_tick: int):
         })
 
 func _start_vote(balls: Array):
-    var vote_types = [
-        {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
-        {"type": "player_buff", "options": ["speed", "damage", "shield"]},
-        {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
-        {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
-    ]
-    var chosen_vote = vote_types[randi() % vote_types.size()]
+    var chosen_vote = {}
+    if crowd_mood >= max_crowd_mood:
+        chosen_vote = {"type": "mega_buff", "options": ["legendary_speed", "legendary_damage", "legendary_shield"]}
+        crowd_mood = 0
+    else:
+        var vote_types = [
+            {"type": "spawn_hazard", "options": ["lava_pit", "spike_trap", "poison_cloud"]},
+            {"type": "player_buff", "options": ["speed", "damage", "shield"]},
+            {"type": "global_stat_modifier", "options": ["global_speed_up", "global_damage_up", "global_shield_up"]},
+            {"type": "global_hazard_zone", "options": ["low_gravity", "slippery_ice", "magnetic_field"]}
+        ]
+        chosen_vote = vote_types[randi() % vote_types.size()]
 
     active_vote = {
         "type": chosen_vote["type"],
@@ -1224,6 +1231,7 @@ func _resolve_vote(balls: Array):
             t_y = float(target.get("y", 0.0))
 
         if vote_type == "spawn_hazard":
+            crowd_mood = max(0, crowd_mood - 1)
             if world != null and world.has_method("add_event"):
                 world.add_event("spawn_hazard", {
                     "x": t_x,
@@ -1239,10 +1247,24 @@ func _resolve_vote(balls: Array):
                     "value": 50.0
                 })
         elif vote_type == "global_stat_modifier":
+            crowd_mood = min(max_crowd_mood, crowd_mood + 1)
             active_global_modifier = winning_option
             global_modifier_timer = 1800
             if world != null and world.has_method("add_event"):
                 world.add_event("crowd_cheer", {"message": "The crowd activated a " + winning_option + " for 30 seconds!", "volume": 1.2})
+        elif vote_type == "mega_buff":
+            active_global_modifier = winning_option
+            global_modifier_timer = 900  # 15 seconds at 60 ticks/sec
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "MEGA VOTE SUCCESS! " + winning_option + " unleashed!", "volume": 2.0})
+                world.add_event("audio_event", {"sound": "mega_cheer", "volume": 2.0})
+                for b in alive_balls:
+                    var b_id = -1
+                    if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                        b_id = b.get("id") if b.get("id") != null else -1
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b_id = b.get("id", -1)
+                    world.add_event("visual_effect", {"type": "fireworks", "target_id": b_id})
         elif vote_type == "global_hazard_zone":
             if world != null and world.has_method("add_event"):
                 var cx = 500.0
@@ -1462,4 +1484,31 @@ func _process_global_modifier(balls: Array, current_tick: int):
                     elif typeof(b) == TYPE_DICTIONARY:
                         var cur_s = b.get("shield", 0.0)
                         b["shield"] = min(50.0, cur_s + 0.1)
+                        b["crowd_global_shield"] = true
+                elif active_global_modifier == "legendary_speed":
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        var base_s = b.get("base_speed") if b.get("base_speed") != null else (b.get("speed") if b.get("speed") != null else 100.0)
+                        b.set("speed", base_s * 3.0)
+                        b.set_meta("crowd_global_speed", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        var base_s = b.get("base_speed", b.get("speed", 100.0))
+                        b["speed"] = base_s * 3.0
+                        b["crowd_global_speed"] = true
+                elif active_global_modifier == "legendary_damage":
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        var base_d = b.get("base_damage") if b.get("base_damage") != null else (b.get("damage") if b.get("damage") != null else 10.0)
+                        b.set("damage", base_d * 3.0)
+                        b.set_meta("crowd_global_damage", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        var base_d = b.get("base_damage", b.get("damage", 10.0))
+                        b["damage"] = base_d * 3.0
+                        b["crowd_global_damage"] = true
+                elif active_global_modifier == "legendary_shield":
+                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                        var cur_s = b.get("shield") if b.get("shield") != null else 0.0
+                        b.set("shield", min(150.0, cur_s + 3.0))
+                        b.set_meta("crowd_global_shield", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        var cur_s = b.get("shield", 0.0)
+                        b["shield"] = min(150.0, cur_s + 3.0)
                         b["crowd_global_shield"] = true
