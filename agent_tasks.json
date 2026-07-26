@@ -38678,6 +38678,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2263",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Temporal Rift Trap",
+      "description": "A stationary trap that, when triggered by an enemy, applies a debuff that slows down their skill cooldowns by 50% for 5 seconds.",
+      "allowed_paths": [
+        "src/arena/temporal_rift_trap.py",
+        "src/arena/temporal_rift_trap.gd",
+        "tests/test_temporal_rift_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
