@@ -49592,6 +49592,142 @@ class VampiricMutatorMode extends GameMode:
 						if world.has_method("add_event"):
 							world.add_event("death", {"id": b.get("id"), "reason": "vampiric_drain"})
 
+
+class StickyCeilingsMutatorMode extends GameMode:
+	var mutators = ["sticky_ceilings"]
+	var sticky_areas = []
+	var setup_done = false
+
+	func _init() -> void:
+		name = "Sticky Ceilings Mutator"
+		description = "During reverse gravity events, certain areas of the ceiling become extremely sticky, slowing down any ball that gets stuck to them and requiring a dash or explosive knockback to break free."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if not "arena" in world or world.arena == null:
+			return
+
+		var arena_w = 800
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if world.arena.has("width"): arena_w = world.arena["width"]
+		else:
+			if "width" in world.arena: arena_w = world.arena.width
+
+		var num_areas = (randi() % 4) + 3 # 3 to 6
+		for i in range(num_areas):
+			var x = randf_range(50.0, float(arena_w) - 50.0)
+			var radius = randf_range(40.0, 100.0)
+			sticky_areas.append({"x": x, "radius": radius})
+		setup_done = true
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not setup_done:
+			setup(world, balls)
+
+		var is_reverse_gravity = false
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("game_mode") and typeof(world["game_mode"]) == TYPE_OBJECT and world["game_mode"].name == "Reverse Gravity Event":
+				is_reverse_gravity = world["game_mode"].event_active
+			if world.has("gravity_reversal_active") and world["gravity_reversal_active"]:
+				is_reverse_gravity = true
+		else:
+			if "game_mode" in world and world.game_mode != null and world.game_mode.name == "Reverse Gravity Event":
+				is_reverse_gravity = world.game_mode.event_active
+			if "gravity_reversal_active" in world and world.gravity_reversal_active:
+				is_reverse_gravity = true
+
+		if not is_reverse_gravity:
+			return
+
+		var current_tick = 0.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("tick_timer"): current_tick = world["tick_timer"]
+		else:
+			if "tick_timer" in world: current_tick = world.tick_timer
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("alive"): is_alive = b["alive"]
+			elif "alive" in b:
+				is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+				is_alive = b.get_meta("alive")
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("ball_type"): b_type = b["ball_type"]
+			elif "ball_type" in b:
+				b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ball_type"):
+				b_type = b.get_meta("ball_type")
+
+			if not is_alive or str(b_type).to_lower() == "spectator":
+				continue
+
+			var b_y = 0.0
+			var b_x = 0.0
+			var b_vx = 0.0
+			var b_vy = 0.0
+			var b_id = null
+			var b_skill_timer = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("y"): b_y = float(b["y"])
+				if b.has("x"): b_x = float(b["x"])
+				if b.has("vx"): b_vx = float(b["vx"])
+				if b.has("vy"): b_vy = float(b["vy"])
+				if b.has("id"): b_id = b["id"]
+				if b.has("skill_timer"): b_skill_timer = float(b["skill_timer"])
+			else:
+				if "y" in b: b_y = float(b.y)
+				if "x" in b: b_x = float(b.x)
+				if "vx" in b: b_vx = float(b.vx)
+				if "vy" in b: b_vy = float(b.vy)
+				if "id" in b: b_id = b.id
+				if "skill_timer" in b: b_skill_timer = float(b.skill_timer)
+
+			if b_y < 50.0:
+				var is_stuck = false
+				for area in sticky_areas:
+					if abs(b_x - area["x"]) < area["radius"]:
+						is_stuck = true
+						break
+
+				if is_stuck:
+					var speed_sq = (b_vx * b_vx) + (b_vy * b_vy)
+					var is_dashing = b_skill_timer > 0.0
+
+					if not is_dashing and speed_sq < 600000.0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = b_vx * 0.1
+							b["vy"] = b_vy * 0.1
+						else:
+							b.vx = b_vx * 0.1
+							b.vy = b_vy * 0.1
+
+						var last_stuck = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							if b.has("last_stuck_event_time"): last_stuck = float(b["last_stuck_event_time"])
+							if last_stuck + 1.0 < current_tick:
+								b["last_stuck_event_time"] = current_tick
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("visual_effect", {"type": "stuck_in_glue", "target": b_id})
+						elif typeof(b) == TYPE_OBJECT:
+							if b.has_meta("last_stuck_event_time"): last_stuck = float(b.get_meta("last_stuck_event_time"))
+							elif "last_stuck_event_time" in b: last_stuck = float(b.last_stuck_event_time)
+
+							if last_stuck + 1.0 < current_tick:
+								if b.has_method("set_meta"):
+									b.set_meta("last_stuck_event_time", current_tick)
+								elif "last_stuck_event_time" in b:
+									b.last_stuck_event_time = current_tick
+
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("visual_effect", {"type": "stuck_in_glue", "target": b_id})
+
 var GAME_MODES = {
 	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
@@ -49806,6 +49942,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"heavy_rain_mutator": HeavyRainMode.new(),
 
 	"sticky_arena": StickyArenaMode.new(),
+	"sticky_ceilings_mutator": StickyCeilingsMutatorMode.new(),
 	"falling_panels": FallingPanelsMode.new(),
 	"decreasing_safe_zones": DecreasingSafeZonesMode.new(),
 	"multiple_safe_zones": MultipleSafeZonesMode.new(),
