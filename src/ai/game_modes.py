@@ -4685,6 +4685,8 @@ class GuildBossFightMode(GameMode):
         self.guild_manager = guild_manager
         self.week_id = week_id
         self.tier = tier
+        self.minion_spawn_timer = 0.0
+        self.minion_spawn_interval = 10.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
@@ -4853,10 +4855,49 @@ class GuildBossFightMode(GameMode):
             return
 
         # Track damage taken and heal boss
+        damage_taken = 0.0
         if boss.hp < boss.max_hp:
             damage_taken = boss.max_hp - boss.hp
             boss.total_damage_taken += damage_taken
             boss.hp = boss.max_hp
+
+            # Tier 2+: Reflect 10% of damage taken
+            if getattr(self, "tier", 1) >= 2 and damage_taken > 0:
+                reflected_damage = damage_taken * 0.1
+                for b in balls:
+                    if getattr(b, "id", None) != self.boss_id and getattr(b, "alive", False) and getattr(b, "team", "") == "Hunters":
+                        b.hp = getattr(b, "hp", 100.0) - reflected_damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+
+        # Tier 3+: Spawn minions
+        if getattr(self, "tier", 1) >= 3:
+            self.minion_spawn_timer += delta
+            if self.minion_spawn_timer >= self.minion_spawn_interval:
+                self.minion_spawn_timer = 0.0
+                if hasattr(world, "balls"):
+                    # Spawn a minion
+                    class BossMinion:
+                        pass
+                    minion = BossMinion()
+                    minion.id = len(world.balls) + 1000 # Random id logic
+                    minion.x = boss.x + (100.0 if boss.x < 500 else -100.0)
+                    minion.y = boss.y + (100.0 if boss.y < 500 else -100.0)
+                    minion.vx = 0.0
+                    minion.vy = 0.0
+                    minion.max_hp = 50.0
+                    minion.hp = 50.0
+                    minion.damage = getattr(boss, "damage", 10.0) * 0.2
+                    minion.speed = getattr(boss, "speed", 100.0)
+                    minion.radius = 15.0
+                    minion.mass = 1.0
+                    minion.team = "Boss"
+                    minion.ball_type = "minion"
+                    minion.alive = True
+
+                    world.balls.append(minion)
+                    balls.append(minion)
 
         # Unique mechanic: pull hunters in
         for b in balls:

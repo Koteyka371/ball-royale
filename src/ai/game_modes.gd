@@ -7418,7 +7418,8 @@ class GuildBossFightMode extends GameMode:
 	var guild_name = null
 	var guild_manager = null
 	var week_id = "week_1"
-
+	var minion_spawn_timer = 0.0
+	var minion_spawn_interval = 10.0
 	var tier = 1
 
 	func _init(p_guild_name = null, p_guild_manager = null, p_week_id = "week_1", p_tier = 1) -> void:
@@ -7686,11 +7687,68 @@ class GuildBossFightMode extends GameMode:
 		if boss == null:
 			return
 
+		var damage_taken = 0.0
 		if "hp" in boss and "max_hp" in boss and boss.hp < boss.max_hp:
-			var damage_taken = boss.max_hp - boss.hp
+			damage_taken = boss.max_hp - boss.hp
 			var total_dmg = boss.get_meta("total_damage_taken")
 			boss.set_meta("total_damage_taken", total_dmg + damage_taken)
 			boss.hp = boss.max_hp
+
+			if tier >= 2 and damage_taken > 0:
+				var reflected_damage = damage_taken * 0.1
+				for bb in balls:
+					var bb_id = bb.get("id") if typeof(bb) == TYPE_DICTIONARY else (bb.id if "id" in bb else bb.get_meta("id", null))
+					var bb_alive = bb.get("alive", false) if typeof(bb) == TYPE_DICTIONARY else (bb.alive if "alive" in bb else false)
+					var bb_team = bb.get("team", "") if typeof(bb) == TYPE_DICTIONARY else (bb.team if "team" in bb else "")
+					if bb_id != boss_id and bb_alive and bb_team == "Hunters":
+						if typeof(bb) == TYPE_DICTIONARY:
+							bb["hp"] = bb.get("hp", 100.0) - reflected_damage
+							if bb["hp"] <= 0:
+								bb["hp"] = 0
+								bb["alive"] = false
+						else:
+							var cur_hp = bb.hp if "hp" in bb else bb.get_meta("hp", 100.0)
+							var new_hp = cur_hp - reflected_damage
+							if new_hp <= 0:
+								new_hp = 0
+								if "alive" in bb:
+									bb.alive = false
+							if "hp" in bb:
+								bb.hp = new_hp
+							elif bb.has_method("set_meta"):
+								bb.set_meta("hp", new_hp)
+
+		if tier >= 3:
+			minion_spawn_timer += delta
+			if minion_spawn_timer >= minion_spawn_interval:
+				minion_spawn_timer = 0.0
+				if world != null and (typeof(world) == TYPE_DICTIONARY and world.has("balls") or (typeof(world) != TYPE_DICTIONARY and "balls" in world)):
+					var boss_x = boss.get("x", 0.0) if typeof(boss) == TYPE_DICTIONARY else (boss.x if "x" in boss else 0.0)
+					var boss_y = boss.get("y", 0.0) if typeof(boss) == TYPE_DICTIONARY else (boss.y if "y" in boss else 0.0)
+					var boss_dmg = boss.get("damage", 10.0) if typeof(boss) == TYPE_DICTIONARY else (boss.damage if "damage" in boss else 10.0)
+					var boss_speed = boss.get("speed", 100.0) if typeof(boss) == TYPE_DICTIONARY else (boss.speed if "speed" in boss else 100.0)
+
+					var minion = {
+						"id": str(boss_id) + "_minion_" + str(randi() % 10000),
+						"x": boss_x + (100.0 if boss_x < 500 else -100.0),
+						"y": boss_y + (100.0 if boss_y < 500 else -100.0),
+						"vx": 0.0,
+						"vy": 0.0,
+						"hp": 50.0,
+						"max_hp": 50.0,
+						"damage": boss_dmg * 0.2,
+						"speed": boss_speed,
+						"radius": 15.0,
+						"mass": 1.0,
+						"team": "Boss",
+						"ball_type": "minion",
+						"alive": true
+					}
+					if typeof(world) == TYPE_DICTIONARY:
+						world["balls"].append(minion)
+					else:
+						world.balls.append(minion)
+					balls.append(minion)
 
 		for b in balls:
 			var current_id = null
