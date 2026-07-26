@@ -49214,7 +49214,48 @@ class ExponentialControlPointMode extends GameMode:
 							var cur_dmg = b.get("damage_multiplier") if b.get("damage_multiplier") != null else 1.0
 							b.set_meta("damage_multiplier", cur_dmg * multiplier_buff)
 
+class VampiricMutatorMode extends GameMode:
+	var health_drain_rate: float = 5.0
+	var lifesteal_bonus: float = 2.0
+
+	func _init().():
+		name = "Vampiric Mutator"
+		description = "All balls passively lose health over time, but gain a massive lifesteal boost. It forces aggressive gameplay as hiding will result in death."
+
+	func setup(world, balls):
+		.setup(world, balls)
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false):
+					b["lifesteal"] = b.get("lifesteal", 0.0) + lifesteal_bonus
+			else:
+				if b.get("alive"):
+					b.set("lifesteal", b.get("lifesteal", 0.0) + lifesteal_bonus)
+
+	func tick(world, balls, delta: float = 0.016):
+		var drain_amount = health_drain_rate * delta
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false):
+					var current_hp = b.get("hp", 100.0) - drain_amount
+					b["hp"] = current_hp
+					if current_hp <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+						if world.has_method("add_event"):
+							world.add_event("death", {"id": b.get("id"), "reason": "vampiric_drain"})
+			else:
+				if b.get("alive"):
+					var current_hp = b.get("hp", 100.0) - drain_amount
+					b.set("hp", current_hp)
+					if current_hp <= 0:
+						b.set("hp", 0)
+						b.set("alive", false)
+						if world.has_method("add_event"):
+							world.add_event("death", {"id": b.get("id"), "reason": "vampiric_drain"})
+
 var GAME_MODES = {
+	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
