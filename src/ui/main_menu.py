@@ -1,6 +1,7 @@
 from ui.prestige_shop.prestige_shop import PrestigeShop
 from ui.nemesis_screen.nemesis_screen import NemesisScreen
 from ui.guild_emblem_editor.guild_emblem_editor import GuildEmblemEditor
+from ui.clan_emissary_quests import ClanEmissary
 from system.profile import ProfileManager
 from system.leaderboard import LeaderboardManager
 
@@ -9,6 +10,7 @@ class MainMenu:
         self.profile_manager = ProfileManager("profile.json")
         self.leaderboard_manager = LeaderboardManager("leaderboard.json", profile_manager=self.profile_manager)
         self.prestige_shop = PrestigeShop(self.profile_manager)
+        self.clan_emissary = ClanEmissary(self.profile_manager)
         self.active_screen = "main"
 
         season = self.leaderboard_manager.data.get("current_season", 1)
@@ -83,6 +85,10 @@ class MainMenu:
         self.active_screen = "prestige_shop"
         return self.prestige_shop.render_ui()
 
+    def open_clan_emissary(self):
+        self.active_screen = "clan_emissary"
+        return self.clan_emissary.render_ui()
+
     def process_input(self, action, *args):
 
         if self.active_screen == "weekend_vote":
@@ -138,6 +144,16 @@ class MainMenu:
                 upgrade_name = args[0]
                 success = self.prestige_shop.buy_upgrade(upgrade_name)
                 return success
+            elif action == "back":
+                self.active_screen = "main"
+                return True
+        if self.active_screen == "clan_emissary":
+            if action == "complete_quest" and args:
+                quest_id = args[0]
+                return self.clan_emissary.complete_quest(quest_id)
+            elif action == "buy_item" and args:
+                item_id = args[0]
+                return self.clan_emissary.buy_item(item_id)
             elif action == "back":
                 self.active_screen = "main"
                 return True
