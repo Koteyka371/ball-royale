@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1524] Quantum Relic Modifier — *2026-07-26 22:52:10 UTC*
+
+A rare relic that causes the player to occasionally 'blink' a short distance in the direction they are moving, briefly becoming intangible, but lowering their max HP temporarily while held.
+
+---
+
 ## [idea-1555] Tag Team Arena — *2026-07-26 22:41:00 UTC*
 
 Players can swap places with a partner at will but share a cooldown on the ability.

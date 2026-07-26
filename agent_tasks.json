@@ -26096,7 +26096,7 @@
     },
     {
       "id": "idea-1524",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Relic Modifier",
@@ -39084,6 +39084,91 @@
         "src/ai/eclipse.py",
         "src/ai/eclipse.gd",
         "tests/test_eclipse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2287",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Possession Swap Mode",
+      "description": "Players can temporarily possess their enemies, swapping bodies and abilities for a short duration. Hitting the possessed body deals damage to the original owner.",
+      "allowed_paths": [
+        "src/ai/possession_swap.py",
+        "src/ai/possession_swap.gd",
+        "tests/test_possession_swap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2288",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Projectiles",
+      "description": "A new mutator where all projectile attacks fired by balls inherit the Super Bouncy Arena rules, bouncing off walls multiple times with increased speed instead of being destroyed.",
+      "allowed_paths": [
+        "src/ai/bouncy_projectiles.py",
+        "src/ai/bouncy_projectiles.gd",
+        "tests/test_bouncy_projectiles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2289",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Super Bouncy Modifier Combo",
+      "description": "Combine the new Super Bouncy Arena with a low friction mutator to create a chaotic air hockey style gameplay mode where balls never stop moving and bounce infinitely.",
+      "allowed_paths": [
+        "src/ai/super_bouncy_combo.py",
+        "src/ai/super_bouncy_combo.gd",
+        "tests/test_super_bouncy_combo.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2290",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Boots Powerup",
+      "description": "A temporary powerup that allows a player to ignore reverse gravity events and walk normally on the floor while it is active, or use walls and ceilings at will by clinging to them.",
+      "allowed_paths": [
+        "src/ai/magnetic_boots_powerup.py",
+        "src/ai/magnetic_boots_powerup.gd",
+        "tests/test_magnetic_boots_powerup.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2291",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Double Dash Arena",
+      "description": "An arena mode where two players are tethered together by an elastic energy beam. Moving further apart stretches the beam, and they can 'snap' together to launch one of them at high speeds.",
+      "allowed_paths": [
+        "src/arena/double_dash_arena.py",
+        "src/arena/double_dash_arena.gd",
+        "tests/test_double_dash_arena.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
