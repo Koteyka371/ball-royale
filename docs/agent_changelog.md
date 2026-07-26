@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1522] Shrinking Safe Zone Mod — *2026-07-26 07:29:42 UTC*
+
+A game mode where the safe area continuously shrinks over time, forcing players into closer proximity and increasing the frequency of encounters.
+
+---
+
 ## [idea-1504] Shifting Gravity Fields — *2026-07-26 07:06:36 UTC*
 
 A mode where gravity periodically shifts in random directions.

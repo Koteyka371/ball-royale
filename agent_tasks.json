@@ -26062,7 +26062,7 @@
     },
     {
       "id": "idea-1522",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zone Mod",
@@ -38452,6 +38452,74 @@
         "src/ui/guild_pets_roaming_hq.gd",
         "src/ai/guild_pets_roaming_hq.py",
         "tests/test_guild_pets_roaming_hq.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2250",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bounty Flags in Capture Zones",
+      "description": "Flags that drop periodically and mark the carrier with a bounty. Capturing them grants extra points but alerts everyone.",
+      "allowed_paths": [
+        "src/ai/bounty_flags_in_capture_zones.py",
+        "src/ai/bounty_flags_in_capture_zones.gd",
+        "tests/test_bounty_flags_in_capture_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2251",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Black Hole Core Arena",
+      "description": "An arena with a massive, stationary black hole in the exact center. Its gravitational pull intensifies as the match progresses, forcing players to constantly fight the pull while dodging each other. Skills like anchors or dashes become crucial for survival.",
+      "allowed_paths": [
+        "src/arena/black_hole_core_arena.py",
+        "src/arena/black_hole_core_arena.gd",
+        "tests/test_black_hole_core_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2252",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Repulsion Walls Modifier",
+      "description": "The arena walls are highly magnetized to repel the balls instead of bouncing them. As players get closer to the walls, they are pushed back with increasing force, effectively shrinking the playable area organically without actually moving the physical boundaries.",
+      "allowed_paths": [
+        "src/ai/repulsion_walls.py",
+        "src/ai/repulsion_walls.gd",
+        "tests/test_repulsion_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2253",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mobile Capture Zones",
+      "description": "Capture zones that slowly drift around the arena, forcing teams to move dynamically to hold them.",
+      "allowed_paths": [
+        "src/ai/mobile_capture_zones.py",
+        "src/ai/mobile_capture_zones.gd",
+        "tests/test_mobile_capture_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
