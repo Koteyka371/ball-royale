@@ -62650,3 +62650,5 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 						b.set("vy", b.get("vy") + pull_y)
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode.new()
+
+GAME_MODES['guild_wars_base_building'] = load("res://src/ai/guild_wars_base_building.gd").new()

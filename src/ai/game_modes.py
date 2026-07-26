@@ -30804,6 +30804,7 @@ class VampiricMutatorMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("death", {"id": getattr(b, "id", None), "reason": "vampiric_drain"})
 
+from ai.guild_wars_base_building import GuildWarsBaseBuildingMode
 GAME_MODES = {
     'vampiric_mutator': VampiricMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
@@ -40336,3 +40337,5 @@ class StationaryBlackHoleMutatorMode(GameMode):
                     b.vy += (dy / dist) * self.pull_strength * delta
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
+
+GAME_MODES['guild_wars_base_building'] = GuildWarsBaseBuildingMode()
