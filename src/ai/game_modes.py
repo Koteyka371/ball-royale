@@ -40698,3 +40698,5 @@ class StationaryBlackHoleMutatorMode(GameMode):
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
 GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
+from ai.neon_lightcycles import NeonLightcyclesMode
+GAME_MODES["neon_lightcycles"] = NeonLightcyclesMode()
