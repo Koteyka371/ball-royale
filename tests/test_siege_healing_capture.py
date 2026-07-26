@@ -35,7 +35,7 @@ def test_attacker_captures_healing_spring():
     action = Action(b, world)
 
     # 5 iterations of 1s delta = 5 seconds. 20 progress per sec = 100
-    for i in range(5):
+    for i in range(15):
         action.execute(strategy={}, delta=1.0)
 
     assert getattr(world.arena.hazards[0], 'capture_progress', 0.0) >= 0.0
