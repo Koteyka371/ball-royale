@@ -25040,7 +25040,7 @@
     },
     {
       "id": "idea-1462",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Diplomacy/Alliance System",
@@ -37786,6 +37786,57 @@
         "src/ai/meteor_shower_defense.py",
         "src/ai/meteor_shower_defense.gd",
         "tests/test_meteor_shower_defense.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2211",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Mines",
+      "description": "Mines that start large and visible, but shrink over time until they become nearly invisible, rewarding careful observation.",
+      "allowed_paths": [
+        "src/ai/shrinking_mines.py",
+        "src/ai/shrinking_mines.gd",
+        "tests/test_shrinking_mines.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2212",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Teleporting Supply Drops",
+      "description": "Supply drops that teleport periodically if no one picks them up within a certain timeframe.",
+      "allowed_paths": [
+        "src/ai/teleporting_supply_drops.py",
+        "src/ai/teleporting_supply_drops.gd",
+        "tests/test_teleporting_supply_drops.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2213",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Starlight Guardian Boss",
+      "description": "A powerful world boss event where a glowing entity spawns in the center of the arena. It attacks with sweeping light beams, but players who deal enough damage to it are granted a 'Starlight Blessing' that heals them continuously and blinds nearby enemies.",
+      "allowed_paths": [
+        "src/ai/starlight_guardian_boss.py",
+        "src/ai/starlight_guardian_boss.gd",
+        "tests/test_starlight_guardian_boss.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
