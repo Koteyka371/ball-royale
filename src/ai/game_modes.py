@@ -30529,6 +30529,71 @@ class ReverseTimePenaltyMode(GameMode):
 
 
 
+
+class ExponentialControlPointMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Exponential Control Point"
+        self.description = "A single control point grants increasing global buffs to the controlling player's faction, but they take exponentially more damage the longer they hold it."
+        self.control_point = {"x": 500, "y": 500, "radius": 150, "owner": None, "capture_progress": 0.0}
+        self.hold_time = 0.0
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        # Update control point logic
+        occupants = []
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 20.0)
+            dx = bx - self.control_point["x"]
+            dy = by - self.control_point["y"]
+            if dx*dx + dy*dy <= (self.control_point["radius"] + br)**2:
+                occupants.append(b)
+
+        if not occupants:
+            if self.control_point["capture_progress"] > 0 and self.control_point["owner"] is None:
+                self.control_point["capture_progress"] = max(0.0, self.control_point["capture_progress"] - delta * 10.0)
+        else:
+            first_occupant_team = getattr(occupants[0], "team", getattr(occupants[0], "ball_type", "unknown"))
+            same_team = all(getattr(b, "team", getattr(b, "ball_type", "unknown")) == first_occupant_team for b in occupants)
+
+            if same_team:
+                if self.control_point["owner"] != first_occupant_team:
+                    if self.control_point["owner"] is not None:
+                        # Contested by another team
+                        self.control_point["capture_progress"] -= delta * 10.0
+                        if self.control_point["capture_progress"] <= 0:
+                            self.control_point["owner"] = None
+                            self.control_point["capture_progress"] = 0
+                            self.hold_time = 0.0
+                    else:
+                        self.control_point["capture_progress"] += delta * 10.0
+                        if self.control_point["capture_progress"] >= 100.0:
+                            self.control_point["capture_progress"] = 100.0
+                            self.control_point["owner"] = first_occupant_team
+                            self.hold_time = 0.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("zone_captured", {"team": first_occupant_team})
+            else:
+                # Contested by multiple teams
+                pass
+
+        # Apply effects
+        if self.control_point["owner"] is not None:
+            self.hold_time += delta
+            exponential_damage = (1.5 ** self.hold_time) * delta
+            multiplier_buff = 1.0 + (0.1 * self.hold_time)
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    b_team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                    if b_team == self.control_point["owner"]:
+                        b.hp -= exponential_damage
+                        b.speed_multiplier = getattr(b, "speed_multiplier", 1.0) * multiplier_buff
+                        b.damage_multiplier = getattr(b, "damage_multiplier", 1.0) * multiplier_buff
+
 GAME_MODES = {
     'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
@@ -39984,3 +40049,5 @@ GAME_MODES['bouncy_portals'] = BouncyPortalsMode()
 
 from ai.shared_health_pool import SharedHealthPoolMode
 GAME_MODES['shared_health_pool'] = SharedHealthPoolMode()
+
+GAME_MODES['exponential_control_point'] = ExponentialControlPointMode()

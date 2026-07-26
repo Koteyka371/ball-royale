@@ -49110,6 +49110,93 @@ class ReverseTimePenaltyMode extends GameMode:
 
 
 
+
+class ExponentialControlPointMode extends GameMode:
+	var control_point: Dictionary = {"x": 500.0, "y": 500.0, "radius": 150.0, "owner": null, "capture_progress": 0.0}
+	var hold_time: float = 0.0
+
+	func _init() -> void:
+		name = "Exponential Control Point"
+		description = "A single control point grants increasing global buffs to the controlling player's faction, but they take exponentially more damage the longer they hold it."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		var occupants = []
+		for b in balls:
+			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else false)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if b.get("ball_type") != null else "")
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.get("x") if b.get("x") != null else 0.0)
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.get("y") if b.get("y") != null else 0.0)
+			var br = b.get("radius") if typeof(b) == TYPE_DICTIONARY else (b.get("radius") if b.get("radius") != null else 20.0)
+
+			var dx = bx - control_point["x"]
+			var dy = by - control_point["y"]
+			if dx*dx + dy*dy <= (control_point["radius"] + br)*(control_point["radius"] + br):
+				occupants.append(b)
+
+		if occupants.size() == 0:
+			if control_point["capture_progress"] > 0 and control_point["owner"] == null:
+				control_point["capture_progress"] = max(0.0, control_point["capture_progress"] - delta * 10.0)
+		else:
+			var first = occupants[0]
+			var first_b_type = first.get("ball_type") if typeof(first) == TYPE_DICTIONARY else (first.get("ball_type") if first.get("ball_type") != null else "unknown")
+			var first_team = first.get("team") if typeof(first) == TYPE_DICTIONARY else (first.get("team") if first.get("team") != null else first_b_type)
+
+			var same_team = true
+			for b in occupants:
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if b.get("ball_type") != null else "unknown")
+				var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else (b.get("team") if b.get("team") != null else b_type)
+				if b_team != first_team:
+					same_team = false
+					break
+
+			if same_team:
+				if control_point["owner"] != first_team:
+					if control_point["owner"] != null:
+						control_point["capture_progress"] -= delta * 10.0
+						if control_point["capture_progress"] <= 0:
+							control_point["owner"] = null
+							control_point["capture_progress"] = 0
+							hold_time = 0.0
+					else:
+						control_point["capture_progress"] += delta * 10.0
+						if control_point["capture_progress"] >= 100.0:
+							control_point["capture_progress"] = 100.0
+							control_point["owner"] = first_team
+							hold_time = 0.0
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("zone_captured", {"team": first_team})
+							elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world["events"].append({"type": "zone_captured", "data": {"team": first_team}})
+
+		if control_point["owner"] != null:
+			hold_time += delta
+			var exponential_damage = pow(1.5, hold_time) * delta
+			var multiplier_buff = 1.0 + (0.1 * hold_time)
+
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else false)
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if b.get("ball_type") != null else "")
+				if is_alive and b_type != "spectator":
+					var b_team = b.get("team") if typeof(b) == TYPE_DICTIONARY else (b.get("team") if b.get("team") != null else b_type)
+
+					if b_team == control_point["owner"]:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] -= exponential_damage
+							b["speed_multiplier"] = b.get("speed_multiplier", 1.0) * multiplier_buff
+							b["damage_multiplier"] = b.get("damage_multiplier", 1.0) * multiplier_buff
+						else:
+							var cur_hp = b.get("hp") if b.get("hp") != null else 100.0
+							b.set_meta("hp", cur_hp - exponential_damage)
+
+							var cur_speed = b.get("speed_multiplier") if b.get("speed_multiplier") != null else 1.0
+							b.set_meta("speed_multiplier", cur_speed * multiplier_buff)
+
+							var cur_dmg = b.get("damage_multiplier") if b.get("damage_multiplier") != null else 1.0
+							b.set_meta("damage_multiplier", cur_dmg * multiplier_buff)
+
 var GAME_MODES = {
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
@@ -62100,3 +62187,5 @@ GAME_MODES['bouncy_portals'] = BouncyPortalsModeClass.new()
 
 const SharedHealthPoolModeClass = preload("res://src/ai/shared_health_pool.gd")
 GAME_MODES['shared_health_pool'] = SharedHealthPoolModeClass.new()
+
+GAME_MODES['exponential_control_point'] = ExponentialControlPointMode.new()
