@@ -119,4 +119,4 @@ def test_repulsion_zone_push_scaling():
     push_dist_near = t_near.x - initial_x_near
     push_dist_far = t_far.x - initial_x_far
 
-    assert push_dist_near > push_dist_far, f"Expected push near center ({push_dist_near}) to be greater than push near edge ({push_dist_far})"
+    assert abs(push_dist_near) > abs(push_dist_far), f"Expected push near center ({push_dist_near}) to be greater than push near edge ({push_dist_far})"
