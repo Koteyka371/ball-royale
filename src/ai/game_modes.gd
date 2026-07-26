@@ -62005,3 +62005,6 @@ class GravityInversionMode extends GameMode:
 GAME_MODES['gravity_inversion'] = GravityInversionMode.new()
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode.new()
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()
+
+const BouncyPortalsModeClass = preload("res://src/ai/bouncy_portals.gd")
+GAME_MODES['bouncy_portals'] = BouncyPortalsModeClass.new()

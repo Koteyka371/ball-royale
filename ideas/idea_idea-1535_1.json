@@ -1,0 +1,4 @@
+{
+  "title": "Bouncy Projectile Modifiers",
+  "description": "Introduces new projectiles and powerups that bounce off walls up to a maximum number of times before detonating. Similar physics as bouncy portals but applied directly to active skills."
+}

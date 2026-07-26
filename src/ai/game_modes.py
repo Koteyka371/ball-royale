@@ -39933,3 +39933,6 @@ GAME_MODES['capture_the_flag_elements_in_battle_royale'] = CaptureTheFlagElement
 
 from ai.ghost_companion import GhostCompanionMode
 GAME_MODES['ghost_companion'] = GhostCompanionMode()
+
+from ai.bouncy_portals import BouncyPortalsMode
+GAME_MODES['bouncy_portals'] = BouncyPortalsMode()
