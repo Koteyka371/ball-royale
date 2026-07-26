@@ -18727,8 +18727,8 @@ class Action:
                         setattr(fb, "vy", ny * 350.0)
                         setattr(fb, "duration", 3.0)
                         setattr(fb, "owner_id", getattr(self.ball, "id", None))
+                        setattr(fb, "is_ricochet_laser", True)
                         if getattr(self.ball, "pinball_projectile_timer", 0.0) > 0:
-                            setattr(fb, "is_ricochet_laser", True)
                             setattr(fb, "bounces_left", 5)
                         else:
                             setattr(fb, "bounces_left", 1)
