@@ -24188,7 +24188,7 @@
     },
     {
       "id": "idea-1412",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sniper Nest Spotter Drone",
@@ -37957,6 +37957,40 @@
         "src/ai/sabotage_vote.py",
         "src/ai/sabotage_vote.gd",
         "tests/test_sabotage_vote.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2221",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Corrupted Audience Mode",
+      "description": "A game mode where the crowd's corruptibility level naturally scales faster, making bribes cheaper over time, but increasing the severity and frequency of negative global modifiers cast by the crowd.",
+      "allowed_paths": [
+        "src/ai/corrupted_audience.py",
+        "src/ai/corrupted_audience.gd",
+        "tests/test_corrupted_audience.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2222",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bribe Resistance Trait",
+      "description": "Players can equip a 'Bribe Resistance' trait that increases the cost of any bribe attempts directed at skewing the vote against them, giving them a tactical advantage in crowd-manipulated environments.",
+      "allowed_paths": [
+        "src/ai/bribe_resistance_trait.py",
+        "src/ai/bribe_resistance_trait.gd",
+        "tests/test_bribe_resistance_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

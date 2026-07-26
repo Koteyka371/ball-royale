@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1412] Sniper Nest Spotter Drone — *2026-07-26 01:06:18 UTC*
+
+Balls in a sniper nest could periodically release a tiny spotter drone that orbits the nest, revealing the location of any enemies in an even larger radius to the sniper. The drone can be destroyed by enemies to deny vision.
+
+---
+
 ## [idea-1521] Bribe the Crowd — *2026-07-26 01:02:25 UTC*
 
 Players can use collected currency or sacrifice a portion of their max HP to bribe the crowd and artificially skew the vote towards a particular outcome, such as forcing a global heal if they are currently low on health.
