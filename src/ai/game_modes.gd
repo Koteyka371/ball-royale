@@ -48408,7 +48408,219 @@ class ExpandingHazardBubblesMode extends GameMode:
 		bubbles = active_bubbles
 
 
+class HighSpeedReflectiveBarriersMode extends GameMode:
+	var barrier_timer: float = 0.0
+
+	func _init():
+		super()
+		name = "High Speed Reflective Barriers"
+		description = "Barriers spawn in the arena that reflect projectiles and players at high speeds."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			arena_width = world.arena.width if "width" in world.arena else 1000.0
+			arena_height = world.arena.height if "height" in world.arena else 1000.0
+
+		var arena_has_hazards = false
+		var arena_ref = null
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				arena_has_hazards = true
+				arena_ref = world.arena
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_has_hazards = true
+				arena_ref = world.arena
+
+		if arena_has_hazards:
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			for i in range(3):
+				var hx = rng.randf_range(200.0, arena_width - 200.0)
+				var hy = rng.randf_range(200.0, arena_height - 200.0)
+				var hazard = {
+					"id": "reflect_barrier_" + str(i),
+					"x": hx,
+					"y": hy,
+					"radius": 40.0,
+					"kind": "high_speed_reflect_barrier",
+					"damage": 0.0,
+					"active": true
+				}
+				if typeof(arena_ref.hazards) == TYPE_ARRAY:
+					arena_ref.hazards.append(hazard)
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		var entities = []
+		for b in balls:
+			entities.append(b)
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("projectiles"):
+			if typeof(world.projectiles) == TYPE_ARRAY:
+				for p in world.projectiles:
+					entities.append(p)
+		elif typeof(world) == TYPE_OBJECT and "projectiles" in world:
+			if typeof(world.projectiles) == TYPE_ARRAY:
+				for p in world.projectiles:
+					entities.append(p)
+
+		var barriers = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				for h in world.arena.hazards:
+					var k = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): k = h.kind
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: k = h.kind
+					if k == "high_speed_reflect_barrier":
+						barriers.append(h)
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var k = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): k = h.kind
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: k = h.kind
+					if k == "high_speed_reflect_barrier":
+						barriers.append(h)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				for h in world.arena.hazards:
+					var k = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): k = h.kind
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: k = h.kind
+					if k == "high_speed_reflect_barrier":
+						barriers.append(h)
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var k = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("kind"): k = h.kind
+					elif typeof(h) == TYPE_OBJECT and "kind" in h: k = h.kind
+					if k == "high_speed_reflect_barrier":
+						barriers.append(h)
+
+		for entity in entities:
+			var alive = true
+			if typeof(entity) == TYPE_DICTIONARY and entity.has("alive"): alive = entity.alive
+			elif typeof(entity) == TYPE_OBJECT and "alive" in entity: alive = entity.alive
+
+			var hp = 1.0
+			if typeof(entity) == TYPE_DICTIONARY and entity.has("hp"): hp = entity.hp
+			elif typeof(entity) == TYPE_OBJECT and "hp" in entity: hp = entity.hp
+
+			var is_proj = false
+			if typeof(entity) == TYPE_DICTIONARY and entity.has("is_projectile"): is_proj = entity.is_projectile
+			elif typeof(entity) == TYPE_OBJECT and "is_projectile" in entity: is_proj = entity.is_projectile
+
+			if not alive and not (hp > 0 and is_proj):
+				continue
+
+			var has_cd = false
+			var cd_val = 0.0
+			if typeof(entity) == TYPE_DICTIONARY and entity.has("reflect_barrier_cooldown"):
+				has_cd = true
+				cd_val = entity.reflect_barrier_cooldown
+			elif typeof(entity) == TYPE_OBJECT and "reflect_barrier_cooldown" in entity:
+				has_cd = true
+				cd_val = entity.reflect_barrier_cooldown
+
+			if has_cd and cd_val > 0:
+				var new_cd = cd_val - delta
+				if typeof(entity) == TYPE_DICTIONARY:
+					if new_cd <= 0:
+						entity.erase("reflect_barrier_cooldown")
+					else:
+						entity.reflect_barrier_cooldown = new_cd
+				elif typeof(entity) == TYPE_OBJECT:
+					if new_cd <= 0:
+						if entity.has_method("remove_meta"):
+							entity.remove_meta("reflect_barrier_cooldown")
+					else:
+						entity.reflect_barrier_cooldown = new_cd
+				continue
+
+			for barrier in barriers:
+				var bx = 0.0
+				var by = 0.0
+				var br = 40.0
+				if typeof(barrier) == TYPE_DICTIONARY:
+					if barrier.has("x"): bx = barrier.x
+					if barrier.has("y"): by = barrier.y
+					if barrier.has("radius"): br = barrier.radius
+				elif typeof(barrier) == TYPE_OBJECT:
+					if "x" in barrier: bx = barrier.x
+					if "y" in barrier: by = barrier.y
+					if "radius" in barrier: br = barrier.radius
+
+				var ex = 0.0
+				var ey = 0.0
+				var er = 10.0
+				if typeof(entity) == TYPE_DICTIONARY:
+					if entity.has("x"): ex = entity.x
+					if entity.has("y"): ey = entity.y
+					if entity.has("radius"): er = entity.radius
+				elif typeof(entity) == TYPE_OBJECT:
+					if "x" in entity: ex = entity.x
+					if "y" in entity: ey = entity.y
+					if "radius" in entity: er = entity.radius
+
+				var dx = ex - bx
+				var dy = ey - by
+				var dist_sq = dx * dx + dy * dy
+				var min_dist = br + er
+
+				if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
+					var dist = sqrt(dist_sq)
+					var nx = dx / dist
+					var ny = dy / dist
+
+					var vx = 0.0
+					var vy = 0.0
+					if typeof(entity) == TYPE_DICTIONARY:
+						if entity.has("vx"): vx = entity.vx
+						if entity.has("vy"): vy = entity.vy
+					elif typeof(entity) == TYPE_OBJECT:
+						if "vx" in entity: vx = entity.vx
+						if "vy" in entity: vy = entity.vy
+
+					var dot = vx * nx + vy * ny
+					if dot < 0:
+						var new_vx = (vx - 2 * dot * nx) * 1.5
+						var new_vy = (vy - 2 * dot * ny) * 1.5
+
+						var overlap = min_dist - dist
+						var new_x = ex + nx * overlap
+						var new_y = ey + ny * overlap
+
+						if typeof(entity) == TYPE_DICTIONARY:
+							entity.vx = new_vx
+							entity.vy = new_vy
+							entity.x = new_x
+							entity.y = new_y
+							entity.reflect_barrier_cooldown = 0.5
+						elif typeof(entity) == TYPE_OBJECT:
+							if "vx" in entity: entity.vx = new_vx
+							else: entity.set_meta("vx", new_vx)
+							if "vy" in entity: entity.vy = new_vy
+							else: entity.set_meta("vy", new_vy)
+							if "x" in entity: entity.x = new_x
+							else: entity.set_meta("x", new_x)
+							if "y" in entity: entity.y = new_y
+							else: entity.set_meta("y", new_y)
+							entity.set_meta("reflect_barrier_cooldown", 0.5)
+
+
 var GAME_MODES = {
+	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),
 	"capture_zones": CaptureZonesMode.new(),
 	"nemesis_sustain": NemesisSustainMode.new(),

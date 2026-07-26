@@ -30093,7 +30093,95 @@ class ExpandingHazardBubblesMode(GameMode):
         self.bubbles = active_bubbles
 
 
+class HighSpeedReflectiveBarriersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "High Speed Reflective Barriers"
+        self.description = "Barriers spawn in the arena that reflect projectiles and players at high speeds."
+        self.barrier_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            import random
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+            for i in range(3):
+                hx = random.uniform(200, arena_width - 200)
+                hy = random.uniform(200, arena_height - 200)
+                hazard = hazard_class(f"reflect_barrier_{i}", hx, hy, 40.0, "high_speed_reflect_barrier", 0.0)
+                world.arena.hazards.append(hazard)
+
+    def apply_dynamic_traits(self, world, balls, delta=0.016):
+        import math
+
+        entities = list(balls)
+        if hasattr(world, "projectiles"):
+            entities.extend(world.projectiles)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            barriers = [h for h in world.arena.hazards if getattr(h, "kind", "") == "high_speed_reflect_barrier"]
+
+            for entity in entities:
+                if not getattr(entity, "alive", True) and not (getattr(entity, "hp", 1.0) > 0 and getattr(entity, "is_projectile", False)):
+                    continue
+
+                if hasattr(entity, "reflect_barrier_cooldown") and entity.reflect_barrier_cooldown > 0:
+                    entity.reflect_barrier_cooldown -= delta
+                    if entity.reflect_barrier_cooldown <= 0:
+                        delattr(entity, "reflect_barrier_cooldown")
+                    continue
+
+                for barrier in barriers:
+                    bx = getattr(barrier, "x", 0.0)
+                    by = getattr(barrier, "y", 0.0)
+                    br = getattr(barrier, "radius", 40.0)
+
+                    dx = entity.x - bx
+                    dy = entity.y - by
+                    dist_sq = dx * dx + dy * dy
+
+                    er = getattr(entity, "radius", 10.0)
+                    min_dist = br + er
+
+                    if dist_sq < min_dist * min_dist and dist_sq > 0.0001:
+                        dist = math.sqrt(dist_sq)
+                        nx = dx / dist
+                        ny = dy / dist
+
+                        vx = getattr(entity, "vx", 0.0)
+                        vy = getattr(entity, "vy", 0.0)
+
+                        dot = vx * nx + vy * ny
+                        if dot < 0:
+                            # Reflect velocity and increase speed
+                            new_vx = (vx - 2 * dot * nx) * 1.5
+                            new_vy = (vy - 2 * dot * ny) * 1.5
+
+                            entity.vx = new_vx
+                            entity.vy = new_vy
+
+                            # Update positions slightly to avoid getting stuck
+                            overlap = min_dist - dist
+                            entity.x += nx * overlap
+                            entity.y += ny * overlap
+
+                            entity.reflect_barrier_cooldown = 0.5
+
+
 GAME_MODES = {
+    "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
     'capture_zones': CaptureZonesMode(),
     "nemesis_sustain": NemesisSustainMode(),
