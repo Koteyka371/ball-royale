@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1531] Ghost Companion — *2026-07-26 07:45:03 UTC*
+
+Eliminated players spawn as ghosts that can attach to living players, applying small buffs or debuffs.
+
+---
+
 ## [idea-1532] Sticky Mine — *2026-07-26 07:44:57 UTC*
 
 A deployable hazard that sticks to the first ball that approaches it, ticking down before exploding. Passing close to another ball transfers the mine.
