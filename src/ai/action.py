@@ -12612,6 +12612,42 @@ class Action:
                         if not hasattr(target, "memory"):
                             target.memory = {}
                         target.memory[self.ball.id] = {"relation": "rival"}
+
+                        # Echo Strike Passive Logic
+                        has_echo_strike = False
+                        if hasattr(self.ball, 'has_passive') and self.ball.has_passive('echo_strike'):
+                            has_echo_strike = True
+                        elif getattr(self.ball, 'skill', '') == 'echo_strike_passive' or getattr(self.ball, 'passive', '') == 'echo_strike_passive':
+                            has_echo_strike = True
+
+                        if has_echo_strike:
+                            attack_count = getattr(self.ball, 'echo_strike_count', 0) + 1
+                            self.ball.echo_strike_count = attack_count
+                            if attack_count >= 3:
+                                self.ball.echo_strike_count = 0
+                                echo_radius = 50.0
+                                base_dmg = getattr(self.ball, 'damage', 10.0)
+                                echo_dmg = base_dmg * 0.5
+
+                                if hasattr(self, '_get_enemies'):
+                                    enemies = self._get_enemies()
+                                else:
+                                    enemies = [b for b in getattr(self.world, 'balls', []) if getattr(b, 'team', -1) != getattr(self.ball, 'team', -1)]
+
+                                for enemy in enemies:
+                                    if enemy.id != target.id and getattr(enemy, 'alive', True):
+                                        dx = enemy.x - target.x
+                                        dy = enemy.y - target.y
+                                        if (dx * dx + dy * dy) <= echo_radius * echo_radius:
+                                            if hasattr(self.world, '_deal_damage'):
+                                                class DummyEchoAttacker:
+                                                    def __init__(self, owner, dmg):
+                                                        self.owner = owner
+                                                        self.damage = dmg
+                                                        self.team = getattr(owner, 'team', -1)
+                                                dummy = DummyEchoAttacker(self.ball, echo_dmg)
+                                                self.world._deal_damage(dummy, enemy)
+
                 speed = getattr(self.ball, "speed", 2.0)
                 cooldown = max(0.2, 2.0 / speed if speed > 0 else 1.0)
                 self.ball.attack_timer = cooldown
@@ -12770,6 +12806,42 @@ class Action:
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
 
+                            # Echo Strike Passive Logic
+                            has_echo_strike = False
+                            if hasattr(self.ball, 'has_passive') and self.ball.has_passive('echo_strike'):
+                                has_echo_strike = True
+                            elif getattr(self.ball, 'skill', '') == 'echo_strike_passive' or getattr(self.ball, 'passive', '') == 'echo_strike_passive':
+                                has_echo_strike = True
+
+                            if has_echo_strike:
+                                attack_count = getattr(self.ball, 'echo_strike_count', 0) + 1
+                                self.ball.echo_strike_count = attack_count
+                                if attack_count >= 3:
+                                    self.ball.echo_strike_count = 0
+                                    echo_radius = 50.0
+                                    base_dmg = getattr(self.ball, 'damage', 10.0)
+                                    echo_dmg = base_dmg * 0.5
+
+                                    if hasattr(self, '_get_enemies'):
+                                        enemies = self._get_enemies()
+                                    else:
+                                        enemies = [b for b in getattr(self.world, 'balls', []) if getattr(b, 'team', -1) != getattr(self.ball, 'team', -1)]
+
+                                    for enemy in enemies:
+                                        if enemy.id != target.id and getattr(enemy, 'alive', True):
+                                            dx = enemy.x - target.x
+                                            dy = enemy.y - target.y
+                                            if (dx * dx + dy * dy) <= echo_radius * echo_radius:
+                                                if hasattr(self.world, '_deal_damage'):
+                                                    class DummyEchoAttacker:
+                                                        def __init__(self, owner, dmg):
+                                                            self.owner = owner
+                                                            self.damage = dmg
+                                                            self.team = getattr(owner, 'team', -1)
+                                                    dummy = DummyEchoAttacker(self.ball, echo_dmg)
+                                                    self.world._deal_damage(dummy, enemy)
+
+
                     # Restore damage
                     if is_critical:
                         self.ball.damage = original_damage
@@ -12888,6 +12960,42 @@ class Action:
                             target_mem = getattr(target, "memory", {})
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
+
+                            # Echo Strike Passive Logic
+                            has_echo_strike = False
+                            if hasattr(self.ball, 'has_passive') and self.ball.has_passive('echo_strike'):
+                                has_echo_strike = True
+                            elif getattr(self.ball, 'skill', '') == 'echo_strike_passive' or getattr(self.ball, 'passive', '') == 'echo_strike_passive':
+                                has_echo_strike = True
+
+                            if has_echo_strike:
+                                attack_count = getattr(self.ball, 'echo_strike_count', 0) + 1
+                                self.ball.echo_strike_count = attack_count
+                                if attack_count >= 3:
+                                    self.ball.echo_strike_count = 0
+                                    echo_radius = 50.0
+                                    base_dmg = getattr(self.ball, 'damage', 10.0)
+                                    echo_dmg = base_dmg * 0.5
+
+                                    if hasattr(self, '_get_enemies'):
+                                        enemies = self._get_enemies()
+                                    else:
+                                        enemies = [b for b in getattr(self.world, 'balls', []) if getattr(b, 'team', -1) != getattr(self.ball, 'team', -1)]
+
+                                    for enemy in enemies:
+                                        if enemy.id != target.id and getattr(enemy, 'alive', True):
+                                            dx = enemy.x - target.x
+                                            dy = enemy.y - target.y
+                                            if (dx * dx + dy * dy) <= echo_radius * echo_radius:
+                                                if hasattr(self.world, '_deal_damage'):
+                                                    class DummyEchoAttacker:
+                                                        def __init__(self, owner, dmg):
+                                                            self.owner = owner
+                                                            self.damage = dmg
+                                                            self.team = getattr(owner, 'team', -1)
+                                                    dummy = DummyEchoAttacker(self.ball, echo_dmg)
+                                                    self.world._deal_damage(dummy, enemy)
+
                         speed_val = getattr(self.ball, "speed", 2.0)
                         self.ball.attack_timer = max(0.2, 2.0 / speed_val if speed_val > 0 else 1.0)
                         if self.ball.attack_timer >= 0.8:
@@ -13097,6 +13205,42 @@ class Action:
                             target_mem = getattr(target, "memory", {})
                             target_mem[self.ball.id] = {"relation": "rival"}
                             target.memory = target_mem
+
+                            # Echo Strike Passive Logic
+                            has_echo_strike = False
+                            if hasattr(self.ball, 'has_passive') and self.ball.has_passive('echo_strike'):
+                                has_echo_strike = True
+                            elif getattr(self.ball, 'skill', '') == 'echo_strike_passive' or getattr(self.ball, 'passive', '') == 'echo_strike_passive':
+                                has_echo_strike = True
+
+                            if has_echo_strike:
+                                attack_count = getattr(self.ball, 'echo_strike_count', 0) + 1
+                                self.ball.echo_strike_count = attack_count
+                                if attack_count >= 3:
+                                    self.ball.echo_strike_count = 0
+                                    echo_radius = 50.0
+                                    base_dmg = getattr(self.ball, 'damage', 10.0)
+                                    echo_dmg = base_dmg * 0.5
+
+                                    if hasattr(self, '_get_enemies'):
+                                        enemies = self._get_enemies()
+                                    else:
+                                        enemies = [b for b in getattr(self.world, 'balls', []) if getattr(b, 'team', -1) != getattr(self.ball, 'team', -1)]
+
+                                    for enemy in enemies:
+                                        if enemy.id != target.id and getattr(enemy, 'alive', True):
+                                            dx = enemy.x - target.x
+                                            dy = enemy.y - target.y
+                                            if (dx * dx + dy * dy) <= echo_radius * echo_radius:
+                                                if hasattr(self.world, '_deal_damage'):
+                                                    class DummyEchoAttacker:
+                                                        def __init__(self, owner, dmg):
+                                                            self.owner = owner
+                                                            self.damage = dmg
+                                                            self.team = getattr(owner, 'team', -1)
+                                                    dummy = DummyEchoAttacker(self.ball, echo_dmg)
+                                                    self.world._deal_damage(dummy, enemy)
+
 
                     if b_type == "ninja":
                         self.ball.damage = original_damage
