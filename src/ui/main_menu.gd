@@ -6,6 +6,7 @@ var leaderboard_manager: LeaderboardManager
 var prestige_shop_ui: PrestigeShop
 var nemesis_screen_ui: NemesisScreen
 var guild_emblem_editor_ui: GuildEmblemEditor
+var clan_emissary_ui: ClanEmissary
 
 var active_screen: String = "main"
 var weekend_options: Array = ["10x_speed", "invisible_enemies", "lava_floor"]
@@ -43,6 +44,10 @@ func _ready():
     add_child(guild_emblem_editor_ui)
     guild_emblem_editor_ui.visible = false
 
+    clan_emissary_ui = ClanEmissary.new(profile_manager)
+    add_child(clan_emissary_ui)
+    clan_emissary_ui.visible = false
+
     var open_emblem_btn = Button.new()
     open_emblem_btn.text = "Open Emblem Editor"
     open_emblem_btn.pressed.connect(self._on_open_emblem_pressed)
@@ -64,6 +69,11 @@ func _ready():
     open_vote_btn.text = "Weekend Event Vote"
     open_vote_btn.pressed.connect(self._on_open_vote_pressed)
     add_child(open_vote_btn)
+
+    var open_emissary_btn = Button.new()
+    open_emissary_btn.text = "Open Clan Emissary"
+    open_emissary_btn.pressed.connect(self._on_open_emissary_pressed)
+    add_child(open_emissary_btn)
 
 
 func _get_theme_color(theme: String) -> Color:
@@ -120,6 +130,17 @@ func process_replay_input(action: String, args: Array = []):
     return false
 
 
+func _on_open_emissary_pressed():
+    active_screen = "clan_emissary"
+    prestige_shop_ui.visible = false
+    if nemesis_screen_ui != null:
+        nemesis_screen_ui.visible = false
+    if guild_emblem_editor_ui != null:
+        guild_emblem_editor_ui.visible = false
+    if clan_emissary_ui != null:
+        clan_emissary_ui.visible = true
+        clan_emissary_ui._refresh_ui()
+
 func _on_open_emblem_pressed():
     active_screen = "guild_emblem_editor"
     prestige_shop_ui.visible = false
@@ -128,6 +149,8 @@ func _on_open_emblem_pressed():
     if guild_emblem_editor_ui != null:
         guild_emblem_editor_ui.visible = true
         guild_emblem_editor_ui._refresh_ui()
+    if clan_emissary_ui != null:
+        clan_emissary_ui.visible = false
 
 func _on_open_nemesis_pressed():
     active_screen = "nemesis"
@@ -135,6 +158,8 @@ func _on_open_nemesis_pressed():
     nemesis_screen_ui.visible = true
     if guild_emblem_editor_ui != null:
         guild_emblem_editor_ui.visible = false
+    if clan_emissary_ui != null:
+        clan_emissary_ui.visible = false
     nemesis_screen_ui._refresh_ui()
 
 func _on_open_vote_pressed():
@@ -144,6 +169,8 @@ func _on_open_vote_pressed():
         nemesis_screen_ui.visible = false
     if guild_emblem_editor_ui != null:
         guild_emblem_editor_ui.visible = false
+    if clan_emissary_ui != null:
+        clan_emissary_ui.visible = false
 
 func cast_weekend_vote(mode: String) -> bool:
     if weekend_options.has(mode):
@@ -172,6 +199,8 @@ func _on_open_shop_pressed():
     nemesis_screen_ui.visible = false
     if guild_emblem_editor_ui != null:
         guild_emblem_editor_ui.visible = false
+    if clan_emissary_ui != null:
+        clan_emissary_ui.visible = false
     prestige_shop_ui.visible = true
     prestige_shop_ui._refresh_ui()
 
@@ -182,3 +211,5 @@ func close_shop():
         nemesis_screen_ui.visible = false
     if guild_emblem_editor_ui != null:
         guild_emblem_editor_ui.visible = false
+    if clan_emissary_ui != null:
+        clan_emissary_ui.visible = false
