@@ -7837,6 +7837,21 @@ class GuildBossFightMode extends GameMode:
 						boss.set_meta("damage_reflection_active", true)
 						boss.set_meta("damage_reflection_multiplier", 0.1)
 
+			if tier >= 4:
+				if typeof(boss) == TYPE_DICTIONARY:
+					boss["damage_reflection_multiplier"] = 0.2
+					boss["radius"] = boss.get("radius", 10.0) * 1.5
+				else:
+					if "damage_reflection_multiplier" in boss: boss.damage_reflection_multiplier = 0.2
+					elif boss.has_method("set_meta"): boss.set_meta("damage_reflection_multiplier", 0.2)
+					if "radius" in boss: boss.radius *= 1.5
+			if tier >= 5:
+				if typeof(boss) == TYPE_DICTIONARY:
+					boss["damage_reflection_multiplier"] = 0.3
+				else:
+					if "damage_reflection_multiplier" in boss: boss.damage_reflection_multiplier = 0.3
+					elif boss.has_method("set_meta"): boss.set_meta("damage_reflection_multiplier", 0.3)
+
 			var elements = ["fire", "water", "earth", "electric", "ice", "wind"]
 			var ctx = HashingContext.new()
 			ctx.start(HashingContext.HASH_MD5)
@@ -7905,6 +7920,16 @@ class GuildBossFightMode extends GameMode:
 					"vy": randf_range(-50, 50)
 				}
 				balls.append(minion)
+
+		if tier >= 4:
+			pull_radius = 500.0
+			pull_strength = 75.0
+			if tier >= 5:
+				pull_radius = 700.0
+				pull_strength = 100.0
+		else:
+			pull_radius = 300.0
+			pull_strength = 50.0
 
 		if "hp" in boss and "max_hp" in boss and boss.hp < boss.max_hp:
 			var damage_taken = boss.max_hp - boss.hp

@@ -580,6 +580,7 @@ class GameMode:
 
         # Check for emissary deaths to reward killer
         for b in world.dead_balls:
+            if isinstance(b, int) or isinstance(b, str): continue
             if not getattr(b, "emissary_bounty_claimed", False):
                 b.emissary_bounty_claimed = True
                 clan_manager = getattr(world, "clan_manager", None)
@@ -4966,6 +4967,12 @@ class GuildBossFightMode(GameMode):
             boss.damage_reflection_active = True
             boss.damage_reflection_multiplier = 0.1
 
+        if getattr(self, "tier", 1) >= 4:
+            boss.damage_reflection_multiplier = 0.2
+            boss.radius = getattr(boss, "radius", 10.0) * 1.5
+        if getattr(self, "tier", 1) >= 5:
+            boss.damage_reflection_multiplier = 0.3
+
         # Position boss in center
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -5031,6 +5038,16 @@ class GuildBossFightMode(GameMode):
                 minion.take_damage = types.MethodType(take_damage, minion)
 
                 balls.append(minion)
+
+        if getattr(self, "tier", 1) >= 4:
+            self.pull_radius = 500.0
+            self.pull_strength = 75.0
+            if getattr(self, "tier", 1) >= 5:
+                self.pull_radius = 700.0
+                self.pull_strength = 100.0
+        else:
+            self.pull_radius = 300.0
+            self.pull_strength = 50.0
 
         # Track damage taken and heal boss
         if boss.hp < boss.max_hp:
