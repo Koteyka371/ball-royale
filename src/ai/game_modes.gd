@@ -40346,6 +40346,11 @@ class ExtremeBouncinessMode extends GameMode:
 		name = "Extreme Bounciness"
 		description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging."
 
+class SuperBouncyArenaMode extends GameMode:
+	func _init() -> void:
+		name = "Super Bouncy Arena"
+		description = "The arena is super bouncy and balls bounce higher and further when hitting edges."
+
 class JumpPadBoundariesMode extends GameMode:
 	func _init() -> void:
 		name = "Jump Pad Boundaries"
@@ -49883,6 +49888,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"bouncy_terrain": BouncyTerrainMode.new(),
 	"chaotic_pinball_machine": ChaoticPinballMachineMode.new(),
 	"extreme_bounciness": ExtremeBouncinessMode.new(),
+	"super_bouncy_arena": SuperBouncyArenaMode.new(),
 	"jump_pad_boundaries": JumpPadBoundariesMode.new(),
 	"pinball": PinballMode.new(),
 	"portal_node": PortalNodeMode.new(),
