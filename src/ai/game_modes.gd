@@ -49011,7 +49011,19 @@ class RandomGravityShiftMode extends GameMode:
 				if h.has("vy"):
 					h["vy"] += gravity_strength * gravity_dir_y * mass * delta
 
+class ContinuousShrinkSafeZoneMode extends SafeZoneMode:
+	func _init() -> void:
+		super()
+		name = "Continuous Shrink Safe Zone"
+		description = "A game mode where the safe area continuously shrinks over time, forcing players into closer proximity and increasing the frequency of encounters."
+		shrink_rate = 15.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		shrink_pause_timer = 0.0
+		super.tick(world, balls, delta)
+
 var GAME_MODES = {
+	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"singularity_bomb_event": SingularityBombEventMode.new(),
 	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),

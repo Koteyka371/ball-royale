@@ -30474,7 +30474,19 @@ class RandomGravityShiftMode(GameMode):
                 if hasattr(h, 'vy'):
                     h.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
 
+class ContinuousShrinkSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Continuous Shrink Safe Zone"
+        self.description = "A game mode where the safe area continuously shrinks over time, forcing players into closer proximity and increasing the frequency of encounters."
+        self.shrink_rate = 15.0
+
+    def tick(self, world, balls, delta=0.016):
+        self.shrink_pause_timer = 0.0
+        super().tick(world, balls, delta)
+
 GAME_MODES = {
+    'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     "singularity_bomb_event": SingularityBombEventMode(),
