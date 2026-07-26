@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1510] Weaponized Paint — *2026-07-26 00:02:02 UTC*
+
+A mode where players shoot paint that stays on the floor, providing a movement speed boost to allies and a slow debuff to enemies traversing over it.
+
+---
+
 ## [idea-1517] Reverse Bubbles — *2026-07-25 23:58:14 UTC*
 
 The entire map is safe, but expanding hazard bubbles randomly spawn. Players must avoid the growing hazard zones.
