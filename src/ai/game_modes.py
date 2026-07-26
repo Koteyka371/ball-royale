@@ -39924,6 +39924,153 @@ class TelegraphedSupplyDropMode(GameMode):
 
         return None
 
+import math
+class ShrapnelMistMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrapnel Mist"
+        self.description = "A game mode where shrapnel hazards progressively split into smaller, faster projectiles over time, eventually dissolving into a fine mist that slightly obscures vision."
+        self.spawn_timer = 0.0
+
+    def tick(self, world, balls, delta: float = 0.016):
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= 10.0:
+            self.spawn_timer -= 10.0  # Keep remainder
+            try:
+                from arena.procedural_arena import Hazard
+                h = Hazard(id=f"shrapnel_{int(getattr(world, 'tick_timer', 0)*1000)}", x=500.0, y=500.0, radius=40.0, kind="shrapnel", damage=20.0)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                h = DummyHazard(f"shrapnel_{int(getattr(world, 'tick_timer', 0)*1000)}", 500.0, 500.0, 40.0, "shrapnel", 20.0)
+
+            setattr(h, "split_stage", 0)
+            setattr(h, "vx", 100.0)
+            setattr(h, "vy", 100.0)
+            setattr(h, "split_timer", 3.0)
+
+            world.arena.hazards.append(h)
+            # Prevent newly spawned hazard from being processed in the same tick
+            # Otherwise if delta is 10.0 it instantly decrements split_timer by 10.0
+            new_hazard_this_tick = h
+        else:
+            new_hazard_this_tick = None
+
+        new_hazards = []
+        hazards_to_remove = []
+
+        for h in world.arena.hazards:
+            if h == new_hazard_this_tick:
+                continue
+
+            if getattr(h, "kind", "") == "shrapnel_mist":
+                timer = getattr(h, "mist_timer", 0.0)
+                timer += delta
+                setattr(h, "mist_timer", timer)
+
+                # Apply vision debuff/tiny damage to nearby balls
+                for b in balls:
+                    if not getattr(b, "alive", True):
+                        continue
+                    dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
+                    if dist < getattr(h, "radius", 80.0):
+                        b.hp = getattr(b, "hp", 100) - (2.0 * delta)
+
+                if timer > 5.0:
+                    hazards_to_remove.append(h)
+                continue
+
+            if getattr(h, "kind", "") != "shrapnel":
+                continue
+
+            stage = getattr(h, "split_stage", 0)
+
+            timer = getattr(h, "split_timer", 3.0)
+            timer -= delta
+            setattr(h, "split_timer", timer)
+
+            # Move the shrapnel
+            h.x = getattr(h, "x", 0.0) + getattr(h, "vx", 0.0) * delta
+            h.y = getattr(h, "y", 0.0) + getattr(h, "vy", 0.0) * delta
+
+            # Deal damage on hit
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+                dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
+                if dist < getattr(h, "radius", 10.0) + getattr(b, "radius", 20.0):
+                    b.hp = getattr(b, "hp", 100) - getattr(h, "damage", 5.0)
+
+            if timer <= 0:
+                hazards_to_remove.append(h)
+                if stage < 2:
+                    # Split into smaller shrapnel
+                    num_splits = 3
+                    speed = math.hypot(getattr(h, "vx", 0.0), getattr(h, "vy", 0.0)) * 1.5
+                    base_angle = math.atan2(getattr(h, "vy", 0.0), getattr(h, "vx", 0.0))
+
+                    for i in range(num_splits):
+                        angle_offset = (i - 1) * (30.0 * math.pi / 180.0) # -30, 0, 30
+                        angle = base_angle + angle_offset
+                        new_vx = math.cos(angle) * speed
+                        new_vy = math.sin(angle) * speed
+
+                        try:
+                            from arena.procedural_arena import Hazard
+                            new_h = Hazard(id=f"{getattr(h, 'id', 'shrapnel')}_split_{i}", x=h.x, y=h.y, radius=h.radius * 0.7, kind="shrapnel", damage=h.damage * 0.7)
+                        except ImportError:
+                            class DummyHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+                            new_h = DummyHazard(f"{getattr(h, 'id', 'shrapnel')}_split_{i}", h.x, h.y, h.radius * 0.7, "shrapnel", h.damage * 0.7)
+
+                        setattr(new_h, "split_stage", stage + 1)
+                        setattr(new_h, "vx", new_vx)
+                        setattr(new_h, "vy", new_vy)
+                        setattr(new_h, "split_timer", 2.0)
+
+                        new_hazards.append(new_h)
+                else:
+                    # Stage 2 turns into mist
+                    try:
+                        from arena.procedural_arena import Hazard
+                        new_h = Hazard(id=f"{getattr(h, 'id', 'shrapnel')}_mist", x=h.x, y=h.y, radius=h.radius * 3.0, kind="shrapnel_mist", damage=0.0)
+                    except ImportError:
+                        class DummyHazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                        new_h = DummyHazard(f"{getattr(h, 'id', 'shrapnel')}_mist", h.x, h.y, h.radius * 3.0, "shrapnel_mist", 0.0)
+
+                    setattr(new_h, "mist_timer", 0.0)
+                    new_hazards.append(new_h)
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+        for h in new_hazards:
+            world.arena.hazards.append(h)
+
+GAME_MODES['shrapnel_mist'] = ShrapnelMistMode()
+
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode()
 
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode()

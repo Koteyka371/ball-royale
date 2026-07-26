@@ -62001,5 +62001,253 @@ class GravityInversionMode extends GameMode:
                         world.add_event("gravity_inversion", event_data)
 
 GAME_MODES['gravity_inversion'] = GravityInversionMode.new()
+
+class ShrapnelMistMode extends GameMode:
+
+    var spawn_timer: float = 0.0
+
+    func _init() -> void:
+        self.name = "Shrapnel Mist"
+        self.description = "A game mode where shrapnel hazards progressively split into smaller, faster projectiles over time, eventually dissolving into a fine mist that slightly obscures vision."
+
+    func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+        super.apply_dynamic_traits(world, balls, delta)
+
+        if world == null or typeof(world) != TYPE_OBJECT or not ("arena" in world) or world.arena == null or not ("hazards" in world.arena):
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+                pass # Dictionary format supported
+            else:
+                return
+
+        var hazards = []
+        var is_dict_world = typeof(world) == TYPE_DICTIONARY
+
+        if is_dict_world:
+            hazards = world.arena.hazards
+        else:
+            hazards = world.arena.hazards
+
+        self.spawn_timer += delta
+        var new_hazard_this_tick = null
+        if self.spawn_timer >= 10.0:
+            self.spawn_timer -= 10.0
+            var h = {}
+
+            var tick_timer = 0.0
+            if typeof(world) == TYPE_DICTIONARY and "tick_timer" in world:
+                tick_timer = world.tick_timer
+            elif typeof(world) == TYPE_OBJECT and "tick_timer" in world:
+                tick_timer = world.tick_timer
+
+            h["id"] = "shrapnel_" + str(int(tick_timer * 1000))
+            h["x"] = 500.0
+            h["y"] = 500.0
+            h["radius"] = 40.0
+            h["kind"] = "shrapnel"
+            h["damage"] = 20.0
+            h["split_stage"] = 0
+            h["vx"] = 100.0
+            h["vy"] = 100.0
+            h["split_timer"] = 3.0
+
+            hazards.append(h)
+            new_hazard_this_tick = h
+
+        var new_hazards = []
+        var hazards_to_remove = []
+
+        for h in hazards:
+            if h == new_hazard_this_tick:
+                continue
+
+            var kind = ""
+            if typeof(h) == TYPE_DICTIONARY and "kind" in h:
+                kind = h.kind
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"):
+                kind = h.get_meta("kind")
+
+            if kind == "shrapnel_mist":
+                var timer = 0.0
+                if typeof(h) == TYPE_DICTIONARY and "mist_timer" in h:
+                    timer = h.mist_timer
+                elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("mist_timer"):
+                    timer = h.get_meta("mist_timer")
+
+                timer += delta
+
+                if typeof(h) == TYPE_DICTIONARY:
+                    h.mist_timer = timer
+                elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+                    h.set_meta("mist_timer", timer)
+
+                var h_x = 0.0
+                if typeof(h) == TYPE_DICTIONARY and "x" in h: h_x = h.x
+                elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): h_x = h.get_meta("x")
+
+                var h_y = 0.0
+                if typeof(h) == TYPE_DICTIONARY and "y" in h: h_y = h.y
+                elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): h_y = h.get_meta("y")
+
+                var h_radius = 80.0
+                if typeof(h) == TYPE_DICTIONARY and "radius" in h: h_radius = h.radius
+                elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): h_radius = h.get_meta("radius")
+
+                for b in balls:
+                    var alive = false
+                    if typeof(b) == TYPE_DICTIONARY and "alive" in b: alive = b.alive
+                    elif typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+                    if not alive: continue
+
+                    var b_x = 0.0
+                    if typeof(b) == TYPE_DICTIONARY and "x" in b: b_x = b.x
+                    elif typeof(b) == TYPE_OBJECT and "x" in b: b_x = b.x
+                    var b_y = 0.0
+                    if typeof(b) == TYPE_DICTIONARY and "y" in b: b_y = b.y
+                    elif typeof(b) == TYPE_OBJECT and "y" in b: b_y = b.y
+
+                    var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+                    if dist < h_radius:
+                        if typeof(b) == TYPE_DICTIONARY and "hp" in b:
+                            b.hp -= 2.0 * delta
+                        elif typeof(b) == TYPE_OBJECT and "hp" in b:
+                            b.hp -= 2.0 * delta
+
+                if timer > 5.0:
+                    hazards_to_remove.append(h)
+                continue
+
+            if kind != "shrapnel":
+                continue
+
+            var stage = 0
+            if typeof(h) == TYPE_DICTIONARY and "split_stage" in h:
+                stage = h.split_stage
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("split_stage"):
+                stage = h.get_meta("split_stage")
+
+            var timer = 3.0
+            if typeof(h) == TYPE_DICTIONARY and "split_timer" in h:
+                timer = h.split_timer
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("split_timer"):
+                timer = h.get_meta("split_timer")
+
+            timer -= delta
+
+            if typeof(h) == TYPE_DICTIONARY:
+                h.split_timer = timer
+            elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+                h.set_meta("split_timer", timer)
+
+            var h_x = 0.0
+            if typeof(h) == TYPE_DICTIONARY and "x" in h: h_x = h.x
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("x"): h_x = h.get_meta("x")
+
+            var h_y = 0.0
+            if typeof(h) == TYPE_DICTIONARY and "y" in h: h_y = h.y
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("y"): h_y = h.get_meta("y")
+
+            var vx = 0.0
+            if typeof(h) == TYPE_DICTIONARY and "vx" in h: vx = h.vx
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("vx"): vx = h.get_meta("vx")
+
+            var vy = 0.0
+            if typeof(h) == TYPE_DICTIONARY and "vy" in h: vy = h.vy
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("vy"): vy = h.get_meta("vy")
+
+            h_x += vx * delta
+            h_y += vy * delta
+
+            if typeof(h) == TYPE_DICTIONARY:
+                h.x = h_x
+                h.y = h_y
+            elif typeof(h) == TYPE_OBJECT and h.has_method("set_meta"):
+                h.set_meta("x", h_x)
+                h.set_meta("y", h_y)
+
+            var h_radius = 10.0
+            if typeof(h) == TYPE_DICTIONARY and "radius" in h: h_radius = h.radius
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("radius"): h_radius = h.get_meta("radius")
+
+            var damage = 5.0
+            if typeof(h) == TYPE_DICTIONARY and "damage" in h: damage = h.damage
+            elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("damage"): damage = h.get_meta("damage")
+
+            for b in balls:
+                var alive = false
+                if typeof(b) == TYPE_DICTIONARY and "alive" in b: alive = b.alive
+                elif typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+                if not alive: continue
+
+                var b_x = 0.0
+                if typeof(b) == TYPE_DICTIONARY and "x" in b: b_x = b.x
+                elif typeof(b) == TYPE_OBJECT and "x" in b: b_x = b.x
+                var b_y = 0.0
+                if typeof(b) == TYPE_DICTIONARY and "y" in b: b_y = b.y
+                elif typeof(b) == TYPE_OBJECT and "y" in b: b_y = b.y
+                var b_radius = 20.0
+                if typeof(b) == TYPE_DICTIONARY and "radius" in b: b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+
+                var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+                if dist < h_radius + b_radius:
+                    if typeof(b) == TYPE_DICTIONARY and "hp" in b:
+                        b.hp -= damage
+                    elif typeof(b) == TYPE_OBJECT and "hp" in b:
+                        b.hp -= damage
+
+            if timer <= 0:
+                hazards_to_remove.append(h)
+                if stage < 2:
+                    var num_splits = 3
+                    var speed = sqrt(vx * vx + vy * vy) * 1.5
+                    var base_angle = atan2(vy, vx)
+
+                    for i in range(num_splits):
+                        var angle_offset = (i - 1) * (30.0 * PI / 180.0)
+                        var angle = base_angle + angle_offset
+                        var new_vx = cos(angle) * speed
+                        var new_vy = sin(angle) * speed
+
+                        var h_id = "shrapnel"
+                        if typeof(h) == TYPE_DICTIONARY and "id" in h: h_id = h.id
+                        elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("id"): h_id = h.get_meta("id")
+
+                        var new_h = {}
+                        new_h["id"] = str(h_id) + "_split_" + str(i)
+                        new_h["x"] = h_x
+                        new_h["y"] = h_y
+                        new_h["radius"] = h_radius * 0.7
+                        new_h["kind"] = "shrapnel"
+                        new_h["damage"] = damage * 0.7
+                        new_h["split_stage"] = stage + 1
+                        new_h["vx"] = new_vx
+                        new_h["vy"] = new_vy
+                        new_h["split_timer"] = 2.0
+
+                        new_hazards.append(new_h)
+                else:
+                    var h_id = "shrapnel"
+                    if typeof(h) == TYPE_DICTIONARY and "id" in h: h_id = h.id
+                    elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("id"): h_id = h.get_meta("id")
+
+                    var new_h = {}
+                    new_h["id"] = str(h_id) + "_mist"
+                    new_h["x"] = h_x
+                    new_h["y"] = h_y
+                    new_h["radius"] = h_radius * 3.0
+                    new_h["kind"] = "shrapnel_mist"
+                    new_h["damage"] = 0.0
+                    new_h["mist_timer"] = 0.0
+
+                    new_hazards.append(new_h)
+
+        for h in hazards_to_remove:
+            var idx = hazards.find(h)
+            if idx != -1:
+                hazards.remove_at(idx)
+        for h in new_hazards:
+            hazards.append(h)
+
+GAME_MODES['shrapnel_mist'] = ShrapnelMistMode.new()
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode.new()
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()
