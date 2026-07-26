@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1469] Decoy Distraction Hazard — *2026-07-26 04:55:28 UTC*
+
+A hazard zone that generates holographic decoys of nearby balls to distract enemy AI, making them attack holograms instead of real players.
+
+---
+
 ## [idea-1512] Airdrop Supply Packages — *2026-07-26 01:24:43 UTC*
 
 Periodically, high-value supply packages are dropped via parachute into the arena. They contain powerful one-time use items or strong temporary buffs, but their landing zone is telegraphed early, causing players to fight over the drop location.

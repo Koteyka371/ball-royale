@@ -25159,7 +25159,7 @@
     },
     {
       "id": "idea-1469",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Distraction Hazard",
@@ -38059,6 +38059,40 @@
         "src/ai/weapon_perks.py",
         "src/ai/weapon_perks.gd",
         "tests/test_weapon_perks.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2227",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Grapple Hook Relay",
+      "description": "A new mode where teams can only traverse gaps by stringing together grapple shots. Floating nodes scattered in the void can be grappled onto, but fall if pulled too much.",
+      "allowed_paths": [
+        "src/ai/grapple_hook_relay.py",
+        "src/ai/grapple_hook_relay.gd",
+        "tests/test_grapple_hook_relay.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2228",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Anomaly Drones",
+      "description": "Small drones periodically spawn in the arena and slowly alter the weather in an expanding radius around them. Destroying them drops a small burst of weather immunity for the team.",
+      "allowed_paths": [
+        "src/ai/anomaly_drones.py",
+        "src/ai/anomaly_drones.gd",
+        "tests/test_anomaly_drones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
