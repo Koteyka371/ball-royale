@@ -18263,8 +18263,17 @@ func execute(strategy: String, delta: float):
                                 var speed = 1000.0
                                 _set_prop(self.ball, "vx", cos(angle) * speed)
                                 _set_prop(self.ball, "vy", sin(angle) * speed)
+                            elif trap_variant == "leech_seed":
+                                var current_timer = self.ball.leech_seed_timer if "leech_seed_timer" in self.ball else (self.ball.get_meta("leech_seed_timer") if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("leech_seed_timer") else 0.0)
+                                _set_prop(self.ball, "leech_seed_timer", max(current_timer, 5.0))
+                                var attacker_id = hazard.get_meta("owner_id") if typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("has_meta") and hazard.has_meta("owner_id") else (hazard.owner_id if "owner_id" in hazard else -1)
+                                _set_prop(self.ball, "leech_seed_attacker_id", attacker_id)
+                                if typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "ricochet":
-                                if hazard.has_method("set_meta"):
+                                if typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0

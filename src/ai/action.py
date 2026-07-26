@@ -9274,6 +9274,10 @@ class Action:
                                     speed = 1000.0
                                     self.ball.vx = math.cos(angle) * speed
                                     self.ball.vy = math.sin(angle) * speed
+                                elif trap_variant == "leech_seed":
+                                    self.ball.leech_seed_timer = max(getattr(self.ball, "leech_seed_timer", 0.0), 5.0)
+                                    self.ball.leech_seed_attacker_id = getattr(hazard, "owner_id", None)
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "ricochet":
                                     hazard.duration = 0.0 # Destroy trap
 
