@@ -40541,3 +40541,78 @@ class StationaryBlackHoleMutatorMode(GameMode):
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
+
+
+
+class BlackHoleAnomalyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole Anomaly"
+        self.description = "Periodically, a massive gravity well appears that sucks in projecticles and items, changing weapon trajectories and creating a dangerous pull effect."
+        self.active = False
+        self.timer = 15.0
+        self.duration = 10.0
+        self.x = 500.0
+        self.y = 500.0
+        self.pull_strength = 200.0
+        self.radius = 400.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        if not self.active:
+            self.timer -= delta
+            if self.timer <= 0:
+                self.active = True
+                self.timer = 10.0
+
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                self.x = arena_width / 2.0
+                self.y = arena_height / 2.0
+
+                if hasattr(world, "add_event"):
+                    world.add_event("anomaly_start", {"message": "A Black Hole Anomaly appeared!"})
+        else:
+            self.timer -= delta
+            if self.timer <= 0:
+                self.active = False
+                self.timer = 15.0
+                if hasattr(world, "add_event"):
+                    world.add_event("anomaly_end", {"message": "The anomaly dissipated."})
+                return
+
+            for b in balls:
+                if not getattr(b, "alive", True): continue
+                dx = self.x - b.x
+                dy = self.y - b.y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if 0 < dist < self.radius:
+                    pull = self.pull_strength * (1.0 - dist / self.radius)
+                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                        b.vx += (dx / dist) * pull * delta
+                        b.vy += (dy / dist) * pull * delta
+
+            if hasattr(world, "projectiles"):
+                for p in world.projectiles:
+                    dx = self.x - p.x
+                    dy = self.y - p.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if 0 < dist < self.radius:
+                        pull = self.pull_strength * 1.5 * (1.0 - dist / self.radius)
+                        if hasattr(p, "vx") and hasattr(p, "vy"):
+                            p.vx += (dx / dist) * pull * delta
+                            p.vy += (dy / dist) * pull * delta
+
+            if hasattr(world, "boosters"):
+                for item in world.boosters:
+                    dx = self.x - item.x
+                    dy = self.y - item.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if 0 < dist < self.radius:
+                        pull = self.pull_strength * 2.0 * (1.0 - dist / self.radius)
+                        item.x += (dx / dist) * pull * delta
+                        item.y += (dy / dist) * pull * delta
+
+GAME_MODES['black_hole_anomaly'] = BlackHoleAnomalyMode()

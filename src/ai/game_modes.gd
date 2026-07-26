@@ -62865,3 +62865,124 @@ class LaserGridSurvivalMode extends GameMode:
 
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
 GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
+
+
+
+class BlackHoleAnomalyMode extends GameMode:
+
+	var active: bool = false
+	var timer: float = 15.0
+	var anomaly_duration: float = 10.0
+	var anomaly_x: float = 500.0
+	var anomaly_y: float = 500.0
+	var pull_strength: float = 200.0
+	var pull_radius: float = 400.0
+
+	func _init() -> void:
+		name = "Black Hole Anomaly"
+		description = "Periodically, a massive gravity well appears that sucks in projecticles and items, changing weapon trajectories and creating a dangerous pull effect."
+		active = false
+		timer = 15.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if not active:
+			timer -= delta
+			if timer <= 0:
+				active = true
+				timer = anomaly_duration
+
+				var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else (world.arena if "arena" in world else null)
+				var w = 1000.0
+				var h = 1000.0
+
+				if typeof(arena) == TYPE_DICTIONARY:
+					w = arena.get("width", 1000.0)
+					h = arena.get("height", 1000.0)
+				elif arena != null and "width" in arena:
+					w = arena.width
+					h = arena.height
+
+				anomaly_x = w / 2.0
+				anomaly_y = h / 2.0
+		else:
+			timer -= delta
+			if timer <= 0:
+				active = false
+				timer = 15.0
+				return
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+
+				if not is_alive:
+					continue
+
+				var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+				var dx = anomaly_x - bx
+				var dy = anomaly_y - by
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0 and dist < pull_radius:
+					var pull = pull_strength * (1.0 - dist / pull_radius)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["vx"] = b.get("vx", 0.0) + (dx / dist) * pull * delta
+						b["vy"] = b.get("vy", 0.0) + (dy / dist) * pull * delta
+					else:
+						if "vx" in b and "vy" in b:
+							b.vx += (dx / dist) * pull * delta
+							b.vy += (dy / dist) * pull * delta
+
+			var projectiles = []
+			if typeof(world) == TYPE_DICTIONARY and "projectiles" in world:
+				projectiles = world.get("projectiles", [])
+			elif typeof(world) != TYPE_DICTIONARY and "projectiles" in world and world.projectiles != null:
+				projectiles = world.projectiles
+
+			for p in projectiles:
+				var px = p.get("x", 0.0) if typeof(p) == TYPE_DICTIONARY else (p.x if "x" in p else 0.0)
+				var py = p.get("y", 0.0) if typeof(p) == TYPE_DICTIONARY else (p.y if "y" in p else 0.0)
+				var dx = anomaly_x - px
+				var dy = anomaly_y - py
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0 and dist < pull_radius:
+					var pull = pull_strength * 1.5 * (1.0 - dist / pull_radius)
+					if typeof(p) == TYPE_DICTIONARY:
+						p["vx"] = p.get("vx", 0.0) + (dx / dist) * pull * delta
+						p["vy"] = p.get("vy", 0.0) + (dy / dist) * pull * delta
+					else:
+						if "vx" in p and "vy" in p:
+							p.vx += (dx / dist) * pull * delta
+							p.vy += (dy / dist) * pull * delta
+
+			var boosters = []
+			if typeof(world) == TYPE_DICTIONARY and "boosters" in world:
+				boosters = world.get("boosters", [])
+			elif typeof(world) != TYPE_DICTIONARY and "boosters" in world and world.boosters != null:
+				boosters = world.boosters
+
+			for item in boosters:
+				var ix = item.get("x", 0.0) if typeof(item) == TYPE_DICTIONARY else (item.x if "x" in item else 0.0)
+				var iy = item.get("y", 0.0) if typeof(item) == TYPE_DICTIONARY else (item.y if "y" in item else 0.0)
+				var dx = anomaly_x - ix
+				var dy = anomaly_y - iy
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0 and dist < pull_radius:
+					var pull = pull_strength * 2.0 * (1.0 - dist / pull_radius)
+					if typeof(item) == TYPE_DICTIONARY:
+						item["x"] = ix + (dx / dist) * pull * delta
+						item["y"] = iy + (dy / dist) * pull * delta
+					else:
+						if "x" in item and "y" in item:
+							item.x += (dx / dist) * pull * delta
+							item.y += (dy / dist) * pull * delta
+
+
+GAME_MODES["black_hole_anomaly"] = BlackHoleAnomalyMode.new()
