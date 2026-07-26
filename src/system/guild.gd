@@ -31,7 +31,8 @@ func load_guilds():
                         "active_ambient_music": null,
                         "announcer_voices": [],
                         "mini_games": {},
-                        "training_arena_unlocked": false
+                        "training_arena_unlocked": false,
+                        "pets": []
                     }
                 elif not data["guilds"][g_name]["hq"].has("mini_games"):
                     data["guilds"][g_name]["hq"]["mini_games"] = {}
@@ -163,7 +164,8 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
             "banners": [],
             "cosmetics": [],
             "mini_games": {},
-            "training_arena_unlocked": false
+            "training_arena_unlocked": false,
+            "pets": []
         },
         "emblem": {"shape": "circle", "color": "white", "symbol": "none"},
         "unlocked_emblem_parts": {"shapes": ["circle"], "colors": ["white"], "symbols": ["none"]},
@@ -861,7 +863,7 @@ func unlock_hq_feature(guild_name: String, feature_type: String, feature_id: Str
         if current_currency >= cost and current_level >= required_level:
             if not guild.has("hq"):
                 guild["hq"] = {"statues": [], "banners": [],
-            "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "training_arena_unlocked": false}
+            "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "training_arena_unlocked": false, "pets": []}
 
             if feature_type == "training_arena":
                 if not guild["hq"]["training_arena_unlocked"]:
@@ -929,7 +931,7 @@ func build_hq_defense(guild_name: String, defense_type: String, cost: int, amoun
         if current_resources >= cost:
             guild["resources"] = current_resources - cost
             if not guild.has("hq"):
-                guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false}
+                guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "pets": []}
             if not guild["hq"].has("defenses"):
                 guild["hq"]["defenses"] = {}
 
@@ -986,7 +988,7 @@ func record_siege_held(defender_name: String, xp_reward: int) -> bool:
 func get_hq_status(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
-        var hq = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": []}
+        var hq = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": [], "pets": []}
         if guild.has("hq"):
             if guild["hq"].has("statues"): hq["statues"] = guild["hq"]["statues"]
             if guild["hq"].has("banners"): hq["banners"] = guild["hq"]["banners"]
@@ -1001,6 +1003,7 @@ func get_hq_status(guild_name: String) -> Dictionary:
             if guild["hq"].has("training_arena_unlocked"): hq["training_arena_unlocked"] = guild["hq"]["training_arena_unlocked"]
             if guild["hq"].has("layout"): hq["layout"] = guild["hq"]["layout"]
             if guild["hq"].has("hall_of_fame"): hq["hall_of_fame"] = guild["hq"]["hall_of_fame"]
+            if guild["hq"].has("pets"): hq["pets"] = guild["hq"]["pets"]
         return hq
     return {}
 
@@ -1008,7 +1011,7 @@ func set_hq_ambient_music(guild_name: String, track_id: String) -> bool:
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
         if not guild.has("hq"):
-            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": []}
+            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": [], "pets": []}
         if not guild["hq"].has("ambient_music"):
             guild["hq"]["ambient_music"] = []
         if guild["hq"]["ambient_music"].has(track_id):
@@ -1021,7 +1024,7 @@ func arrange_hq_item(guild_name: String, item_type: String, item_id: String, pos
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
         if not guild.has("hq"):
-            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": []}
+            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": [], "pets": []}
         if not guild["hq"].has("layout"):
             guild["hq"]["layout"] = {}
         if not guild["hq"]["layout"].has(item_type):
@@ -1036,7 +1039,7 @@ func add_to_hall_of_fame(guild_name: String, player_id: String, category: String
     if data["guilds"].has(guild_name):
         var guild = data["guilds"][guild_name]
         if not guild.has("hq"):
-            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": []}
+            guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": [], "pets": []}
         if not guild["hq"].has("hall_of_fame"):
             guild["hq"]["hall_of_fame"] = []
 
@@ -1123,3 +1126,38 @@ func join_multiguild_event(guild_name: String) -> bool:
         if total_members <= 50:
             return true
     return false
+
+func purchase_pet(guild_name: String, pet_id: String, cost: int) -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        var current_xp = 0
+        if guild.has("guild_xp"):
+            current_xp = guild["guild_xp"]
+
+        if current_xp >= cost:
+            guild["guild_xp"] -= cost
+            if not guild.has("hq"):
+                guild["hq"] = {"statues": [], "banners": [], "cosmetics": [], "flags": [], "backgrounds": [], "announcer_voices": [], "ambient_music": [], "active_ambient_music": null, "mini_games": {}, "defenses": {}, "training_arena_unlocked": false, "layout": {}, "hall_of_fame": [], "pets": []}
+            if not guild["hq"].has("pets"):
+                guild["hq"]["pets"] = []
+
+            guild["hq"]["pets"].append({
+                "id": pet_id,
+                "status": "happy",
+                "interactions": 0
+            })
+            save_guilds()
+            return true
+    return false
+
+func interact_with_pet(guild_name: String, pet_index: int, action: String) -> Dictionary:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("hq") and guild["hq"].has("pets"):
+            var pets = guild["hq"]["pets"]
+            if pet_index >= 0 and pet_index < pets.size():
+                if action == "pet" or action == "feed":
+                    pets[pet_index]["interactions"] += 1
+                    save_guilds()
+                    return {"buff": "luck_boost", "duration": 3600}
+    return {}

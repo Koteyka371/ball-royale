@@ -513,3 +513,31 @@ def test_alliance_size_limit_and_chat(temp_guild_file):
 
     # Check multiguild event
     assert gm.join_multiguild_event("G2") == True
+
+def test_purchase_and_interact_pet(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("PetGuild", "player1")
+
+    # Needs guild_xp
+    assert gm.purchase_pet("PetGuild", "dragon_whelp", 100) == False
+
+    # Add guild_xp
+    gm.data["guilds"]["PetGuild"]["guild_xp"] = 150
+    gm.save()
+
+    # Purchase should succeed
+    assert gm.purchase_pet("PetGuild", "dragon_whelp", 100) == True
+    assert gm.data["guilds"]["PetGuild"]["guild_xp"] == 50
+
+    hq = gm.data["guilds"]["PetGuild"]["hq"]
+    assert len(hq["pets"]) == 1
+    assert hq["pets"][0]["id"] == "dragon_whelp"
+    assert hq["pets"][0]["interactions"] == 0
+
+    # Interact with pet
+    buff = gm.interact_with_pet("PetGuild", 0, "pet")
+    assert buff == {"buff": "luck_boost", "duration": 3600}
+    assert gm.data["guilds"]["PetGuild"]["hq"]["pets"][0]["interactions"] == 1
+
+    # Invalid index
+    assert gm.interact_with_pet("PetGuild", 99, "pet") == {}
