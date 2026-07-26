@@ -1,0 +1,4 @@
+{
+  "title": "Season-Based Dynamic Maps",
+  "description": "Introduce a seasonal rotation for maps, where each season fundamentally changes the procedural generation of the arena (e.g., 'Winter Season' replaces all water with slippery ice patches and changes basic hazard textures to frost spikes, while 'Summer Season' introduces drought mechanics that drain stamina faster in the open)."
+}

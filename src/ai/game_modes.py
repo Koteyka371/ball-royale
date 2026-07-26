@@ -31005,6 +31005,79 @@ class LaserGridSurvivalMode(GameMode):
                             if hasattr(world, "add_event"):
                                 world.add_event("death", {"id": getattr(b, "id", None), "reason": "grid_laser"})
 
+class DynamicWeatherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Weather"
+        self.description = "Weather changes dynamically (clear, thunderstorm, blizzard, sandstorm)."
+        self.weathers = ["clear", "thunderstorm", "blizzard", "sandstorm"]
+        self.weather_index = 0
+        self.current_weather = "clear"
+        self.weather_timer = 15.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.weather_index = 0
+        self.current_weather = self.weathers[self.weather_index]
+        self.weather_timer = 15.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.weather_timer -= delta
+        if self.weather_timer <= 0:
+            self.weather_timer = 15.0
+            self.weather_index = (self.weather_index + 1) % len(self.weathers)
+            self.current_weather = self.weathers[self.weather_index]
+
+        if self.current_weather == "thunderstorm":
+            import random
+            if random.random() < 0.05:
+                aw = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and getattr(world, "arena") else 1000.0
+                ah = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and getattr(world, "arena") else 1000.0
+                hx = random.uniform(-aw/2, aw/2)
+                hy = random.uniform(-ah/2, ah/2)
+
+                valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+                if valid_balls and random.random() < 0.5:
+                    target = random.choice(valid_balls)
+                    hx = getattr(target, "x", hx)
+                    hy = getattr(target, "y", hy)
+
+                class FallbackHazard:
+                    def __init__(self, id_str, x, y, radius, kind, damage):
+                        self.id = id_str
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                        self.lifespan = 0.5
+                        self.is_ricochet_laser = False
+                        self.bounces_left = 0
+
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    h_id = "lightning_" + str(getattr(world, "tick", random.randint(0, 1000000))) + "_" + str(random.randint(0, 1000))
+                    h = FallbackHazard(h_id, hx, hy, 80.0, "lightning_strike", 25.0)
+                    world.arena.hazards.append(h)
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                if self.current_weather == "blizzard":
+                    if not hasattr(b, "base_speed"):
+                        b.base_speed = getattr(b, "speed", 100.0)
+                    b.speed = b.base_speed * 0.5
+                else:
+                    # Restore speed if it was halved
+                    if hasattr(b, "base_speed") and hasattr(b, "speed") and abs(b.speed - b.base_speed * 0.5) < 0.01:
+                        b.speed = b.base_speed
+
+                if self.current_weather == "sandstorm":
+                    b.smokescreen_timer = getattr(b, "smokescreen_timer", 0.0) + delta * 2.0
+
 GAME_MODES = {
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
@@ -40541,3 +40614,4 @@ class StationaryBlackHoleMutatorMode(GameMode):
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
+GAME_MODES['dynamic_weather'] = DynamicWeatherMode()

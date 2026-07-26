@@ -62863,5 +62863,119 @@ class LaserGridSurvivalMode extends GameMode:
 						else:
 							b.set("hp", hp)
 
+class DynamicWeatherMode extends GameMode:
+	var weathers: Array = ["clear", "thunderstorm", "blizzard", "sandstorm"]
+	var weather_index: int = 0
+	var current_weather: String = "clear"
+	var weather_timer: float = 15.0
+
+	func _init() -> void:
+		name = "Dynamic Weather"
+		description = "Weather changes dynamically (clear, thunderstorm, blizzard, sandstorm)."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		weather_index = 0
+		current_weather = weathers[weather_index]
+		weather_timer = 15.0
+
+	func tick(world, balls: Array, delta: float) -> void:
+		.tick(world, balls, delta)
+		weather_timer -= delta
+		if weather_timer <= 0:
+			weather_timer = 15.0
+			weather_index = (weather_index + 1) % weathers.size()
+			current_weather = weathers[weather_index]
+
+		if current_weather == "thunderstorm":
+			if randf() < 0.05:
+				var aw = 1000.0
+				var ah = 1000.0
+				if world != null:
+					if typeof(world) == TYPE_DICTIONARY and "arena" in world and world.arena != null:
+						aw = world.arena.get("width", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.width
+						ah = world.arena.get("height", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.height
+					elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+						aw = world.arena.get("width", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.width
+						ah = world.arena.get("height", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.height
+
+				var hx = (randf() * aw) - aw/2
+				var hy = (randf() * ah) - ah/2
+
+				var valid_balls = []
+				for b in balls:
+					var alive = b["alive"] if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if b.get("ball_type") != null else "")
+					if alive and b_type != "spectator":
+						valid_balls.append(b)
+
+				if valid_balls.size() > 0 and randf() < 0.5:
+					var target = valid_balls[randi() % valid_balls.size()]
+					hx = target.get("x", hx) if typeof(target) == TYPE_DICTIONARY else target.get("x")
+					hy = target.get("y", hy) if typeof(target) == TYPE_DICTIONARY else target.get("y")
+
+				if world != null:
+					var hazards = null
+					if typeof(world) == TYPE_DICTIONARY and "arena" in world and world.arena != null:
+						hazards = world.arena.get("hazards") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.hazards
+					elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+						hazards = world.arena.get("hazards") if typeof(world.arena) == TYPE_DICTIONARY else world.arena.hazards
+
+					if hazards != null:
+						var tick_val = world.get("tick", randi()) if typeof(world) == TYPE_DICTIONARY else world.get("tick")
+						var h_id = "lightning_" + str(tick_val) + "_" + str(randi() % 1000)
+						var h = {
+							"id": h_id,
+							"x": hx,
+							"y": hy,
+							"radius": 80.0,
+							"kind": "lightning_strike",
+							"damage": 25.0,
+							"active": true,
+							"lifespan": 0.5,
+							"is_ricochet_laser": false,
+							"bounces_left": 0
+						}
+						hazards.append(h)
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		.apply_dynamic_traits(world, balls, delta)
+
+		for b in balls:
+			var alive = b["alive"] if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if b.get("ball_type") != null else "")
+			if alive and b_type != "spectator":
+				if current_weather == "blizzard":
+					var base_speed = null
+					if typeof(b) == TYPE_DICTIONARY:
+						if not "base_speed" in b:
+							b["base_speed"] = b.get("speed", 100.0)
+						base_speed = b["base_speed"]
+						b["speed"] = base_speed * 0.5
+					else:
+						if b.get("base_speed") == null:
+							b.set("base_speed", b.get("speed")) if b.get("speed") != null else b.set("base_speed", 100.0)
+						base_speed = b.get("base_speed")
+						b.set("speed", base_speed * 0.5)
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						if "base_speed" in b and "speed" in b:
+							if abs(b["speed"] - b["base_speed"] * 0.5) < 0.01:
+								b["speed"] = b["base_speed"]
+					else:
+						if b.get("base_speed") != null and b.get("speed") != null:
+							if abs(b.get("speed") - b.get("base_speed") * 0.5) < 0.01:
+								b.set("speed", b.get("base_speed"))
+
+				if current_weather == "sandstorm":
+					if typeof(b) == TYPE_DICTIONARY:
+						var st = b.get("smokescreen_timer", 0.0)
+						b["smokescreen_timer"] = st + delta * 2.0
+					else:
+						var st = b.get("smokescreen_timer") if b.get("smokescreen_timer") != null else 0.0
+						b.set("smokescreen_timer", st + delta * 2.0)
+
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
 GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
+
+GAME_MODES["dynamic_weather"] = DynamicWeatherMode.new()
