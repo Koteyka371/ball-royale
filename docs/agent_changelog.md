@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1519] Quantum Swap Power-up — *2026-07-26 05:12:58 UTC*
+
+A new booster that allows the player to swap places with the nearest enemy when they press the action button or automatically upon dropping to low HP. This causes confusion and can completely turn the tide of an engagement or save the player from being cornered.
+
+---
+
 ## [idea-1523] Vampiric Relic Aura — *2026-07-26 05:12:53 UTC*
 
 A cursed relic that drains the player's health over time but creates a large aura around them. Any enemies caught in the aura take damage, which heals the player for a fraction of the damage dealt.
