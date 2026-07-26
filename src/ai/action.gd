@@ -3487,13 +3487,16 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ball_type"): ball_type = self.ball.get_meta("ball_type")
     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): ball_type = self.ball["ball_type"]
 
-    if not is_alive and ball_type == "ghost":
-        _handle_ghost_behavior(delta)
+    if not is_alive and ball_type == "phantom":
+        _handle_phantom_behavior(delta)
         return
 
-    if not is_alive and ball_type != "spectator" and ball_type != "ghost":
-        if "ball_type" in self.ball: self.ball.ball_type = "ghost"
-        elif self.ball.has_method("set_meta"): self.ball.set_meta("ball_type", "ghost")
+    if not is_alive and ball_type != "spectator":
+        if "ball_type" in self.ball: self.ball.ball_type = "phantom"
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("ball_type", "phantom")
+
+        if "phantom_spawn_timer" in self.ball: self.ball.phantom_spawn_timer = 5.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("phantom_spawn_timer", 5.0)
 
         if "speed" in self.ball: self.ball.speed = 100.0
         elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", 100.0)
@@ -44037,9 +44040,54 @@ func _ricochet_attack(delta: float):
 			if self.world != null and self.world.has_method("_deal_damage"):
 				self.world._deal_damage(self.ball, target)
 
-func _handle_ghost_behavior(delta: float):
+func _handle_phantom_behavior(delta: float):
     if self.world == null or not ("arena" in self.world) or self.world.arena == null or not ("hazards" in self.world.arena):
         return
+
+    var timer_val = 5.0
+    if "phantom_spawn_timer" in self.ball:
+        timer_val = self.ball.phantom_spawn_timer
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("phantom_spawn_timer"):
+        timer_val = self.ball.get_meta("phantom_spawn_timer")
+
+    timer_val -= delta
+
+    if timer_val <= 0.0:
+        timer_val = 5.0
+        var rng = RandomNumberGenerator.new()
+        rng.randomize()
+        if typeof(self.world) == TYPE_OBJECT and "tick_timer" in self.world:
+            rng.seed = int(self.world.tick_timer * 1000)
+
+        var ball_x = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if self.ball.has_method("has_meta") and self.ball.has_meta("x") else 0.0)
+        var ball_y = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if self.ball.has_method("has_meta") and self.ball.has_meta("y") else 0.0)
+
+        if rng.randf() < 0.5:
+            # Spawn ice patch
+            var hazard = {}
+            hazard["x"] = ball_x
+            hazard["y"] = ball_y
+            hazard["kind"] = "ice_patch"
+            hazard["radius"] = 20.0
+            hazard["active"] = true
+            if "hazards" in self.world.arena:
+                self.world.arena.hazards.append(hazard)
+        else:
+            # Spawn health pack
+            var booster = {}
+            booster["x"] = ball_x
+            booster["y"] = ball_y
+            booster["kind"] = "health_pack"
+            booster["radius"] = 15.0
+            booster["heal"] = 10.0
+            if "boosters" in self.world:
+                self.world.boosters.append(booster)
+
+    if "phantom_spawn_timer" in self.ball:
+        self.ball.phantom_spawn_timer = timer_val
+    elif self.ball.has_method("set_meta"):
+        self.ball.set_meta("phantom_spawn_timer", timer_val)
+
 
     var push_force = 20.0 * delta
     var nearest = null

@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Leap Mutator",
+  "description": "Every 15 seconds, all balls swap positions randomly. Balls that swap into a hazard get a temporary shield."
+}
