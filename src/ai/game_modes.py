@@ -578,9 +578,13 @@ class GameMode:
                                 world.add_event("emissary_survival", {"message": f"Emissary of {clan_name} reached the top 3, earning 500 clan points!"})
                             clan_manager.deposit_to_stash(clan_name, player_id, "emissary_medal", 1)
 
+
         # Check for emissary deaths to reward killer
         for b in world.dead_balls:
+            if isinstance(b, int) or isinstance(b, str):
+                continue
             if not getattr(b, "emissary_bounty_claimed", False):
+
                 b.emissary_bounty_claimed = True
                 clan_manager = getattr(world, "clan_manager", None)
                 if not clan_manager and hasattr(world, "profile_manager") and hasattr(world.profile_manager, "clan_manager"):
@@ -30843,6 +30847,108 @@ class VampiricMutatorMode(GameMode):
 
 from ai.double_juggernaut import DoubleJuggernautMode
 
+class MovingHazardLinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Moving Hazard Lines"
+        self.description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 5.0
+        self.line_speed = 200.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+
+            # Spawn a new line
+            try:
+                from arena.procedural_arena import Hazard
+                h_id = 80000 + len(world.arena.hazards)
+
+                if random.random() < 0.5:
+                    # Vertical line moving horizontally
+                    start_x = 0 if random.random() < 0.5 else world.arena.width
+                    h = Hazard(h_id, start_x, 0, 20.0, "deployable_thin_hazard_line", 30.0)
+                    h.end_x = start_x
+                    h.end_y = world.arena.height
+                    h.vx = self.line_speed if start_x == 0 else -self.line_speed
+                    h.vy = 0
+                else:
+                    # Horizontal line moving vertically
+                    start_y = 0 if random.random() < 0.5 else world.arena.height
+                    h = Hazard(h_id, 0, start_y, 20.0, "deployable_thin_hazard_line", 30.0)
+                    h.end_x = world.arena.width
+                    h.end_y = start_y
+                    h.vx = 0
+                    h.vy = self.line_speed if start_y == 0 else -self.line_speed
+
+                h.duration = max(world.arena.width, world.arena.height) / self.line_speed + 2.0
+                h.team = "environment"
+                h.hit_ids = []
+                world.arena.hazards.append(h)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+                h_id = 80000 + len(world.arena.hazards)
+                if random.random() < 0.5:
+                    start_x = 0 if random.random() < 0.5 else world.arena.width
+                    h = DummyHazard(h_id, start_x, 0, 20.0, "deployable_thin_hazard_line", 30.0)
+                    h.end_x = start_x
+                    h.end_y = world.arena.height
+                    h.vx = self.line_speed if start_x == 0 else -self.line_speed
+                    h.vy = 0
+                else:
+                    start_y = 0 if random.random() < 0.5 else world.arena.height
+                    h = DummyHazard(h_id, 0, start_y, 20.0, "deployable_thin_hazard_line", 30.0)
+                    h.end_x = world.arena.width
+                    h.end_y = start_y
+                    h.vx = 0
+                    h.vy = self.line_speed if start_y == 0 else -self.line_speed
+
+                h.duration = max(world.arena.width, world.arena.height) / self.line_speed + 2.0
+                h.team = "environment"
+                h.hit_ids = []
+                world.arena.hazards.append(h)
+
+        # Update lines
+        if hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards[:]:
+                if getattr(h, "kind", "") == "deployable_thin_hazard_line" and getattr(h, "team", "") == "environment":
+                    vx = getattr(h, "vx", 0.0)
+                    vy = getattr(h, "vy", 0.0)
+                    h.x += vx * delta
+                    h.y += vy * delta
+
+                    if hasattr(h, "end_x") and hasattr(h, "end_y"):
+                        h.end_x += vx * delta
+                        h.end_y += vy * delta
+
+                    if hasattr(h, "hit_ids"):
+                        h.hit_ids.clear()
+
+                    dur = getattr(h, "duration", 0) - delta
+                    h.duration = dur
+                    if dur <= 0:
+                        world.arena.hazards.remove(h)
+
+
 GAME_MODES = {
     'vampiric_mutator': VampiricMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
@@ -40376,3 +40482,4 @@ class StationaryBlackHoleMutatorMode(GameMode):
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
+GAME_MODES['moving_hazard_line'] = MovingHazardLinesMode()

@@ -49592,6 +49592,89 @@ class VampiricMutatorMode extends GameMode:
 						if world.has_method("add_event"):
 							world.add_event("death", {"id": b.get("id"), "reason": "vampiric_drain"})
 
+class MovingHazardLinesMode extends GameMode:
+	var spawn_timer = 0.0
+	var spawn_interval = 5.0
+	var line_speed = 200.0
+
+	func _init().():
+		self.name = "Moving Hazard Lines"
+		self.description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+
+	func setup(world, balls):
+		.setup(world, balls)
+		if not world.has("arena") or typeof(world["arena"]) != TYPE_DICTIONARY:
+			return
+		if not world["arena"].has("hazards"):
+			world["arena"]["hazards"] = []
+
+	func tick(world, balls, delta = 0.016):
+		.tick(world, balls, delta)
+		if not world.has("arena") or typeof(world["arena"]) != TYPE_DICTIONARY:
+			return
+		if not world["arena"].has("hazards"):
+			return
+
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			var h_id = 80000 + world["arena"]["hazards"].size()
+			var h = {
+				"id": h_id,
+				"kind": "deployable_thin_hazard_line",
+				"radius": 20.0,
+				"damage": 30.0,
+				"team": "environment",
+				"hit_ids": []
+			}
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world["arena"].has("width"):
+				arena_width = float(world["arena"]["width"])
+			if world["arena"].has("height"):
+				arena_height = float(world["arena"]["height"])
+
+			if randf() < 0.5:
+				var start_x = 0.0 if randf() < 0.5 else arena_width
+				h["x"] = start_x
+				h["y"] = 0.0
+				h["end_x"] = start_x
+				h["end_y"] = arena_height
+				h["vx"] = line_speed if start_x == 0.0 else -line_speed
+				h["vy"] = 0.0
+			else:
+				var start_y = 0.0 if randf() < 0.5 else arena_height
+				h["x"] = 0.0
+				h["y"] = start_y
+				h["end_x"] = arena_width
+				h["end_y"] = start_y
+				h["vx"] = 0.0
+				h["vy"] = line_speed if start_y == 0.0 else -line_speed
+
+			h["duration"] = max(arena_width, arena_height) / line_speed + 2.0
+			world["arena"]["hazards"].append(h)
+
+		var i = world["arena"]["hazards"].size() - 1
+		while i >= 0:
+			var h = world["arena"]["hazards"][i]
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "deployable_thin_hazard_line" and h.has("team") and h["team"] == "environment":
+				var vx = h.get("vx", 0.0)
+				var vy = h.get("vy", 0.0)
+				h["x"] = h.get("x", 0.0) + vx * delta
+				h["y"] = h.get("y", 0.0) + vy * delta
+				if h.has("end_x") and h.has("end_y"):
+					h["end_x"] = h.get("end_x", 0.0) + vx * delta
+					h["end_y"] = h.get("end_y", 0.0) + vy * delta
+
+				if h.has("hit_ids"):
+					h["hit_ids"].clear()
+
+				h["duration"] = h.get("duration", 0.0) - delta
+				if h["duration"] <= 0:
+					world["arena"]["hazards"].remove(i)
+			i -= 1
+
+
 var GAME_MODES = {
 	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
@@ -62691,3 +62774,5 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode.new()
 const DoubleJuggernautMode = preload("res://src/ai/double_juggernaut.gd")
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
+
+GAME_MODES["moving_hazard_line"] = MovingHazardLinesMode.new()
