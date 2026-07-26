@@ -62692,4 +62692,176 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode.new()
 const DoubleJuggernautMode = preload("res://src/ai/double_juggernaut.gd")
+class LaserGridSurvivalMode extends GameMode:
+	var grid_offset_x: float = 0.0
+	var grid_offset_y: float = 0.0
+	var grid_speed: float = 50.0
+	var grid_spacing: float = 400.0
+	var laser_radius: float = 20.0
+	var laser_damage_per_second: float = 300.0
+	var lasers_spawned: bool = false
+	var node_spacing: float = 30.0
+
+	func _init():
+		description = "An intense game mode where a grid of static lasers slowly moves across the arena, forcing players to find safe pockets and navigate the grid while fighting enemies."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		grid_offset_x = 0.0
+		grid_offset_y = 0.0
+		lasers_spawned = false
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+			if not world.arena.has("hazards"):
+				world.arena["hazards"] = []
+
+		if not lasers_spawned:
+			lasers_spawned = true
+
+			var grid_w = max(2000.0, arena_width * 2)
+			var grid_h = max(2000.0, arena_height * 2)
+
+			var num_v = int(grid_w / grid_spacing) + 1
+			var num_h = int(grid_h / grid_spacing) + 1
+
+			for i in range(num_v):
+				var x_line = i * grid_spacing
+				var nodes = int(grid_h / node_spacing) + 1
+				for j in range(nodes):
+					var y_node = j * node_spacing
+					var h_id = "g_laser_v_" + str(i) + "_" + str(j)
+					var h = {"id": h_id, "x": x_line, "y": y_node, "radius": laser_radius, "kind": "grid_laser", "damage": 0.0, "active": true, "duration": 9999.0, "grid_type": "v", "grid_i": i, "grid_j": j}
+					world.arena.hazards.append(h)
+
+			for i in range(num_h):
+				var y_line = i * grid_spacing
+				var nodes = int(grid_w / node_spacing) + 1
+				for j in range(nodes):
+					var x_node = j * node_spacing
+					var h_id = "g_laser_h_" + str(i) + "_" + str(j)
+					var h = {"id": h_id, "x": x_node, "y": y_line, "radius": laser_radius, "kind": "grid_laser", "damage": 0.0, "active": true, "duration": 9999.0, "grid_type": "h", "grid_i": i, "grid_j": j}
+					world.arena.hazards.append(h)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		grid_offset_x += grid_speed * delta
+		grid_offset_y += grid_speed * delta
+
+		if grid_offset_x > grid_spacing:
+			grid_offset_x -= grid_spacing
+		if grid_offset_y > grid_spacing:
+			grid_offset_y -= grid_spacing
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		var grid_w = max(2000.0, arena_width * 2)
+		var grid_h = max(2000.0, arena_height * 2)
+
+		if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			for h in world.arena.hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+					kind = h["kind"]
+				elif typeof(h) == TYPE_OBJECT and h.get("kind") != null:
+					kind = h.get("kind")
+
+				if kind == "grid_laser":
+					var g_type = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("grid_type"):
+						g_type = h["grid_type"]
+					elif typeof(h) == TYPE_OBJECT and h.get("grid_type") != null:
+						g_type = h.get("grid_type")
+
+					var g_i = 0
+					if typeof(h) == TYPE_DICTIONARY and h.has("grid_i"):
+						g_i = h["grid_i"]
+					elif typeof(h) == TYPE_OBJECT and h.get("grid_i") != null:
+						g_i = h.get("grid_i")
+
+					var g_j = 0
+					if typeof(h) == TYPE_DICTIONARY and h.has("grid_j"):
+						g_j = h["grid_j"]
+					elif typeof(h) == TYPE_OBJECT and h.get("grid_j") != null:
+						g_j = h.get("grid_j")
+
+					if g_type == "v":
+						var base_x = g_i * grid_spacing + grid_offset_x
+						base_x = fmod(base_x, grid_w) - (grid_w - arena_width) / 2.0
+						var base_y = g_j * node_spacing
+						base_y = fmod(base_y, grid_h) - (grid_h - arena_height) / 2.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["x"] = base_x
+							h["y"] = base_y
+						else:
+							h.set("x", base_x)
+							h.set("y", base_y)
+					elif g_type == "h":
+						var base_y = g_i * grid_spacing + grid_offset_y
+						base_y = fmod(base_y, grid_h) - (grid_h - arena_height) / 2.0
+						var base_x = g_j * node_spacing
+						base_x = fmod(base_x, grid_w) - (grid_w - arena_width) / 2.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							h["x"] = base_x
+							h["y"] = base_y
+						else:
+							h.set("x", base_x)
+							h.set("y", base_y)
+
+			var v_lines_x = []
+			var num_v = int(grid_w / grid_spacing) + 1
+			for i in range(num_v):
+				var base_x = i * grid_spacing + grid_offset_x
+				v_lines_x.append(fmod(base_x, grid_w) - (grid_w - arena_width) / 2.0)
+
+			var h_lines_y = []
+			var num_h = int(grid_h / grid_spacing) + 1
+			for i in range(num_h):
+				var base_y = i * grid_spacing + grid_offset_y
+				h_lines_y.append(fmod(base_y, grid_h) - (grid_h - arena_height) / 2.0)
+
+			for b in balls:
+				var alive = b["alive"] if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else false)
+				if alive:
+					var b_x = b["x"] if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var b_y = b["y"] if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var hit = false
+
+					for lx in v_lines_x:
+						if abs(b_x - lx) < laser_radius:
+							hit = true
+							break
+
+					if not hit:
+						for ly in h_lines_y:
+							if abs(b_y - ly) < laser_radius:
+								hit = true
+								break
+
+					if hit:
+						var dmg = laser_damage_per_second * delta
+						var hp = b["hp"] if typeof(b) == TYPE_DICTIONARY else (b.get("hp") if b.get("hp") != null else 100.0)
+						hp -= dmg
+						if hp <= 0:
+							hp = 0
+							if typeof(b) == TYPE_DICTIONARY:
+								b["alive"] = false
+							else:
+								b.set("alive", false)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+						else:
+							b.set("hp", hp)
+
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
+GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
