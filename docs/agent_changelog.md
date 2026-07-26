@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1427] Stormcaller Ball Type — *2026-07-26 20:02:54 UTC*
+
+A new ball type that specializes in manipulating environmental hazards. Its primary skill allows it to spawn miniature tornados, and its passive ability grants it immunity to gravity wells and push/pull effects from hazards.
+
+---
+
 ## [idea-1538] Vampiric Arena Mutator — *2026-07-26 16:05:28 UTC*
 
 A mutator where all balls passively lose health over time, but gain a massive lifesteal boost. It forces aggressive gameplay as hiding will result in death.
