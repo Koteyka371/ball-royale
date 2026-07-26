@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1523] Vampiric Relic Aura — *2026-07-26 05:12:53 UTC*
+
+A cursed relic that drains the player's health over time but creates a large aura around them. Any enemies caught in the aura take damage, which heals the player for a fraction of the damage dealt.
+
+---
+
 ## [idea-1518] Magnetic Mine Hazard — *2026-07-26 05:06:37 UTC*
 
 A new type of deployable hazard or natural arena element that slowly pulls all nearby projectiles (both friendly and enemy) towards its center. Upon absorbing a certain amount of damage, it explodes in a massive AoE blast.
