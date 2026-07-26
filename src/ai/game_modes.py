@@ -39930,3 +39930,6 @@ GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode()
 
 from ai.capture_the_flag_elements_in_battle_royale import CaptureTheFlagElementsInBattleRoyaleMode
 GAME_MODES['capture_the_flag_elements_in_battle_royale'] = CaptureTheFlagElementsInBattleRoyaleMode()
+
+from ai.ghost_companion import GhostCompanionMode
+GAME_MODES['ghost_companion'] = GhostCompanionMode()

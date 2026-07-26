@@ -52938,6 +52938,8 @@ class MeteorBombardmentMode extends GameMode:
 
 
 GAME_MODES['capture_the_flag_elements_in_battle_royale'] = load("res://src/ai/capture_the_flag_elements_in_battle_royale.gd").CaptureTheFlagElementsInBattleRoyaleMode.new()
+GAME_MODES['ghost_companion'] = load("res://src/ai/ghost_companion.gd").new()
+
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
