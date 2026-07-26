@@ -15977,8 +15977,50 @@ class MirrorWallsMode(GameMode):
         self.name = "Mirror Walls"
         self.description = "An arena event where all projectiles are reflected infinitely across mirror walls."
 
-    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
+
+        arena = getattr(world, "arena", None)
+        arena_width = getattr(arena, "width", 1000) if arena else 1000
+        arena_height = getattr(arena, "height", 1000) if arena else 1000
+
+        projectiles = getattr(world, "projectiles", [])
+        hazards = getattr(arena, "hazards", []) if arena else []
+
+        for proj in projectiles + hazards:
+            if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                continue
+
+            b_type = getattr(proj, "ball_type", getattr(proj, "kind", ""))
+            is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(proj, "is_projectile", False) or getattr(proj, "is_spell", False)
+
+            if not is_proj:
+                continue
+
+            x = getattr(proj, "x", 0)
+            y = getattr(proj, "y", 0)
+            radius = getattr(proj, "radius", 5.0)
+            vx = getattr(proj, "vx", 0)
+            vy = getattr(proj, "vy", 0)
+
+            bounced = False
+            if x - radius < 0 and vx < 0:
+                proj.vx = -vx
+                proj.x = radius
+                bounced = True
+            elif x + radius > arena_width and vx > 0:
+                proj.vx = -vx
+                proj.x = arena_width - radius
+                bounced = True
+
+            if y - radius < 0 and vy < 0:
+                proj.vy = -vy
+                proj.y = radius
+                bounced = True
+            elif y + radius > arena_height and vy > 0:
+                proj.vy = -vy
+                proj.y = arena_height - radius
+                bounced = True
 
 class GeometricZoneMode(GameMode):
     def __init__(self):
