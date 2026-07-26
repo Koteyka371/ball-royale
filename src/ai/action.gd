@@ -14100,6 +14100,98 @@ func execute(strategy: String, delta: float):
                                                 if typeof(world) == TYPE_OBJECT and world.has_method("add_combat_log"):
                                                     world.add_combat_log(b_id, "hit by deployable_shockwave_mine", 5.0)
 
+                elif hazard.kind == "deployable_swap_trap":
+                    var current_tick = world.tick if "tick" in world else 0
+                    var last_updated = -1
+                    if "last_updated_tick" in hazard: last_updated = hazard.last_updated_tick
+                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("last_updated_tick"): last_updated = hazard["last_updated_tick"]
+                    if last_updated != current_tick:
+                        _set_attr(hazard, "last_updated_tick", current_tick)
+                        var activation_timer = 2.0
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            if hazard.has("activation_timer"): activation_timer = hazard["activation_timer"]
+                        else:
+                            if "activation_timer" in hazard: activation_timer = hazard.activation_timer
+                        if activation_timer > 0.0:
+                            activation_timer -= delta
+                            _set_attr(hazard, "activation_timer", activation_timer)
+                        if activation_timer <= 0.0:
+                            var trap_triggered = false
+                            if typeof(hazard) == TYPE_DICTIONARY:
+                                if hazard.has("trap_triggered"): trap_triggered = hazard["trap_triggered"]
+                            else:
+                                if "trap_triggered" in hazard: trap_triggered = hazard.trap_triggered
+                            if not trap_triggered:
+                                var owner_id = null
+                                if typeof(hazard) == TYPE_DICTIONARY:
+                                    if hazard.has("owner_id"): owner_id = hazard["owner_id"]
+                                    elif hazard.has("creator_id"): owner_id = hazard["creator_id"]
+                                else:
+                                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                                    elif "creator_id" in hazard: owner_id = hazard.creator_id
+                                var owner_team = null
+                                if "balls" in world:
+                                    for b in world.balls:
+                                        if _get_id(b) == owner_id:
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                owner_team = b.get("team", b.get("ball_type", ""))
+                                            else:
+                                                if "team" in b: owner_team = b.team
+                                                elif b.has_method("get_meta") and b.has_meta("team"): owner_team = b.get_meta("team")
+                                                elif "ball_type" in b: owner_team = b.ball_type
+                                                elif b.has_method("get_meta") and b.has_meta("ball_type"): owner_team = b.get_meta("ball_type")
+                                            break
+                                    if owner_team != null:
+                                        var closest_ally = null
+                                        var closest_enemy = null
+                                        var min_dist_ally = 999999999.0
+                                        var min_dist_enemy = 999999999.0
+                                        for b in world.balls:
+                                            if _get_id(b) != owner_id:
+                                                var b_alive = true
+                                                if typeof(b) == TYPE_DICTIONARY:
+                                                    b_alive = b.get("alive", true)
+                                                else:
+                                                    b_alive = b.alive if "alive" in b else true
+                                                if b_alive:
+                                                    var hx = hazard.x if typeof(hazard) != TYPE_DICTIONARY else hazard.get("x", 0.0)
+                                                    var hy = hazard.y if typeof(hazard) != TYPE_DICTIONARY else hazard.get("y", 0.0)
+                                                    var bx = b.x if typeof(b) != TYPE_DICTIONARY else b.get("x", 0.0)
+                                                    var by = b.y if typeof(b) != TYPE_DICTIONARY else b.get("y", 0.0)
+                                                    var dist_sq = (hx - bx) * (hx - bx) + (hy - by) * (hy - by)
+                                                    var h_radius = hazard.radius if typeof(hazard) != TYPE_DICTIONARY else hazard.get("radius", 0.0)
+                                                    if dist_sq <= h_radius * h_radius:
+                                                        var b_team = ""
+                                                        if typeof(b) == TYPE_DICTIONARY:
+                                                            b_team = b.get("team", b.get("ball_type", ""))
+                                                        else:
+                                                            if "team" in b: b_team = b.team
+                                                            elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+                                                            elif "ball_type" in b: b_team = b.ball_type
+                                                            elif b.has_method("get_meta") and b.has_meta("ball_type"): b_team = b.get_meta("ball_type")
+                                                        if b_team == owner_team:
+                                                            if dist_sq < min_dist_ally:
+                                                                min_dist_ally = dist_sq
+                                                                closest_ally = b
+                                                        else:
+                                                            if dist_sq < min_dist_enemy:
+                                                                min_dist_enemy = dist_sq
+                                                                closest_enemy = b
+                                        if closest_ally != null and closest_enemy != null:
+                                            var cx_ally = closest_ally.x if typeof(closest_ally) != TYPE_DICTIONARY else closest_ally.get("x", 0.0)
+                                            var cy_ally = closest_ally.y if typeof(closest_ally) != TYPE_DICTIONARY else closest_ally.get("y", 0.0)
+                                            var cx_enemy = closest_enemy.x if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.get("x", 0.0)
+                                            var cy_enemy = closest_enemy.y if typeof(closest_enemy) != TYPE_DICTIONARY else closest_enemy.get("y", 0.0)
+                                            _set_attr(closest_ally, "x", cx_enemy)
+                                            _set_attr(closest_ally, "y", cy_enemy)
+                                            _set_attr(closest_ally, "last_teleport_tick", current_tick)
+                                            _set_attr(closest_enemy, "x", cx_ally)
+                                            _set_attr(closest_enemy, "y", cy_ally)
+                                            _set_attr(closest_enemy, "last_teleport_tick", current_tick)
+                                            _set_attr(hazard, "trap_triggered", true)
+                                            _set_attr(hazard, "duration", 0.0)
+                                            if "events" in world:
+                                                world.events.append({"type": "swap", "source": _get_id(closest_ally), "target": _get_id(closest_enemy), "x": cx_enemy, "y": cy_enemy})
                 elif hazard.kind == "deployable_acid_puddle":
                     var current_tick = world.tick if "tick" in world else 0
                     var last_updated = -1
