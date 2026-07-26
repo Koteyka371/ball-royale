@@ -42670,8 +42670,109 @@ func _update_skill_timer(delta: float):
 
     if shadow_timer > 0.0:
         shadow_timer -= delta
-        if shadow_timer < 0.0:
+
+        # Shadow form mechanics: drain max stamina, steal HP, increase speed
+        if "max_stamina" in self.ball:
+            self.ball.max_stamina = max(0.0, float(self.ball.max_stamina) - 5.0 * delta)
+        elif self.ball.has_method("set_meta") and self.ball.has_meta("max_stamina"):
+            self.ball.set_meta("max_stamina", max(0.0, float(self.ball.get_meta("max_stamina")) - 5.0 * delta))
+
+        var shadow_speed_applied = false
+        if "shadow_speed_applied" in self.ball:
+            shadow_speed_applied = self.ball.shadow_speed_applied
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("shadow_speed_applied"):
+            shadow_speed_applied = self.ball.get_meta("shadow_speed_applied")
+
+        if not shadow_speed_applied:
+            if "speed_multiplier" in self.ball:
+                self.ball.speed_multiplier = float(self.ball.speed_multiplier) * 1.5
+            elif self.ball.has_method("set_meta") and self.ball.has_meta("speed_multiplier"):
+                self.ball.set_meta("speed_multiplier", float(self.ball.get_meta("speed_multiplier")) * 1.5)
+
+            if "shadow_speed_applied" in self.ball:
+                self.ball.shadow_speed_applied = true
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("shadow_speed_applied", true)
+
+        if self.world != null and "balls" in self.world:
+            var my_team = ""
+            if "team" in self.ball:
+                my_team = self.ball.team
+            elif "ball_type" in self.ball:
+                my_team = self.ball.ball_type
+            var my_id = -1
+            if "id" in self.ball:
+                my_id = self.ball.id
+
+            for b in self.world.balls:
+                var is_alive = true
+                if "alive" in b:
+                    is_alive = b.alive
+
+                var b_id = -2
+                if "id" in b:
+                    b_id = b.id
+
+                var b_team = ""
+                if "team" in b:
+                    b_team = b.team
+                elif "ball_type" in b:
+                    b_team = b.ball_type
+
+                if is_alive and b_id != my_id and b_team != my_team:
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    if "x" in b and "y" in b:
+                        b_x = float(b.x)
+                        b_y = float(b.y)
+
+                    var my_x = 0.0
+                    var my_y = 0.0
+                    if "x" in self.ball and "y" in self.ball:
+                        my_x = float(self.ball.x)
+                        my_y = float(self.ball.y)
+
+                    var dx = b_x - my_x
+                    var dy = b_y - my_y
+                    var dist = sqrt(dx*dx + dy*dy)
+
+                    if dist < 100.0:
+                        var drain = 10.0 * delta
+                        var b_hp = 100.0
+                        if "hp" in b:
+                            b_hp = float(b.hp)
+                        b_hp = max(0.0, b_hp - drain)
+                        if "hp" in b:
+                            b.hp = b_hp
+
+                        var my_hp = 100.0
+                        var my_max = 100.0
+                        if "hp" in self.ball:
+                            my_hp = float(self.ball.hp)
+                        if "max_hp" in self.ball:
+                            my_max = float(self.ball.max_hp)
+                        my_hp = min(my_max, my_hp + drain)
+                        if "hp" in self.ball:
+                            self.ball.hp = my_hp
+
+        if shadow_timer <= 0.0:
             shadow_timer = 0.0
+            var shadow_speed_applied = false
+            if "shadow_speed_applied" in self.ball:
+                shadow_speed_applied = self.ball.shadow_speed_applied
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("shadow_speed_applied"):
+                shadow_speed_applied = self.ball.get_meta("shadow_speed_applied")
+
+            if shadow_speed_applied:
+                if "speed_multiplier" in self.ball:
+                    self.ball.speed_multiplier = float(self.ball.speed_multiplier) / 1.5
+                elif self.ball.has_method("set_meta") and self.ball.has_meta("speed_multiplier"):
+                    self.ball.set_meta("speed_multiplier", float(self.ball.get_meta("speed_multiplier")) / 1.5)
+
+                if "shadow_speed_applied" in self.ball:
+                    self.ball.shadow_speed_applied = false
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("shadow_speed_applied", false)
         if "shadow_booster_timer" in self.ball:
             self.ball.shadow_booster_timer = shadow_timer
         elif self.ball.has_method("set_meta"):

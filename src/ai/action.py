@@ -21823,8 +21823,30 @@ class Action:
 
         if hasattr(self.ball, "shadow_booster_timer") and self.ball.shadow_booster_timer > 0:
             self.ball.shadow_booster_timer -= delta
-            if self.ball.shadow_booster_timer < 0:
+
+            # Shadow form mechanics: drain max stamina, steal HP, increase speed
+            if hasattr(self.ball, "max_stamina"):
+                self.ball.max_stamina = max(0.0, self.ball.max_stamina - 5.0 * delta)
+            if hasattr(self.ball, "speed_multiplier") and not getattr(self.ball, "shadow_speed_applied", False):
+                self.ball.speed_multiplier *= 1.5
+                self.ball.shadow_speed_applied = True
+
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(self.ball, "id", None) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                        import math
+                        dist = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
+                        if dist < 100.0:
+                            drain = 10.0 * delta
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - drain)
+                            self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + drain)
+
+            if self.ball.shadow_booster_timer <= 0:
                 self.ball.shadow_booster_timer = 0.0
+                if getattr(self.ball, "shadow_speed_applied", False):
+                    if hasattr(self.ball, "speed_multiplier"):
+                        self.ball.speed_multiplier /= 1.5
+                    self.ball.shadow_speed_applied = False
 
         if hasattr(self.ball, "invisibility_timer") and self.ball.invisibility_timer > 0:
             self.ball.invisibility_timer -= delta
