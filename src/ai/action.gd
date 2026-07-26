@@ -24868,6 +24868,90 @@ func _group_attack(delta: float):
                     elif "memory" in target:
                         target.memory = target_memory
 
+                    # Echo Strike Passive Logic
+                    # Every third basic attack echoes for 50% damage in a small AoE
+                    var has_echo_strike = false
+                    if self.ball.has_method("has_passive") and self.ball.has_passive("echo_strike"):
+                        has_echo_strike = true
+                    elif "skill" in self.ball and self.ball.skill == "echo_strike_passive":
+                        has_echo_strike = true
+                    elif "passive" in self.ball and self.ball.passive == "echo_strike_passive":
+                        has_echo_strike = true
+                    elif self.ball.has_method("get_meta") and self.ball.get_meta("skill") == "echo_strike_passive":
+                        has_echo_strike = true
+
+                    if has_echo_strike:
+                        var attack_count = 0
+                        if self.ball.has_method("get_meta") and self.ball.has_meta("echo_strike_count"):
+                            attack_count = self.ball.get_meta("echo_strike_count")
+                        elif "echo_strike_count" in self.ball:
+                            attack_count = self.ball.echo_strike_count
+
+                        attack_count += 1
+
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("echo_strike_count", attack_count)
+                        if "echo_strike_count" in self.ball:
+                            self.ball.echo_strike_count = attack_count
+
+                        if attack_count >= 3:
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("echo_strike_count", 0)
+                            if "echo_strike_count" in self.ball:
+                                self.ball.echo_strike_count = 0
+
+                            var echo_radius = 50.0
+                            var base_dmg = 10.0
+                            if "damage" in self.ball:
+                                base_dmg = self.ball.damage
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("damage"):
+                                base_dmg = self.ball.get_meta("damage")
+
+                            var echo_dmg = base_dmg * 0.5
+
+                            var enemies = []
+                            if self.has_method("_get_enemies"):
+                                enemies = self._get_enemies()
+                            elif self.world != null and "balls" in self.world:
+                                for b in self.world.balls:
+                                    var t1 = -1
+                                    var t2 = -2
+                                    if "team" in b: t1 = b.team
+                                    elif b.has_method("get_meta") and b.has_meta("team"): t1 = b.get_meta("team")
+                                    if "team" in self.ball: t2 = self.ball.team
+                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): t2 = self.ball.get_meta("team")
+                                    if t1 != t2:
+                                        enemies.append(b)
+
+                            for enemy in enemies:
+                                var is_alive = true
+                                if "alive" in enemy: is_alive = enemy.alive
+                                elif enemy.has_method("get_meta") and enemy.has_meta("alive"): is_alive = enemy.get_meta("alive")
+
+                                var e_id = -1
+                                if "id" in enemy: e_id = enemy.id
+                                elif enemy.has_method("get_meta") and enemy.has_meta("id"): e_id = enemy.get_meta("id")
+
+                                var t_id_val = -2
+                                if "id" in target: t_id_val = target.id
+                                elif target.has_method("get_meta") and target.has_meta("id"): t_id_val = target.get_meta("id")
+
+                                if e_id != t_id_val and is_alive:
+                                    var edx = enemy.x - target.x
+                                    var edy = enemy.y - target.y
+                                    if (edx * edx + edy * edy) <= echo_radius * echo_radius:
+                                        if self.world != null and self.world.has_method("_deal_damage"):
+                                            # Instead of complex dummy objects, we apply damage modifier then deal damage
+                                            var old_dmg = base_dmg
+                                            if "damage" in self.ball: self.ball.damage = echo_dmg
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("damage", echo_dmg)
+
+                                            self.world._deal_damage(self.ball, enemy)
+
+                                            if "damage" in self.ball: self.ball.damage = old_dmg
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("damage", old_dmg)
+
+
             var speed = 2.0
             if "speed" in self.ball: speed = float(self.ball.speed)
             var cooldown = 1.0
