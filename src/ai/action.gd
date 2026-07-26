@@ -1339,7 +1339,12 @@ func _attempt_damage_internal(attacker, target) -> void:
 	if has_damage_reflection:
 		var base_dmg_refl = 10.0
 		if "damage" in attacker: base_dmg_refl = float(attacker.damage)
-		var refl_dmg = base_dmg_refl * 0.5
+		var refl_multiplier = 0.5
+		if "damage_reflection_multiplier" in target:
+			refl_multiplier = float(target.damage_reflection_multiplier)
+		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("damage_reflection_multiplier"):
+			refl_multiplier = float(target.get_meta("damage_reflection_multiplier"))
+		var refl_dmg = base_dmg_refl * refl_multiplier
 		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("take_damage"):
 			attacker.take_damage(refl_dmg)
 		elif "hp" in attacker:

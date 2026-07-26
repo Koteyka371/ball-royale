@@ -7419,6 +7419,7 @@ class GuildBossFightMode extends GameMode:
 	var guild_name = null
 	var guild_manager = null
 	var week_id = "week_1"
+	var minion_timer = 5.0
 
 	var tier = 1
 
@@ -7644,23 +7645,35 @@ class GuildBossFightMode extends GameMode:
 			elif boss.has_meta("mass"):
 				boss.set_meta("mass", boss.get_meta("mass") * 10.0)
 
-				var elements = ["fire", "water", "earth", "electric", "ice", "wind"]
-				var ctx = HashingContext.new()
-				ctx.start(HashingContext.HASH_MD5)
-				ctx.update(week_id.to_utf8_buffer())
-				var res = ctx.finish()
-				var hex_str = res.hex_encode()
-				# GDScript doesn't have a direct large hex to int, let's take a substring for modulo
-				var h_int = hex_str.substr(0, 8).hex_to_int()
-				var boss_weakness = elements[h_int % elements.size()]
-
+			if tier >= 2:
 				if typeof(boss) == TYPE_DICTIONARY:
-					boss["weakness"] = boss_weakness
+					boss["damage_reflection_active"] = true
+					boss["damage_reflection_multiplier"] = 0.1
 				else:
-					if "weakness" in boss:
-						boss.weakness = boss_weakness
+					if "damage_reflection_active" in boss:
+						boss.damage_reflection_active = true
+						boss.damage_reflection_multiplier = 0.1
 					elif boss.has_method("set_meta"):
-						boss.set_meta("weakness", boss_weakness)
+						boss.set_meta("damage_reflection_active", true)
+						boss.set_meta("damage_reflection_multiplier", 0.1)
+
+			var elements = ["fire", "water", "earth", "electric", "ice", "wind"]
+			var ctx = HashingContext.new()
+			ctx.start(HashingContext.HASH_MD5)
+			ctx.update(week_id.to_utf8_buffer())
+			var res = ctx.finish()
+			var hex_str = res.hex_encode()
+			# GDScript doesn't have a direct large hex to int, let's take a substring for modulo
+			var h_int = hex_str.substr(0, 8).hex_to_int()
+			var boss_weakness = elements[h_int % elements.size()]
+
+			if typeof(boss) == TYPE_DICTIONARY:
+				boss["weakness"] = boss_weakness
+			else:
+				if "weakness" in boss:
+					boss.weakness = boss_weakness
+				elif boss.has_method("set_meta"):
+					boss.set_meta("weakness", boss_weakness)
 
 			for i in range(1, valid_balls.size()):
 				var b = valid_balls[i]
@@ -7686,6 +7699,32 @@ class GuildBossFightMode extends GameMode:
 
 		if boss == null:
 			return
+
+		if tier >= 3:
+			minion_timer -= delta
+			if minion_timer <= 0:
+				minion_timer = 10.0
+				var boss_x = 500.0
+				if "x" in boss: boss_x = float(boss.x)
+				var boss_y = 500.0
+				if "y" in boss: boss_y = float(boss.y)
+				var m_id = "boss_minion_" + str(randi() % 10000)
+				var minion = {
+					"id": m_id,
+					"team": "Boss",
+					"ball_type": "minion",
+					"alive": true,
+					"hp": 100.0,
+					"max_hp": 100.0,
+					"radius": 15.0,
+					"damage": 15.0,
+					"speed": 100.0,
+					"x": boss_x + randf_range(-30, 30),
+					"y": boss_y + randf_range(-30, 30),
+					"vx": randf_range(-50, 50),
+					"vy": randf_range(-50, 50)
+				}
+				balls.append(minion)
 
 		if "hp" in boss and "max_hp" in boss and boss.hp < boss.max_hp:
 			var damage_taken = boss.max_hp - boss.hp
