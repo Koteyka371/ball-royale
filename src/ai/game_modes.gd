@@ -60389,7 +60389,144 @@ class WindingSnakePathMode extends GameMode:
 
 GAME_MODES['winding_snake_path'] = WindingSnakePathMode.new()
 
+
+class HazardLinesMode extends GameMode:
+	var spawn_timer = 0.0
+	var spawn_interval = 8.0
+	var line_speed = 150.0
+
+	func _init():
+		super._init()
+		name = "Laser Fence Mode"
+		description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not ("arena" in world):
+			return
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if not world.arena.has("hazards"):
+				world.arena.hazards = []
+		elif typeof(world.arena) == TYPE_OBJECT:
+			if not ("hazards" in world.arena):
+				world.arena.hazards = []
+		_spawn_line(world)
+
+	func _spawn_line(world):
+		var arena_width = 1000
+		var arena_height = 1000
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			arena_width = world.arena.get("width", 1000)
+			arena_height = world.arena.get("height", 1000)
+		elif typeof(world.arena) == TYPE_OBJECT:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		var t_id = "moving_hazard_line_" + str(randi() % 9000 + 1000)
+		var is_horizontal = (randi() % 2) == 0
+
+		var line = {
+			"id": t_id,
+			"kind": "deployable_thin_hazard_line",
+			"radius": 10.0,
+			"damage": 20.0,
+			"hit_ids": [],
+			"team": "neutral",
+			"duration": 15.0,
+			"is_horizontal": is_horizontal,
+			"vx": 0.0,
+			"vy": 0.0
+		}
+
+		if is_horizontal:
+			var start_y = 50.0
+			if (randi() % 2) == 1:
+				start_y = arena_height - 50.0
+			line.start_x = 0
+			line.end_x = arena_width
+			line.start_y = start_y
+			line.end_y = start_y
+			line.x = arena_width / 2.0
+			line.y = start_y
+			line.vy = line_speed if start_y < 100 else -line_speed
+		else:
+			var start_x = 50.0
+			if (randi() % 2) == 1:
+				start_x = arena_width - 50.0
+			line.start_x = start_x
+			line.end_x = start_x
+			line.start_y = 0
+			line.end_y = arena_height
+			line.x = start_x
+			line.y = arena_height / 2.0
+			line.vx = line_speed if start_x < 100 else -line_speed
+
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards = world.arena.hazards
+
+		hazards.append(line)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+			_spawn_line(world)
+
+		var hazards = []
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards = world.arena.hazards
+
+		var i = 0
+		while i < hazards.size():
+			var h = hazards[i]
+			var is_line = false
+			if typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "deployable_thin_hazard_line" and h.has("is_horizontal"):
+				is_line = true
+			elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "deployable_thin_hazard_line" and "is_horizontal" in h:
+				is_line = true
+
+			if is_line:
+				if typeof(h) == TYPE_DICTIONARY:
+					var vx = h.get("vx", 0.0)
+					var vy = h.get("vy", 0.0)
+					h["x"] = h.get("x", 0.0) + vx * delta
+					h["y"] = h.get("y", 0.0) + vy * delta
+					h["start_x"] = h.get("start_x", 0.0) + vx * delta
+					h["end_x"] = h.get("end_x", 0.0) + vx * delta
+					h["start_y"] = h.get("start_y", 0.0) + vy * delta
+					h["end_y"] = h.get("end_y", 0.0) + vy * delta
+
+					var duration = h.get("duration", 0.0) - delta
+					h["duration"] = duration
+					if duration <= 0:
+						hazards.remove_at(i)
+						continue
+				else:
+					var vx = h.vx if "vx" in h else 0.0
+					var vy = h.vy if "vy" in h else 0.0
+					h.x += vx * delta
+					h.y += vy * delta
+					if "start_x" in h: h.start_x += vx * delta
+					if "end_x" in h: h.end_x += vx * delta
+					if "start_y" in h: h.start_y += vy * delta
+					if "end_y" in h: h.end_y += vy * delta
+
+					var duration = h.duration - delta if "duration" in h else 0.0
+					if "duration" in h: h.duration = duration
+					if duration <= 0:
+						hazards.remove_at(i)
+						continue
+			i += 1
+
 GAME_MODES["spawning_safe_zones"] = SpawningSafeZonesMode.new()
+GAME_MODES["hazard_lines"] = HazardLinesMode.new()
 
 class CorruptionZoneMode extends GameMode:
 	var zone_radius: float = 150.0

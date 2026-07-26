@@ -39586,6 +39586,109 @@ class AuctionEventMode(GameMode):
                     if hasattr(world, "add_event"):
                         world.add_event("auction_failed", {})
 
+
+class HazardLinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Laser Fence Mode"
+        self.description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 8.0
+        self.line_speed = 150.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        self._spawn_line(world)
+
+    def _spawn_line(self, world):
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            hazard_class = None
+
+        if hazard_class is None or not hasattr(hazard_class, "__init__"):
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+            hazard_class = FallbackHazard
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        is_horizontal = random.choice([True, False])
+
+        t_id = f"moving_hazard_line_{random.randint(1000, 9999)}"
+        line = hazard_class(t_id, arena_width / 2, arena_height / 2, 10.0, "deployable_thin_hazard_line", 20.0)
+
+        if is_horizontal:
+            start_y = random.choice([50.0, arena_height - 50.0])
+            line.start_x = 0
+            line.end_x = arena_width
+            line.start_y = start_y
+            line.end_y = start_y
+            line.x = arena_width / 2
+            line.y = start_y
+            setattr(line, "vx", 0.0)
+            setattr(line, "vy", self.line_speed if start_y < 100 else -self.line_speed)
+        else:
+            start_x = random.choice([50.0, arena_width - 50.0])
+            line.start_x = start_x
+            line.end_x = start_x
+            line.start_y = 0
+            line.end_y = arena_height
+            line.x = start_x
+            line.y = arena_height / 2
+            setattr(line, "vx", self.line_speed if start_x < 100 else -self.line_speed)
+            setattr(line, "vy", 0.0)
+
+        setattr(line, "duration", 15.0)
+        setattr(line, "hit_ids", [])
+        setattr(line, "team", "neutral")
+        setattr(line, "is_horizontal", is_horizontal)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards.append(line)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+            self._spawn_line(world)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in list(world.arena.hazards):
+                if getattr(h, "kind", "") == "deployable_thin_hazard_line" and hasattr(h, "is_horizontal"):
+                    # Update position based on velocity
+                    vx = getattr(h, "vx", 0.0)
+                    vy = getattr(h, "vy", 0.0)
+
+                    h.x += vx * delta
+                    h.y += vy * delta
+                    h.start_x += vx * delta
+                    h.end_x += vx * delta
+                    h.start_y += vy * delta
+                    h.end_y += vy * delta
+
+                    # Handle duration / off-screen removal
+                    duration = getattr(h, "duration", 0.0)
+                    duration -= delta
+                    setattr(h, "duration", duration)
+                    if duration <= 0:
+                        world.arena.hazards.remove(h)
+
 GAME_MODES['auction_event'] = AuctionEventMode()
 
 
@@ -40080,3 +40183,4 @@ from ai.shared_health_pool import SharedHealthPoolMode
 GAME_MODES['shared_health_pool'] = SharedHealthPoolMode()
 
 GAME_MODES['exponential_control_point'] = ExponentialControlPointMode()
+GAME_MODES['hazard_lines'] = HazardLinesMode()
