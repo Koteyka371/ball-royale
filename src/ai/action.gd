@@ -16225,6 +16225,11 @@ func execute(strategy: String, delta: float):
                         elif typeof(self.ball) == TYPE_DICTIONARY:
                             self.ball["_chrono_slow"] = 0.4
                 elif hazard.kind == "sinkhole":
+                    var gbt = 0.0
+                    if "glider_booster_timer" in self.ball: gbt = float(self.ball.glider_booster_timer)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("glider_booster_timer"): gbt = float(self.ball.get_meta("glider_booster_timer"))
+                    if gbt > 0.0:
+                        continue
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
                     var dist_sq = dx * dx + dy * dy
@@ -18932,6 +18937,11 @@ func execute(strategy: String, delta: float):
                         if "skill_timer" in self.ball and self.ball.skill_timer > 0:
                             self.ball.skill_timer += delta * (1.0 - speed_mult)
                     elif hazard.kind in ["tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                        var gbt = 0.0
+                        if "glider_booster_timer" in self.ball: gbt = float(self.ball.glider_booster_timer)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("glider_booster_timer"): gbt = float(self.ball.get_meta("glider_booster_timer"))
+                        if gbt > 0.0:
+                            continue
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
                         var md = max(0.1, dist)
@@ -22851,16 +22861,22 @@ func execute(strategy: String, delta: float):
                     }
                     self.world.arena.hazards.append(shield_hazard)
             elif wall_state == "abyss":
-                new_speed = 0.0
-                if typeof(self.ball) == TYPE_DICTIONARY:
-                    self.ball["hp"] = 0
-                    self.ball["alive"] = false
-                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                    self.ball.set_meta("hp", 0)
-                    self.ball.set_meta("alive", false)
+                var gbt = 0.0
+                if "glider_booster_timer" in self.ball: gbt = float(self.ball.glider_booster_timer)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("glider_booster_timer"): gbt = float(self.ball.get_meta("glider_booster_timer"))
+                if gbt > 0.0:
+                    pass
                 else:
-                    if "hp" in self.ball: self.ball.hp = 0
-                    if "alive" in self.ball: self.ball.alive = false
+                    new_speed = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["hp"] = 0
+                        self.ball["alive"] = false
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("hp", 0)
+                        self.ball.set_meta("alive", false)
+                    else:
+                        if "hp" in self.ball: self.ball.hp = 0
+                        if "alive" in self.ball: self.ball.alive = false
             elif wall_state == "spikes":
                 new_speed = speed * 0.5
             elif wall_state == "slow_wall":
@@ -29049,6 +29065,19 @@ func _collect_booster(delta: float):
 				else:
 					self.ball.leech_booster_timer = 10.0
 
+				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+					var idx = self.world.arena.hazards.find(nearest)
+					if idx != -1:
+						self.world.arena.hazards.remove_at(idx)
+				if self.world != null and "boosters" in self.world:
+					var idx = self.world.boosters.find(nearest)
+					if idx != -1:
+						self.world.boosters.remove_at(idx)
+			elif "kind" in nearest and nearest.kind == "glider_booster":
+				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+					self.ball.set_meta("glider_booster_timer", 10.0)
+				else:
+					self.ball.glider_booster_timer = 10.0
 				if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
 					var idx = self.world.arena.hazards.find(nearest)
 					if idx != -1:
@@ -40021,6 +40050,37 @@ func _update_skill_timer(delta: float):
                             elif typeof(item) == TYPE_OBJECT:
                                 if "x" in item: item.x += nx * pull_strength
                                 if "y" in item: item.y += ny * pull_strength
+
+    var glider_booster_timer = 0.0
+    if "glider_booster_timer" in self.ball:
+        glider_booster_timer = float(self.ball.glider_booster_timer)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("glider_booster_timer"):
+        glider_booster_timer = float(self.ball.get_meta("glider_booster_timer"))
+    if glider_booster_timer > 0.0:
+        glider_booster_timer -= delta
+        var speed_applied = false
+        if "glider_speed_applied" in self.ball: speed_applied = bool(self.ball.glider_speed_applied)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("glider_speed_applied"): speed_applied = bool(self.ball.get_meta("glider_speed_applied"))
+
+        if not speed_applied:
+            if "speed_multiplier" in self.ball: self.ball.speed_multiplier *= 1.5
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed_multiplier"): self.ball.set_meta("speed_multiplier", float(self.ball.get_meta("speed_multiplier")) * 1.5)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", 1.5)
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("glider_speed_applied", true)
+            else: self.ball.glider_speed_applied = true
+
+        if glider_booster_timer <= 0.0:
+            glider_booster_timer = 0.0
+            if speed_applied:
+                if "speed_multiplier" in self.ball: self.ball.speed_multiplier /= 1.5
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("speed_multiplier"): self.ball.set_meta("speed_multiplier", float(self.ball.get_meta("speed_multiplier")) / 1.5)
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("glider_speed_applied", false)
+                else: self.ball.glider_speed_applied = false
+
+        if "glider_booster_timer" in self.ball:
+            self.ball.glider_booster_timer = glider_booster_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+            self.ball.set_meta("glider_booster_timer", glider_booster_timer)
 
     var tornado_booster_timer = 0.0
     if "tornado_booster_timer" in self.ball:

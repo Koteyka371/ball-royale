@@ -8338,6 +8338,8 @@ class Action:
                                     self.ball.killer = "singularity"
                             self.ball._chrono_slow = 0.4
                     elif hazard.kind == "sinkhole" or hazard.kind == "massive_sinkhole":
+                        if getattr(self.ball, "glider_booster_timer", 0.0) > 0.0:
+                            continue
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx * dx + dy * dy
@@ -9906,6 +9908,9 @@ class Action:
                                 self.ball.skill_timer += delta * (1.0 - speed_mult)
                             continue
                         elif hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                            # If glider active, immunity to tornado pull/damage
+                            if getattr(self.ball, "glider_booster_timer", 0.0) > 0.0:
+                                continue
                             # Pull effect, launch, and damage
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
@@ -11559,9 +11564,13 @@ class Action:
 
                         self.world.arena.hazards.append(DefensiveShieldHazard(ix, iy))
                 elif wall_state == "abyss":
-                    new_speed = 0.0
-                    self.ball.hp = 0
-                    self.ball.alive = False
+                    if getattr(self.ball, "glider_booster_timer", 0.0) > 0.0:
+                        # Glider allows ignoring the abyss death zone completely
+                        pass
+                    else:
+                        new_speed = 0.0
+                        self.ball.hp = 0
+                        self.ball.alive = False
                 elif wall_state == "spikes":
                     new_speed = speed * 0.5
                 elif wall_state == "slow_wall":
@@ -14804,6 +14813,13 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "bomb_booster":
                     self.ball.bomb_booster_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "glider_booster":
+                    self.ball.glider_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -20547,6 +20563,17 @@ class Action:
                             else:
                                 self.ball.x += nx * force
                                 self.ball.y += ny * force
+
+        if hasattr(self.ball, "glider_booster_timer") and self.ball.glider_booster_timer > 0:
+            self.ball.glider_booster_timer -= delta
+            if not getattr(self.ball, "glider_speed_applied", False):
+                self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.0) * 1.5
+                self.ball.glider_speed_applied = True
+            if self.ball.glider_booster_timer <= 0:
+                self.ball.glider_booster_timer = 0.0
+                if getattr(self.ball, "glider_speed_applied", False):
+                    self.ball.speed_multiplier = getattr(self.ball, "speed_multiplier", 1.5) / 1.5
+                    self.ball.glider_speed_applied = False
 
         if hasattr(self.ball, "tornado_booster_timer") and self.ball.tornado_booster_timer > 0:
             self.ball.tornado_booster_timer -= delta
