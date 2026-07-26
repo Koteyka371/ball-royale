@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1518] Magnetic Mine Hazard — *2026-07-26 05:06:37 UTC*
+
+A new type of deployable hazard or natural arena element that slowly pulls all nearby projectiles (both friendly and enemy) towards its center. Upon absorbing a certain amount of damage, it explodes in a massive AoE blast.
+
+---
+
 ## [idea-1469] Decoy Distraction Hazard — *2026-07-26 04:55:28 UTC*
 
 A hazard zone that generates holographic decoys of nearby balls to distract enemy AI, making them attack holograms instead of real players.

@@ -25994,7 +25994,7 @@
     },
     {
       "id": "idea-1518",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Mine Hazard",
@@ -38093,6 +38093,40 @@
         "src/ai/anomaly_drones.py",
         "src/ai/anomaly_drones.gd",
         "tests/test_anomaly_drones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2229",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Hazard Variants",
+      "description": "Some hazard zones create an entire fake replica of the arena.",
+      "allowed_paths": [
+        "src/arena/mirage_variants.py",
+        "src/arena/mirage_variants.gd",
+        "tests/test_mirage_variants.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2230",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Decoy Explosions",
+      "description": "Decoys have a small chance to trigger a mini EMP explosion when destroyed.",
+      "allowed_paths": [
+        "src/ai/quantum_decoy_explosions.py",
+        "src/ai/quantum_decoy_explosions.gd",
+        "tests/test_quantum_decoy_explosions.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
