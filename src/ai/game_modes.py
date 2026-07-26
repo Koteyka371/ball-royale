@@ -30383,7 +30383,149 @@ class GravityInversionMode(GameMode):
                 if hasattr(world, 'add_event'):
                     world.add_event("gravity_inversion", {"duration": self.inversion_duration})
 
+
+
+
+class MercenaryOutpostsMode(GameMode):
+    class MercenaryBall:
+        def __init__(self, id_val, x, y, team):
+            self.id = id_val
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.radius = 15.0
+            self.mass = 1.0
+            self.hp = 50.0
+            self.max_hp = 50.0
+            self.team = team
+            self.ball_type = "mercenary"
+            self.alive = True
+            self.is_mercenary = True
+            self.speed_multiplier = 1.0
+            self.damage_multiplier = 1.0
+            self.base_speed = 100.0
+            self.speed = 100.0
+
+        def update(self, delta, arena_width=1000.0, arena_height=1000.0):
+            # Engine physics will handle movement based on vx/vy
+            pass
+
+    def __init__(self):
+        super().__init__()
+        self.name = "Mercenary Outposts"
+        self.description = "Players can capture mercenary outposts across the map. Once fully captured, friendly AI balls spawn periodically and help defend the capturing player."
+        self.outposts = []
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        # Initialize outposts if none exist
+        if not self.outposts:
+            random.seed(int(getattr(world, "tick_timer", 0.0) * 1000) + 1337)
+            for _ in range(3):
+                self.outposts.append({
+                    "x": random.uniform(200, 800),
+                    "y": random.uniform(200, 800),
+                    "radius": 120.0,
+                    "owner": None,
+                    "capture_progress": 0.0,
+                    "spawn_timer": 0.0
+                })
+            random.seed()
+
+        for outpost in self.outposts:
+            occupants = []
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                    continue
+                if getattr(b, "is_mercenary", False):
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                br = getattr(b, "radius", 20.0)
+                dx = bx - outpost["x"]
+                dy = by - outpost["y"]
+                if dx*dx + dy*dy <= (outpost["radius"] + br)**2:
+                    occupants.append(b)
+
+            if not occupants:
+                if outpost["capture_progress"] > 0 and outpost["owner"] is None:
+                    outpost["capture_progress"] = max(0.0, outpost["capture_progress"] - delta * 10.0)
+            else:
+                first_occupant_team = getattr(occupants[0], "team", getattr(occupants[0], "ball_type", "unknown"))
+                same_team = all(getattr(b, "team", getattr(b, "ball_type", "unknown")) == first_occupant_team for b in occupants)
+
+                if same_team:
+                    if outpost["owner"] == first_occupant_team:
+                        pass # Already fully owned, don't change
+                    else:
+                        if outpost["owner"] is None:
+                            outpost["capture_progress"] += delta * 20.0
+                            if outpost["capture_progress"] >= 100.0:
+                                outpost["capture_progress"] = 100.0
+                                outpost["owner"] = first_occupant_team
+                                if hasattr(world, "add_event"):
+                                    world.add_event("outpost_captured", {"team": first_occupant_team, "outpost": outpost})
+                        else:
+                            # Enemy is capturing an owned point
+                            outpost["capture_progress"] -= delta * 20.0
+                            if outpost["capture_progress"] <= 0:
+                                outpost["capture_progress"] = 0.0
+                                outpost["owner"] = None
+                else:
+                    # Contested, no progress change, or maybe decay
+                    outpost["capture_progress"] -= delta * 20.0
+                    if outpost["capture_progress"] <= 0:
+                        outpost["capture_progress"] = 0.0
+                        outpost["owner"] = None
+
+            if outpost["owner"] is not None:
+                outpost["spawn_timer"] += delta
+                if outpost["spawn_timer"] >= 10.0:
+                    outpost["spawn_timer"] = 0.0
+
+                    merc_id = random.randint(100000, 999999)
+                    if hasattr(world, "next_id"):
+                        merc_id = world.next_id
+                        world.next_id += 1
+
+                    new_merc = self.MercenaryBall(merc_id, outpost["x"], outpost["y"], outpost["owner"])
+                    if hasattr(world, "balls"):
+                        world.balls.append(new_merc)
+
+        # update mercenaries AI
+        for b in list(balls):
+            if getattr(b, "is_mercenary", False) and getattr(b, "alive", False):
+                # find closest enemy
+                closest_enemy = None
+                closest_dist = float('inf')
+                for other in balls:
+                    if other == b or not getattr(other, "alive", False) or getattr(other, "team", None) == getattr(b, "team", None):
+                        continue
+                    if getattr(other, "is_mercenary", False):
+                        continue
+
+                    dx = getattr(other, "x", 0.0) - b.x
+                    dy = getattr(other, "y", 0.0) - b.y
+                    dist = (dx*dx + dy*dy)**0.5
+                    if dist < closest_dist:
+                        closest_dist = dist
+                        closest_enemy = other
+
+                if closest_enemy:
+                    # Move towards enemy
+                    dx = closest_enemy.x - b.x
+                    dy = closest_enemy.y - b.y
+                    dist = (dx*dx + dy*dy)**0.5
+                    if dist > 0:
+                        b.vx = (dx/dist) * b.speed
+                        b.vy = (dy/dist) * b.speed
+                else:
+                    b.vx = 0
+                    b.vy = 0
+
 GAME_MODES = {
+    'mercenary_outposts': MercenaryOutpostsMode(),
     'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     "singularity_bomb_event": SingularityBombEventMode(),

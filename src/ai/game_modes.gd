@@ -48869,7 +48869,239 @@ class SingularityBombEventMode extends GameMode:
 								if "vy" in b: b.vy += ny * knockback
 
 
+
+
+
+
+class MercenaryOutpostsMode extends GameMode:
+	var outposts = []
+
+	class MercenaryBall:
+		var id
+		var x: float
+		var y: float
+		var vx: float
+		var vy: float
+		var radius: float
+		var mass: float
+		var hp: float
+		var max_hp: float
+		var team: String
+		var ball_type: String
+		var alive: bool
+		var is_mercenary: bool
+		var speed_multiplier: float
+		var damage_multiplier: float
+		var speed: float
+		var base_speed: float
+
+		func _init(id_val, start_x: float, start_y: float, team_val: String):
+			id = id_val
+			x = start_x
+			y = start_y
+			vx = 0.0
+			vy = 0.0
+			radius = 15.0
+			mass = 1.0
+			hp = 50.0
+			max_hp = 50.0
+			team = team_val
+			ball_type = "mercenary"
+			alive = true
+			is_mercenary = true
+			speed_multiplier = 1.0
+			damage_multiplier = 1.0
+			speed = 100.0
+			base_speed = 100.0
+
+		func update(delta: float, arena_width: float = 1000.0, arena_height: float = 1000.0):
+			pass
+
+	func _init():
+		name = "Mercenary Outposts"
+		description = "Players can capture mercenary outposts across the map. Once fully captured, friendly AI balls spawn periodically and help defend the capturing player."
+		outposts = []
+
+	func tick(world, balls, delta):
+		if outposts.size() == 0:
+			var rng = RandomNumberGenerator.new()
+			var tick_timer = 0.0
+			if world.get("tick_timer") != null:
+				tick_timer = world.get("tick_timer")
+			rng.seed = int(tick_timer * 1000) + 1337
+			for i in range(3):
+				outposts.append({
+					"x": rng.randf_range(200.0, 800.0),
+					"y": rng.randf_range(200.0, 800.0),
+					"radius": 120.0,
+					"owner": null,
+					"capture_progress": 0.0,
+					"spawn_timer": 0.0
+				})
+
+		for outpost in outposts:
+			var occupants = []
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					continue
+
+				var is_alive = false
+				if "alive" in b: is_alive = b.alive
+
+				var b_type = ""
+				if "ball_type" in b: b_type = b.ball_type
+
+				if not is_alive or b_type == "spectator":
+					continue
+
+				var is_merc = false
+				if "is_mercenary" in b: is_merc = b.is_mercenary
+
+				if is_merc:
+					continue
+
+				var bx = 0.0
+				if "x" in b: bx = b.x
+
+				var by = 0.0
+				if "y" in b: by = b.y
+
+				var br = 20.0
+				if "radius" in b: br = b.radius
+
+				var dx = bx - outpost["x"]
+				var dy = by - outpost["y"]
+				if dx*dx + dy*dy <= (outpost["radius"] + br) * (outpost["radius"] + br):
+					occupants.append(b)
+
+			if occupants.size() == 0:
+				if outpost["capture_progress"] > 0 and outpost["owner"] == null:
+					outpost["capture_progress"] = max(0.0, outpost["capture_progress"] - delta * 10.0)
+			else:
+				var first_team = "unknown"
+				if "team" in occupants[0]: first_team = occupants[0].team
+				elif "ball_type" in occupants[0]: first_team = occupants[0].ball_type
+
+				var same_team = true
+				for b in occupants:
+					var b_team = "unknown"
+					if "team" in b: b_team = b.team
+					elif "ball_type" in b: b_team = b.ball_type
+					if b_team != first_team:
+						same_team = false
+						break
+
+				if same_team:
+					if outpost["owner"] == first_team:
+						pass
+					else:
+						if outpost["owner"] == null:
+							outpost["capture_progress"] += delta * 20.0
+							if outpost["capture_progress"] >= 100.0:
+								outpost["capture_progress"] = 100.0
+								outpost["owner"] = first_team
+						else:
+							outpost["capture_progress"] -= delta * 20.0
+							if outpost["capture_progress"] <= 0.0:
+								outpost["capture_progress"] = 0.0
+								outpost["owner"] = null
+				else:
+					outpost["capture_progress"] -= delta * 20.0
+					if outpost["capture_progress"] <= 0.0:
+						outpost["capture_progress"] = 0.0
+						outpost["owner"] = null
+
+			if outpost["owner"] != null:
+				outpost["spawn_timer"] += delta
+				if outpost["spawn_timer"] >= 10.0:
+					outpost["spawn_timer"] = 0.0
+
+					var merc_id = randi()
+					if world.get("next_id") != null:
+						merc_id = world.next_id
+						world.next_id += 1
+
+					var new_merc = MercenaryBall.new(merc_id, outpost["x"], outpost["y"], outpost["owner"])
+					if world.get("balls") != null:
+						world.balls.append(new_merc)
+
+		for b in balls:
+			if typeof(b) != TYPE_DICTIONARY:
+				var is_merc = false
+				if "is_mercenary" in b: is_merc = b.is_mercenary
+				var is_alive = false
+				if "alive" in b: is_alive = b.alive
+
+				if is_merc and is_alive:
+					var closest_enemy = null
+					var closest_dist = 9999999.0
+
+					var b_team = null
+					if "team" in b: b_team = b.team
+
+					for other in balls:
+						if typeof(other) == TYPE_DICTIONARY:
+							continue
+
+						var o_alive = false
+						if "alive" in other: o_alive = other.alive
+
+						var o_team = null
+						if "team" in other: o_team = other.team
+
+						if other == b or not o_alive or o_team == b_team:
+							continue
+
+						var o_merc = false
+						if "is_mercenary" in other: o_merc = other.is_mercenary
+
+						if o_merc:
+							continue
+
+						var bx = 0.0
+						if "x" in b: bx = b.x
+						var by = 0.0
+						if "y" in b: by = b.y
+
+						var ox = 0.0
+						if "x" in other: ox = other.x
+						var oy = 0.0
+						if "y" in other: oy = other.y
+
+						var dx = ox - bx
+						var dy = oy - by
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < closest_dist:
+							closest_dist = dist
+							closest_enemy = other
+
+					if closest_enemy != null:
+						var bx = 0.0
+						if "x" in b: bx = b.x
+						var by = 0.0
+						if "y" in b: by = b.y
+
+						var ox = 0.0
+						if "x" in closest_enemy: ox = closest_enemy.x
+						var oy = 0.0
+						if "y" in closest_enemy: oy = closest_enemy.y
+
+						var dx = ox - bx
+						var dy = oy - by
+						var dist = sqrt(dx*dx + dy*dy)
+
+						var bspeed = 100.0
+						if "speed" in b: bspeed = b.speed
+
+						if dist > 0.0:
+							b.vx = (dx/dist) * bspeed
+							b.vy = (dy/dist) * bspeed
+					else:
+						b.vx = 0.0
+						b.vy = 0.0
+
 var GAME_MODES = {
+	"mercenary_outposts": MercenaryOutpostsMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"singularity_bomb_event": SingularityBombEventMode.new(),
 	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),
