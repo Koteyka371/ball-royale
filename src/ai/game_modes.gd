@@ -52783,6 +52783,7 @@ class MeteorBombardmentMode extends GameMode:
 				world.arena.hazards.append(HazardObj.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
 
+GAME_MODES['capture_the_flag_elements_in_battle_royale'] = load("res://src/ai/capture_the_flag_elements_in_battle_royale.gd").CaptureTheFlagElementsInBattleRoyaleMode.new()
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()
