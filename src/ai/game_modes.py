@@ -30093,7 +30093,54 @@ class ExpandingHazardBubblesMode(GameMode):
         self.bubbles = active_bubbles
 
 
+
+class RandomDirectionGravityMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.id = "Random Direction Gravity"
+        self.name = "Random Direction Gravity"
+        self.description = "Gravity periodically shifts in random directions."
+        self.shift_timer = 0.0
+        self.shift_duration = 0.0
+        self.shift_dx = 0.0
+        self.shift_dy = 0.0
+        self.shift_strength = 200.0
+
+    def setup(self, world: Any, balls: List[Any]):
+        super().setup(world, balls)
+        self.rng = __import__("random").Random(int(getattr(world, 'tick_timer', 0.0) * 1000))
+        self.shift_timer = self.rng.uniform(5.0, 15.0)
+
+    def tick(self, world: Any, balls: List[Any], delta: float):
+        super().tick(world, balls, delta)
+
+
+        if self.shift_duration > 0:
+            self.shift_duration -= delta
+
+            for b in balls:
+                if not getattr(b, 'alive', True) or not getattr(b, 'active', True): continue
+                if getattr(b, 'ball_type', None) == 'spectator': continue
+
+                # Apply gravity
+                b.vx = getattr(b, 'vx', 0.0) + self.shift_dx * self.shift_strength * delta
+                b.vy = getattr(b, 'vy', 0.0) + self.shift_dy * self.shift_strength * delta
+        else:
+            self.shift_timer -= delta
+            if self.shift_timer <= 0:
+                self.shift_duration = self.rng.uniform(3.0, 8.0)
+                self.shift_timer = self.rng.uniform(10.0, 20.0)
+
+                # Pick a random direction (angle)
+                angle = self.rng.uniform(0, 2 * __import__("math").pi)
+                self.shift_dx = __import__("math").cos(angle)
+                self.shift_dy = __import__("math").sin(angle)
+
+                if hasattr(world, 'add_event'):
+                    world.add_event("random_direction_gravity_shift", {"duration": self.shift_duration, "dx": self.shift_dx, "dy": self.shift_dy})
+
 GAME_MODES = {
+    "random_direction_gravity": RandomDirectionGravityMode(),
     'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
     'capture_zones': CaptureZonesMode(),
     "nemesis_sustain": NemesisSustainMode(),

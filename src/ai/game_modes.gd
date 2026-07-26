@@ -60730,3 +60730,80 @@ class BountyExtractionMode extends GameMode:
 
 
 GAME_MODES['bounty_extraction'] = BountyExtractionMode.new()
+
+class RandomDirectionGravityMode extends GameMode:
+	var shift_timer = 0.0
+	var shift_duration = 0.0
+	var shift_dx = 0.0
+	var shift_dy = 0.0
+	var shift_strength = 200.0
+	var random = RandomNumberGenerator.new()
+
+	func _init():
+		id = "Random Direction Gravity"
+		name = "Random Direction Gravity"
+		description = "Gravity periodically shifts in random directions."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var seed_val = 0
+		if typeof(world) == TYPE_DICTIONARY and "tick_timer" in world: seed_val = int(world.tick_timer * 1000)
+		elif typeof(world) == TYPE_OBJECT and "tick_timer" in world: seed_val = int(world.tick_timer * 1000)
+		random.seed = seed_val
+		shift_timer = random.randf_range(5.0, 15.0)
+
+	func tick(world, balls, delta):
+		super.tick(world, balls, delta)
+
+
+		if shift_duration > 0:
+			shift_duration -= delta
+
+			for b in balls:
+				var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get_meta("alive") if b.has_meta("alive") else true
+				var is_active = b.get("active") if typeof(b) == TYPE_DICTIONARY else b.get_meta("active") if b.has_meta("active") else true
+				if not is_alive or not is_active:
+					continue
+
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get_meta("ball_type") if b.has_meta("ball_type") else ""
+				if b_type == "spectator":
+					continue
+
+				var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
+				var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
+
+				vx += shift_dx * shift_strength * delta
+				vy += shift_dy * shift_strength * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = vx
+					b["vy"] = vy
+				else:
+					b.set_meta("vx", vx)
+					b.set_meta("vy", vy)
+		else:
+			shift_timer -= delta
+			if shift_timer <= 0:
+				shift_duration = random.randf_range(3.0, 8.0)
+				shift_timer = random.randf_range(10.0, 20.0)
+
+				var angle = random.randf_range(0.0, 2.0 * PI)
+				shift_dx = cos(angle)
+				shift_dy = sin(angle)
+
+				var world_has_event = false
+				if typeof(world) == TYPE_DICTIONARY:
+					if world.has("add_event"):
+						world_has_event = true
+				else:
+					if world.has_method("add_event"):
+						world_has_event = true
+
+				if world_has_event:
+					var event_data = {"duration": shift_duration, "dx": shift_dx, "dy": shift_dy}
+					if typeof(world) == TYPE_DICTIONARY:
+						world["add_event"].call("random_direction_gravity_shift", event_data)
+					else:
+						world.add_event("random_direction_gravity_shift", event_data)
+
+GAME_MODES['random_direction_gravity'] = RandomDirectionGravityMode.new()
