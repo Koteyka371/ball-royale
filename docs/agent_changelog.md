@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1496] Phantom Spectator Intervention — *2026-07-26 00:06:58 UTC*
+
+Eliminated balls become 'Phantom Spectators' with limited ability to spawn minor hazards (like small ice patches) or toss tiny health packs to influence the match before it ends.
+
+---
+
 ## [idea-1510] Weaponized Paint — *2026-07-26 00:02:02 UTC*
 
 A mode where players shoot paint that stays on the floor, providing a movement speed boost to allies and a slow debuff to enemies traversing over it.

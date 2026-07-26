@@ -25618,7 +25618,7 @@
     },
     {
       "id": "idea-1496",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Phantom Spectator Intervention",
@@ -37735,6 +37735,23 @@
         "src/ai/zero_g_pinball.py",
         "src/ai/zero_g_pinball.gd",
         "tests/test_zero_g_pinball.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2208",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Color Changing Walls",
+      "description": "Arena walls periodically shift colors. Bouncing off a wall of your team's color grants a temporary shield, while hitting an enemy-colored wall deals chip damage.",
+      "allowed_paths": [
+        "src/ai/color_changing_walls.py",
+        "src/ai/color_changing_walls.gd",
+        "tests/test_color_changing_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
