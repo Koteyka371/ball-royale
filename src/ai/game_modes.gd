@@ -1,6 +1,7 @@
 class_name GameModes
 
 
+
 class GameMode:
 	var name: String = "Unknown"
 	var description: String = "Base game mode"
@@ -49022,7 +49023,95 @@ class ContinuousShrinkSafeZoneMode extends SafeZoneMode:
 		shrink_pause_timer = 0.0
 		super.tick(world, balls, delta)
 
+class ReverseTimePenaltyMode extends GameMode:
+    var timer = 0.0
+    var history = {}
+
+    func _init():
+        name = "Reverse Time Penalty"
+        description = "Every 60 seconds, all balls are forcefully rewound to their positions 10 seconds ago. However, their health and cooldowns remain at current levels, leading to unpredictable resets and repositioning plays."
+
+    func tick(world, balls, delta=0.016):
+        super(world, balls, delta)
+        timer += delta
+
+        # Record position history
+        for b in balls:
+            if typeof(b) == TYPE_DICTIONARY and b.get("ball_type", "") == "spectator":
+                continue
+            elif typeof(b) != TYPE_DICTIONARY and b.get("ball_type") == "spectator":
+                continue
+
+            var b_id
+            if typeof(b) == TYPE_DICTIONARY:
+                if not b.has("id"):
+                    continue
+                b_id = b.id
+            else:
+                if not "id" in b:
+                    continue
+                b_id = b.id
+
+            if not history.has(b_id):
+                history[b_id] = []
+
+            var bx = 0.0
+            var by = 0.0
+            if typeof(b) == TYPE_DICTIONARY:
+                bx = b.x
+                by = b.y
+            else:
+                bx = b.x
+                by = b.y
+
+            history[b_id].append([timer, bx, by])
+
+            while history[b_id].size() > 0 and timer - history[b_id][0][0] > 10.0:
+                history[b_id].pop_front()
+
+        if timer >= 60.0:
+            for b in balls:
+                var is_alive = false
+                var b_type = ""
+                var b_id = null
+                var has_id = false
+
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("alive"):
+                        is_alive = b.alive
+                    if b.has("ball_type"):
+                        b_type = b.ball_type
+                    if b.has("id"):
+                        b_id = b.id
+                        has_id = true
+                else:
+                    if "alive" in b:
+                        is_alive = b.alive
+                    if "ball_type" in b:
+                        b_type = b.ball_type
+                    if "id" in b:
+                        b_id = b.id
+                        has_id = true
+
+                if not is_alive or b_type == "spectator" or not has_id:
+                    continue
+
+                if history.has(b_id) and history[b_id].size() > 0:
+                    var oldest_state = history[b_id][0]
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b.x = oldest_state[1]
+                        b.y = oldest_state[2]
+                    else:
+                        b.x = oldest_state[1]
+                        b.y = oldest_state[2]
+
+            timer = 0.0
+            history = {}
+
+
+
 var GAME_MODES = {
+	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"singularity_bomb_event": SingularityBombEventMode.new(),

@@ -30485,7 +30485,52 @@ class ContinuousShrinkSafeZoneMode(SafeZoneMode):
         self.shrink_pause_timer = 0.0
         super().tick(world, balls, delta)
 
+class ReverseTimePenaltyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Time Penalty"
+        self.description = "Every 60 seconds, all balls are forcefully rewound to their positions 10 seconds ago. However, their health and cooldowns remain at current levels, leading to unpredictable resets and repositioning plays."
+        self.timer = 0.0
+        self.history = {}
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.timer += delta
+
+        # Record position history
+        for b in balls:
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+            b_id = getattr(b, "id", id(b))
+            if b_id not in self.history:
+                self.history[b_id] = []
+
+            # Save (timestamp, x, y)
+            self.history[b_id].append((self.timer, b.x, b.y))
+
+            # Prune history older than 10 seconds
+            while self.history[b_id] and self.timer - self.history[b_id][0][0] > 10.0:
+                self.history[b_id].pop(0)
+
+        if self.timer >= 60.0:
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                b_id = getattr(b, "id", id(b))
+                if b_id in self.history and len(self.history[b_id]) > 0:
+                    # Rewind to oldest recorded state (around 10s ago)
+                    oldest_state = self.history[b_id][0]
+                    b.x = oldest_state[1]
+                    b.y = oldest_state[2]
+
+            # Reset timer and history
+            self.timer = 0.0
+            self.history = {}
+
+
+
 GAME_MODES = {
+    'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
