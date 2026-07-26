@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1553] Clan Emissary System — *2026-07-26 20:11:30 UTC*
+
+Allow clan leaders to designate 'Emissaries'. In Battle Royale modes, if an Emissary survives to the top 3, they claim bonus territory points or resources for their clan. This paints a target on their back during matches, creating emergent 'bounty' gameplay dynamics where other players can earn rewards for eliminating an Emissary.
+
+---
+
 ## [idea-1505] Black Hole Core — *2026-07-26 20:11:25 UTC*
 
 A modifier where a stationary black hole sits in the center of the arena, dragging balls towards it continuously.
