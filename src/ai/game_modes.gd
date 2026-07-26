@@ -61248,4 +61248,318 @@ class DynamicCaptureZonesMode extends GameMode:
 
 		return null
 
+
+class TelegraphedSupplyDropMode extends GameMode:
+	var drop_timer: float = 0.0
+	var active_telegraphs: Array = []
+	var high_tier_drops: Array = []
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Telegraphed Supply Drop"
+		description = "Periodically, high-value supply packages are dropped via parachute into the arena. Their landing zone is telegraphed early."
+		rng.seed = 12345
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		drop_timer = 0.0
+		active_telegraphs = []
+		high_tier_drops = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("tick_timer"):
+			rng.seed = int(world["tick_timer"] * 1000)
+		elif typeof(world) == TYPE_OBJECT and "tick_timer" in world:
+			rng.seed = int(world.tick_timer * 1000)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var has_arena = false
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena"): has_arena = true
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null: has_arena = true
+
+		if not has_arena:
+			return
+
+		drop_timer += delta
+		if drop_timer >= 20.0:
+			drop_timer = 0.0
+
+			var arena_width = 1000
+			var arena_height = 1000
+			if typeof(world) == TYPE_DICTIONARY:
+				if typeof(world["arena"]) == TYPE_DICTIONARY:
+					if world["arena"].has("width"): arena_width = world["arena"]["width"]
+					if world["arena"].has("height"): arena_height = world["arena"]["height"]
+				else:
+					if "width" in world["arena"]: arena_width = world["arena"].width
+					if "height" in world["arena"]: arena_height = world["arena"].height
+			else:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("width"): arena_width = world.arena.width
+					if world.arena.has("height"): arena_height = world.arena.height
+				else:
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
+
+			var cx = rng.randf_range(200, arena_width - 200)
+			var cy = rng.randf_range(200, arena_height - 200)
+			var drop_id = "telegraph_" + str(rng.randi_range(1000, 9999))
+
+			var telegraph = {
+				"id": drop_id,
+				"x": cx,
+				"y": cy,
+				"radius": 50.0,
+				"kind": "supply_drop_telegraph",
+				"timer": 5.0,
+				"active": true
+			}
+			active_telegraphs.append(telegraph)
+
+			var hazards_list = null
+			if typeof(world) == TYPE_DICTIONARY:
+				if typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+					hazards_list = world["arena"]["hazards"]
+				elif typeof(world["arena"]) != TYPE_DICTIONARY and "hazards" in world["arena"]:
+					hazards_list = world["arena"].hazards
+			else:
+				if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					hazards_list = world.arena["hazards"]
+				elif typeof(world.arena) != TYPE_DICTIONARY and "hazards" in world.arena:
+					hazards_list = world.arena.hazards
+
+			if hazards_list != null:
+				var h = {
+					"id": drop_id,
+					"x": cx,
+					"y": cy,
+					"radius": 50.0,
+					"kind": "supply_drop_telegraph",
+					"damage": 0.0,
+					"timer": 5.0,
+					"active": true
+				}
+				hazards_list.append(h)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("telegraph_spawn", {"message": "A high-value supply drop is incoming!"})
+
+		var telegraphs_to_remove = []
+		for t in active_telegraphs:
+			if not t.get("active", true):
+				continue
+
+			t["timer"] -= delta
+
+			var sync_h = null
+			var hazards_list = null
+			if typeof(world) == TYPE_DICTIONARY:
+				if typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+					hazards_list = world["arena"]["hazards"]
+				elif typeof(world["arena"]) != TYPE_DICTIONARY and "hazards" in world["arena"]:
+					hazards_list = world["arena"].hazards
+			else:
+				if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					hazards_list = world.arena["hazards"]
+				elif typeof(world.arena) != TYPE_DICTIONARY and "hazards" in world.arena:
+					hazards_list = world.arena.hazards
+
+			if hazards_list != null:
+				for h in hazards_list:
+					var h_id = ""
+					if typeof(h) == TYPE_DICTIONARY and h.has("id"): h_id = h["id"]
+					elif typeof(h) != TYPE_DICTIONARY and "id" in h: h_id = h.id
+
+					if h_id == t["id"]:
+						if typeof(h) == TYPE_DICTIONARY: h["timer"] = t["timer"]
+						else: h.timer = t["timer"]
+						sync_h = h
+						break
+
+			if t["timer"] <= 0:
+				t["active"] = false
+				telegraphs_to_remove.append(t)
+				if sync_h != null and hazards_list != null:
+					hazards_list.erase(sync_h)
+
+				var htd_id = "ht_drop_" + str(rng.randi_range(1000, 9999))
+				var drop = {
+					"id": htd_id,
+					"x": t["x"],
+					"y": t["y"],
+					"radius": 60.0,
+					"kind": "high_tier_drop",
+					"damage": 0.0,
+					"active": true,
+					"capture_progress": 0.0,
+					"capturing_team": null
+				}
+
+				if hazards_list != null:
+					hazards_list.append(drop)
+
+				high_tier_drops.append(drop)
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("high_tier_drop_landed", {"message": "Supply drop has landed! Capture it!"})
+
+		for tr in telegraphs_to_remove:
+			active_telegraphs.erase(tr)
+
+		var drops_to_remove = []
+		for drop in high_tier_drops:
+			if not drop.get("active", true):
+				drops_to_remove.append(drop)
+				continue
+
+			var balls_inside = []
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+				elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+				if not is_alive: continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				elif typeof(b) == TYPE_OBJECT:
+					bx = b.get("x") if "x" in b else 0.0
+					by = b.get("y") if "y" in b else 0.0
+
+				var dist = sqrt(pow(bx - drop["x"], 2) + pow(by - drop["y"], 2))
+				if dist < drop["radius"]:
+					balls_inside.append(b)
+
+			if balls_inside.size() > 0:
+				var teams_inside = []
+				for b in balls_inside:
+					var team = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						team = b.get("team", b.get("ball_type", ""))
+					elif typeof(b) == TYPE_OBJECT:
+						team = b.get("team") if "team" in b else (b.get("ball_type") if "ball_type" in b else "")
+
+					if not teams_inside.has(team):
+						teams_inside.append(team)
+
+				if teams_inside.size() == 1:
+					var team = teams_inside[0]
+					if drop["capturing_team"] == team:
+						drop["capture_progress"] += 20.0 * delta
+						if drop["capture_progress"] >= 100.0:
+							drop["active"] = false
+							drops_to_remove.append(drop)
+
+							var hazards_list = null
+							if typeof(world) == TYPE_DICTIONARY:
+								if typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"): hazards_list = world["arena"]["hazards"]
+								elif typeof(world["arena"]) != TYPE_DICTIONARY and "hazards" in world["arena"]: hazards_list = world["arena"].hazards
+							else:
+								if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"): hazards_list = world.arena["hazards"]
+								elif typeof(world.arena) != TYPE_DICTIONARY and "hazards" in world.arena: hazards_list = world.arena.hazards
+
+							if hazards_list != null and hazards_list.has(drop):
+								hazards_list.erase(drop)
+
+							for b in balls:
+								var is_alive = false
+								var b_team = ""
+								if typeof(b) == TYPE_DICTIONARY:
+									is_alive = b.get("alive", false)
+									b_team = b.get("team", b.get("ball_type", ""))
+								elif typeof(b) == TYPE_OBJECT:
+									is_alive = b.get("alive") if "alive" in b else false
+									b_team = b.get("team") if "team" in b else (b.get("ball_type") if "ball_type" in b else "")
+
+								if b_team == team and is_alive:
+									var buff_choices = ["invulnerability", "instant_ultimate", "mega_heal", "damage_boost"]
+									var buff_type = buff_choices[rng.randi() % buff_choices.size()]
+									if buff_type == "invulnerability":
+										if typeof(b) == TYPE_DICTIONARY: b["invulnerable_timer"] = b.get("invulnerable_timer", 0.0) + 15.0
+										else: b.invulnerable_timer = (b.invulnerable_timer if "invulnerable_timer" in b else 0.0) + 15.0
+									elif buff_type == "instant_ultimate":
+										if typeof(b) == TYPE_DICTIONARY: b["ultimate_charge"] = b.get("max_ultimate_charge", 100.0)
+										else: b.ultimate_charge = b.max_ultimate_charge if "max_ultimate_charge" in b else 100.0
+									elif buff_type == "mega_heal":
+										if typeof(b) == TYPE_DICTIONARY:
+											b["hp"] = b.get("max_hp", 100.0)
+											b["shield"] = b.get("shield", 0.0) + 100.0
+										else:
+											b.hp = b.max_hp if "max_hp" in b else 100.0
+											b.shield = (b.shield if "shield" in b else 0.0) + 100.0
+									elif buff_type == "damage_boost":
+										if typeof(b) == TYPE_DICTIONARY:
+											b["damage"] = b.get("base_damage", b.get("damage", 10.0)) * 2.0
+											b["soul_boost_timer"] = b.get("soul_boost_timer", 0.0) + 20.0
+										else:
+											var bd = b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0)
+											b.damage = bd * 2.0
+											b.soul_boost_timer = (b.soul_boost_timer if "soul_boost_timer" in b else 0.0) + 20.0
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("high_tier_drop_captured", {"team": team})
+					else:
+						drop["capturing_team"] = team
+						drop["capture_progress"] = 0.0
+				else:
+					drop["capture_progress"] = max(0.0, drop["capture_progress"] - 10.0 * delta)
+			else:
+				drop["capture_progress"] = max(0.0, drop["capture_progress"] - 5.0 * delta)
+				if drop["capture_progress"] == 0:
+					drop["capturing_team"] = null
+
+		for dr in drops_to_remove:
+			high_tier_drops.erase(dr)
+
+	func check_winner(world, balls: Array):
+		var alive_teams = {}
+		for b in balls:
+			var is_alive = false
+			var ball_type = ""
+			var team = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				ball_type = b.get("ball_type", "")
+				team = b.get("team", ball_type)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				ball_type = b.get("ball_type") if "ball_type" in b else ""
+				team = b.get("team") if "team" in b else ball_type
+
+			if is_alive and ball_type != "spectator":
+				alive_teams[team] = true
+
+		if alive_teams.size() == 1:
+			return alive_teams.keys()[0]
+
+		var best_score = -1
+		var best_team = null
+		for b in balls:
+			var is_alive = false
+			var ball_type = ""
+			var team = ""
+			var score = 0
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				ball_type = b.get("ball_type", "")
+				team = b.get("team", ball_type)
+				score = b.get("score", 0)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				ball_type = b.get("ball_type") if "ball_type" in b else ""
+				team = b.get("team") if "team" in b else ball_type
+				score = b.get("score") if "score" in b else 0
+
+			if is_alive and ball_type != "spectator":
+				if score >= 1000:
+					return team
+				if score > best_score:
+					best_score = score
+					best_team = team
+
+		return null
+
+
+GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode.new()
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()

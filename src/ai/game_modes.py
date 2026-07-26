@@ -39388,4 +39388,212 @@ class DynamicCaptureZonesMode(GameMode):
 
         return None
 
+
+class TelegraphedSupplyDropMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Telegraphed Supply Drop"
+        self.description = "Periodically, high-value supply packages are dropped via parachute into the arena. Their landing zone is telegraphed early."
+        self.drop_timer = 0.0
+        self.active_telegraphs = []
+        self.high_tier_drops = []
+        self.random = __import__("random").Random(12345)
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.drop_timer = 0.0
+        self.active_telegraphs = []
+        self.high_tier_drops = []
+        if hasattr(world, "tick_timer"):
+            self.random = __import__("random").Random(int(world.tick_timer * 1000))
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "arena"):
+            return
+
+        self.drop_timer += delta
+        if self.drop_timer >= 20.0:
+            self.drop_timer = 0.0
+
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            x = self.random.uniform(200, arena_width - 200)
+            y = self.random.uniform(200, arena_height - 200)
+
+            t_id = f"telegraph_{self.random.randint(1000, 9999)}"
+            telegraph = {
+                "id": t_id,
+                "x": x,
+                "y": y,
+                "radius": 50.0,
+                "kind": "supply_drop_telegraph",
+                "timer": 5.0,
+                "active": True
+            }
+            self.active_telegraphs.append(telegraph)
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            try:
+                from arena.procedural_arena import Hazard
+                h = Hazard(id=t_id, x=x, y=y, radius=50.0, kind="supply_drop_telegraph", damage=0.0)
+                setattr(h, "timer", 5.0)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                h = DummyHazard(t_id, x, y, 50.0, "supply_drop_telegraph", 0.0)
+                setattr(h, "timer", 5.0)
+
+            world.arena.hazards.append(h)
+            if hasattr(world, "add_event"):
+                world.add_event("telegraph_spawn", {"message": "A high-value supply drop is incoming!"})
+
+        # Process telegraphs
+        for t in self.active_telegraphs[:]:
+            if not t.get("active", True):
+                continue
+
+            t["timer"] -= delta
+
+            # Synchronize with hazard
+            sync_h = None
+            if hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "id", "") == t["id"]:
+                        setattr(h, "timer", t["timer"])
+                        sync_h = h
+                        break
+
+            if t["timer"] <= 0:
+                t["active"] = False
+                if t in self.active_telegraphs:
+                    self.active_telegraphs.remove(t)
+                if sync_h and hasattr(world.arena, "hazards") and sync_h in world.arena.hazards:
+                    world.arena.hazards.remove(sync_h)
+
+                # Spawn high tier drop
+                drop_id = f"ht_drop_{self.random.randint(1000, 9999)}"
+                try:
+                    from arena.procedural_arena import Hazard
+                    drop = Hazard(id=drop_id, x=t["x"], y=t["y"], radius=60.0, kind="high_tier_drop", damage=0.0)
+                except ImportError:
+                    class DummyHazardHT:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.active = True
+                    drop = DummyHazardHT(drop_id, t["x"], t["y"], 60.0, "high_tier_drop", 0.0)
+
+                setattr(drop, "capture_progress", 0.0)
+                setattr(drop, "capturing_team", None)
+
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(drop)
+
+                if not hasattr(self, "high_tier_drops"):
+                    self.high_tier_drops = []
+                self.high_tier_drops.append(drop)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("high_tier_drop_landed", {"message": "Supply drop has landed! Capture it!"})
+
+        # Process drops
+        if hasattr(self, "high_tier_drops"):
+            drops_to_remove = []
+            import math
+            for drop in self.high_tier_drops:
+                if not getattr(drop, "active", True):
+                    drops_to_remove.append(drop)
+                    continue
+
+                balls_inside = []
+                for b in balls:
+                    if not getattr(b, "alive", False): continue
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    if math.hypot(bx - getattr(drop, "x", 0.0), by - getattr(drop, "y", 0.0)) < getattr(drop, "radius", 60.0):
+                        balls_inside.append(b)
+
+                if balls_inside:
+                    teams_inside = list(set(getattr(b, "team", getattr(b, "ball_type", "")) for b in balls_inside))
+                    if len(teams_inside) == 1:
+                        team = teams_inside[0]
+                        if getattr(drop, "capturing_team", None) == team:
+                            drop.capture_progress = getattr(drop, "capture_progress", 0.0) + 20.0 * delta
+                            if drop.capture_progress >= 100.0:
+                                drop.active = False
+                                drops_to_remove.append(drop)
+                                if hasattr(world.arena, "hazards") and drop in world.arena.hazards:
+                                    world.arena.hazards.remove(drop)
+
+                                for b in balls:
+                                    if getattr(b, "team", getattr(b, "ball_type", "")) == team and getattr(b, "alive", False):
+                                        buff_type = self.random.choice(["invulnerability", "instant_ultimate", "mega_heal", "damage_boost"])
+                                        if buff_type == "invulnerability":
+                                            b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 15.0
+                                        elif buff_type == "instant_ultimate":
+                                            b.ultimate_charge = getattr(b, "max_ultimate_charge", 100.0)
+                                        elif buff_type == "mega_heal":
+                                            b.hp = getattr(b, "max_hp", 100.0)
+                                            b.shield = getattr(b, "shield", 0.0) + 100.0
+                                        elif buff_type == "damage_boost":
+                                            b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
+                                            b.soul_boost_timer = getattr(b, "soul_boost_timer", 0.0) + 20.0
+
+                                if hasattr(world, "add_event"):
+                                    world.add_event("high_tier_drop_captured", {"team": team})
+                        else:
+                            drop.capturing_team = team
+                            drop.capture_progress = 0.0
+                    else:
+                        # Contested
+                        drop.capture_progress = max(0.0, getattr(drop, "capture_progress", 0.0) - 10.0 * delta)
+                else:
+                    drop.capture_progress = max(0.0, getattr(drop, "capture_progress", 0.0) - 5.0 * delta)
+                    if drop.capture_progress == 0:
+                        drop.capturing_team = None
+
+            for d in drops_to_remove:
+                if d in self.high_tier_drops:
+                    self.high_tier_drops.remove(d)
+
+    def check_winner(self, world, balls):
+        alive_teams = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                alive_teams[team] = True
+
+        if len(alive_teams) == 1:
+            return list(alive_teams.keys())[0]
+
+        best_score = -1
+        best_team = None
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                team = getattr(b, "team", getattr(b, "ball_type", "unknown"))
+                score = getattr(b, "score", 0)
+                if score >= 1000:
+                    return team
+                if score > best_score:
+                    best_score = score
+                    best_team = team
+
+        return None
+
+GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode()
+
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode()
