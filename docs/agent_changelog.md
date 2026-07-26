@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1541] Guild Headquarters Music Player — *2026-07-26 06:53:41 UTC*
+
+Allow guilds to spend their Guild XP on unlocking different ambient background music tracks for their HQ, allowing members to personalize the vibe of their headquarters lobby.
+
+---
+
 ## [idea-1511] Air Glider Booster — *2026-07-26 06:50:29 UTC*
 
 A booster item that grants temporary immunity to fall damage and hazard launch effects (like tornadoes), instead letting the ball gracefully glide over hazards with increased speed.

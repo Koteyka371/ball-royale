@@ -26385,7 +26385,7 @@
     },
     {
       "id": "idea-1541",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Music Player",
@@ -38365,6 +38365,57 @@
         "src/ai/midnight_eclipse.py",
         "src/ai/midnight_eclipse.gd",
         "tests/test_midnight_eclipse.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2245",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Juggernaut Revenge Bomb",
+      "description": "When a Juggernaut is killed or swapped randomly, they drop a revenge bomb that deals massive damage to whoever is nearby in a large radius.",
+      "allowed_paths": [
+        "src/ai/juggernaut_revenge_bomb.py",
+        "src/ai/juggernaut_revenge_bomb.gd",
+        "tests/test_juggernaut_revenge_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2246",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Juggernaut Escalation Modifier",
+      "description": "Every time the Juggernaut randomly swaps, the new Juggernaut gains a permanent 5% damage and speed boost, encouraging players to survive the shifting alliances.",
+      "allowed_paths": [
+        "src/ai/juggernaut_escalation.py",
+        "src/ai/juggernaut_escalation.gd",
+        "tests/test_juggernaut_escalation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2247",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Magnet Mode",
+      "description": "A game mode where all booster effects are reversed and balls are repelled from each other instead of attracting.",
+      "allowed_paths": [
+        "src/ai/reverse_magnet.py",
+        "src/ai/reverse_magnet.gd",
+        "tests/test_reverse_magnet.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
