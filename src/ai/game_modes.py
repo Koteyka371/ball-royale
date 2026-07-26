@@ -552,6 +552,67 @@ class GameMode:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
 
+        alive_balls_list = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_decoy", False) and not getattr(b, "is_pet", False) and not getattr(b, "spawned_by_decoy_spawner", False) and not getattr(b, "is_final_boss", False) and not getattr(b, "is_behemoth", False)]
+        alive_count = len(alive_balls_list)
+
+        if alive_count <= 3 and alive_count > 0:
+            if not getattr(self, "emissary_top3_rewarded", False):
+                self.emissary_top3_rewarded = True
+                clan_manager = getattr(world, "clan_manager", None)
+                if not clan_manager and hasattr(world, "profile_manager") and hasattr(world.profile_manager, "clan_manager"):
+                    clan_manager = world.profile_manager.clan_manager
+                if clan_manager:
+                    for b in alive_balls_list:
+                        player_id = getattr(b, "id", None)
+                        clan_name = None
+                        if player_id:
+                            for c_name, c_data in clan_manager.data.get("clans", {}).items():
+                                if player_id in c_data.get("members", []):
+                                    role = c_data.get("roles", {}).get(player_id, "member")
+                                    if role == "emissary":
+                                        clan_name = c_name
+                                        break
+                        if clan_name:
+                            clan_manager.add_clan_points(clan_name, 500)
+                            if hasattr(world, "add_event"):
+                                world.add_event("emissary_survival", {"message": f"Emissary of {clan_name} reached the top 3, earning 500 clan points!"})
+                            clan_manager.deposit_to_stash(clan_name, player_id, "emissary_medal", 1)
+
+        # Check for emissary deaths to reward killer
+        for b in world.dead_balls:
+            if not getattr(b, "emissary_bounty_claimed", False):
+                b.emissary_bounty_claimed = True
+                clan_manager = getattr(world, "clan_manager", None)
+                if not clan_manager and hasattr(world, "profile_manager") and hasattr(world.profile_manager, "clan_manager"):
+                    clan_manager = world.profile_manager.clan_manager
+
+                if clan_manager:
+                    player_id = getattr(b, "id", None)
+                    killer_id = getattr(b, "killer", None)
+                    is_emissary = False
+                    if player_id:
+                        for c_name, c_data in clan_manager.data.get("clans", {}).items():
+                            if player_id in c_data.get("members", []):
+                                role = c_data.get("roles", {}).get(player_id, "member")
+                                if role == "emissary":
+                                    is_emissary = True
+                                    break
+
+                    if is_emissary and killer_id and killer_id != "acid_rain" and killer_id != "behemoth_explosion":
+                        # give killer reward
+                        killer_ball = next((kb for kb in balls if getattr(kb, "id", None) == killer_id), None)
+                        if killer_ball:
+                            killer_clan_name = None
+                            for c_name, c_data in clan_manager.data.get("clans", {}).items():
+                                if killer_id in c_data.get("members", []):
+                                    killer_clan_name = c_name
+                                    break
+                            if killer_clan_name:
+                                clan_manager.add_clan_points(killer_clan_name, 250)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("emissary_bounty", {"message": f"Emissary eliminated! {killer_clan_name} claims the bounty."})
+
+
         # Quantum Entanglement Trait Logic
         entangled_balls = [b for b in balls if getattr(b, "is_quantum_entangled", False)]
         if len(entangled_balls) == 2:
@@ -987,7 +1048,7 @@ class GameMode:
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         pass
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -2185,6 +2246,67 @@ class BattleRoyaleMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
 
+
+        alive_balls_list = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_decoy", False) and not getattr(b, "is_pet", False) and not getattr(b, "spawned_by_decoy_spawner", False) and not getattr(b, "is_final_boss", False) and not getattr(b, "is_behemoth", False)]
+        alive_count = len(alive_balls_list)
+
+        if alive_count <= 3 and alive_count > 0:
+            if not getattr(self, "emissary_top3_rewarded", False):
+                self.emissary_top3_rewarded = True
+                clan_manager = getattr(world, "clan_manager", None)
+                if not clan_manager and hasattr(world, "profile_manager") and hasattr(world.profile_manager, "clan_manager"):
+                    clan_manager = world.profile_manager.clan_manager
+                if clan_manager:
+                    for b in alive_balls_list:
+                        player_id = getattr(b, "id", None)
+                        clan_name = None
+                        if player_id:
+                            for c_name, c_data in clan_manager.data.get("clans", {}).items():
+                                if player_id in c_data.get("members", []):
+                                    role = c_data.get("roles", {}).get(player_id, "member")
+                                    if role == "emissary":
+                                        clan_name = c_name
+                                        break
+                        if clan_name:
+                            clan_manager.add_clan_points(clan_name, 500)
+                            if hasattr(world, "add_event"):
+                                world.add_event("emissary_survival", {"message": f"Emissary of {clan_name} reached the top 3, earning 500 clan points!"})
+                            clan_manager.deposit_to_stash(clan_name, player_id, "emissary_medal", 1)
+
+        # Check for emissary deaths to reward killer
+        for b in getattr(world, "dead_balls", []):
+            if not getattr(b, "emissary_bounty_claimed", False):
+                b.emissary_bounty_claimed = True
+                clan_manager = getattr(world, "clan_manager", None)
+                if not clan_manager and hasattr(world, "profile_manager") and hasattr(world.profile_manager, "clan_manager"):
+                    clan_manager = world.profile_manager.clan_manager
+
+                if clan_manager:
+                    player_id = getattr(b, "id", None)
+                    killer_id = getattr(b, "killer", None)
+                    is_emissary = False
+                    if player_id:
+                        for c_name, c_data in clan_manager.data.get("clans", {}).items():
+                            if player_id in c_data.get("members", []):
+                                role = c_data.get("roles", {}).get(player_id, "member")
+                                if role == "emissary":
+                                    is_emissary = True
+                                    break
+
+                    if is_emissary and killer_id and killer_id != "acid_rain" and killer_id != "behemoth_explosion":
+                        # give killer reward
+                        killer_ball = next((kb for kb in balls if getattr(kb, "id", None) == killer_id), None)
+                        if killer_ball:
+                            killer_clan_name = None
+                            for c_name, c_data in clan_manager.data.get("clans", {}).items():
+                                if killer_id in c_data.get("members", []):
+                                    killer_clan_name = c_name
+                                    break
+                            if killer_clan_name:
+                                clan_manager.add_clan_points(killer_clan_name, 250)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("emissary_bounty", {"message": f"Emissary eliminated! {killer_clan_name} claims the bounty."})
+
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         self.apply_dynamic_traits(world, balls, delta)
@@ -2203,7 +2325,7 @@ class BattleRoyaleMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         if not hasattr(self, "altars"):
             self.altars = []
         for altar in self.altars:
@@ -4647,7 +4769,7 @@ class ZombieInfectionMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         survivors = [b for b in balls if getattr(b, "team", "") == "Survivor"]
         for survivor in survivors:
             if not getattr(survivor, "alive", False):
@@ -5411,7 +5533,7 @@ class DualPayloadMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -7046,7 +7168,7 @@ class VampireRoyaleMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         self.tick_timer += delta
         if self.tick_timer >= 1.0:
             self.tick_timer = 0.0
@@ -7538,7 +7660,7 @@ class KingOfTheHillMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         self.game_time += delta
         self.tick_timer += delta
         if self.tick_timer >= 0.5:
@@ -7762,7 +7884,7 @@ class SweepingBlackHoleMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
                 continue
 
             if getattr(b, "ball_type", None) == "spectator":
@@ -7823,7 +7945,7 @@ class BlackHoleMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         import math
         arena_width = 1000
         arena_height = 1000
@@ -7920,7 +8042,7 @@ class BlackHoleSafeZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
                 continue
 
             # Check safe zone damage
@@ -8120,7 +8242,7 @@ class WeatherChaosMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         controller = None
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
@@ -9026,7 +9148,7 @@ class DominationMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         for pt in self.points:
             red_count = 0
@@ -9334,7 +9456,7 @@ class MemoryTrapsMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
                 continue
@@ -9518,7 +9640,7 @@ class CustomMatchMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         if getattr(self, "mutators_active", False):
             if "boss" in self.mutators:
@@ -9799,7 +9921,7 @@ class EcholocationMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         self.flash_timer += delta
 
@@ -9989,7 +10111,7 @@ class PitchBlackMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         # Ensure it matches their actual base perception radius
         for b in balls:
@@ -10160,7 +10282,7 @@ class VisionReducedMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         self.pulse_timer += delta
         is_pulse_active = False
@@ -10825,7 +10947,7 @@ class ShrinkingDangerZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         # Drift the safe zone
         dx = self.zone_target_x - self.zone_x
@@ -10997,7 +11119,7 @@ class ModifierSafeZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         # Move the safe zone slowly
         dx = self.zone_target_x - self.zone_x
@@ -11163,7 +11285,7 @@ class ModifierZonesSafeZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         # Move the safe zone
         dx = self.zone_target_x - self.zone_x
@@ -11489,7 +11611,7 @@ class SafeZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         # Move the safe zone
         import random
@@ -12713,7 +12835,7 @@ class ToxicEnvironmentMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
                 continue
 
             imm_timer = getattr(b, "immunity_timer", 0.0)
@@ -13129,7 +13251,7 @@ class WindstormMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         # Wind Current logic
         if not hasattr(self, 'wind_current_timer'):
@@ -13869,7 +13991,7 @@ class EarthquakeMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         if self.is_shaking:
             self.shake_timer -= delta
@@ -14235,7 +14357,7 @@ class SupernovaMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
         import math
         arena_width = 1000.0
         arena_height = 1000.0
@@ -15566,7 +15688,7 @@ class QuantumTunnelMutatorMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
                 continue
 
             vx = getattr(b, "vx", 0.0)
@@ -16070,7 +16192,7 @@ class GeometricZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         self.shape_timer += delta
         if self.shape_timer > 15.0:
@@ -16207,7 +16329,7 @@ class BodySwapMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         self.swap_timer += delta
         if self.swap_timer >= self.swap_interval:
@@ -17630,7 +17752,7 @@ class InverseSafeZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         # Expand the danger zone
         if self.danger_radius < self.max_danger_radius:
@@ -20071,7 +20193,7 @@ class ArtifactUpgraderMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         if getattr(self, "npc", None) and getattr(self.npc, "alive", False):
             arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -20553,7 +20675,7 @@ class MazeSafeZoneMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -26505,7 +26627,7 @@ class GravityReversalMutatorMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         timer = getattr(self, "showcase_timer", 0.0) + delta
         if timer > 15.0:
@@ -28367,7 +28489,7 @@ class TeleportDashMutatorMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
                 continue
 
 
@@ -29405,7 +29527,7 @@ class ExpandingLavaRoyaleMode(GameMode):
                     b.time_since_death = 0.0
                     world.dead_balls.append(b)
                 else:
-                    b.time_since_death += delta
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
 
         if self.danger_radius < self.max_danger_radius:
             self.danger_radius += self.expand_rate * delta
