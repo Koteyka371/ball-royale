@@ -2699,6 +2699,24 @@ class BattleRoyaleMode(GameMode):
                                 self.lifespan = 8.0
                         b_id = 80000 + getattr(self, "random", __import__("random")).randint(0, 9999)
                         new_decoy = DecoyBall(b_id, h.x, h.y)
+
+                        # Find nearest player to mimic
+                        if hasattr(world, "balls"):
+                            nearest_player = None
+                            min_dist = float('inf')
+                            for p in world.balls:
+                                if getattr(p, "alive", False) and not getattr(p, "is_decoy", False) and getattr(p, "ball_type", None) != "spectator":
+                                    dx = p.x - h.x
+                                    dy = p.y - h.y
+                                    dist = dx*dx + dy*dy
+                                    if dist < 40000 and dist < min_dist: # 200 radius
+                                        min_dist = dist
+                                        nearest_player = p
+                            if nearest_player:
+                                new_decoy.is_hologram_decoy = True
+                                new_decoy.ball_type = getattr(nearest_player, "ball_type", "mimic_decoy")
+                                new_decoy.owner_id = getattr(nearest_player, "id", None)
+
                         if hasattr(world, "balls"):
                             world.balls.append(new_decoy)
                             if hasattr(world, "entities") and world.balls is not world.entities:

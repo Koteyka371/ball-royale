@@ -4688,6 +4688,50 @@ class BattleRoyaleMode extends GameMode:
 						new_decoy["spawned_by_decoy_spawner"] = true
 						new_decoy["lifespan"] = 8.0
 						new_decoy["has_method"] = Callable(func(method_name): return false)
+
+						var nearest_player = null
+						var min_dist = 40000.0
+						for p in world.balls:
+							var p_alive = false
+							if typeof(p) == TYPE_DICTIONARY and p.has("alive"): p_alive = p["alive"]
+							elif "alive" in p: p_alive = p.alive
+
+							var p_is_decoy = false
+							if typeof(p) == TYPE_DICTIONARY and p.has("is_decoy"): p_is_decoy = p["is_decoy"]
+							elif "is_decoy" in p: p_is_decoy = p.is_decoy
+							elif typeof(p) == TYPE_OBJECT and p.has_method("has_meta") and p.has_meta("is_decoy"): p_is_decoy = p.get_meta("is_decoy")
+
+							var p_type = null
+							if typeof(p) == TYPE_DICTIONARY and p.has("ball_type"): p_type = p["ball_type"]
+							elif "ball_type" in p: p_type = p.ball_type
+
+							if p_alive and not p_is_decoy and p_type != "spectator":
+								var p_x = 0.0
+								var p_y = 0.0
+								if typeof(p) == TYPE_DICTIONARY and p.has("x"): p_x = p["x"]
+								elif "x" in p: p_x = p.x
+								if typeof(p) == TYPE_DICTIONARY and p.has("y"): p_y = p["y"]
+								elif "y" in p: p_y = p.y
+
+								var dx = p_x - h.x
+								var dy = p_y - h.y
+								var dist = dx*dx + dy*dy
+								if dist < min_dist:
+									min_dist = dist
+									nearest_player = p
+
+						if nearest_player != null:
+							new_decoy["is_hologram_decoy"] = true
+							if typeof(nearest_player) == TYPE_DICTIONARY and nearest_player.has("ball_type"):
+								new_decoy["ball_type"] = nearest_player["ball_type"]
+							elif "ball_type" in nearest_player:
+								new_decoy["ball_type"] = nearest_player.ball_type
+
+							if typeof(nearest_player) == TYPE_DICTIONARY and nearest_player.has("id"):
+								new_decoy["owner_id"] = nearest_player["id"]
+							elif "id" in nearest_player:
+								new_decoy["owner_id"] = nearest_player.id
+
 						world.balls.append(new_decoy)
 					h.set_meta("spawn_timer", st)
 
