@@ -970,6 +970,86 @@ class GameMode:
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 
+		if not world.get("dead_balls"):
+			world.set("dead_balls", [])
+
+		var alive_balls_list = []
+		for b in balls:
+			var b_type = b.get("ball_type")
+			if typeof(b_type) == TYPE_STRING and b_type != "spectator":
+				if b.get("alive") == true and b.get("is_decoy", false) == false and b.get("is_pet", false) == false and b.get("spawned_by_decoy_spawner", false) == false and b.get("is_final_boss", false) == false and b.get("is_behemoth", false) == false:
+					alive_balls_list.append(b)
+
+		var alive_count = alive_balls_list.size()
+
+		if alive_count <= 3 and alive_count > 0:
+			if not self.get("emissary_top3_rewarded"):
+				self.set("emissary_top3_rewarded", true)
+				var clan_manager = world.get("clan_manager")
+				if clan_manager == null and world.get("profile_manager") != null and world.profile_manager.get("clan_manager") != null:
+					clan_manager = world.profile_manager.clan_manager
+				if clan_manager != null:
+					for b in alive_balls_list:
+						var player_id = b.get("id")
+						var clan_name = null
+						if player_id != null:
+							var clans_data = clan_manager.data.get("clans", {})
+							for c_name in clans_data.keys():
+								var c_data = clans_data[c_name]
+								var members = c_data.get("members", [])
+								if player_id in members:
+									var roles = c_data.get("roles", {})
+									var role = "member"
+									if roles.has(player_id):
+										role = roles[player_id]
+									if role == "emissary":
+										clan_name = c_name
+										break
+						if clan_name != null:
+							clan_manager.add_clan_points(clan_name, 500)
+							if world.has_method("add_event"):
+								world.add_event("emissary_survival", {"message": "Emissary of " + clan_name + " reached the top 3, earning 500 clan points!"})
+							clan_manager.deposit_to_stash(clan_name, player_id, "emissary_medal", 1)
+
+		for b in world.get("dead_balls"):
+			if not b.get("emissary_bounty_claimed", false):
+				b.set("emissary_bounty_claimed", true)
+				var clan_manager = world.get("clan_manager")
+				if clan_manager == null and world.get("profile_manager") != null and world.profile_manager.get("clan_manager") != null:
+					clan_manager = world.profile_manager.clan_manager
+				if clan_manager != null:
+					var player_id = b.get("id")
+					var killer_id = b.get("killer")
+					var is_emissary = false
+					if player_id != null:
+						var clans_data = clan_manager.data.get("clans", {})
+						for c_name in clans_data.keys():
+							var c_data = clans_data[c_name]
+							var members = c_data.get("members", [])
+							if player_id in members:
+								var roles = c_data.get("roles", {})
+								var role = "member"
+								if roles.has(player_id):
+									role = roles[player_id]
+								if role == "emissary":
+									is_emissary = true
+									break
+
+					if is_emissary and killer_id != null and killer_id != "acid_rain" and killer_id != "behemoth_explosion":
+						var killer_clan_name = null
+						var clans_data = clan_manager.data.get("clans", {})
+						for c_name in clans_data.keys():
+							var c_data = clans_data[c_name]
+							var members = c_data.get("members", [])
+							if killer_id in members:
+								killer_clan_name = c_name
+								break
+						if killer_clan_name != null:
+							clan_manager.add_clan_points(killer_clan_name, 250)
+							if world.has_method("add_event"):
+								world.add_event("emissary_bounty", {"message": "Emissary eliminated! " + killer_clan_name + " claims the bounty."})
+
+
 		if not ("dead_balls" in world):
 			world.dead_balls = []
 
@@ -3990,6 +4070,84 @@ class BattleRoyaleMode extends GameMode:
 
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
+
+		var alive_balls_list = []
+		for b in balls:
+			var b_type = b.get("ball_type")
+			if typeof(b_type) == TYPE_STRING and b_type != "spectator":
+				if b.get("alive") == true and b.get("is_decoy", false) == false and b.get("is_pet", false) == false and b.get("spawned_by_decoy_spawner", false) == false and b.get("is_final_boss", false) == false and b.get("is_behemoth", false) == false:
+					alive_balls_list.append(b)
+
+		var alive_count = alive_balls_list.size()
+
+		if alive_count <= 3 and alive_count > 0:
+			if not self.get("emissary_top3_rewarded"):
+				self.set("emissary_top3_rewarded", true)
+				var clan_manager = world.get("clan_manager")
+				if clan_manager == null and world.get("profile_manager") != null and world.profile_manager.get("clan_manager") != null:
+					clan_manager = world.profile_manager.clan_manager
+				if clan_manager != null:
+					for b in alive_balls_list:
+						var player_id = b.get("id")
+						var clan_name = null
+						if player_id != null:
+							var clans_data = clan_manager.data.get("clans", {})
+							for c_name in clans_data.keys():
+								var c_data = clans_data[c_name]
+								var members = c_data.get("members", [])
+								if player_id in members:
+									var roles = c_data.get("roles", {})
+									var role = "member"
+									if roles.has(player_id):
+										role = roles[player_id]
+									if role == "emissary":
+										clan_name = c_name
+										break
+						if clan_name != null:
+							clan_manager.add_clan_points(clan_name, 500)
+							if world.has_method("add_event"):
+								world.add_event("emissary_survival", {"message": "Emissary of " + clan_name + " reached the top 3, earning 500 clan points!"})
+							clan_manager.deposit_to_stash(clan_name, player_id, "emissary_medal", 1)
+
+		if world.get("dead_balls") != null:
+			for b in world.get("dead_balls"):
+				if not b.get("emissary_bounty_claimed", false):
+					b.set("emissary_bounty_claimed", true)
+					var clan_manager = world.get("clan_manager")
+					if clan_manager == null and world.get("profile_manager") != null and world.profile_manager.get("clan_manager") != null:
+						clan_manager = world.profile_manager.clan_manager
+					if clan_manager != null:
+						var player_id = b.get("id")
+						var killer_id = b.get("killer")
+						var is_emissary = false
+						if player_id != null:
+							var clans_data = clan_manager.data.get("clans", {})
+							for c_name in clans_data.keys():
+								var c_data = clans_data[c_name]
+								var members = c_data.get("members", [])
+								if player_id in members:
+									var roles = c_data.get("roles", {})
+									var role = "member"
+									if roles.has(player_id):
+										role = roles[player_id]
+									if role == "emissary":
+										is_emissary = true
+										break
+
+						if is_emissary and killer_id != null and killer_id != "acid_rain" and killer_id != "behemoth_explosion":
+							var killer_clan_name = null
+							var clans_data = clan_manager.data.get("clans", {})
+							for c_name in clans_data.keys():
+								var c_data = clans_data[c_name]
+								var members = c_data.get("members", [])
+								if killer_id in members:
+									killer_clan_name = c_name
+									break
+							if killer_clan_name != null:
+								clan_manager.add_clan_points(killer_clan_name, 250)
+								if world.has_method("add_event"):
+									world.add_event("emissary_bounty", {"message": "Emissary eliminated! " + killer_clan_name + " claims the bounty."})
+
 		# Acid Rain logic
 		var altars = []
 		if has_meta("altars"):
@@ -24965,7 +25123,7 @@ class GeometricZoneMode extends GameMode:
 					b.time_since_death = 0.0
 					world.get_meta("dead_balls").append(b)
 				else:
-					b.time_since_death += delta
+					b.set("time_since_death", b.get("time_since_death", 0.0) + delta)
 
 		shape_timer += delta
 		if shape_timer > 15.0:
