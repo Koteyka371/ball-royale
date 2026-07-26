@@ -25244,7 +25244,7 @@
     },
     {
       "id": "idea-1474",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Decoy",
@@ -38161,6 +38161,40 @@
         "src/ai/black_hole_boomerang.py",
         "src/ai/black_hole_boomerang.gd",
         "tests/test_black_hole_boomerang.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2233",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Soul Tether",
+      "description": "A new hazard that binds two players together, dealing damage if they move too far apart.",
+      "allowed_paths": [
+        "src/ai/soul_tether.py",
+        "src/ai/soul_tether.gd",
+        "tests/test_soul_tether.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2234",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Chain",
+      "description": "A chained ability where damage taken by one entangled entity is equally distributed among all other entangled targets.",
+      "allowed_paths": [
+        "src/ai/quantum_entanglement_chain.py",
+        "src/ai/quantum_entanglement_chain.gd",
+        "tests/test_quantum_entanglement_chain.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

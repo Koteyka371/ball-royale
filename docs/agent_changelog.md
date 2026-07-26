@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1474] Decoy Decoy — *2026-07-26 05:19:54 UTC*
+
+Spawns a fake clone of a random teammate.
+
+---
+
 ## [idea-1519] Quantum Swap Power-up — *2026-07-26 05:12:58 UTC*
 
 A new booster that allows the player to swap places with the nearest enemy when they press the action button or automatically upon dropping to low HP. This causes confusion and can completely turn the tide of an engagement or save the player from being cornered.
