@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1549] Shared Health Pool Mode — *2026-07-26 10:34:03 UTC*
+
+Teams share a single massive health pool. Taking damage drains from the collective pool. When it reaches 0, the entire team is eliminated simultaneously. Promotes extreme teamwork and protective strategies.
+
+---
+
 ## [idea-1535] Portal Bounce Challenge — *2026-07-26 08:18:07 UTC*
 
 Portals spawn on the map that reflect projectiles and players based on velocity and incidence angle, turning the arena into a bouncy chaos.
