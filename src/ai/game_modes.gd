@@ -22636,6 +22636,45 @@ class DayNightMode extends GameMode:
 								elif b.has_method("has_meta") and b.has_meta("inventory"):
 									inv = b.get_meta("inventory")
 
+								var has_reflective = "reflective_shield" in inv
+								var is_sk = false
+								if typeof(b) == TYPE_DICTIONARY:
+									is_sk = b.get("is_sun_kissed", false)
+								else:
+									is_sk = b.get("is_sun_kissed") if "is_sun_kissed" in b else (b.get_meta("is_sun_kissed") if b.has_method("has_meta") and b.has_meta("is_sun_kissed") else false)
+
+								if not has_reflective and not is_sk:
+									var exp_timer = 0.0
+									if typeof(b) == TYPE_DICTIONARY:
+										exp_timer = b.get("sunlight_exposure_timer", 0.0)
+										b["sunlight_exposure_timer"] = exp_timer + delta
+										if b["sunlight_exposure_timer"] >= 2.0:
+											b["is_sun_kissed"] = true
+											var bs = b.get("base_speed", b.get("speed", 100.0))
+											b["base_speed"] = bs * 1.1
+											b["speed"] = b["base_speed"]
+											if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+												world.add_event("status_effect", {"type": "sun_kissed", "target_id": b.get("id")})
+									else:
+										exp_timer = b.get("sunlight_exposure_timer") if "sunlight_exposure_timer" in b else (b.get_meta("sunlight_exposure_timer") if b.has_method("has_meta") and b.has_meta("sunlight_exposure_timer") else 0.0)
+										exp_timer += delta
+										if "sunlight_exposure_timer" in b:
+											b.sunlight_exposure_timer = exp_timer
+										elif b.has_method("set_meta"):
+											b.set_meta("sunlight_exposure_timer", exp_timer)
+										if exp_timer >= 2.0:
+											if "is_sun_kissed" in b:
+												b.is_sun_kissed = true
+											elif b.has_method("set_meta"):
+												b.set_meta("is_sun_kissed", true)
+											var bs = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
+											if "base_speed" in b:
+												b.base_speed = bs * 1.1
+											if "speed" in b:
+												b.speed = bs * 1.1
+											if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+												world.add_event("status_effect", {"type": "sun_kissed", "target_id": b.get("id") if "id" in b else null})
+
 								if "reflective_shield" in inv:
 									inv.erase("reflective_shield")
 									var angle = randf() * 2.0 * PI

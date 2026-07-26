@@ -14584,6 +14584,16 @@ class DayNightMode(GameMode):
 
                             if not behind_cover:
                                 inv = getattr(b, "inventory", [])
+                                if "reflective_shield" not in inv and not getattr(b, "is_sun_kissed", False):
+                                    if not hasattr(b, "sunlight_exposure_timer"):
+                                        b.sunlight_exposure_timer = 0.0
+                                    b.sunlight_exposure_timer += delta
+                                    if b.sunlight_exposure_timer >= 2.0:
+                                        b.is_sun_kissed = True
+                                        b.base_speed = round(getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.1, 2)
+                                        b.speed = b.base_speed
+                                        if hasattr(world, "add_event"):
+                                            world.add_event("status_effect", {"type": "sun_kissed", "target_id": getattr(b, "id", None)})
                                 if "reflective_shield" in inv:
                                     # Completely nullify damage and redirect beam
                                     b.inventory.remove("reflective_shield")

@@ -58,6 +58,8 @@ class Perception:
                 has_night_vision = True
             if getattr(self.ball, "light_source_booster_timer", 0.0) > 0:
                 has_night_vision = True
+            if getattr(self.ball, "is_sun_kissed", False):
+                has_night_vision = True
 
             # Dynamic vision enhancements based on items and cosmetics
             has_thermal_vision = getattr(self.ball, "has_thermal_vision", False) or cosmetic_val in ["thermal_goggles", "infrared_goggles"]
@@ -83,6 +85,13 @@ class Perception:
         is_lunar = hasattr(self.world, "arena") and getattr(self.world.arena, "is_lunar_eclipse", False)
 
         ignores_fog = cosmetic_val == "thermal_goggles"
+
+        if getattr(self.ball, "is_sun_kissed", False):
+            if hasattr(self.world, "arena") and getattr(self.world.arena, "is_night", False):
+                self.ball.glowing = True
+                has_night_vision = True
+            else:
+                self.ball.glowing = False
         ignores_sandstorm = cosmetic_val in ["desert_goggles", "sand_goggles"]
         ignores_snow = cosmetic_val in ["snow_goggles", "ski_goggles"]
         ignores_rain = cosmetic_val in ["rain_goggles", "waterproof_goggles"]

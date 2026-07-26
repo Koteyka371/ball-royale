@@ -47,6 +47,14 @@ func scan() -> Dictionary:
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("light_source_booster_timer") and float(self.ball.get_meta("light_source_booster_timer")) > 0.0:
             has_night_vision = true
 
+        var is_sk = false
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            is_sk = self.ball.get("is_sun_kissed", false)
+        else:
+            is_sk = self.ball.get("is_sun_kissed") if "is_sun_kissed" in self.ball else (self.ball.get_meta("is_sun_kissed") if self.ball.has_method("has_meta") and self.ball.has_meta("is_sun_kissed") else false)
+        if is_sk:
+            has_night_vision = true
+
         # Dynamic vision enhancements based on items and cosmetics
         var local_has_thermal = false
         if "has_thermal_vision" in self.ball and self.ball.has_thermal_vision:
@@ -91,6 +99,29 @@ func scan() -> Dictionary:
     elif cosmetic == "thermal_goggles" or cosmetic == "infrared_goggles":
         has_thermal_vision = true
     var ignores_fog = cosmetic == "thermal_goggles"
+
+    var is_sk_glow = false
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        is_sk_glow = self.ball.get("is_sun_kissed", false)
+    else:
+        is_sk_glow = self.ball.get("is_sun_kissed") if "is_sun_kissed" in self.ball else (self.ball.get_meta("is_sun_kissed") if self.ball.has_method("has_meta") and self.ball.has_meta("is_sun_kissed") else false)
+
+    if is_sk_glow:
+        if self.world != null and "arena" in self.world and "is_night" in self.world.arena and self.world.arena.is_night:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["glowing"] = true
+            elif "glowing" in self.ball:
+                self.ball.glowing = true
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("glowing", true)
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["glowing"] = false
+            elif "glowing" in self.ball:
+                self.ball.glowing = false
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("glowing", false)
+
     var ignores_sandstorm = cosmetic in ["desert_goggles", "sand_goggles"]
     var ignores_snow = cosmetic in ["snow_goggles", "ski_goggles"]
     var ignores_rain = cosmetic in ["rain_goggles", "waterproof_goggles"]
