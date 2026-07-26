@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Singularity Trap",
+  "description": "A deployable hazard that acts like a delayed black hole. When placed, it remains invisible for 3 seconds. Once triggered by enemy proximity, it creates a gravitational pull dragging enemies toward its center while slowly draining their stamina over 2 seconds before violently exploding, causing massive damage and scrambling their controls for a brief duration."
+}

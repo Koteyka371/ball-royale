@@ -7401,6 +7401,50 @@ class Action:
                                                 if hasattr(self.ball, "hp"):
                                                     self.ball.hp -= 5.0 * delta
 
+                    elif hazard.kind == "shockwave_mine":
+                        hazard_is_active = getattr(hazard, "active", True)
+                        if hazard_is_active:
+                            if getattr(hazard, "state", "arming") == "arming":
+                                hazard.arming_timer = getattr(hazard, "arming_timer", 1.5) - delta
+                                if hazard.arming_timer <= 0:
+                                    hazard.state = "armed"
+                            elif getattr(hazard, "state", "armed") == "armed":
+                                hazard_team = getattr(hazard, "team", "")
+                                my_team = getattr(self.ball, "team", "")
+
+                                if hazard_team != my_team:
+                                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                                    if dist_sq < (getattr(hazard, "radius", 20.0) + self.ball.radius)**2:
+                                        hazard.active = False
+                                        # Trigger explosion hitting all enemies within 150 radius
+                                        if hasattr(self.world, "balls"):
+                                            for b in getattr(self.world, "balls", []):
+                                                if getattr(b, "team", "") != hazard_team and getattr(b, "hp", 0) > 0:
+                                                    b_dist = math.hypot(b.x - hazard.x, b.y - hazard.y)
+                                                    b_radius = getattr(b, "radius", 10.0)
+                                                    if b_dist < 150.0 + b_radius:
+                                                        # Deal damage
+                                                        class DummyAttacker:
+                                                            pass
+                                                        attacker = DummyAttacker()
+                                                        attacker.damage = 10.0
+                                                        if hasattr(self.world, "_deal_damage"):
+                                                            self.world._deal_damage(attacker, b)
+                                                        else:
+                                                            b.hp -= 10.0
+                                                        # Silence
+                                                        b.silence_timer = max(getattr(b, "silence_timer", 0.0), 1.5)
+                                                        # Knockback
+                                                        dx = b.x - hazard.x
+                                                        dy = b.y - hazard.y
+                                                        if dx == 0 and dy == 0:
+                                                            dx, dy = 1.0, 0.0
+                                                        norm = math.hypot(dx, dy)
+                                                        nx, ny = dx/norm, dy/norm
+                                                        push_strength = 2000.0
+                                                        b.vx = getattr(b, "vx", 0.0) + nx * push_strength
+                                                        b.vy = getattr(b, "vy", 0.0) + ny * push_strength
+
                     elif hazard.kind == "bounty_trap":
                         hazard_is_active = getattr(hazard, "active", True)
                         hazard_team = getattr(hazard, "team", "")
@@ -13498,7 +13542,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_shockwave_mine']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -18674,6 +18718,25 @@ class Action:
                     node.team = getattr(self.ball, "team", "")
                     node.duration = 15.0
                     node.active = True
+                    self.world.arena.hazards.append(node)
+                self.ball.skill_timer = 15.0
+
+            elif skill_name == "deploy_shockwave_mine":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class ShockwaveMineNode:
+                        pass
+                    node = ShockwaveMineNode()
+                    node.id = f"shockwave_mine_{getattr(self.ball, 'id', '0')}_{getattr(self.world, 'tick', 0)}"
+                    node.kind = "shockwave_mine"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 20.0
+                    node.owner_id = getattr(self.ball, "id", None)
+                    node.team = getattr(self.ball, "team", "")
+                    node.duration = 30.0
+                    node.active = True
+                    node.arming_timer = 1.5
+                    node.state = "arming"
                     self.world.arena.hazards.append(node)
                 self.ball.skill_timer = 15.0
 
