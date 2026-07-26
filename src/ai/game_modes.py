@@ -40298,6 +40298,8 @@ from ai.ghost_companion import GhostCompanionMode
 GAME_MODES['ghost_companion'] = GhostCompanionMode()
 
 from ai.bouncy_portals import BouncyPortalsMode
+import ai.hovercraft
+GAME_MODES['hovercraft'] = ai.hovercraft.HovercraftMode()
 GAME_MODES['bouncy_portals'] = BouncyPortalsMode()
 
 from ai.shared_health_pool import SharedHealthPoolMode
