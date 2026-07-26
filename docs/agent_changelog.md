@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1520] Vote Streaks — *2026-07-26 00:50:33 UTC*
+
+If the crowd consistently votes for global stat modifiers over hazard drops, a 'crowd mood' bar shifts. Hitting max mood unlocks a mega-vote where all balls receive a randomized legendary buff for a brief duration, accompanied by special visual fireworks and audio cheers.
+
+---
+
 ## [idea-1465] Bounty Contracts Item — *2026-07-26 00:47:24 UTC*
 
 Add an equippable item or pickup called 'Bounty Contract' that temporarily selects a random enemy as a bounty. If the player eliminates that specific enemy within a time limit, they receive a massive payout of skill points and a unique permanent stat boost for the rest of the match.

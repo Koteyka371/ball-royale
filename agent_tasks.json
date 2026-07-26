@@ -26028,7 +26028,7 @@
     },
     {
       "id": "idea-1520",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vote Streaks",
@@ -37906,6 +37906,23 @@
         "src/ai/shrinking_hex_grid.py",
         "src/ai/shrinking_hex_grid.gd",
         "tests/test_shrinking_hex_grid.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2218",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Resonance Item",
+      "description": "An equippable item that occasionally causes a ball's actions (like shooting or dashing) to echo 1 second later in the exact same location, effectively doubling their offensive output temporarily.",
+      "allowed_paths": [
+        "src/ai/quantum_resonance_item.py",
+        "src/ai/quantum_resonance_item.gd",
+        "tests/test_quantum_resonance_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
