@@ -38644,6 +38644,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2261",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weapon Randomizer Mode",
+      "description": "Every 30 seconds, players are equipped with a randomly chosen set of weapons or abilities, forcing them to adapt constantly.",
+      "allowed_paths": [
+        "src/ai/weapon_randomizer.py",
+        "src/ai/weapon_randomizer.gd",
+        "tests/test_weapon_randomizer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
