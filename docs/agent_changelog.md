@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1516] Shrinking Safe Paths — *2026-07-26 00:44:40 UTC*
+
+Instead of bubbles, narrow snaking paths are the only safe zones. They slowly constrict and vanish while new ones appear.
+
+---
+
 ## [idea-1462] Diplomacy/Alliance System — *2026-07-26 00:38:49 UTC*
 
 Guilds can form temporary alliances, sharing territory control and preventing friendly fire, but the alliance breaks when there are no neutral or enemy territories left to conquer.

@@ -25960,7 +25960,7 @@
     },
     {
       "id": "idea-1516",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Paths",
@@ -37837,6 +37837,41 @@
         "src/ai/starlight_guardian_boss.py",
         "src/ai/starlight_guardian_boss.gd",
         "tests/test_starlight_guardian_boss.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2214",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Renegade Guild Mechaninc",
+      "description": "If a guild intentionally breaks an alliance by declaring war on an ally while still having neutral territories, they gain the 'Renegade' status, allowing them to plunder more resources from their former allies but making them visible to all other guilds on the map.",
+      "allowed_paths": [
+        "src/ui/renegade_guild_mechaninc.py",
+        "src/ui/renegade_guild_mechaninc.gd",
+        "src/ai/renegade_guild_mechaninc.py",
+        "tests/test_renegade_guild_mechaninc.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2215",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Alliance Emissary Boss Buff",
+      "description": "If an alliance manages to conquer 80% of the world map, they summon a powerful 'Alliance Emissary' boss that fights alongside them in World Boss events, boosting their total damage output for one week.",
+      "allowed_paths": [
+        "src/ai/alliance_emissary_boss_buff.py",
+        "src/ai/alliance_emissary_boss_buff.gd",
+        "tests/test_alliance_emissary_boss_buff.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
