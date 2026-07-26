@@ -1,0 +1,4 @@
+{
+    "title": "Shrinking Hex Grid",
+    "description": "The arena is a grid of hexagonal tiles. Periodically, tiles at the edges of the grid fall away into the void. Balls must scramble to stay on the remaining tiles as the playable area becomes an ever-shrinking, irregularly shaped island."
+}
