@@ -30224,6 +30224,54 @@ class HighSpeedReflectiveBarriersMode(GameMode):
                             entity.reflect_barrier_cooldown = 0.5
 
 
+class ModifierRoyaleMode(BattleRoyaleMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Modifier Royale"
+        self.description = "A battle royale mode where random modifiers (like double speed or zero gravity) trigger every 60 seconds, forcing players to adapt dynamically."
+        self.modifier_timer = 0.0
+        self.active_modifier = "none"
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+
+        self.modifier_timer += delta
+        if self.modifier_timer >= 60.0:
+            self.modifier_timer -= 60.0
+            modifiers = ["double_speed", "half_speed", "double_damage", "zero_gravity", "none"]
+            self.active_modifier = self.random.choice(modifiers)
+            if hasattr(world, "add_event"):
+                world.add_event("modifier_changed", {"modifier": self.active_modifier})
+
+        if self.active_modifier == "zero_gravity":
+            world.zero_gravity_active = True
+        else:
+            world.zero_gravity_active = False
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if self.active_modifier == "zero_gravity":
+                b.frictionless_modifier_applied = True
+            else:
+                if getattr(b, "frictionless_modifier_applied", False):
+                    b.frictionless_modifier_applied = False
+
+            if hasattr(b, "base_speed"):
+                if self.active_modifier == "double_speed":
+                    b.speed = b.base_speed * 2.0
+                elif self.active_modifier == "half_speed":
+                    b.speed = b.base_speed * 0.5
+                else:
+                    b.speed = b.base_speed
+
+            if hasattr(b, "base_damage"):
+                if self.active_modifier == "double_damage":
+                    b.damage = b.base_damage * 2.0
+                else:
+                    b.damage = b.base_damage
+
 GAME_MODES = {
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
@@ -30388,6 +30436,7 @@ GAME_MODES = {
     "vampire_royale": VampireRoyaleMode(),
     "shrinking_arena": ShrinkingArenaMode(),
     "battle_royale": BattleRoyaleMode(),
+    "modifier_royale": ModifierRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),
     "zombie_infection": ZombieInfectionMode(),
     "boss_fight": BossFightMode(),

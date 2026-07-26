@@ -48701,6 +48701,131 @@ class HighSpeedReflectiveBarriersMode extends GameMode:
 							entity.set_meta("reflect_barrier_cooldown", 0.5)
 
 
+class ModifierRoyaleMode extends BattleRoyaleMode:
+	var modifier_timer: float = 0.0
+	var active_modifier: String = "none"
+
+	func _init() -> void:
+		super._init()
+		name = "Modifier Royale"
+		description = "A battle royale mode where random modifiers (like double speed or zero gravity) trigger every 60 seconds, forcing players to adapt dynamically."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+
+		modifier_timer += delta
+		if modifier_timer >= 60.0:
+			modifier_timer -= 60.0
+			var modifiers = ["double_speed", "half_speed", "double_damage", "zero_gravity", "none"]
+			active_modifier = modifiers[rng.randi_range(0, modifiers.size() - 1)]
+			if world.has_method("add_event"):
+				world.add_event("modifier_changed", {"modifier": active_modifier})
+
+		if active_modifier == "zero_gravity":
+			if typeof(world) == TYPE_DICTIONARY:
+				world["zero_gravity_active"] = true
+			else:
+				if "zero_gravity_active" in world:
+					world.zero_gravity_active = true
+				elif world.has_method("set_meta"):
+					world.set_meta("zero_gravity_active", true)
+		else:
+			if typeof(world) == TYPE_DICTIONARY:
+				world["zero_gravity_active"] = false
+			else:
+				if "zero_gravity_active" in world:
+					world.zero_gravity_active = false
+				elif world.has_method("set_meta"):
+					world.set_meta("zero_gravity_active", false)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			if active_modifier == "zero_gravity":
+				if typeof(b) == TYPE_DICTIONARY:
+					b["frictionless_modifier_applied"] = true
+				else:
+					if "frictionless_modifier_applied" in b:
+						b.frictionless_modifier_applied = true
+					elif b.has_method("set_meta"):
+						b.set_meta("frictionless_modifier_applied", true)
+			else:
+				var has_frictionless = false
+				if typeof(b) == TYPE_DICTIONARY:
+					has_frictionless = b.get("frictionless_modifier_applied", false)
+					if has_frictionless:
+						b["frictionless_modifier_applied"] = false
+				else:
+					has_frictionless = b.get("frictionless_modifier_applied") if "frictionless_modifier_applied" in b else (b.get_meta("frictionless_modifier_applied") if b.has_method("get_meta") and b.has_meta("frictionless_modifier_applied") else false)
+					if has_frictionless:
+						if "frictionless_modifier_applied" in b:
+							b.frictionless_modifier_applied = false
+						elif b.has_method("set_meta"):
+							b.set_meta("frictionless_modifier_applied", false)
+
+			var base_speed = 0.0
+			var has_base_speed = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("base_speed"):
+					base_speed = b.get("base_speed")
+					has_base_speed = true
+			else:
+				if "base_speed" in b:
+					base_speed = b.base_speed
+					has_base_speed = true
+				elif b.has_method("get_meta") and b.has_meta("base_speed"):
+					base_speed = b.get_meta("base_speed")
+					has_base_speed = true
+
+			if has_base_speed:
+				var new_speed = base_speed
+				if active_modifier == "double_speed":
+					new_speed = base_speed * 2.0
+				elif active_modifier == "half_speed":
+					new_speed = base_speed * 0.5
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["speed"] = new_speed
+				else:
+					if "speed" in b:
+						b.speed = new_speed
+					elif b.has_method("set_meta"):
+						b.set_meta("speed", new_speed)
+
+			var base_damage = 0.0
+			var has_base_damage = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("base_damage"):
+					base_damage = b.get("base_damage")
+					has_base_damage = true
+			else:
+				if "base_damage" in b:
+					base_damage = b.base_damage
+					has_base_damage = true
+				elif b.has_method("get_meta") and b.has_meta("base_damage"):
+					base_damage = b.get_meta("base_damage")
+					has_base_damage = true
+
+			if has_base_damage:
+				var new_damage = base_damage
+				if active_modifier == "double_damage":
+					new_damage = base_damage * 2.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["damage"] = new_damage
+				else:
+					if "damage" in b:
+						b.damage = new_damage
+					elif b.has_method("set_meta"):
+						b.set_meta("damage", new_damage)
+
 var GAME_MODES = {
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),
@@ -49021,6 +49146,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"vampire_royale": VampireRoyaleMode.new(),
 	"shrinking_arena": ShrinkingArenaMode.new(),
 	"battle_royale": BattleRoyaleMode.new(),
+	"modifier_royale": ModifierRoyaleMode.new(),
 	"team_deathmatch": TeamDeathmatchMode.new(),
 	"zombie_infection": ZombieInfectionMode.new(),
 	"boss_fight": BossFightMode.new(),
