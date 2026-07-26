@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1563] Laser Grid Survival Mode — *2026-07-26 22:09:15 UTC*
+
+An intense game mode where a grid of static lasers slowly moves across the arena, forcing players to find safe pockets and navigate the grid while fighting enemies.
+
+---
+
 ## [idea-1552] Quantum Swap Bomb — *2026-07-26 21:40:25 UTC*
 
 A new deployable hazard that arms after 2 seconds. When triggered, it swaps the positions of the closest ally and the closest enemy within a massive radius, potentially throwing an enemy into a hazard while pulling an ally to safety.

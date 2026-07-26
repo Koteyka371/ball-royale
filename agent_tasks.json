@@ -26762,7 +26762,7 @@
     },
     {
       "id": "idea-1563",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Grid Survival Mode",
@@ -38999,6 +38999,57 @@
         "src/ai/reverse_hovercraft.py",
         "src/ai/reverse_hovercraft.gd",
         "tests/test_reverse_hovercraft.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2282",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Time-Dilation Zone",
+      "description": "A hazard that locally slows down ball movement and projectile speed, altering physics within its radius.",
+      "allowed_paths": [
+        "src/ai/time_dilation_zone.py",
+        "src/ai/time_dilation_zone.gd",
+        "tests/test_time_dilation_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2283",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirror Match Mode",
+      "description": "A game mode where all players start with the exact same stats, cosmetic, and ability loadout, focusing purely on mechanical skill.",
+      "allowed_paths": [
+        "src/ai/mirror_match.py",
+        "src/ai/mirror_match.gd",
+        "tests/test_mirror_match.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2284",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Mirror Booster",
+      "description": "A booster that creates a temporary clone of the player that perfectly mirrors their movements and attacks for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/echo_mirror_booster.py",
+        "src/ai/echo_mirror_booster.gd",
+        "tests/test_echo_mirror_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
