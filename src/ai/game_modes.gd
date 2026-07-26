@@ -48657,8 +48657,177 @@ class HighSpeedReflectiveBarriersMode extends GameMode:
 							entity.set_meta("reflect_barrier_cooldown", 0.5)
 
 
+
+class SingularityBombEventMode extends GameMode:
+	var event_timer = 0.0
+
+	func _init():
+		super._init()
+		self.name = "Singularity Bomb Event"
+		self.description = "A massive singularity bomb spawns periodically. It slowly pulls in all nearby projectiles. If it absorbs enough projectiles or takes enough damage, it detonates in a massive AoE blast!"
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016):
+		event_timer += delta
+
+		if not world.has("arena"):
+			return
+
+		if typeof(world["arena"]) == TYPE_DICTIONARY and not world["arena"].has("hazards"):
+			world["arena"]["hazards"] = []
+		elif typeof(world["arena"]) == TYPE_OBJECT and not ("hazards" in world["arena"]):
+			world["arena"].hazards = []
+
+		if event_timer >= 20.0:
+			event_timer = 0.0
+			var rng = RandomNumberGenerator.new()
+			rng.randomize()
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if typeof(world["arena"]) == TYPE_DICTIONARY:
+				if world["arena"].has("width"): arena_width = float(world["arena"]["width"])
+				if world["arena"].has("height"): arena_height = float(world["arena"]["height"])
+			else:
+				if "width" in world["arena"]: arena_width = float(world["arena"].width)
+				if "height" in world["arena"]: arena_height = float(world["arena"].height)
+
+			var cx = rng.randf_range(200.0, arena_width - 200.0)
+			var cy = rng.randf_range(200.0, arena_height - 200.0)
+
+			var h_id = 90000 + rng.randi_range(0, 1000)
+			var hazards = world["arena"]["hazards"] if typeof(world["arena"]) == TYPE_DICTIONARY else world["arena"].hazards
+			if hazards:
+				h_id += hazards.size()
+
+			var h = {
+				"id": h_id,
+				"x": cx,
+				"y": cy,
+				"radius": 80.0,
+				"kind": "singularity_bomb",
+				"damage": 0.0,
+				"hp": 150.0,
+				"max_hp": 150.0,
+				"pull_radius": 400.0,
+				"pull_strength": 200.0
+			}
+			hazards.append(h)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("singularity_bomb_spawned", {"x": cx, "y": cy})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("events") and typeof(world["events"]) == TYPE_ARRAY:
+				world["events"].append({"type": "singularity_bomb_spawned", "data": {"x": cx, "y": cy}})
+
+		var hazards = world["arena"]["hazards"] if typeof(world["arena"]) == TYPE_DICTIONARY else world["arena"].hazards
+		var hazards_to_remove = []
+
+		for h in hazards:
+			var kind = h["kind"] if typeof(h) == TYPE_DICTIONARY else h.kind
+			if kind == "singularity_bomb":
+				var hx = float(h["x"] if typeof(h) == TYPE_DICTIONARY else h.x)
+				var hy = float(h["y"] if typeof(h) == TYPE_DICTIONARY else h.y)
+				var pull_radius = float(h["pull_radius"] if typeof(h) == TYPE_DICTIONARY else h.pull_radius)
+				var pull_strength = float(h["pull_strength"] if typeof(h) == TYPE_DICTIONARY else h.pull_strength)
+				var h_radius = float(h["radius"] if typeof(h) == TYPE_DICTIONARY else h.radius)
+
+				# Pull projectiles
+				if world.has("projectiles"):
+					var projs_to_remove = []
+					for p in world["projectiles"]:
+						var px = float(p["x"] if typeof(p) == TYPE_DICTIONARY else p.x)
+						var py = float(p["y"] if typeof(p) == TYPE_DICTIONARY else p.y)
+						var dx = hx - px
+						var dy = hy - py
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist < pull_radius:
+							if dist < h_radius:
+								projs_to_remove.append(p)
+							elif dist > 0.0001:
+								var nx = dx / dist
+								var ny = dy / dist
+								if typeof(p) == TYPE_DICTIONARY:
+									if p.has("vx"): p["vx"] += nx * pull_strength * delta
+									if p.has("vy"): p["vy"] += ny * pull_strength * delta
+									p["x"] += nx * (pull_strength * 0.5) * delta
+									p["y"] += ny * (pull_strength * 0.5) * delta
+								else:
+									if "vx" in p: p.vx += nx * pull_strength * delta
+									if "vy" in p: p.vy += ny * pull_strength * delta
+									p.x += nx * (pull_strength * 0.5) * delta
+									p.y += ny * (pull_strength * 0.5) * delta
+
+					for p in projs_to_remove:
+						world["projectiles"].erase(p)
+						var pdmg = float(p["damage"] if typeof(p) == TYPE_DICTIONARY else (p.damage if "damage" in p else 10.0))
+						if typeof(h) == TYPE_DICTIONARY:
+							h["hp"] -= pdmg
+						else:
+							h.hp -= pdmg
+
+				var hp = float(h["hp"] if typeof(h) == TYPE_DICTIONARY else h.hp)
+				if hp <= 0.0:
+					hazards_to_remove.append(h)
+
+		for h in hazards_to_remove:
+			hazards.erase(h)
+
+			var hx = float(h["x"] if typeof(h) == TYPE_DICTIONARY else h.x)
+			var hy = float(h["y"] if typeof(h) == TYPE_DICTIONARY else h.y)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("visual_effect", {"type": "singularity_bomb_explosion", "x": hx, "y": hy, "radius": 300.0})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("events") and typeof(world["events"]) == TYPE_ARRAY:
+				world["events"].append({"type": "visual_effect", "data": {"type": "singularity_bomb_explosion", "x": hx, "y": hy, "radius": 300.0}})
+
+			for b in balls:
+				var alive = false
+				var ball_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = bool(b["alive"]) if b.has("alive") else false
+					ball_type = b["ball_type"] if b.has("ball_type") else ""
+				else:
+					alive = bool(b.alive) if "alive" in b else false
+					ball_type = b.ball_type if "ball_type" in b else ""
+
+				if alive and ball_type != "spectator":
+					var bx = float(b["x"] if typeof(b) == TYPE_DICTIONARY else b.x)
+					var by = float(b["y"] if typeof(b) == TYPE_DICTIONARY else b.y)
+					var dx = bx - hx
+					var dy = by - hy
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= 300.0:
+						var damage = 100.0 * (1.0 - dist / 300.0)
+						var hp = float(b["hp"] if typeof(b) == TYPE_DICTIONARY else b.hp)
+						hp -= damage
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+							if hp <= 0:
+								b["hp"] = 0
+								b["alive"] = false
+								b["killer"] = "singularity_bomb"
+						else:
+							b.hp = hp
+							if hp <= 0:
+								b.hp = 0
+								b.alive = false
+								b.killer = "singularity_bomb"
+
+						if dist > 0.0001:
+							var nx = dx / dist
+							var ny = dy / dist
+							var knockback = 500.0 * (1.0 - dist / 300.0)
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("vx"): b["vx"] += nx * knockback
+								if b.has("vy"): b["vy"] += ny * knockback
+							else:
+								if "vx" in b: b.vx += nx * knockback
+								if "vy" in b: b.vy += ny * knockback
+
+
 var GAME_MODES = {
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
+	"singularity_bomb_event": SingularityBombEventMode.new(),
 	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),
 	"capture_zones": CaptureZonesMode.new(),
 	"nemesis_sustain": NemesisSustainMode.new(),
