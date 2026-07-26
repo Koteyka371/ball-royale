@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1394] Shockwave Mine Trap — *2026-07-26 05:26:12 UTC*
+
+A deployable mine that detonates upon enemy contact, emitting a massive radial shockwave that deals low damage but pushes all enemies significantly far away and disables their movement abilities for 1.5 seconds.
+
+---
+
 ## [idea-1474] Decoy Decoy — *2026-07-26 05:19:54 UTC*
 
 Spawns a fake clone of a random teammate.

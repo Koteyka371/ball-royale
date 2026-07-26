@@ -23881,7 +23881,7 @@
     },
     {
       "id": "idea-1394",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shockwave Mine Trap",
@@ -38195,6 +38195,40 @@
         "src/ai/quantum_entanglement_chain.py",
         "src/ai/quantum_entanglement_chain.gd",
         "tests/test_quantum_entanglement_chain.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2235",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Confusion Mode",
+      "description": "A new mutator where every player continuously spawns decoys of themselves, and taking damage destroys a decoy before hurting the real player.",
+      "allowed_paths": [
+        "src/ai/decoy_confusion.py",
+        "src/ai/decoy_confusion.gd",
+        "tests/test_decoy_confusion.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2236",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Healer Trait",
+      "description": "A trait that chains healing effects to nearby teammates with slightly diminished returns.",
+      "allowed_paths": [
+        "src/ai/chain_healer_trait.py",
+        "src/ai/chain_healer_trait.gd",
+        "tests/test_chain_healer_trait.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
