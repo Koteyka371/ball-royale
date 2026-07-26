@@ -33664,8 +33664,8 @@ func _use_skill():
 
                         var b_pinball = 0.0
                         if "pinball_projectile_timer" in self.ball: b_pinball = self.ball.pinball_projectile_timer
+                        fb["is_ricochet_laser"] = true
                         if b_pinball > 0.0:
-                            fb["is_ricochet_laser"] = true
                             fb["bounces_left"] = 5
                         else:
                             fb["bounces_left"] = 1

@@ -1,4 +1,4 @@
 {
-  "title": "EMP Blast Mode",
-  "description": "Periodically, a huge EMP disables all active skills, shields, and boosts in the arena for a few seconds. Players must rely solely on movement and base stats during this window."
+  "title": "Meteor Swarm Skill",
+  "description": "A new skill that allows the player to summon a barrage of miniature fireballs falling from the sky in a designated area. The impact zones would be telegraphed briefly before dealing area-of-effect damage. These meteors would ignore walls but deal reduced damage to balls hiding under covers or shields."
 }

@@ -1,4 +1,4 @@
 {
-  "title": "Sticky Tar Pits",
-  "description": "Hazards that slow down balls significantly and stick to them for a few seconds after leaving the pit, reducing movement speed globally while active."
+  "title": "Bouncy Bumper Hazard",
+  "description": "Introduce a new hazard type called 'bouncy_bumper' that actively moves around the arena and violently reflects any projectiles (like fireballs, bullets, lasers) that hit it, multiplying their speed and damage with each bounce. If a player hits it directly, they take heavy knockback but receive a temporary speed boost."
 }
