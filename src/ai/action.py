@@ -21968,6 +21968,27 @@ class Action:
 
         if getattr(self.ball, "cursed_relic_timer", 0.0) > 0.0:
             self.ball.cursed_relic_timer -= delta
+
+            # Health drain and aura logic
+            if hasattr(self.world, "balls") and getattr(self.ball, "hp", 0.0) > 0:
+                drain = 5.0 * delta
+                self.ball.hp = max(0.0, self.ball.hp - drain)
+
+                aura_radius = 150.0
+                damage_to_enemies = 10.0 * delta
+                heal_fraction = 0.5
+                total_healed = 0.0
+
+                import math
+                for other_ball in self.world.balls:
+                    if other_ball != self.ball and getattr(other_ball, "hp", 0.0) > 0:
+                        dist = math.hypot(self.ball.x - other_ball.x, self.ball.y - other_ball.y)
+                        if dist <= aura_radius:
+                            other_ball.hp -= damage_to_enemies
+                            total_healed += damage_to_enemies * heal_fraction
+
+                if total_healed > 0.0:
+                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + total_healed)
             if self.ball.cursed_relic_timer <= 0.0:
                 self.ball.cursed_relic_timer = 0.0
                 if getattr(self.ball, "cursed_relic_applied", False):

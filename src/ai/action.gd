@@ -43041,6 +43041,54 @@ func _update_skill_timer(delta: float):
         if "cursed_relic_timer" in self.ball: self.ball.cursed_relic_timer = cr_timer_val
         elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_timer", cr_timer_val)
 
+        var hp_val = 0.0
+        if "hp" in self.ball: hp_val = float(self.ball.hp)
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): hp_val = float(self.ball.get_meta("hp"))
+
+        if hp_val > 0.0:
+            var drain = 5.0 * delta
+            hp_val = max(0.0, hp_val - drain)
+            if "hp" in self.ball: self.ball.hp = hp_val
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp_val)
+
+            var aura_radius = 150.0
+            var damage_to_enemies = 10.0 * delta
+            var heal_fraction = 0.5
+            var total_healed = 0.0
+
+            if "balls" in self.world:
+                for other_ball in self.world.balls:
+                    if other_ball != self.ball:
+                        var other_hp = 0.0
+                        if "hp" in other_ball: other_hp = float(other_ball.hp)
+                        elif other_ball.has_method("has_meta") and other_ball.has_meta("hp"): other_hp = float(other_ball.get_meta("hp"))
+
+                        if other_hp > 0.0:
+                            var dist = 0.0
+                            if "x" in self.ball and "y" in self.ball and "x" in other_ball and "y" in other_ball:
+                                var dx = float(self.ball.x) - float(other_ball.x)
+                                var dy = float(self.ball.y) - float(other_ball.y)
+                                dist = sqrt(dx*dx + dy*dy)
+                            elif self.ball.has_method("has_meta") and other_ball.has_method("has_meta"):
+                                var dx = float(self.ball.get_meta("x")) - float(other_ball.get_meta("x"))
+                                var dy = float(self.ball.get_meta("y")) - float(other_ball.get_meta("y"))
+                                dist = sqrt(dx*dx + dy*dy)
+
+                            if dist <= aura_radius:
+                                other_hp -= damage_to_enemies
+                                if "hp" in other_ball: other_ball.hp = other_hp
+                                elif other_ball.has_method("set_meta"): other_ball.set_meta("hp", other_hp)
+                                total_healed += damage_to_enemies * heal_fraction
+
+            if total_healed > 0.0:
+                var max_hp_val = 100.0
+                if "max_hp" in self.ball: max_hp_val = float(self.ball.max_hp)
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp_val = float(self.ball.get_meta("max_hp"))
+
+                hp_val = min(max_hp_val, hp_val + total_healed)
+                if "hp" in self.ball: self.ball.hp = hp_val
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", hp_val)
+
         if cr_timer_val <= 0:
             if "cursed_relic_timer" in self.ball: self.ball.cursed_relic_timer = 0.0
             elif self.ball.has_method("set_meta"): self.ball.set_meta("cursed_relic_timer", 0.0)
