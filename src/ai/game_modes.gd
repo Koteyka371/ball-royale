@@ -62650,3 +62650,5 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 						b.set("vy", b.get("vy") + pull_y)
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode.new()
+const DoubleJuggernautMode = preload("res://src/ai/double_juggernaut.gd")
+GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
