@@ -22588,28 +22588,7 @@ func execute(strategy: String, delta: float):
         elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"): vy_val = self.ball.get_meta("vy")
 
     if bounced_wall and (pow(vx_val, 2) + pow(vy_val, 2) > 1.0):
-        if typeof(self.ball) == TYPE_DICTIONARY:
-            var has_sticky = self.ball.get("has_sticky_boots", false)
-            if has_sticky or not (self.ball.has("wall_stick_timer") and self.ball["wall_stick_timer"] > 0.0):
-                var ws_dur = self.ball.get("wall_stick_duration", 2.0)
-                if has_sticky: ws_dur = max(ws_dur, 3.0)
-                self.ball["wall_stick_timer"] = ws_dur
-                self.ball["is_stunned"] = true
-        elif "wall_stick_timer" in self.ball:
-            var has_sticky = self.ball.get("has_sticky_boots") if "has_sticky_boots" in self.ball else false
-            if has_sticky or not self.ball.wall_stick_timer > 0.0:
-                var ws_dur = self.ball.get("wall_stick_duration") if "wall_stick_duration" in self.ball else 2.0
-                if has_sticky: ws_dur = max(ws_dur, 3.0)
-                self.ball.wall_stick_timer = ws_dur
-                if "is_stunned" in self.ball: self.ball.is_stunned = true
-                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", true)
-        elif self.ball.has_method("set_meta"):
-            var has_sticky = self.ball.has_meta("has_sticky_boots") and self.ball.get_meta("has_sticky_boots")
-            if has_sticky or not (self.ball.has_meta("wall_stick_timer") and self.ball.get_meta("wall_stick_timer") > 0.0):
-                var ws_dur = self.ball.get_meta("wall_stick_duration") if self.ball.has_meta("wall_stick_duration") else 2.0
-                if has_sticky: ws_dur = max(ws_dur, 3.0)
-                self.ball.set_meta("wall_stick_timer", ws_dur)
-                self.ball.set_meta("is_stunned", true)
+        pass
 
     if bounced_wall:
         if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
@@ -22990,13 +22969,13 @@ func execute(strategy: String, delta: float):
                         if "alive" in self.ball: self.ball.alive = false
                         elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
 
-            if is_mirror_walls or is_agile_bouncer:
-                if typeof(self.ball) == TYPE_DICTIONARY:
-                    self.ball["vx"] = nvx
-                    self.ball["vy"] = nvy
-                elif "vx" in self.ball:
-                    self.ball.vx = nvx
-                    self.ball.vy = nvy
+            # Unconditional bounce velocity for pinball effect (at double speed)
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["vx"] = nvx * 2.0
+                self.ball["vy"] = nvy * 2.0
+            elif "vx" in self.ball:
+                self.ball.vx = nvx * 2.0
+                self.ball.vy = nvy * 2.0
 
             if speed > 400:
                 if typeof(self.ball) == TYPE_DICTIONARY:

@@ -6565,11 +6565,7 @@ class Action:
             self._resolve_collisions()
             bounced_wall = self._clamp_position()
             if bounced_wall and (getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2 > 1.0):
-                if getattr(self.ball, "has_sticky_boots", False) or getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
-                    self.ball.wall_stick_timer = getattr(self.ball, "wall_stick_duration", 2.0)
-                    if getattr(self.ball, "has_sticky_boots", False):
-                        self.ball.wall_stick_timer = max(self.ball.wall_stick_timer, 3.0)
-                    self.ball.is_stunned = True
+                pass
             return
 
         """
@@ -11407,11 +11403,7 @@ class Action:
         # Wait, hazards don't call execute(). They are updated in action.py main loop or in game_modes.
 
         if bounced_wall and (getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2 > 1.0):
-            if getattr(self.ball, "has_sticky_boots", False) or getattr(self.ball, "wall_stick_timer", 0.0) <= 0.0:
-                self.ball.wall_stick_timer = getattr(self.ball, "wall_stick_duration", 2.0)
-                if getattr(self.ball, "has_sticky_boots", False):
-                    self.ball.wall_stick_timer = max(self.ball.wall_stick_timer, 3.0)
-                self.ball.is_stunned = True
+            pass
 
         # Reflect projectiles and entities with increased speed upon hitting the boundary
         if bounced_wall:
@@ -11646,10 +11638,9 @@ class Action:
                         if self.ball.hp <= 0:
                             self.ball.alive = False
 
-                if is_mirror_walls or is_agile_bouncer:
-                    # Give it a bounce velocity
-                    self.ball.vx = self.ball._reflection_vx
-                    self.ball.vy = self.ball._reflection_vy
+                # Give it a bounce velocity unconditionally for chaotic pinball element (at double speed)
+                self.ball.vx = self.ball._reflection_vx * 2.0
+                self.ball.vy = self.ball._reflection_vy * 2.0
 
                 # Trigger combo window if bounced at high speed
                 if speed > 400:
