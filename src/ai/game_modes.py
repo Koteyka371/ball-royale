@@ -30224,6 +30224,66 @@ class HighSpeedReflectiveBarriersMode(GameMode):
                             entity.reflect_barrier_cooldown = 0.5
 
 
+
+class BlackHoleMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole Mutator"
+        self.description = "A modifier where a stationary black hole sits in the center of the arena, dragging balls towards it continuously."
+        self.mutators_active = True
+        self.mutators = ["black_hole_mutator"]
+        self.bh_id = 9991234
+        self.pull_strength = 250.0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+        cx = getattr(world.arena, "width", 1000.0) / 2.0
+        cy = getattr(world.arena, "height", 1000.0) / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+                bh = Hazard(id=self.bh_id, x=cx, y=cy, radius=40.0, kind="black_hole", damage=0.0)
+                world.arena.hazards.append(bh)
+            except ImportError:
+                class DummyBH:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                bh = DummyBH(self.bh_id, cx, cy, 40.0, "black_hole", 0.0)
+                world.arena.hazards.append(bh)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"): return
+
+        bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not bh: return
+
+        import math
+        for b in balls:
+            if not getattr(b, "alive", True): continue
+
+            dx = bh.x - getattr(b, "x", 0.0)
+            dy = bh.y - getattr(b, "y", 0.0)
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 0:
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * self.pull_strength * delta
+                    b.vy += (dy / dist) * self.pull_strength * delta
+
+
 GAME_MODES = {
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
@@ -37448,6 +37508,7 @@ GAME_MODES['weather_combinations'] = WeatherCombinationsMode()
 
 GAME_MODES['ice_walls'] = IceWallsMode()
 GAME_MODES['pinball_mutator'] = PinballMutatorMode()
+GAME_MODES['black_hole_mutator'] = BlackHoleMutatorMode()
 GAME_MODES['linked_portals'] = LinkedPortalsMode()
 
 

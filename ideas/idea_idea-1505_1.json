@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Polarization Mutator",
+  "description": "A mutator where all repelling forces become pulling forces and all pulling forces become repelling forces. For example, black holes push balls away, and repulsion fields drag balls inwards."
+}

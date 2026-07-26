@@ -48701,6 +48701,115 @@ class HighSpeedReflectiveBarriersMode extends GameMode:
 							entity.set_meta("reflect_barrier_cooldown", 0.5)
 
 
+
+class BlackHoleMutatorMode extends GameMode:
+	var bh_id = 9991234
+	var pull_strength = 250.0
+
+	func _init():
+		super()
+		name = "Black Hole Mutator"
+		description = "A modifier where a stationary black hole sits in the center of the arena, dragging balls towards it continuously."
+		mutators_active = true
+		mutators = ["black_hole_mutator"]
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not ("arena" in world) or world.arena == null: return
+		if not ("hazards" in world.arena):
+			if typeof(world.arena) == TYPE_DICTIONARY: world.arena["hazards"] = []
+			else: world.arena.set("hazards", [])
+
+		var old_w = 1000.0
+		var old_h = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			old_w = world.arena.get("width", 1000.0)
+			old_h = world.arena.get("height", 1000.0)
+		else:
+			if "width" in world.arena: old_w = world.arena.width
+			if "height" in world.arena: old_h = world.arena.height
+
+		var cx = old_w / 2.0
+		var cy = old_h / 2.0
+
+		var existing = null
+		if "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY:
+			for h in world.arena.hazards:
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.get("kind", "") == "black_hole" and h.get("id", null) == bh_id:
+						existing = h
+						break
+				elif typeof(h) == TYPE_OBJECT:
+					if h.get("kind") == "black_hole" and h.get("id") == bh_id:
+						existing = h
+						break
+
+		if not existing:
+			var new_hazard = {
+				"id": bh_id,
+				"x": cx,
+				"y": cy,
+				"radius": 40.0,
+				"kind": "black_hole",
+				"damage": 0.0,
+				"active": true
+			}
+			world.arena.hazards.append(new_hazard)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not ("arena" in world) or world.arena == null: return
+		if not ("hazards" in world.arena): return
+
+		var bh = null
+		if typeof(world.arena.hazards) == TYPE_ARRAY:
+			for h in world.arena.hazards:
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.get("kind", "") == "black_hole" and h.get("id", null) == bh_id:
+						bh = h
+						break
+				elif typeof(h) == TYPE_OBJECT:
+					if h.get("kind") == "black_hole" and h.get("id") == bh_id:
+						bh = h
+						break
+
+		if bh == null:
+			return
+
+		var bh_x = bh.get("x") if typeof(bh) == TYPE_OBJECT else bh.get("x", 0.0)
+		var bh_y = bh.get("y") if typeof(bh) == TYPE_OBJECT else bh.get("y", 0.0)
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			if not is_alive:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+
+			var dx = bh_x - bx
+			var dy = bh_y - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 0:
+				var pull_x = (dx / dist) * pull_strength * delta
+				var pull_y = (dy / dist) * pull_strength * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("vx") and b.has("vy"):
+						b["vx"] += pull_x
+						b["vy"] += pull_y
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + pull_x)
+						b.set("vy", b.get("vy") + pull_y)
+
+
 var GAME_MODES = {
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),
@@ -61607,3 +61716,4 @@ class TelegraphedSupplyDropMode extends GameMode:
 
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode.new()
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()
+GAME_MODES['black_hole_mutator'] = BlackHoleMutatorMode.new()
