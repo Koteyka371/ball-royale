@@ -62097,3 +62097,6 @@ GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()
 
 const BouncyPortalsModeClass = preload("res://src/ai/bouncy_portals.gd")
 GAME_MODES['bouncy_portals'] = BouncyPortalsModeClass.new()
+
+const SharedHealthPoolModeClass = preload("res://src/ai/shared_health_pool.gd")
+GAME_MODES['shared_health_pool'] = SharedHealthPoolModeClass.new()

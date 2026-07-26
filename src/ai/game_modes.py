@@ -39981,3 +39981,6 @@ GAME_MODES['ghost_companion'] = GhostCompanionMode()
 
 from ai.bouncy_portals import BouncyPortalsMode
 GAME_MODES['bouncy_portals'] = BouncyPortalsMode()
+
+from ai.shared_health_pool import SharedHealthPoolMode
+GAME_MODES['shared_health_pool'] = SharedHealthPoolMode()
