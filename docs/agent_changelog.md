@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1555] Tag Team Arena — *2026-07-26 22:41:00 UTC*
+
+Players can swap places with a partner at will but share a cooldown on the ability.
+
+---
+
 ## [idea-1556] Bouncy Castle Mode — *2026-07-26 22:40:56 UTC*
 
 The arena is super bouncy and balls bounce higher and further when hitting edges.
