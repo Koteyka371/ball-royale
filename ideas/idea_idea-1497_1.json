@@ -1,4 +1,4 @@
 {
-  "title": "Dynamic Alliance Mode",
-  "description": "Introduce a game mode where weaker teams or guilds can temporarily form dynamic alliances mid-match to defeat a dominating guild, which breaks automatically once the dominating guild is eliminated."
+  "title": "Guild Boss Enrage Timer",
+  "description": "After a certain amount of time, the guild boss goes into an enrage mode where its damage and speed are doubled to wipe out the remaining hunters quickly."
 }

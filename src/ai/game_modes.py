@@ -5010,8 +5010,9 @@ class GuildBossFightMode(GameMode):
             if self.minion_timer <= 0:
                 self.minion_timer = 10.0
                 import random
-                minion_class = type(balls[0]) if balls else type('MockBoss', (object,), {})
-                minion = minion_class()
+                class DummyMinion:
+                    pass
+                minion = DummyMinion()
                 minion.id = f"boss_minion_{random.randint(1000, 9999)}"
                 minion.team = "Boss"
                 minion.ball_type = "minion"

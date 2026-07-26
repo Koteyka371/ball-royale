@@ -1,4 +1,4 @@
 {
-  "title": "Seasonal Boss Raids",
-  "description": "Introduce seasonal world bosses that roam across different game modes dynamically, requiring players to track them down across various arenas over the season to collect rare crafting materials."
+  "title": "Guild Boss Phase Transitions",
+  "description": "When the boss's HP drops below 50%, it changes its weakness element and changes its arena weather to match its new phase, requiring hunters to dynamically adapt."
 }
