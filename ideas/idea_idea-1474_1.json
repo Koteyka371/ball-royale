@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Confusion Mode",
+  "description": "A new mutator where every player continuously spawns decoys of themselves, and taking damage destroys a decoy before hurting the real player."
+}
