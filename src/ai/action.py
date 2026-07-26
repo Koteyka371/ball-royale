@@ -7545,6 +7545,71 @@ class Action:
                                                     other_hazard.vy = (dy / dist) * speed
 
 
+                    elif hazard.kind == "deployable_swap_trap":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+
+                            if getattr(hazard, "activation_timer", 2.0) > 0.0:
+                                hazard.activation_timer = getattr(hazard, "activation_timer", 2.0) - delta
+
+                            if getattr(hazard, "activation_timer", 2.0) <= 0.0:
+                                if not getattr(hazard, "trap_triggered", False):
+                                    owner_id = getattr(hazard, "owner_id", None)
+                                    if owner_id is None:
+                                        owner_id = getattr(hazard, "creator_id", None)
+                                    closest_ally = None
+                                    closest_enemy = None
+                                    min_dist_ally = float('inf')
+                                    min_dist_enemy = float('inf')
+
+                                    owner_team = None
+                                    for b in getattr(self.world, "balls", []):
+                                        if getattr(b, "id", None) == owner_id:
+                                            owner_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                            break
+
+                                    if owner_team is not None:
+                                        for b in getattr(self.world, "balls", []):
+                                            if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
+                                                hx = getattr(hazard, "x", 0)
+                                                hy = getattr(hazard, "y", 0)
+                                                bx = getattr(b, "x", 0)
+                                                by = getattr(b, "y", 0)
+                                                dist_sq = (hx - bx)**2 + (hy - by)**2
+                                                if dist_sq <= hazard.radius * hazard.radius:
+                                                    b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                                                    if b_team == owner_team:
+                                                        if dist_sq < min_dist_ally:
+                                                            min_dist_ally = dist_sq
+                                                            closest_ally = b
+                                                    else:
+                                                        if dist_sq < min_dist_enemy:
+                                                            min_dist_enemy = dist_sq
+                                                            closest_enemy = b
+
+                                        if closest_ally and closest_enemy:
+                                            temp_x, temp_y = closest_ally.x, closest_ally.y
+                                            closest_ally.x, closest_ally.y = closest_enemy.x, closest_enemy.y
+                                            closest_enemy.x, closest_enemy.y = temp_x, temp_y
+
+                                            # update teleport tick
+                                            closest_ally.last_teleport_tick = current_tick
+                                            closest_enemy.last_teleport_tick = current_tick
+                                            if hasattr(closest_ally, "set_meta"):
+                                                closest_ally.set_meta("last_teleport_tick", current_tick)
+                                            if hasattr(closest_enemy, "set_meta"):
+                                                closest_enemy.set_meta("last_teleport_tick", current_tick)
+
+                                            hazard.trap_triggered = True
+                                            hazard.duration = 0.0
+                                            if hasattr(self.world, "events"):
+                                                self.world.events.append({"type": "swap", "source": getattr(closest_ally, "id", None), "target": getattr(closest_enemy, "id", None), "x": closest_enemy.x, "y": closest_enemy.y})
+                                            if hasattr(self.world, "add_combat_log"):
+                                                self.world.add_combat_log(owner_id, "triggered deployable_swap_trap", 0)
+                                        else:
+                                            pass
                     elif hazard.kind == "electric_beam_trap":
                         hazard_is_active = getattr(hazard, "active", True)
                         hazard_team = getattr(hazard, "team", "")
