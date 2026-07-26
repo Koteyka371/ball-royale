@@ -580,6 +580,11 @@ class GameMode:
 
         # Check for emissary deaths to reward killer
         for b in world.dead_balls:
+            if isinstance(b, int):
+                b_id = b
+                b = next((ball for ball in balls if getattr(ball, "id", None) == b_id), None)
+                if b is None:
+                    continue
             if not getattr(b, "emissary_bounty_claimed", False):
                 b.emissary_bounty_claimed = True
                 clan_manager = getattr(world, "clan_manager", None)
