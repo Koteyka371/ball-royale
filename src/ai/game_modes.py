@@ -2063,7 +2063,7 @@ class BattleRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Battle Royale"
-        self.description = "Last man standing. The safe zone shrinks and moves. Areas outside the safe zone turn into damaging lava, punishing displacement heavily. Periodically, global acid rain falls, dealing DoT unless shielded."
+        self.description = "Last man standing. The safe zone shrinks and moves. Being outside the safe zone doesn\'t deal damage, but instead continuously reverses your position back in time, trapping you in the storm forever. Periodically, global acid rain falls, dealing DoT unless shielded."
         self.dark_phase_timer = 0.0
         self.is_dark_phase = False
         self.shadow_monsters = []
@@ -2751,26 +2751,32 @@ class BattleRoyaleMode(GameMode):
                 distance_to_center = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
 
                 # Check if player is outside the shrinking circular safe zone
-                if distance_to_center > self.zone_radius:
-                    # In this Battle Royale, outside the safe zone is LAVA!
-                    damage_amount = zone_damage_per_second * delta
-                    # Lava damage multiplier (more punishing than standard storm)
-                    damage_amount *= 1.5
-                    if hasattr(b, "take_damage"):
-                        b.take_damage(damage_amount)
-                    else:
-                        b.hp -= damage_amount  # Apply continuous safe zone damage
-                        if b.hp <= 0:
-                            b.hp = 0
-                            b.alive = False
-                            if not hasattr(b, "killer") or not b.killer:
-                                b.killer = "safe_zone"
+                if not hasattr(self, "position_history"):
+                    self.position_history = {}
 
-                    # Apply burn status effect (if not already burned/lava)
-                    if not hasattr(b, "burn_timer") or b.burn_timer <= 0:
-                        b.burn_timer = 2.0
-                    else:
-                        b.burn_timer = max(b.burn_timer, 2.0)
+                b_id = getattr(b, "id", None)
+                if b_id is not None:
+                    if b_id not in self.position_history:
+                        self.position_history[b_id] = []
+
+                if distance_to_center > self.zone_radius:
+                    # Time rewind instead of damage
+                    if b_id is not None and len(self.position_history[b_id]) > 0:
+                        # Pop the most recent position (LIFO) for continuous rewind
+                        # but keep the last position so they remain trapped forever
+                        if len(self.position_history[b_id]) > 1:
+                            old_pos = self.position_history[b_id].pop()
+                        else:
+                            old_pos = self.position_history[b_id][0]
+                        b.x = old_pos[0]
+                        b.y = old_pos[1]
+                else:
+                    # Record history if inside the safe zone
+                    if b_id is not None:
+                        self.position_history[b_id].append((b_x, b_y))
+                        # Limit history to something reasonable (e.g. 5 seconds * 60 ticks = 300)
+                        if len(self.position_history[b_id]) > 300:
+                            self.position_history[b_id].pop(0)
 
         # Moving walls / hazards logic
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):

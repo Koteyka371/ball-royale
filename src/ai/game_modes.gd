@@ -3802,6 +3802,7 @@ class BattleRoyaleMode extends GameMode:
 	var final_boss_spawned: bool = false
 	var obstacle_timer: float = 0.0
 	var random_event_timer: float = 0.0
+	var position_history: Dictionary = {}
 
 
 	func _init() -> void:
@@ -4633,35 +4634,32 @@ class BattleRoyaleMode extends GameMode:
 
 				var distance_to_center = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
 				# Check if ball is outside the circular safe zone bounds
-				if distance_to_center > self.get("zone_radius"):
-					# In this Battle Royale, outside the safe zone is LAVA!
-					var damage_amount = zone_damage_per_second * delta
-					damage_amount *= 1.5
-					if b.has_method("take_damage"):
-						b.take_damage(damage_amount)
-					elif "hp" in b:
-						b.hp -= damage_amount  # Apply continuous safe zone damage
-						if b.hp <= 0:
-							b.hp = 0
-							b.alive = false
-							if not "killer" in b or b.killer == null or b.killer == "":
-								if b.has_method("set_meta"):
-									b.set_meta("killer", "safe_zone")
-								else:
-									b.killer = "safe_zone"
+				var pos_hist = self.position_history
 
-					if typeof(b) == TYPE_OBJECT:
-						if "burn_timer" in b:
-							b.burn_timer = max(b.burn_timer, 2.0)
-						elif b.has_method("get_meta") and b.has_meta("burn_timer"):
-							b.set_meta("burn_timer", max(b.get_meta("burn_timer"), 2.0))
-						elif b.has_method("set_meta"):
-							b.set_meta("burn_timer", 2.0)
-					elif typeof(b) == TYPE_DICTIONARY:
-						if b.has("burn_timer"):
-							b["burn_timer"] = max(b["burn_timer"], 2.0)
-						else:
-							b["burn_timer"] = 2.0
+				var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+				if b_id != null:
+					var b_id_str = str(b_id)
+					if not pos_hist.has(b_id_str):
+						pos_hist[b_id_str] = []
+
+					if distance_to_center > self.get("zone_radius"):
+						# Time rewind instead of damage
+						if pos_hist[b_id_str].size() > 0:
+							var old_pos
+							if pos_hist[b_id_str].size() > 1:
+								old_pos = pos_hist[b_id_str].pop_back()
+							else:
+								old_pos = pos_hist[b_id_str][0]
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] = old_pos[0]
+								b["y"] = old_pos[1]
+							else:
+								b.set("x", old_pos[0])
+								b.set("y", old_pos[1])
+					else:
+						pos_hist[b_id_str].append([b_x, b_y])
+						if pos_hist[b_id_str].size() > 300:
+							pos_hist[b_id_str].pop_front()
 
 
 		# Mutate hazards inside the shrinking safe zone
