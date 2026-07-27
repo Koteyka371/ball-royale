@@ -256,6 +256,12 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+        if getattr(target, "nemesis_shield_timer", 0.0) > 0:
+            pm = getattr(self.world, "profile_manager", None)
+            if pm and hasattr(pm, "is_nemesis") and getattr(target, "ball_type", None) and getattr(attacker, "ball_type", None):
+                if pm.is_nemesis(attacker.ball_type, target.ball_type):
+                    return # Shield blocks damage from Nemesis
+
         if getattr(target, "has_aegis_shield", False):
             if getattr(target, "aegis_shield_active_timer", 0.0) > 0:
                 return # Take no damage
@@ -11933,6 +11939,10 @@ class Action:
             self.ball._last_dy = dy
 
             import math as _nemesis_math
+            if hasattr(self.ball, "nemesis_shield_timer") and self.ball.nemesis_shield_timer > 0:
+                self.ball.nemesis_shield_timer -= delta
+                if self.ball.nemesis_shield_timer < 0:
+                    self.ball.nemesis_shield_timer = 0.0
             if hasattr(self.ball, "nemesis_booster_timer") and self.ball.nemesis_booster_timer > 0:
                 pm = getattr(self.world, "profile_manager", None)
                 if pm and hasattr(pm, "is_nemesis"):
@@ -14489,6 +14499,13 @@ class Action:
                                 h_dy = h.y - self.ball.y
                                 if (h_dx**2 + h_dy**2) <= emp_radius**2:
                                     h.emp_disabled_timer = 10.0
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "nemesis_shield_booster":
+                    self.ball.nemesis_shield_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -21064,6 +21081,10 @@ class Action:
             if self.ball.immunity_timer < 0:
                 self.ball.immunity_timer = 0.0
 
+        if hasattr(self.ball, "nemesis_shield_timer") and self.ball.nemesis_shield_timer > 0:
+            self.ball.nemesis_shield_timer -= delta
+            if self.ball.nemesis_shield_timer < 0:
+                self.ball.nemesis_shield_timer = 0.0
         if hasattr(self.ball, "nemesis_booster_timer") and self.ball.nemesis_booster_timer > 0:
             self.ball.nemesis_booster_timer -= delta
             if self.ball.nemesis_booster_timer < 0:
@@ -21213,7 +21234,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math

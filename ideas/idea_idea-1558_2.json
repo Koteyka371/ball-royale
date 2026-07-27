@@ -1,0 +1,4 @@
+{
+    "title": "Kinetic Discharge Trap",
+    "description": "A placeable trap that absorbs all kinetic energy from entities passing through it (halting their momentum entirely). Once it absorbs a set amount of energy, it violently detonates, dealing damage and massive knockback proportional to the absorbed energy in a wide area."
+}
