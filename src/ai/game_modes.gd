@@ -51260,15 +51260,38 @@ class TagTeamMode extends GameMode:
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		.tick(world, balls, delta)
 
-			for b in balls:
-				var rt = b.get("tag_recent_hit_timer") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("tag_recent_hit_timer") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("tag_recent_hit_timer") else (b.tag_recent_hit_timer if typeof(b) == TYPE_OBJECT and "tag_recent_hit_timer" in b else 0.0))
-				if rt > 0.0:
-					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
-						b.set_meta("tag_recent_hit_timer", rt - delta)
-					elif typeof(b) == TYPE_DICTIONARY:
-						b["tag_recent_hit_timer"] = rt - delta
-					elif typeof(b) == TYPE_OBJECT and "tag_recent_hit_timer" in b:
-						b.tag_recent_hit_timer = rt - delta
+		for b in balls:
+			var ubt = b.get("ultra_ball_timer") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("ultra_ball_timer") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ultra_ball_timer") else (b.ultra_ball_timer if typeof(b) == TYPE_OBJECT and "ultra_ball_timer" in b else 0.0))
+			if ubt > 0.0:
+				var new_ubt = max(0.0, ubt - delta)
+				if typeof(b) == TYPE_DICTIONARY:
+					b["ultra_ball_timer"] = new_ubt
+				elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+					b.set_meta("ultra_ball_timer", new_ubt)
+				elif typeof(b) == TYPE_OBJECT and "ultra_ball_timer" in b:
+					b.ultra_ball_timer = new_ubt
+
+				if new_ubt <= 0.0:
+					var orig_traits = b.get("tag_original_traits") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("tag_original_traits") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("tag_original_traits") else (b.tag_original_traits if typeof(b) == TYPE_OBJECT and "tag_original_traits" in b else null))
+					if orig_traits != null:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["traits"] = orig_traits.duplicate()
+						elif typeof(b) == TYPE_OBJECT and "traits" in b:
+							b.traits = orig_traits.duplicate()
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world["add_event"].call("ultra_ball_end", {"type": "ultra_ball_end", "message": "Ultra Ball expired!"})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("ultra_ball_end", {"type": "ultra_ball_end", "message": "Ultra Ball expired!"})
+
+		for b in balls:
+			var rt = b.get("tag_recent_hit_timer") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("tag_recent_hit_timer") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("tag_recent_hit_timer") else (b.tag_recent_hit_timer if typeof(b) == TYPE_OBJECT and "tag_recent_hit_timer" in b else 0.0))
+			if rt > 0.0:
+				if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+					b.set_meta("tag_recent_hit_timer", rt - delta)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["tag_recent_hit_timer"] = rt - delta
+				elif typeof(b) == TYPE_OBJECT and "tag_recent_hit_timer" in b:
+					b.tag_recent_hit_timer = rt - delta
 
 		var teams = {}
 		for b in balls:
@@ -51601,6 +51624,65 @@ class TagTeamMode extends GameMode:
 
 						var active_rt = active.get("tag_recent_hit_timer") if typeof(active) == TYPE_DICTIONARY else (active.get_meta("tag_recent_hit_timer") if typeof(active) == TYPE_OBJECT and active.has_method("has_meta") and active.has_meta("tag_recent_hit_timer") else (active.tag_recent_hit_timer if typeof(active) == TYPE_OBJECT and "tag_recent_hit_timer" in active else 0.0))
 						if active_rt > 0.0:
+							var cur_chain = active.get("tag_combo_chain") if typeof(active) == TYPE_DICTIONARY else (active.get_meta("tag_combo_chain") if typeof(active) == TYPE_OBJECT and active.has_method("has_meta") and active.has_meta("tag_combo_chain") else (active.tag_combo_chain if typeof(active) == TYPE_OBJECT and "tag_combo_chain" in active else 0))
+							var new_chain = cur_chain + 1
+							if typeof(inactive) == TYPE_DICTIONARY:
+								inactive["tag_combo_chain"] = new_chain
+							elif typeof(inactive) == TYPE_OBJECT and inactive.has_method("set_meta"):
+								inactive.set_meta("tag_combo_chain", new_chain)
+							elif typeof(inactive) == TYPE_OBJECT and "tag_combo_chain" in inactive:
+								inactive.tag_combo_chain = new_chain
+
+							if new_chain >= 3:
+								if typeof(inactive) == TYPE_DICTIONARY:
+									inactive["ultra_ball_timer"] = 10.0
+									inactive["tag_combo_chain"] = 0
+								elif typeof(inactive) == TYPE_OBJECT and inactive.has_method("set_meta"):
+									inactive.set_meta("ultra_ball_timer", 10.0)
+									inactive.set_meta("tag_combo_chain", 0)
+								elif typeof(inactive) == TYPE_OBJECT and "ultra_ball_timer" in inactive:
+									inactive.ultra_ball_timer = 10.0
+									inactive.tag_combo_chain = 0
+
+								var in_orig_traits = inactive.get("tag_original_traits") if typeof(inactive) == TYPE_DICTIONARY else (inactive.get_meta("tag_original_traits") if typeof(inactive) == TYPE_OBJECT and inactive.has_method("has_meta") and inactive.has_meta("tag_original_traits") else (inactive.tag_original_traits if typeof(inactive) == TYPE_OBJECT and "tag_original_traits" in inactive else null))
+								if in_orig_traits == null:
+									var cur_traits = inactive.get("traits", []) if typeof(inactive) == TYPE_DICTIONARY else (inactive.traits if "traits" in inactive else [])
+									if typeof(inactive) == TYPE_DICTIONARY:
+										inactive["tag_original_traits"] = cur_traits.duplicate()
+									elif typeof(inactive) == TYPE_OBJECT and inactive.has_method("set_meta"):
+										inactive.set_meta("tag_original_traits", cur_traits.duplicate())
+									elif typeof(inactive) == TYPE_OBJECT and "tag_original_traits" in inactive:
+										inactive.tag_original_traits = cur_traits.duplicate()
+									in_orig_traits = cur_traits.duplicate()
+
+								var ac_orig_traits = active.get("tag_original_traits") if typeof(active) == TYPE_DICTIONARY else (active.get_meta("tag_original_traits") if typeof(active) == TYPE_OBJECT and active.has_method("has_meta") and active.has_meta("tag_original_traits") else (active.tag_original_traits if typeof(active) == TYPE_OBJECT and "tag_original_traits" in active else null))
+								if ac_orig_traits == null:
+									ac_orig_traits = active.get("traits", []) if typeof(active) == TYPE_DICTIONARY else (active.traits if "traits" in active else [])
+
+								var merged = []
+								for t in in_orig_traits:
+									if not merged.has(t):
+										merged.append(t)
+								for t in ac_orig_traits:
+									if not merged.has(t):
+										merged.append(t)
+
+								if typeof(inactive) == TYPE_DICTIONARY:
+									inactive["traits"] = merged
+								elif typeof(inactive) == TYPE_OBJECT and "traits" in inactive:
+									inactive.traits = merged
+
+								var i_x = inactive.get("x") if typeof(inactive) == TYPE_DICTIONARY else (inactive.get("x") if "x" in inactive else 0.0)
+								var i_y = inactive.get("y") if typeof(inactive) == TYPE_DICTIONARY else (inactive.get("y") if "y" in inactive else 0.0)
+								if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+									world["events"].append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': i_x, 'y': i_y, 'radius': 300.0, 'color': 'gold'}})
+								elif typeof(world) == TYPE_OBJECT and "events" in world:
+									world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': i_x, 'y': i_y, 'radius': 300.0, 'color': 'gold'}})
+								if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+									world["add_event"].call("ultra_ball", {"type": "ultra_ball", "message": "ULTRA BALL UNLOCKED!"})
+								elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("ultra_ball", {"type": "ultra_ball", "message": "ULTRA BALL UNLOCKED!"})
+
 							if typeof(world) == TYPE_DICTIONARY and world.has("events"):
 								world["events"].append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': a_x, 'y': a_y, 'radius': 200.0}})
 							elif typeof(world) == TYPE_OBJECT and "events" in world:
@@ -51642,6 +51724,13 @@ class TagTeamMode extends GameMode:
 											b_enemy.hp -= 50.0
 										elif typeof(b_enemy) == TYPE_DICTIONARY and b_enemy.has("hp"):
 											b_enemy["hp"] -= 50.0
+						else:
+							if typeof(inactive) == TYPE_DICTIONARY:
+								inactive["tag_combo_chain"] = 0
+							elif typeof(inactive) == TYPE_OBJECT and inactive.has_method("set_meta"):
+								inactive.set_meta("tag_combo_chain", 0)
+							elif typeof(inactive) == TYPE_OBJECT and "tag_combo_chain" in inactive:
+								inactive.tag_combo_chain = 0
 
 
 
