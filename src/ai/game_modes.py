@@ -41000,3 +41000,6 @@ GAME_MODES['mercenary_outposts'] = MercenaryOutpostsMode()
 
 from ai.necromantic_area_denial import NecromanticAreaDenialMode
 GAME_MODES['necromantic_area_denial'] = NecromanticAreaDenialMode()
+
+from ai.dynamic_mutators import DynamicWeatherMutatorsMode
+GAME_MODES['dynamic_mutators'] = DynamicWeatherMutatorsMode()
