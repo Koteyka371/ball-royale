@@ -41268,3 +41268,114 @@ GAME_MODES["pulsating_core_mode"] = PulsatingCoreMode()
 
 from ai.acoustic_disruption_field import AcousticDisruptionFieldMode
 GAME_MODES['acoustic_disruption_field'] = AcousticDisruptionFieldMode()
+
+
+class IndestructibleLaserCoreMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Indestructible Laser Core"
+        self.description = "A single indestructible laser core spawns in the center of the map. It fires two continuous solid beam lasers in opposite directions and slowly rotates. Over time, the core bounces around the arena like a paddle ball, randomly changing direction when hitting a wall, making dodging extremely unpredictable."
+        self.core_spawned = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.core_spawned = False
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"): return
+
+        if not self.core_spawned:
+            self.core_spawned = True
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+
+            import math
+            import random
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            h_id = "indestructible_laser_core_0"
+            h = Hazard(id=h_id, x=aw/2.0, y=ah/2.0, radius=500.0, kind="spinning_laser", damage=50.0)
+            h.angle = random.uniform(0, math.pi * 2)
+            h.duration = 9999.0
+
+            # Start moving in a random direction
+            speed = 300.0
+            move_angle = random.uniform(0, math.pi * 2)
+            h.vx = math.cos(move_angle) * speed
+            h.vy = math.sin(move_angle) * speed
+
+            # The core itself doesn't have a built-in visual radius in the hazard dictionary
+            # for the ball part if it's purely a spinning laser, but let's add one just in case
+            # for our own logic.
+            h.core_radius = 40.0
+
+            world.arena.hazards.append(h)
+
+        # Update the core's position and handle wall bouncing
+        aw = getattr(world.arena, "width", 1000.0)
+        ah = getattr(world.arena, "height", 1000.0)
+        import random
+
+        for hazard in world.arena.hazards:
+            if getattr(hazard, "id", "") == "indestructible_laser_core_0":
+                # Update position
+                vx = getattr(hazard, "vx", 0.0)
+                vy = getattr(hazard, "vy", 0.0)
+
+                hazard.x += vx * delta
+                hazard.y += vy * delta
+
+                core_radius = getattr(hazard, "core_radius", 40.0)
+
+                bounced = False
+
+                if hazard.x - core_radius < 0:
+                    hazard.x = core_radius
+                    hazard.vx = abs(hazard.vx)
+                    bounced = True
+                elif hazard.x + core_radius > aw:
+                    hazard.x = aw - core_radius
+                    hazard.vx = -abs(hazard.vx)
+                    bounced = True
+
+                if hazard.y - core_radius < 0:
+                    hazard.y = core_radius
+                    hazard.vy = abs(hazard.vy)
+                    bounced = True
+                elif hazard.y + core_radius > ah:
+                    hazard.y = ah - core_radius
+                    hazard.vy = -abs(hazard.vy)
+                    bounced = True
+
+                if bounced:
+                    # Randomly changing direction when hitting a wall slightly
+                    # but keep magnitude
+                    import math
+                    current_speed = math.hypot(hazard.vx, hazard.vy)
+                    current_angle = math.atan2(hazard.vy, hazard.vx)
+
+                    # add small random deviation between -15 and 15 degrees
+                    angle_deviation = random.uniform(-0.26, 0.26)
+                    new_angle = current_angle + angle_deviation
+
+                    hazard.vx = math.cos(new_angle) * current_speed
+                    hazard.vy = math.sin(new_angle) * current_speed
+
+GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode()
