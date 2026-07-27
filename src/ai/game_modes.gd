@@ -49780,19 +49780,27 @@ class RandomGravityShiftMode extends GameMode:
 			var mass = b.get("mass") if typeof(b) == TYPE_DICTIONARY else b.get_meta("mass") if typeof(b) == TYPE_OBJECT and b.has_meta("mass") else b.mass if typeof(b) == TYPE_OBJECT and "mass" in b else 1.0
 
 			if typeof(b) == TYPE_DICTIONARY:
+				var gravity_mult = -1.0 if b.get("in_reverse_physics_zone", false) else 1.0
 				if b.has("vx"):
-					b["vx"] += gravity_strength * gravity_dir_x * mass * delta
+					b["vx"] += gravity_strength * gravity_dir_x * mass * delta * gravity_mult
 				if b.has("vy"):
-					b["vy"] += gravity_strength * gravity_dir_y * mass * delta
+					b["vy"] += gravity_strength * gravity_dir_y * mass * delta * gravity_mult
 			else:
+				var in_rev = false
+				if "in_reverse_physics_zone" in b:
+					in_rev = b.in_reverse_physics_zone
+				elif b.has_meta("in_reverse_physics_zone"):
+					in_rev = b.get_meta("in_reverse_physics_zone")
+				var gravity_mult = -1.0 if in_rev else 1.0
+
 				if "vx" in b:
-					b.vx += gravity_strength * gravity_dir_x * mass * delta
+					b.vx += gravity_strength * gravity_dir_x * mass * delta * gravity_mult
 				elif b.has_meta("vx"):
-					b.set_meta("vx", b.get_meta("vx") + gravity_strength * gravity_dir_x * mass * delta)
+					b.set_meta("vx", b.get_meta("vx") + gravity_strength * gravity_dir_x * mass * delta * gravity_mult)
 				if "vy" in b:
-					b.vy += gravity_strength * gravity_dir_y * mass * delta
+					b.vy += gravity_strength * gravity_dir_y * mass * delta * gravity_mult
 				elif b.has_meta("vy"):
-					b.set_meta("vy", b.get_meta("vy") + gravity_strength * gravity_dir_y * mass * delta)
+					b.set_meta("vy", b.get_meta("vy") + gravity_strength * gravity_dir_y * mass * delta * gravity_mult)
 
 		if world != null and typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
 			for h in world.arena.hazards:
@@ -60919,8 +60927,14 @@ class GravityShiftMode extends GameMode:
                     if dist > 0:
                         var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
                         var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
-                        vx += (dx/dist) * shift_strength * delta
-                        vy += (dy/dist) * shift_strength * delta
+                        var in_rev = false
+                        if typeof(b) == TYPE_DICTIONARY and "in_reverse_physics_zone" in b:
+                            in_rev = b.in_reverse_physics_zone
+                        elif typeof(b) == TYPE_OBJECT and b.has_meta("in_reverse_physics_zone"):
+                            in_rev = b.get_meta("in_reverse_physics_zone")
+                        var gravity_mult = -1.0 if in_rev else 1.0
+                        vx += (dx/dist) * shift_strength * delta * gravity_mult
+                        vy += (dy/dist) * shift_strength * delta * gravity_mult
                         if typeof(b) == TYPE_DICTIONARY:
                             b["vx"] = vx
                             b["vy"] = vy
@@ -60932,8 +60946,14 @@ class GravityShiftMode extends GameMode:
                     if dist > 0:
                         var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
                         var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
-                        vx += (b_x/dist) * shift_strength * delta
-                        vy += (b_y/dist) * shift_strength * delta
+                        var in_rev = false
+                        if typeof(b) == TYPE_DICTIONARY and "in_reverse_physics_zone" in b:
+                            in_rev = b.in_reverse_physics_zone
+                        elif typeof(b) == TYPE_OBJECT and b.has_meta("in_reverse_physics_zone"):
+                            in_rev = b.get_meta("in_reverse_physics_zone")
+                        var gravity_mult = -1.0 if in_rev else 1.0
+                        vx += (b_x/dist) * shift_strength * delta * gravity_mult
+                        vy += (b_y/dist) * shift_strength * delta * gravity_mult
                         if typeof(b) == TYPE_DICTIONARY:
                             b["vx"] = vx
                             b["vy"] = vy

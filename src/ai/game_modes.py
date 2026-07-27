@@ -30313,7 +30313,8 @@ class PeriodicGravityFlipMode(GameMode):
                 mass = getattr(b, "mass", 1.0)
                 if not hasattr(b, "vy"):
                     b.vy = 0.0
-                b.vy += self.gravity_strength * self.gravity_direction * mass * delta
+                gravity_mult = -1.0 if getattr(b, "in_reverse_physics_zone", False) else 1.0
+                b.vy += self.gravity_strength * self.gravity_direction * mass * delta * gravity_mult
 
         if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
             for h in world.arena.hazards:
@@ -30889,10 +30890,11 @@ class RandomGravityShiftMode(GameMode):
                 continue
 
             mass = getattr(b, 'mass', 1.0)
+            gravity_mult = -1.0 if getattr(b, "in_reverse_physics_zone", False) else 1.0
             if hasattr(b, 'vx'):
-                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta
+                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta * gravity_mult
             if hasattr(b, 'vy'):
-                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
+                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta * gravity_mult
 
         if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
             for h in world.arena.hazards:
@@ -38896,15 +38898,17 @@ class GravityShiftMode(GameMode):
                     dy = self.shift_point[1] - b.y
                     dist = (dx**2 + dy**2)**0.5
                     if dist > 0:
-                        b.vx += (dx/dist) * self.shift_strength * delta
-                        b.vy += (dy/dist) * self.shift_strength * delta
+                        gravity_mult = -1.0 if getattr(b, "in_reverse_physics_zone", False) else 1.0
+                        b.vx += (dx/dist) * self.shift_strength * delta * gravity_mult
+                        b.vy += (dy/dist) * self.shift_strength * delta * gravity_mult
                 elif self.shift_type == 'edges':
                     # Push towards nearest edge (assuming standard arena bounds [-300, 300])
                     # We'll just push outwards from center
                     dist = (b.x**2 + b.y**2)**0.5
                     if dist > 0:
-                        b.vx += (b.x/dist) * self.shift_strength * delta
-                        b.vy += (b.y/dist) * self.shift_strength * delta
+                        gravity_mult = -1.0 if getattr(b, "in_reverse_physics_zone", False) else 1.0
+                        b.vx += (b.x/dist) * self.shift_strength * delta * gravity_mult
+                        b.vy += (b.y/dist) * self.shift_strength * delta * gravity_mult
 
         else:
             self.shift_timer -= delta
@@ -38969,10 +38973,11 @@ class RandomGravityShiftMode(GameMode):
                 continue
 
             mass = getattr(b, 'mass', 1.0)
+            gravity_mult = -1.0 if getattr(b, "in_reverse_physics_zone", False) else 1.0
             if hasattr(b, 'vx'):
-                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta
+                b.vx += self.gravity_strength * self.gravity_dir_x * mass * delta * gravity_mult
             if hasattr(b, 'vy'):
-                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
+                b.vy += self.gravity_strength * self.gravity_dir_y * mass * delta * gravity_mult
 
         if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
             for h in world.arena.hazards:

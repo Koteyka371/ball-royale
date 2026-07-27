@@ -1,0 +1,4 @@
+{
+  "title": "Bouncy Bullet Mode",
+  "description": "A game mode where balls firing projectiles (if applicable) can bounce off walls up to 5 times. Each bounce increases the projectile speed by 10% and damage by 5%."
+}

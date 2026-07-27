@@ -11912,6 +11912,7 @@ func execute(strategy: String, delta: float):
 
     var in_anomaly_zone = false
     var in_bouncy_zone = false
+    var in_reverse_physics_zone = false
     if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
         for h in world.arena.hazards:
             var h_kind = h.kind if "kind" in h else (h.get_meta("kind") if h.has_method("has_meta") and h.has_meta("kind") else "")
@@ -11925,6 +11926,16 @@ func execute(strategy: String, delta: float):
                     var dy = hy - my_ball.y
                     if dx*dx + dy*dy <= hr*hr:
                         in_anomaly_zone = true
+            elif h_kind == "reverse_physics_zone":
+                var hx = h.x if "x" in h else h.get_meta("x")
+                var hy = h.y if "y" in h else h.get_meta("y")
+                var hr = h.radius if "radius" in h else h.get_meta("radius")
+                var active = h.active if "active" in h else (h.get_meta("active") if h.has_method("has_meta") and h.has_meta("active") else true)
+                if active:
+                    var dx = hx - my_ball.x
+                    var dy = hy - my_ball.y
+                    if dx*dx + dy*dy <= hr*hr:
+                        in_reverse_physics_zone = true
 
             elif h_kind == "nemesis_hunter":
                 var h_x = 0.0
@@ -12086,9 +12097,11 @@ func execute(strategy: String, delta: float):
     if typeof(my_ball) == TYPE_OBJECT and my_ball.has_method("set_meta"):
         my_ball.set_meta("in_anomaly_zone", in_anomaly_zone)
         my_ball.set_meta("in_bouncy_zone", in_bouncy_zone)
+        my_ball.set_meta("in_reverse_physics_zone", in_reverse_physics_zone)
     elif typeof(my_ball) == TYPE_DICTIONARY:
         my_ball["in_anomaly_zone"] = in_anomaly_zone
         my_ball["in_bouncy_zone"] = in_bouncy_zone
+        my_ball["in_reverse_physics_zone"] = in_reverse_physics_zone
 
     var gm = null
     if world != null and "game_mode" in world:
@@ -38861,18 +38874,25 @@ func _resolve_collisions() -> bool:
             var knockback_multiplier = 1.0
             var in_anomaly_zone = false
             var in_bouncy_zone = false
+            var in_reverse_physics_zone = false
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta"):
                 if self.ball.has_meta("in_anomaly_zone"):
                     in_anomaly_zone = self.ball.get_meta("in_anomaly_zone")
                 if self.ball.has_meta("in_bouncy_zone"):
                     in_bouncy_zone = self.ball.get_meta("in_bouncy_zone")
+                if self.ball.has_meta("in_reverse_physics_zone"):
+                    in_reverse_physics_zone = self.ball.get_meta("in_reverse_physics_zone")
             elif typeof(self.ball) == TYPE_DICTIONARY:
                 if self.ball.has("in_anomaly_zone"):
                     in_anomaly_zone = self.ball["in_anomaly_zone"]
                 if self.ball.has("in_bouncy_zone"):
                     in_bouncy_zone = self.ball["in_bouncy_zone"]
+                if self.ball.has("in_reverse_physics_zone"):
+                    in_reverse_physics_zone = self.ball["in_reverse_physics_zone"]
 
-            if in_anomaly_zone:
+            if in_reverse_physics_zone:
+                knockback_multiplier = -1.0
+            elif in_anomaly_zone:
                 knockback_multiplier = 5.0
             elif in_bouncy_zone:
                 knockback_multiplier = 5.0
