@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1546] Laser Fence Mode — *2026-07-27 22:03:47 UTC*
+
+Hazard lines periodically spawn and move across the arena, damaging anyone caught.
+
+---
+
 ## [idea-1572] Quantum Leap Traps — *2026-07-27 21:33:16 UTC*
 
 Placeable traps that don't deal damage but randomly teleport the victim across the arena while simultaneously scrambling their controls for a few seconds.
