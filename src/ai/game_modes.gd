@@ -63970,6 +63970,29 @@ class ShrapnelMistMode extends GameMode:
 											if b.hp <= 0.0:
 												b.alive = false
 
+									if typeof(b) == TYPE_DICTIONARY:
+										b["is_blinded"] = true
+										var b_blind_timer = 0.2
+										if "blindness_timer" in b:
+											b_blind_timer = max(b["blindness_timer"], 0.2)
+										b["blindness_timer"] = b_blind_timer
+									elif b != null:
+										if b.has_method("set_meta"):
+											b.set_meta("is_blinded", true)
+										if "is_blinded" in b:
+											b.is_blinded = true
+
+										var b_blind_timer = 0.2
+										if "blindness_timer" in b:
+											b_blind_timer = max(b.blindness_timer, 0.2)
+										elif b.has_method("get_meta") and b.has_meta("blindness_timer"):
+											b_blind_timer = max(b.get_meta("blindness_timer"), 0.2)
+
+										if "blindness_timer" in b:
+											b.blindness_timer = b_blind_timer
+										if b.has_method("set_meta"):
+											b.set_meta("blindness_timer", b_blind_timer)
+
 		# Remove marked hazards from end to start to avoid index shifting
 		to_remove.reverse()
 		for idx in to_remove:
