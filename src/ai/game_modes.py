@@ -18694,7 +18694,6 @@ class BlackMarketMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import math
         import random
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -27586,7 +27585,6 @@ class ChargedMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import math
         import random
 
         self.charge_flip_timer += delta
@@ -29543,7 +29541,6 @@ class CurrencyBurdenMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import math
         import random
 
         # Suppress generic boosters
@@ -30344,7 +30341,6 @@ class MovingWallsMode(GameMode):
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        import math
         import random
 
         if not hasattr(world.arena, "hazards"):
@@ -31480,6 +31476,109 @@ class MobilePlatformMode(GameMode):
                     b.x += dx
                     b.y += dy
 
+class HazardLinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hazard Lines"
+        self.description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 3.0
+            line_type = random.choice(["horizontal", "vertical"])
+            speed = 100.0
+
+            if line_type == "horizontal":
+                if random.random() < 0.5:
+                    x = 0
+                    vx = speed
+                else:
+                    x = world.arena.width
+                    vx = -speed
+                y = world.arena.height / 2
+                w = 10
+                h = world.arena.height
+                vy = 0.0
+            else:
+                if random.random() < 0.5:
+                    y = 0
+                    vy = speed
+                else:
+                    y = world.arena.height
+                    vy = -speed
+                x = world.arena.width / 2
+                w = world.arena.width
+                h = 10
+                vx = 0.0
+
+            hazard = {
+                "kind": "hazard_line",
+                "x": x,
+                "y": y,
+                "width": w,
+                "height": h,
+                "vx": vx,
+                "vy": vy,
+                "damage": 30.0,
+                "duration": 20.0,
+                "id": f"hazard_line_{getattr(world, 'tick_count', random.randint(0, 10000))}"
+            }
+            if isinstance(world.arena.hazards, list):
+                world.arena.hazards.append(hazard)
+
+        to_remove = []
+        for hazard in world.arena.hazards:
+            if isinstance(hazard, dict) and hazard.get("kind") == "hazard_line":
+                hazard["duration"] -= delta
+                if hazard["duration"] <= 0:
+                    to_remove.append(hazard)
+                    continue
+
+                hazard["x"] += hazard.get("vx", 0) * delta
+                hazard["y"] += hazard.get("vy", 0) * delta
+
+                hx = hazard["x"]
+                hy = hazard["y"]
+                hw = hazard["width"]
+                hh = hazard["height"]
+                hdmg = hazard.get("damage", 30.0)
+
+                for b in balls:
+                    if getattr(b, "alive", True) and not getattr(b, "is_intangible", False):
+                        bx = b.x
+                        by = b.y
+                        br = getattr(b, "radius", 20.0)
+
+                        closest_x = max(hx - hw/2, min(bx, hx + hw/2))
+                        closest_y = max(hy - hh/2, min(by, hy + hh/2))
+
+                        dist_sq = (bx - closest_x)**2 + (by - closest_y)**2
+                        if dist_sq <= br*br:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(hdmg * delta)
+                            else:
+                                b.hp -= hdmg * delta
+                                if b.hp <= 0:
+                                    b.alive = False
+
+                            if hasattr(world, "events"):
+                                if getattr(world, "tick_count", 0) % 10 == 0:
+                                    world.events.append({'type': 'visual_effect', 'data': {'type': 'spark', 'x': bx, 'y': by, 'radius': 5.0, 'color': 'red'}})
+
+        if hasattr(world.arena.hazards, "remove"):
+            for r in to_remove:
+                if r in world.arena.hazards:
+                    world.arena.hazards.remove(r)
+
+
 GAME_MODES = {
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),
@@ -31493,6 +31592,7 @@ GAME_MODES = {
     'capture_zones': CaptureZonesMode(),
     "nemesis_sustain": NemesisSustainMode(),
     "moving_walls": MovingWallsMode(),
+    "hazard_lines": HazardLinesMode(),
     'periodic_gravity_flip': PeriodicGravityFlipMode(),
     'chain_lightning_event': ChainLightningEventMode(),
     "ricochet_arena": RicochetArenaMode(),

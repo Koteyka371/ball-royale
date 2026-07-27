@@ -50431,6 +50431,116 @@ class MobilePlatformMode extends GameMode:
 						if "x" in b: b.x = b_x + dx
 						if "y" in b: b.y = b_y + dy
 
+class HazardLinesMode extends GameMode:
+	var spawn_timer: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Hazard Lines"
+		description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not ('hazards' in world.arena):
+			world.arena.hazards = []
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 3.0
+			var line_types = ["horizontal", "vertical"]
+			var line_type = line_types[randi() % line_types.size()]
+			var speed = 100.0
+			var x = 0.0
+			var y = 0.0
+			var vx = 0.0
+			var vy = 0.0
+			var w = 10.0
+			var h = 10.0
+
+			if line_type == "horizontal":
+				if randf() < 0.5:
+					x = 0
+					vx = speed
+				else:
+					x = world.arena.width
+					vx = -speed
+				y = world.arena.height / 2.0
+				w = 10.0
+				h = world.arena.height
+				vy = 0.0
+			else:
+				if randf() < 0.5:
+					y = 0
+					vy = speed
+				else:
+					y = world.arena.height
+					vy = -speed
+				x = world.arena.width / 2.0
+				w = world.arena.width
+				h = 10.0
+				vx = 0.0
+
+			var hazard = {
+				"kind": "hazard_line",
+				"x": x,
+				"y": y,
+				"width": w,
+				"height": h,
+				"vx": vx,
+				"vy": vy,
+				"damage": 30.0,
+				"duration": 20.0,
+				"id": "hazard_line_" + str(randi() % 10000)
+			}
+			if typeof(world.arena.hazards) == TYPE_ARRAY:
+				world.arena.hazards.append(hazard)
+
+		var to_remove = []
+		for hazard in world.arena.hazards:
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "hazard_line":
+				hazard["duration"] -= delta
+				if hazard["duration"] <= 0:
+					to_remove.append(hazard)
+					continue
+
+				hazard["x"] += hazard.get("vx", 0) * delta
+				hazard["y"] += hazard.get("vy", 0) * delta
+
+				var hx = hazard["x"]
+				var hy = hazard["y"]
+				var hw = hazard["width"]
+				var hh = hazard["height"]
+				var hdmg = hazard["damage"] if hazard.has("damage") else 30.0
+
+				for b in balls:
+					if b.get("alive") != false and b.get("is_intangible") != true:
+						var bx = b.x
+						var by = b.y
+						var br = b.get("radius")
+						if typeof(br) != TYPE_FLOAT and typeof(br) != TYPE_INT:
+							br = 20.0
+
+						var closest_x = max(hx - hw/2.0, min(bx, hx + hw/2.0))
+						var closest_y = max(hy - hh/2.0, min(by, hy + hh/2.0))
+
+						var dist_sq = (bx - closest_x)*(bx - closest_x) + (by - closest_y)*(by - closest_y)
+						if dist_sq <= br*br:
+							if b.has_method("take_damage"):
+								b.take_damage(hdmg * delta)
+							else:
+								b.hp -= hdmg * delta
+								if b.hp <= 0:
+									b.alive = false
+
+							if 'events' in world:
+								if randi() % 10 == 0:
+									world.events.append({'type': 'visual_effect', 'data': {'type': 'spark', 'x': bx, 'y': by, 'radius': 5.0, 'color': 'red'}})
+
+		for r in to_remove:
+			world.arena.hazards.erase(r)
+
+
 var GAME_MODES = {
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),
@@ -50442,6 +50552,7 @@ var GAME_MODES = {
 	"capture_zones": CaptureZonesMode.new(),
 	"nemesis_sustain": NemesisSustainMode.new(),
 	"moving_walls": MovingWallsMode.new(),
+	"hazard_lines": HazardLinesMode.new(),
 	"periodic_gravity_flip": PeriodicGravityFlipMode.new(),
 	"mirror_arena": MirrorArenaMode.new(),
 	"chain_lightning_event": ChainLightningEventMode.new(),
