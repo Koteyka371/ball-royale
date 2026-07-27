@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Relay Booster",
+  "description": "A booster that allows the user to set a spatial anchor. Upon activation, they teleport back to the anchor's location, resetting their velocity but carrying over any status effects they acquired."
+}

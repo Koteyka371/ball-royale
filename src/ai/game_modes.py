@@ -40966,3 +40966,6 @@ GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode()
 
 from ai.magnet_ball import MagnetBallMode
 GAME_MODES["magnet_ball"] = MagnetBallMode()
+
+from ai.idea_2_gravity_pulse_mine import GravityPulseMineMode
+GAME_MODES['gravity_pulse_mine'] = GravityPulseMineMode()

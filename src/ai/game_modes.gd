@@ -63562,3 +63562,8 @@ class ShrapnelMistMode extends GameMode:
 GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode.new()
 
 GAME_MODES["magnet_ball"] = load("res://src/ai/magnet_ball.gd").new()
+
+
+var gravity_pulse_mine_mode = load("res://src/ai/idea_2_gravity_pulse_mine.gd").new()
+if gravity_pulse_mine_mode:
+	GAME_MODES["gravity_pulse_mine"] = gravity_pulse_mine_mode
