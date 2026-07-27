@@ -68,3 +68,5 @@ def test_warp_trap():
     assert trap.duration == 0.0
     assert len(world.events) > 0
     assert world.events[-1]['type'] == 'teleport'
+    assert getattr(my_ball, "is_confused", False) == True
+    assert getattr(my_ball, "confused_timer", 0.0) == 3.0

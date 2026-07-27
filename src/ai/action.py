@@ -9657,6 +9657,9 @@ class Action:
                                     if hasattr(self.world, "events"):
                                         self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
 
+                                    self.ball.is_confused = True
+                                    self.ball.confused_timer = max(getattr(self.ball, 'confused_timer', 0.0), 3.0)
+
                                     hazard.duration = 0.0 # Destroy trap
 
                                 elif trap_variant == "swap":
