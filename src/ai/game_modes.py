@@ -40813,3 +40813,5 @@ GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
 GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
 from ai.neon_lightcycles import NeonLightcyclesMode
 GAME_MODES["neon_lightcycles"] = NeonLightcyclesMode()
+from ai.bouncing_laser_core import BouncingLaserCoreMode
+GAME_MODES["bouncing_laser_core"] = BouncingLaserCoreMode()

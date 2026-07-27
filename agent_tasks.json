@@ -512,7 +512,7 @@
         "Tests pass"
       ],
       "title": "Implement PERCEPTION skill",
-      "description": "Create PERCEPTION skill: Восприятие"
+      "description": "Create PERCEPTION skill: \u0412\u043e\u0441\u043f\u0440\u0438\u044f\u0442\u0438\u0435"
     },
     {
       "id": "auto-implement-emotion-skill",
@@ -528,7 +528,7 @@
         "Tests pass"
       ],
       "title": "Implement EMOTION skill",
-      "description": "Create EMOTION skill: Эмоции"
+      "description": "Create EMOTION skill: \u042d\u043c\u043e\u0446\u0438\u0438"
     },
     {
       "id": "auto-implement-decision-skill",
@@ -544,7 +544,7 @@
         "Tests pass"
       ],
       "title": "Implement DECISION skill",
-      "description": "Create DECISION skill: Решение"
+      "description": "Create DECISION skill: \u0420\u0435\u0448\u0435\u043d\u0438\u0435"
     },
     {
       "id": "auto-implement-action-skill",
@@ -560,10 +560,10 @@
         "Tests pass"
       ],
       "title": "Implement ACTION skill",
-      "description": "Create ACTION skill: Действие"
+      "description": "Create ACTION skill: \u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435"
     },
     {
-      "id": "auto-implement-**target-strong**-—-атакует-самого-сильн",
+      "id": "auto-implement-**target-strong**-\u2014-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u0441\u0430\u043c\u043e\u0433\u043e-\u0441\u0438\u043b\u044c\u043d",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -575,11 +575,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Target Strong** — атакует самого сильного skill",
-      "description": "Create **Target Strong** — атакует самого сильного skill: для Tank"
+      "title": "Implement **Target Strong** \u2014 \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u0441\u0430\u043c\u043e\u0433\u043e \u0441\u0438\u043b\u044c\u043d\u043e\u0433\u043e skill",
+      "description": "Create **Target Strong** \u2014 \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u0441\u0430\u043c\u043e\u0433\u043e \u0441\u0438\u043b\u044c\u043d\u043e\u0433\u043e skill: \u0434\u043b\u044f Tank"
     },
     {
-      "id": "auto-implement-**kite**-—-держит-дистанцию,-атакует-при",
+      "id": "auto-implement-**kite**-\u2014-\u0434\u0435\u0440\u0436\u0438\u0442-\u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e,-\u0430\u0442\u0430\u043a\u0443\u0435\u0442-\u043f\u0440\u0438",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -591,11 +591,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Kite** — держит дистанцию, атакует при приближении skill",
-      "description": "Create **Kite** — держит дистанцию, атакует при приближении skill: для Sniper"
+      "title": "Implement **Kite** \u2014 \u0434\u0435\u0440\u0436\u0438\u0442 \u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e, \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u043f\u0440\u0438 \u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u0438 skill",
+      "description": "Create **Kite** \u2014 \u0434\u0435\u0440\u0436\u0438\u0442 \u0434\u0438\u0441\u0442\u0430\u043d\u0446\u0438\u044e, \u0430\u0442\u0430\u043a\u0443\u0435\u0442 \u043f\u0440\u0438 \u043f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u0438 skill: \u0434\u043b\u044f Sniper"
     },
     {
-      "id": "auto-implement-**flank**-—-обходит-сзади-для-удара-skil",
+      "id": "auto-implement-**flank**-\u2014-\u043e\u0431\u0445\u043e\u0434\u0438\u0442-\u0441\u0437\u0430\u0434\u0438-\u0434\u043b\u044f-\u0443\u0434\u0430\u0440\u0430-skil",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -607,11 +607,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Flank** — обходит сзади для удара skill",
-      "description": "Create **Flank** — обходит сзади для удара skill: для Ninja"
+      "title": "Implement **Flank** \u2014 \u043e\u0431\u0445\u043e\u0434\u0438\u0442 \u0441\u0437\u0430\u0434\u0438 \u0434\u043b\u044f \u0443\u0434\u0430\u0440\u0430 skill",
+      "description": "Create **Flank** \u2014 \u043e\u0431\u0445\u043e\u0434\u0438\u0442 \u0441\u0437\u0430\u0434\u0438 \u0434\u043b\u044f \u0443\u0434\u0430\u0440\u0430 skill: \u0434\u043b\u044f Ninja"
     },
     {
-      "id": "auto-implement-spectator-mode-(наблюдатель)-game-mode",
+      "id": "auto-implement-spectator-mode-(\u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c)-game-mode",
       "status": "done",
       "area": "modes",
       "risk": "medium",
@@ -623,11 +623,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement Spectator Mode (Наблюдатель) game mode",
-      "description": "Create Spectator Mode (Наблюдатель) with full rules and mechanics"
+      "title": "Implement Spectator Mode (\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c) game mode",
+      "description": "Create Spectator Mode (\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044c) with full rules and mechanics"
     },
     {
-      "id": "auto-implement-coach-mode-(тренер)-game-mode",
+      "id": "auto-implement-coach-mode-(\u0442\u0440\u0435\u043d\u0435\u0440)-game-mode",
       "status": "done",
       "area": "modes",
       "risk": "medium",
@@ -639,8 +639,8 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement Coach Mode (Тренер) game mode",
-      "description": "Create Coach Mode (Тренер) with full rules and mechanics"
+      "title": "Implement Coach Mode (\u0422\u0440\u0435\u043d\u0435\u0440) game mode",
+      "description": "Create Coach Mode (\u0422\u0440\u0435\u043d\u0435\u0440) with full rules and mechanics"
     },
     {
       "id": "idea-feature-033",
@@ -801,7 +801,7 @@
       "description": "Implement Procedural Arenas with unique mechanics"
     },
     {
-      "id": "auto-implement-**ball-genetics**-—-balls-reproduce-afte",
+      "id": "auto-implement-**ball-genetics**-\u2014-balls-reproduce-afte",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -813,11 +813,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill",
-      "description": "Create **Ball Genetics** — Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color"
+      "title": "Implement **Ball Genetics** \u2014 Balls reproduce after surviving N battles. Offspring inherit traits skill",
+      "description": "Create **Ball Genetics** \u2014 Balls reproduce after surviving N battles. Offspring inherit traits skill: speed, damage, color"
     },
     {
-      "id": "auto-implement-**neural-ball**-—-a-ball-controlled-by-a",
+      "id": "auto-implement-**neural-ball**-\u2014-a-ball-controlled-by-a",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -829,11 +829,11 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Neural Ball** — A ball controlled by a simple neural network skill",
-      "description": "Create **Neural Ball** — A ball controlled by a simple neural network skill: numpy, no external libs"
+      "title": "Implement **Neural Ball** \u2014 A ball controlled by a simple neural network skill",
+      "description": "Create **Neural Ball** \u2014 A ball controlled by a simple neural network skill: numpy, no external libs"
     },
     {
-      "id": "auto-implement-**ball-relationships**-—-balls-remember-",
+      "id": "auto-implement-**ball-relationships**-\u2014-balls-remember-",
       "status": "done",
       "area": "skills",
       "risk": "medium",
@@ -845,8 +845,8 @@
         "Feature works",
         "Tests pass"
       ],
-      "title": "Implement **Ball Relationships** — Balls remember each other. Rivalry skill",
-      "description": "Create **Ball Relationships** — Balls remember each other. Rivalry skill: attacked me before → attack on sight"
+      "title": "Implement **Ball Relationships** \u2014 Balls remember each other. Rivalry skill",
+      "description": "Create **Ball Relationships** \u2014 Balls remember each other. Rivalry skill: attacked me before \u2192 attack on sight"
     },
     {
       "id": "add-particle-effects",
@@ -7585,7 +7585,7 @@
       "area": "innovation",
       "risk": "medium",
       "title": "Tug-of-War Mode",
-      "description": "Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team’s goal.",
+      "description": "Introduce a mode where a single payload is centered. Both teams fight to push/pull the payload to the opposing team\u2019s goal.",
       "allowed_paths": [
         "src/ai/tug_of_war.py",
         "src/ai/tug_of_war.gd",
@@ -17326,7 +17326,7 @@
       "area": "innovation",
       "risk": "medium",
       "title": "Engineer Synergies: Overclock",
-      "description": "If an Engineer is near one of their deployed turrets and activates their skill while it is on cooldown, the turret gets 'overclocked'—firing twice as fast but slowly losing HP over time.",
+      "description": "If an Engineer is near one of their deployed turrets and activates their skill while it is on cooldown, the turret gets 'overclocked'\u2014firing twice as fast but slowly losing HP over time.",
       "allowed_paths": [
         "src/ai/engineer_synergies_overclock.py",
         "src/ai/engineer_synergies_overclock.gd",
@@ -25210,7 +25210,7 @@
     },
     {
       "id": "idea-1472",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stealth Camouflage Booster",
@@ -25601,7 +25601,7 @@
     },
     {
       "id": "idea-1495",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster's Mirage Skill",
@@ -25635,7 +25635,7 @@
     },
     {
       "id": "idea-1497",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Boss Mutations per Tier",
@@ -25705,7 +25705,7 @@
     },
     {
       "id": "idea-1501",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrink Ray Trap",
@@ -25841,7 +25841,7 @@
     },
     {
       "id": "idea-1509",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Reflect",
@@ -25909,7 +25909,7 @@
     },
     {
       "id": "idea-1513",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Warning Siren Trap",
@@ -26147,7 +26147,7 @@
     },
     {
       "id": "idea-1527",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflective Walls",
@@ -26164,7 +26164,7 @@
     },
     {
       "id": "idea-1528",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Battering Ram Booster",
@@ -26368,7 +26368,7 @@
     },
     {
       "id": "idea-1540",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mercenary Outposts",
@@ -26437,7 +26437,7 @@
     },
     {
       "id": "idea-1544",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Boomerang Projectile",
@@ -26454,7 +26454,7 @@
     },
     {
       "id": "idea-1545",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Shrapnel Mode",
@@ -26471,7 +26471,7 @@
     },
     {
       "id": "idea-1546",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Fence Mode",
@@ -26505,7 +26505,7 @@
     },
     {
       "id": "idea-1548",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Boots Active Item",
@@ -26607,7 +26607,7 @@
     },
     {
       "id": "idea-1554",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Map Hazards Based on Territory Ownership",
@@ -26658,7 +26658,7 @@
     },
     {
       "id": "idea-1557",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Tractor Beam",
@@ -26675,7 +26675,7 @@
     },
     {
       "id": "idea-1558",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Shield Booster",
@@ -26727,7 +26727,7 @@
     },
     {
       "id": "idea-1561",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Wars Base Building",
@@ -26745,7 +26745,7 @@
     },
     {
       "id": "idea-1562",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Weather Mutators",
@@ -26779,7 +26779,7 @@
     },
     {
       "id": "idea-1564",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Laser Shield Trait",
@@ -26813,7 +26813,7 @@
     },
     {
       "id": "idea-1566",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Anomaly",
@@ -26830,7 +26830,7 @@
     },
     {
       "id": "idea-1567",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ricochet Mode",
@@ -26847,7 +26847,7 @@
     },
     {
       "id": "idea-1568",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Trap",
@@ -26864,7 +26864,7 @@
     },
     {
       "id": "idea-1569",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blackout Ghost Mode",
@@ -26881,7 +26881,7 @@
     },
     {
       "id": "idea-1570",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromantic Area Denial",
@@ -26915,7 +26915,7 @@
     },
     {
       "id": "idea-1572",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Leap Traps",
@@ -26932,7 +26932,7 @@
     },
     {
       "id": "idea-1573",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Reversal Zone",
@@ -26949,7 +26949,7 @@
     },
     {
       "id": "idea-1574",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Juggernaut Mode",
@@ -26966,7 +26966,7 @@
     },
     {
       "id": "idea-1575",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echolocation Only Mode",
@@ -26983,7 +26983,7 @@
     },
     {
       "id": "idea-1576",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Laser Core",
@@ -27000,7 +27000,7 @@
     },
     {
       "id": "idea-1577",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Revival Disruption Aura",
@@ -27017,7 +27017,7 @@
     },
     {
       "id": "idea-1578",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnet Ball Modifier",
@@ -27034,7 +27034,7 @@
     },
     {
       "id": "idea-1579",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrink Ray Arena",
@@ -27051,7 +27051,7 @@
     },
     {
       "id": "idea-1580",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Downed Bleed-out Timer",
@@ -27068,7 +27068,7 @@
     },
     {
       "id": "idea-1581",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Idea 1: Solar Flare Mode",
@@ -27085,7 +27085,7 @@
     },
     {
       "id": "idea-1582",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sniper's Nest Deployable",
@@ -27102,7 +27102,7 @@
     },
     {
       "id": "idea-1583",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Acoustic Disruption Field",
@@ -27119,7 +27119,7 @@
     },
     {
       "id": "idea-1584",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Idea 2: Gravity Pulse Mine",
@@ -27136,7 +27136,7 @@
     },
     {
       "id": "idea-1585",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tag Team Ultimate Synergy Mode",
@@ -27153,7 +27153,7 @@
     },
     {
       "id": "idea-1586",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Assisting Spectator Actions",
@@ -27170,7 +27170,7 @@
     },
     {
       "id": "idea-1587",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shockwave Mine",
@@ -27187,7 +27187,7 @@
     },
     {
       "id": "idea-1588",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Market Auction Event",
@@ -27204,7 +27204,7 @@
     },
     {
       "id": "idea-1589",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Pinball Bumper Mutator",
@@ -27221,7 +27221,7 @@
     },
     {
       "id": "idea-1590",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Trail Mode",
@@ -27238,7 +27238,7 @@
     },
     {
       "id": "idea-1591",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Floor Hazard",
@@ -27255,7 +27255,7 @@
     },
     {
       "id": "idea-1592",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Image Decoy Booster",
@@ -27272,7 +27272,7 @@
     },
     {
       "id": "idea-1593",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Arenas",
@@ -27289,7 +27289,7 @@
     },
     {
       "id": "idea-1594",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunneling Skill",
@@ -27306,7 +27306,7 @@
     },
     {
       "id": "idea-1595",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Time Zone",
@@ -27323,7 +27323,7 @@
     },
     {
       "id": "idea-1596",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Bullets Mode",
@@ -27340,7 +27340,7 @@
     },
     {
       "id": "idea-1597",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Inverter Zone",
@@ -27357,7 +27357,7 @@
     },
     {
       "id": "idea-1598",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Boots",
@@ -27374,7 +27374,7 @@
     },
     {
       "id": "idea-1599",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Relay",
@@ -27391,7 +27391,7 @@
     },
     {
       "id": "idea-1600",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Swap Hazard",
@@ -27408,7 +27408,7 @@
     },
     {
       "id": "idea-1601",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Toxic Sludge Mutator",
@@ -27425,7 +27425,7 @@
     },
     {
       "id": "idea-1602",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Unstable Payload Event",
@@ -27442,7 +27442,7 @@
     },
     {
       "id": "idea-1603",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Energy Battery Mode",
@@ -27459,7 +27459,7 @@
     },
     {
       "id": "idea-1604",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Mimic Transposition",
@@ -27476,7 +27476,7 @@
     },
     {
       "id": "idea-1605",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Turret Overdrive Protocol",
@@ -27493,7 +27493,7 @@
     },
     {
       "id": "idea-1606",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Unstable Decoy Overload",
@@ -27510,7 +27510,7 @@
     },
     {
       "id": "idea-1607",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mobile Turret Platform",
@@ -27527,7 +27527,7 @@
     },
     {
       "id": "idea-1608",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Inverter",
@@ -27544,7 +27544,7 @@
     },
     {
       "id": "idea-1609",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Unstable Artifact Event",
@@ -27561,10 +27561,10 @@
     },
     {
       "id": "idea-1610",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
-      "title": "Quantum Doppelgänger Event",
+      "title": "Quantum Doppelg\u00e4nger Event",
       "description": "Using a quantum teleporter has a small chance to spawn an aggressive clone of the player at the exit point that mirrors their stats and attacks them.",
       "allowed_paths": [
         "src/ai/quantum_doppelgnger.py",
@@ -27578,7 +27578,7 @@
     },
     {
       "id": "idea-1611",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slingshot Nodes",
@@ -27595,7 +27595,7 @@
     },
     {
       "id": "idea-1612",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Mines",
@@ -27612,7 +27612,7 @@
     },
     {
       "id": "idea-1613",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Decoy",
@@ -27629,7 +27629,7 @@
     },
     {
       "id": "idea-1614",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Instability Field",
@@ -27646,7 +27646,7 @@
     },
     {
       "id": "idea-1615",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Bodyguard",
@@ -27663,7 +27663,7 @@
     },
     {
       "id": "idea-1616",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zone With Damage Multiplier",
@@ -27680,7 +27680,7 @@
     },
     {
       "id": "idea-1617",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Mine Sweeper Power-up",
@@ -27697,7 +27697,7 @@
     },
     {
       "id": "idea-1618",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Overload",
@@ -27714,7 +27714,7 @@
     },
     {
       "id": "idea-1619",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ammunition Scavenge Mode",
@@ -27731,7 +27731,7 @@
     },
     {
       "id": "idea-1620",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Teleporting Safe Zone Mode",
@@ -27748,7 +27748,7 @@
     },
     {
       "id": "idea-1621",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "False Maze Walls",
@@ -27765,7 +27765,7 @@
     },
     {
       "id": "idea-1622",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Bouncy Arena Mode",
@@ -27782,7 +27782,7 @@
     },
     {
       "id": "idea-1623",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Bullet Hell Mode",
@@ -27799,7 +27799,7 @@
     },
     {
       "id": "idea-1624",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Frenzy Mode",
@@ -27816,7 +27816,7 @@
     },
     {
       "id": "idea-1625",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Shield Integration",
@@ -27833,7 +27833,7 @@
     },
     {
       "id": "idea-1626",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Mayhem",
@@ -27850,7 +27850,7 @@
     },
     {
       "id": "idea-1627",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Grid Arena",
@@ -27867,7 +27867,7 @@
     },
     {
       "id": "idea-1628",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Waterfalls (Vertical Currents)",
@@ -27884,7 +27884,7 @@
     },
     {
       "id": "idea-1629",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Earthquake Event",
@@ -27901,7 +27901,7 @@
     },
     {
       "id": "idea-1630",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hazard Traps",
@@ -27918,7 +27918,7 @@
     },
     {
       "id": "idea-1631",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Mastery Trait",
@@ -27935,7 +27935,7 @@
     },
     {
       "id": "idea-1632",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Holo-Decoy Ball",
@@ -27952,7 +27952,7 @@
     },
     {
       "id": "idea-1633",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Decoy",
@@ -27969,7 +27969,7 @@
     },
     {
       "id": "idea-1634",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Car Demolition",
@@ -27986,7 +27986,7 @@
     },
     {
       "id": "idea-1635",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Resonance Chain",
@@ -28003,7 +28003,7 @@
     },
     {
       "id": "idea-1636",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wormhole network",
@@ -28020,7 +28020,7 @@
     },
     {
       "id": "idea-1637",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic string",
@@ -28037,7 +28037,7 @@
     },
     {
       "id": "idea-1638",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Random Supply Drops",
@@ -28054,7 +28054,7 @@
     },
     {
       "id": "idea-1639",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supernova Powerup",
@@ -28071,7 +28071,7 @@
     },
     {
       "id": "idea-1640",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Decoy",
@@ -28088,7 +28088,7 @@
     },
     {
       "id": "idea-1641",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cryogenic Ammo",
@@ -28105,7 +28105,7 @@
     },
     {
       "id": "idea-1642",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Thermal Jetpack Booster",
@@ -28122,7 +28122,7 @@
     },
     {
       "id": "idea-1643",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Grenade",
@@ -28139,7 +28139,7 @@
     },
     {
       "id": "idea-1644",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Collapser",
@@ -28156,7 +28156,7 @@
     },
     {
       "id": "idea-1645",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Swap Pad",
@@ -28173,7 +28173,7 @@
     },
     {
       "id": "idea-1646",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Anomaly - Thunderstorm",
@@ -28190,7 +28190,7 @@
     },
     {
       "id": "idea-1647",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Dependent Traps",
@@ -28207,7 +28207,7 @@
     },
     {
       "id": "idea-1648",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slippery Ice Arena Mode",
@@ -28224,7 +28224,7 @@
     },
     {
       "id": "idea-1649",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Energy Battery",
@@ -28241,7 +28241,7 @@
     },
     {
       "id": "idea-1650",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Safe Zone",
@@ -28258,7 +28258,7 @@
     },
     {
       "id": "idea-1651",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chameleon Skin Item",
@@ -28276,7 +28276,7 @@
     },
     {
       "id": "idea-1652",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Windstorm Mutator",
@@ -28293,7 +28293,7 @@
     },
     {
       "id": "idea-1653",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grappling Hook Buff",
@@ -28310,7 +28310,7 @@
     },
     {
       "id": "idea-1654",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Volcanic Eruption Arena Event",
@@ -28327,7 +28327,7 @@
     },
     {
       "id": "idea-1655",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sabotage Decoys",
@@ -28344,7 +28344,7 @@
     },
     {
       "id": "idea-1656",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chameleon Booster",
@@ -28361,7 +28361,7 @@
     },
     {
       "id": "idea-1657",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chameleon Skin Environmental Camouflage",
@@ -28379,7 +28379,7 @@
     },
     {
       "id": "idea-1658",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Doppelganger Mode",
@@ -28396,7 +28396,7 @@
     },
     {
       "id": "idea-1659",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Relay Race Mode",
@@ -28413,7 +28413,7 @@
     },
     {
       "id": "idea-1660",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Strike Booster",
@@ -28430,7 +28430,7 @@
     },
     {
       "id": "idea-1661",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Event: Eclipse",
@@ -28447,7 +28447,7 @@
     },
     {
       "id": "idea-1662",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Item: Mirror Shield",
@@ -28464,7 +28464,7 @@
     },
     {
       "id": "idea-1663",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Mine Traps",
@@ -28481,7 +28481,7 @@
     },
     {
       "id": "idea-1664",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Chain Mode",
@@ -28498,7 +28498,7 @@
     },
     {
       "id": "idea-1665",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Inversion Traps",
@@ -28515,7 +28515,7 @@
     },
     {
       "id": "idea-1666",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall Jump Booster",
@@ -28532,7 +28532,7 @@
     },
     {
       "id": "idea-1667",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Snowball Growth",
@@ -28549,7 +28549,7 @@
     },
     {
       "id": "idea-1668",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Heist Vaults",
@@ -28566,7 +28566,7 @@
     },
     {
       "id": "idea-1669",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Drone",
@@ -28583,7 +28583,7 @@
     },
     {
       "id": "idea-1670",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster's Mirage Clone",
@@ -28600,7 +28600,7 @@
     },
     {
       "id": "idea-1671",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slippery Slope Arena Mode",
@@ -28617,7 +28617,7 @@
     },
     {
       "id": "idea-1672",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Thunderstorm Tornado Combo",
@@ -28634,7 +28634,7 @@
     },
     {
       "id": "idea-1673",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflect Shield Booster",
@@ -28651,7 +28651,7 @@
     },
     {
       "id": "idea-1674",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Abyssal Labyrinth",
@@ -28668,7 +28668,7 @@
     },
     {
       "id": "idea-1675",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Debris Mutator",
@@ -28685,7 +28685,7 @@
     },
     {
       "id": "idea-1676",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Conveyor Belts",
@@ -28702,7 +28702,7 @@
     },
     {
       "id": "idea-1677",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Wall Modification",
@@ -28719,7 +28719,7 @@
     },
     {
       "id": "idea-1678",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Snowball Fight Mode",
@@ -28736,7 +28736,7 @@
     },
     {
       "id": "idea-1679",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Holographic Decoy Modules",
@@ -28753,7 +28753,7 @@
     },
     {
       "id": "idea-1680",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Blast Trap",
@@ -28770,7 +28770,7 @@
     },
     {
       "id": "idea-1681",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Curling Mode",
@@ -28787,7 +28787,7 @@
     },
     {
       "id": "idea-1682",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Anti-Gravity Repulsor Booster",
@@ -28804,7 +28804,7 @@
     },
     {
       "id": "idea-1683",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Turret Overload",
@@ -28821,7 +28821,7 @@
     },
     {
       "id": "idea-1684",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Healing Turret",
@@ -28838,7 +28838,7 @@
     },
     {
       "id": "idea-1685",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Idea 2: Phantom Walk",
@@ -28855,7 +28855,7 @@
     },
     {
       "id": "idea-1686",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Idea 1: Laser Mirror Arena",
@@ -28872,7 +28872,7 @@
     },
     {
       "id": "idea-1687",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Leap Booster",
@@ -28889,7 +28889,7 @@
     },
     {
       "id": "idea-1688",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Hazard",
@@ -28906,7 +28906,7 @@
     },
     {
       "id": "idea-1689",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Anomaly Mode",
@@ -28923,7 +28923,7 @@
     },
     {
       "id": "idea-1690",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Anti-Gravity Zone Event",
@@ -28940,7 +28940,7 @@
     },
     {
       "id": "idea-1691",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Weather Event",
@@ -28957,7 +28957,7 @@
     },
     {
       "id": "idea-1692",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Radar Jammer",
@@ -28974,7 +28974,7 @@
     },
     {
       "id": "idea-1693",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Link Trap",
@@ -28991,7 +28991,7 @@
     },
     {
       "id": "idea-1694",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Thermo-Optic Camouflage",
@@ -29008,7 +29008,7 @@
     },
     {
       "id": "idea-1695",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Zones Speed Modifier",
@@ -29025,7 +29025,7 @@
     },
     {
       "id": "idea-1696",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Safe Zone Radar Item",
@@ -29042,7 +29042,7 @@
     },
     {
       "id": "idea-1697",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Hook Only Mode",
@@ -29059,7 +29059,7 @@
     },
     {
       "id": "idea-1698",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vertical Platformer Mode",
@@ -29076,7 +29076,7 @@
     },
     {
       "id": "idea-1699",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stasis Bubble",
@@ -29093,7 +29093,7 @@
     },
     {
       "id": "idea-1700",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Balloon Trap",
@@ -29110,7 +29110,7 @@
     },
     {
       "id": "idea-1701",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Minefield Mode",
@@ -29127,7 +29127,7 @@
     },
     {
       "id": "idea-1702",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Holographic projection traps",
@@ -29144,7 +29144,7 @@
     },
     {
       "id": "idea-1703",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Teleportation Zone",
@@ -29161,7 +29161,7 @@
     },
     {
       "id": "idea-1704",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Well Booster",
@@ -29178,7 +29178,7 @@
     },
     {
       "id": "idea-1705",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shifting Gravity Mode",
@@ -29195,7 +29195,7 @@
     },
     {
       "id": "idea-1706",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chaos Orbs Mode",
@@ -29212,7 +29212,7 @@
     },
     {
       "id": "idea-1707",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Event",
@@ -29229,7 +29229,7 @@
     },
     {
       "id": "idea-1708",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravitational Mine",
@@ -29246,7 +29246,7 @@
     },
     {
       "id": "idea-1709",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chrono Shift Booster",
@@ -29263,7 +29263,7 @@
     },
     {
       "id": "idea-1710",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Flashbang Grenade",
@@ -29280,7 +29280,7 @@
     },
     {
       "id": "idea-1711",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sniper Drone Pet",
@@ -29297,7 +29297,7 @@
     },
     {
       "id": "idea-1712",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Swap Item",
@@ -29314,7 +29314,7 @@
     },
     {
       "id": "idea-1713",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Swap Hazard",
@@ -29331,7 +29331,7 @@
     },
     {
       "id": "idea-1714",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nightmare Hazard",
@@ -29348,7 +29348,7 @@
     },
     {
       "id": "idea-1715",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbiting Moons Item",
@@ -29365,7 +29365,7 @@
     },
     {
       "id": "idea-1716",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Doppelganger Mirror Mode",
@@ -29382,7 +29382,7 @@
     },
     {
       "id": "idea-1717",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Leap Boots (Booster)",
@@ -29399,7 +29399,7 @@
     },
     {
       "id": "idea-1718",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Banshee Shriek Trap",
@@ -29416,7 +29416,7 @@
     },
     {
       "id": "idea-1719",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ice Rink Arena Modifier",
@@ -29433,7 +29433,7 @@
     },
     {
       "id": "idea-1720",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Hook Momentum",
@@ -29450,7 +29450,7 @@
     },
     {
       "id": "idea-1721",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Moving Black Hole",
@@ -29467,7 +29467,7 @@
     },
     {
       "id": "idea-1722",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Heal or Hurt Zone",
@@ -29484,7 +29484,7 @@
     },
     {
       "id": "idea-1723",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Ricochet Hazard",
@@ -29501,7 +29501,7 @@
     },
     {
       "id": "idea-1724",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Controls Booster",
@@ -29518,7 +29518,7 @@
     },
     {
       "id": "idea-1725",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time-Dilation Bumper",
@@ -29535,7 +29535,7 @@
     },
     {
       "id": "idea-1726",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Enhancer",
@@ -29552,7 +29552,7 @@
     },
     {
       "id": "idea-1727",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grounding Field",
@@ -29569,7 +29569,7 @@
     },
     {
       "id": "idea-1728",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Image Event",
@@ -29586,7 +29586,7 @@
     },
     {
       "id": "idea-1729",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Swarm Skill",
@@ -29603,7 +29603,7 @@
     },
     {
       "id": "idea-1730",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Specific Boosters",
@@ -29620,7 +29620,7 @@
     },
     {
       "id": "idea-1731",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Explosion Booster",
@@ -29637,7 +29637,7 @@
     },
     {
       "id": "idea-1732",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Affected AI Vision",
@@ -29654,7 +29654,7 @@
     },
     {
       "id": "idea-1733",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Geyser Hazard",
@@ -29671,7 +29671,7 @@
     },
     {
       "id": "idea-1734",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Bomb Relay Mode",
@@ -29688,7 +29688,7 @@
     },
     {
       "id": "idea-1735",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Storm Weather",
@@ -29705,7 +29705,7 @@
     },
     {
       "id": "idea-1736",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Faction Mercenaries",
@@ -29722,7 +29722,7 @@
     },
     {
       "id": "idea-1737",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Faction Superweapons",
@@ -29739,7 +29739,7 @@
     },
     {
       "id": "idea-1738",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stasis Bubble Booster",
@@ -29756,7 +29756,7 @@
     },
     {
       "id": "idea-1739",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Lava Surfing Skill",
@@ -29773,7 +29773,7 @@
     },
     {
       "id": "idea-1740",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Molten Rock Golem Entity",
@@ -29790,7 +29790,7 @@
     },
     {
       "id": "idea-1741",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Mine",
@@ -29807,7 +29807,7 @@
     },
     {
       "id": "idea-1742",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "White Hole Repulsor Mode",
@@ -29824,7 +29824,7 @@
     },
     {
       "id": "idea-1743",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wormhole Portals",
@@ -29841,7 +29841,7 @@
     },
     {
       "id": "idea-1744",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Silent Steps Mutator",
@@ -29858,7 +29858,7 @@
     },
     {
       "id": "idea-1745",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bone Splinters",
@@ -29875,7 +29875,7 @@
     },
     {
       "id": "idea-1746",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Clone Upgrade",
@@ -29892,7 +29892,7 @@
     },
     {
       "id": "idea-1747",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Reflector Shield Booster",
@@ -29909,7 +29909,7 @@
     },
     {
       "id": "idea-1748",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunneler Booster",
@@ -29926,7 +29926,7 @@
     },
     {
       "id": "idea-1749",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Weather Anomalies",
@@ -29943,7 +29943,7 @@
     },
     {
       "id": "idea-1750",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Weather Transmitters",
@@ -29960,7 +29960,7 @@
     },
     {
       "id": "idea-1751",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Decoy Resonance",
@@ -29977,7 +29977,7 @@
     },
     {
       "id": "idea-1752",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Mirror Image Dash",
@@ -29994,7 +29994,7 @@
     },
     {
       "id": "idea-1753",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Shifting Map",
@@ -30011,7 +30011,7 @@
     },
     {
       "id": "idea-1754",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Auras",
@@ -30028,7 +30028,7 @@
     },
     {
       "id": "idea-1755",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cursed Shrine Mechanic",
@@ -30045,7 +30045,7 @@
     },
     {
       "id": "idea-1756",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chameleon Mimic Enemy",
@@ -30062,7 +30062,7 @@
     },
     {
       "id": "idea-1757",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Debris Hazard",
@@ -30079,7 +30079,7 @@
     },
     {
       "id": "idea-1758",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Friction Modifier Zone",
@@ -30096,7 +30096,7 @@
     },
     {
       "id": "idea-1759",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetize Booster",
@@ -30113,7 +30113,7 @@
     },
     {
       "id": "idea-1760",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Swap Skill",
@@ -30130,7 +30130,7 @@
     },
     {
       "id": "idea-1761",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones with Multiple Cores",
@@ -30147,7 +30147,7 @@
     },
     {
       "id": "idea-1762",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tethered Teams Mode",
@@ -30164,7 +30164,7 @@
     },
     {
       "id": "idea-1763",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Mine",
@@ -30181,7 +30181,7 @@
     },
     {
       "id": "idea-1764",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Eclipse Trap Booster",
@@ -30198,7 +30198,7 @@
     },
     {
       "id": "idea-1765",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aggro Redirect Traps",
@@ -30215,7 +30215,7 @@
     },
     {
       "id": "idea-1766",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Swap Decoy Overload",
@@ -30232,7 +30232,7 @@
     },
     {
       "id": "idea-1767",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corrosive Fog Mode",
@@ -30249,7 +30249,7 @@
     },
     {
       "id": "idea-1768",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blizzard Tornado Event",
@@ -30266,7 +30266,7 @@
     },
     {
       "id": "idea-1769",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Storm Weather Event",
@@ -30283,7 +30283,7 @@
     },
     {
       "id": "idea-1770",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunnels Mode",
@@ -30300,7 +30300,7 @@
     },
     {
       "id": "idea-1771",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Shifter Trap",
@@ -30317,7 +30317,7 @@
     },
     {
       "id": "idea-1772",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones within Danger Zones",
@@ -30334,7 +30334,7 @@
     },
     {
       "id": "idea-1773",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Ability",
@@ -30351,7 +30351,7 @@
     },
     {
       "id": "idea-1774",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrink Ray Traps",
@@ -30368,7 +30368,7 @@
     },
     {
       "id": "idea-1775",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Drain Field Event",
@@ -30385,7 +30385,7 @@
     },
     {
       "id": "idea-1776",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Overload Mod",
@@ -30402,7 +30402,7 @@
     },
     {
       "id": "idea-1777",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Wind Weather Event",
@@ -30419,7 +30419,7 @@
     },
     {
       "id": "idea-1778",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Minor Synergy",
@@ -30436,7 +30436,7 @@
     },
     {
       "id": "idea-1779",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Minor Bounty Degradation",
@@ -30453,7 +30453,7 @@
     },
     {
       "id": "idea-1780",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirage Decoy Generator",
@@ -30470,7 +30470,7 @@
     },
     {
       "id": "idea-1781",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Cargo Buff Variants",
@@ -30487,7 +30487,7 @@
     },
     {
       "id": "idea-1782",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Reversal Pushback",
@@ -30504,7 +30504,7 @@
     },
     {
       "id": "idea-1783",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Escort Boss Mode",
@@ -30521,7 +30521,7 @@
     },
     {
       "id": "idea-1784",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hot Potato Payload",
@@ -30538,7 +30538,7 @@
     },
     {
       "id": "idea-1785",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Saboteur Traps on Payloads",
@@ -30555,7 +30555,7 @@
     },
     {
       "id": "idea-1786",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Overcharge Events",
@@ -30572,7 +30572,7 @@
     },
     {
       "id": "idea-1787",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stasis Bubble Deployable",
@@ -30589,7 +30589,7 @@
     },
     {
       "id": "idea-1788",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tug of War Multiple Payloads",
@@ -30606,7 +30606,7 @@
     },
     {
       "id": "idea-1789",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Payload Mod",
@@ -30623,7 +30623,7 @@
     },
     {
       "id": "idea-1790",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Safe Zones",
@@ -30640,7 +30640,7 @@
     },
     {
       "id": "idea-1791",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Micro Safe Zones",
@@ -30657,7 +30657,7 @@
     },
     {
       "id": "idea-1792",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Color Match Team Mode",
@@ -30674,7 +30674,7 @@
     },
     {
       "id": "idea-1793",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Boundaries",
@@ -30691,7 +30691,7 @@
     },
     {
       "id": "idea-1794",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Adaptive Decoys",
@@ -30708,7 +30708,7 @@
     },
     {
       "id": "idea-1795",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Push/Pull Mechanics",
@@ -30725,7 +30725,7 @@
     },
     {
       "id": "idea-1796",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Mercenaries",
@@ -30743,7 +30743,7 @@
     },
     {
       "id": "idea-1797",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Alliance Tournaments",
@@ -30760,7 +30760,7 @@
     },
     {
       "id": "idea-1798",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stellar Conjunction Event",
@@ -30777,7 +30777,7 @@
     },
     {
       "id": "idea-1799",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Repulsion Mine",
@@ -30794,7 +30794,7 @@
     },
     {
       "id": "idea-1800",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time-Dilated Safe Zone",
@@ -30811,7 +30811,7 @@
     },
     {
       "id": "idea-1801",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Moon Gravity Adjuster",
@@ -30828,7 +30828,7 @@
     },
     {
       "id": "idea-1802",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Flare Mode",
@@ -30845,7 +30845,7 @@
     },
     {
       "id": "idea-1803",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Puddles",
@@ -30862,7 +30862,7 @@
     },
     {
       "id": "idea-1804",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cryogenic Shield Booster",
@@ -30879,7 +30879,7 @@
     },
     {
       "id": "idea-1805",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Dimension Event",
@@ -30896,7 +30896,7 @@
     },
     {
       "id": "idea-1806",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Swap Mutator",
@@ -30913,7 +30913,7 @@
     },
     {
       "id": "idea-1807",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wind Shield Booster",
@@ -30930,7 +30930,7 @@
     },
     {
       "id": "idea-1808",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wind Funnels",
@@ -30947,7 +30947,7 @@
     },
     {
       "id": "idea-1809",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Reversal Mine",
@@ -30964,7 +30964,7 @@
     },
     {
       "id": "idea-1810",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Singularity Mine",
@@ -30981,7 +30981,7 @@
     },
     {
       "id": "idea-1811",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Overdrive",
@@ -30998,7 +30998,7 @@
     },
     {
       "id": "idea-1812",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Escort Decoys",
@@ -31015,7 +31015,7 @@
     },
     {
       "id": "idea-1813",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Overcharge",
@@ -31032,7 +31032,7 @@
     },
     {
       "id": "idea-1814",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Match Betting",
@@ -31049,7 +31049,7 @@
     },
     {
       "id": "idea-1815",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Twitch Plays AI Parameters",
@@ -31066,7 +31066,7 @@
     },
     {
       "id": "idea-1816",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grappling Hook Skill",
@@ -31083,7 +31083,7 @@
     },
     {
       "id": "idea-1817",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Viewer Faction Wars",
@@ -31100,7 +31100,7 @@
     },
     {
       "id": "idea-1818",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Viewer Betting Mini-Game",
@@ -31117,7 +31117,7 @@
     },
     {
       "id": "idea-1819",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Confetti Explosion Mode",
@@ -31134,7 +31134,7 @@
     },
     {
       "id": "idea-1820",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Booster",
@@ -31151,7 +31151,7 @@
     },
     {
       "id": "idea-1821",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Leech Beam",
@@ -31168,7 +31168,7 @@
     },
     {
       "id": "idea-1822",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital EMP Blast",
@@ -31185,7 +31185,7 @@
     },
     {
       "id": "idea-1823",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Nullifier Zone",
@@ -31202,7 +31202,7 @@
     },
     {
       "id": "idea-1824",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Viewer Named AI Balls",
@@ -31219,7 +31219,7 @@
     },
     {
       "id": "idea-1825",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Chain Reaction Mode",
@@ -31236,7 +31236,7 @@
     },
     {
       "id": "idea-1826",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Tug-of-War Map Hazards",
@@ -31253,7 +31253,7 @@
     },
     {
       "id": "idea-1827",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Payload",
@@ -31270,7 +31270,7 @@
     },
     {
       "id": "idea-1828",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Booster Pad",
@@ -31287,7 +31287,7 @@
     },
     {
       "id": "idea-1829",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Spiderweb Traps",
@@ -31304,7 +31304,7 @@
     },
     {
       "id": "idea-1830",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Fog Weather Event",
@@ -31321,7 +31321,7 @@
     },
     {
       "id": "idea-1831",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wind Tunnel Arena Hazard",
@@ -31338,7 +31338,7 @@
     },
     {
       "id": "idea-1832",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Overheal Shield Capacity",
@@ -31355,7 +31355,7 @@
     },
     {
       "id": "idea-1833",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shield Breaker Payload Mod",
@@ -31372,7 +31372,7 @@
     },
     {
       "id": "idea-1834",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Energy Vampire Mode",
@@ -31389,7 +31389,7 @@
     },
     {
       "id": "idea-1835",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Mirror Maze",
@@ -31406,7 +31406,7 @@
     },
     {
       "id": "idea-1836",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Boots Booster",
@@ -31423,7 +31423,7 @@
     },
     {
       "id": "idea-1837",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Swap Mines",
@@ -31440,7 +31440,7 @@
     },
     {
       "id": "idea-1838",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Skill",
@@ -31457,7 +31457,7 @@
     },
     {
       "id": "idea-1839",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Shifters Mode",
@@ -31474,7 +31474,7 @@
     },
     {
       "id": "idea-1840",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ghost Boosters",
@@ -31491,7 +31491,7 @@
     },
     {
       "id": "idea-1841",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cursed Buffs",
@@ -31508,7 +31508,7 @@
     },
     {
       "id": "idea-1842",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ghost Orbs",
@@ -31525,7 +31525,7 @@
     },
     {
       "id": "idea-1843",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Healing Rain",
@@ -31542,7 +31542,7 @@
     },
     {
       "id": "idea-1844",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Supply Drops",
@@ -31559,7 +31559,7 @@
     },
     {
       "id": "idea-1845",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supply Drop Orbital Path",
@@ -31576,7 +31576,7 @@
     },
     {
       "id": "idea-1846",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Pull Booster",
@@ -31593,7 +31593,7 @@
     },
     {
       "id": "idea-1847",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "test",
@@ -31610,7 +31610,7 @@
     },
     {
       "id": "idea-1848",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Lock Trap",
@@ -31627,7 +31627,7 @@
     },
     {
       "id": "idea-1849",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Jolt Reflex Skill",
@@ -31644,7 +31644,7 @@
     },
     {
       "id": "idea-1850",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Static Feedback Loop",
@@ -31661,7 +31661,7 @@
     },
     {
       "id": "idea-1851",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Low Gravity Events",
@@ -31678,7 +31678,7 @@
     },
     {
       "id": "idea-1852",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Conveyor Belt Terrain",
@@ -31695,7 +31695,7 @@
     },
     {
       "id": "idea-1853",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Overflow Discharge",
@@ -31712,7 +31712,7 @@
     },
     {
       "id": "idea-1854",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Mirage Dash",
@@ -31729,7 +31729,7 @@
     },
     {
       "id": "idea-1855",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Shower Variant",
@@ -31746,7 +31746,7 @@
     },
     {
       "id": "idea-1856",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Overdrive Mode",
@@ -31763,7 +31763,7 @@
     },
     {
       "id": "idea-1857",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Magnetic Field Mode",
@@ -31780,7 +31780,7 @@
     },
     {
       "id": "idea-1858",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ice Rink Arena",
@@ -31797,7 +31797,7 @@
     },
     {
       "id": "idea-1859",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Altar Sabotage Item",
@@ -31814,7 +31814,7 @@
     },
     {
       "id": "idea-1860",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cursed Altar",
@@ -31831,7 +31831,7 @@
     },
     {
       "id": "idea-1861",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Entanglement Mode",
@@ -31848,7 +31848,7 @@
     },
     {
       "id": "idea-1862",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Pinball Mode",
@@ -31865,7 +31865,7 @@
     },
     {
       "id": "idea-1863",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Twitch Spectator Voting: Hazard Upgrades",
@@ -31882,7 +31882,7 @@
     },
     {
       "id": "idea-1864",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Gravity Modifier",
@@ -31899,7 +31899,7 @@
     },
     {
       "id": "idea-1865",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Twitch Loyalty Shop: Cosmetic Auras",
@@ -31916,7 +31916,7 @@
     },
     {
       "id": "idea-1866",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Stealth Camouflage",
@@ -31933,7 +31933,7 @@
     },
     {
       "id": "idea-1867",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Tracking Darts",
@@ -31950,7 +31950,7 @@
     },
     {
       "id": "idea-1868",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ghost Phase",
@@ -31967,7 +31967,7 @@
     },
     {
       "id": "idea-1869",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "High Gravity Well",
@@ -31984,7 +31984,7 @@
     },
     {
       "id": "idea-1870",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Collapsing Geometry Arena",
@@ -32001,7 +32001,7 @@
     },
     {
       "id": "idea-1871",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall Reinforcement Mode",
@@ -32018,7 +32018,7 @@
     },
     {
       "id": "idea-1872",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Recall Traps",
@@ -32035,7 +32035,7 @@
     },
     {
       "id": "idea-1873",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Network Overload",
@@ -32052,7 +32052,7 @@
     },
     {
       "id": "idea-1874",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Grapple Hook Skill",
@@ -32069,7 +32069,7 @@
     },
     {
       "id": "idea-1875",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Linking Mechanic",
@@ -32086,7 +32086,7 @@
     },
     {
       "id": "idea-1876",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Momentum Reversal Trap",
@@ -32103,7 +32103,7 @@
     },
     {
       "id": "idea-1877",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Alliance System",
@@ -32120,7 +32120,7 @@
     },
     {
       "id": "idea-1878",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Clan Hubs",
@@ -32137,7 +32137,7 @@
     },
     {
       "id": "idea-1879",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity well that specifically targets high health players",
@@ -32154,7 +32154,7 @@
     },
     {
       "id": "idea-1880",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Inverted control schemes mutator",
@@ -32171,7 +32171,7 @@
     },
     {
       "id": "idea-1881",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Static Field",
@@ -32188,7 +32188,7 @@
     },
     {
       "id": "idea-1882",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Silence Immunity Booster",
@@ -32205,7 +32205,7 @@
     },
     {
       "id": "idea-1883",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Global Silence Event",
@@ -32222,7 +32222,7 @@
     },
     {
       "id": "idea-1884",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Mutator",
@@ -32239,7 +32239,7 @@
     },
     {
       "id": "idea-1885",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Banners in Matches",
@@ -32256,7 +32256,7 @@
     },
     {
       "id": "idea-1886",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supply Drops that can be Shot Down",
@@ -32273,7 +32273,7 @@
     },
     {
       "id": "idea-1887",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Maps from Multiple Points",
@@ -32290,7 +32290,7 @@
     },
     {
       "id": "idea-1888",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Pets",
@@ -32307,7 +32307,7 @@
     },
     {
       "id": "idea-1889",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Horizon Event",
@@ -32324,7 +32324,7 @@
     },
     {
       "id": "idea-1890",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Grapple Node Mode",
@@ -32341,7 +32341,7 @@
     },
     {
       "id": "idea-1891",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bungee Cord Skill",
@@ -32358,7 +32358,7 @@
     },
     {
       "id": "idea-1892",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Based Jump Pads",
@@ -32375,7 +32375,7 @@
     },
     {
       "id": "idea-1893",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sabotage Vote Option",
@@ -32392,7 +32392,7 @@
     },
     {
       "id": "idea-1894",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Crumbling Platforms",
@@ -32409,7 +32409,7 @@
     },
     {
       "id": "idea-1895",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vote Streaks Cosmetics",
@@ -32426,7 +32426,7 @@
     },
     {
       "id": "idea-1896",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Low Gravity Zone",
@@ -32443,7 +32443,7 @@
     },
     {
       "id": "idea-1897",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ghost Revival Altars",
@@ -32460,7 +32460,7 @@
     },
     {
       "id": "idea-1898",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Possession Mechanic for Ghosts",
@@ -32477,7 +32477,7 @@
     },
     {
       "id": "idea-1899",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Eruption Weather",
@@ -32494,7 +32494,7 @@
     },
     {
       "id": "idea-1900",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Pulse Bomb",
@@ -32511,7 +32511,7 @@
     },
     {
       "id": "idea-1901",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Harmony Mode",
@@ -32528,7 +32528,7 @@
     },
     {
       "id": "idea-1902",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Dimension Arena Mode",
@@ -32545,7 +32545,7 @@
     },
     {
       "id": "idea-1903",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Overload Event",
@@ -32562,7 +32562,7 @@
     },
     {
       "id": "idea-1904",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reflective Mirror Walls",
@@ -32579,7 +32579,7 @@
     },
     {
       "id": "idea-1905",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chroma Dash Mutator",
@@ -32596,7 +32596,7 @@
     },
     {
       "id": "idea-1906",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echoing Steps Booster",
@@ -32613,7 +32613,7 @@
     },
     {
       "id": "idea-1907",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shatter Trap",
@@ -32630,7 +32630,7 @@
     },
     {
       "id": "idea-1908",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Bomb",
@@ -32647,7 +32647,7 @@
     },
     {
       "id": "idea-1909",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteorite Debris from Orbital Strikes",
@@ -32664,7 +32664,7 @@
     },
     {
       "id": "idea-1910",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Laser Reflector Powerup",
@@ -32681,7 +32681,7 @@
     },
     {
       "id": "idea-1911",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Weather Events",
@@ -32698,7 +32698,7 @@
     },
     {
       "id": "idea-1912",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sabotage Votes",
@@ -32715,7 +32715,7 @@
     },
     {
       "id": "idea-1913",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Projectile Overload",
@@ -32732,7 +32732,7 @@
     },
     {
       "id": "idea-1914",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter System",
@@ -32749,7 +32749,7 @@
     },
     {
       "id": "idea-1915",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Hazard Arena",
@@ -32766,7 +32766,7 @@
     },
     {
       "id": "idea-1916",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Disruption Grenade",
@@ -32783,7 +32783,7 @@
     },
     {
       "id": "idea-1917",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Pulse Amplifier",
@@ -32800,7 +32800,7 @@
     },
     {
       "id": "idea-1918",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Projectiles",
@@ -32817,7 +32817,7 @@
     },
     {
       "id": "idea-1919",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Overcharge Station",
@@ -32834,7 +32834,7 @@
     },
     {
       "id": "idea-1920",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Blood Pact",
@@ -32851,7 +32851,7 @@
     },
     {
       "id": "idea-1921",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grave Robber Booster",
@@ -32868,7 +32868,7 @@
     },
     {
       "id": "idea-1922",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Pinball Bumpers Feature",
@@ -32885,7 +32885,7 @@
     },
     {
       "id": "idea-1923",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wall-Crawler Ball Type",
@@ -32902,7 +32902,7 @@
     },
     {
       "id": "idea-1924",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Conduit Boss",
@@ -32920,7 +32920,7 @@
     },
     {
       "id": "idea-1925",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Lightning Tether Mode",
@@ -32937,7 +32937,7 @@
     },
     {
       "id": "idea-1926",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Renegade Bounty Hunters",
@@ -32954,7 +32954,7 @@
     },
     {
       "id": "idea-1927",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Collisions",
@@ -32971,7 +32971,7 @@
     },
     {
       "id": "idea-1928",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Trap Modifiers",
@@ -32988,7 +32988,7 @@
     },
     {
       "id": "idea-1929",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Mastery",
@@ -33005,7 +33005,7 @@
     },
     {
       "id": "idea-1930",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skin specific kill effects",
@@ -33023,7 +33023,7 @@
     },
     {
       "id": "idea-1931",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunnels Biome",
@@ -33040,7 +33040,7 @@
     },
     {
       "id": "idea-1932",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skin recolors via materials",
@@ -33058,7 +33058,7 @@
     },
     {
       "id": "idea-1933",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Nullifier Biome",
@@ -33075,7 +33075,7 @@
     },
     {
       "id": "idea-1934",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones event",
@@ -33092,7 +33092,7 @@
     },
     {
       "id": "idea-1935",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vortex Centers",
@@ -33109,7 +33109,7 @@
     },
     {
       "id": "idea-1936",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Boundaries",
@@ -33126,7 +33126,7 @@
     },
     {
       "id": "idea-1937",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Daily Tournaments",
@@ -33144,7 +33144,7 @@
     },
     {
       "id": "idea-1938",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Cosmetics Customization",
@@ -33162,7 +33162,7 @@
     },
     {
       "id": "idea-1939",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Decoy",
@@ -33179,7 +33179,7 @@
     },
     {
       "id": "idea-1940",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Decoy",
@@ -33196,7 +33196,7 @@
     },
     {
       "id": "idea-1941",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Resonance Fields",
@@ -33213,7 +33213,7 @@
     },
     {
       "id": "idea-1942",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Skill: Bone Prison",
@@ -33230,7 +33230,7 @@
     },
     {
       "id": "idea-1943",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corrupted Altars",
@@ -33247,7 +33247,7 @@
     },
     {
       "id": "idea-1944",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Skill: Soul Swap",
@@ -33264,7 +33264,7 @@
     },
     {
       "id": "idea-1945",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quest Reroll with Mutator Tokens",
@@ -33282,7 +33282,7 @@
     },
     {
       "id": "idea-1946",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weekend Mutator Bounty",
@@ -33299,7 +33299,7 @@
     },
     {
       "id": "idea-1947",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Thermal Glider Item",
@@ -33316,7 +33316,7 @@
     },
     {
       "id": "idea-1948",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Volcanic Eruption Boss",
@@ -33333,7 +33333,7 @@
     },
     {
       "id": "idea-1949",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Twitch integration: Bet points on surviving Juggernaut",
@@ -33350,7 +33350,7 @@
     },
     {
       "id": "idea-1950",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Twitch integration: Voting on Boss type",
@@ -33367,7 +33367,7 @@
     },
     {
       "id": "idea-1951",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gladiator Chains Event",
@@ -33384,7 +33384,7 @@
     },
     {
       "id": "idea-1952",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cursed Relic Modifier",
@@ -33401,7 +33401,7 @@
     },
     {
       "id": "idea-1953",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Ricochet Mode",
@@ -33418,7 +33418,7 @@
     },
     {
       "id": "idea-1954",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Anomalies",
@@ -33435,7 +33435,7 @@
     },
     {
       "id": "idea-1955",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Conveyor Belts",
@@ -33452,7 +33452,7 @@
     },
     {
       "id": "idea-1956",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Grid Arena",
@@ -33469,7 +33469,7 @@
     },
     {
       "id": "idea-1957",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Bank Investment System",
@@ -33487,7 +33487,7 @@
     },
     {
       "id": "idea-1958",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Market Auction House",
@@ -33504,7 +33504,7 @@
     },
     {
       "id": "idea-1959",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunnels Game Mode",
@@ -33521,7 +33521,7 @@
     },
     {
       "id": "idea-1960",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Car Madness Game Mode",
@@ -33538,7 +33538,7 @@
     },
     {
       "id": "idea-1961",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Collapse",
@@ -33555,7 +33555,7 @@
     },
     {
       "id": "idea-1962",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Summoner Build",
@@ -33573,7 +33573,7 @@
     },
     {
       "id": "idea-1963",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Frostbite Weather Mutation",
@@ -33590,7 +33590,7 @@
     },
     {
       "id": "idea-1964",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirage Oasis Trap",
@@ -33607,7 +33607,7 @@
     },
     {
       "id": "idea-1965",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Treadmill Hazard",
@@ -33624,7 +33624,7 @@
     },
     {
       "id": "idea-1966",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time dilation zones",
@@ -33641,7 +33641,7 @@
     },
     {
       "id": "idea-1967",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Ice Zone",
@@ -33658,7 +33658,7 @@
     },
     {
       "id": "idea-1968",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Treasure Hunter",
@@ -33675,7 +33675,7 @@
     },
     {
       "id": "idea-1969",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Tag Mode",
@@ -33692,7 +33692,7 @@
     },
     {
       "id": "idea-1970",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Thermal Overload",
@@ -33709,7 +33709,7 @@
     },
     {
       "id": "idea-1971",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Bomb Mode",
@@ -33726,7 +33726,7 @@
     },
     {
       "id": "idea-1972",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Mine Mode",
@@ -33743,7 +33743,7 @@
     },
     {
       "id": "idea-1973",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Minion Evolution System",
@@ -33760,7 +33760,7 @@
     },
     {
       "id": "idea-1974",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Bone Armor Reflects Damage",
@@ -33777,7 +33777,7 @@
     },
     {
       "id": "idea-1975",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Emotional Override Booster",
@@ -33794,7 +33794,7 @@
     },
     {
       "id": "idea-1976",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Emotion Sync Traps",
@@ -33811,7 +33811,7 @@
     },
     {
       "id": "idea-1977",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Grapple Mod",
@@ -33828,7 +33828,7 @@
     },
     {
       "id": "idea-1978",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Electric Grapple",
@@ -33845,7 +33845,7 @@
     },
     {
       "id": "idea-1979",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Contract Drops",
@@ -33862,7 +33862,7 @@
     },
     {
       "id": "idea-1980",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blinding Flashbang Trap",
@@ -33879,7 +33879,7 @@
     },
     {
       "id": "idea-1981",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrink Ray Weapon",
@@ -33896,7 +33896,7 @@
     },
     {
       "id": "idea-1982",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corrupted Currency Pickups",
@@ -33913,7 +33913,7 @@
     },
     {
       "id": "idea-1983",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Location Mechanic",
@@ -33930,7 +33930,7 @@
     },
     {
       "id": "idea-1984",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Singularity Booster",
@@ -33947,7 +33947,7 @@
     },
     {
       "id": "idea-1985",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Stations in more modes",
@@ -33964,7 +33964,7 @@
     },
     {
       "id": "idea-1986",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Weather Types",
@@ -33981,7 +33981,7 @@
     },
     {
       "id": "idea-1987",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Strike Event",
@@ -33998,7 +33998,7 @@
     },
     {
       "id": "idea-1988",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ice Wall Deployable",
@@ -34015,7 +34015,7 @@
     },
     {
       "id": "idea-1989",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Radioactive Fallout Game Mode",
@@ -34032,7 +34032,7 @@
     },
     {
       "id": "idea-1990",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive HQ Obstacle Course Minigame",
@@ -34049,7 +34049,7 @@
     },
     {
       "id": "idea-1991",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hall of Fame Contributor Titles",
@@ -34066,7 +34066,7 @@
     },
     {
       "id": "idea-1992",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic Distortion Event",
@@ -34083,7 +34083,7 @@
     },
     {
       "id": "idea-1993",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Toxic Minion Mutator",
@@ -34100,7 +34100,7 @@
     },
     {
       "id": "idea-1994",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Danger Beacons",
@@ -34117,7 +34117,7 @@
     },
     {
       "id": "idea-1995",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Phantom Safe Zone",
@@ -34134,7 +34134,7 @@
     },
     {
       "id": "idea-1996",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Shield Cosmetic",
@@ -34151,7 +34151,7 @@
     },
     {
       "id": "idea-1997",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Swap Mastery",
@@ -34168,7 +34168,7 @@
     },
     {
       "id": "idea-1998",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Explosion Deco",
@@ -34185,7 +34185,7 @@
     },
     {
       "id": "idea-1999",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mercenary AI Bots",
@@ -34202,7 +34202,7 @@
     },
     {
       "id": "idea-2000",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Walls Modifier",
@@ -34219,7 +34219,7 @@
     },
     {
       "id": "idea-2001",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bone Wall Hazard Spell",
@@ -34236,7 +34236,7 @@
     },
     {
       "id": "idea-2002",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromancer Bone Wall Skill",
@@ -34253,7 +34253,7 @@
     },
     {
       "id": "idea-2003",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Trap Zone",
@@ -34270,7 +34270,7 @@
     },
     {
       "id": "idea-2004",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Bounce Shield",
@@ -34287,7 +34287,7 @@
     },
     {
       "id": "idea-2005",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Market Altars",
@@ -34304,7 +34304,7 @@
     },
     {
       "id": "idea-2006",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Skeletal Mage Subtype",
@@ -34321,7 +34321,7 @@
     },
     {
       "id": "idea-2007",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Minion Swarm Evolution",
@@ -34338,7 +34338,7 @@
     },
     {
       "id": "idea-2008",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Black Hole Trap",
@@ -34355,7 +34355,7 @@
     },
     {
       "id": "idea-2009",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Overdrive",
@@ -34372,7 +34372,7 @@
     },
     {
       "id": "idea-2010",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Drain Ray",
@@ -34389,7 +34389,7 @@
     },
     {
       "id": "idea-2011",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Harmonizer Item",
@@ -34406,7 +34406,7 @@
     },
     {
       "id": "idea-2012",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Bomb Launcher",
@@ -34423,7 +34423,7 @@
     },
     {
       "id": "idea-2013",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Deflector Shield",
@@ -34440,7 +34440,7 @@
     },
     {
       "id": "idea-2014",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Contract Board",
@@ -34457,7 +34457,7 @@
     },
     {
       "id": "idea-2015",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Necromantic Tether",
@@ -34474,7 +34474,7 @@
     },
     {
       "id": "idea-2016",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Trait",
@@ -34491,7 +34491,7 @@
     },
     {
       "id": "idea-2017",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Bubbles",
@@ -34508,7 +34508,7 @@
     },
     {
       "id": "idea-2018",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tangle Hazard",
@@ -34525,7 +34525,7 @@
     },
     {
       "id": "idea-2019",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sludge Bomb",
@@ -34542,7 +34542,7 @@
     },
     {
       "id": "idea-2020",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Glacial Epoch Mutator",
@@ -34559,7 +34559,7 @@
     },
     {
       "id": "idea-2021",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slowing Puddles",
@@ -34576,7 +34576,7 @@
     },
     {
       "id": "idea-2022",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Detonator Mode",
@@ -34593,7 +34593,7 @@
     },
     {
       "id": "idea-2023",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Overcharge Battery",
@@ -34610,7 +34610,7 @@
     },
     {
       "id": "idea-2024",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Anti-Gravity Field",
@@ -34627,7 +34627,7 @@
     },
     {
       "id": "idea-2025",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Expanding Arena Mode",
@@ -34644,7 +34644,7 @@
     },
     {
       "id": "idea-2026",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Arena Shape Shifting Mode",
@@ -34661,7 +34661,7 @@
     },
     {
       "id": "idea-2027",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nanite Repair Swarm",
@@ -34678,7 +34678,7 @@
     },
     {
       "id": "idea-2028",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chrono-Shifter Core",
@@ -34695,7 +34695,7 @@
     },
     {
       "id": "idea-2029",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chrono Anchor Booster",
@@ -34712,7 +34712,7 @@
     },
     {
       "id": "idea-2030",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Storm Chaser Trait",
@@ -34729,7 +34729,7 @@
     },
     {
       "id": "idea-2031",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Predictor Hologram",
@@ -34746,7 +34746,7 @@
     },
     {
       "id": "idea-2032",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Leap Mechanic",
@@ -34763,7 +34763,7 @@
     },
     {
       "id": "idea-2033",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dark Matter Mode",
@@ -34780,7 +34780,7 @@
     },
     {
       "id": "idea-2034",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Altar",
@@ -34797,7 +34797,7 @@
     },
     {
       "id": "idea-2035",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Lava Traps",
@@ -34814,7 +34814,7 @@
     },
     {
       "id": "idea-2036",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Snowball Fight Mini-Event",
@@ -34831,7 +34831,7 @@
     },
     {
       "id": "idea-2037",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Geyser Eruptions",
@@ -34848,7 +34848,7 @@
     },
     {
       "id": "idea-2038",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Avalanche Environmental Hazard",
@@ -34865,7 +34865,7 @@
     },
     {
       "id": "idea-2039",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chaining Limit Upgrade",
@@ -34882,7 +34882,7 @@
     },
     {
       "id": "idea-2040",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Pull Force Trait",
@@ -34899,7 +34899,7 @@
     },
     {
       "id": "idea-2041",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Fog Mode",
@@ -34916,7 +34916,7 @@
     },
     {
       "id": "idea-2042",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Payload Booster Drops in Escort Mode",
@@ -34933,7 +34933,7 @@
     },
     {
       "id": "idea-2043",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Shield Generation",
@@ -34950,7 +34950,7 @@
     },
     {
       "id": "idea-2044",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tangle Ball Type",
@@ -34967,7 +34967,7 @@
     },
     {
       "id": "idea-2045",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Plates Mode",
@@ -34984,7 +34984,7 @@
     },
     {
       "id": "idea-2046",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Freezing Edge Mode",
@@ -35001,7 +35001,7 @@
     },
     {
       "id": "idea-2047",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Auras",
@@ -35018,7 +35018,7 @@
     },
     {
       "id": "idea-2048",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Displacement Mine",
@@ -35035,7 +35035,7 @@
     },
     {
       "id": "idea-2049",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Temporal Anchor Booster",
@@ -35052,7 +35052,7 @@
     },
     {
       "id": "idea-2050",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Faction War Event",
@@ -35069,7 +35069,7 @@
     },
     {
       "id": "idea-2051",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Enforcer Vengeance Bounty",
@@ -35086,7 +35086,7 @@
     },
     {
       "id": "idea-2052",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Siphon Drone Pet",
@@ -35103,7 +35103,7 @@
     },
     {
       "id": "idea-2053",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Supernova Trap",
@@ -35120,7 +35120,7 @@
     },
     {
       "id": "idea-2054",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wormhole Relic",
@@ -35137,7 +35137,7 @@
     },
     {
       "id": "idea-2055",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tether Hook Traps",
@@ -35154,7 +35154,7 @@
     },
     {
       "id": "idea-2056",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Duplicate",
@@ -35171,7 +35171,7 @@
     },
     {
       "id": "idea-2057",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sabotage Bounties",
@@ -35188,7 +35188,7 @@
     },
     {
       "id": "idea-2058",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Contract Streak",
@@ -35205,7 +35205,7 @@
     },
     {
       "id": "idea-2059",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Enraged Minion Speed Boost",
@@ -35222,7 +35222,7 @@
     },
     {
       "id": "idea-2060",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hive Defense Structure",
@@ -35239,7 +35239,7 @@
     },
     {
       "id": "idea-2061",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Weather System",
@@ -35256,7 +35256,7 @@
     },
     {
       "id": "idea-2062",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Abyssal Boss Fights",
@@ -35273,7 +35273,7 @@
     },
     {
       "id": "idea-2063",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aether Relay Booster",
@@ -35290,7 +35290,7 @@
     },
     {
       "id": "idea-2064",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Black Hole",
@@ -35307,7 +35307,7 @@
     },
     {
       "id": "idea-2065",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Bracers",
@@ -35324,7 +35324,7 @@
     },
     {
       "id": "idea-2066",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Midas Touch Artifact",
@@ -35341,7 +35341,7 @@
     },
     {
       "id": "idea-2067",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Core Item",
@@ -35358,7 +35358,7 @@
     },
     {
       "id": "idea-2068",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stasis Bubble Projector",
@@ -35375,7 +35375,7 @@
     },
     {
       "id": "idea-2069",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Relay Trap",
@@ -35392,7 +35392,7 @@
     },
     {
       "id": "idea-2070",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Match Replay Fast Forward and Rewind",
@@ -35409,7 +35409,7 @@
     },
     {
       "id": "idea-2071",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Replay Highlight Reels",
@@ -35426,7 +35426,7 @@
     },
     {
       "id": "idea-2072",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Potion",
@@ -35443,7 +35443,7 @@
     },
     {
       "id": "idea-2073",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Mirage Field",
@@ -35460,7 +35460,7 @@
     },
     {
       "id": "idea-2074",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Hook",
@@ -35477,7 +35477,7 @@
     },
     {
       "id": "idea-2075",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sun and Moon Aspects",
@@ -35494,7 +35494,7 @@
     },
     {
       "id": "idea-2076",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Eclipse Event",
@@ -35511,7 +35511,7 @@
     },
     {
       "id": "idea-2077",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Weather Altar",
@@ -35528,7 +35528,7 @@
     },
     {
       "id": "idea-2078",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Anomaly Zones",
@@ -35545,7 +35545,7 @@
     },
     {
       "id": "idea-2079",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Amplifier Trap",
@@ -35562,7 +35562,7 @@
     },
     {
       "id": "idea-2080",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Nullifier Field",
@@ -35579,7 +35579,7 @@
     },
     {
       "id": "idea-2081",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic Swap Event",
@@ -35596,7 +35596,7 @@
     },
     {
       "id": "idea-2082",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Crowd Directed Meteors",
@@ -35613,7 +35613,7 @@
     },
     {
       "id": "idea-2083",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aegis Reflection Dome",
@@ -35630,7 +35630,7 @@
     },
     {
       "id": "idea-2084",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Voice Assistant Commentator",
@@ -35647,7 +35647,7 @@
     },
     {
       "id": "idea-2085",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shareable Interactive Highlights",
@@ -35664,7 +35664,7 @@
     },
     {
       "id": "idea-2086",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Bumper Trap",
@@ -35681,7 +35681,7 @@
     },
     {
       "id": "idea-2087",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Accumulator Trait",
@@ -35698,7 +35698,7 @@
     },
     {
       "id": "idea-2088",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Siphon Aura",
@@ -35715,7 +35715,7 @@
     },
     {
       "id": "idea-2089",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Strike Trap",
@@ -35732,7 +35732,7 @@
     },
     {
       "id": "idea-2090",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Hunter Tracking Contracts",
@@ -35749,7 +35749,7 @@
     },
     {
       "id": "idea-2091",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Artifact Set Bonuses",
@@ -35766,7 +35766,7 @@
     },
     {
       "id": "idea-2092",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Feedback Booster",
@@ -35783,7 +35783,7 @@
     },
     {
       "id": "idea-2093",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Loop Zone",
@@ -35800,7 +35800,7 @@
     },
     {
       "id": "idea-2094",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Health Drain Artifact",
@@ -35817,7 +35817,7 @@
     },
     {
       "id": "idea-2095",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Disruption Trap",
@@ -35834,7 +35834,7 @@
     },
     {
       "id": "idea-2096",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Strike",
@@ -35851,7 +35851,7 @@
     },
     {
       "id": "idea-2097",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Aura Overload Booster",
@@ -35868,7 +35868,7 @@
     },
     {
       "id": "idea-2098",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Mimic Cast",
@@ -35885,7 +35885,7 @@
     },
     {
       "id": "idea-2099",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Synergy: Thunderstorm Elementals",
@@ -35902,7 +35902,7 @@
     },
     {
       "id": "idea-2100",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hydro-Pump Trap Item",
@@ -35919,7 +35919,7 @@
     },
     {
       "id": "idea-2101",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Leap Mutator",
@@ -35936,7 +35936,7 @@
     },
     {
       "id": "idea-2102",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Infected Shadows",
@@ -35953,7 +35953,7 @@
     },
     {
       "id": "idea-2103",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Abyssal Deep Biome Mode",
@@ -35970,7 +35970,7 @@
     },
     {
       "id": "idea-2104",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Combos",
@@ -35987,7 +35987,7 @@
     },
     {
       "id": "idea-2105",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Strike Event",
@@ -36004,7 +36004,7 @@
     },
     {
       "id": "idea-2106",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quicksand Pit",
@@ -36022,7 +36022,7 @@
     },
     {
       "id": "idea-2107",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Starlight Celestial Event",
@@ -36039,7 +36039,7 @@
     },
     {
       "id": "idea-2108",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Drain Aura",
@@ -36056,7 +36056,7 @@
     },
     {
       "id": "idea-2109",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Season-Based Evolution Mode",
@@ -36073,7 +36073,7 @@
     },
     {
       "id": "idea-2110",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Whirlpool Pull Mutator",
@@ -36090,7 +36090,7 @@
     },
     {
       "id": "idea-2111",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Syphon Hazard",
@@ -36107,7 +36107,7 @@
     },
     {
       "id": "idea-2112",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Booster Synergy",
@@ -36124,7 +36124,7 @@
     },
     {
       "id": "idea-2113",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Abyssal Fog Mutator",
@@ -36141,7 +36141,7 @@
     },
     {
       "id": "idea-2114",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decaying Orbits mutator",
@@ -36158,7 +36158,7 @@
     },
     {
       "id": "idea-2115",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetize Buff",
@@ -36175,7 +36175,7 @@
     },
     {
       "id": "idea-2116",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Anomaly Event",
@@ -36192,7 +36192,7 @@
     },
     {
       "id": "idea-2117",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slippery Arena",
@@ -36209,7 +36209,7 @@
     },
     {
       "id": "idea-2118",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sunburn Effect",
@@ -36226,7 +36226,7 @@
     },
     {
       "id": "idea-2119",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slippery Mud Puddles",
@@ -36243,7 +36243,7 @@
     },
     {
       "id": "idea-2120",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time Stop Powerup",
@@ -36260,7 +36260,7 @@
     },
     {
       "id": "idea-2121",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Leech Mode",
@@ -36277,7 +36277,7 @@
     },
     {
       "id": "idea-2122",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wormhole portals mode",
@@ -36294,7 +36294,7 @@
     },
     {
       "id": "idea-2123",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Spectral Phantom Tag",
@@ -36311,7 +36311,7 @@
     },
     {
       "id": "idea-2124",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar flare event mode",
@@ -36328,7 +36328,7 @@
     },
     {
       "id": "idea-2125",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Air and Earth Synergy: Sandstorm Aura",
@@ -36345,7 +36345,7 @@
     },
     {
       "id": "idea-2126",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Water and Ice Synergy: Absolute Zero",
@@ -36362,7 +36362,7 @@
     },
     {
       "id": "idea-2127",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Mine",
@@ -36379,7 +36379,7 @@
     },
     {
       "id": "idea-2128",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Acoustic Dampener Zone",
@@ -36396,7 +36396,7 @@
     },
     {
       "id": "idea-2129",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Flare Item",
@@ -36413,7 +36413,7 @@
     },
     {
       "id": "idea-2130",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Currency Item: Overcharged Coin",
@@ -36430,7 +36430,7 @@
     },
     {
       "id": "idea-2131",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Market Loyalty Card",
@@ -36447,7 +36447,7 @@
     },
     {
       "id": "idea-2132",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Siege Behemoth Mode",
@@ -36464,7 +36464,7 @@
     },
     {
       "id": "idea-2133",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Flare Mutator",
@@ -36481,7 +36481,7 @@
     },
     {
       "id": "idea-2134",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Stronghold Layout Editor",
@@ -36499,7 +36499,7 @@
     },
     {
       "id": "idea-2135",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic Drift Modifier",
@@ -36516,7 +36516,7 @@
     },
     {
       "id": "idea-2136",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Season Changes",
@@ -36533,7 +36533,7 @@
     },
     {
       "id": "idea-2137",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Anomaly Modifier",
@@ -36550,7 +36550,7 @@
     },
     {
       "id": "idea-2138",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Homing Missile Booster",
@@ -36567,7 +36567,7 @@
     },
     {
       "id": "idea-2139",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Polarity Synergy",
@@ -36584,7 +36584,7 @@
     },
     {
       "id": "idea-2140",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Gravity Zone Hazard",
@@ -36601,7 +36601,7 @@
     },
     {
       "id": "idea-2141",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Comeback Aura",
@@ -36618,7 +36618,7 @@
     },
     {
       "id": "idea-2142",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Wars",
@@ -36636,7 +36636,7 @@
     },
     {
       "id": "idea-2143",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mounts",
@@ -36653,7 +36653,7 @@
     },
     {
       "id": "idea-2144",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Survival",
@@ -36670,7 +36670,7 @@
     },
     {
       "id": "idea-2145",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Resonance",
@@ -36687,7 +36687,7 @@
     },
     {
       "id": "idea-2146",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Elemental Imbuement",
@@ -36704,7 +36704,7 @@
     },
     {
       "id": "idea-2147",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather System Expansion",
@@ -36721,7 +36721,7 @@
     },
     {
       "id": "idea-2148",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Boots Item",
@@ -36738,7 +36738,7 @@
     },
     {
       "id": "idea-2149",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chronosphere Grenade",
@@ -36755,7 +36755,7 @@
     },
     {
       "id": "idea-2150",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weightless Aura",
@@ -36772,7 +36772,7 @@
     },
     {
       "id": "idea-2151",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Spawner",
@@ -36789,7 +36789,7 @@
     },
     {
       "id": "idea-2152",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Image Decoy",
@@ -36806,7 +36806,7 @@
     },
     {
       "id": "idea-2153",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Hook Item",
@@ -36823,7 +36823,7 @@
     },
     {
       "id": "idea-2154",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Invisible Walls Mode",
@@ -36840,7 +36840,7 @@
     },
     {
       "id": "idea-2155",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Tracker Drone",
@@ -36857,7 +36857,7 @@
     },
     {
       "id": "idea-2156",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Trap Decoy",
@@ -36874,7 +36874,7 @@
     },
     {
       "id": "idea-2157",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather-Adaptive Maps",
@@ -36891,7 +36891,7 @@
     },
     {
       "id": "idea-2158",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Electric Storm Weather Hazard",
@@ -36908,7 +36908,7 @@
     },
     {
       "id": "idea-2159",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole and Gravity Well Synergy",
@@ -36925,7 +36925,7 @@
     },
     {
       "id": "idea-2160",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Double Jeopardy Bounty",
@@ -36942,7 +36942,7 @@
     },
     {
       "id": "idea-2161",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gold Rush event",
@@ -36959,7 +36959,7 @@
     },
     {
       "id": "idea-2162",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Singularity Trap",
@@ -36976,7 +36976,7 @@
     },
     {
       "id": "idea-2163",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stamina Transfer Link",
@@ -36993,7 +36993,7 @@
     },
     {
       "id": "idea-2164",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Event Horizon Field",
@@ -37010,7 +37010,7 @@
     },
     {
       "id": "idea-2165",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Mirage Booster",
@@ -37027,7 +37027,7 @@
     },
     {
       "id": "idea-2166",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Entropy Field",
@@ -37044,7 +37044,7 @@
     },
     {
       "id": "idea-2167",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Healing Clusters",
@@ -37061,7 +37061,7 @@
     },
     {
       "id": "idea-2168",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Grid Hazard",
@@ -37078,7 +37078,7 @@
     },
     {
       "id": "idea-2169",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "New Weapon: Tesla Coil Trap",
@@ -37095,7 +37095,7 @@
     },
     {
       "id": "idea-2170",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Synergy: Blizzards & Wet Debuffs",
@@ -37112,7 +37112,7 @@
     },
     {
       "id": "idea-2171",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Core Mode",
@@ -37129,7 +37129,7 @@
     },
     {
       "id": "idea-2172",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Trap Decoys",
@@ -37146,7 +37146,7 @@
     },
     {
       "id": "idea-2173",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Extraction Zone Ambush Mod",
@@ -37163,7 +37163,7 @@
     },
     {
       "id": "idea-2174",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Homing Decoys",
@@ -37180,7 +37180,7 @@
     },
     {
       "id": "idea-2175",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Shield Swap",
@@ -37197,7 +37197,7 @@
     },
     {
       "id": "idea-2176",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Controller Item",
@@ -37214,7 +37214,7 @@
     },
     {
       "id": "idea-2177",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Floor Trap",
@@ -37231,7 +37231,7 @@
     },
     {
       "id": "idea-2178",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Eclipse Assasin",
@@ -37248,7 +37248,7 @@
     },
     {
       "id": "idea-2179",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Event",
@@ -37265,7 +37265,7 @@
     },
     {
       "id": "idea-2180",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blackout Weather",
@@ -37282,7 +37282,7 @@
     },
     {
       "id": "idea-2181",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Glitch Dash Skill",
@@ -37299,7 +37299,7 @@
     },
     {
       "id": "idea-2182",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Anti-Gravity Web",
@@ -37316,7 +37316,7 @@
     },
     {
       "id": "idea-2183",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Wall Traps",
@@ -37333,7 +37333,7 @@
     },
     {
       "id": "idea-2184",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Customizable Training Dummies",
@@ -37351,7 +37351,7 @@
     },
     {
       "id": "idea-2185",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Invasions",
@@ -37369,7 +37369,7 @@
     },
     {
       "id": "idea-2186",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Boots",
@@ -37386,7 +37386,7 @@
     },
     {
       "id": "idea-2187",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Field Generator",
@@ -37403,7 +37403,7 @@
     },
     {
       "id": "idea-2188",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Flame Trail Boots",
@@ -37420,7 +37420,7 @@
     },
     {
       "id": "idea-2189",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Reassignment Token",
@@ -37437,7 +37437,7 @@
     },
     {
       "id": "idea-2190",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slime Trail Trait",
@@ -37454,7 +37454,7 @@
     },
     {
       "id": "idea-2191",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Airborne Evasion Core",
@@ -37471,7 +37471,7 @@
     },
     {
       "id": "idea-2192",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Alley Game Mode",
@@ -37488,7 +37488,7 @@
     },
     {
       "id": "idea-2193",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Floor Traps",
@@ -37505,7 +37505,7 @@
     },
     {
       "id": "idea-2194",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Alliance Headquarters Customization",
@@ -37522,7 +37522,7 @@
     },
     {
       "id": "idea-2195",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Alliance Faction Wars",
@@ -37539,7 +37539,7 @@
     },
     {
       "id": "idea-2196",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Flare Eclipse Event",
@@ -37556,7 +37556,7 @@
     },
     {
       "id": "idea-2197",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Moonlight Mirage Synergy",
@@ -37573,7 +37573,7 @@
     },
     {
       "id": "idea-2198",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Trap",
@@ -37590,7 +37590,7 @@
     },
     {
       "id": "idea-2199",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Boots",
@@ -37607,7 +37607,7 @@
     },
     {
       "id": "idea-2200",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Interactive Emblem Taunt",
@@ -37624,7 +37624,7 @@
     },
     {
       "id": "idea-2201",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Emblem Glow Effect Based on Streak",
@@ -37641,7 +37641,7 @@
     },
     {
       "id": "idea-2202",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Smoke Teleport",
@@ -37658,7 +37658,7 @@
     },
     {
       "id": "idea-2203",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trickster Fake Booster Drop",
@@ -37675,7 +37675,7 @@
     },
     {
       "id": "idea-2204",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Volcanic Eruption Mode",
@@ -37692,7 +37692,7 @@
     },
     {
       "id": "idea-2205",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ash Cloud Debuff",
@@ -37709,7 +37709,7 @@
     },
     {
       "id": "idea-2206",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Resonance",
@@ -37726,7 +37726,7 @@
     },
     {
       "id": "idea-2207",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Zero-G Pinball",
@@ -37743,7 +37743,7 @@
     },
     {
       "id": "idea-2208",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Color Changing Walls",
@@ -37760,7 +37760,7 @@
     },
     {
       "id": "idea-2209",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Vampiric Fog Weather",
@@ -37777,7 +37777,7 @@
     },
     {
       "id": "idea-2210",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Shower Defense Mode",
@@ -37794,7 +37794,7 @@
     },
     {
       "id": "idea-2211",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Mines",
@@ -37811,7 +37811,7 @@
     },
     {
       "id": "idea-2212",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Teleporting Supply Drops",
@@ -37828,7 +37828,7 @@
     },
     {
       "id": "idea-2213",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Starlight Guardian Boss",
@@ -37845,7 +37845,7 @@
     },
     {
       "id": "idea-2214",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Renegade Guild Mechaninc",
@@ -37863,7 +37863,7 @@
     },
     {
       "id": "idea-2215",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Alliance Emissary Boss Buff",
@@ -37880,7 +37880,7 @@
     },
     {
       "id": "idea-2216",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Tunnels Network",
@@ -37897,7 +37897,7 @@
     },
     {
       "id": "idea-2217",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Hex Grid",
@@ -37914,7 +37914,7 @@
     },
     {
       "id": "idea-2218",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Resonance Item",
@@ -37931,7 +37931,7 @@
     },
     {
       "id": "idea-2219",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Crowd Investment",
@@ -37948,7 +37948,7 @@
     },
     {
       "id": "idea-2220",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sabotage Vote",
@@ -37965,7 +37965,7 @@
     },
     {
       "id": "idea-2221",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Corrupted Audience Mode",
@@ -37982,7 +37982,7 @@
     },
     {
       "id": "idea-2222",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bribe Resistance Trait",
@@ -37999,7 +37999,7 @@
     },
     {
       "id": "idea-2223",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Network Overdrive",
@@ -38016,7 +38016,7 @@
     },
     {
       "id": "idea-2224",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hack Drone",
@@ -38033,7 +38033,7 @@
     },
     {
       "id": "idea-2225",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blacksmith Station",
@@ -38050,7 +38050,7 @@
     },
     {
       "id": "idea-2226",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weapon Perks",
@@ -38067,7 +38067,7 @@
     },
     {
       "id": "idea-2227",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Hook Relay",
@@ -38084,7 +38084,7 @@
     },
     {
       "id": "idea-2228",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weather Anomaly Drones",
@@ -38101,7 +38101,7 @@
     },
     {
       "id": "idea-2229",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirage Hazard Variants",
@@ -38118,7 +38118,7 @@
     },
     {
       "id": "idea-2230",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Decoy Explosions",
@@ -38135,7 +38135,7 @@
     },
     {
       "id": "idea-2231",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Nullification Boots",
@@ -38152,7 +38152,7 @@
     },
     {
       "id": "idea-2232",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Boomerang",
@@ -38169,7 +38169,7 @@
     },
     {
       "id": "idea-2233",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Soul Tether",
@@ -38186,7 +38186,7 @@
     },
     {
       "id": "idea-2234",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Chain",
@@ -38203,7 +38203,7 @@
     },
     {
       "id": "idea-2235",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Confusion Mode",
@@ -38220,7 +38220,7 @@
     },
     {
       "id": "idea-2236",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Healer Trait",
@@ -38237,7 +38237,7 @@
     },
     {
       "id": "idea-2237",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Floor Mode",
@@ -38254,7 +38254,7 @@
     },
     {
       "id": "idea-2238",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Hologram Projection Drone",
@@ -38271,7 +38271,7 @@
     },
     {
       "id": "idea-2239",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirage zone",
@@ -38288,7 +38288,7 @@
     },
     {
       "id": "idea-2240",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Solar Flares",
@@ -38305,7 +38305,7 @@
     },
     {
       "id": "idea-2241",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Blast Mode",
@@ -38322,7 +38322,7 @@
     },
     {
       "id": "idea-2242",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Tar Pits",
@@ -38339,7 +38339,7 @@
     },
     {
       "id": "idea-2243",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "EMP Grenade Shrapnel",
@@ -38356,7 +38356,7 @@
     },
     {
       "id": "idea-2244",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Midnight Eclipse",
@@ -38373,7 +38373,7 @@
     },
     {
       "id": "idea-2245",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Juggernaut Revenge Bomb",
@@ -38390,7 +38390,7 @@
     },
     {
       "id": "idea-2246",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Juggernaut Escalation Modifier",
@@ -38407,7 +38407,7 @@
     },
     {
       "id": "idea-2247",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Magnet Mode",
@@ -38424,7 +38424,7 @@
     },
     {
       "id": "idea-2248",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters Theme Packages",
@@ -38442,7 +38442,7 @@
     },
     {
       "id": "idea-2249",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Pets roaming HQ",
@@ -38460,7 +38460,7 @@
     },
     {
       "id": "idea-2250",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounty Flags in Capture Zones",
@@ -38477,7 +38477,7 @@
     },
     {
       "id": "idea-2251",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Core Arena",
@@ -38494,7 +38494,7 @@
     },
     {
       "id": "idea-2252",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Repulsion Walls Modifier",
@@ -38511,7 +38511,7 @@
     },
     {
       "id": "idea-2253",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mobile Capture Zones",
@@ -38528,7 +38528,7 @@
     },
     {
       "id": "idea-2254",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Laser Beams Mode",
@@ -38545,7 +38545,7 @@
     },
     {
       "id": "idea-2255",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Cosmic Ray Booster",
@@ -38562,7 +38562,7 @@
     },
     {
       "id": "idea-2256",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Meteor Swarm Skill",
@@ -38579,7 +38579,7 @@
     },
     {
       "id": "idea-2257",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Bumper Hazard",
@@ -38596,7 +38596,7 @@
     },
     {
       "id": "idea-2258",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Projectile Modifiers",
@@ -38613,7 +38613,7 @@
     },
     {
       "id": "idea-2259",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Entanglement Damage Mode",
@@ -38630,7 +38630,7 @@
     },
     {
       "id": "idea-2260",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Portal Gun Consumable Item",
@@ -38647,7 +38647,7 @@
     },
     {
       "id": "idea-2261",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Weapon Randomizer Mode",
@@ -38664,7 +38664,7 @@
     },
     {
       "id": "idea-2262",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Bomb",
@@ -38681,7 +38681,7 @@
     },
     {
       "id": "idea-2263",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Temporal Rift Trap",
@@ -38698,7 +38698,7 @@
     },
     {
       "id": "idea-2264",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Darkness Event Mode",
@@ -38715,7 +38715,7 @@
     },
     {
       "id": "idea-2265",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Borders Mutator",
@@ -38732,7 +38732,7 @@
     },
     {
       "id": "idea-2266",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Wormhole Connector",
@@ -38749,7 +38749,7 @@
     },
     {
       "id": "idea-2267",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Emissary Escort Mode",
@@ -38766,7 +38766,7 @@
     },
     {
       "id": "idea-2268",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Bounty Board",
@@ -38783,7 +38783,7 @@
     },
     {
       "id": "idea-2269",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Spawners",
@@ -38800,7 +38800,7 @@
     },
     {
       "id": "idea-2270",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Emissary Seasonal Quests",
@@ -38818,7 +38818,7 @@
     },
     {
       "id": "idea-2271",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Juggernaut Resurrection",
@@ -38835,7 +38835,7 @@
     },
     {
       "id": "idea-2272",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Dynamic Alliance Mode",
@@ -38852,7 +38852,7 @@
     },
     {
       "id": "idea-2273",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Trio Juggernaut Chaos",
@@ -38869,7 +38869,7 @@
     },
     {
       "id": "idea-2274",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Clan Emissary Shop Rotation",
@@ -38886,7 +38886,7 @@
     },
     {
       "id": "idea-2275",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bounce Pad Arena",
@@ -38903,7 +38903,7 @@
     },
     {
       "id": "idea-2276",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Pets Expansion - Evolving Pets",
@@ -38921,7 +38921,7 @@
     },
     {
       "id": "idea-2277",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Amplifier Mutator",
@@ -38938,7 +38938,7 @@
     },
     {
       "id": "idea-2278",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Seasonal Boss Raids",
@@ -38955,7 +38955,7 @@
     },
     {
       "id": "idea-2279",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones with Multi-Biome Properties",
@@ -38972,7 +38972,7 @@
     },
     {
       "id": "idea-2280",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Guild Headquarters - Mini-Game Machine",
@@ -38990,7 +38990,7 @@
     },
     {
       "id": "idea-2281",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Reverse Hovercraft Mode",
@@ -39007,7 +39007,7 @@
     },
     {
       "id": "idea-2282",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Time-Dilation Zone",
@@ -39024,7 +39024,7 @@
     },
     {
       "id": "idea-2283",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Match Mode",
@@ -39041,7 +39041,7 @@
     },
     {
       "id": "idea-2284",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Echo Mirror Booster",
@@ -39058,7 +39058,7 @@
     },
     {
       "id": "idea-2285",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Well Roulette",
@@ -39075,7 +39075,7 @@
     },
     {
       "id": "idea-2286",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Eclipse Mode",
@@ -39092,7 +39092,7 @@
     },
     {
       "id": "idea-2287",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Possession Swap Mode",
@@ -39109,7 +39109,7 @@
     },
     {
       "id": "idea-2288",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Projectiles",
@@ -39126,7 +39126,7 @@
     },
     {
       "id": "idea-2289",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Super Bouncy Modifier Combo",
@@ -39143,7 +39143,7 @@
     },
     {
       "id": "idea-2290",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Magnetic Boots Powerup",
@@ -39160,7 +39160,7 @@
     },
     {
       "id": "idea-2291",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Double Dash Arena",
@@ -39177,7 +39177,7 @@
     },
     {
       "id": "idea-2292",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Phantom Dash Boot",
@@ -39194,7 +39194,7 @@
     },
     {
       "id": "idea-2293",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Gun Relic",
@@ -39211,7 +39211,7 @@
     },
     {
       "id": "idea-2294",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blackout Modifier",
