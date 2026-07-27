@@ -27068,7 +27068,7 @@
     },
     {
       "id": "idea-1581",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Idea 1: Solar Flare Mode",
@@ -39305,6 +39305,125 @@
         "src/ai/tornado_ally_buff.py",
         "src/ai/tornado_ally_buff.gd",
         "tests/test_tornado_ally_buff.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2300",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Well Traps",
+      "description": "Hazards that suck players into the center.",
+      "allowed_paths": [
+        "src/arena/gravity_well_traps.py",
+        "src/arena/gravity_well_traps.gd",
+        "tests/test_gravity_well_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2301",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Anti-Gravity Well",
+      "description": "A hazard that repels players away from its center instead of pulling them in, useful for defensive setups.",
+      "allowed_paths": [
+        "src/ai/anti_gravity_well.py",
+        "src/ai/anti_gravity_well.gd",
+        "tests/test_anti_gravity_well.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2302",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Weather Modifier System",
+      "description": "Global weather changes that affect player speeds.",
+      "allowed_paths": [
+        "src/ai/.py",
+        "src/ai/.gd",
+        "tests/test_.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2303",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reflective Shield Module",
+      "description": "A new equippable module or booster that creates a brief directional shield for the player. When an infinitely ricocheting projectile hits this shield, it bounces back with a homing property targeting the original owner, turning their own infinite duration weapons against them.",
+      "allowed_paths": [
+        "src/ai/reflective_shield_module.py",
+        "src/ai/reflective_shield_module.gd",
+        "tests/test_reflective_shield_module.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2304",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Revival Beacon",
+      "description": "A consumable item that revives a downed teammate remotely.",
+      "allowed_paths": [
+        "src/ai/revival_beacon.py",
+        "src/ai/revival_beacon.gd",
+        "tests/test_revival_beacon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2305",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tag Team Synergy",
+      "description": "Special combo moves when swapping near an enemy.",
+      "allowed_paths": [
+        "src/ai/tag_team_synergy.py",
+        "src/ai/tag_team_synergy.gd",
+        "tests/test_tag_team_synergy.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2306",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Reversal Field",
+      "description": "A hazard zone that reverses the kinetic energy of any ball that enters it. Instead of bouncing off walls, balls bounce towards the center of the arena, and taking damage causes them to gain movement speed rather than stagger.",
+      "allowed_paths": [
+        "src/ai/kinetic_reversal_field.py",
+        "src/ai/kinetic_reversal_field.gd",
+        "tests/test_kinetic_reversal_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
