@@ -40813,3 +40813,7 @@ GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
 GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
 from ai.neon_lightcycles import NeonLightcyclesMode
 GAME_MODES["neon_lightcycles"] = NeonLightcyclesMode()
+
+
+from ai.kinetic_reversal_zone import KineticReversalZoneMode
+GAME_MODES['kinetic_reversal_zone'] = KineticReversalZoneMode()
