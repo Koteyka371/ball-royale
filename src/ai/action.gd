@@ -27260,7 +27260,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_boomerang', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -36876,6 +36876,55 @@ func _use_skill():
                     "owner_id": self.ball.get("id", null)
                 }
                 hazards.append(thrown_grenade)
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
+
+        elif skill_name == "throw_boomerang":
+            if "hazards" in self.world.arena:
+                var hazards = self.world.arena.hazards
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_dist_sq = INF
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dist_sq = dx_e*dx_e + dy_e*dy_e
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            closest_enemy = e
+                    var dx = closest_enemy.x - self.ball.x
+                    var dy = closest_enemy.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx = dx/dist
+                        ny = dy/dist
+
+                var b_radius = 10.0
+                if "radius" in self.ball: b_radius = self.ball.radius
+
+                var thrown_boomerang = {
+                    "id": hazards.size() + int(randf() * 90000) + 19300,
+                    "x": self.ball.x + nx * (b_radius + 5.0),
+                    "y": self.ball.y + ny * (b_radius + 5.0),
+                    "radius": 15.0,
+                    "kind": "thrown_boomerang",
+                    "damage": 25.0,
+                    "vx": nx * 500.0,
+                    "vy": ny * 500.0,
+                    "duration": 0.6,
+                    "pause_timer": 0.3,
+                    "state": "outgoing",
+                    "owner_id": self.ball.id if "id" in self.ball else null,
+                    "team": self.ball.team if "team" in self.ball else null,
+                    "hit_entities": [],
+                    "active": true
+                }
+                hazards.append(thrown_boomerang)
+
                 var cd = 5.0
                 if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
                 self.ball.skill_timer = cd

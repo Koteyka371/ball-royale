@@ -4822,6 +4822,61 @@ class Action:
                                                         b.killer = getattr(hazard, "owner_id", None)
                                 if hasattr(self.world, "events"):
                                     self.world.events.append({'type': 'explosion', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': explosion_radius}})
+                if getattr(hazard, "kind", "") == "thrown_boomerang":
+                    state = getattr(hazard, "state", "outgoing")
+
+                    if state == "outgoing":
+                        hazard.x += getattr(hazard, "vx", 0) * delta
+                        hazard.y += getattr(hazard, "vy", 0) * delta
+                        if getattr(hazard, "duration", 0.0) > 0:
+                            hazard.duration -= delta
+                            if hazard.duration <= 0:
+                                hazard.state = "paused"
+                                hazard.hit_entities = [] # Reset for returning
+                    elif state == "paused":
+                        if getattr(hazard, "pause_timer", 0.0) > 0:
+                            hazard.pause_timer -= delta
+                            if hazard.pause_timer <= 0:
+                                hazard.state = "returning"
+                    elif state == "returning":
+                        owner_id = getattr(hazard, "owner_id", None)
+                        owner = None
+                        if hasattr(self.world, "balls"):
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "id", None) == owner_id:
+                                    owner = b
+                                    break
+
+                        if owner and getattr(owner, "alive", True):
+                            dx = owner.x - hazard.x
+                            dy = owner.y - hazard.y
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist < (getattr(owner, "radius", 10.0) + getattr(hazard, "radius", 15.0)):
+                                hazard.active = False
+                            elif dist > 0.0001:
+                                speed = 500.0
+                                hazard.x += (dx/dist) * speed * delta
+                                hazard.y += (dy/dist) * speed * delta
+                        else:
+                            hazard.active = False
+
+                    # Damage logic
+                    current_state = getattr(hazard, "state", "outgoing")
+                    if current_state in ["outgoing", "returning"] and getattr(hazard, "active", True):
+                        hit_list = getattr(hazard, "hit_entities", [])
+                        if hasattr(self.world, "balls"):
+                            for b in getattr(self.world, "balls", []):
+                                if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(hazard, "owner_id", None) and getattr(b, "id", None) not in hit_list:
+                                    dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                    if dist_sq <= (getattr(hazard, "radius", 15.0) + getattr(b, "radius", 10.0))**2:
+                                        if hasattr(b, "take_damage"):
+                                            b.take_damage(getattr(hazard, "damage", 25.0))
+                                        else:
+                                            b.hp -= getattr(hazard, "damage", 25.0)
+                                        hit_list.append(getattr(b, "id", None))
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({'type': 'hit_sound', 'data': {'x': b.x, 'y': b.y}})
+
                 if getattr(hazard, "kind", "") == "thrown_bomb":
                     if getattr(hazard, "duration", 0.0) > 0:
                         hazard.duration -= delta
@@ -13907,7 +13962,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_boomerang', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -17753,6 +17808,49 @@ class Action:
                     setattr(thrown_grenade, "active", True)
 
                     self.world.arena.hazards.append(thrown_grenade)
+                    self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
+            elif skill_name == "throw_boomerang":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    enemies = self._get_enemies()
+                    nx, ny = 1.0, 0.0
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                        dx = closest_enemy.x - self.ball.x
+                        dy = closest_enemy.y - self.ball.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.0001:
+                            nx, ny = dx/dist, dy/dist
+
+                    try:
+                        from arena.procedural_arena import Hazard
+                    except ImportError:
+                        class Hazard:
+                            def __init__(self, id, x, y, radius, kind, damage):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+
+                    thrown_boomerang = Hazard(
+                        id=19300 + len(self.world.arena.hazards),
+                        x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                        radius=15.0,
+                        kind="thrown_boomerang",
+                        damage=25.0
+                    )
+                    setattr(thrown_boomerang, "vx", nx * 500.0)
+                    setattr(thrown_boomerang, "vy", ny * 500.0)
+                    setattr(thrown_boomerang, "duration", 0.6)
+                    setattr(thrown_boomerang, "pause_timer", 0.3)
+                    setattr(thrown_boomerang, "state", "outgoing")
+                    setattr(thrown_boomerang, "owner_id", getattr(self.ball, "id", None))
+                    setattr(thrown_boomerang, "team", getattr(self.ball, "team", None))
+                    setattr(thrown_boomerang, "hit_entities", [])
+                    self.world.arena.hazards.append(thrown_boomerang)
                     self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
 
             elif skill_name == "throw_bomb":

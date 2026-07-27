@@ -14,7 +14,7 @@ class Brawler:
     PERCEPTION_RADIUS = 200
     AGGRESSION = 0.9
     COLOR = 'brown'
-    SKILL = 'throw_hazard'
+    SKILL = 'throw_boomerang'
     SKILL_COOLDOWN = 4.0
     ATTACK_RANGE = 18.0
 
