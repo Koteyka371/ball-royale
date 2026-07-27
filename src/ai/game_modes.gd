@@ -64573,4 +64573,165 @@ class BlindFragmentAuctionMode extends GameMode:
 							"item": current_item["name"]
 						})
 
+
+class UnstablePayloadMode extends GameMode:
+	var payload = null
+	var spawn_timer: float = 30.0
+	var detonated: bool = false
+
+	func _init() -> void:
+		name = "Unstable Payload"
+		description = "Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius."
+
+	func setup(world, balls: Array) -> void:
+		pass
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width: float = 1000.0
+		var arena_height: float = 1000.0
+		if world != null and world.get("arena") != null:
+			if world.arena.get("width") != null:
+				arena_width = world.arena.width
+			if world.arena.get("height") != null:
+				arena_height = world.arena.height
+
+		var payload_alive = false
+		if payload != null:
+			if typeof(payload) == TYPE_DICTIONARY:
+				payload_alive = payload.get("alive", false)
+			else:
+				payload_alive = payload.get("alive") if "alive" in payload else false
+
+		if not payload_alive:
+			if not detonated:
+				spawn_timer -= delta
+				if spawn_timer <= 0:
+					payload = {
+						"ball_type": "payload",
+						"is_payload": true,
+						"is_invulnerable": true,
+						"speed": 0.0,
+						"base_speed": 0.0,
+						"damage": 0.0,
+						"base_damage": 0.0,
+						"max_hp": 10000.0,
+						"hp": 10000.0,
+						"x": arena_width / 2.0,
+						"y": arena_height / 2.0,
+						"alive": true,
+						"team": "Hazard",
+						"radius": 20.0
+					}
+					balls.append(payload)
+		else:
+			if typeof(payload) == TYPE_DICTIONARY:
+				payload["radius"] += 5.0 * delta
+				var rad_radius = payload["radius"] + 150.0
+				var damage_per_second = 10.0 + (payload["radius"] - 20.0)
+				for b in balls:
+					if b != payload:
+						var is_alive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+						else:
+							is_alive = b.get("alive") if "alive" in b else false
+						if is_alive:
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.get("x") if "x" in b else 0.0
+								by = b.get("y") if "y" in b else 0.0
+							var dist_sq = pow(bx - payload["x"], 2) + pow(by - payload["y"], 2)
+							if dist_sq < pow(rad_radius, 2):
+								if typeof(b) == TYPE_DICTIONARY:
+									if "hp" in b:
+										b["hp"] -= damage_per_second * delta
+										if b["hp"] <= 0:
+											b["hp"] = 0
+											b["alive"] = false
+											if world != null and "dead_balls" in world:
+												world.dead_balls.append(b)
+								else:
+									if b.has_method("take_damage"):
+										b.take_damage(damage_per_second * delta)
+									else:
+										if "hp" in b:
+											b.hp -= damage_per_second * delta
+											if b.hp <= 0:
+												b.hp = 0
+												b.alive = false
+												if world != null and "dead_balls" in world:
+													world.dead_balls.append(b)
+				var red_push = 0
+				var blue_push = 0
+				for b in balls:
+					if b != payload:
+						var is_alive = false
+						var team = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							team = b.get("team", "")
+						else:
+							is_alive = b.get("alive") if "alive" in b else false
+							team = b.get("team") if "team" in b else ""
+						if is_alive:
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.get("x") if "x" in b else 0.0
+								by = b.get("y") if "y" in b else 0.0
+							var dist_sq = pow(bx - payload["x"], 2) + pow(by - payload["y"], 2)
+							if dist_sq < pow(payload["radius"] + 100, 2):
+								if team == "Red":
+									red_push += 1
+								elif team == "Blue":
+									blue_push += 1
+				if red_push > blue_push:
+					payload["x"] += 50.0 * delta
+				elif blue_push > red_push:
+					payload["x"] -= 50.0 * delta
+
+				if payload["radius"] >= 150.0:
+					detonated = true
+					payload["alive"] = false
+					payload["hp"] = 0
+					var explosion_radius = 500.0
+					for b in balls:
+						if b != payload:
+							var is_alive = false
+							if typeof(b) == TYPE_DICTIONARY:
+								is_alive = b.get("alive", false)
+							else:
+								is_alive = b.get("alive") if "alive" in b else false
+							if is_alive:
+								var bx = 0.0
+								var by = 0.0
+								if typeof(b) == TYPE_DICTIONARY:
+									bx = b.get("x", 0.0)
+									by = b.get("y", 0.0)
+								else:
+									bx = b.get("x") if "x" in b else 0.0
+									by = b.get("y") if "y" in b else 0.0
+								var dist_sq = pow(bx - payload["x"], 2) + pow(by - payload["y"], 2)
+								if dist_sq < pow(explosion_radius, 2):
+									if typeof(b) == TYPE_DICTIONARY:
+										if "hp" in b:
+											b["hp"] = 0
+											b["alive"] = false
+											if world != null and "dead_balls" in world:
+												world.dead_balls.append(b)
+									else:
+										if "hp" in b:
+											b.hp = 0
+											b.alive = false
+											if world != null and "dead_balls" in world:
+												world.dead_balls.append(b)
+
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
+GAME_MODES["unstable_payload"] = UnstablePayloadMode.new()

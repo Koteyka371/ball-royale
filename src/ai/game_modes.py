@@ -41480,4 +41480,93 @@ class BlindFragmentAuctionMode(GameMode):
                             "item": self.current_item["name"]
                         })
 
+
+class UnstablePayloadMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Unstable Payload"
+        self.description = "Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius."
+        self.payload = None
+        self.spawn_timer = 30.0
+        self.detonated = False
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        pass
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if not self.payload or not getattr(self.payload, "alive", False):
+            if not self.detonated:
+                self.spawn_timer -= delta
+                if self.spawn_timer <= 0:
+                    class PayloadObj:
+                        pass
+                    self.payload = PayloadObj()
+                    self.payload.ball_type = "payload"
+                    self.payload.is_payload = True
+                    self.payload.is_invulnerable = True
+                    self.payload.speed = 0.0
+                    self.payload.base_speed = 0.0
+                    self.payload.damage = 0.0
+                    self.payload.base_damage = 0.0
+                    self.payload.max_hp = 10000.0
+                    self.payload.hp = 10000.0
+                    self.payload.x = arena_width / 2.0
+                    self.payload.y = arena_height / 2.0
+                    self.payload.alive = True
+                    self.payload.team = "Hazard"
+                    self.payload.radius = 20.0
+                    balls.append(self.payload)
+        else:
+            self.payload.radius += 5.0 * delta # slowly expands
+
+            # Radiation damage
+            import math
+            radiation_radius = self.payload.radius + 150.0
+            damage_per_second = 10.0 + (self.payload.radius - 20.0) # increasing damage
+            for b in balls:
+                if b != self.payload and getattr(b, "alive", False):
+                    dist_sq = (b.x - self.payload.x)**2 + (b.y - self.payload.y)**2
+                    if dist_sq < radiation_radius**2:
+                        b.hp -= damage_per_second * delta
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(world, "dead_balls"):
+                                world.dead_balls.append(b)
+
+            # Move based on players nearby
+            red_push = 0
+            blue_push = 0
+            for b in balls:
+                if b != self.payload and getattr(b, "alive", False):
+                    dist_sq = (b.x - self.payload.x)**2 + (b.y - self.payload.y)**2
+                    if dist_sq < (self.payload.radius + 100)**2:
+                        if getattr(b, "team", "") == "Red":
+                            red_push += 1
+                        elif getattr(b, "team", "") == "Blue":
+                            blue_push += 1
+            if red_push > blue_push:
+                self.payload.x += 50.0 * delta
+            elif blue_push > red_push:
+                self.payload.x -= 50.0 * delta
+
+            # Critical mass explosion
+            if self.payload.radius >= 150.0:
+                self.detonated = True
+                self.payload.alive = False
+                self.payload.hp = 0
+                explosion_radius = 500.0
+                for b in balls:
+                    if b != self.payload and getattr(b, "alive", False):
+                        dist_sq = (b.x - self.payload.x)**2 + (b.y - self.payload.y)**2
+                        if dist_sq < explosion_radius**2:
+                            b.hp = 0
+                            b.alive = False
+                            if hasattr(world, "dead_balls"):
+                                world.dead_balls.append(b)
+
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
+GAME_MODES["unstable_payload"] = UnstablePayloadMode()
