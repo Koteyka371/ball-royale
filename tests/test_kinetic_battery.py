@@ -35,6 +35,7 @@ def test_kinetic_battery_no_damage():
 
     mode.tick(world, [b1], delta=1.0)
     assert b1.damage == 0.0
+    assert b1.base_damage == 0.0
 
 def test_kinetic_battery_move_charge():
     mode = KineticBatteryMode()

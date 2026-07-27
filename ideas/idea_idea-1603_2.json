@@ -1,4 +1,4 @@
 {
-  "title": "Quantum Entanglement",
-  "description": "Two random balls are entangled; whatever damage one takes, the other also takes, regardless of distance."
+  "title": "Shrinking Safe Zone Mutator",
+  "description": "A random safe zone appears on the map and slowly shrinks over time. Players outside the safe zone take increasing damage over time. The safe zone eventually disappears entirely."
 }

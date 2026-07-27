@@ -30,6 +30,7 @@ func tick(world, balls, delta=0.016):
                 continue
 
             b.set("damage", 0.0)
+            b.set("base_damage", 0.0)
 
             var charge = b.get("kinetic_charge") if b.get("kinetic_charge") != null else 0.0
             var vx = b.get("vx") if b.get("vx") != null else 0.0
@@ -106,6 +107,7 @@ func tick(world, balls, delta=0.016):
                 continue
 
             b["damage"] = 0.0
+            b["base_damage"] = 0.0
 
             var charge = b.get("kinetic_charge", 0.0)
             var vx = b.get("vx", 0.0)

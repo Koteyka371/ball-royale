@@ -13,6 +13,7 @@ class KineticBatteryMode(GameMode):
 
             # Balls don't do damage directly
             b.damage = 0.0
+            b.base_damage = 0.0
 
             # Initialize battery variables
             charge = getattr(b, "kinetic_charge", 0.0)

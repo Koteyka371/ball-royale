@@ -1,4 +1,4 @@
 {
-  "title": "Chain Lightning Buff",
-  "description": "Balls that get closely packed will share a chain lightning effect that travels between allies to strike enemies."
+  "title": "Magnetic Chain Mode",
+  "description": "Players are periodically magnetized. When magnetized, they attract or repel other players based on their polarity (red/blue). Colliding with a repelled player deals massive damage."
 }
