@@ -26932,7 +26932,7 @@
     },
     {
       "id": "idea-1573",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Kinetic Reversal Zone",
@@ -39509,6 +39509,57 @@
         "src/ai/capture_point.py",
         "src/ai/capture_point.gd",
         "tests/test_capture_point.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2312",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trickster Reality Distortion Aura",
+      "description": "An alternate skill for the trickster where they cast an aura that randomly swaps the positions of enemies who enter it, heavily disorienting them and causing their speed to drop by 20% while inside the aura.",
+      "allowed_paths": [
+        "src/ai/trickster_reality_distortion_aura.py",
+        "src/ai/trickster_reality_distortion_aura.gd",
+        "tests/test_trickster_reality_distortion_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2313",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Juggernaut Variant",
+      "description": "A Juggernaut variant where the Juggernaut doesn't lose HP over time, but their mass, damage, and radius continuously shrink as time progresses, making them faster but vastly weaker, fundamentally shifting the dynamic of the hunt in the late game.",
+      "allowed_paths": [
+        "src/ai/shrinking_juggernaut_variant.py",
+        "src/ai/shrinking_juggernaut_variant.gd",
+        "tests/test_shrinking_juggernaut_variant.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2314",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decaying Armor Mechanics",
+      "description": "Introduce an armor mechanic that gives balls additional hitpoints, but the armor naturally corrodes and loses effectiveness over time, encouraging players to quickly engage after obtaining armor boosts before their advantage wears off.",
+      "allowed_paths": [
+        "src/ai/decaying_armor_mechanics.py",
+        "src/ai/decaying_armor_mechanics.gd",
+        "tests/test_decaying_armor_mechanics.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1573] Kinetic Reversal Zone — *2026-07-27 07:11:11 UTC*
+
+A special arena hazard zone that acts like a mirror to momentum. Any entity entering the zone immediately has their velocity vectors flipped by 180 degrees, bouncing them directly backward without applying any damage. Great for defensive placements.
+
+---
+
 ## [idea-1495] Trickster's Mirage Skill — *2026-07-27 06:47:11 UTC*
 
 An active skill for the trickster ball that creates three non-damaging illusions that run in different directions. Enemies attacking these illusions get a minor slow debuff, giving the trickster time to escape or counter-attack.
