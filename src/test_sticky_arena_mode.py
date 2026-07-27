@@ -24,6 +24,9 @@ class MockBall:
         self.speed = 100.0
         self.vx = 100.0
         self.vy = 100.0
+        self.glue_time = 0.0
+        self.base_mass = 1.0
+        self.mass = 1.0
 
 def test_sticky_arena_mode_setup():
     mode = StickyArenaMode()
@@ -50,12 +53,29 @@ def test_sticky_arena_mode_tick_glue():
 
     world.arena.hazards.append(MockHazard(400, 300, 50.0, "glue_patch"))
 
-    # Verify inside glue dampens velocity and speed
-    mode.tick(world, balls, 0.016)
+    # First tick in glue (e.g. delta 1.0)
+    mode.tick(world, balls, 1.0)
 
-    assert b.speed == 50.0, "Speed should be 50% of base speed"
+    # Reduction factor = max(0.1, 1.0 - 0.2 * 1.0) = 0.8
+    assert b.speed == 80.0, f"Speed should be 80.0, got {b.speed}"
     assert b.vx == 95.0, "vx should be dampened by 0.95"
     assert b.vy == 95.0, "vy should be dampened by 0.95"
+    assert b.mass == 5.0, "Mass should drastically increase to 5x base_mass"
+
+    # Second tick in glue (delta 2.0 -> total glue time 3.0)
+    mode.tick(world, balls, 2.0)
+    # Reduction factor = max(0.1, 1.0 - 0.2 * 3.0) = 0.4
+    assert abs(b.speed - 40.0) < 0.001, f"Speed should be ~40.0, got {b.speed}"
+    assert b.mass == 5.0, "Mass should remain 5.0 while in glue"
+
+    # Move outside glue
+    b.x = 10.0
+    b.y = 10.0
+    mode.tick(world, balls, 1.0)
+
+    assert b.speed == 100.0, "Speed should reset to base_speed"
+    assert b.glue_time == 0.0, "Glue time should reset"
+    assert b.mass == 1.0, "Mass should reset to base_mass"
 
 def test_sticky_arena_mode_tick_wall():
     mode = StickyArenaMode()
