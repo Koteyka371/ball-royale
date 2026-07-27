@@ -32689,11 +32689,11 @@ class SweepingPaddlesMode extends GameMode:
 
 class SweepingLasersMode extends GameMode:
 	var sweep_timer: float = 0.0
-	var laser_damage_per_second: float = 500.0
+	var laser_damage_per_second: float = 100.0
 
 	func _init() -> void:
 		name = "Sweeping Lasers"
-		description = "Solid beam lasers sweep across the arena, dealing high continuous damage if players touch them."
+		description = "Lasers sweep the arena. Any ball hit permanently shrinks by 10%, loses max HP, and gains speed. Multiple hits turn you into a tiny fragile speedster."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		pass
@@ -32741,6 +32741,31 @@ class SweepingLasersMode extends GameMode:
 					else:
 						h.x = center_x + sin(sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
 
+		for b in balls:
+			var alive = false
+			if "alive" in b: alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+			if alive:
+				var cd = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					cd = b.get("sweeping_laser_cd", 0.0)
+					if cd > 0:
+						b["sweeping_laser_cd"] = cd - delta
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_meta("sweeping_laser_cd"):
+						cd = b.get_meta("sweeping_laser_cd")
+					elif "sweeping_laser_cd" in b:
+						cd = b.sweeping_laser_cd
+					if cd > 0:
+						if b.has_method("set_meta") and b.has_meta("sweeping_laser_cd"):
+							b.set_meta("sweeping_laser_cd", cd - delta)
+						elif "sweeping_laser_cd" in b:
+							b.sweeping_laser_cd = cd - delta
+						else:
+							b.set_meta("sweeping_laser_cd", cd - delta)
+
 		if "hazards" in world.arena:
 			for h in world.arena.hazards:
 				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
@@ -32778,6 +32803,65 @@ class SweepingLasersMode extends GameMode:
 										b.set_meta("hp", b.get_meta("hp") - dmg)
 									elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
 										b["hp"] -= dmg
+
+								var cd = 0.0
+								if typeof(b) == TYPE_DICTIONARY:
+									cd = b.get("sweeping_laser_cd", 0.0)
+								elif typeof(b) == TYPE_OBJECT:
+									if b.has_meta("sweeping_laser_cd"): cd = b.get_meta("sweeping_laser_cd")
+									elif "sweeping_laser_cd" in b: cd = b.sweeping_laser_cd
+
+								if cd <= 0:
+									if typeof(b) == TYPE_DICTIONARY:
+										var radius = b.get("radius", 25.0)
+										b["radius"] = radius * 0.9
+										var max_hp = b.get("max_hp", 100.0)
+										var new_max_hp = max_hp * 0.9
+										b["max_hp"] = new_max_hp
+										if b.get("hp", 100.0) > new_max_hp:
+											b["hp"] = new_max_hp
+										var sm = b.get("speed_multiplier", 1.0)
+										b["speed_multiplier"] = sm * 1.2
+										b["sweeping_laser_cd"] = 1.0
+									elif typeof(b) == TYPE_OBJECT:
+										var radius = 25.0
+										if b.has_meta("radius"): radius = b.get_meta("radius")
+										elif "radius" in b: radius = b.radius
+
+										var max_hp = 100.0
+										if b.has_meta("max_hp"): max_hp = b.get_meta("max_hp")
+										elif "max_hp" in b: max_hp = b.max_hp
+
+										var hp = 100.0
+										if b.has_meta("hp"): hp = b.get_meta("hp")
+										elif "hp" in b: hp = b.hp
+
+										var sm = 1.0
+										if b.has_meta("speed_multiplier"): sm = b.get_meta("speed_multiplier")
+										elif "speed_multiplier" in b: sm = b.speed_multiplier
+
+										var new_max_hp = max_hp * 0.9
+										var new_hp = hp
+										if hp > new_max_hp:
+											new_hp = new_max_hp
+
+										if b.has_method("set_meta") and b.has_meta("radius"):
+											b.set_meta("radius", radius * 0.9)
+											b.set_meta("max_hp", new_max_hp)
+											b.set_meta("hp", new_hp)
+											b.set_meta("speed_multiplier", sm * 1.2)
+											b.set_meta("sweeping_laser_cd", 1.0)
+										else:
+											if "radius" in b: b.radius = radius * 0.9
+											else: b.set_meta("radius", radius * 0.9)
+											if "max_hp" in b: b.max_hp = new_max_hp
+											else: b.set_meta("max_hp", new_max_hp)
+											if "hp" in b: b.hp = new_hp
+											else: b.set_meta("hp", new_hp)
+											if "speed_multiplier" in b: b.speed_multiplier = sm * 1.2
+											else: b.set_meta("speed_multiplier", sm * 1.2)
+											if "sweeping_laser_cd" in b: b.sweeping_laser_cd = 1.0
+											else: b.set_meta("sweeping_laser_cd", 1.0)
 
 
 
