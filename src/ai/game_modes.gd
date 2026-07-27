@@ -64129,3 +64129,161 @@ GAME_MODES["pulsating_core"] = PulsatingCoreMode.new()
 var ADField = load("res://src/ai/acoustic_disruption_field.gd")
 if ADField != null:
 	GAME_MODES["acoustic_disruption_field"] = ADField.new()
+
+
+class IndestructibleLaserCoreMode extends GameMode:
+	var core_spawned = false
+
+	func _init():
+		super()
+		name = "Indestructible Laser Core"
+		description = "A single indestructible laser core spawns in the center of the map. It fires two continuous solid beam lasers in opposite directions and slowly rotates. Over time, the core bounces around the arena like a paddle ball, randomly changing direction when hitting a wall, making dodging extremely unpredictable."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		core_spawned = false
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		if not "arena" in world or not world.arena:
+			return
+
+		var aw = 1000.0
+		if "width" in world.arena: aw = world.arena.width
+		elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"): aw = world.arena["width"]
+
+		var ah = 1000.0
+		if "height" in world.arena: ah = world.arena.height
+		elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"): ah = world.arena["height"]
+
+		var arena_ref = world.arena
+		var has_hazards = false
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
+		elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: has_hazards = true
+
+		if not has_hazards:
+			if typeof(arena_ref) == TYPE_DICTIONARY:
+				arena_ref["hazards"] = []
+			else:
+				arena_ref.hazards = []
+
+		if not core_spawned:
+			core_spawned = true
+
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+			var h_id = "indestructible_laser_core_0"
+			var h = null
+			var start_angle = randf_range(0, PI * 2)
+			var move_angle = randf_range(0, PI * 2)
+			var speed = 300.0
+			var vx = cos(move_angle) * speed
+			var vy = sin(move_angle) * speed
+
+			if ProceduralArenaScript != null:
+				h = ProceduralArenaScript.Hazard.new(h_id, aw/2.0, ah/2.0, 500.0, "spinning_laser", 50.0)
+				h.set_meta("angle", start_angle)
+				h.set_meta("duration", 9999.0)
+				h.set_meta("vx", vx)
+				h.set_meta("vy", vy)
+				h.set_meta("core_radius", 40.0)
+			else:
+				h = {
+					"id": h_id,
+					"x": aw/2.0,
+					"y": ah/2.0,
+					"radius": 500.0,
+					"kind": "spinning_laser",
+					"damage": 50.0,
+					"active": true,
+					"angle": start_angle,
+					"duration": 9999.0,
+					"vx": vx,
+					"vy": vy,
+					"core_radius": 40.0
+				}
+			if typeof(arena_ref) == TYPE_DICTIONARY:
+				arena_ref["hazards"].append(h)
+			else:
+				arena_ref.hazards.append(h)
+
+		var hazards = []
+		if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): hazards = arena_ref["hazards"]
+		elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: hazards = arena_ref.hazards
+
+		for h in hazards:
+			var hid = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("id"): hid = h["id"]
+			elif typeof(h) == TYPE_OBJECT and "id" in h: hid = h.id
+
+			if hid == "indestructible_laser_core_0":
+				var vx = 0.0
+				var vy = 0.0
+				var cx = 0.0
+				var cy = 0.0
+				var core_radius = 40.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.has("vx"): vx = h["vx"]
+					if h.has("vy"): vy = h["vy"]
+					if h.has("x"): cx = h["x"]
+					if h.has("y"): cy = h["y"]
+					if h.has("core_radius"): core_radius = h["core_radius"]
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_method("get_meta") and h.has_meta("vx"): vx = h.get_meta("vx")
+					elif "vx" in h: vx = h.vx
+
+					if h.has_method("get_meta") and h.has_meta("vy"): vy = h.get_meta("vy")
+					elif "vy" in h: vy = h.vy
+
+					if "x" in h: cx = h.x
+					if "y" in h: cy = h.y
+
+					if h.has_method("get_meta") and h.has_meta("core_radius"): core_radius = h.get_meta("core_radius")
+					elif "core_radius" in h: core_radius = h.core_radius
+
+				cx += vx * delta
+				cy += vy * delta
+
+				var bounced = false
+				if cx - core_radius < 0:
+					cx = core_radius
+					vx = abs(vx)
+					bounced = true
+				elif cx + core_radius > aw:
+					cx = aw - core_radius
+					vx = -abs(vx)
+					bounced = true
+
+				if cy - core_radius < 0:
+					cy = core_radius
+					vy = abs(vy)
+					bounced = true
+				elif cy + core_radius > ah:
+					cy = ah - core_radius
+					vy = -abs(vy)
+					bounced = true
+
+				if bounced:
+					var current_speed = sqrt(vx*vx + vy*vy)
+					var current_angle = atan2(vy, vx)
+					var angle_deviation = randf_range(-0.26, 0.26)
+					var new_angle = current_angle + angle_deviation
+					vx = cos(new_angle) * current_speed
+					vy = sin(new_angle) * current_speed
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = cx
+					h["y"] = cy
+					h["vx"] = vx
+					h["vy"] = vy
+				elif typeof(h) == TYPE_OBJECT:
+					h.x = cx
+					h.y = cy
+					if h.has_method("set_meta"):
+						h.set_meta("vx", vx)
+						h.set_meta("vy", vy)
+					else:
+						h.vx = vx
+						h.vy = vy
+
+GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode.new()
