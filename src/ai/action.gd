@@ -8559,6 +8559,438 @@ func execute(strategy: String, delta: float):
 					self.ball.set_meta("alive", false)
 					self.ball.set_meta("hp", 0)
 
+	var n_pull_timer = 0.0
+	if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_timer"):
+		n_pull_timer = self.ball.get_meta("nemesis_pull_timer")
+	elif "nemesis_pull_timer" in self.ball:
+		n_pull_timer = self.ball.nemesis_pull_timer
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_timer"):
+		n_pull_timer = self.ball["nemesis_pull_timer"]
+
+	if n_pull_timer > 0:
+		var target = null
+		if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_source"):
+			target = self.ball.get_meta("nemesis_pull_source")
+		elif "nemesis_pull_source" in self.ball:
+			target = self.ball.nemesis_pull_source
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_source"):
+			target = self.ball["nemesis_pull_source"]
+
+		var is_target_alive = true
+		if target != null:
+			if "alive" in target:
+				is_target_alive = target.alive
+			elif typeof(target) == TYPE_DICTIONARY and target.has("alive"):
+				is_target_alive = target["alive"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"):
+				is_target_alive = target.get_meta("alive")
+
+		if target != null and is_target_alive:
+			var tx = 0.0
+			var ty = 0.0
+			if "x" in target: tx = target.x
+			elif typeof(target) == TYPE_DICTIONARY and target.has("x"): tx = target["x"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x"): tx = target.get_meta("x")
+
+			if "y" in target: ty = target.y
+			elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ty = target["y"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y"): ty = target.get_meta("y")
+
+			var dx = tx - self.ball.x
+			var dy = ty - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var pull_speed = 2.0 * 1.5
+				if "speed" in self.ball: pull_speed = self.ball.speed * 1.5
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): pull_speed = self.ball["speed"] * 1.5
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): pull_speed = self.ball.get_meta("speed") * 1.5
+
+				var move_x = (dx / dist) * pull_speed * delta
+				var move_y = (dy / dist) * pull_speed * delta
+
+				if "x" in self.ball: self.ball.x += move_x
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] += move_x
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("x", self.ball.get_meta("x") + move_x)
+
+				if "y" in self.ball: self.ball.y += move_y
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] += move_y
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("y", self.ball.get_meta("y") + move_y)
+
+				var curr_slow = 0.0
+				if "slow_timer" in self.ball: curr_slow = self.ball.slow_timer
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_timer"): curr_slow = self.ball["slow_timer"]
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer"): curr_slow = self.ball.get_meta("slow_timer")
+
+				var new_slow = max(curr_slow, 0.5)
+				if "slow_timer" in self.ball: self.ball.slow_timer = new_slow
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["slow_timer"] = new_slow
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", new_slow)
+
+		n_pull_timer -= delta
+		if "nemesis_pull_timer" in self.ball: self.ball.nemesis_pull_timer = n_pull_timer
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["nemesis_pull_timer"] = n_pull_timer
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("nemesis_pull_timer", n_pull_timer)
+
+	var n_pull_timer = 0.0
+	if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_timer"):
+		n_pull_timer = self.ball.get_meta("nemesis_pull_timer")
+	elif "nemesis_pull_timer" in self.ball:
+		n_pull_timer = self.ball.nemesis_pull_timer
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_timer"):
+		n_pull_timer = self.ball["nemesis_pull_timer"]
+
+	if n_pull_timer > 0:
+		var target = null
+		if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_source"):
+			target = self.ball.get_meta("nemesis_pull_source")
+		elif "nemesis_pull_source" in self.ball:
+			target = self.ball.nemesis_pull_source
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_source"):
+			target = self.ball["nemesis_pull_source"]
+
+		var is_target_alive = true
+		if target != null:
+			if "alive" in target:
+				is_target_alive = target.alive
+			elif typeof(target) == TYPE_DICTIONARY and target.has("alive"):
+				is_target_alive = target["alive"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"):
+				is_target_alive = target.get_meta("alive")
+
+		if target != null and is_target_alive:
+			var tx = 0.0
+			var ty = 0.0
+			if "x" in target: tx = target.x
+			elif typeof(target) == TYPE_DICTIONARY and target.has("x"): tx = target["x"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x"): tx = target.get_meta("x")
+
+			if "y" in target: ty = target.y
+			elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ty = target["y"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y"): ty = target.get_meta("y")
+
+			var dx = tx - self.ball.x
+			var dy = ty - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var pull_speed = 2.0 * 1.5
+				if "speed" in self.ball: pull_speed = self.ball.speed * 1.5
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): pull_speed = self.ball["speed"] * 1.5
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): pull_speed = self.ball.get_meta("speed") * 1.5
+
+				var move_x = (dx / dist) * pull_speed * delta
+				var move_y = (dy / dist) * pull_speed * delta
+
+				if "x" in self.ball: self.ball.x += move_x
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] += move_x
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("x", self.ball.get_meta("x") + move_x)
+
+				if "y" in self.ball: self.ball.y += move_y
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] += move_y
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("y", self.ball.get_meta("y") + move_y)
+
+				var curr_slow = 0.0
+				if "slow_timer" in self.ball: curr_slow = self.ball.slow_timer
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_timer"): curr_slow = self.ball["slow_timer"]
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer"): curr_slow = self.ball.get_meta("slow_timer")
+
+				var new_slow = max(curr_slow, 0.5)
+				if "slow_timer" in self.ball: self.ball.slow_timer = new_slow
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["slow_timer"] = new_slow
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", new_slow)
+
+		n_pull_timer -= delta
+		if "nemesis_pull_timer" in self.ball: self.ball.nemesis_pull_timer = n_pull_timer
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["nemesis_pull_timer"] = n_pull_timer
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("nemesis_pull_timer", n_pull_timer)
+
+	var n_pull_timer = 0.0
+	if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_timer"):
+		n_pull_timer = self.ball.get_meta("nemesis_pull_timer")
+	elif "nemesis_pull_timer" in self.ball:
+		n_pull_timer = self.ball.nemesis_pull_timer
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_timer"):
+		n_pull_timer = self.ball["nemesis_pull_timer"]
+
+	if n_pull_timer > 0:
+		var target = null
+		if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_source"):
+			target = self.ball.get_meta("nemesis_pull_source")
+		elif "nemesis_pull_source" in self.ball:
+			target = self.ball.nemesis_pull_source
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_source"):
+			target = self.ball["nemesis_pull_source"]
+
+		var is_target_alive = true
+		if target != null:
+			if "alive" in target:
+				is_target_alive = target.alive
+			elif typeof(target) == TYPE_DICTIONARY and target.has("alive"):
+				is_target_alive = target["alive"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"):
+				is_target_alive = target.get_meta("alive")
+
+		if target != null and is_target_alive:
+			var tx = 0.0
+			var ty = 0.0
+			if "x" in target: tx = target.x
+			elif typeof(target) == TYPE_DICTIONARY and target.has("x"): tx = target["x"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x"): tx = target.get_meta("x")
+
+			if "y" in target: ty = target.y
+			elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ty = target["y"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y"): ty = target.get_meta("y")
+
+			var dx = tx - self.ball.x
+			var dy = ty - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var pull_speed = 2.0 * 1.5
+				if "speed" in self.ball: pull_speed = self.ball.speed * 1.5
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): pull_speed = self.ball["speed"] * 1.5
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): pull_speed = self.ball.get_meta("speed") * 1.5
+
+				var move_x = (dx / dist) * pull_speed * delta
+				var move_y = (dy / dist) * pull_speed * delta
+
+				if "x" in self.ball: self.ball.x += move_x
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] += move_x
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("x", self.ball.get_meta("x") + move_x)
+
+				if "y" in self.ball: self.ball.y += move_y
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] += move_y
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("y", self.ball.get_meta("y") + move_y)
+
+				var curr_slow = 0.0
+				if "slow_timer" in self.ball: curr_slow = self.ball.slow_timer
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_timer"): curr_slow = self.ball["slow_timer"]
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer"): curr_slow = self.ball.get_meta("slow_timer")
+
+				var new_slow = max(curr_slow, 0.5)
+				if "slow_timer" in self.ball: self.ball.slow_timer = new_slow
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["slow_timer"] = new_slow
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", new_slow)
+
+		n_pull_timer -= delta
+		if "nemesis_pull_timer" in self.ball: self.ball.nemesis_pull_timer = n_pull_timer
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["nemesis_pull_timer"] = n_pull_timer
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("nemesis_pull_timer", n_pull_timer)
+
+	var n_pull_timer = 0.0
+	if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_timer"):
+		n_pull_timer = self.ball.get_meta("nemesis_pull_timer")
+	elif "nemesis_pull_timer" in self.ball:
+		n_pull_timer = self.ball.nemesis_pull_timer
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_timer"):
+		n_pull_timer = self.ball["nemesis_pull_timer"]
+
+	if n_pull_timer > 0:
+		var target = null
+		if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_source"):
+			target = self.ball.get_meta("nemesis_pull_source")
+		elif "nemesis_pull_source" in self.ball:
+			target = self.ball.nemesis_pull_source
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_source"):
+			target = self.ball["nemesis_pull_source"]
+
+		var is_target_alive = true
+		if target != null:
+			if "alive" in target:
+				is_target_alive = target.alive
+			elif typeof(target) == TYPE_DICTIONARY and target.has("alive"):
+				is_target_alive = target["alive"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"):
+				is_target_alive = target.get_meta("alive")
+
+		if target != null and is_target_alive:
+			var tx = 0.0
+			var ty = 0.0
+			if "x" in target: tx = target.x
+			elif typeof(target) == TYPE_DICTIONARY and target.has("x"): tx = target["x"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x"): tx = target.get_meta("x")
+
+			if "y" in target: ty = target.y
+			elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ty = target["y"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y"): ty = target.get_meta("y")
+
+			var dx = tx - self.ball.x
+			var dy = ty - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var pull_speed = 2.0 * 1.5
+				if "speed" in self.ball: pull_speed = self.ball.speed * 1.5
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): pull_speed = self.ball["speed"] * 1.5
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): pull_speed = self.ball.get_meta("speed") * 1.5
+
+				var move_x = (dx / dist) * pull_speed * delta
+				var move_y = (dy / dist) * pull_speed * delta
+
+				if "x" in self.ball: self.ball.x += move_x
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] += move_x
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("x", self.ball.get_meta("x") + move_x)
+
+				if "y" in self.ball: self.ball.y += move_y
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] += move_y
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("y", self.ball.get_meta("y") + move_y)
+
+				var curr_slow = 0.0
+				if "slow_timer" in self.ball: curr_slow = self.ball.slow_timer
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_timer"): curr_slow = self.ball["slow_timer"]
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer"): curr_slow = self.ball.get_meta("slow_timer")
+
+				var new_slow = max(curr_slow, 0.5)
+				if "slow_timer" in self.ball: self.ball.slow_timer = new_slow
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["slow_timer"] = new_slow
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", new_slow)
+
+		n_pull_timer -= delta
+		if "nemesis_pull_timer" in self.ball: self.ball.nemesis_pull_timer = n_pull_timer
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["nemesis_pull_timer"] = n_pull_timer
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("nemesis_pull_timer", n_pull_timer)
+
+	var n_pull_timer = 0.0
+	if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_timer"):
+		n_pull_timer = self.ball.get_meta("nemesis_pull_timer")
+	elif "nemesis_pull_timer" in self.ball:
+		n_pull_timer = self.ball.nemesis_pull_timer
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_timer"):
+		n_pull_timer = self.ball["nemesis_pull_timer"]
+
+	if n_pull_timer > 0:
+		var target = null
+		if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_source"):
+			target = self.ball.get_meta("nemesis_pull_source")
+		elif "nemesis_pull_source" in self.ball:
+			target = self.ball.nemesis_pull_source
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_source"):
+			target = self.ball["nemesis_pull_source"]
+
+		var is_target_alive = true
+		if target != null:
+			if "alive" in target:
+				is_target_alive = target.alive
+			elif typeof(target) == TYPE_DICTIONARY and target.has("alive"):
+				is_target_alive = target["alive"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"):
+				is_target_alive = target.get_meta("alive")
+
+		if target != null and is_target_alive:
+			var tx = 0.0
+			var ty = 0.0
+			if "x" in target: tx = target.x
+			elif typeof(target) == TYPE_DICTIONARY and target.has("x"): tx = target["x"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x"): tx = target.get_meta("x")
+
+			if "y" in target: ty = target.y
+			elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ty = target["y"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y"): ty = target.get_meta("y")
+
+			var dx = tx - self.ball.x
+			var dy = ty - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var pull_speed = 2.0 * 1.5
+				if "speed" in self.ball: pull_speed = self.ball.speed * 1.5
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): pull_speed = self.ball["speed"] * 1.5
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): pull_speed = self.ball.get_meta("speed") * 1.5
+
+				var move_x = (dx / dist) * pull_speed * delta
+				var move_y = (dy / dist) * pull_speed * delta
+
+				if "x" in self.ball: self.ball.x += move_x
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] += move_x
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("x", self.ball.get_meta("x") + move_x)
+
+				if "y" in self.ball: self.ball.y += move_y
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] += move_y
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("y", self.ball.get_meta("y") + move_y)
+
+				var curr_slow = 0.0
+				if "slow_timer" in self.ball: curr_slow = self.ball.slow_timer
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_timer"): curr_slow = self.ball["slow_timer"]
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer"): curr_slow = self.ball.get_meta("slow_timer")
+
+				var new_slow = max(curr_slow, 0.5)
+				if "slow_timer" in self.ball: self.ball.slow_timer = new_slow
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["slow_timer"] = new_slow
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", new_slow)
+
+		n_pull_timer -= delta
+		if "nemesis_pull_timer" in self.ball: self.ball.nemesis_pull_timer = n_pull_timer
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["nemesis_pull_timer"] = n_pull_timer
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("nemesis_pull_timer", n_pull_timer)
+
+	var n_pull_timer = 0.0
+	if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_timer"):
+		n_pull_timer = self.ball.get_meta("nemesis_pull_timer")
+	elif "nemesis_pull_timer" in self.ball:
+		n_pull_timer = self.ball.nemesis_pull_timer
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_timer"):
+		n_pull_timer = self.ball["nemesis_pull_timer"]
+
+	if n_pull_timer > 0:
+		var target = null
+		if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("nemesis_pull_source"):
+			target = self.ball.get_meta("nemesis_pull_source")
+		elif "nemesis_pull_source" in self.ball:
+			target = self.ball.nemesis_pull_source
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("nemesis_pull_source"):
+			target = self.ball["nemesis_pull_source"]
+
+		var is_target_alive = true
+		if target != null:
+			if "alive" in target:
+				is_target_alive = target.alive
+			elif typeof(target) == TYPE_DICTIONARY and target.has("alive"):
+				is_target_alive = target["alive"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("alive"):
+				is_target_alive = target.get_meta("alive")
+
+		if target != null and is_target_alive:
+			var tx = 0.0
+			var ty = 0.0
+			if "x" in target: tx = target.x
+			elif typeof(target) == TYPE_DICTIONARY and target.has("x"): tx = target["x"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("x"): tx = target.get_meta("x")
+
+			if "y" in target: ty = target.y
+			elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ty = target["y"]
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("y"): ty = target.get_meta("y")
+
+			var dx = tx - self.ball.x
+			var dy = ty - self.ball.y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0:
+				var pull_speed = 2.0 * 1.5
+				if "speed" in self.ball: pull_speed = self.ball.speed * 1.5
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): pull_speed = self.ball["speed"] * 1.5
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("speed"): pull_speed = self.ball.get_meta("speed") * 1.5
+
+				var move_x = (dx / dist) * pull_speed * delta
+				var move_y = (dy / dist) * pull_speed * delta
+
+				if "x" in self.ball: self.ball.x += move_x
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] += move_x
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("x", self.ball.get_meta("x") + move_x)
+
+				if "y" in self.ball: self.ball.y += move_y
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] += move_y
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("y", self.ball.get_meta("y") + move_y)
+
+				var curr_slow = 0.0
+				if "slow_timer" in self.ball: curr_slow = self.ball.slow_timer
+				elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_timer"): curr_slow = self.ball["slow_timer"]
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("slow_timer"): curr_slow = self.ball.get_meta("slow_timer")
+
+				var new_slow = max(curr_slow, 0.5)
+				if "slow_timer" in self.ball: self.ball.slow_timer = new_slow
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["slow_timer"] = new_slow
+				elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", new_slow)
+
+		n_pull_timer -= delta
+		if "nemesis_pull_timer" in self.ball: self.ball.nemesis_pull_timer = n_pull_timer
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["nemesis_pull_timer"] = n_pull_timer
+		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("nemesis_pull_timer", n_pull_timer)
+
 	var m_tether_timer = 0.0
 	if self.ball.has_method("has_meta") and self.ball.has_meta("magnet_tether_timer"):
 		m_tether_timer = self.ball.get_meta("magnet_tether_timer")
@@ -33955,6 +34387,282 @@ func _use_skill():
                 tornado.set_meta("vx", randf_range(-100.0, 100.0))
                 tornado.set_meta("vy", randf_range(-100.0, 100.0))
                 self.world.arena.hazards.append(tornado)
+        elif skill_name == "nemesis_pull":
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("hp"): o_hp = other["hp"]
+                        elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                            if "ball_type" in other: o_type = other.ball_type
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other["nemesis_pull_source"] = self.ball
+                                    other["nemesis_pull_timer"] = 5.0
+                                elif other.has_method("set_meta"):
+                                    other.set_meta("nemesis_pull_source", self.ball)
+                                    other.set_meta("nemesis_pull_timer", 5.0)
+
+            var cooldown = 8.0
+            if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cooldown = self.ball["skill_cooldown"]
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cooldown = self.ball.get_meta("skill_cooldown")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+            if has_method("_spawn_skill_particles"):
+                call("_spawn_skill_particles", "nemesis_pull")
+                elif skill_name == "nemesis_pull":
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("hp"): o_hp = other["hp"]
+                        elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                            if "ball_type" in other: o_type = other.ball_type
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other["nemesis_pull_source"] = self.ball
+                                    other["nemesis_pull_timer"] = 5.0
+                                elif other.has_method("set_meta"):
+                                    other.set_meta("nemesis_pull_source", self.ball)
+                                    other.set_meta("nemesis_pull_timer", 5.0)
+
+            var cooldown = 8.0
+            if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cooldown = self.ball["skill_cooldown"]
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cooldown = self.ball.get_meta("skill_cooldown")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+            if has_method("_spawn_skill_particles"):
+                call("_spawn_skill_particles", "nemesis_pull")
+        elif skill_name == "nemesis_pull":
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("hp"): o_hp = other["hp"]
+                        elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                            if "ball_type" in other: o_type = other.ball_type
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other["nemesis_pull_source"] = self.ball
+                                    other["nemesis_pull_timer"] = 5.0
+                                elif typeof(other) != TYPE_DICTIONARY and other.has_method("set_meta"):
+                                    other.set_meta("nemesis_pull_source", self.ball)
+                                    other.set_meta("nemesis_pull_timer", 5.0)
+
+            var cooldown = 8.0
+            if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cooldown = self.ball["skill_cooldown"]
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cooldown = self.ball.get_meta("skill_cooldown")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+            if has_method("_spawn_skill_particles"):
+                call("_spawn_skill_particles", "nemesis_pull")
+        elif skill_name == "nemesis_pull":
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("hp"): o_hp = other["hp"]
+                        elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                            if "ball_type" in other: o_type = other.ball_type
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other["nemesis_pull_source"] = self.ball
+                                    other["nemesis_pull_timer"] = 5.0
+                                elif typeof(other) != TYPE_DICTIONARY and other.has_method("set_meta"):
+                                    other.set_meta("nemesis_pull_source", self.ball)
+                                    other.set_meta("nemesis_pull_timer", 5.0)
+
+            var cooldown = 8.0
+            if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cooldown = self.ball["skill_cooldown"]
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cooldown = self.ball.get_meta("skill_cooldown")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+            if has_method("_spawn_skill_particles"):
+                call("_spawn_skill_particles", "nemesis_pull")
+        elif skill_name == "nemesis_pull":
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("hp"): o_hp = other["hp"]
+                        elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                            if "ball_type" in other: o_type = other.ball_type
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other["nemesis_pull_source"] = self.ball
+                                    other["nemesis_pull_timer"] = 5.0
+                                elif typeof(other) != TYPE_DICTIONARY and other.has_method("set_meta"):
+                                    other.set_meta("nemesis_pull_source", self.ball)
+                                    other.set_meta("nemesis_pull_timer", 5.0)
+
+            var cooldown = 8.0
+            if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cooldown = self.ball["skill_cooldown"]
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cooldown = self.ball.get_meta("skill_cooldown")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+            if has_method("_spawn_skill_particles"):
+                call("_spawn_skill_particles", "nemesis_pull")
+        elif skill_name == "nemesis_pull":
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("hp"): o_hp = other["hp"]
+                        elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                            if "ball_type" in other: o_type = other.ball_type
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other["nemesis_pull_source"] = self.ball
+                                    other["nemesis_pull_timer"] = 5.0
+                                elif typeof(other) != TYPE_DICTIONARY and other.has_method("set_meta"):
+                                    other.set_meta("nemesis_pull_source", self.ball)
+                                    other.set_meta("nemesis_pull_timer", 5.0)
+
+            var cooldown = 8.0
+            if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cooldown = self.ball["skill_cooldown"]
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cooldown = self.ball.get_meta("skill_cooldown")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+            if has_method("_spawn_skill_particles"):
+                call("_spawn_skill_particles", "nemesis_pull")
         elif skill_name == "nemesis_explosion":
             var enemies = _get_enemies()
 
@@ -37614,6 +38322,68 @@ func _spawn_skill_particles(skill_name: String = ""):
                 particles.color = Color(0.2, 0.5, 1.0, 0.8) # Blue wave
             particles.lifetime = 0.6 * (1.0 + (tier_multiplier - 1.0) * 0.2)
             particles.explosiveness = 0.9
+        elif skill_name == "nemesis_pull":
+            if world != null and world.has_method("get_profile_manager"):
+                var pm = world.call("get_profile_manager")
+                if pm != null and pm.has_method("is_nemesis") and "balls" in world:
+                    for other in world.balls:
+                        var o_id = -1
+                        var my_id = -1
+                        if "id" in other: o_id = other.id
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+
+                        if "id" in self.ball: my_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+
+                        var o_hp = 0
+                        if "hp" in other: o_hp = other.hp
+                        elif typeof(other) == TYPE_DICTIONARY and other.has("hp"): o_hp = other["hp"]
+                        elif typeof(other) != TYPE_DICTIONARY and other.has_method("has_meta") and other.has_meta("hp"): o_hp = other.get_meta("hp")
+
+                        if o_id != my_id and o_hp > 0:
+                            var my_type = ""
+                            var o_type = ""
+                            if "ball_type" in self.ball: my_type = self.ball.ball_type
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_type = self.ball["ball_type"]
+
+                            if "ball_type" in other: o_type = other.ball_type
+                            elif typeof(other) == TYPE_DICTIONARY and other.has("ball_type"): o_type = other["ball_type"]
+
+                            if my_type != "" and o_type != "" and pm.is_nemesis(o_type, my_type):
+                                if typeof(other) == TYPE_DICTIONARY:
+                                    other["nemesis_pull_source"] = self.ball
+                                    other["nemesis_pull_timer"] = 5.0
+                                elif other.has_method("set_meta"):
+                                    other.set_meta("nemesis_pull_source", self.ball)
+                                    other.set_meta("nemesis_pull_timer", 5.0)
+
+            var cooldown = 8.0
+            if "skill_cooldown" in self.ball: cooldown = self.ball.skill_cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("skill_cooldown"): cooldown = self.ball["skill_cooldown"]
+            elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("skill_cooldown"): cooldown = self.ball.get_meta("skill_cooldown")
+
+            if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cooldown
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
+
+            if has_method("_spawn_skill_particles"):
+                call("_spawn_skill_particles", "nemesis_pull")
+        elif skill_name == "nemesis_pull":
+            particles.amount = 40
+            particles.spread = 180.0
+            particles.initial_velocity_min = 100.0
+            particles.initial_velocity_max = 200.0
+            particles.color = Color(0.8, 0.2, 0.2, 0.8) # Red wave
+            particles.lifetime = 0.5
+            particles.explosiveness = 0.5
+        elif skill_name == "nemesis_pull":
+            particles.amount = 40
+            particles.spread = 180.0
+            particles.initial_velocity_min = 100.0
+            particles.initial_velocity_max = 200.0
+            particles.color = Color(0.8, 0.2, 0.2, 0.8) # Red wave
+            particles.lifetime = 0.5
+            particles.explosiveness = 0.5
         elif skill_name == "nemesis_explosion":
             particles.amount = int(80 * tier_multiplier)
             particles.spread = 360.0
