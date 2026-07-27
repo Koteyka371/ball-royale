@@ -5925,6 +5925,7 @@ class Action:
         # Zero gravity processing (friction)
         in_anomaly_zone = False
         in_bouncy_zone = False
+        in_reverse_physics_zone = False
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
             self.ball.in_bush = False
@@ -5938,6 +5939,11 @@ class Action:
                     dy = hazard.y - self.ball.y
                     if (dx*dx + dy*dy) <= getattr(hazard, "radius", 0)**2:
                         in_anomaly_zone = True
+                elif getattr(hazard, "kind", "") == "reverse_physics_zone" and getattr(hazard, "active", True):
+                    dx = hazard.x - self.ball.x
+                    dy = hazard.y - self.ball.y
+                    if (dx*dx + dy*dy) <= getattr(hazard, "radius", 0)**2:
+                        in_reverse_physics_zone = True
                 elif getattr(hazard, "kind", "") == "bouncy_zone" and getattr(hazard, "active", True):
                     dx = hazard.x - self.ball.x
                     dy = hazard.y - self.ball.y
@@ -5945,6 +5951,7 @@ class Action:
                         in_bouncy_zone = True
         self.ball.in_anomaly_zone = in_anomaly_zone
         self.ball.in_bouncy_zone = in_bouncy_zone
+        self.ball.in_reverse_physics_zone = in_reverse_physics_zone
 
         gm = getattr(self.world, "game_mode", None)
         is_zero_gravity = False
@@ -19852,7 +19859,10 @@ class Action:
                 gm = getattr(self.world, "game_mode", None)
                 in_anomaly_zone = getattr(self.ball, "in_anomaly_zone", False)
                 in_bouncy_zone = getattr(self.ball, "in_bouncy_zone", False)
-                if in_anomaly_zone:
+                in_reverse_physics_zone = getattr(self.ball, "in_reverse_physics_zone", False)
+                if in_reverse_physics_zone:
+                    knockback_multiplier = -1.0
+                elif in_anomaly_zone:
                     knockback_multiplier = 5.0
                 elif in_bouncy_zone:
                     knockback_multiplier = 5.0
