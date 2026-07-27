@@ -25841,7 +25841,7 @@
     },
     {
       "id": "idea-1509",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Reflect",
@@ -39866,6 +39866,40 @@
         "src/ai/projectile_fragmentation.py",
         "src/ai/projectile_fragmentation.gd",
         "tests/test_projectile_fragmentation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2333",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Link Damage Transfer",
+      "description": "An ability that creates a link between you and your nemesis. A portion of the damage you take is transferred to them as long as the link is active and they remain within a certain radius.",
+      "allowed_paths": [
+        "src/ai/nemesis_link_damage_transfer.py",
+        "src/ai/nemesis_link_damage_transfer.gd",
+        "tests/test_nemesis_link_damage_transfer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2334",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Volatile Barrel",
+      "description": "A deployable item that looks exactly like a standard healing orb on the minimap, but when an enemy attempts to collect it, it explodes dealing massive AoE damage.",
+      "allowed_paths": [
+        "src/ai/decoy_volatile_barrel.py",
+        "src/ai/decoy_volatile_barrel.gd",
+        "tests/test_decoy_volatile_barrel.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
