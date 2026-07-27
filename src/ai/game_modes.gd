@@ -64330,3 +64330,52 @@ class IndestructibleLaserCoreMode extends GameMode:
 						h.vy = vy
 
 GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode.new()
+
+class TimeTrapSafeZoneMode extends SafeZoneMode:
+	var history: Dictionary = {}
+
+	func _init() -> void:
+		super._init()
+		name = "Time Trap Safe Zone"
+		description = "A battle royale where being outside the safe zone doesn't deal damage, but instead continuously reverses the player's position back in time, trapping them in the storm forever."
+		outside_damage_per_second = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			if not b.alive or b.ball_type == "spectator":
+				continue
+			var b_id = str(b.get_instance_id()) if typeof(b) == TYPE_OBJECT else str(b.get("id", ""))
+			if not history.has(b_id):
+				history[b_id] = []
+
+			var dx = b.x - zone_x
+			var dy = b.y - zone_y
+			var distance_to_center = sqrt(dx*dx + dy*dy)
+
+			if distance_to_center > zone_radius:
+				if history[b_id].size() > 0:
+					var old_pos = history[b_id].pop_back()
+					if history[b_id].size() > 0: old_pos = history[b_id].pop_back()
+					if history[b_id].size() > 0: old_pos = history[b_id].pop_back()
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = old_pos.x
+						b["y"] = old_pos.y
+					else:
+						b.x = old_pos.x
+						b.y = old_pos.y
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("vx"): b["vx"] = 0.0
+					if b.has("vy"): b["vy"] = 0.0
+				else:
+					if "vx" in b: b.vx = 0.0
+					if "vy" in b: b.vy = 0.0
+			else:
+				history[b_id].append({"x": b.x, "y": b.y})
+				if history[b_id].size() > 3000:
+					history[b_id].pop_front()
+
+GAME_MODES["time_trap_safe_zone"] = TimeTrapSafeZoneMode.new()

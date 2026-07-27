@@ -1,0 +1,4 @@
+{
+  "title": "Decaying Clone Mode",
+  "description": "Whenever a player uses an ability, a fragile mirror clone is created at their position. Clones mimic movement but take 500% more damage and explode upon death, hurting nearby enemies and the player if they stand too close."
+}

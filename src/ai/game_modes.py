@@ -41384,3 +41384,48 @@ class IndestructibleLaserCoreMode(GameMode):
                     hazard.vy = math.sin(new_angle) * current_speed
 
 GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode()
+
+class TimeTrapSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Trap Safe Zone"
+        self.description = "A battle royale where being outside the safe zone doesn't deal damage, but instead continuously reverses the player's position back in time, trapping them in the storm forever."
+        self.outside_damage_per_second = 0.0
+        self.history = {}
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+            b_id = getattr(b, "id", str(id(b)))
+            if b_id not in self.history:
+                self.history[b_id] = []
+
+            dx = b.x - self.zone_x
+            dy = b.y - self.zone_y
+            distance_to_center = math.sqrt(dx*dx + dy*dy)
+
+            # Always record history, but only if they are not actively being forced backward by the storm,
+            # or actually, we can just record history if they are moving naturally.
+            # To trap them in the storm forever, if they are outside the safe zone, they get pulled backward
+            # along their historical path.
+            if distance_to_center > self.zone_radius:
+                if len(self.history[b_id]) > 0:
+                    old_pos = self.history[b_id].pop()
+                    # pop a few more to rewind faster than they can move forward
+                    if len(self.history[b_id]) > 0: old_pos = self.history[b_id].pop()
+                    if len(self.history[b_id]) > 0: old_pos = self.history[b_id].pop()
+                    b.x = old_pos[0]
+                    b.y = old_pos[1]
+                if hasattr(b, "vx"): b.vx = 0.0
+                if hasattr(b, "vy"): b.vy = 0.0
+            else:
+                # Inside safe zone, record history
+                self.history[b_id].append((b.x, b.y))
+                if len(self.history[b_id]) > 3000: # large history
+                    self.history[b_id].pop(0)
+
+GAME_MODES["time_trap_safe_zone"] = TimeTrapSafeZoneMode()
