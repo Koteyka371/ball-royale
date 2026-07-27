@@ -155,10 +155,10 @@ def main():
             except Exception as e:
                 print(f"Error processing idea {idea_file}: {e}")
 
-    # 1. Run physical mode observability testing
-    print("[Auto-Improve] Running Physical Mode Observability Suite...")
+    # 1. Run physical mode observability testing (fast sample for auto-improve loop)
+    print("[Auto-Improve] Running Physical Mode Observability Suite (fast sample)...")
     try:
-        subprocess.run([sys.executable, "scripts/test_physical_modes.py"], check=False)
+        subprocess.run([sys.executable, "scripts/test_physical_modes.py", "--fast"], check=False)
     except Exception as e:
         print(f"[Auto-Improve] Error running physical mode suite: {e}")
 

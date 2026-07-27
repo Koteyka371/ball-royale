@@ -172,18 +172,38 @@ def main():
         for i, idea in enumerate(new_ideas[:10], 1):
             print(f"  {i}. [{idea['type']}] {idea['title']}")
         
-        print("\n[GENERATING TASKS...]")
+        print("\n[RUNNING INTER-AGENT DEBATE ON NEW IDEAS...]")
+        try:
+            from scripts.agent_debate import AgentDebateEngine
+            debate_engine = AgentDebateEngine()
+        except Exception as e:
+            print(f"[Warning] Could not initialize debate engine in generate_ideas: {e}")
+            debate_engine = None
+
         tasks_to_add = []
         for i, idea in enumerate(new_ideas[:5], 1):
             task = generate_task_from_idea(idea, len(manifest.get("tasks", [])) + i)
-            tasks_to_add.append(task)
-            print(f"  + {task['id']}: {task['title']}")
+            
+            approved = True
+            if debate_engine:
+                approved, score, reason = debate_engine.debate_idea(
+                    task['id'], task['title'], task['description'], task.get('area', 'content')
+                )
+                print(f"  * Inter-Agent Debate for [{task['id']}] '{task['title']}': {reason}")
+            
+            if approved:
+                tasks_to_add.append(task)
+                print(f"  + APPROVED & ADDED {task['id']}: {task['title']}")
+            else:
+                print(f"  - REJECTED {task['id']}: {task['title']}")
         
-        manifest["tasks"].extend(tasks_to_add)
-        with manifest_path.open("w", encoding="utf-8") as f:
-            json.dump(manifest, f, indent=2, ensure_ascii=False)
-        
-        print(f"\n[OK] Added {len(tasks_to_add)} new tasks to agent_tasks.json")
+        if tasks_to_add:
+            manifest["tasks"].extend(tasks_to_add)
+            with manifest_path.open("w", encoding="utf-8") as f:
+                json.dump(manifest, f, indent=2, ensure_ascii=False)
+            print(f"\n[OK] Added {len(tasks_to_add)} approved tasks to agent_tasks.json")
+        else:
+            print("\n[OK] All proposed ideas were filtered out by Inter-Agent Debate.")
     else:
         print("\n[OK] No new ideas - all features are in task list!")
     

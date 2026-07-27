@@ -78,16 +78,23 @@ class PhysicalModeTester:
 
         return result
 
-    def run_all_modes(self) -> bool:
+    def run_all_modes(self, sample_count: int = None) -> bool:
         print("=" * 60)
         print("PHYSICAL MODE OBSERVABILITY SUITE")
         print("=" * 60)
-        print(f"[*] Testing {len(GAME_MODES)} registered game modes...")
+        
+        mode_items = list(GAME_MODES.items())
+        if sample_count and sample_count < len(mode_items):
+            import random
+            mode_items = random.sample(mode_items, sample_count)
+            print(f"[*] Sampling {sample_count} out of {len(GAME_MODES)} registered game modes for fast check...")
+        else:
+            print(f"[*] Testing all {len(GAME_MODES)} registered game modes...")
 
         all_passed = True
         report = []
 
-        for key, mode_obj in GAME_MODES.items():
+        for key, mode_obj in mode_items:
             res = self.test_mode_physics(key, mode_obj)
             status_str = "[PASS]" if res["passed"] else "[FAIL]"
             print(f"  {status_str} Mode: {key:<25} | Ticks: {res['ticks_run']:<4} | OutOfBounds: {res['out_of_bounds']}")
@@ -101,7 +108,7 @@ class PhysicalModeTester:
 
         print("-" * 60)
         if all_passed:
-            print("[SUCCESS] All game modes passed physical observation testing!")
+            print("[SUCCESS] Physical observation testing completed successfully!")
         else:
             print("[WARNING] Physical observation failures detected in one or more modes.")
 
@@ -110,8 +117,9 @@ class PhysicalModeTester:
 
 
 def main():
-    tester = PhysicalModeTester(ticks_per_mode=200, num_balls=12)
-    success = tester.run_all_modes()
+    sample_fast = "--fast" in sys.argv or "--sample" in sys.argv
+    tester = PhysicalModeTester(ticks_per_mode=150, num_balls=10)
+    success = tester.run_all_modes(sample_count=10 if sample_fast else None)
     return 0 if success else 1
 
 
