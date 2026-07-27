@@ -27561,7 +27561,7 @@
     },
     {
       "id": "idea-1610",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Doppelgänger Event",
@@ -40155,6 +40155,74 @@
         "src/arena/quantum_swap_arena.py",
         "src/arena/quantum_swap_arena.gd",
         "tests/test_quantum_swap_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2350",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Blackout Protocol Mode",
+      "description": "Periodically, the arena plunges into darkness for 5 seconds. Player vision is severely reduced, and movement speed is slightly decreased. Small glowing flares are scattered around to provide safe zones.",
+      "allowed_paths": [
+        "src/ai/blackout_protocol.py",
+        "src/ai/blackout_protocol.gd",
+        "tests/test_blackout_protocol.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2351",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Distortion Field",
+      "description": "A field that randomly teleports projectiles in unpredictable ways within its radius.",
+      "allowed_paths": [
+        "src/ai/quantum_distortion_field.py",
+        "src/ai/quantum_distortion_field.gd",
+        "tests/test_quantum_distortion_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2352",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Shield Ricochet",
+      "description": "When the Nemesis Shield successfully blocks an attack from your nemesis, it reflects a portion of the damage back as a homing projectile.",
+      "allowed_paths": [
+        "src/ai/nemesis_shield_ricochet.py",
+        "src/ai/nemesis_shield_ricochet.gd",
+        "tests/test_nemesis_shield_ricochet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2353",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mimic Chest Hazard",
+      "description": "A hazard that looks exactly like a health pack but deals damage when collected.",
+      "allowed_paths": [
+        "src/arena/mimic_chest.py",
+        "src/arena/mimic_chest.gd",
+        "tests/test_mimic_chest.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

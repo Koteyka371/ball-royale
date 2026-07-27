@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1610] Quantum Doppelgänger Event — *2026-07-27 22:29:34 UTC*
+
+Using a quantum teleporter has a small chance to spawn an aggressive clone of the player at the exit point that mirrors their stats and attacks them.
+
+---
+
 ## [idea-1546] Laser Fence Mode — *2026-07-27 22:03:47 UTC*
 
 Hazard lines periodically spawn and move across the arena, damaging anyone caught.
