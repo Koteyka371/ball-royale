@@ -1,0 +1,4 @@
+{
+  "title": "Parasitic Hive Mutator",
+  "description": "A game mode mutator where defeated balls spawn a swarm of small homing parasite minions. These parasites latch onto nearby alive balls, slowly draining their HP and transferring a portion of it back to the hive nest to spawn more parasites."
+}

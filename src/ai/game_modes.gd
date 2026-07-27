@@ -34480,6 +34480,21 @@ class SolarFlareMode extends GameMode:
 			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
 				world.events.append({"type": "solar_flare_start", "message": "Solar Flare Active! Hazards disabled and skills paused!"})
 
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					if not b.has("base_perception_radius"):
+						b["base_perception_radius"] = b.get("perception_radius", 250.0)
+					b["perception_radius"] = b["base_perception_radius"] * 0.5
+				elif typeof(b) == TYPE_OBJECT:
+					if not b.has_meta("base_perception_radius"):
+						var pr = b.get_meta("perception_radius") if b.has_meta("perception_radius") else (b.perception_radius if "perception_radius" in b else 250.0)
+						b.set_meta("base_perception_radius", pr) if b.has_method("set_meta") else null
+					var b_pr = b.get_meta("base_perception_radius") if b.has_meta("base_perception_radius") else 250.0
+					if "perception_radius" in b:
+						b.perception_radius = b_pr * 0.5
+					elif b.has_method("set_meta"):
+						b.set_meta("perception_radius", b_pr * 0.5)
+
 		elif is_flaring and flare_timer >= flare_duration:
 			is_flaring = false
 			flare_timer = 0.0
@@ -34492,6 +34507,18 @@ class SolarFlareMode extends GameMode:
 				world.add_event("solar_flare_end", {"message": "Solar Flare Ended."})
 			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
 				world.events.append({"type": "solar_flare_end", "message": "Solar Flare Ended."})
+
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("base_perception_radius"):
+						b["perception_radius"] = b["base_perception_radius"]
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_meta("base_perception_radius"):
+						var b_pr = b.get_meta("base_perception_radius")
+						if "perception_radius" in b:
+							b.perception_radius = b_pr
+						elif b.has_method("set_meta"):
+							b.set_meta("perception_radius", b_pr)
 
 		var hazards = null
 		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
