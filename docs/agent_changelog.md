@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1591] Sticky Floor Hazard — *2026-07-27 08:11:35 UTC*
+
+Certain areas of the map act as sticky floors that slowly reduce movement speed over time while a player remains on them, but drastically increase traction/defense against pushing.
+
+---
+
 ## [idea-1577] Revival Disruption Aura — *2026-07-27 08:02:51 UTC*
 
 During the reviving process, the downed player emits an aura that slightly slows down enemies or disrupts their abilities, providing a small tactical window of safety for the active player trying to pull off the revive.

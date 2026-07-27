@@ -27238,7 +27238,7 @@
     },
     {
       "id": "idea-1591",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Sticky Floor Hazard",
@@ -39662,6 +39662,57 @@
         "src/arena/echo_strike.py",
         "src/arena/echo_strike.gd",
         "tests/test_echo_strike.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2321",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Adrenaline Rush on Revive",
+      "description": "When a player is successfully revived, both the reviver and the revived player receive a 3-second movement speed and attack speed boost to help them escape tricky situations.",
+      "allowed_paths": [
+        "src/ai/adrenaline_rush_on_revive.py",
+        "src/ai/adrenaline_rush_on_revive.gd",
+        "tests/test_adrenaline_rush_on_revive.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2322",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Mimic Mode",
+      "description": "Instead of static decoys, trailing decoys move dynamically in opposite directions relative to the player, swapping places with the player if the player is hit.",
+      "allowed_paths": [
+        "src/ai/quantum_mimic.py",
+        "src/ai/quantum_mimic.gd",
+        "tests/test_quantum_mimic.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2323",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Revive Shield Aura",
+      "description": "During the revive process, the reviving player (not the downed one) emits a small shield dome that absorbs up to 50 damage, making revives safer in open spaces.",
+      "allowed_paths": [
+        "src/ai/revive_shield_aura.py",
+        "src/ai/revive_shield_aura.gd",
+        "tests/test_revive_shield_aura.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
