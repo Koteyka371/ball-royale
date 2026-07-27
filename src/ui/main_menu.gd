@@ -6,6 +6,7 @@ var leaderboard_manager: LeaderboardManager
 var prestige_shop_ui: PrestigeShop
 var nemesis_screen_ui: NemesisScreen
 var guild_emblem_editor_ui: GuildEmblemEditor
+var guild_wars_base_building_ui: GuildWarsBaseBuilding
 var clan_emissary_ui: ClanEmissary
 
 var active_screen: String = "main"
@@ -41,6 +42,9 @@ func _ready():
     nemesis_screen_ui.visible = false
 
     guild_emblem_editor_ui = GuildEmblemEditor.new(profile_manager)
+    guild_wars_base_building_ui = GuildWarsBaseBuilding.new(profile_manager)
+    add_child(guild_wars_base_building_ui)
+    guild_wars_base_building_ui.visible = false
     add_child(guild_emblem_editor_ui)
     guild_emblem_editor_ui.visible = false
 
@@ -140,6 +144,17 @@ func _on_open_emissary_pressed():
     if clan_emissary_ui != null:
         clan_emissary_ui.visible = true
         clan_emissary_ui._refresh_ui()
+
+
+func _on_open_guild_wars_pressed():
+    active_screen = "guild_wars_base_building"
+    var guild_name = "TestGuild"
+    guild_wars_base_building_ui.set_guild(guild_name)
+    guild_wars_base_building_ui.visible = true
+
+func close_guild_wars():
+    active_screen = "main"
+    guild_wars_base_building_ui.visible = false
 
 func _on_open_emblem_pressed():
     active_screen = "guild_emblem_editor"

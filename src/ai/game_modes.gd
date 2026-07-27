@@ -63562,3 +63562,5 @@ class ShrapnelMistMode extends GameMode:
 GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode.new()
 
 GAME_MODES["magnet_ball"] = load("res://src/ai/magnet_ball.gd").new()
+
+GAME_MODES["guild_wars_base_building"] = load("res://src/ai/guild_wars_base_building.gd").new()
