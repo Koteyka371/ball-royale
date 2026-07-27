@@ -20744,7 +20744,7 @@ class SweepingLasersMode(GameMode):
         for b in balls:
             if getattr(b, "alive", False):
                 cd = getattr(b, "sweeping_laser_cd", 0.0)
-                if cd > 0:
+                if isinstance(cd, (int, float)) and cd > 0:
                     setattr(b, "sweeping_laser_cd", cd - delta)
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
@@ -20761,7 +20761,7 @@ class SweepingLasersMode(GameMode):
                                     b.hp = getattr(b, "hp", 100) - dmg
 
                                 cd = getattr(b, "sweeping_laser_cd", 0.0)
-                                if cd <= 0:
+                                if isinstance(cd, (int, float)) and cd <= 0:
                                     # Shrink by 10%
                                     current_radius = getattr(b, "radius", 25.0)
                                     setattr(b, "radius", current_radius * 0.9)
