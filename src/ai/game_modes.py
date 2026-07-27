@@ -41075,3 +41075,6 @@ GAME_MODES['necromantic_area_denial'] = NecromanticAreaDenialMode()
 
 from ai.dynamic_mutators import DynamicWeatherMutatorsMode
 GAME_MODES['dynamic_mutators'] = DynamicWeatherMutatorsMode()
+
+from ai.reflective_walls import ReflectiveWallsArena
+GAME_MODES["reflective_walls"] = ReflectiveWallsArena()

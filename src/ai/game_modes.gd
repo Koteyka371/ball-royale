@@ -63803,3 +63803,7 @@ GAME_MODES['mercenary_outposts'] = load('res://src/ai/mercenary_outposts.gd').ne
 GAME_MODES['necromantic_area_denial'] = load('res://src/ai/necromantic_area_denial.gd').new()
 
 GAME_MODES['dynamic_mutators'] = load('res://src/ai/dynamic_mutators.gd').new()
+
+var reflective_walls_script = load("res://src/ai/reflective_walls.gd")
+if reflective_walls_script:
+    GAME_MODES["reflective_walls"] = reflective_walls_script.new()
