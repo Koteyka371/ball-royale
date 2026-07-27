@@ -1,4 +1,4 @@
 {
-    "title": "Quantum Entanglement Mine",
-    "description": "A zero-damage mine that entangles two target balls upon detonation. Whatever momentum or status effect happens to one, partially happens to the other for a short duration."
+  "title": "Aura Reversal Field",
+  "description": "A deployed device that creates a massive zone which reverses the properties of all auras, turning damage auras into healing ones and buffing auras into debuffs."
 }
