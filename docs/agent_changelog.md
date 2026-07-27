@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1495] Trickster's Mirage Skill — *2026-07-27 06:47:11 UTC*
+
+An active skill for the trickster ball that creates three non-damaging illusions that run in different directions. Enemies attacking these illusions get a minor slow debuff, giving the trickster time to escape or counter-attack.
+
+---
+
 ## [idea-1574] Shrinking Juggernaut Mode — *2026-07-27 06:47:05 UTC*
 
 Similar to Juggernaut mode, but the Juggernaut's stats slowly decay over time, pushing players to stay aggressive and preventing endless stalling.
