@@ -20,6 +20,8 @@ def test_sweeping_lasers_mode():
     b1.x = 500
     b1.y = 50
     b1.hp = 100
+    b1.max_hp = 100.0
+    b1.sweeping_laser_cd = 0.0
     b1.take_damage = MagicMock()
 
     b2 = MagicMock()
@@ -27,6 +29,8 @@ def test_sweeping_lasers_mode():
     b2.x = 100
     b2.y = 100
     b2.hp = 100
+    b2.max_hp = 100.0
+    b2.sweeping_laser_cd = 0.0
     b2.take_damage = MagicMock()
 
     mode.setup(world, [b1, b2])
