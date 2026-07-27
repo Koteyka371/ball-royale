@@ -1665,6 +1665,21 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "is_time_rewinding", False):
+            if hasattr(self.ball, "time_rewind_timer"):
+                self.ball.time_rewind_timer -= delta
+                if self.ball.time_rewind_timer <= 0:
+                    self.ball.is_time_rewinding = False
+                    state = getattr(self.ball, "time_rewind_state", {})
+                    if "x" in state:
+                        self.ball.x = state["x"]
+                    if "y" in state:
+                        self.ball.y = state["y"]
+                    if "hp" in state:
+                        self.ball.hp = state["hp"]
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": self.ball.x, "y": self.ball.y}})
         if getattr(self.ball, "is_bounty_contract_target", False):
             if hasattr(self.ball, "bounty_contract_timer"):
                 self.ball.bounty_contract_timer -= delta
@@ -21506,6 +21521,22 @@ class Action:
                                                                 b.killer = "pull_trap"
                                         hazard.duration = 0.0 # Destroy trap
 
+                if getattr(hazard, "kind", "") == "time_rewind_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        trigger_radius = getattr(hazard, "radius", 20.0) + getattr(self.ball, "radius", 10.0)
+                        if dist_sq < trigger_radius * trigger_radius:
+                            if not getattr(self.ball, "is_time_rewinding", False):
+                                self.ball.is_time_rewinding = True
+                                self.ball.time_rewind_timer = 3.0
+                                self.ball.time_rewind_state = {
+                                    "x": self.ball.x,
+                                    "y": self.ball.y,
+                                    "hp": getattr(self.ball, "hp", 100.0)
+                                }
+                                hazard.duration = 0.0 # Destroy trap
+                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and hazard in self.world.arena.hazards:
+                                    self.world.arena.hazards.remove(hazard)
                 if getattr(hazard, "kind", "") == "grapple_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
