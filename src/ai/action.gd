@@ -4578,14 +4578,13 @@ func execute(strategy: String, delta: float):
     if is_laser:
         if typeof(self.ball) == TYPE_DICTIONARY:
             self.ball["duration"] -= delta
-            if self.ball["duration"] <= 0 or self.ball["bounces_left"] <= 0:
+            if self.ball["duration"] <= 0:
                 self.ball["alive"] = false
                 return
 
             self.ball["x"] += self.ball["vx"] * delta
             self.ball["y"] += self.ball["vy"] * delta
 
-            var bounces = self.ball["bounces_left"]
             var bounced = false
             var r = self.ball["radius"]
 
@@ -4620,11 +4619,10 @@ func execute(strategy: String, delta: float):
                 self.ball["vy"] *= -1
                 bounced = true
 
-            if bounced:
-                bounces -= 1
-                self.ball["bounces_left"] = bounces
+            pass
 
-            if bounces > 0 and world != null:
+            var hit_target = false
+            if world != null:
                 var balls_arr = []
                 if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
                     balls_arr = world.balls
@@ -4661,11 +4659,8 @@ func execute(strategy: String, delta: float):
                     var r_sum = r + o_r
 
                     if dist_sq < r_sum * r_sum:
-                        var last_hit = self.ball.get("last_hit_id", -1)
                         var base_dmg = self.ball.get("base_damage", 10.0)
                         var dmg = base_dmg
-                        if o_id == last_hit:
-                            dmg = self.ball.get("damage", base_dmg) * 2.0
 
                         self.ball["damage"] = dmg
                         self.ball["last_hit_id"] = o_id
@@ -4688,34 +4683,20 @@ func execute(strategy: String, delta: float):
                             else:
                                 other.set_meta("slow_timer", 1.0)
 
-                        var dist = sqrt(dist_sq)
-                        if dist > 0.0001:
-                            var nx = (self.ball["x"] - o_x) / dist
-                            var ny = (self.ball["y"] - o_y) / dist
-                            var dot = self.ball["vx"] * nx + self.ball["vy"] * ny
-                            if dot < 0:
-                                self.ball["vx"] = self.ball["vx"] - 2 * dot * nx
-                                self.ball["vy"] = self.ball["vy"] - 2 * dot * ny
-                        else:
-                            self.ball["vx"] *= -1
-                            self.ball["vy"] *= -1
-
-                        bounces -= 1
-                        self.ball["bounces_left"] = bounces
+                        hit_target = true
                         break
-            if bounces <= 0:
+            if hit_target:
                 self.ball["alive"] = false
             return
         elif typeof(self.ball) == TYPE_OBJECT:
             self.ball.duration -= delta
-            if self.ball.duration <= 0 or self.ball.bounces_left <= 0:
+            if self.ball.duration <= 0:
                 self.ball.alive = false
                 return
 
             self.ball.x += self.ball.vx * delta
             self.ball.y += self.ball.vy * delta
 
-            var bounces = self.ball.bounces_left
             var bounced = false
             var r = self.ball.radius if "radius" in self.ball else 5.0
 
@@ -4750,11 +4731,10 @@ func execute(strategy: String, delta: float):
                 self.ball.vy *= -1
                 bounced = true
 
-            if bounced:
-                bounces -= 1
-                self.ball.bounces_left = bounces
+            pass
 
-            if bounces > 0 and world != null:
+            var hit_target = false
+            if world != null:
                 var balls_arr = []
                 if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
                     balls_arr = world.balls
@@ -4791,11 +4771,8 @@ func execute(strategy: String, delta: float):
                     var r_sum = r + o_r
 
                     if dist_sq < r_sum * r_sum:
-                        var last_hit = self.ball.last_hit_id if "last_hit_id" in self.ball else -1
                         var base_dmg = self.ball.base_damage if "base_damage" in self.ball else 10.0
                         var dmg = base_dmg
-                        if o_id == last_hit:
-                            dmg = (self.ball.damage if "damage" in self.ball else base_dmg) * 2.0
 
                         self.ball.damage = dmg
                         self.ball.last_hit_id = o_id
@@ -4818,22 +4795,9 @@ func execute(strategy: String, delta: float):
                             else:
                                 other.set_meta("slow_timer", 1.0)
 
-                        var dist = sqrt(dist_sq)
-                        if dist > 0.0001:
-                            var nx = (self.ball.x - o_x) / dist
-                            var ny = (self.ball.y - o_y) / dist
-                            var dot = self.ball.vx * nx + self.ball.vy * ny
-                            if dot < 0:
-                                self.ball.vx = self.ball.vx - 2 * dot * nx
-                                self.ball.vy = self.ball.vy - 2 * dot * ny
-                        else:
-                            self.ball.vx *= -1
-                            self.ball.vy *= -1
-
-                        bounces -= 1
-                        self.ball.bounces_left = bounces
+                        hit_target = true
                         break
-            if bounces <= 0:
+            if hit_target:
                 self.ball.alive = false
             return
 

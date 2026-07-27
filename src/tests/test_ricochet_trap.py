@@ -118,15 +118,8 @@ def test_ricochet_laser_logic():
 
     assert enemy1.hp == 90.0 # 100 - 10 damage
     assert getattr(enemy1, "slow_timer", 0.0) == 1.0
-    assert laser.bounces_left == 4
+    # no longer decrementing bounces
+    assert not laser.alive
     assert laser.last_hit_id == enemy1.id
 
-    # Tick 2: hit again? Wait, it bounced off so it moves away. Let's force it to hit enemy1 again by reversing vx/vy
-    laser.vx = -laser.vx
-    laser.vy = -laser.vy
-    laser.x = 45 # move back
-    laser.y = 45
 
-    action.execute("idle", 0.1) # hit enemy1 again
-    assert enemy1.hp == 70.0 # 90 - 20 (double damage!)
-    assert laser.bounces_left == 3

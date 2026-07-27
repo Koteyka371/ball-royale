@@ -2221,14 +2221,13 @@ class Action:
 
         if getattr(self.ball, "is_ricochet_laser", False):
             self.ball.duration -= delta
-            if self.ball.duration <= 0 or getattr(self.ball, "bounces_left", 0) <= 0:
+            if self.ball.duration <= 0:
                 self.ball.alive = False
                 return
 
             self.ball.x += self.ball.vx * delta
             self.ball.y += self.ball.vy * delta
 
-            bounces_left = getattr(self.ball, "bounces_left", 5)
             bounced = False
 
             # Wall collisions
@@ -2259,63 +2258,44 @@ class Action:
                 self.ball.vy *= -1
                 bounced = True
 
-            if bounced:
-                bounces_left -= 1
-                setattr(self.ball, "bounces_left", bounces_left)
+            pass
 
             # Entity collisions
-            if bounces_left > 0:
-                import math
-                owner_id = getattr(self.ball, "owner_id", None)
-                for other in getattr(self.world, "balls", []):
-                    if not getattr(other, "alive", True) or getattr(other, "id", None) == getattr(self.ball, "id", None):
-                        continue
-                    if getattr(other, "id", None) == owner_id:
-                        continue
+            hit_target = False
+            import math
+            owner_id = getattr(self.ball, "owner_id", None)
+            for other in getattr(self.world, "balls", []):
+                if not getattr(other, "alive", True) or getattr(other, "id", None) == getattr(self.ball, "id", None):
+                    continue
+                if getattr(other, "id", None) == owner_id:
+                    continue
 
-                    dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
-                    r_sum = radius + getattr(other, "radius", 15.0)
+                dist_sq = (self.ball.x - other.x)**2 + (self.ball.y - other.y)**2
+                r_sum = radius + getattr(other, "radius", 15.0)
 
-                    if dist_sq < r_sum**2:
-                        # Hit!
-                        last_hit = getattr(self.ball, "last_hit_id", None)
-                        base_dmg = getattr(self.ball, "base_damage", 10.0)
+                if dist_sq < r_sum**2:
+                    # Hit!
+                    last_hit = getattr(self.ball, "last_hit_id", None)
+                    base_dmg = getattr(self.ball, "base_damage", 10.0)
 
-                        if getattr(other, "id", None) == last_hit:
-                            dmg = getattr(self.ball, "damage", base_dmg) * 2.0
-                        else:
-                            dmg = base_dmg
+                    dmg = base_dmg
 
-                        setattr(self.ball, "damage", dmg)
-                        setattr(self.ball, "last_hit_id", getattr(other, "id", None))
+                    setattr(self.ball, "damage", dmg)
+                    setattr(self.ball, "last_hit_id", getattr(other, "id", None))
 
-                        if hasattr(self.world, "_deal_damage"):
-                            self.world._deal_damage(self.ball, other, dmg)
-                        elif hasattr(other, "take_damage"):
-                            other.take_damage(dmg)
-                        elif hasattr(other, "hp"):
-                            other.hp -= dmg
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(self.ball, other, dmg)
+                    elif hasattr(other, "take_damage"):
+                        other.take_damage(dmg)
+                    elif hasattr(other, "hp"):
+                        other.hp -= dmg
 
-                        other.slow_timer = getattr(other, "slow_timer", 0.0) + 1.0
+                    other.slow_timer = getattr(other, "slow_timer", 0.0) + 1.0
 
-                        # Reflect
-                        dist = math.sqrt(dist_sq)
-                        if dist > 0.0001:
-                            nx = (self.ball.x - other.x) / dist
-                            ny = (self.ball.y - other.y) / dist
-                            dot = self.ball.vx * nx + self.ball.vy * ny
-                            if dot < 0:
-                                self.ball.vx = self.ball.vx - 2 * dot * nx
-                                self.ball.vy = self.ball.vy - 2 * dot * ny
-                        else:
-                            self.ball.vx *= -1
-                            self.ball.vy *= -1
+                    hit_target = True
+                    break
 
-                        bounces_left -= 1
-                        setattr(self.ball, "bounces_left", bounces_left)
-                        break
-
-            if bounces_left <= 0:
+            if hit_target:
                 self.ball.alive = False
             return
 
