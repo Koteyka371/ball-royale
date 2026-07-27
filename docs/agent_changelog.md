@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1590] Decoy Trail Mode — *2026-07-27 08:02:46 UTC*
+
+Players periodically leave behind a trail of decoys that inherit their current appearance and velocity for a short duration, confusing opponents in high-speed chases.
+
+---
+
 ## [idea-1544] Boomerang Projectile — *2026-07-27 08:02:40 UTC*
 
 A new skill where the player throws a projectile that deals damage on its way out, pauses, and then returns to the player. It can hit enemies twice (outgoing and returning).
