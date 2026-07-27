@@ -18359,6 +18359,22 @@ func execute(strategy: String, delta: float):
                                 if "events" in self.world:
                                     self.world.events.append({"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y}})
 
+                                self.ball.is_confused = true
+                                var ct = 0.0
+                                if "confused_timer" in self.ball:
+                                    ct = self.ball.confused_timer
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta("confused_timer"):
+                                    ct = self.ball.get_meta("confused_timer")
+
+                                ct = max(ct, 3.0)
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("confused_timer", ct)
+                                    self.ball.set_meta("is_confused", true)
+                                if "confused_timer" in self.ball:
+                                    self.ball.confused_timer = ct
+                                if "is_confused" in self.ball:
+                                    self.ball.is_confused = true
+
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard:
