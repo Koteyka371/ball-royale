@@ -63362,3 +63362,145 @@ class LaserGridSurvivalMode extends GameMode:
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
 GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
 GAME_MODES["neon_lightcycles"] = load("res://src/ai/neon_lightcycles.gd").new()
+
+class ShrapnelMistMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		self.name = "Shrapnel Mist"
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if world != null:
+			if not "arena" in world:
+				world.arena = {}
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+
+	func tick(world, balls, current_tick, delta):
+		super.tick(world, balls, current_tick, delta)
+		if world == null or not "arena" in world or not "hazards" in world.arena:
+			return
+
+		spawn_timer -= delta
+		if spawn_timer <= 0.0:
+			spawn_timer = 5.0
+			var shrapnel = {}
+			shrapnel.kind = "shrapnel_mist_hazard"
+			shrapnel.x = randf_range(100.0, 700.0)
+			shrapnel.y = randf_range(100.0, 500.0)
+			var angle = randf_range(0.0, 2.0 * PI)
+			var speed = 100.0
+			shrapnel.vx = cos(angle) * speed
+			shrapnel.vy = sin(angle) * speed
+			shrapnel.radius = 20.0
+			shrapnel.duration = 2.0
+			shrapnel.damage = 15.0
+			shrapnel.split_count = 0
+			world.arena.hazards.append(shrapnel)
+
+		var new_hazards = []
+		var to_remove = []
+		for i in range(world.arena.hazards.size()):
+			var hazard = world.arena.hazards[i]
+			if typeof(hazard) == TYPE_DICTIONARY:
+				if hazard.get("kind", "") == "shrapnel_mist_hazard":
+					hazard.x += hazard.get("vx", 0.0) * delta
+					hazard.y += hazard.get("vy", 0.0) * delta
+
+					if hazard.x < 0.0 or hazard.x > 800.0:
+						hazard.vx = hazard.get("vx", 0.0) * -1.0
+					if hazard.y < 0.0 or hazard.y > 600.0:
+						hazard.vy = hazard.get("vy", 0.0) * -1.0
+
+					var duration = hazard.get("duration", 0.0) - delta
+					hazard.duration = duration
+					var split_count = hazard.get("split_count", 0)
+					if duration <= 0.0:
+						if split_count < 3:
+							var new_split_count = split_count + 1
+							var base_angle = atan2(hazard.get("vy", 0.0), hazard.get("vx", 0.0))
+							var base_speed = sqrt(pow(hazard.get("vx", 0.0), 2) + pow(hazard.get("vy", 0.0), 2)) * 1.5
+							for j in range(3):
+								var sm = {}
+								sm.kind = "shrapnel_mist_hazard"
+								sm.x = hazard.x
+								sm.y = hazard.y
+								var a = base_angle + (j - 1.0) * 0.5 + randf_range(-0.2, 0.2)
+								sm.vx = cos(a) * base_speed
+								sm.vy = sin(a) * base_speed
+								sm.radius = hazard.get("radius", 20.0) * 0.6
+								sm.duration = 2.0
+								sm.damage = hazard.get("damage", 10.0) * 0.5
+								sm.split_count = new_split_count
+								new_hazards.append(sm)
+							to_remove.append(i)
+						else:
+							if "events" in world:
+								world.events.append({
+									"type": "visual_effect",
+									"data": {
+										"type": "explosion",
+										"x": hazard.x,
+										"y": hazard.y,
+										"radius": 50.0,
+										"duration": 4.0
+									}
+								})
+							var mist = {}
+							mist.kind = "shrapnel_mist_cloud"
+							mist.x = hazard.x
+							mist.y = hazard.y
+							mist.radius = 50.0
+							mist.duration = 4.0
+							mist.damage = 1.0
+							new_hazards.append(mist)
+							to_remove.append(i)
+				elif hazard.get("kind", "") == "shrapnel_mist_cloud":
+					var duration = hazard.get("duration", 0.0) - delta
+					hazard.duration = duration
+					if duration <= 0.0:
+						to_remove.append(i)
+					else:
+						for b in balls:
+							var alive = true
+							if typeof(b) == TYPE_DICTIONARY:
+								alive = b.get("alive", true)
+							elif b != null and "alive" in b:
+								alive = b.alive
+							if alive:
+								var bx = 0.0
+								var by = 0.0
+								if typeof(b) == TYPE_DICTIONARY:
+									bx = b.get("x", 0.0)
+									by = b.get("y", 0.0)
+								elif b != null:
+									bx = b.x
+									by = b.y
+								var dx = bx - hazard.x
+								var dy = by - hazard.y
+								var dist = sqrt(dx*dx + dy*dy)
+								if dist < hazard.get("radius", 50.0):
+									var dmg = hazard.get("damage", 1.0) * delta
+									if typeof(b) == TYPE_DICTIONARY:
+										if "hp" in b:
+											b.hp -= dmg
+											if b.hp <= 0.0:
+												b.alive = false
+									elif b != null:
+										if b.has_method("take_damage"):
+											b.take_damage(dmg)
+										elif "hp" in b:
+											b.hp -= dmg
+											if b.hp <= 0.0:
+												b.alive = false
+
+		# Remove marked hazards from end to start to avoid index shifting
+		to_remove.reverse()
+		for idx in to_remove:
+			world.arena.hazards.remove_at(idx)
+
+		for nh in new_hazards:
+			world.arena.hazards.append(nh)
+
+GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode.new()
