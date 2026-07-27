@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1497] Boss Mutations per Tier — *2026-07-27 00:31:47 UTC*
+
+Introduce dynamic mutations for guild bosses that scale with tier. For example, a tier 2 boss might reflect 10% of damage, while a tier 3 boss might spawn minions periodically during the fight.
+
+---
+
 ## [idea-1513] Tornado Warning Siren Trap — *2026-07-27 00:26:12 UTC*
 
 A deployable trap that emits a localized siren. If an enemy ball enters the zone, a minor tornado spawns directly on them after 3 seconds, launching them out of the arena.
