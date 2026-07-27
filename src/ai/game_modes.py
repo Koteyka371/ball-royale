@@ -32321,6 +32321,52 @@ class TagTeamMode(GameMode):
 
                 downed = next((m for m in members if getattr(m, "is_downed", False)), None)
                 active = next((m for m in members if not getattr(m, "is_downed", False) and getattr(m, "ball_type", "") != "spectator"), None)
+                inactive = next((m for m in members if not getattr(m, "is_downed", False) and getattr(m, "ball_type", "") == "spectator"), None)
+
+                if inactive and active and getattr(active, "alive", False) and not downed:
+                    timer = getattr(inactive, "tag_assist_timer", 5.0) - delta
+                    if timer <= 0:
+                        import random
+                        timer = random.uniform(4.0, 8.0)
+                        choice = random.choice(["booster", "trap"])
+                        drop_x = getattr(active, "x", 0.0) + random.uniform(-100, 100)
+                        drop_y = getattr(active, "y", 0.0) + random.uniform(-100, 100)
+
+                        if choice == "booster" and hasattr(world, "boosters"):
+                            b_id = f"tag_assist_b_{getattr(inactive, 'id', random.randint(100,999))}_{random.randint(1000, 9999)}"
+                            kind = random.choice(["speed", "health", "shield"])
+                            world.boosters.append({
+                                "id": b_id,
+                                "x": drop_x,
+                                "y": drop_y,
+                                "kind": kind,
+                                "respawn_timer": 0.0
+                            })
+                            if hasattr(world, "add_event"):
+                                world.add_event("tag_assist", {"message": "Spectator dropped a booster!", "x": drop_x, "y": drop_y})
+
+                        elif choice == "trap" and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            h_id = f"tag_assist_h_{getattr(inactive, 'id', random.randint(100,999))}_{random.randint(1000, 9999)}"
+                            try:
+                                from arena.procedural_arena import Hazard
+                                h = Hazard(id=h_id, x=drop_x, y=drop_y, radius=15.0, kind="trap", damage=15.0)
+                            except ImportError:
+                                class DummyAssistHazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+                                        self.active = True
+                                h = DummyAssistHazard(h_id, drop_x, drop_y, 15.0, "trap", 15.0)
+                            world.arena.hazards.append(h)
+                            if hasattr(world, "add_event"):
+                                world.add_event("tag_assist", {"message": "Spectator dropped a trap!", "x": drop_x, "y": drop_y})
+
+                    inactive.tag_assist_timer = timer
+
                 if downed:
                     downed.max_hp = getattr(downed, "max_hp", 100.0) - 5.0 * delta
                     if downed.max_hp <= 0:

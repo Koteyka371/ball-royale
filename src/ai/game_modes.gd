@@ -51187,6 +51187,7 @@ class TagTeamMode extends GameMode:
 
 				var downed = null
 				var active = null
+				var inactive = null
 				for m in members:
 					var m_is_downed = m.get_meta("is_downed") if (typeof(m) == TYPE_OBJECT and m.has_meta("is_downed")) else (m.get("is_downed", false) if typeof(m) == TYPE_DICTIONARY else false)
 					var m_type = m.get("ball_type") if typeof(m) == TYPE_DICTIONARY else m.get("ball_type")
@@ -51194,6 +51195,70 @@ class TagTeamMode extends GameMode:
 						downed = m
 					elif m_type != "spectator":
 						active = m
+					elif m_type == "spectator":
+						inactive = m
+
+				if inactive != null and active != null and not downed:
+					var a_alive = active.get("alive") if typeof(active) == TYPE_DICTIONARY else (active.get("alive") if "alive" in active else false)
+					if a_alive:
+						var timer = 0.0
+						if typeof(inactive) == TYPE_OBJECT:
+							timer = inactive.get_meta("tag_assist_timer") if inactive.has_meta("tag_assist_timer") else 5.0
+						else:
+							timer = inactive.get("tag_assist_timer", 5.0)
+
+						timer -= delta
+						if timer <= 0.0:
+							timer = 4.0 + randf() * 4.0
+							var choice = "booster" if randf() < 0.5 else "trap"
+							var drop_x = (active.get("x") if typeof(active) == TYPE_DICTIONARY else (active.get("x") if "x" in active else 0.0)) + (randf() * 200.0 - 100.0)
+							var drop_y = (active.get("y") if typeof(active) == TYPE_DICTIONARY else (active.get("y") if "y" in active else 0.0)) + (randf() * 200.0 - 100.0)
+
+							var w_is_dict = typeof(world) == TYPE_DICTIONARY
+							if choice == "booster" and ((w_is_dict and world.has("boosters")) or (not w_is_dict and "boosters" in world)):
+								var b_kinds = ["speed", "health", "shield"]
+								var kind = b_kinds[randi() % b_kinds.size()]
+								var b_id = "tag_assist_b_" + str(randi() % 10000)
+								var b_obj = {
+									"id": b_id,
+									"x": drop_x,
+									"y": drop_y,
+									"kind": kind,
+									"respawn_timer": 0.0
+								}
+								if w_is_dict:
+									world["boosters"].append(b_obj)
+								else:
+									world.boosters.append(b_obj)
+								if w_is_dict and world.has("add_event"):
+									world["add_event"].call("tag_assist", {"message": "Spectator dropped a booster!", "x": drop_x, "y": drop_y})
+								elif not w_is_dict and world.has_method("add_event"):
+									world.add_event("tag_assist", {"message": "Spectator dropped a booster!", "x": drop_x, "y": drop_y})
+
+							elif choice == "trap" and ((w_is_dict and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards")) or (not w_is_dict and "arena" in world and "hazards" in world.arena)):
+								var h_id = "tag_assist_h_" + str(randi() % 10000)
+								var h_obj = {
+									"id": h_id,
+									"x": drop_x,
+									"y": drop_y,
+									"radius": 15.0,
+									"kind": "trap",
+									"damage": 15.0,
+									"active": true
+								}
+								if w_is_dict:
+									world["arena"]["hazards"].append(h_obj)
+									if world.has("add_event"):
+										world["add_event"].call("tag_assist", {"message": "Spectator dropped a trap!", "x": drop_x, "y": drop_y})
+								else:
+									world.arena.hazards.append(h_obj)
+									if world.has_method("add_event"):
+										world.add_event("tag_assist", {"message": "Spectator dropped a trap!", "x": drop_x, "y": drop_y})
+
+						if typeof(inactive) == TYPE_OBJECT:
+							inactive.set_meta("tag_assist_timer", timer)
+						else:
+							inactive["tag_assist_timer"] = timer
 
 				if downed != null:
 					if typeof(downed) == TYPE_OBJECT:
