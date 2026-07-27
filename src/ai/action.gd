@@ -3071,6 +3071,56 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+	var is_time_rewinding = false
+	if typeof(self.ball) == TYPE_OBJECT:
+		if "is_time_rewinding" in self.ball: is_time_rewinding = bool(self.ball.is_time_rewinding)
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("is_time_rewinding"): is_time_rewinding = bool(self.ball.get_meta("is_time_rewinding"))
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_time_rewinding"):
+		is_time_rewinding = bool(self.ball["is_time_rewinding"])
+
+	if is_time_rewinding:
+		var tr_timer = 0.0
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "time_rewind_timer" in self.ball: tr_timer = float(self.ball.time_rewind_timer)
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("time_rewind_timer"): tr_timer = float(self.ball.get_meta("time_rewind_timer"))
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("time_rewind_timer"): tr_timer = float(self.ball["time_rewind_timer"])
+
+		tr_timer -= delta
+		if tr_timer <= 0:
+			if typeof(self.ball) == TYPE_OBJECT:
+				if "is_time_rewinding" in self.ball: self.ball.is_time_rewinding = false
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("is_time_rewinding", false)
+			elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_time_rewinding"] = false
+
+			var state = {}
+			if typeof(self.ball) == TYPE_OBJECT:
+				if "time_rewind_state" in self.ball: state = self.ball.time_rewind_state
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("time_rewind_state"): state = self.ball.get_meta("time_rewind_state")
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("time_rewind_state"): state = self.ball["time_rewind_state"]
+
+			if state.has("x"):
+				if typeof(self.ball) == TYPE_OBJECT:
+					if "x" in self.ball: self.ball.x = state["x"]
+					elif self.ball.has_method("set_meta"): self.ball.set_meta("x", state["x"])
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["x"] = state["x"]
+			if state.has("y"):
+				if typeof(self.ball) == TYPE_OBJECT:
+					if "y" in self.ball: self.ball.y = state["y"]
+					elif self.ball.has_method("set_meta"): self.ball.set_meta("y", state["y"])
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["y"] = state["y"]
+			if state.has("hp"):
+				if typeof(self.ball) == TYPE_OBJECT:
+					if "hp" in self.ball: self.ball.hp = state["hp"]
+					elif self.ball.has_method("set_meta"): self.ball.set_meta("hp", state["hp"])
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = state["hp"]
+			if "events" in self.world:
+				self.world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": state["x"], "y": state["y"]}})
+		else:
+			if typeof(self.ball) == TYPE_OBJECT:
+				if "time_rewind_timer" in self.ball: self.ball.time_rewind_timer = tr_timer
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("time_rewind_timer", tr_timer)
+			elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["time_rewind_timer"] = tr_timer
 	var is_bounty_contract_target = false
 	if typeof(self.ball) == TYPE_OBJECT:
 		if "is_bounty_contract_target" in self.ball: is_bounty_contract_target = bool(self.ball.is_bounty_contract_target)
@@ -42640,6 +42690,67 @@ func _update_skill_timer(delta: float):
                                             self.ball.y += ny * force
 
 
+                if h_kind == "time_rewind_trap":
+                    var h_x = 0.0
+                    if "x" in hazard: h_x = hazard.x
+                    elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                    var h_y = 0.0
+                    if "y" in hazard: h_y = hazard.y
+                    elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+
+                    var h_rad = 20.0
+                    if "radius" in hazard: h_rad = hazard.radius
+                    elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    if owner_id != b_id:
+                        var b_rad = 10.0
+                        if "radius" in self.ball: b_rad = self.ball.radius
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad = self.ball.get_meta("radius")
+
+                        var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                        var tr = h_rad + b_rad
+                        if dist_sq < tr * tr:
+                            var b_hp = 100.0
+                            if "hp" in self.ball: b_hp = self.ball.hp
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"): b_hp = self.ball.get_meta("hp")
+
+                            var state = {"x": self.ball.x, "y": self.ball.y, "hp": b_hp}
+
+                            var is_rw = false
+                            if typeof(self.ball) == TYPE_OBJECT:
+                                if "is_time_rewinding" in self.ball: is_rw = self.ball.is_time_rewinding
+                                elif self.ball.has_method("get_meta") and self.ball.has_meta("is_time_rewinding"): is_rw = self.ball.get_meta("is_time_rewinding")
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_time_rewinding"): is_rw = self.ball["is_time_rewinding"]
+
+                            if not is_rw:
+                                if typeof(self.ball) == TYPE_OBJECT:
+                                    if "is_time_rewinding" in self.ball: self.ball.is_time_rewinding = true
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_time_rewinding", true)
+                                    if "time_rewind_timer" in self.ball: self.ball.time_rewind_timer = 3.0
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("time_rewind_timer", 3.0)
+                                    if "time_rewind_state" in self.ball: self.ball.time_rewind_state = state
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("time_rewind_state", state)
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["is_time_rewinding"] = true
+                                    self.ball["time_rewind_timer"] = 3.0
+                                    self.ball["time_rewind_state"] = state
+
+                            if typeof(hazard) == TYPE_OBJECT:
+                                if "duration" in hazard: hazard.duration = 0.0
+                                elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                            if "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                                var hidx = self.world.arena.hazards.find(hazard)
+                                if hidx >= 0:
+                                    self.world.arena.hazards.remove_at(hidx)
                 if h_kind == "grapple_trap":
                     var h_x = 0.0
                     if "x" in hazard: h_x = hazard.x
