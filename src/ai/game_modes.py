@@ -40698,3 +40698,6 @@ class StationaryBlackHoleMutatorMode(GameMode):
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
 GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
+
+from ai.black_hole_anomaly import BlackHoleAnomalyMode
+GAME_MODES['black_hole_anomaly'] = BlackHoleAnomalyMode()

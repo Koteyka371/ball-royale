@@ -63204,3 +63204,5 @@ class LaserGridSurvivalMode extends GameMode:
 
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
 GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
+
+GAME_MODES["black_hole_anomaly"] = preload("res://ai/black_hole_anomaly.gd").new()
