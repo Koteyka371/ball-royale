@@ -1,4 +1,4 @@
 {
-  "title": "Bounty Hunter mode",
-  "description": "A game mode where periodically the game announces one player as a high-value bounty target. The target is slowed and revealed, but killing them grants massive XP and a permanent speed buff."
+  "title": "Nemesis Swap Trap",
+  "description": "A trap that, when triggered by any player, instantly swaps the positions of the trap-layer and their highest-ranked nemesis, potentially dropping the nemesis into a hazardous situation they were completely unprepared for."
 }
