@@ -21820,6 +21820,35 @@ class Action:
                                                                 b.killer = "pull_trap"
                                         hazard.duration = 0.0 # Destroy trap
 
+                if getattr(hazard, "kind", "") == "repulsion_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        trigger_radius = getattr(hazard, "radius", 40.0) + getattr(self.ball, "radius", 10.0)
+                        if dist_sq < trigger_radius * trigger_radius:
+                            import math
+                            dist = math.sqrt(dist_sq)
+                            if dist < 0.0001:
+                                dist = 0.0001
+
+                            if hasattr(self.world, "balls"):
+                                for b in getattr(self.world, "balls", []):
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                        b_dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                        explosion_radius = getattr(hazard, "radius", 40.0) * 3.0 # Massive area
+                                        if b_dist_sq < explosion_radius * explosion_radius:
+                                            b_dist = math.sqrt(b_dist_sq)
+                                            if b_dist < 0.0001:
+                                                b_dist = 0.0001
+                                            nx, ny = (b.x - hazard.x) / b_dist, (b.y - hazard.y) / b_dist
+                                            # Apply enormous outward physics knockback
+                                            knockback_force = 5000.0
+                                            if getattr(b, "anchor_booster_timer", 0.0) <= 0:
+                                                b.vx = getattr(b, "vx", 0.0) + nx * knockback_force
+                                                b.vy = getattr(b, "vy", 0.0) + ny * knockback_force
+                                                b.is_frictionless = True # So it ignores drag and gets violently tossed
+
+                            hazard.duration = 0.0 # Destroy trap
+
                 if getattr(hazard, "kind", "") == "time_rewind_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
