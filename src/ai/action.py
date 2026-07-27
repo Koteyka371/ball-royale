@@ -18060,6 +18060,61 @@ class Action:
                 if killed_enemy:
                     self.ball.skill_timer = 0.0
 
+
+            elif skill_name == "tunnel":
+                # Find if we are right next to a wall or hazard
+                import math
+                arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "width", 1000)
+                arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") and self.world.arena else getattr(self.world, "height", 1000)
+
+                dist_threshold = getattr(self.ball, "radius", 10.0) + 15.0
+                teleport_dist = 60.0
+                tunneled = False
+
+                # Check walls
+                if self.ball.x <= dist_threshold: # left wall
+                    self.ball.x += teleport_dist
+                    tunneled = True
+                elif arena_width - self.ball.x <= dist_threshold: # right wall
+                    self.ball.x -= teleport_dist
+                    tunneled = True
+                elif self.ball.y <= dist_threshold: # top wall
+                    self.ball.y += teleport_dist
+                    tunneled = True
+                elif arena_height - self.ball.y <= dist_threshold: # bottom wall
+                    self.ball.y -= teleport_dist
+                    tunneled = True
+
+                # Check hazards
+                if not tunneled and hasattr(self.world, "arena") and self.world.arena and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        if getattr(h, 'is_disabled_by_flare', False):
+                            continue
+                        h_x = getattr(h, "x", 0.0)
+                        h_y = getattr(h, "y", 0.0)
+                        h_radius = getattr(h, "radius", 0.0)
+
+                        dist_sq = (h_x - self.ball.x)**2 + (h_y - self.ball.y)**2
+                        if dist_sq <= (dist_threshold + h_radius)**2:
+                            # Teleport through hazard
+                            dist = math.sqrt(dist_sq)
+                            if dist > 0:
+                                dx = h_x - self.ball.x
+                                dy = h_y - self.ball.y
+                                nx = dx / dist
+                                ny = dy / dist
+                                # Teleport to the other side of the hazard
+                                self.ball.x = h_x + nx * (h_radius + getattr(self.ball, "radius", 10.0) + 5.0)
+                                self.ball.y = h_y + ny * (h_radius + getattr(self.ball, "radius", 10.0) + 5.0)
+                                tunneled = True
+                                break
+
+                if tunneled:
+                    self.ball.intangible = True
+                    self.ball.intangible_timer = 0.5
+                    self.ball.skill_timer = 15.0
+                    self._spawn_skill_particles("tunnel")
+
             elif skill_name == "grapple":
                 self._spawn_skill_particles("grapple")
 
