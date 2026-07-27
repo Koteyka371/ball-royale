@@ -1,0 +1,396 @@
+﻿2026-06-28T05:26:05.0483463Z Current runner version: '2.335.1'
+2026-06-28T05:26:05.0509894Z ##[group]Runner Image Provisioner
+2026-06-28T05:26:05.0510920Z Hosted Compute Agent
+2026-06-28T05:26:05.0511533Z Version: 20260611.554
+2026-06-28T05:26:05.0512236Z Commit: 5e0782fdc9014723d3be820dd114dd31555c2bd1
+2026-06-28T05:26:05.0513047Z Build Date: 2026-06-11T21:40:46Z
+2026-06-28T05:26:05.0513792Z Worker ID: {fb89aaef-6adb-4d5e-ac23-c35dc8be7729}
+2026-06-28T05:26:05.0514650Z Azure Region: northcentralus
+2026-06-28T05:26:05.0515280Z ##[endgroup]
+2026-06-28T05:26:05.0516874Z ##[group]Operating System
+2026-06-28T05:26:05.0517551Z Ubuntu
+2026-06-28T05:26:05.0518564Z 24.04.4
+2026-06-28T05:26:05.0519225Z LTS
+2026-06-28T05:26:05.0519757Z ##[endgroup]
+2026-06-28T05:26:05.0520363Z ##[group]Runner Image
+2026-06-28T05:26:05.0521011Z Image: ubuntu-24.04
+2026-06-28T05:26:05.0521622Z Version: 20260622.220.1
+2026-06-28T05:26:05.0523015Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260622.220/images/ubuntu/Ubuntu2404-Readme.md
+2026-06-28T05:26:05.0524622Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260622.220
+2026-06-28T05:26:05.0525615Z ##[endgroup]
+2026-06-28T05:26:05.0526936Z ##[group]GITHUB_TOKEN Permissions
+2026-06-28T05:26:05.0529171Z Contents: write
+2026-06-28T05:26:05.0529796Z Metadata: read
+2026-06-28T05:26:05.0530556Z PullRequests: write
+2026-06-28T05:26:05.0531158Z ##[endgroup]
+2026-06-28T05:26:05.0533367Z Secret source: Actions
+2026-06-28T05:26:05.0534198Z Prepare workflow directory
+2026-06-28T05:26:05.0896726Z Prepare all required actions
+2026-06-28T05:26:05.0938785Z Getting action download info
+2026-06-28T05:26:05.3291403Z Download action repository 'actions/checkout@v5' (SHA:93cb6efe18208431cddfb8368fd83d5badbf9bfd)
+2026-06-28T05:26:05.4232440Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-06-28T05:26:05.6540915Z Complete job name: supervise
+2026-06-28T05:26:05.7308427Z ##[group]Run actions/checkout@v5
+2026-06-28T05:26:05.7309482Z with:
+2026-06-28T05:26:05.7309939Z   fetch-depth: 1
+2026-06-28T05:26:05.7310438Z   repository: Koteyka371/ball-royale
+2026-06-28T05:26:05.7314785Z   token: ***
+2026-06-28T05:26:05.7315233Z   ssh-strict: true
+2026-06-28T05:26:05.7315688Z   ssh-user: git
+2026-06-28T05:26:05.7316163Z   persist-credentials: true
+2026-06-28T05:26:05.7316664Z   clean: true
+2026-06-28T05:26:05.7317125Z   sparse-checkout-cone-mode: true
+2026-06-28T05:26:05.7317663Z   fetch-tags: false
+2026-06-28T05:26:05.7318420Z   show-progress: true
+2026-06-28T05:26:05.7318896Z   lfs: false
+2026-06-28T05:26:05.7319440Z   submodules: false
+2026-06-28T05:26:05.7319912Z   set-safe-directory: true
+2026-06-28T05:26:05.7320728Z ##[endgroup]
+2026-06-28T05:26:05.8306698Z Syncing repository: Koteyka371/ball-royale
+2026-06-28T05:26:05.8308888Z ##[group]Getting Git version info
+2026-06-28T05:26:05.8309825Z Working directory is '/home/runner/work/ball-royale/ball-royale'
+2026-06-28T05:26:05.8310919Z [command]/usr/bin/git version
+2026-06-28T05:26:05.8355799Z git version 2.54.0
+2026-06-28T05:26:05.8409710Z ##[endgroup]
+2026-06-28T05:26:05.8424362Z Temporarily overriding HOME='/home/runner/work/_temp/3d28c149-2ea3-47ff-9c68-81e65bce5d3b' before making global git config changes
+2026-06-28T05:26:05.8426736Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-28T05:26:05.8430031Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ball-royale/ball-royale
+2026-06-28T05:26:05.8473517Z Deleting the contents of '/home/runner/work/ball-royale/ball-royale'
+2026-06-28T05:26:05.8477592Z ##[group]Initializing the repository
+2026-06-28T05:26:05.8482499Z [command]/usr/bin/git init /home/runner/work/ball-royale/ball-royale
+2026-06-28T05:26:05.8570071Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-06-28T05:26:05.8571629Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-06-28T05:26:05.8572636Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-06-28T05:26:05.8573703Z hint: call:
+2026-06-28T05:26:05.8574116Z hint:
+2026-06-28T05:26:05.8574645Z hint: 	git config --global init.defaultBranch <name>
+2026-06-28T05:26:05.8575306Z hint:
+2026-06-28T05:26:05.8575913Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-06-28T05:26:05.8576866Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-06-28T05:26:05.8577619Z hint:
+2026-06-28T05:26:05.8578225Z hint: 	git branch -m <name>
+2026-06-28T05:26:05.8578722Z hint:
+2026-06-28T05:26:05.8579360Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-06-28T05:26:05.8585839Z Initialized empty Git repository in /home/runner/work/ball-royale/ball-royale/.git/
+2026-06-28T05:26:05.8598690Z [command]/usr/bin/git remote add origin https://github.com/Koteyka371/ball-royale
+2026-06-28T05:26:05.8648531Z ##[endgroup]
+2026-06-28T05:26:05.8649992Z ##[group]Disabling automatic garbage collection
+2026-06-28T05:26:05.8653190Z [command]/usr/bin/git config --local gc.auto 0
+2026-06-28T05:26:05.8682495Z ##[endgroup]
+2026-06-28T05:26:05.8683702Z ##[group]Setting up auth
+2026-06-28T05:26:05.8689086Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-28T05:26:05.8720596Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-28T05:26:05.9036067Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-28T05:26:05.9067360Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-28T05:26:05.9290788Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-28T05:26:05.9321406Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-28T05:26:05.9545551Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-06-28T05:26:05.9581482Z ##[endgroup]
+2026-06-28T05:26:05.9582544Z ##[group]Fetching the repository
+2026-06-28T05:26:05.9591094Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0bd6106abc8d8d478c5e0d980c5f6e37d31e8649:refs/remotes/origin/main
+2026-06-28T05:26:06.2681207Z From https://github.com/Koteyka371/ball-royale
+2026-06-28T05:26:06.2682968Z  * [new ref]         0bd6106abc8d8d478c5e0d980c5f6e37d31e8649 -> origin/main
+2026-06-28T05:26:06.2714915Z ##[endgroup]
+2026-06-28T05:26:06.2715751Z ##[group]Determining the checkout info
+2026-06-28T05:26:06.2716879Z ##[endgroup]
+2026-06-28T05:26:06.2722913Z [command]/usr/bin/git sparse-checkout disable
+2026-06-28T05:26:06.2767516Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-06-28T05:26:06.2794329Z ##[group]Checking out the ref
+2026-06-28T05:26:06.2798320Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-06-28T05:26:06.2982239Z Switched to a new branch 'main'
+2026-06-28T05:26:06.2985589Z branch 'main' set up to track 'origin/main'.
+2026-06-28T05:26:06.2992318Z ##[endgroup]
+2026-06-28T05:26:06.3038203Z [command]/usr/bin/git log -1 --format=%H
+2026-06-28T05:26:06.3061936Z 0bd6106abc8d8d478c5e0d980c5f6e37d31e8649
+2026-06-28T05:26:06.3269131Z ##[group]Run git config user.name "github-actions[bot]"
+2026-06-28T05:26:06.3270054Z [36;1mgit config user.name "github-actions[bot]"[0m
+2026-06-28T05:26:06.3270922Z [36;1mgit config user.email "github-actions[bot]@users.noreply.github.com"[0m
+2026-06-28T05:26:06.3420069Z shell: /usr/bin/bash -e {0}
+2026-06-28T05:26:06.3420681Z ##[endgroup]
+2026-06-28T05:26:06.3659439Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-28T05:26:06.3732803Z ##[group]Run actions/setup-python@v5
+2026-06-28T05:26:06.3733567Z with:
+2026-06-28T05:26:06.3734082Z   python-version: 3.12
+2026-06-28T05:26:06.3734630Z   cache: pip
+2026-06-28T05:26:06.3735099Z   check-latest: false
+2026-06-28T05:26:06.3739664Z   token: ***
+2026-06-28T05:26:06.3740146Z   update-environment: true
+2026-06-28T05:26:06.3740676Z   allow-prereleases: false
+2026-06-28T05:26:06.3741198Z   freethreaded: false
+2026-06-28T05:26:06.3741675Z ##[endgroup]
+2026-06-28T05:26:06.5362546Z ##[group]Installed versions
+2026-06-28T05:26:06.8160227Z (node:2263) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-06-28T05:26:06.8163797Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-06-28T05:26:06.8166231Z Successfully set up CPython (3.12.13)
+2026-06-28T05:26:06.8169250Z ##[endgroup]
+2026-06-28T05:26:06.8848362Z [command]/opt/hostedtoolcache/Python/3.12.13/x64/bin/pip cache dir
+2026-06-28T05:26:07.7115027Z /home/runner/.cache/pip
+2026-06-28T05:26:07.8372363Z Cache hit for: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.13-pip-de3f210b8cdd0a6403c77eebe8a22893549b23e0eae29a935322afe0ef1cbc61
+2026-06-28T05:26:07.8479689Z (node:2263) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-06-28T05:26:08.4802709Z Received 32290734 of 32290734 (100.0%), 60.6 MBs/sec
+2026-06-28T05:26:08.4803485Z Cache Size: ~31 MB (32290734 B)
+2026-06-28T05:26:08.4835663Z [command]/usr/bin/tar -xf /home/runner/work/_temp/7832ea74-f47c-4065-8935-c2f3014ac613/cache.tzst -P -C /home/runner/work/ball-royale/ball-royale --use-compress-program unzstd
+2026-06-28T05:26:08.5368475Z Cache restored successfully
+2026-06-28T05:26:08.5392373Z Cache restored from key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.13-pip-de3f210b8cdd0a6403c77eebe8a22893549b23e0eae29a935322afe0ef1cbc61
+2026-06-28T05:26:08.5563714Z ##[group]Run python3 scripts/supervisor.py
+2026-06-28T05:26:08.5564130Z [36;1mpython3 scripts/supervisor.py[0m
+2026-06-28T05:26:08.5601296Z shell: /usr/bin/bash -e {0}
+2026-06-28T05:26:08.5601587Z env:
+2026-06-28T05:26:08.5601871Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:08.5602359Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-06-28T05:26:08.5602825Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:08.5603241Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:08.5603661Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:08.5604070Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-06-28T05:26:08.5607229Z   GITHUB_TOKEN: ***
+2026-06-28T05:26:08.5607610Z   JULES_API_KEY: ***
+2026-06-28T05:26:08.5608271Z   JULES_API_KEY_2: ***
+2026-06-28T05:26:08.5608535Z ##[endgroup]
+2026-06-28T05:26:09.8102614Z ============================================================
+2026-06-28T05:26:09.8103200Z JULES SUPERVISOR (Agent 7)
+2026-06-28T05:26:09.8103562Z ============================================================
+2026-06-28T05:26:09.8103966Z [Supervisor] Active agents: agent-1, agent-3
+2026-06-28T05:26:09.8104224Z 
+2026-06-28T05:26:09.8104356Z [Supervisor] Checking open PRs...
+2026-06-28T05:26:09.8104567Z 
+2026-06-28T05:26:09.8104765Z   PR #332: [idea-arena-124-new] Implement Meta Evolution Aren
+2026-06-28T05:26:09.8105148Z     Labels: []
+2026-06-28T05:26:09.8105384Z     Mergeable: ?
+2026-06-28T05:26:09.8105616Z     CI pending...
+2026-06-28T05:26:09.8105880Z [Supervisor] No PR updates needed
+2026-06-28T05:26:09.8106083Z 
+2026-06-28T05:26:09.8106187Z [Supervisor] Done!
+2026-06-28T05:26:09.8237226Z ##[group]Run python3 scripts/status_agents.py
+2026-06-28T05:26:09.8238239Z [36;1mpython3 scripts/status_agents.py[0m
+2026-06-28T05:26:09.8271276Z shell: /usr/bin/bash -e {0}
+2026-06-28T05:26:09.8271558Z env:
+2026-06-28T05:26:09.8271846Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:09.8272321Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-06-28T05:26:09.8272770Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:09.8273167Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:09.8273579Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:26:09.8273990Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-06-28T05:26:09.8277071Z   GITHUB_TOKEN: ***
+2026-06-28T05:26:09.8277305Z ##[endgroup]
+2026-06-28T05:26:09.8532453Z ======================================================================
+2026-06-28T05:26:09.8533303Z JULES AGENT DASHBOARD
+2026-06-28T05:26:09.8533884Z Time: 2026-06-28 05:26:09 UTC
+2026-06-28T05:26:09.8534568Z ======================================================================
+2026-06-28T05:26:09.8535074Z 
+2026-06-28T05:26:09.8535300Z Tasks: 151 done / 36 todo / 187 total
+2026-06-28T05:26:09.8535896Z Progress: 80.7%
+2026-06-28T05:26:09.8536168Z 
+2026-06-28T05:26:09.8536572Z Agent                Status       Area           Task                           Cycles  
+2026-06-28T05:26:09.8537289Z ------------------------------------------------------------------------------------
+2026-06-28T05:26:09.8538680Z agent-1              [93massigned[0m     ai-core        idea-146                       1/30
+2026-06-28T05:26:09.8539368Z agent-10             [90midle[0m         meta           -                              0/30
+2026-06-28T05:26:09.8540007Z agent-11             [90midle[0m         innovation     -                              0/30
+2026-06-28T05:26:09.8540642Z agent-12             [90midle[0m         ai-core        -                              0/30
+2026-06-28T05:26:09.8541264Z agent-13             [90midle[0m         tests          -                              0/30
+2026-06-28T05:26:09.8541904Z agent-14             [90midle[0m         content        -                              0/30
+2026-06-28T05:26:09.8542511Z agent-15             [90midle[0m         meta           -                              0/30
+2026-06-28T05:26:09.8543152Z agent-16             [90midle[0m         innovation     -                              0/30
+2026-06-28T05:26:09.8543780Z agent-17             [90midle[0m         ai-core        -                              0/30
+2026-06-28T05:26:09.8544393Z agent-18             [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:26:09.8545045Z agent-19             [90midle[0m         tests          -                              0/30
+2026-06-28T05:26:09.8545657Z agent-2              [90midle[0m         behaviors      -                              1/30
+2026-06-28T05:26:09.8546279Z agent-20             [90midle[0m         content        -                              0/30
+2026-06-28T05:26:09.8546925Z agent-21             [90midle[0m         ai-core        -                              0/30
+2026-06-28T05:26:09.8547544Z agent-22             [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:26:09.8548469Z agent-23             [90midle[0m         tests          -                              0/30
+2026-06-28T05:26:09.8549116Z agent-24             [90midle[0m         content        -                              0/30
+2026-06-28T05:26:09.8549664Z agent-25             [90midle[0m         meta           -                              0/30
+2026-06-28T05:26:09.8550211Z agent-26             [90midle[0m         innovation     -                              0/30
+2026-06-28T05:26:09.8550756Z agent-27             [90midle[0m         content        -                              0/30
+2026-06-28T05:26:09.8551530Z agent-28             [90midle[0m         tests          -                              0/30
+2026-06-28T05:26:09.8552222Z agent-29             [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:26:09.8552778Z agent-3              [92mworking[0m      tests          idea-168                       1/30
+2026-06-28T05:26:09.8553325Z agent-30             [90midle[0m         meta           -                              0/30
+2026-06-28T05:26:09.8553933Z agent-4              [90midle[0m         content        -                              0/30
+2026-06-28T05:26:09.8554476Z agent-5              [90midle[0m         meta           -                              0/30
+2026-06-28T05:26:09.8555018Z agent-6              [90midle[0m         innovation     -                              0/30
+2026-06-28T05:26:09.8555562Z agent-7              [90midle[0m         content        -                              0/30
+2026-06-28T05:26:09.8556104Z agent-8              [90midle[0m         tests          -                              0/30
+2026-06-28T05:26:09.8556656Z agent-9              [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:26:09.8557221Z supervisor           [90midle[0m         supervisor     -                              0/30
+2026-06-28T05:26:09.8557714Z ------------------------------------------------------------------------------------
+2026-06-28T05:26:09.8558273Z 
+2026-06-28T05:26:09.8558370Z Active agents: 2/30
+2026-06-28T05:26:09.8558627Z Total cycles today: 3/900
+2026-06-28T05:26:09.8558797Z 
+2026-06-28T05:26:09.8558925Z ======================================================================
+2026-06-28T05:26:09.8559297Z COMPLETED TASKS
+2026-06-28T05:26:09.8559546Z ======================================================================
+2026-06-28T05:26:09.8559879Z   [done] web-visualizer-improvements
+2026-06-28T05:26:09.8560178Z   [done] ai-brain-architecture
+2026-06-28T05:26:09.8560449Z   [done] ai-perception-system
+2026-06-28T05:26:09.8560724Z   [done] ai-emotion-system
+2026-06-28T05:26:09.8560986Z   [done] ai-decision-system
+2026-06-28T05:26:09.8561235Z   [done] ai-action-system
+2026-06-28T05:26:09.8561487Z   [done] ai-personality-system
+2026-06-28T05:26:09.8561754Z   [done] ai-behavior-chase
+2026-06-28T05:26:09.8562213Z   [done] ai-behavior-flee
+2026-06-28T05:26:09.8562657Z   [done] ai-behavior-attack
+2026-06-28T05:26:09.8563094Z   [done] ai-behavior-kite
+2026-06-28T05:26:09.8563511Z   [done] ai-behavior-flank
+2026-06-28T05:26:09.8564017Z   [done] ai-behavior-group-attack
+2026-06-28T05:26:09.8564528Z   [done] ai-behavior-collect-booster
+2026-06-28T05:26:09.8565234Z   [done] ai-ball-warrior-ai
+2026-06-28T05:26:09.8565624Z   [done] ai-ball-scout-ai
+2026-06-28T05:26:09.8565890Z   [done] ai-ball-tank-ai
+2026-06-28T05:26:09.8566138Z   [done] ai-ball-healer-ai
+2026-06-28T05:26:09.8566383Z   [done] ai-ball-sniper-ai
+2026-06-28T05:26:09.8566631Z   [done] ai-ball-bomber-ai
+2026-06-28T05:26:09.8566868Z   [done] ai-ball-ninja-ai
+2026-06-28T05:26:09.8567116Z   [done] ai-ball-king-ai
+2026-06-28T05:26:09.8567378Z   [done] ai-difficulty-system
+2026-06-28T05:26:09.8567637Z   [done] ai-team-coordination
+2026-06-28T05:26:09.8568202Z   [done] auto-implement-perception-skill
+2026-06-28T05:26:09.8568529Z   [done] auto-implement-emotion-skill
+2026-06-28T05:26:09.8568838Z   [done] auto-implement-decision-skill
+2026-06-28T05:26:09.8569134Z   [done] auto-implement-action-skill
+2026-06-28T05:26:09.8569825Z   [done] auto-implement-**target-strong**-—-атакует-самого-сильн
+2026-06-28T05:26:09.8570332Z   [done] auto-implement-**kite**-—-держит-дистанцию,-атакует-при
+2026-06-28T05:26:09.8570795Z   [done] auto-implement-**flank**-—-обходит-сзади-для-удара-skil
+2026-06-28T05:26:09.8571265Z   [done] auto-implement-spectator-mode-(наблюдатель)-game-mode
+2026-06-28T05:26:09.8571712Z   [done] auto-implement-coach-mode-(тренер)-game-mode
+2026-06-28T05:26:09.8572045Z   [done] idea-feature-033
+2026-06-28T05:26:09.8572296Z   [done] idea-feature-034
+2026-06-28T05:26:09.8572746Z   [done] idea-feature-035
+2026-06-28T05:26:09.8573116Z   [done] idea-feature-036
+2026-06-28T05:26:09.8573363Z   [done] idea-feature-037
+2026-06-28T05:26:09.8573615Z   [done] ai-neural-network-learning
+2026-06-28T05:26:09.8573905Z   [done] arena-shrinking-zone
+2026-06-28T05:26:09.8574166Z   [done] ai-swarm-boids
+2026-06-28T05:26:09.8574441Z   [done] auto-create-procedural-arenas-arena
+2026-06-28T05:26:09.8574895Z   [done] auto-implement-**ball-genetics**-—-balls-reproduce-afte
+2026-06-28T05:26:09.8575384Z   [done] auto-implement-**neural-ball**-—-a-ball-controlled-by-a
+2026-06-28T05:26:09.8575861Z   [done] auto-implement-**ball-relationships**-—-balls-remember-
+2026-06-28T05:26:09.8576223Z   [done] add-particle-effects
+2026-06-28T05:26:09.8576549Z   [done] implement-kill-feed-ui
+2026-06-28T05:26:09.8576826Z   [done] procedural-hazards
+2026-06-28T05:26:09.8577096Z   [done] ai-neural-network-learning-v2
+2026-06-28T05:26:09.8577407Z   [done] ai-physics-chain-reactions
+2026-06-28T05:26:09.8577707Z   [done] ai-battle-commentator-text
+2026-06-28T05:26:09.8578395Z   [done] ai-neural-network-brain-wrapper
+2026-06-28T05:26:09.8578727Z   [done] ai-meta-evolution-phase
+2026-06-28T05:26:09.8579013Z   [done] ai-emotional-contagion-logic
+2026-06-28T05:26:09.8579311Z   [done] add-skill-effects-vfx
+2026-06-28T05:26:09.8579600Z   [done] ai-neural-network-brain-phase3
+2026-06-28T05:26:09.8579921Z   [done] arena-procedural-generation-rooms
+2026-06-28T05:26:09.8580234Z   [done] visualizer-skills-effects
+2026-06-28T05:26:09.8580535Z   [done] visualizer-interactive-spectator
+2026-06-28T05:26:09.8580832Z   [done] idea-feature-059
+2026-06-28T05:26:09.8581079Z   [done] idea-feature-060
+2026-06-28T05:26:09.8581321Z   [done] idea-feature-061
+2026-06-28T05:26:09.8581561Z   [done] idea-feature-062
+2026-06-28T05:26:09.8581793Z   [done] idea-feature-063
+2026-06-28T05:26:09.8582042Z   [done] balance-buff-assassin
+2026-06-28T05:26:09.8582309Z   [done] balance-buff-healer
+2026-06-28T05:26:09.8582568Z   [done] balance-buff-rogue
+2026-06-28T05:26:09.8582833Z   [done] balance-buff-swarm
+2026-06-28T05:26:09.8583088Z   [done] balance-buff-guardian
+2026-06-28T05:26:09.8583363Z   [done] sync-gd-perception-calc-dist
+2026-06-28T05:26:09.8583665Z   [done] innovate-perceptron-ai
+2026-06-28T05:26:09.8583931Z   [done] idea-feature-072
+2026-06-28T05:26:09.8584170Z   [done] idea-feature-073
+2026-06-28T05:26:09.8584413Z   [done] idea-feature-074
+2026-06-28T05:26:09.8584648Z   [done] idea-feature-075
+2026-06-28T05:26:09.8584886Z   [done] idea-feature-076
+2026-06-28T05:26:09.8585126Z   [done] idea-feature-077
+2026-06-28T05:26:09.8585357Z   [done] idea-feature-078
+2026-06-28T05:26:09.8585590Z   [done] idea-feature-079
+2026-06-28T05:26:09.8585835Z   [done] idea-ball_type-080
+2026-06-28T05:26:09.8586079Z   [done] idea-ball_type-081
+2026-06-28T05:26:09.8586323Z   [done] idea-ball_type-082
+2026-06-28T05:26:09.8586571Z   [done] idea-ball_type-083
+2026-06-28T05:26:09.8586811Z   [done] idea-ball_type-084
+2026-06-28T05:26:09.8587050Z   [done] idea-ball_type-085
+2026-06-28T05:26:09.8587300Z   [done] idea-ball_type-086
+2026-06-28T05:26:09.8587556Z   [done] idea-ball_type-087
+2026-06-28T05:26:09.8588101Z   [done] idea-ball_type-088
+2026-06-28T05:26:09.8588364Z   [done] idea-ball_type-089
+2026-06-28T05:26:09.8588613Z   [done] idea-ball_type-090
+2026-06-28T05:26:09.8588854Z   [done] idea-ball_type-091
+2026-06-28T05:26:09.8589091Z   [done] idea-arena-092
+2026-06-28T05:26:09.8589331Z   [done] idea-arena-093
+2026-06-28T05:26:09.8589561Z   [done] idea-arena-094
+2026-06-28T05:26:09.8589788Z   [done] idea-arena-095
+2026-06-28T05:26:09.8590025Z   [done] idea-arena-096
+2026-06-28T05:26:09.8590250Z   [done] idea-arena-097
+2026-06-28T05:26:09.8590477Z   [done] idea-arena-098
+2026-06-28T05:26:09.8590713Z   [done] idea-arena-099
+2026-06-28T05:26:09.8590940Z   [done] idea-arena-100
+2026-06-28T05:26:09.8591166Z   [done] idea-arena-101
+2026-06-28T05:26:09.8591397Z   [done] idea-arena-102
+2026-06-28T05:26:09.8591620Z   [done] idea-arena-103
+2026-06-28T05:26:09.8591843Z   [done] idea-arena-104
+2026-06-28T05:26:09.8592222Z   [done] idea-arena-105
+2026-06-28T05:26:09.8592563Z   [done] idea-arena-106
+2026-06-28T05:26:09.8592789Z   [done] idea-arena-107
+2026-06-28T05:26:09.8593018Z   [done] idea-arena-108
+2026-06-28T05:26:09.8593239Z   [done] idea-arena-109
+2026-06-28T05:26:09.8593461Z   [done] idea-arena-110
+2026-06-28T05:26:09.8593688Z   [done] idea-arena-111
+2026-06-28T05:26:09.8593909Z   [done] idea-arena-112
+2026-06-28T05:26:09.8594134Z   [done] idea-arena-113
+2026-06-28T05:26:09.8594367Z   [done] idea-arena-114
+2026-06-28T05:26:09.8594592Z   [done] idea-arena-115
+2026-06-28T05:26:09.8594815Z   [done] idea-arena-116
+2026-06-28T05:26:09.8595046Z   [done] idea-arena-117
+2026-06-28T05:26:09.8595269Z   [done] idea-arena-118
+2026-06-28T05:26:09.8595495Z   [done] idea-arena-119
+2026-06-28T05:26:09.8595722Z   [done] idea-arena-120
+2026-06-28T05:26:09.8595947Z   [done] idea-arena-121
+2026-06-28T05:26:09.8596168Z   [done] idea-arena-122
+2026-06-28T05:26:09.8596391Z   [done] idea-arena-123
+2026-06-28T05:26:09.8596625Z   [done] idea-arena-124
+2026-06-28T05:26:09.8596858Z   [done] idea-arena-125
+2026-06-28T05:26:09.8597103Z   [done] idea-arena-126
+2026-06-28T05:26:09.8597323Z   [done] idea-126
+2026-06-28T05:26:09.8597543Z   [done] idea-127
+2026-06-28T05:26:09.8597994Z   [done] idea-128
+2026-06-28T05:26:09.8598222Z   [done] idea-129
+2026-06-28T05:26:09.8598438Z   [done] idea-130
+2026-06-28T05:26:09.8598652Z   [done] idea-131
+2026-06-28T05:26:09.8598856Z   [done] idea-132
+2026-06-28T05:26:09.8599066Z   [done] idea-133
+2026-06-28T05:26:09.8599268Z   [done] idea-134
+2026-06-28T05:26:09.8599470Z   [done] idea-135
+2026-06-28T05:26:09.8599678Z   [done] idea-136
+2026-06-28T05:26:09.8599878Z   [done] idea-137
+2026-06-28T05:26:09.8600079Z   [done] idea-138
+2026-06-28T05:26:09.8600278Z   [done] idea-139
+2026-06-28T05:26:09.8600486Z   [done] idea-140
+2026-06-28T05:26:09.8600689Z   [done] idea-141
+2026-06-28T05:26:09.8600894Z   [done] idea-142
+2026-06-28T05:26:09.8601100Z   [done] idea-143
+2026-06-28T05:26:09.8601299Z   [done] idea-144
+2026-06-28T05:26:09.8601504Z   [done] idea-145
+2026-06-28T05:26:09.8601717Z   [done] idea-147
+2026-06-28T05:26:09.8601917Z   [done] idea-148
+2026-06-28T05:26:09.8602121Z   [done] idea-166
+2026-06-28T05:26:09.8602328Z   [done] idea-170
+2026-06-28T05:26:09.8602529Z   [done] idea-172
+2026-06-28T05:26:09.8602657Z 
+2026-06-28T05:26:09.8699747Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-28T05:26:09.8701065Z Post job cleanup.
+2026-06-28T05:26:09.9899476Z Cache hit occurred on the primary key setup-python-Linux-x64-24.04-Ubuntu-python-3.12.13-pip-de3f210b8cdd0a6403c77eebe8a22893549b23e0eae29a935322afe0ef1cbc61, not saving cache.
+2026-06-28T05:26:09.9901499Z (node:2312) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-06-28T05:26:09.9902619Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-06-28T05:26:10.0070236Z Post job cleanup.
+2026-06-28T05:26:10.0899495Z [command]/usr/bin/git version
+2026-06-28T05:26:10.0969907Z git version 2.54.0
+2026-06-28T05:26:10.1006868Z Temporarily overriding HOME='/home/runner/work/_temp/03df7d21-3859-465b-80f8-32fcfa73cc52' before making global git config changes
+2026-06-28T05:26:10.1008179Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-28T05:26:10.1012773Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ball-royale/ball-royale
+2026-06-28T05:26:10.1049352Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-28T05:26:10.1082677Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-28T05:26:10.1318661Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-28T05:26:10.1343884Z http.https://github.com/.extraheader
+2026-06-28T05:26:10.1358751Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-06-28T05:26:10.1392497Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-28T05:26:10.1638780Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-28T05:26:10.1675615Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-28T05:26:10.2087696Z Cleaning up orphan processes
+2026-06-28T05:26:10.2371250Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

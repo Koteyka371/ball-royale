@@ -1,0 +1,1577 @@
+﻿2026-06-28T04:59:54.4400118Z Current runner version: '2.335.1'
+2026-06-28T04:59:54.4427110Z ##[group]Runner Image Provisioner
+2026-06-28T04:59:54.4428072Z Hosted Compute Agent
+2026-06-28T04:59:54.4428681Z Version: 20260611.554
+2026-06-28T04:59:54.4429458Z Commit: 5e0782fdc9014723d3be820dd114dd31555c2bd1
+2026-06-28T04:59:54.4430203Z Build Date: 2026-06-11T21:40:46Z
+2026-06-28T04:59:54.4430915Z Worker ID: {9ce8d68e-99d7-46eb-84e9-2da098ec47b9}
+2026-06-28T04:59:54.4431652Z Azure Region: westus
+2026-06-28T04:59:54.4432224Z ##[endgroup]
+2026-06-28T04:59:54.4433871Z ##[group]Operating System
+2026-06-28T04:59:54.4434527Z Ubuntu
+2026-06-28T04:59:54.4435032Z 24.04.4
+2026-06-28T04:59:54.4435613Z LTS
+2026-06-28T04:59:54.4436123Z ##[endgroup]
+2026-06-28T04:59:54.4436999Z ##[group]Runner Image
+2026-06-28T04:59:54.4437649Z Image: ubuntu-24.04
+2026-06-28T04:59:54.4438255Z Version: 20260622.220.1
+2026-06-28T04:59:54.4439674Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260622.220/images/ubuntu/Ubuntu2404-Readme.md
+2026-06-28T04:59:54.4441295Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260622.220
+2026-06-28T04:59:54.4442291Z ##[endgroup]
+2026-06-28T04:59:54.4443657Z ##[group]GITHUB_TOKEN Permissions
+2026-06-28T04:59:54.4445673Z Actions: write
+2026-06-28T04:59:54.4446334Z Contents: write
+2026-06-28T04:59:54.4447239Z Metadata: read
+2026-06-28T04:59:54.4447819Z PullRequests: write
+2026-06-28T04:59:54.4448473Z ##[endgroup]
+2026-06-28T04:59:54.4451054Z Secret source: Actions
+2026-06-28T04:59:54.4451860Z Prepare workflow directory
+2026-06-28T04:59:54.4870152Z Prepare all required actions
+2026-06-28T04:59:54.4917712Z Getting action download info
+2026-06-28T04:59:54.8256052Z Download action repository 'actions/checkout@v5' (SHA:93cb6efe18208431cddfb8368fd83d5badbf9bfd)
+2026-06-28T04:59:54.9305018Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-06-28T04:59:55.1269008Z Complete job name: dispatch
+2026-06-28T04:59:55.2080386Z ##[group]Run actions/checkout@v5
+2026-06-28T04:59:55.2081409Z with:
+2026-06-28T04:59:55.2081858Z   fetch-depth: 1
+2026-06-28T04:59:55.2082341Z   repository: Koteyka371/ball-royale
+2026-06-28T04:59:55.2086839Z   token: ***
+2026-06-28T04:59:55.2087306Z   ssh-strict: true
+2026-06-28T04:59:55.2087758Z   ssh-user: git
+2026-06-28T04:59:55.2088220Z   persist-credentials: true
+2026-06-28T04:59:55.2088727Z   clean: true
+2026-06-28T04:59:55.2089183Z   sparse-checkout-cone-mode: true
+2026-06-28T04:59:55.2089717Z   fetch-tags: false
+2026-06-28T04:59:55.2090182Z   show-progress: true
+2026-06-28T04:59:55.2090638Z   lfs: false
+2026-06-28T04:59:55.2091056Z   submodules: false
+2026-06-28T04:59:55.2091518Z   set-safe-directory: true
+2026-06-28T04:59:55.2092289Z ##[endgroup]
+2026-06-28T04:59:55.3134029Z Syncing repository: Koteyka371/ball-royale
+2026-06-28T04:59:55.3137575Z ##[group]Getting Git version info
+2026-06-28T04:59:55.3138756Z Working directory is '/home/runner/work/ball-royale/ball-royale'
+2026-06-28T04:59:55.3139882Z [command]/usr/bin/git version
+2026-06-28T04:59:55.3226427Z git version 2.54.0
+2026-06-28T04:59:55.3249881Z ##[endgroup]
+2026-06-28T04:59:55.3265894Z Temporarily overriding HOME='/home/runner/work/_temp/f56dae25-f86d-4b94-bab3-ff766306eb1b' before making global git config changes
+2026-06-28T04:59:55.3268116Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-28T04:59:55.3272257Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ball-royale/ball-royale
+2026-06-28T04:59:55.3331818Z Deleting the contents of '/home/runner/work/ball-royale/ball-royale'
+2026-06-28T04:59:55.3337296Z ##[group]Initializing the repository
+2026-06-28T04:59:55.3343406Z [command]/usr/bin/git init /home/runner/work/ball-royale/ball-royale
+2026-06-28T04:59:55.3481767Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-06-28T04:59:55.3483321Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-06-28T04:59:55.3484579Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-06-28T04:59:55.3485911Z hint: call:
+2026-06-28T04:59:55.3486936Z hint:
+2026-06-28T04:59:55.3487940Z hint: 	git config --global init.defaultBranch <name>
+2026-06-28T04:59:55.3488975Z hint:
+2026-06-28T04:59:55.3490156Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-06-28T04:59:55.3491964Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-06-28T04:59:55.3493403Z hint:
+2026-06-28T04:59:55.3494178Z hint: 	git branch -m <name>
+2026-06-28T04:59:55.3495061Z hint:
+2026-06-28T04:59:55.3496234Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-06-28T04:59:55.3498617Z Initialized empty Git repository in /home/runner/work/ball-royale/ball-royale/.git/
+2026-06-28T04:59:55.3504521Z [command]/usr/bin/git remote add origin https://github.com/Koteyka371/ball-royale
+2026-06-28T04:59:55.3557690Z ##[endgroup]
+2026-06-28T04:59:55.3559052Z ##[group]Disabling automatic garbage collection
+2026-06-28T04:59:55.3563327Z [command]/usr/bin/git config --local gc.auto 0
+2026-06-28T04:59:55.3595851Z ##[endgroup]
+2026-06-28T04:59:55.3597476Z ##[group]Setting up auth
+2026-06-28T04:59:55.3604156Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-28T04:59:55.3644444Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-28T04:59:55.4028349Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-28T04:59:55.4065984Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-28T04:59:55.4317654Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-28T04:59:55.4352652Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-28T04:59:55.4587192Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-06-28T04:59:55.4626106Z ##[endgroup]
+2026-06-28T04:59:55.4627382Z ##[group]Fetching the repository
+2026-06-28T04:59:55.4635772Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9d2753656d6996168f85e8a105186b9475929024:refs/remotes/origin/main
+2026-06-28T04:59:55.9794093Z From https://github.com/Koteyka371/ball-royale
+2026-06-28T04:59:55.9796178Z  * [new ref]         9d2753656d6996168f85e8a105186b9475929024 -> origin/main
+2026-06-28T04:59:55.9839907Z ##[endgroup]
+2026-06-28T04:59:55.9840749Z ##[group]Determining the checkout info
+2026-06-28T04:59:55.9842402Z ##[endgroup]
+2026-06-28T04:59:55.9850660Z [command]/usr/bin/git sparse-checkout disable
+2026-06-28T04:59:55.9904168Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-06-28T04:59:55.9937079Z ##[group]Checking out the ref
+2026-06-28T04:59:55.9942782Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-06-28T04:59:56.0136367Z Switched to a new branch 'main'
+2026-06-28T04:59:56.0139250Z branch 'main' set up to track 'origin/main'.
+2026-06-28T04:59:56.0144877Z ##[endgroup]
+2026-06-28T04:59:56.0198665Z [command]/usr/bin/git log -1 --format=%H
+2026-06-28T04:59:56.0223266Z 9d2753656d6996168f85e8a105186b9475929024
+2026-06-28T04:59:56.0460359Z ##[group]Run git config user.name "github-actions[bot]"
+2026-06-28T04:59:56.0462292Z [36;1mgit config user.name "github-actions[bot]"[0m
+2026-06-28T04:59:56.0464366Z [36;1mgit config user.email "github-actions[bot]@users.noreply.github.com"[0m
+2026-06-28T04:59:56.0680358Z shell: /usr/bin/bash -e {0}
+2026-06-28T04:59:56.0681556Z ##[endgroup]
+2026-06-28T04:59:56.1025018Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-28T04:59:56.1031686Z ##[group]Run actions/setup-python@v5
+2026-06-28T04:59:56.1032828Z with:
+2026-06-28T04:59:56.1033599Z   python-version: 3.12
+2026-06-28T04:59:56.1034490Z   cache: pip
+2026-06-28T04:59:56.1035285Z   check-latest: false
+2026-06-28T04:59:56.1047064Z   token: ***
+2026-06-28T04:59:56.1047948Z   update-environment: true
+2026-06-28T04:59:56.1048942Z   allow-prereleases: false
+2026-06-28T04:59:56.1049934Z   freethreaded: false
+2026-06-28T04:59:56.1050838Z ##[endgroup]
+2026-06-28T04:59:56.2450336Z ##[group]Installed versions
+2026-06-28T04:59:56.2555249Z (node:2261) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-06-28T04:59:56.2558582Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-06-28T04:59:56.2560172Z Successfully set up CPython (3.12.13)
+2026-06-28T04:59:56.2561855Z ##[endgroup]
+2026-06-28T04:59:56.3268333Z [command]/opt/hostedtoolcache/Python/3.12.13/x64/bin/pip cache dir
+2026-06-28T04:59:57.4695511Z /home/runner/.cache/pip
+2026-06-28T04:59:57.7352299Z Cache hit for: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.13-pip-de3f210b8cdd0a6403c77eebe8a22893549b23e0eae29a935322afe0ef1cbc61
+2026-06-28T04:59:57.7475034Z (node:2261) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-06-28T04:59:59.0371840Z Received 0 of 32290734 (0.0%), 0.0 MBs/sec
+2026-06-28T04:59:59.4700544Z Received 32290734 of 32290734 (100.0%), 21.5 MBs/sec
+2026-06-28T04:59:59.4701629Z Cache Size: ~31 MB (32290734 B)
+2026-06-28T04:59:59.4737444Z [command]/usr/bin/tar -xf /home/runner/work/_temp/1759fb8a-0775-4ea9-a938-121990843943/cache.tzst -P -C /home/runner/work/ball-royale/ball-royale --use-compress-program unzstd
+2026-06-28T04:59:59.5295589Z Cache restored successfully
+2026-06-28T04:59:59.5328050Z Cache restored from key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.13-pip-de3f210b8cdd0a6403c77eebe8a22893549b23e0eae29a935322afe0ef1cbc61
+2026-06-28T04:59:59.5513242Z ##[group]Run python3 scripts/auto_improve_loop.py
+2026-06-28T04:59:59.5513691Z [36;1mpython3 scripts/auto_improve_loop.py[0m
+2026-06-28T04:59:59.5514038Z [36;1mgit add agent_tasks.json ideas/ || true[0m
+2026-06-28T04:59:59.5514451Z [36;1mgit commit -m "chore: auto-ingest new ideas from agents" || true[0m
+2026-06-28T04:59:59.5514841Z [36;1mgit push || true[0m
+2026-06-28T04:59:59.5552491Z shell: /usr/bin/bash -e {0}
+2026-06-28T04:59:59.5552793Z env:
+2026-06-28T04:59:59.5553079Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T04:59:59.5553545Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-06-28T04:59:59.5554008Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T04:59:59.5554408Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T04:59:59.5554805Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T04:59:59.5555251Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-06-28T04:59:59.5558645Z   GITHUB_TOKEN: ***
+2026-06-28T04:59:59.5558917Z ##[endgroup]
+2026-06-28T04:59:59.6267847Z ============================================================
+2026-06-28T04:59:59.6268614Z BALL ROYALE - IDEA GENERATOR
+2026-06-28T04:59:59.6269069Z ============================================================
+2026-06-28T04:59:59.6269411Z 
+2026-06-28T04:59:59.6269577Z [*] Found 66 ideas in game_design.md
+2026-06-28T04:59:59.6270058Z [NEW] 0 new ideas not in task list
+2026-06-28T04:59:59.6270348Z 
+2026-06-28T04:59:59.6270564Z [OK] No new ideas - all features are in task list!
+2026-06-28T04:59:59.6270937Z 
+2026-06-28T04:59:59.6271089Z [SUGGESTED NEXT STEPS]
+2026-06-28T04:59:59.6272016Z   1. Start with: King of the Hill
+2026-06-28T04:59:59.6272426Z   2. Then: Black Hole Survival Mode
+2026-06-28T04:59:59.6272865Z   3. Finally: Trap Customization Sandbox
+2026-06-28T04:59:59.6273208Z 
+2026-06-28T04:59:59.6273412Z ============================================================
+2026-06-28T04:59:59.6391972Z [Auto-Improve] Running idea generator...
+2026-06-28T04:59:59.6392754Z [Auto-Improve] Running quality checks...
+2026-06-28T04:59:59.6393402Z [Auto-Improve] Ruff not installed, skipping linter checks
+2026-06-28T04:59:59.6394068Z [Auto-Improve] Running test suite to catch bugs...
+2026-06-28T04:59:59.6394790Z Error running tests: [Errno 2] No such file or directory: 'pytest'
+2026-06-28T04:59:59.6395537Z [Auto-Improve] No new auto-improvement tasks generated
+2026-06-28T04:59:59.6466233Z fatal: pathspec 'ideas/' did not match any files
+2026-06-28T04:59:59.6547368Z On branch main
+2026-06-28T04:59:59.6547989Z Your branch is up to date with 'origin/main'.
+2026-06-28T04:59:59.6548340Z 
+2026-06-28T04:59:59.6548562Z nothing to commit, working tree clean
+2026-06-28T05:00:00.0148449Z Everything up-to-date
+2026-06-28T05:00:00.0213015Z ##[group]Run python3 scripts/dispatch_agents.py
+2026-06-28T05:00:00.0213436Z [36;1mpython3 scripts/dispatch_agents.py[0m
+2026-06-28T05:00:00.0247118Z shell: /usr/bin/bash -e {0}
+2026-06-28T05:00:00.0247385Z env:
+2026-06-28T05:00:00.0247659Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:00.0248120Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-06-28T05:00:00.0248572Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:00.0248995Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:00.0249392Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:00.0249790Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-06-28T05:00:00.0252876Z   GITHUB_TOKEN: ***
+2026-06-28T05:00:00.0253102Z ##[endgroup]
+2026-06-28T05:00:00.4733500Z ============================================================
+2026-06-28T05:00:00.4733938Z JULES DISPATCHER
+2026-06-28T05:00:00.4734332Z ============================================================
+2026-06-28T05:00:00.4734759Z [Dispatcher] agent-1: STALE after 151 min, resetting
+2026-06-28T05:00:00.4735183Z [Dispatcher] agent-2: STALE after 151 min, resetting
+2026-06-28T05:00:00.4735634Z [Dispatcher] agent-1: assigned idea-145 (area=ai-core)
+2026-06-28T05:00:00.4736174Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4737093Z [Dispatcher] agent-2: assigned idea-148 (area=behaviors)
+2026-06-28T05:00:00.4737777Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4738421Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4739049Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4739666Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4740308Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4740924Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4741548Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4742162Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4742779Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4743392Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4743984Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4744491Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4744998Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4745767Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4746274Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4747186Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4747708Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4748218Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4748725Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4749166Z [Dispatcher] agent-3: assigned idea-168 (area=tests)
+2026-06-28T05:00:00.4749688Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4750358Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4750934Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4752151Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4752892Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4753405Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4753918Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4754429Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4754941Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4755438Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4755931Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4756428Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4757747Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4758549Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4759397Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4760301Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4761194Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4762071Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4762939Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4763836Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4764731Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4765610Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4766753Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4767665Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4768693Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4769629Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4770667Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4771596Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4772713Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4773848Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4774797Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4776115Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4777375Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4778327Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4779285Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4780221Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4781089Z [Dispatcher] agent-4: no tasks available (area=content or any)
+2026-06-28T05:00:00.4781969Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4782998Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4783927Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4784885Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4786072Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4787327Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4788248Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4789171Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4790099Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4791034Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4791960Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4792895Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4793835Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4794846Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4795843Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4797139Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4798114Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4799030Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4799924Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4800820Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4801742Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4802697Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4803666Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4804625Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4805580Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4806872Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4807856Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4808936Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4810031Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4810972Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4811926Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4812837Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4814022Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4814965Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4816032Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4817231Z [Dispatcher] agent-5: no tasks available (area=meta or any)
+2026-06-28T05:00:00.4818090Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4819071Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4819888Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4820402Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4820900Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4821402Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4822094Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4822605Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4823106Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4823605Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4824096Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4825003Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4825797Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4826300Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4827126Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4827638Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4828159Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4828647Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4829137Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4829620Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4830108Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4830592Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4831088Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4831572Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4832062Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4832547Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4833042Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4833526Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4834023Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4834510Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4835016Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4835526Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4836020Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4836775Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4837504Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4838001Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4838490Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4838980Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4839471Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4839958Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4840445Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4840931Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4841471Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4842351Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4843296Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4843807Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4844292Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4844781Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4845272Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4845758Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4846244Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4847077Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4847568Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4848071Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4848555Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4849049Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4849540Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4850027Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4850509Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4851003Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4851486Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4852073Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4852670Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4853170Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4853659Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4854142Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4854629Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4855121Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4855610Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4856094Z [Dispatcher] agent-6: no tasks available (area=innovation or any)
+2026-06-28T05:00:00.4856938Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4857957Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4858868Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4859413Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4859903Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4860388Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4860879Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4861365Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4861852Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4862334Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4862823Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4863314Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4863936Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4864427Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4864920Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4865403Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4865890Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4866375Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4867210Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4867706Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4868197Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4868688Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4869197Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4869687Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4870179Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4870670Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4871158Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4871645Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4872225Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4872816Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4873473Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4874351Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4874920Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4875420Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4875907Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4876397Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4877016Z [Dispatcher] agent-7: no tasks available (area=content or any)
+2026-06-28T05:00:00.4877479Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4877970Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4878624Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4879119Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4879619Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4880107Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4880594Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4881077Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4881575Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4882059Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4882544Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4883027Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4883642Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4884143Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4884626Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4885107Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4885589Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4886078Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4886710Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4887196Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4887681Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4888186Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4888683Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4889500Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4890266Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4890762Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4891243Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4891819Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4892400Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4892893Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4893378Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4893875Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4894361Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4894856Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4895356Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4895809Z [Dispatcher] agent-8: no tasks available (area=tests or any)
+2026-06-28T05:00:00.4896251Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4896900Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4897393Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4897884Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4898514Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4899005Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4899497Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4899997Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4900495Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4900984Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4901481Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4901963Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4902449Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4902936Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4903566Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4904063Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4904552Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4905035Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4905528Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4906018Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4906837Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4907440Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4907943Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4908448Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4908949Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4909440Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4909934Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4910510Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4911094Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4911586Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4912085Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4912573Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4913063Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4913563Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4914054Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4914529Z [Dispatcher] agent-9: no tasks available (area=behaviors or any)
+2026-06-28T05:00:00.4914981Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4915470Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4915964Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4916661Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4917345Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4917844Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4918569Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4919079Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4919571Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4920061Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4920555Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4921049Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4921538Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4922029Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4922514Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4923003Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4923637Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4924146Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4924656Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4925160Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4925653Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4926144Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4926841Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4927336Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4927872Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4928374Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4928874Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4929458Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4930057Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4930554Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4931042Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4931534Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4932036Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4932525Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4933168Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4933628Z [Dispatcher] agent-10: no tasks available (area=meta or any)
+2026-06-28T05:00:00.4934090Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4934587Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4935078Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4935565Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4936064Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4936709Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4937208Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4937701Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4938365Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4938866Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4939359Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4939856Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4940370Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4940866Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4941357Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4941845Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4942335Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4942834Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4943457Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4943964Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4944459Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4944955Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4945447Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4945940Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4946755Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4947389Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4947893Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4948398Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4948900Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4949405Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4949897Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4950388Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4950882Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4951378Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4951869Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4952366Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4952883Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4953391Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4953892Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4954386Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4954881Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4955373Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4955873Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4956371Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4957286Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4957789Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4958470Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4958977Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4959469Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4959964Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4960465Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4960959Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4961448Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4961940Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4962435Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4962929Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4963534Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4964040Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4964539Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4965026Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4965513Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4966092Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4966875Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4967366Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4967856Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4968357Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4968846Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4969341Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4969832Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4970305Z [Dispatcher] agent-11: no tasks available (area=innovation or any)
+2026-06-28T05:00:00.4970766Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4971268Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4971756Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4972247Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4972739Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4973239Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4973732Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4974223Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4974722Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4975220Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4975706Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4976198Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4976838Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4977605Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.4999750Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5000305Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5001033Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5001619Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5002291Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5002879Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5003710Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5004232Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5004929Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5005437Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5006260Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5007155Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5007691Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5008444Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5009047Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5009707Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5010226Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5010890Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5011390Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5012056Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5012557Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5013178Z [Dispatcher] agent-12: no tasks available (area=ai-core or any)
+2026-06-28T05:00:00.5013663Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5014332Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5014831Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5015678Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5016183Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5017028Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5017545Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5018219Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5018712Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5019369Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5019860Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5020509Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5021003Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5021649Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5022146Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5022805Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5023545Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5024227Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5024718Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5025372Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5025874Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5026752Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5027464Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5028009Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5028654Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5029163Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5029940Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5030628Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5031408Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5031910Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5032556Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5033047Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5033707Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5034197Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5034847Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5035312Z [Dispatcher] agent-13: no tasks available (area=tests or any)
+2026-06-28T05:00:00.5036004Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5036894Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5037437Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5038003Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5038582Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5039085Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5039724Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5040213Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5040872Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5041370Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5042012Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5042496Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5043142Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5043629Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5044275Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5044760Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5045403Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5046052Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5046854Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5047508Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5048044Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5048626Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5049206Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5049759Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5050335Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5050823Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5051460Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5052160Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5052861Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5053608Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5054129Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5054783Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5055289Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5055907Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5056403Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5057217Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5057709Z [Dispatcher] agent-14: no tasks available (area=content or any)
+2026-06-28T05:00:00.5058367Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5058875Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5059549Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5060051Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5060709Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5061241Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5061905Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5062478Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5062968Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5063660Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5064159Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5064646Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5065138Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5065806Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5066309Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5067105Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5067610Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5068101Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5068767Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5069267Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5069977Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5070466Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5070952Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5071438Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5071926Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5072409Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5072901Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5073488Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5074235Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5074731Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5075218Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5075705Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5076198Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5077040Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5077613Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5078075Z [Dispatcher] agent-15: no tasks available (area=meta or any)
+2026-06-28T05:00:00.5078522Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5079031Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5079524Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5080016Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5080503Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5080999Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5081488Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5081979Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5082470Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5082984Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5083470Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5083967Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5084458Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5084966Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5085470Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5085967Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5086587Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5087101Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5087599Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5088097Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5088727Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5089224Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5089713Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5090367Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5090919Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5091417Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5091905Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5092395Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5092883Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5093369Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5094000Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5094496Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5094981Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5095471Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5095966Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5096595Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5097095Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5097585Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5098081Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5098575Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5099070Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5099561Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5100055Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5100544Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5101033Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5101522Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5102019Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5102512Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5103002Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5103502Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5104000Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5104497Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5104990Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5105483Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5105973Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5106729Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5107267Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5107762Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5108397Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5108893Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5109382Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5109972Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5110556Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5111048Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5111532Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5112020Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5112504Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5113003Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5113601Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5114075Z [Dispatcher] agent-16: no tasks available (area=innovation or any)
+2026-06-28T05:00:00.5114542Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5115034Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5115518Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5116004Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5116752Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5117352Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5117854Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5118348Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5118840Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5119331Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5119830Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5120321Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5120807Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5121297Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5121790Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5122276Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5122765Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5123257Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5123753Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5124248Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5124740Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5125229Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5125726Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5126213Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5126973Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5127467Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5128154Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5128747Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5129334Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5129823Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5130313Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5130797Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5131284Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5131774Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5132265Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5132731Z [Dispatcher] agent-17: no tasks available (area=ai-core or any)
+2026-06-28T05:00:00.5133292Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5133784Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5134273Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5134766Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5135253Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5135747Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5136239Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5136882Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5137370Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5137874Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5138362Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5138853Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5139339Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5139827Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5140314Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5140808Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5141296Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5141783Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5142275Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5142772Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5143258Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5143761Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5144264Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5144752Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5145248Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5145742Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5146234Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5147099Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5147856Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5148357Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5148847Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5149334Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5149830Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5150316Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5150805Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5151268Z [Dispatcher] agent-18: no tasks available (area=behaviors or any)
+2026-06-28T05:00:00.5151726Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5152222Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5152837Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5153330Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5153825Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5154317Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5154805Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5155293Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5155787Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5156278Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5156937Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5157444Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5157942Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5158435Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5158932Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5159422Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5159914Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5160414Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5160907Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5161401Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5161893Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5162390Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5162877Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5163367Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5163874Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5164375Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5164864Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5165449Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5166035Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5166804Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5167469Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5167966Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5168462Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5169198Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5169695Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5170353Z [Dispatcher] agent-19: no tasks available (area=tests or any)
+2026-06-28T05:00:00.5170895Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5171494Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5171999Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5172501Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5173185Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5173683Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5174194Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5174690Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5175179Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5175668Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5176163Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5176814Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5177315Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5177818Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5178315Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5178804Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5179293Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5179778Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5180277Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5180764Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5181254Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5181741Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5182239Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5182728Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5183215Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5183702Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5184193Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5184679Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5185257Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5185841Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5186333Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5187249Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5187757Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5188251Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5188740Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5189235Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5189696Z [Dispatcher] agent-20: no tasks available (area=content or any)
+2026-06-28T05:00:00.5190152Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5190639Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5191129Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5191619Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5192237Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5192733Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5193227Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5193714Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5194200Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5194687Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5195197Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5195688Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5196181Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5196822Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5197331Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5197828Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5198320Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5198808Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5199297Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5199792Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5200279Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5200769Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5201261Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5201764Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5202251Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5202738Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5203227Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5203815Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5204400Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5204890Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5205381Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5205881Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5206712Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5207303Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5207807Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5208276Z [Dispatcher] agent-21: no tasks available (area=ai-core or any)
+2026-06-28T05:00:00.5208728Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5209218Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5209705Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5210199Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5210683Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5211173Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5211791Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5212283Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5212776Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5213263Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5213748Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5214233Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5214723Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5215213Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5215701Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5216191Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5216850Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5217358Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5217848Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5218334Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5218830Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5219317Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5219803Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5220291Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5220786Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5221288Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5221777Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5222362Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5222960Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5223453Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5223942Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5224434Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5224922Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5225415Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5226029Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5226794Z [Dispatcher] agent-22: no tasks available (area=behaviors or any)
+2026-06-28T05:00:00.5227295Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5227834Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5228327Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5228818Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5229311Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5229813Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5230307Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5230793Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5231421Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5231925Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5232410Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5232899Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5233386Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5233879Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5234367Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5234855Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5235343Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5235840Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5236334Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5237086Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5237578Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5238071Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5238567Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5239054Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5239542Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5240031Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5240526Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5241117Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5241695Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5242186Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5242685Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5243171Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5243665Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5244156Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5244659Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5245116Z [Dispatcher] agent-23: no tasks available (area=tests or any)
+2026-06-28T05:00:00.5245788Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5246389Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5247260Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5247778Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5248282Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5248775Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5249276Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5249766Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5250263Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5250766Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5251404Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5251897Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5252386Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5252873Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5253359Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5253850Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5254344Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5254827Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5255315Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5255819Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5256309Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5256959Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5257445Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5257941Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5258427Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5258912Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5259400Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5259892Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5260473Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5261057Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5261548Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5262044Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5262530Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5263021Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5263512Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5264005Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5264472Z [Dispatcher] agent-24: no tasks available (area=content or any)
+2026-06-28T05:00:00.5264923Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5265549Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5266036Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5266681Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5267176Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5267668Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5268158Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5268672Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5269172Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5269662Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5270158Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5270773Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5271263Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5271747Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5272235Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5272732Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5273218Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5273702Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5274187Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5274687Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5275183Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5275672Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5276161Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5276796Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5277288Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5277777Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5278260Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5278837Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5279418Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5279915Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5280407Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5280896Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5281390Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5281876Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5282363Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5282817Z [Dispatcher] agent-25: no tasks available (area=meta or any)
+2026-06-28T05:00:00.5283269Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5283761Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5284250Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5284867Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5285356Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5285844Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5286329Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5287133Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5287840Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5288679Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5289509Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5290309Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5291159Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5292136Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5293001Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5293919Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5294859Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5295805Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5297024Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5297969Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5298903Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5299854Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5300810Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5301733Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5302662Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5303604Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5304540Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5305445Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5306325Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5307390Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5307922Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5308449Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5308947Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5309449Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5309941Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5310432Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5310920Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5311418Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5311908Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5312398Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5312884Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5313571Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5314065Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5314559Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5315044Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5315537Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5316024Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5316794Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5317310Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5317803Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5318302Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5318918Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5319414Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5319900Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5320397Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5320887Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5321372Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5321861Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5322359Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5322850Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5323353Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5323942Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5324536Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5325037Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5325532Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5326037Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5326834Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5327359Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5328061Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5328643Z [Dispatcher] agent-26: no tasks available (area=innovation or any)
+2026-06-28T05:00:00.5329440Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5330162Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5330803Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5331477Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5332103Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5332709Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5333317Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5333903Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5334751Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5335340Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5335967Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5336756Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5337402Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5338053Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5338664Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5348686Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5349604Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5350497Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5351535Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5352459Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5353397Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5354195Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5355050Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5355882Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5356413Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5357133Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5357659Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5358181Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5358786Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5359398Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5359905Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5360404Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5360923Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5361430Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5361933Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5362446Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5362956Z [Dispatcher] agent-27: no tasks available (area=content or any)
+2026-06-28T05:00:00.5363442Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5363969Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5364484Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5364990Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5365490Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5365987Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5366839Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:00.5367422Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1113514Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1115511Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1116995Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1118168Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1119416Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1120304Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1120989Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1121599Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1122209Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1122820Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1123434Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1124308Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1124924Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1125534Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1126144Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1127067Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1127694Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1128306Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1128918Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1129647Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1130403Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1131033Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1131521Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1132019Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1132508Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1132997Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1133488Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1133945Z [Dispatcher] agent-28: no tasks available (area=tests or any)
+2026-06-28T05:00:11.1134401Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1134907Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1135405Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1135893Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1136381Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1137275Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1137762Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1138246Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1138746Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1139260Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1139752Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1140421Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1140912Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1141407Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1141891Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1142379Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1142863Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1143345Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1143833Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1144315Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1144805Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1145416Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1145913Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1146401Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1147179Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1147664Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1148154Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1148738Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1149321Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1149811Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1150316Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1150807Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1151291Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1151777Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1152266Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1152729Z [Dispatcher] agent-29: no tasks available (area=behaviors or any)
+2026-06-28T05:00:11.1153185Z [Dispatcher] Task idea-146 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1153674Z [Dispatcher] Task idea-149 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1154167Z [Dispatcher] Task idea-150 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1154656Z [Dispatcher] Task idea-151 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1155146Z [Dispatcher] Task idea-152 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1155638Z [Dispatcher] Task idea-153 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1156129Z [Dispatcher] Task idea-154 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1156956Z [Dispatcher] Task idea-155 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1157464Z [Dispatcher] Task idea-156 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1157975Z [Dispatcher] Task idea-157 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1158490Z [Dispatcher] Task idea-158 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1158991Z [Dispatcher] Task idea-159 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1159495Z [Dispatcher] Task idea-160 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1160161Z [Dispatcher] Task idea-161 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1160658Z [Dispatcher] Task idea-162 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1161150Z [Dispatcher] Task idea-163 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1161641Z [Dispatcher] Task idea-164 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1162128Z [Dispatcher] Task idea-165 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1162614Z [Dispatcher] Task idea-167 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1163112Z [Dispatcher] Task idea-169 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1163606Z [Dispatcher] Task idea-171 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1164094Z [Dispatcher] Task idea-173 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1164586Z [Dispatcher] Task idea-174 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1165198Z [Dispatcher] Task idea-175 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1165690Z [Dispatcher] Task idea-176 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1166173Z [Dispatcher] Task idea-177 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1166983Z [Dispatcher] Task idea-178 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1167576Z [Dispatcher] Task sync-gd-decision-get-weights has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1168156Z [Dispatcher] Task idea-179 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1168645Z [Dispatcher] Task idea-180 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1169130Z [Dispatcher] Task idea-181 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1169625Z [Dispatcher] Task idea-182 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1170127Z [Dispatcher] Task idea-183 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1170615Z [Dispatcher] Task idea-184 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1171104Z [Dispatcher] Task idea-185 has path overlap with active task, skipping for now
+2026-06-28T05:00:11.1171575Z [Dispatcher] agent-30: no tasks available (area=meta or any)
+2026-06-28T05:00:11.1171826Z 
+2026-06-28T05:00:11.1171937Z [Dispatcher] Saved agent_lock.json
+2026-06-28T05:00:11.1172113Z 
+2026-06-28T05:00:11.1172233Z [Dispatcher] Triggering agent workflows...
+2026-06-28T05:00:11.1172553Z [Dispatcher] Triggered agent-1 (jules-agent-1.yml)
+2026-06-28T05:00:11.1172897Z [Dispatcher] Triggered agent-2 (jules-agent-2.yml)
+2026-06-28T05:00:11.1173235Z [Dispatcher] Triggered agent-3 (jules-agent-3.yml)
+2026-06-28T05:00:11.1173440Z 
+2026-06-28T05:00:11.1173550Z [Dispatcher] Remaining tasks by area:
+2026-06-28T05:00:11.1173817Z   content: 1
+2026-06-28T05:00:11.1174009Z   innovation: 37
+2026-06-28T05:00:11.1174133Z 
+2026-06-28T05:00:11.1174254Z [Dispatcher] Done!
+2026-06-28T05:00:11.1252755Z ##[group]Run python3 scripts/status_agents.py
+2026-06-28T05:00:11.1253135Z [36;1mpython3 scripts/status_agents.py[0m
+2026-06-28T05:00:11.1285683Z shell: /usr/bin/bash -e {0}
+2026-06-28T05:00:11.1285935Z env:
+2026-06-28T05:00:11.1286199Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:11.1286917Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+2026-06-28T05:00:11.1287361Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:11.1287761Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:11.1288147Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+2026-06-28T05:00:11.1288531Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+2026-06-28T05:00:11.1291531Z   GITHUB_TOKEN: ***
+2026-06-28T05:00:11.1291749Z ##[endgroup]
+2026-06-28T05:00:11.1559679Z ======================================================================
+2026-06-28T05:00:11.1560678Z JULES AGENT DASHBOARD
+2026-06-28T05:00:11.1561197Z Time: 2026-06-28 05:00:11 UTC
+2026-06-28T05:00:11.1561608Z ======================================================================
+2026-06-28T05:00:11.1561949Z 
+2026-06-28T05:00:11.1562089Z Tasks: 149 done / 38 todo / 187 total
+2026-06-28T05:00:11.1562484Z Progress: 79.7%
+2026-06-28T05:00:11.1562665Z 
+2026-06-28T05:00:11.1562945Z Agent                Status       Area           Task                           Cycles  
+2026-06-28T05:00:11.1563629Z ------------------------------------------------------------------------------------
+2026-06-28T05:00:11.1564698Z agent-1              [93massigned[0m     ai-core        idea-145                       0/30
+2026-06-28T05:00:11.1565565Z agent-10             [90midle[0m         meta           -                              0/30
+2026-06-28T05:00:11.1566389Z agent-11             [90midle[0m         innovation     -                              0/30
+2026-06-28T05:00:11.1567528Z agent-12             [90midle[0m         ai-core        -                              0/30
+2026-06-28T05:00:11.1568327Z agent-13             [90midle[0m         tests          -                              0/30
+2026-06-28T05:00:11.1569132Z agent-14             [90midle[0m         content        -                              0/30
+2026-06-28T05:00:11.1569925Z agent-15             [90midle[0m         meta           -                              0/30
+2026-06-28T05:00:11.1570725Z agent-16             [90midle[0m         innovation     -                              0/30
+2026-06-28T05:00:11.1571482Z agent-17             [90midle[0m         ai-core        -                              0/30
+2026-06-28T05:00:11.1572095Z agent-18             [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:00:11.1572653Z agent-19             [90midle[0m         tests          -                              0/30
+2026-06-28T05:00:11.1573231Z agent-2              [93massigned[0m     behaviors      idea-148                       0/30
+2026-06-28T05:00:11.1573819Z agent-20             [90midle[0m         content        -                              0/30
+2026-06-28T05:00:11.1574383Z agent-21             [90midle[0m         ai-core        -                              0/30
+2026-06-28T05:00:11.1574952Z agent-22             [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:00:11.1575525Z agent-23             [90midle[0m         tests          -                              0/30
+2026-06-28T05:00:11.1576089Z agent-24             [90midle[0m         content        -                              0/30
+2026-06-28T05:00:11.1576822Z agent-25             [90midle[0m         meta           -                              0/30
+2026-06-28T05:00:11.1577388Z agent-26             [90midle[0m         innovation     -                              0/30
+2026-06-28T05:00:11.1577959Z agent-27             [90midle[0m         content        -                              0/30
+2026-06-28T05:00:11.1578906Z agent-28             [90midle[0m         tests          -                              0/30
+2026-06-28T05:00:11.1579495Z agent-29             [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:00:11.1580072Z agent-3              [93massigned[0m     tests          idea-168                       0/30
+2026-06-28T05:00:11.1580642Z agent-30             [90midle[0m         meta           -                              0/30
+2026-06-28T05:00:11.1581199Z agent-4              [90midle[0m         content        -                              0/30
+2026-06-28T05:00:11.1581765Z agent-5              [90midle[0m         meta           -                              0/30
+2026-06-28T05:00:11.1582279Z agent-6              [90midle[0m         innovation     -                              0/30
+2026-06-28T05:00:11.1582802Z agent-7              [90midle[0m         content        -                              0/30
+2026-06-28T05:00:11.1583479Z agent-8              [90midle[0m         tests          -                              0/30
+2026-06-28T05:00:11.1584003Z agent-9              [90midle[0m         behaviors      -                              0/30
+2026-06-28T05:00:11.1584538Z supervisor           [90midle[0m         supervisor     -                              0/30
+2026-06-28T05:00:11.1585000Z ------------------------------------------------------------------------------------
+2026-06-28T05:00:11.1585281Z 
+2026-06-28T05:00:11.1585366Z Active agents: 3/30
+2026-06-28T05:00:11.1585587Z Total cycles today: 0/900
+2026-06-28T05:00:11.1585738Z 
+2026-06-28T05:00:11.1585858Z ======================================================================
+2026-06-28T05:00:11.1586151Z COMPLETED TASKS
+2026-06-28T05:00:11.1586378Z ======================================================================
+2026-06-28T05:00:11.1586869Z   [done] web-visualizer-improvements
+2026-06-28T05:00:11.1587156Z   [done] ai-brain-architecture
+2026-06-28T05:00:11.1587413Z   [done] ai-perception-system
+2026-06-28T05:00:11.1587668Z   [done] ai-emotion-system
+2026-06-28T05:00:11.1587902Z   [done] ai-decision-system
+2026-06-28T05:00:11.1588135Z   [done] ai-action-system
+2026-06-28T05:00:11.1588373Z   [done] ai-personality-system
+2026-06-28T05:00:11.1588611Z   [done] ai-behavior-chase
+2026-06-28T05:00:11.1588841Z   [done] ai-behavior-flee
+2026-06-28T05:00:11.1589090Z   [done] ai-behavior-attack
+2026-06-28T05:00:11.1589322Z   [done] ai-behavior-kite
+2026-06-28T05:00:11.1589544Z   [done] ai-behavior-flank
+2026-06-28T05:00:11.1589787Z   [done] ai-behavior-group-attack
+2026-06-28T05:00:11.1590061Z   [done] ai-behavior-collect-booster
+2026-06-28T05:00:11.1590334Z   [done] ai-ball-warrior-ai
+2026-06-28T05:00:11.1590564Z   [done] ai-ball-scout-ai
+2026-06-28T05:00:11.1590787Z   [done] ai-ball-tank-ai
+2026-06-28T05:00:11.1591011Z   [done] ai-ball-healer-ai
+2026-06-28T05:00:11.1591236Z   [done] ai-ball-sniper-ai
+2026-06-28T05:00:11.1591480Z   [done] ai-ball-bomber-ai
+2026-06-28T05:00:11.1591705Z   [done] ai-ball-ninja-ai
+2026-06-28T05:00:11.1591927Z   [done] ai-ball-king-ai
+2026-06-28T05:00:11.1592232Z   [done] ai-difficulty-system
+2026-06-28T05:00:11.1592654Z   [done] ai-team-coordination
+2026-06-28T05:00:11.1593080Z   [done] auto-implement-perception-skill
+2026-06-28T05:00:11.1593580Z   [done] auto-implement-emotion-skill
+2026-06-28T05:00:11.1594064Z   [done] auto-implement-decision-skill
+2026-06-28T05:00:11.1594548Z   [done] auto-implement-action-skill
+2026-06-28T05:00:11.1595712Z   [done] auto-implement-**target-strong**-—-атакует-самого-сильн
+2026-06-28T05:00:11.1597019Z   [done] auto-implement-**kite**-—-держит-дистанцию,-атакует-при
+2026-06-28T05:00:11.1597607Z   [done] auto-implement-**flank**-—-обходит-сзади-для-удара-skil
+2026-06-28T05:00:11.1598079Z   [done] auto-implement-spectator-mode-(наблюдатель)-game-mode
+2026-06-28T05:00:11.1598499Z   [done] auto-implement-coach-mode-(тренер)-game-mode
+2026-06-28T05:00:11.1598837Z   [done] idea-feature-033
+2026-06-28T05:00:11.1599070Z   [done] idea-feature-034
+2026-06-28T05:00:11.1599507Z   [done] idea-feature-035
+2026-06-28T05:00:11.1599748Z   [done] idea-feature-036
+2026-06-28T05:00:11.1599968Z   [done] idea-feature-037
+2026-06-28T05:00:11.1600212Z   [done] ai-neural-network-learning
+2026-06-28T05:00:11.1600479Z   [done] arena-shrinking-zone
+2026-06-28T05:00:11.1600720Z   [done] ai-swarm-boids
+2026-06-28T05:00:11.1600973Z   [done] auto-create-procedural-arenas-arena
+2026-06-28T05:00:11.1601406Z   [done] auto-implement-**ball-genetics**-—-balls-reproduce-afte
+2026-06-28T05:00:11.1601873Z   [done] auto-implement-**neural-ball**-—-a-ball-controlled-by-a
+2026-06-28T05:00:11.1602324Z   [done] auto-implement-**ball-relationships**-—-balls-remember-
+2026-06-28T05:00:11.1602661Z   [done] add-particle-effects
+2026-06-28T05:00:11.1602912Z   [done] implement-kill-feed-ui
+2026-06-28T05:00:11.1603161Z   [done] procedural-hazards
+2026-06-28T05:00:11.1603422Z   [done] ai-neural-network-learning-v2
+2026-06-28T05:00:11.1603854Z   [done] ai-physics-chain-reactions
+2026-06-28T05:00:11.1604134Z   [done] ai-battle-commentator-text
+2026-06-28T05:00:11.1604418Z   [done] ai-neural-network-brain-wrapper
+2026-06-28T05:00:11.1604717Z   [done] ai-meta-evolution-phase
+2026-06-28T05:00:11.1604990Z   [done] ai-emotional-contagion-logic
+2026-06-28T05:00:11.1605270Z   [done] add-skill-effects-vfx
+2026-06-28T05:00:11.1605591Z   [done] ai-neural-network-brain-phase3
+2026-06-28T05:00:11.1605896Z   [done] arena-procedural-generation-rooms
+2026-06-28T05:00:11.1606199Z   [done] visualizer-skills-effects
+2026-06-28T05:00:11.1606745Z   [done] visualizer-interactive-spectator
+2026-06-28T05:00:11.1607089Z   [done] idea-feature-059
+2026-06-28T05:00:11.1607323Z   [done] idea-feature-060
+2026-06-28T05:00:11.1607547Z   [done] idea-feature-061
+2026-06-28T05:00:11.1607771Z   [done] idea-feature-062
+2026-06-28T05:00:11.1607989Z   [done] idea-feature-063
+2026-06-28T05:00:11.1608215Z   [done] balance-buff-assassin
+2026-06-28T05:00:11.1608474Z   [done] balance-buff-healer
+2026-06-28T05:00:11.1608713Z   [done] balance-buff-rogue
+2026-06-28T05:00:11.1608962Z   [done] balance-buff-swarm
+2026-06-28T05:00:11.1609199Z   [done] balance-buff-guardian
+2026-06-28T05:00:11.1609462Z   [done] sync-gd-perception-calc-dist
+2026-06-28T05:00:11.1609742Z   [done] innovate-perceptron-ai
+2026-06-28T05:00:11.1609992Z   [done] idea-feature-072
+2026-06-28T05:00:11.1610218Z   [done] idea-feature-073
+2026-06-28T05:00:11.1610438Z   [done] idea-feature-074
+2026-06-28T05:00:11.1610656Z   [done] idea-feature-075
+2026-06-28T05:00:11.1610874Z   [done] idea-feature-076
+2026-06-28T05:00:11.1611092Z   [done] idea-feature-077
+2026-06-28T05:00:11.1611317Z   [done] idea-feature-078
+2026-06-28T05:00:11.1611537Z   [done] idea-feature-079
+2026-06-28T05:00:11.1611758Z   [done] idea-ball_type-080
+2026-06-28T05:00:11.1611988Z   [done] idea-ball_type-081
+2026-06-28T05:00:11.1612215Z   [done] idea-ball_type-082
+2026-06-28T05:00:11.1612444Z   [done] idea-ball_type-083
+2026-06-28T05:00:11.1612670Z   [done] idea-ball_type-084
+2026-06-28T05:00:11.1612896Z   [done] idea-ball_type-085
+2026-06-28T05:00:11.1613121Z   [done] idea-ball_type-086
+2026-06-28T05:00:11.1613343Z   [done] idea-ball_type-087
+2026-06-28T05:00:11.1613580Z   [done] idea-ball_type-088
+2026-06-28T05:00:11.1613804Z   [done] idea-ball_type-089
+2026-06-28T05:00:11.1614028Z   [done] idea-ball_type-090
+2026-06-28T05:00:11.1614254Z   [done] idea-ball_type-091
+2026-06-28T05:00:11.1614480Z   [done] idea-arena-092
+2026-06-28T05:00:11.1614705Z   [done] idea-arena-093
+2026-06-28T05:00:11.1614921Z   [done] idea-arena-094
+2026-06-28T05:00:11.1615137Z   [done] idea-arena-095
+2026-06-28T05:00:11.1615350Z   [done] idea-arena-096
+2026-06-28T05:00:11.1615558Z   [done] idea-arena-097
+2026-06-28T05:00:11.1615771Z   [done] idea-arena-098
+2026-06-28T05:00:11.1615978Z   [done] idea-arena-099
+2026-06-28T05:00:11.1616183Z   [done] idea-arena-100
+2026-06-28T05:00:11.1616393Z   [done] idea-arena-101
+2026-06-28T05:00:11.1616860Z   [done] idea-arena-102
+2026-06-28T05:00:11.1617087Z   [done] idea-arena-103
+2026-06-28T05:00:11.1617297Z   [done] idea-arena-104
+2026-06-28T05:00:11.1617648Z   [done] idea-arena-105
+2026-06-28T05:00:11.1617869Z   [done] idea-arena-106
+2026-06-28T05:00:11.1618087Z   [done] idea-arena-107
+2026-06-28T05:00:11.1618306Z   [done] idea-arena-108
+2026-06-28T05:00:11.1618514Z   [done] idea-arena-109
+2026-06-28T05:00:11.1618722Z   [done] idea-arena-110
+2026-06-28T05:00:11.1618935Z   [done] idea-arena-111
+2026-06-28T05:00:11.1619143Z   [done] idea-arena-112
+2026-06-28T05:00:11.1619363Z   [done] idea-arena-113
+2026-06-28T05:00:11.1619573Z   [done] idea-arena-114
+2026-06-28T05:00:11.1619780Z   [done] idea-arena-115
+2026-06-28T05:00:11.1619991Z   [done] idea-arena-116
+2026-06-28T05:00:11.1620201Z   [done] idea-arena-117
+2026-06-28T05:00:11.1620417Z   [done] idea-arena-118
+2026-06-28T05:00:11.1620625Z   [done] idea-arena-119
+2026-06-28T05:00:11.1620836Z   [done] idea-arena-120
+2026-06-28T05:00:11.1621047Z   [done] idea-arena-121
+2026-06-28T05:00:11.1621380Z   [done] idea-arena-122
+2026-06-28T05:00:11.1621597Z   [done] idea-arena-123
+2026-06-28T05:00:11.1621814Z   [done] idea-arena-124
+2026-06-28T05:00:11.1622024Z   [done] idea-arena-125
+2026-06-28T05:00:11.1622233Z   [done] idea-arena-126
+2026-06-28T05:00:11.1622438Z   [done] idea-126
+2026-06-28T05:00:11.1622641Z   [done] idea-127
+2026-06-28T05:00:11.1622830Z   [done] idea-128
+2026-06-28T05:00:11.1623022Z   [done] idea-129
+2026-06-28T05:00:11.1623211Z   [done] idea-130
+2026-06-28T05:00:11.1623405Z   [done] idea-131
+2026-06-28T05:00:11.1623603Z   [done] idea-132
+2026-06-28T05:00:11.1623800Z   [done] idea-133
+2026-06-28T05:00:11.1623989Z   [done] idea-134
+2026-06-28T05:00:11.1624180Z   [done] idea-135
+2026-06-28T05:00:11.1624368Z   [done] idea-136
+2026-06-28T05:00:11.1624563Z   [done] idea-137
+2026-06-28T05:00:11.1624751Z   [done] idea-138
+2026-06-28T05:00:11.1624939Z   [done] idea-139
+2026-06-28T05:00:11.1625127Z   [done] idea-140
+2026-06-28T05:00:11.1625314Z   [done] idea-141
+2026-06-28T05:00:11.1625512Z   [done] idea-142
+2026-06-28T05:00:11.1625700Z   [done] idea-143
+2026-06-28T05:00:11.1625886Z   [done] idea-144
+2026-06-28T05:00:11.1626076Z   [done] idea-147
+2026-06-28T05:00:11.1626264Z   [done] idea-166
+2026-06-28T05:00:11.1626663Z   [done] idea-170
+2026-06-28T05:00:11.1626877Z   [done] idea-172
+2026-06-28T05:00:11.1626990Z 
+2026-06-28T05:00:11.1725431Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-28T05:00:11.1727055Z Post job cleanup.
+2026-06-28T05:00:11.2973476Z Cache hit occurred on the primary key setup-python-Linux-x64-24.04-Ubuntu-python-3.12.13-pip-de3f210b8cdd0a6403c77eebe8a22893549b23e0eae29a935322afe0ef1cbc61, not saving cache.
+2026-06-28T05:00:11.2975437Z (node:2380) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-06-28T05:00:11.2976727Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-06-28T05:00:11.3126781Z Post job cleanup.
+2026-06-28T05:00:11.4007587Z [command]/usr/bin/git version
+2026-06-28T05:00:11.4078721Z git version 2.54.0
+2026-06-28T05:00:11.4119024Z Temporarily overriding HOME='/home/runner/work/_temp/7cbfa449-071f-49ce-a20e-7a404be67a50' before making global git config changes
+2026-06-28T05:00:11.4120036Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-28T05:00:11.4124839Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ball-royale/ball-royale
+2026-06-28T05:00:11.4169395Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-28T05:00:11.4210610Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-28T05:00:11.4471302Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-28T05:00:11.4500836Z http.https://github.com/.extraheader
+2026-06-28T05:00:11.4514304Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-06-28T05:00:11.4552554Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-28T05:00:11.4811083Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-28T05:00:11.4846218Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-28T05:00:11.5244398Z Cleaning up orphan processes
+2026-06-28T05:00:11.5648866Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
