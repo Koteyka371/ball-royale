@@ -18944,6 +18944,58 @@ class Action:
                 if hasattr(self, "_spawn_skill_particles"):
                     self._spawn_skill_particles("explosion")
 
+            elif skill_name == "boomerang":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    can_cast = True
+                    for h in self.world.arena.hazards:
+                        if getattr(h, "kind", "") == "boomerang" and getattr(h, "owner_id", None) == self.ball.id:
+                            can_cast = False
+                            break
+
+                    if can_cast and skill_timer <= 0:
+                        enemies = self._get_enemies()
+                        nx, ny = 1.0, 0.0
+                        if enemies:
+                            closest_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+                            dx = closest_enemy.x - self.ball.x
+                            dy = closest_enemy.y - self.ball.y
+                            import math
+                            dist = math.sqrt(dx*dx + dy*dy)
+                            if dist > 0.0001:
+                                nx, ny = dx/dist, dy/dist
+
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            class Hazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+                                    self.active = True
+
+                        boomerang = Hazard(
+                            id=18500 + len(self.world.arena.hazards),
+                            x=self.ball.x + nx * (getattr(self.ball, "radius", 10.0) + 5.0),
+                            y=self.ball.y + ny * (getattr(self.ball, "radius", 10.0) + 5.0),
+                            radius=15.0,
+                            kind="boomerang",
+                            damage=getattr(self.ball, "damage", 25)
+                        )
+                        setattr(boomerang, "vx", nx * 400.0)
+                        setattr(boomerang, "vy", ny * 400.0)
+                        setattr(boomerang, "duration", 5.0)  # Max lifetime just in case
+                        setattr(boomerang, "owner_id", getattr(self.ball, "id", None))
+                        setattr(boomerang, "boomerang_state", "outgoing")
+                        setattr(boomerang, "boomerang_timer", 0.0)
+                        setattr(boomerang, "hit_enemies", set())
+
+                        self.world.arena.hazards.append(boomerang)
+                        self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 5.0)
+
             elif skill_name == "fireball":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     fireball_hazard = None
