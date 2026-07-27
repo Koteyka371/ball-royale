@@ -40975,3 +40975,5 @@ GAME_MODES['mercenary_outposts'] = MercenaryOutpostsMode()
 
 from ai.necromantic_area_denial import NecromanticAreaDenialMode
 GAME_MODES['necromantic_area_denial'] = NecromanticAreaDenialMode()
+from ai.echolocation_only import EcholocationOnlyMode
+GAME_MODES['echolocation_only'] = EcholocationOnlyMode()

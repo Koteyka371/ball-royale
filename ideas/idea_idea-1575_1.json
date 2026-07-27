@@ -1,0 +1,4 @@
+{
+  "title": "Reverse Controls Mine",
+  "description": "A trap that temporarily reverses a ball's movement vectors (vx, vy) upon triggering, causing the player to move in the opposite direction."
+}

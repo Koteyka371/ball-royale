@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zone Mode",
+  "description": "A mode where a small circular safe zone exists that slowly shrinks over time. Players outside the zone take continuous damage."
+}
