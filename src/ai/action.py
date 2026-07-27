@@ -6516,11 +6516,13 @@ class Action:
                                     dy = other.y - b.y
                                     dist = math.sqrt(dx*dx + dy*dy)
                                     if dist <= 80.0:
-                                        if hasattr(other, "take_damage"):
+                                        if getattr(b, "is_confetti_clone", False):
+                                            other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 1.5
+                                        elif hasattr(other, "take_damage"):
                                             other.take_damage(20.0)
                                         else:
                                             other.hp -= 20.0
-                                            if other.hp <= 0:
+                                            if getattr(other, "hp", 100) <= 0:
 
                                                 other.alive = False
 
@@ -17052,32 +17054,38 @@ class Action:
 
             elif skill_name == "trickster_clone":
                 import copy
+                import math
                 if hasattr(self.world, "balls"):
-                    clone = copy.copy(self.ball)
-                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
-                    if hasattr(self.world, "next_id"):
-                        self.world.next_id += 1
+                    for i in range(3):
+                        clone = copy.copy(self.ball)
+                        clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
 
-                    clone.hp = getattr(self.ball, "max_hp", 100) * 0.5
-                    clone.max_hp = clone.hp
-                    clone.damage = 0.0
-                    clone.is_decoy_clone = True
-                    clone.is_illusion = True
-                    clone.mimic_owner = getattr(self.ball, "id", None)
-                    clone.mimic_timer = 15.0
+                        clone.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                        clone.max_hp = clone.hp
+                        clone.damage = 0.0
+                        clone.is_decoy_clone = True
+                        clone.is_illusion = True
+                        clone.mimic_owner = getattr(self.ball, "id", None)
+                        clone.mimic_timer = 15.0
 
-                    clone.skill = None
-                    clone.SKILL = None
-                    if hasattr(clone, "active_skill"):
-                        clone.active_skill = None
-                    clone.skill_timer = 9999.0
+                        clone.skill = None
+                        clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+                        clone.skill_timer = 9999.0
 
-                    clone.is_decoy = True
-                    clone.decoy_type = "explosive"
-                    clone.decoy_timer = 15.0
-                    clone.is_confetti_clone = True
+                        clone.is_decoy = True
+                        clone.decoy_type = "explosive"
+                        clone.decoy_timer = 15.0
+                        clone.is_confetti_clone = True
 
-                    self.world.balls.append(clone)
+                        angle = (i * 2 * math.pi / 3)
+                        clone.vx = 200 * math.cos(angle)
+                        clone.vy = 200 * math.sin(angle)
+
+                        self.world.balls.append(clone)
 
             elif skill_name == "decoy_clone":
                 import copy
