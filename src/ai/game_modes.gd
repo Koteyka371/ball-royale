@@ -64045,3 +64045,7 @@ class PulsatingCoreMode extends GameMode:
 
 		super.apply_dynamic_traits(world, balls, delta)
 GAME_MODES["pulsating_core"] = PulsatingCoreMode.new()
+
+var ADField = load("res://src/ai/acoustic_disruption_field.gd")
+if ADField != null:
+	GAME_MODES["acoustic_disruption_field"] = ADField.new()

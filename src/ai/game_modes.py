@@ -41242,3 +41242,6 @@ class PulsatingCoreMode(GameMode):
                                     b.vy = getattr(b, "vy", 0.0) + dir_y * force * delta * 50
 
 GAME_MODES["pulsating_core_mode"] = PulsatingCoreMode()
+
+from ai.acoustic_disruption_field import AcousticDisruptionFieldMode
+GAME_MODES['acoustic_disruption_field'] = AcousticDisruptionFieldMode()
