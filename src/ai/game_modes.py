@@ -984,6 +984,71 @@ class GameMode:
                                     b.cooldown_multiplier = getattr(b, "_orig_cooldown_multiplier", 1.0) * 0.5
             world.lightning_strike_timer = timer
 
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if not getattr(h, "active", True):
+                    continue
+                if getattr(h, "kind", "") == "boomerang":
+                    import math
+                    owner = next((b for b in balls if getattr(b, "id", None) == getattr(h, "owner_id", None)), None)
+                    state = getattr(h, "boomerang_state", "outgoing")
+                    timer = getattr(h, "boomerang_timer", 0.0)
+                    timer += delta
+                    setattr(h, "boomerang_timer", timer)
+
+                    # Move
+                    vx = getattr(h, "vx", 0.0)
+                    vy = getattr(h, "vy", 0.0)
+                    h.x += vx * delta
+                    h.y += vy * delta
+
+                    # State transitions
+                    if state == "outgoing" and timer >= 0.8:
+                        setattr(h, "boomerang_state", "paused")
+                        setattr(h, "boomerang_timer", 0.0)
+                        setattr(h, "vx", 0.0)
+                        setattr(h, "vy", 0.0)
+                        setattr(h, "hit_enemies", set()) # Reset hits for the return journey
+                    elif state == "paused" and timer >= 0.5:
+                        setattr(h, "boomerang_state", "returning")
+                        setattr(h, "boomerang_timer", 0.0)
+                    elif state == "returning":
+                        if owner and getattr(owner, "alive", True):
+                            dx = owner.x - h.x
+                            dy = owner.y - h.y
+                            dist = math.hypot(dx, dy)
+                            if dist < getattr(owner, "radius", 10.0) + getattr(h, "radius", 15.0):
+                                h.active = False
+                                h.duration = 0.0
+                            elif dist > 0:
+                                speed = 500.0
+                                setattr(h, "vx", (dx / dist) * speed)
+                                setattr(h, "vy", (dy / dist) * speed)
+                        else:
+                            # Owner is dead, just disappear
+                            h.active = False
+                            h.duration = 0.0
+
+                    # Collision
+                    if getattr(h, "active", True):
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "id", None) != getattr(h, "owner_id", None):
+                                dist_sq = (b.x - h.x)**2 + (b.y - h.y)**2
+                                hit_rad = getattr(b, "radius", 10.0) + getattr(h, "radius", 15.0)
+                                if dist_sq < hit_rad * hit_rad:
+                                    hit_enemies = getattr(h, "hit_enemies", set())
+                                    if b.id not in hit_enemies:
+                                        hit_enemies.add(b.id)
+                                        setattr(h, "hit_enemies", hit_enemies)
+                                        if hasattr(b, "take_damage"):
+                                            b.take_damage(getattr(h, "damage", 25.0))
+                                        else:
+                                            b.hp = getattr(b, "hp", 100.0) - getattr(h, "damage", 25.0)
+                                            if b.hp <= 0:
+                                                b.alive = False
+                                                b.hp = 0
+
         # Manage overcharge timers
         for b in balls:
             if getattr(b, "alive", False) and getattr(b, "is_overcharged", False):
