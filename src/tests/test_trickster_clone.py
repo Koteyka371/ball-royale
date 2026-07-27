@@ -17,7 +17,7 @@ def test_trickster_clone_skill():
 
     action._use_skill()
 
-    assert len(world.balls) == 2
+    assert len(world.balls) == 4
 
     clone = world.balls[1]
     assert getattr(clone, "damage", None) == 0.0

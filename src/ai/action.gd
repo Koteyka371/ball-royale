@@ -13034,30 +13034,40 @@ func execute(strategy: String, delta: float):
                                 var dy = opos_y - bpos_y
                                 var dist = sqrt(dx*dx + dy*dy)
                                 if dist <= 80.0:
-                                    if other.has_method("take_damage"):
-                                        other.take_damage(20.0)
+                                    var is_confetti_clone = b.is_confetti_clone if "is_confetti_clone" in b else (b.get_meta("is_confetti_clone") if b.has_method("has_meta") and b.has_meta("is_confetti_clone") else false)
+                                    if is_confetti_clone:
+                                        if "stutter_timer" in other:
+                                            other.stutter_timer += 1.5
+                                        elif other.has_method("has_meta") and other.has_method("set_meta") and other.has_method("get_meta"):
+                                            var current_stutter = 0.0
+                                            if other.has_meta("stutter_timer"):
+                                                current_stutter = other.get_meta("stutter_timer")
+                                            other.set_meta("stutter_timer", current_stutter + 1.5)
                                     else:
-                                        if "hp" in other:
-                                            other.hp -= 20.0
-                                        elif other.has_method("get_meta") and other.has_meta("hp"):
-                                            other.set_meta("hp", other.get_meta("hp") - 20.0)
+                                        if other.has_method("take_damage"):
+                                            other.take_damage(20.0)
+                                        else:
+                                            if "hp" in other:
+                                                other.hp -= 20.0
+                                            elif other.has_method("get_meta") and other.has_meta("hp"):
+                                                other.set_meta("hp", other.get_meta("hp") - 20.0)
 
-                                        var other_hp_check = 1.0
-                                        if "hp" in other: other_hp_check = other.hp
-                                        elif other.has_method("get_meta") and other.has_meta("hp"): other_hp_check = other.get_meta("hp")
-                                        if other_hp_check <= 0.0:
-                                            if "alive" in other:
-                                                other.alive = false
-                                            elif other.has_method("set_meta"):
-                                                other.set_meta("alive", false)
+                                            var other_hp_check = 1.0
+                                            if "hp" in other: other_hp_check = other.hp
+                                            elif other.has_method("get_meta") and other.has_meta("hp"): other_hp_check = other.get_meta("hp")
+                                            if other_hp_check <= 0.0:
+                                                if "alive" in other:
+                                                    other.alive = false
+                                                elif other.has_method("set_meta"):
+                                                    other.set_meta("alive", false)
 
-                                    if "stutter_timer" in other:
-                                        other.stutter_timer += 2.0
-                                    elif other.has_method("has_meta") and other.has_method("set_meta") and other.has_method("get_meta"):
-                                        var current_stutter = 0.0
-                                        if other.has_meta("stutter_timer"):
-                                            current_stutter = other.get_meta("stutter_timer")
-                                        other.set_meta("stutter_timer", current_stutter + 2.0)
+                                        if "stutter_timer" in other:
+                                            other.stutter_timer += 2.0
+                                        elif other.has_method("has_meta") and other.has_method("set_meta") and other.has_method("get_meta"):
+                                            var current_stutter = 0.0
+                                            if other.has_meta("stutter_timer"):
+                                                current_stutter = other.get_meta("stutter_timer")
+                                            other.set_meta("stutter_timer", current_stutter + 2.0)
 
     if strategy == "target_weak":
         _target_weak(delta)
@@ -33122,57 +33132,70 @@ func _use_skill():
                 self.world.arena.hazards.append(smoke)
         elif skill_name == "trickster_clone":
             if "balls" in self.world:
-                var clone = null
-                if self.ball.has_method("duplicate"):
-                    clone = self.ball.duplicate()
-                elif self.ball is Dictionary:
-                    clone = self.ball.duplicate()
+                for i in range(3):
+                    var clone = null
+                    if self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                    elif self.ball is Dictionary:
+                        clone = self.ball.duplicate()
 
-                if clone != null:
-                    var next_id = randi() % 90000 + 10000
-                    if "next_id" in self.world:
-                        next_id = self.world.next_id
-                        self.world.next_id += 1
+                    if clone != null:
+                        var next_id = randi() % 90000 + 10000
+                        if "next_id" in self.world:
+                            next_id = self.world.next_id
+                            self.world.next_id += 1
 
-                    if "id" in clone: clone.id = next_id
+                        if "id" in clone: clone.id = next_id
 
-                    var owner_max_hp = 100.0
-                    if "max_hp" in self.ball: owner_max_hp = float(self.ball.max_hp)
+                        var owner_max_hp = 100.0
+                        if "max_hp" in self.ball: owner_max_hp = float(self.ball.max_hp)
 
-                    if "hp" in clone and "max_hp" in clone:
-                        clone.max_hp = owner_max_hp * 0.5
-                        clone.hp = clone.max_hp
-                    if "damage" in clone: clone.damage = 0.0
+                        if "hp" in clone and "max_hp" in clone:
+                            clone.max_hp = owner_max_hp * 0.5
+                            clone.hp = clone.max_hp
+                        if "damage" in clone: clone.damage = 0.0
 
-                    if "skill" in clone: clone.skill = ""
-                    if "SKILL" in clone: clone.SKILL = ""
-                    if "active_skill" in clone: clone.active_skill = ""
-                    if "skill_timer" in clone: clone.skill_timer = 9999.0
+                        if "skill" in clone: clone.skill = ""
+                        if "SKILL" in clone: clone.SKILL = ""
+                        if "active_skill" in clone: clone.active_skill = ""
+                        if "skill_timer" in clone: clone.skill_timer = 9999.0
 
-                    var owner_id = -1
-                    if "id" in self.ball: owner_id = self.ball.id
-                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+                        var owner_id = -1
+                        if "id" in self.ball: owner_id = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
 
-                    if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
-                        clone.set_meta("is_decoy_clone", true)
-                        clone.set_meta("is_illusion", true)
-                        clone.set_meta("mimic_owner", owner_id)
-                        clone.set_meta("mimic_timer", 15.0)
-                        clone.set_meta("is_decoy", true)
-                        clone.set_meta("decoy_type", "explosive")
-                        clone.set_meta("decoy_timer", 15.0)
-                        clone.set_meta("is_confetti_clone", true)
-                    elif typeof(clone) == TYPE_DICTIONARY:
-                        clone["is_decoy_clone"] = true
-                        clone["is_illusion"] = true
-                        clone["mimic_owner"] = owner_id
-                        clone["mimic_timer"] = 15.0
-                        clone["is_decoy"] = true
-                        clone["decoy_type"] = "explosive"
-                        clone["decoy_timer"] = 15.0
-                        clone["is_confetti_clone"] = true
 
-                    self.world.balls.append(clone)
+                        if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                            clone.set_meta("is_decoy_clone", true)
+                            clone.set_meta("is_illusion", true)
+                            clone.set_meta("mimic_owner", owner_id)
+                            clone.set_meta("mimic_timer", 15.0)
+                            clone.set_meta("is_decoy", true)
+                            clone.set_meta("decoy_type", "explosive")
+                            clone.set_meta("decoy_timer", 15.0)
+                            clone.set_meta("is_confetti_clone", true)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["is_decoy_clone"] = true
+                            clone["is_illusion"] = true
+                            clone["mimic_owner"] = owner_id
+                            clone["mimic_timer"] = 15.0
+                            clone["is_decoy"] = true
+                            clone["decoy_type"] = "explosive"
+                            clone["decoy_timer"] = 15.0
+                            clone["is_confetti_clone"] = true
+
+                        var angle = (i * 2.0 * PI) / 3.0
+                        if "vx" in clone and "vy" in clone:
+                            clone.vx = 200.0 * cos(angle)
+                            clone.vy = 200.0 * sin(angle)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["vx"] = 200.0 * cos(angle)
+                            clone["vy"] = 200.0 * sin(angle)
+                        elif typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                            clone.set_meta("vx", 200.0 * cos(angle))
+                            clone.set_meta("vy", 200.0 * sin(angle))
+
+                        self.world.balls.append(clone)
 
         elif skill_name == "decoy_clone":
             if "balls" in self.world:
