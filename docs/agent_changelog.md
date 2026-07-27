@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1557] Nemesis Tractor Beam — *2026-07-27 11:02:42 UTC*
+
+An activated ability that slowly pulls your Nemesis towards you while slowing them down.
+
+---
+
 ## [idea-1597] Gravity Inverter Zone — *2026-07-27 10:34:42 UTC*
 
 A specific zone in the arena where the effects of gravity and knockbacks are completely reversed for all entities inside.

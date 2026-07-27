@@ -26658,7 +26658,7 @@
     },
     {
       "id": "idea-1557",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Tractor Beam",
@@ -39985,6 +39985,23 @@
         "src/ai/quantum_link.py",
         "src/ai/quantum_link.gd",
         "tests/test_quantum_link.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2340",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Bullet Mode",
+      "description": "A game mode where balls firing projectiles (if applicable) can bounce off walls up to 5 times. Each bounce increases the projectile speed by 10% and damage by 5%.",
+      "allowed_paths": [
+        "src/ai/bouncy_bullet.py",
+        "src/ai/bouncy_bullet.gd",
+        "tests/test_bouncy_bullet.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
