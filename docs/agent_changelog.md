@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1600] Gravity Swap Hazard — *2026-07-27 21:33:10 UTC*
+
+A hazard zone that reverses the controls and gravity effects of anyone who enters it for a few seconds.
+
+---
+
 ## [idea-1548] Gravity Boots Active Item — *2026-07-27 21:25:43 UTC*
 
 An active item that players can pick up and activate to individually reverse their own gravity for a short time. Useful for dodging floor-based hazards like lava or spikes, or escaping a dense group of enemies.

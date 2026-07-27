@@ -27391,7 +27391,7 @@
     },
     {
       "id": "idea-1600",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Gravity Swap Hazard",
@@ -40087,6 +40087,40 @@
         "src/ai/chain_reaction_overload.py",
         "src/ai/chain_reaction_overload.gd",
         "tests/test_chain_reaction_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2346",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Conveyor Belt Arena",
+      "description": "An arena mode where the ground is a series of conveyor belts that push balls in specific directions, requiring players to constantly adjust their movement and aim to stay in position or reach their targets.",
+      "allowed_paths": [
+        "src/arena/conveyor_belt_arena.py",
+        "src/arena/conveyor_belt_arena.gd",
+        "tests/test_conveyor_belt_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2347",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Engineer's Moving Fortress",
+      "description": "A new hazard type that is a large mobile platform with deployable barricades and integrated healing stations. Teams can capture and ride the fortress around the arena, using it as a moving base of operations.",
+      "allowed_paths": [
+        "src/ai/engineers_moving_fortress.py",
+        "src/ai/engineers_moving_fortress.gd",
+        "tests/test_engineers_moving_fortress.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
