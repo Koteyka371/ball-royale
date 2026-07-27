@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1588] Black Market Auction Event — *2026-07-27 16:22:32 UTC*
+
+A mid-game event where players can wager their collected loadout fragments in a fast-paced blind auction to secure ultra-rare, game-changing booster items or exclusive cosmetics.
+
+---
+
 ## [idea-1557] Nemesis Tractor Beam — *2026-07-27 11:02:42 UTC*
 
 An activated ability that slowly pulls your Nemesis towards you while slowing them down.
