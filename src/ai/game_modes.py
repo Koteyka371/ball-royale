@@ -24939,11 +24939,25 @@ class StickyArenaMode(GameMode):
                     break
 
             if in_glue:
-                b.speed = getattr(b, "base_speed", 100.0) * 0.5
+                b.glue_time = getattr(b, "glue_time", 0.0) + delta
+
+                base_speed = getattr(b, "base_speed", 100.0)
+                # Speed smoothly decreases over time, down to 10% of base speed
+                reduction_factor = max(0.1, 1.0 - 0.2 * b.glue_time)
+                b.speed = base_speed * reduction_factor
+
                 b.vx = getattr(b, "vx", 0.0) * 0.95
                 b.vy = getattr(b, "vy", 0.0) * 0.95
+
+                # Increase mass drastically
+                if not hasattr(b, "base_mass"):
+                    b.base_mass = getattr(b, "mass", 1.0)
+                b.mass = b.base_mass * 5.0
             else:
+                b.glue_time = 0.0
                 b.speed = getattr(b, "base_speed", 100.0)
+                if hasattr(b, "base_mass"):
+                    b.mass = b.base_mass
 
             # Wall dampening
             margin = br + 5.0

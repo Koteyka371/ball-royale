@@ -39914,12 +39914,21 @@ class StickyArenaMode extends GameMode:
 					break
 
 			if in_glue:
+				var glue_time = 0.0
+				if "glue_time" in b: glue_time = b.glue_time
+				elif b.has_method("get_meta") and b.has_meta("glue_time"): glue_time = b.get_meta("glue_time")
+
+				glue_time += delta
+				if "glue_time" in b: b.glue_time = glue_time
+				elif b.has_method("set_meta"): b.set_meta("glue_time", glue_time)
+
 				var base_speed = 100.0
 				if "base_speed" in b: base_speed = b.base_speed
 				elif b.has_method("get_meta") and b.has_meta("base_speed"): base_speed = b.get_meta("base_speed")
 
-				if "speed" in b: b.speed = base_speed * 0.5
-				elif b.has_method("set_meta"): b.set_meta("speed", base_speed * 0.5)
+				var reduction_factor = max(0.1, 1.0 - 0.2 * glue_time)
+				if "speed" in b: b.speed = base_speed * reduction_factor
+				elif b.has_method("set_meta"): b.set_meta("speed", base_speed * reduction_factor)
 
 				var vx = 0.0
 				var vy = 0.0
@@ -39932,13 +39941,45 @@ class StickyArenaMode extends GameMode:
 				elif b.has_method("set_meta"): b.set_meta("vx", vx * 0.95)
 				if "vy" in b: b.vy = vy * 0.95
 				elif b.has_method("set_meta"): b.set_meta("vy", vy * 0.95)
+
+				var base_mass = 1.0
+				var mass = 1.0
+				if "mass" in b: mass = b.mass
+				elif b.has_method("get_meta") and b.has_meta("mass"): mass = b.get_meta("mass")
+
+				if "base_mass" in b: base_mass = b.base_mass
+				elif b.has_method("get_meta") and b.has_meta("base_mass"): base_mass = b.get_meta("base_mass")
+				else:
+					base_mass = mass
+					if "base_mass" in b: b.base_mass = base_mass
+					elif b.has_method("set_meta"): b.set_meta("base_mass", base_mass)
+
+				if "mass" in b: b.mass = base_mass * 5.0
+				elif b.has_method("set_meta"): b.set_meta("mass", base_mass * 5.0)
+
 			else:
+				if "glue_time" in b: b.glue_time = 0.0
+				elif b.has_method("set_meta"): b.set_meta("glue_time", 0.0)
+
 				var base_speed = 100.0
 				if "base_speed" in b: base_speed = b.base_speed
 				elif b.has_method("get_meta") and b.has_meta("base_speed"): base_speed = b.get_meta("base_speed")
 
 				if "speed" in b: b.speed = base_speed
 				elif b.has_method("set_meta"): b.set_meta("speed", base_speed)
+
+				var has_base_mass = false
+				var base_mass = 1.0
+				if "base_mass" in b:
+					base_mass = b.base_mass
+					has_base_mass = true
+				elif b.has_method("get_meta") and b.has_meta("base_mass"):
+					base_mass = b.get_meta("base_mass")
+					has_base_mass = true
+
+				if has_base_mass:
+					if "mass" in b: b.mass = base_mass
+					elif b.has_method("set_meta"): b.set_meta("mass", base_mass)
 
 			var margin = br + 5.0
 			if bx <= margin or bx >= arena_w - margin or by <= margin or by >= arena_h - margin:
