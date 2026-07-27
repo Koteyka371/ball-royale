@@ -21541,6 +21541,78 @@ class Action:
                                     # Root the victim for 2 seconds
                                     self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 2.0)
                                     hazard.duration = 0.0 # Destroy trap
+                if getattr(hazard, "kind", "") == "siren_trap":
+                    if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                        dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                        if dist_sq < (getattr(hazard, "radius", 50.0))**2:
+
+                            # Emit visual/audio event
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({
+                                    'type': 'visual_effect',
+                                    'data': {
+                                        'type': 'siren_alert',
+                                        'x': hazard.x,
+                                        'y': hazard.y,
+                                        'radius': getattr(hazard, "radius", 50.0)
+                                    }
+                                })
+
+                            # Track timer per ball on the trap
+                            if not hasattr(hazard, "siren_target_timers"):
+                                hazard.siren_target_timers = {}
+
+                            ball_id = getattr(self.ball, "id", -1)
+                            current_timer = hazard.siren_target_timers.get(ball_id, 0.0)
+
+                            hazard.siren_target_timers[ball_id] = current_timer + delta
+
+                            if hazard.siren_target_timers[ball_id] >= 3.0:
+                                # Spawn minor tornado
+                                try:
+                                    from arena.procedural_arena import Hazard as ArenaHazard
+                                    tornado = ArenaHazard(id=getattr(self.world, "next_id", 99999) + 1, x=self.ball.x, y=self.ball.y, radius=30.0, kind="local_tornado", damage=5.0)
+                                except ImportError:
+                                    tornado = type("Hazard", (), {})()
+                                    tornado.id = getattr(self.world, "next_id", 99999) + 1
+                                    tornado.x = self.ball.x
+                                    tornado.y = self.ball.y
+                                    tornado.radius = 30.0
+                                    tornado.kind = "local_tornado"
+                                    tornado.damage = 5.0
+
+                                tornado.duration = 5.0
+                                if hasattr(self.world, "next_id"): self.world.next_id += 1
+
+                                # Launch out of arena: extremely high velocity directed away from center
+                                cx = 1000.0 if not hasattr(self.world, "arena") or not hasattr(self.world.arena, "width") else self.world.arena.width / 2.0
+                                cy = 1000.0 if not hasattr(self.world, "arena") or not hasattr(self.world.arena, "height") else self.world.arena.height / 2.0
+                                import math
+                                dist_center = math.sqrt((self.ball.x - cx)**2 + (self.ball.y - cy)**2)
+                                if dist_center > 0.1:
+                                    nx, ny = (self.ball.x - cx) / dist_center, (self.ball.y - cy) / dist_center
+                                else:
+                                    nx, ny = 1.0, 0.0
+
+                                tornado.vx = nx * 5000.0
+                                tornado.vy = ny * 5000.0
+
+                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                    self.world.arena.hazards.append(tornado)
+
+                                # Launch the ball out of the arena immediately as well
+                                self.ball.vx = nx * 5000.0
+                                self.ball.vy = ny * 5000.0
+                                self.ball.is_frictionless = True
+
+                                # Destroy trap after triggering
+                                hazard.duration = 0.0
+                        else:
+                            # Reset timer if out of zone
+                            if hasattr(hazard, "siren_target_timers"):
+                                ball_id = getattr(self.ball, "id", -1)
+                                if ball_id in hazard.siren_target_timers:
+                                    hazard.siren_target_timers[ball_id] = max(0.0, hazard.siren_target_timers[ball_id] - delta)
                 if getattr(hazard, "kind", "") == "ethereal_trap":
                     dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                     if dist_sq < (getattr(hazard, "radius", 15.0) + getattr(self.ball, "radius", 10.0))**2:
