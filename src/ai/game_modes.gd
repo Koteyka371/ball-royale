@@ -56146,15 +56146,33 @@ class InverseControlsZoneMode extends GameMode:
 			var dist = sqrt(dx * dx + dy * dy)
 
 			if dist <= zone_radius:
-				var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.vx if "vx" in b else (b.get("velocity_x") if typeof(b) == TYPE_DICTIONARY else b.velocity_x if "velocity_x" in b else 0.0)
-				var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.vy if "vy" in b else (b.get("velocity_y") if typeof(b) == TYPE_DICTIONARY else b.velocity_y if "velocity_y" in b else 0.0)
-
 				if typeof(b) == TYPE_DICTIONARY:
-					b["x"] -= vx * delta * 2
-					b["y"] -= vy * delta * 2
-				else:
-					if "x" in b: b.x -= vx * delta * 2
-					if "y" in b: b.y -= vy * delta * 2
+					var inv_timer = b.get("invert_timer", 0.0)
+					b["invert_timer"] = max(inv_timer, 3.0)
+
+					var gm_timer = b.get("gravity_multiplier_timer", 0.0)
+					b["gravity_multiplier_timer"] = max(gm_timer, 3.0)
+
+					var rg_timer = b.get("reverse_gravity_timer", 0.0)
+					b["reverse_gravity_timer"] = max(rg_timer, 3.0)
+				elif typeof(b) == TYPE_OBJECT:
+					var inv_timer = b.get("invert_timer") if "invert_timer" in b else (b.get_meta("invert_timer") if b.has_method("has_meta") and b.has_meta("invert_timer") else 0.0)
+					if "invert_timer" in b:
+						b.invert_timer = max(inv_timer, 3.0)
+					elif b.has_method("set_meta"):
+						b.set_meta("invert_timer", max(inv_timer, 3.0))
+
+					var gm_timer = b.get("gravity_multiplier_timer") if "gravity_multiplier_timer" in b else (b.get_meta("gravity_multiplier_timer") if b.has_method("has_meta") and b.has_meta("gravity_multiplier_timer") else 0.0)
+					if "gravity_multiplier_timer" in b:
+						b.gravity_multiplier_timer = max(gm_timer, 3.0)
+					elif b.has_method("set_meta"):
+						b.set_meta("gravity_multiplier_timer", max(gm_timer, 3.0))
+
+					var rg_timer = b.get("reverse_gravity_timer") if "reverse_gravity_timer" in b else (b.get_meta("reverse_gravity_timer") if b.has_method("has_meta") and b.has_meta("reverse_gravity_timer") else 0.0)
+					if "reverse_gravity_timer" in b:
+						b.reverse_gravity_timer = max(rg_timer, 3.0)
+					elif b.has_method("set_meta"):
+						b.set_meta("reverse_gravity_timer", max(rg_timer, 3.0))
 
 class EdgeSlingshotsMode:
 	extends GameMode
