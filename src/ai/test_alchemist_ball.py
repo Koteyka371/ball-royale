@@ -88,6 +88,8 @@ def test_alchemist_apply_poison_on_attack():
     action = Action(b, w)
 
     # Force attempt damage many times to trigger 25% probability
+    import random
+    random.seed(42)
     for _ in range(20):
         action._attempt_damage(b, e)
 

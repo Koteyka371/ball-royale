@@ -31667,10 +31667,91 @@ class HazardLinesMode(GameMode):
                     world.arena.hazards.remove(r)
 
 
+
+class MutatingHazardZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mutating Hazard Zone"
+        self.description = "Spawns a hazard that periodically scrambles the stats of any ball inside it."
+        self.mutation_timer = 0.0
+        self.mutation_interval = 3.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+            hazard_class = FallbackHazard
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        hx = arena_width / 2.0
+        hy = arena_height / 2.0
+
+        self.hazard = hazard_class("mutating_hazard_zone_1", hx, hy, 200.0, "mutating_zone", 0.0)
+        world.arena.hazards.append(self.hazard)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        if not hasattr(self, "hazard") or not hasattr(world, "arena"):
+            return
+
+        self.mutation_timer -= delta
+        if self.mutation_timer <= 0:
+            self.mutation_timer = self.mutation_interval
+
+            hx = getattr(self.hazard, "x", 0)
+            hy = getattr(self.hazard, "y", 0)
+            hradius = getattr(self.hazard, "radius", 0)
+
+            for ball in balls:
+                if not getattr(ball, "is_alive", True):
+                    continue
+
+                bx = getattr(ball, "x", 0)
+                by = getattr(ball, "y", 0)
+                bradius = getattr(ball, "radius", 10)
+
+                dx = bx - hx
+                dy = by - hy
+                dist_sq = dx*dx + dy*dy
+                if dist_sq <= (hradius + bradius) ** 2:
+                    stat_choice = random.choice(["speed", "mass", "damage_multiplier"])
+                    if stat_choice == "speed":
+                        if hasattr(ball, "speed"):
+                            ball.speed *= random.uniform(0.5, 1.5)
+                        elif hasattr(ball, "base_speed"):
+                            ball.base_speed *= random.uniform(0.5, 1.5)
+                    elif stat_choice == "mass":
+                        if hasattr(ball, "mass"):
+                            ball.mass *= random.uniform(0.5, 1.5)
+                    elif stat_choice == "damage_multiplier":
+                        dm = getattr(ball, "damage_multiplier", 1.0)
+                        setattr(ball, "damage_multiplier", dm * random.uniform(0.5, 1.5))
+
 from ai.kinetic_battery import KineticBatteryMode
+
 
 GAME_MODES = {
     "kinetic_battery": KineticBatteryMode(),
+    "mutating_hazard_zone": MutatingHazardZoneMode(),
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),

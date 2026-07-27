@@ -64910,6 +64910,152 @@ class BlindFragmentAuctionMode extends GameMode:
 							"item": current_item["name"]
 						})
 
+
+class MutatingHazardZoneMode extends GameMode:
+	var mutation_timer = 0.0
+	var mutation_interval = 3.0
+	var hazard_id = "mutating_hazard_zone_1"
+
+	func _init():
+		self.name = "Mutating Hazard Zone"
+		self.description = "Spawns a hazard that periodically scrambles the stats of any ball inside it."
+		self.mutation_timer = 0.0
+		self.mutation_interval = 3.0
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if typeof(world) == TYPE_DICTIONARY:
+			if not "arena" in world:
+				return
+			if typeof(world.arena) == TYPE_DICTIONARY and not "hazards" in world.arena:
+				world.arena.hazards = []
+
+			var hx = world.arena.get("width", 1000.0) / 2.0
+			var hy = world.arena.get("height", 1000.0) / 2.0
+			var hazard = {
+				"id": self.hazard_id,
+				"x": hx,
+				"y": hy,
+				"radius": 200.0,
+				"kind": "mutating_zone",
+				"damage": 0.0
+			}
+			world.arena.hazards.append(hazard)
+		else:
+			if world.get("arena") == null:
+				return
+			if world.arena.get("hazards") == null:
+				world.arena.hazards = []
+
+			var arena_w = world.arena.get("width") if world.arena.get("width") != null else 1000.0
+			var arena_h = world.arena.get("height") if world.arena.get("height") != null else 1000.0
+
+			var hx = arena_w / 2.0
+			var hy = arena_h / 2.0
+
+			var hazard = {
+				"id": self.hazard_id,
+				"x": hx,
+				"y": hy,
+				"radius": 200.0,
+				"kind": "mutating_zone",
+				"damage": 0.0
+			}
+			world.arena.hazards.append(hazard)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+			hazards = world.arena.hazards
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null and world.arena.get("hazards") != null:
+			hazards = world.arena.hazards
+		else:
+			return
+
+		var my_hazard = null
+		for h in hazards:
+			if typeof(h) == TYPE_DICTIONARY and h.get("id") == self.hazard_id:
+				my_hazard = h
+				break
+			elif typeof(h) == TYPE_OBJECT and h.get("id") == self.hazard_id:
+				my_hazard = h
+				break
+
+		if my_hazard == null:
+			return
+
+		self.mutation_timer -= delta
+		if self.mutation_timer <= 0:
+			self.mutation_timer = self.mutation_interval
+
+			var hx = my_hazard.get("x") if my_hazard.get("x") != null else 0.0
+			var hy = my_hazard.get("y") if my_hazard.get("y") != null else 0.0
+			var hr = my_hazard.get("radius") if my_hazard.get("radius") != null else 0.0
+
+			for b in balls:
+				var is_alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("is_alive", true)
+				else:
+					is_alive = b.get("is_alive") if b.get("is_alive") != null else true
+
+				if not is_alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var br = 10.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					br = b.get("radius", 10.0)
+				else:
+					bx = b.get("x") if b.get("x") != null else 0.0
+					by = b.get("y") if b.get("y") != null else 0.0
+					br = b.get("radius") if b.get("radius") != null else 10.0
+
+				var dx = bx - hx
+				var dy = by - hy
+				var dist_sq = dx*dx + dy*dy
+
+				if dist_sq <= (hr + br) * (hr + br):
+					var r = randf()
+					if r < 0.33:
+						var factor = randf_range(0.5, 1.5)
+						if typeof(b) == TYPE_DICTIONARY:
+							if "speed" in b:
+								b["speed"] *= factor
+							elif "base_speed" in b:
+								b["base_speed"] *= factor
+						else:
+							if "speed" in b:
+								b.speed *= factor
+							elif "base_speed" in b:
+								b.base_speed *= factor
+					elif r < 0.66:
+						var factor = randf_range(0.5, 1.5)
+						if typeof(b) == TYPE_DICTIONARY:
+							if "mass" in b:
+								b["mass"] *= factor
+						else:
+							if "mass" in b:
+								b.mass *= factor
+					else:
+						var factor = randf_range(0.5, 1.5)
+						if typeof(b) == TYPE_DICTIONARY:
+							var dm = b.get("damage_multiplier", 1.0)
+							b["damage_multiplier"] = dm * factor
+						else:
+							var dm = b.get("damage_multiplier") if b.get("damage_multiplier") != null else 1.0
+							if "damage_multiplier" in b:
+								b.damage_multiplier = dm * factor
+
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
+
 GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
 GAME_MODES["kinetic_battery"] = load("res://src/ai/kinetic_battery.gd").new()
+
+GAME_MODES["mutating_hazard_zone"] = MutatingHazardZoneMode.new()
