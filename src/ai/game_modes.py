@@ -1,3 +1,4 @@
+import math
 
 class WeekendBoss:
     def __init__(self, id_val, x, y):
@@ -9928,12 +9929,7 @@ class EcholocationMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Echolocation"
-        self.description = "The arena is completely dark except for a small ring of light around each ball. Echolocation cues and occasional lightning flashes reveal the map."
-        self.flash_timer = 0.0
-        self.flash_interval = 10.0
-        self.is_flashing = False
-        self.flash_duration = 0.5
-        self.current_flash_time = 0.0
+        self.description = "The arena is completely dark except for a small ring of light around each ball. Every few seconds, players emit a sound pulse that reveals enemies and walls momentarily."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
@@ -10045,9 +10041,6 @@ class EcholocationMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.world = world
-        self.flash_timer = 0.0
-        self.is_flashing = False
-        self.current_flash_time = 0.0
 
         if hasattr(world, "arena"):
             world.arena.is_night = True
@@ -10056,15 +10049,24 @@ class EcholocationMode(GameMode):
             world.dead_balls = []
 
         for b in balls:
-
             if getattr(b, "ball_type", None) != "spectator":
                 b.base_perception_radius = getattr(b, "perception_radius", 250.0)
                 b.team = getattr(b, "team", b.ball_type)
                 b.perception_radius = 60.0
 
+                # Setup pulse timers
+                b.pulse_interval = 3.0
+                b.pulse_duration = 0.5
+                b.pulse_timer = 0.0
+                b.is_pulsing = False
+
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
+
+        # Ensure environment stays dark
+        if hasattr(world, "arena"):
+            world.arena.is_night = True
 
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
@@ -10075,32 +10077,36 @@ class EcholocationMode(GameMode):
                     world.dead_balls.append(b)
                 else:
                     b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
+                continue
 
-        self.flash_timer += delta
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
 
-        if self.is_flashing:
-            self.current_flash_time += delta
-            if self.current_flash_time >= self.flash_duration:
-                self.is_flashing = False
-                if hasattr(world, "arena"):
-                    world.arena.is_night = True
-                for b in balls:
-                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                        b.perception_radius = 60.0
-        else:
-            if self.flash_timer >= self.flash_interval:
-                self.flash_timer = 0.0
-                self.is_flashing = True
-                self.current_flash_time = 0.0
-                if hasattr(world, "arena"):
-                    world.arena.is_night = False
+            # Process individual pulse
+            is_pulsing = getattr(b, "is_pulsing", False)
+            pulse_timer = getattr(b, "pulse_timer", 0.0)
+            pulse_interval = getattr(b, "pulse_interval", 3.0)
+            pulse_duration = getattr(b, "pulse_duration", 0.5)
 
-                if hasattr(world, "add_event"):
-                    world.add_event("weather_warning", {"type": "weather_warning", "message": "Lightning flash reveals the arena!"})
+            pulse_timer += delta
 
-                for b in balls:
-                    if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                        b.perception_radius = 1000.0
+            if is_pulsing:
+                if pulse_timer >= pulse_duration:
+                    b.is_pulsing = False
+                    b.pulse_timer = 0.0
+                    b.perception_radius = 60.0
+                else:
+                    b.pulse_timer = pulse_timer
+            else:
+                if pulse_timer >= pulse_interval:
+                    b.is_pulsing = True
+                    b.pulse_timer = 0.0
+                    b.perception_radius = 1000.0
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("echolocation_pulse", {"ball_id": getattr(b, "id", None)})
+                else:
+                    b.pulse_timer = pulse_timer
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]

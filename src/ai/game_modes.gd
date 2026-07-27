@@ -14461,15 +14461,10 @@ class CustomMatchMode extends GameMode:
 
 
 class EcholocationMode extends GameMode:
-	var flash_timer = 0.0
-	var flash_interval = 10.0
-	var is_flashing = false
-	var flash_duration = 0.5
-	var current_flash_time = 0.0
 
 	func _init() -> void:
 		name = "Echolocation"
-		description = "The arena is completely dark except for a small ring of light around each ball. Echolocation cues and occasional lightning flashes reveal the map."
+		description = "The arena is completely dark except for a small ring of light around each ball. Every few seconds, players emit a sound pulse that reveals enemies and walls momentarily."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		for b in balls:
@@ -14636,66 +14631,136 @@ class EcholocationMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
-		flash_timer = 0.0
-		is_flashing = false
-		current_flash_time = 0.0
 
 		if world != null and "arena" in world and world.arena != null:
-			world.arena.is_night = true
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				world.arena["is_night"] = true
+			else:
+				world.arena.is_night = true
 
 		if not "dead_balls" in world:
-			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+			if typeof(world) == TYPE_DICTIONARY:
+				world["dead_balls"] = []
+			elif world.has_method("set_meta"):
+				world.set_meta("dead_balls", [])
 
 		for b in balls:
-			if b.ball_type != "spectator":
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else null)
+			if b_type != "spectator":
 				var base_perc = 250.0
 				if "perception_radius" in b:
 					base_perc = float(b.perception_radius)
-				if b.has_method("set_meta"):
-					b.set_meta("base_perception_radius", base_perc)
-				b.perception_radius = 60.0
-				if not "team" in b:
-					b.team = b.ball_type
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["base_perception_radius"] = base_perc
+					b["perception_radius"] = 60.0
+					if not "team" in b:
+						b["team"] = b_type
+					b["pulse_interval"] = 3.0
+					b["pulse_duration"] = 0.5
+					b["pulse_timer"] = 0.0
+					b["is_pulsing"] = false
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("base_perception_radius", base_perc)
+					b.perception_radius = 60.0
+					if not "team" in b:
+						b.team = b_type
+					if b.has_method("set_meta"):
+						b.set_meta("pulse_interval", 3.0)
+						b.set_meta("pulse_duration", 0.5)
+						b.set_meta("pulse_timer", 0.0)
+						b.set_meta("is_pulsing", false)
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		if not "dead_balls" in world:
-			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+			if typeof(world) == TYPE_DICTIONARY:
+				world["dead_balls"] = []
+			elif world.has_method("set_meta"):
+				world.set_meta("dead_balls", [])
+
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				world.arena["is_night"] = true
+			else:
+				world.arena.is_night = true
 
 		for b in balls:
-			if not b.alive:
-				if not world.get_meta("dead_balls").has(b):
-					if b.has_method("set_meta"):
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else null)
+
+			if not is_alive:
+				var dead_balls = world.get("dead_balls", []) if typeof(world) == TYPE_DICTIONARY else world.get_meta("dead_balls")
+				if not dead_balls.has(b):
+					if typeof(b) == TYPE_DICTIONARY:
+						b["time_since_death"] = 0.0
+					elif b.has_method("set_meta"):
 						b.set_meta("time_since_death", 0.0)
-					world.get_meta("dead_balls").append(b)
+					dead_balls.append(b)
 				else:
-					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+					if typeof(b) == TYPE_DICTIONARY and "time_since_death" in b:
+						b["time_since_death"] = b["time_since_death"] + delta
+					elif typeof(b) != TYPE_DICTIONARY and b.has_method("get_meta") and b.has_meta("time_since_death"):
 						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+				continue
 
-		flash_timer += delta
+			if b_type == "spectator":
+				continue
 
-		if is_flashing:
-			current_flash_time += delta
-			if current_flash_time >= flash_duration:
-				is_flashing = false
-				if world != null and "arena" in world and world.arena != null:
-					world.arena.is_night = true
-				for b in balls:
-					if b.alive and b.ball_type != "spectator":
+			var is_pulsing = false
+			var p_timer = 0.0
+			var p_interval = 3.0
+			var p_duration = 0.5
+			var b_id = null
+
+			if typeof(b) == TYPE_DICTIONARY:
+				is_pulsing = b.get("is_pulsing", false)
+				p_timer = b.get("pulse_timer", 0.0)
+				p_interval = b.get("pulse_interval", 3.0)
+				p_duration = b.get("pulse_duration", 0.5)
+				b_id = b.get("id", null)
+			else:
+				is_pulsing = b.get_meta("is_pulsing") if b.has_method("get_meta") and b.has_meta("is_pulsing") else false
+				p_timer = b.get_meta("pulse_timer") if b.has_method("get_meta") and b.has_meta("pulse_timer") else 0.0
+				p_interval = b.get_meta("pulse_interval") if b.has_method("get_meta") and b.has_meta("pulse_interval") else 3.0
+				p_duration = b.get_meta("pulse_duration") if b.has_method("get_meta") and b.has_meta("pulse_duration") else 0.5
+				b_id = b.id if "id" in b else null
+
+			p_timer += delta
+
+			if is_pulsing:
+				if p_timer >= p_duration:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["is_pulsing"] = false
+						b["pulse_timer"] = 0.0
+						b["perception_radius"] = 60.0
+					else:
+						b.set_meta("is_pulsing", false)
+						b.set_meta("pulse_timer", 0.0)
 						b.perception_radius = 60.0
-		else:
-			if flash_timer >= flash_interval:
-				flash_timer = 0.0
-				is_flashing = true
-				current_flash_time = 0.0
-				if world != null and "arena" in world and world.arena != null:
-					world.arena.is_night = false
-
-				if world != null and world.has_method("add_event"):
-					world.add_event("weather_warning", {"type": "weather_warning", "message": "Lightning flash reveals the arena!"})
-
-				for b in balls:
-					if b.alive and b.ball_type != "spectator":
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["pulse_timer"] = p_timer
+					else:
+						b.set_meta("pulse_timer", p_timer)
+			else:
+				if p_timer >= p_interval:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["is_pulsing"] = true
+						b["pulse_timer"] = 0.0
+						b["perception_radius"] = 1000.0
+					else:
+						b.set_meta("is_pulsing", true)
+						b.set_meta("pulse_timer", 0.0)
 						b.perception_radius = 1000.0
+
+					if world != null and world.has_method("add_event"):
+						world.add_event("echolocation_pulse", {"ball_id": b_id})
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["pulse_timer"] = p_timer
+					else:
+						b.set_meta("pulse_timer", p_timer)
 
 	func check_winner(world, balls: Array):
 		var alive = []
@@ -14723,7 +14788,6 @@ class EcholocationMode extends GameMode:
 			return alive[0].ball_type
 
 		return null
-
 
 class PitchBlackMode extends GameMode:
 	func _init() -> void:

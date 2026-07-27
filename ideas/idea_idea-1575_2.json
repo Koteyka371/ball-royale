@@ -1,0 +1,4 @@
+{
+  "title": "Sonar Blinder Booster",
+  "description": "A booster item that, upon collection, jams the sonar pulses of nearby enemies. Their pulse_interval is temporarily increased and pulse_duration shortened, leaving them blind."
+}

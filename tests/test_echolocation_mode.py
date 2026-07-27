@@ -4,12 +4,14 @@ from ai.game_modes import EcholocationMode
 class MockArena:
     def __init__(self):
         self.is_night = False
+        self.hazards = []
 
 class MockWorld:
     def __init__(self):
         self.arena = MockArena()
         self.dead_balls = []
         self.events = []
+        self.boosters = []
 
     def add_event(self, type_name, data):
         self.events.append((type_name, data))
@@ -31,20 +33,21 @@ def test_echolocation_mode():
     assert world.arena.is_night == True
     for b in balls:
         assert b.perception_radius == 60.0
+        assert b.pulse_interval == 3.0
+        assert b.pulse_duration == 0.5
+        assert b.pulse_timer == 0.0
+        assert b.is_pulsing == False
 
-    mode.tick(world, balls, delta=9.9)
-    assert not mode.is_flashing
-
-    # Tick past flash interval
-    mode.tick(world, balls, delta=0.2)
-    assert mode.is_flashing
-    assert world.arena.is_night == False
-    for b in balls:
-        assert b.perception_radius == 1000.0
-
-    # Tick past flash duration
-    mode.tick(world, balls, delta=0.6)
-    assert not mode.is_flashing
+    # Tick past pulse interval
+    mode.tick(world, balls, delta=3.0)
     assert world.arena.is_night == True
     for b in balls:
+        assert b.is_pulsing == True
+        assert b.perception_radius == 1000.0
+
+    # Tick past pulse duration
+    mode.tick(world, balls, delta=0.6)
+    assert world.arena.is_night == True
+    for b in balls:
+        assert b.is_pulsing == False
         assert b.perception_radius == 60.0
