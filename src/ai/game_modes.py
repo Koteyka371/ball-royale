@@ -40975,3 +40975,60 @@ GAME_MODES['mercenary_outposts'] = MercenaryOutpostsMode()
 
 from ai.necromantic_area_denial import NecromanticAreaDenialMode
 GAME_MODES['necromantic_area_denial'] = NecromanticAreaDenialMode()
+
+
+class LoadoutFragmentAuctionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Loadout Fragment Auction"
+        self.description = "Players can wager their collected loadout fragments in a fast-paced blind auction to secure ultra-rare boosters."
+        self.auction_timer = 30.0
+        self.auction_active = False
+        self.auction_duration = 10.0
+        self.current_highest_bid = 0
+        self.highest_bidder = None
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+        if not alive_balls:
+            return
+
+        if not self.auction_active:
+            self.auction_timer -= delta
+            if self.auction_timer <= 0:
+                self.auction_active = True
+                self.auction_duration = 10.0
+                self.current_highest_bid = 0
+                self.highest_bidder = None
+                if hasattr(world, "add_event"):
+                    world.add_event("fragment_auction_started", {})
+        else:
+            self.auction_duration -= delta
+
+            for b in alive_balls:
+                fragments = getattr(b, "loadout_fragments", 0)
+                if fragments > self.current_highest_bid and random.random() < 2.0 * delta:
+                    bid = random.randint(self.current_highest_bid + 1, fragments)
+                    self.current_highest_bid = bid
+                    self.highest_bidder = b
+                    if hasattr(world, "add_event"):
+                        world.add_event("fragment_auction_bid", {"bidder_id": getattr(b, "id", None), "amount": bid})
+
+            if self.auction_duration <= 0:
+                self.auction_active = False
+                self.auction_timer = random.uniform(20.0, 40.0)
+                if self.highest_bidder:
+                    self.highest_bidder.loadout_fragments -= self.current_highest_bid
+                    # Ultra-rare booster stats
+                    self.highest_bidder.base_speed = getattr(self.highest_bidder, "base_speed", 100.0) + 50.0
+                    self.highest_bidder.base_damage = getattr(self.highest_bidder, "base_damage", 10.0) + 25.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("fragment_auction_won", {
+                            "winner_id": getattr(self.highest_bidder, "id", None),
+                            "amount": self.current_highest_bid
+                        })
+
+GAME_MODES['loadout_fragment_auction'] = LoadoutFragmentAuctionEventMode()

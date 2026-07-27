@@ -63569,3 +63569,91 @@ GAME_MODES["magnet_ball"] = load("res://src/ai/magnet_ball.gd").new()
 GAME_MODES['mercenary_outposts'] = load('res://src/ai/mercenary_outposts.gd').new()
 
 GAME_MODES['necromantic_area_denial'] = load('res://src/ai/necromantic_area_denial.gd').new()
+
+class LoadoutFragmentAuctionEventMode extends GameMode:
+	var auction_timer = 30.0
+	var auction_active = false
+	var auction_duration = 10.0
+	var current_highest_bid = 0
+	var highest_bidder = null
+
+	func _init():
+		super()
+		name = "Loadout Fragment Auction"
+		description = "Players can wager their collected loadout fragments in a fast-paced blind auction to secure ultra-rare boosters."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			if (typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator") or (typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator"):
+				alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return
+
+		if not auction_active:
+			auction_timer -= delta
+			if auction_timer <= 0:
+				auction_active = true
+				auction_duration = 10.0
+				current_highest_bid = 0
+				highest_bidder = null
+				if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+					world.add_event("fragment_auction_started", {})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("fragment_auction_started", {})
+		else:
+			auction_duration -= delta
+
+			for b in alive_balls:
+				var fragments = 0
+				if typeof(b) == TYPE_DICTIONARY and b.has("loadout_fragments"):
+					fragments = b["loadout_fragments"]
+				elif typeof(b) == TYPE_OBJECT and 'loadout_fragments' in b:
+					fragments = b.get("loadout_fragments")
+
+				if fragments > current_highest_bid and randf() < 2.0 * delta:
+					var bid = current_highest_bid + 1
+					if fragments > current_highest_bid + 1:
+						bid = current_highest_bid + 1 + (randi() % (fragments - current_highest_bid))
+					current_highest_bid = bid
+					highest_bidder = b
+
+					var b_id = null
+					if typeof(b) == TYPE_DICTIONARY and b.has("id"):
+						b_id = b["id"]
+					elif typeof(b) == TYPE_OBJECT and 'id' in b:
+						b_id = b.get("id")
+
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event("fragment_auction_bid", {"bidder_id": b_id, "amount": bid})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("fragment_auction_bid", {"bidder_id": b_id, "amount": bid})
+
+			if auction_duration <= 0:
+				auction_active = false
+				auction_timer = randf_range(20.0, 40.0)
+				if highest_bidder:
+					if typeof(highest_bidder) == TYPE_DICTIONARY:
+						highest_bidder["loadout_fragments"] -= current_highest_bid
+						highest_bidder["base_speed"] = highest_bidder.get("base_speed", 100.0) + 50.0
+						highest_bidder["base_damage"] = highest_bidder.get("base_damage", 10.0) + 25.0
+					elif typeof(highest_bidder) == TYPE_OBJECT:
+						highest_bidder.loadout_fragments -= current_highest_bid
+						highest_bidder.base_speed = (highest_bidder.get("base_speed") if highest_bidder.get("base_speed") != null else 100.0) + 50.0
+						highest_bidder.base_damage = (highest_bidder.get("base_damage") if highest_bidder.get("base_damage") != null else 10.0) + 25.0
+
+					var b_id = null
+					if typeof(highest_bidder) == TYPE_DICTIONARY and highest_bidder.has("id"):
+						b_id = highest_bidder["id"]
+					elif typeof(highest_bidder) == TYPE_OBJECT and 'id' in highest_bidder:
+						b_id = highest_bidder.get("id")
+
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event("fragment_auction_won", {"winner_id": b_id, "amount": current_highest_bid})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("fragment_auction_won", {"winner_id": b_id, "amount": current_highest_bid})
+
+GAME_MODES['loadout_fragment_auction'] = LoadoutFragmentAuctionEventMode.new()
