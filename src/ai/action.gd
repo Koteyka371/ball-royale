@@ -21056,6 +21056,44 @@ func execute(strategy: String, delta: float):
                             if self.ball.hp > self.ball.max_hp:
                                 self.ball.hp = self.ball.max_hp
                         continue
+                    elif hazard.kind == "shrink_ray_trap":
+                        var is_shrunk = false
+                        if typeof(self.ball) == TYPE_DICTIONARY: is_shrunk = self.ball.get("is_shrunk", false)
+                        elif typeof(self.ball) == TYPE_OBJECT: is_shrunk = self.ball.get("is_shrunk") if "is_shrunk" in self.ball else false
+
+                        if not is_shrunk:
+                            var shrink_duration = 5.0
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("shrink_duration"): shrink_duration = hazard["shrink_duration"]
+                            elif typeof(hazard) == TYPE_OBJECT and "shrink_duration" in hazard: shrink_duration = hazard.shrink_duration
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["is_shrunk"] = true
+                                self.ball["shrink_ray_timer"] = shrink_duration
+                                if not self.ball.has("base_radius"): self.ball["base_radius"] = self.ball.get("radius", 10.0)
+                                if not self.ball.has("base_mass"): self.ball["base_mass"] = self.ball.get("mass", 1.0)
+                                if not self.ball.has("base_speed"): self.ball["base_speed"] = self.ball.get("speed", 100.0)
+                                self.ball["radius"] = self.ball["base_radius"] * 0.5
+                                self.ball["mass"] = self.ball["base_mass"] * 0.2
+                                self.ball["speed"] = self.ball["base_speed"] * 1.5
+                            elif typeof(self.ball) == TYPE_OBJECT:
+                                self.ball.set("is_shrunk", true)
+                                self.ball.set("shrink_ray_timer", shrink_duration)
+                                if not "base_radius" in self.ball: self.ball.set("base_radius", self.ball.get("radius") if "radius" in self.ball else 10.0)
+                                if not "base_mass" in self.ball: self.ball.set("base_mass", self.ball.get("mass") if "mass" in self.ball else 1.0)
+                                if not "base_speed" in self.ball: self.ball.set("base_speed", self.ball.get("speed") if "speed" in self.ball else 100.0)
+                                self.ball.set("radius", self.ball.get("base_radius") * 0.5)
+                                self.ball.set("mass", self.ball.get("base_mass") * 0.2)
+                                self.ball.set("speed", self.ball.get("base_speed") * 1.5)
+                        else:
+                            var shrink_duration = 5.0
+                            if typeof(hazard) == TYPE_DICTIONARY and hazard.has("shrink_duration"): shrink_duration = hazard["shrink_duration"]
+                            elif typeof(hazard) == TYPE_OBJECT and "shrink_duration" in hazard: shrink_duration = hazard.shrink_duration
+                            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["shrink_ray_timer"] = shrink_duration
+                            elif typeof(self.ball) == TYPE_OBJECT: self.ball.set("shrink_ray_timer", shrink_duration)
+
+                        if typeof(hazard) == TYPE_DICTIONARY: hazard["active"] = false
+                        elif typeof(hazard) == TYPE_OBJECT: hazard.active = false
+                        continue
                     elif hazard.kind == "tether_trap":
                         var dx = hazard.x - self.ball.x
                         var dy = hazard.y - self.ball.y
@@ -43714,6 +43752,29 @@ func _update_skill_timer(delta: float):
             self.ball.blindness_timer = blindness_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("blindness_timer", blindness_timer)
+
+    var shrink_timer = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY: shrink_timer = self.ball.get("shrink_ray_timer", 0.0)
+    elif typeof(self.ball) == TYPE_OBJECT: shrink_timer = self.ball.get("shrink_ray_timer") if "shrink_ray_timer" in self.ball else 0.0
+    if shrink_timer > 0.0:
+        shrink_timer -= delta
+        if shrink_timer <= 0.0:
+            shrink_timer = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["is_shrunk"] = false
+                self.ball["shrink_ray_timer"] = 0.0
+                if self.ball.has("base_radius"): self.ball["radius"] = self.ball["base_radius"]
+                if self.ball.has("base_mass"): self.ball["mass"] = self.ball["base_mass"]
+                if self.ball.has("base_speed"): self.ball["speed"] = self.ball["base_speed"]
+            elif typeof(self.ball) == TYPE_OBJECT:
+                self.ball.set("is_shrunk", false)
+                self.ball.set("shrink_ray_timer", 0.0)
+                if "base_radius" in self.ball: self.ball.set("radius", self.ball.get("base_radius"))
+                if "base_mass" in self.ball: self.ball.set("mass", self.ball.get("base_mass"))
+                if "base_speed" in self.ball: self.ball.set("speed", self.ball.get("base_speed"))
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["shrink_ray_timer"] = shrink_timer
+            elif typeof(self.ball) == TYPE_OBJECT: self.ball.set("shrink_ray_timer", shrink_timer)
 
     var stutter_timer = 0.0
     if "stutter_timer" in self.ball:

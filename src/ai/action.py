@@ -10784,6 +10784,21 @@ class Action:
                                 if self.ball.hp > self.ball.max_hp:
                                     self.ball.hp = self.ball.max_hp
                             continue
+                        elif hazard.kind == "shrink_ray_trap":
+                            if not getattr(self.ball, "is_shrunk", False):
+                                self.ball.is_shrunk = True
+                                self.ball.shrink_ray_timer = getattr(hazard, "shrink_duration", 5.0)
+                                self.ball.base_radius = getattr(self.ball, "base_radius", getattr(self.ball, "radius", 10.0))
+                                self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
+                                self.ball.base_speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0))
+                                self.ball.radius = self.ball.base_radius * 0.5
+                                self.ball.mass = self.ball.base_mass * 0.2
+                                self.ball.speed = self.ball.base_speed * 1.5
+                            else:
+                                self.ball.shrink_ray_timer = getattr(hazard, "shrink_duration", 5.0)
+                            # the trap triggers once and is consumed
+                            hazard.active = False
+                            continue
                         elif hazard.kind == "tether_trap":
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
@@ -22427,6 +22442,15 @@ class Action:
             self.ball.ricochet_barrier_timer -= delta
         if hasattr(self.ball, "kite_trap_timer") and self.ball.kite_trap_timer > 0:
             self.ball.kite_trap_timer -= delta
+        if getattr(self.ball, "shrink_ray_timer", 0.0) > 0:
+            self.ball.shrink_ray_timer -= delta
+            if self.ball.shrink_ray_timer <= 0:
+                self.ball.shrink_ray_timer = 0.0
+                self.ball.is_shrunk = False
+                self.ball.radius = getattr(self.ball, "base_radius", getattr(self.ball, "radius", 10.0))
+                self.ball.mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
+                self.ball.speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0))
+
         if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
             self.ball.stutter_timer -= delta
             if self.ball.stutter_timer <= 0:
