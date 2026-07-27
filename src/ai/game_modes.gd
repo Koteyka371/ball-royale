@@ -59480,7 +59480,7 @@ class CursedBoosterMode extends GameMode:
 class BouncingProjectilesMutatorMode extends GameMode:
 	func _init():
 		name = "Bouncing Projectiles Mutator"
-		description = "All projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating."
+		description = "All projectiles (bullets, fireballs, snipes) bounce off walls and hazards infinitely until they hit a player or lose all their velocity."
 
 	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
@@ -59542,16 +59542,7 @@ class BouncingProjectilesMutatorMode extends GameMode:
 			elif typeof(proj) == TYPE_DICTIONARY:
 				bounces = proj.get("bounces", 0)
 
-			if bounces >= 3:
-				if typeof(proj) == TYPE_OBJECT:
-					if "alive" in proj:
-						proj.set("alive", false)
-					if "hp" in proj:
-						proj.set("hp", 0)
-				elif typeof(proj) == TYPE_DICTIONARY:
-					proj["alive"] = false
-					proj["hp"] = 0
-				continue
+				# Projectiles bounce infinitely
 
 			var x = 0.0
 			var y = 0.0
