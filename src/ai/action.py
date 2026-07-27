@@ -13907,7 +13907,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'trickster_mass_illusion', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -17040,6 +17040,40 @@ class Action:
                     setattr(smoke, "owner_id", getattr(self.ball, "id", None))
                     self.world.arena.hazards.append(smoke)
 
+            elif skill_name == "trickster_mass_illusion":
+                import copy
+                import math
+                if hasattr(self.world, "balls"):
+                    for i in range(3):
+                        clone = copy.copy(self.ball)
+                        clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        clone.hp = 1.0
+                        clone.max_hp = 1.0
+                        clone.damage = 0.0
+                        clone.is_decoy_clone = True
+                        clone.is_illusion = True
+                        clone.mimic_owner = getattr(self.ball, "id", None)
+                        clone.mimic_timer = 10.0
+
+                        clone.skill = None
+                        clone.SKILL = None
+                        if hasattr(clone, "active_skill"):
+                            clone.active_skill = None
+                        clone.skill_timer = 9999.0
+
+                        clone.is_decoy = True
+                        clone.decoy_type = "mass_illusion"
+                        clone.decoy_timer = 10.0
+
+                        angle = (i * 2 * math.pi / 3)
+                        clone.vx = math.cos(angle) * 800.0
+                        clone.vy = math.sin(angle) * 800.0
+
+                        self.world.balls.append(clone)
+
             elif skill_name == "trickster_clone":
                 import copy
                 if hasattr(self.world, "balls"):
@@ -19955,6 +19989,16 @@ class Action:
                                             other.damage = old_dmg
                                         elif hasattr(b, "hp"):
                                             b.hp -= 50.0
+                        other.hp = 0
+                        other.alive = False
+
+                    if getattr(self.ball, "is_decoy", False) and getattr(self.ball, "decoy_type", "") == "mass_illusion":
+                        other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 3.0
+                        self.ball.hp = 0
+                        self.ball.alive = False
+
+                    if getattr(other, "is_decoy", False) and getattr(other, "decoy_type", "") == "mass_illusion":
+                        self.ball.stutter_timer = getattr(self.ball, "stutter_timer", 0.0) + 3.0
                         other.hp = 0
                         other.alive = False
 
