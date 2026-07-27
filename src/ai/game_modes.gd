@@ -51188,6 +51188,31 @@ class TagTeamMode extends GameMode:
 
 						var dist_sq = (ax - dx) * (ax - dx) + (ay - dy) * (ay - dy)
 						if dist_sq < 3600.0:
+							# Emits a disruption aura during revive to slow down nearby enemies
+							for b in balls:
+								var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("id") if b.has_method("has_meta") and b.has_meta("id") else (b.id if "id" in b else null))
+								var d_id = downed.get("id") if typeof(downed) == TYPE_DICTIONARY else (downed.get_meta("id") if downed.has_method("has_meta") and downed.has_meta("id") else (downed.id if "id" in downed else null))
+								var a_id = active.get("id") if typeof(active) == TYPE_DICTIONARY else (active.get_meta("id") if active.has_method("has_meta") and active.has_meta("id") else (active.id if "id" in active else null))
+								var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("alive") if b.has_method("has_meta") and b.has_meta("alive") else (b.alive if "alive" in b else false))
+								var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("ball_type") if b.has_method("has_meta") and b.has_meta("ball_type") else (b.ball_type if "ball_type" in b else ""))
+								if b_id != d_id and b_id != a_id and b_alive and b_type != "spectator":
+									var e_tid = b.get("tag_team_id") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("tag_team_id") if b.has_method("has_meta") and b.has_meta("tag_team_id") else (b.tag_team_id if "tag_team_id" in b else null))
+									var d_tid = downed.get("tag_team_id") if typeof(downed) == TYPE_DICTIONARY else (downed.get_meta("tag_team_id") if downed.has_method("has_meta") and downed.has_meta("tag_team_id") else (downed.tag_team_id if "tag_team_id" in downed else null))
+									if e_tid == null or e_tid != d_tid:
+										var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if "x" in b else 0.0))
+										var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if "y" in b else 0.0))
+										var d_x = downed.get("x", 0.0) if typeof(downed) == TYPE_DICTIONARY else (downed.get_meta("x") if downed.has_method("has_meta") and downed.has_meta("x") else (downed.x if "x" in downed else 0.0))
+										var d_y = downed.get("y", 0.0) if typeof(downed) == TYPE_DICTIONARY else (downed.get_meta("y") if downed.has_method("has_meta") and downed.has_meta("y") else (downed.y if "y" in downed else 0.0))
+										var dist_sq_aura = pow(b_x - d_x, 2) + pow(b_y - d_y, 2)
+										if dist_sq_aura < 10000.0:
+											if typeof(b) == TYPE_DICTIONARY:
+												b["stutter_timer"] = b.get("stutter_timer", 0.0) + delta * 2.0
+											elif b.has_method("set_meta"):
+												var current_stutter = b.get_meta("stutter_timer") if b.has_meta("stutter_timer") else 0.0
+												b.set_meta("stutter_timer", current_stutter + delta * 2.0)
+											elif "stutter_timer" in b:
+												b.stutter_timer = b.stutter_timer + delta * 2.0
+
 							if typeof(downed) == TYPE_OBJECT:
 								var rp = downed.get_meta("revive_progress") if downed.has_meta("revive_progress") else 0.0
 								rp += delta

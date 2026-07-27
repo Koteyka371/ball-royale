@@ -32326,6 +32326,16 @@ class TagTeamMode(GameMode):
                     dist_sq = (getattr(active, "x", 0.0) - getattr(downed, "x", 0.0))**2 + (getattr(active, "y", 0.0) - getattr(downed, "y", 0.0))**2
                     if dist_sq < 3600.0:
                         downed.revive_progress = getattr(downed, "revive_progress", 0.0) + delta
+
+                        # Emits a disruption aura during revive to slow down nearby enemies
+                        for b in balls:
+                            if getattr(b, "id", None) != getattr(downed, "id", None) and getattr(b, "id", None) != getattr(active, "id", None) and getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                                e_tid = getattr(b, "tag_team_id", None)
+                                d_tid = getattr(downed, "tag_team_id", None)
+                                if e_tid is None or e_tid != d_tid:
+                                    dist_sq_aura = (getattr(b, "x", 0.0) - getattr(downed, "x", 0.0))**2 + (getattr(b, "y", 0.0) - getattr(downed, "y", 0.0))**2
+                                    if dist_sq_aura < 10000.0:
+                                        b.stutter_timer = getattr(b, "stutter_timer", 0.0) + delta * 2.0
                         if downed.revive_progress >= 3.0:
                             downed.is_downed = False
                             downed.revive_progress = 0.0
