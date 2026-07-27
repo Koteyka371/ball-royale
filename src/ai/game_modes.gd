@@ -23782,8 +23782,10 @@ class GuildVsGuildMode extends GameMode:
 			guilds["GuildA"] = g1
 			guilds["GuildB"] = g2
 
-	func _tick(delta: float):
-		super._tick(delta)
+	func tick(world_ref, balls_ref: Array, delta: float = 0.016):
+		super.tick(world_ref, balls_ref, delta)
+		world = world_ref
+		balls = balls_ref
 		if territory_captured:
 			return
 
@@ -32387,8 +32389,10 @@ class ClanTournamentMode extends GameMode:
 			clans["ClanA"] = g1
 			clans["ClanB"] = g2
 
-	func _tick(delta: float):
-		super._tick(delta)
+	func tick(world_ref, balls_ref: Array, delta: float = 0.016):
+		super.tick(world_ref, balls_ref, delta)
+		world = world_ref
+		balls = balls_ref
 		if tournament_over:
 			return
 
@@ -50431,7 +50435,215 @@ class MobilePlatformMode extends GameMode:
 						if "x" in b: b.x = b_x + dx
 						if "y" in b: b.y = b_y + dy
 
+
+class GuildWarMode extends GameMode:
+	var attacker_guild = ""
+	var defender_guild = ""
+	var hq_core = null
+	var defenses_spawned = false
+	var war_timer = 0.0
+	var max_duration = 300.0
+	var war_resolved = false
+
+	func _init(att_guild = "", def_guild = ""):
+		name = "Guild War"
+		desc = "Attackers must break through defender's custom HQ defenses to steal resources."
+		attacker_guild = att_guild
+		defender_guild = def_guild
+
+	func setup(world_ref, balls_ref: Array):
+		super.setup(world_ref, balls_ref)
+		war_resolved = false
+		war_timer = 0.0
+
+		var hq_x = 1000.0
+		var hq_y = 1000.0
+		if world.has_meta("arena"):
+			var arena = world.get_meta("arena")
+			if arena.has("width"): hq_x = arena["width"] / 2.0
+			if arena.has("height"): hq_y = arena["height"] / 2.0
+		elif "arena" in world:
+			if "width" in world.arena: hq_x = world.arena.width / 2.0
+			if "height" in world.arena: hq_y = world.arena.height / 2.0
+
+		hq_core = {
+			"id": 999999,
+			"x": hq_x,
+			"y": hq_y,
+			"radius": 80.0,
+			"kind": "hq_core",
+			"hp": 1000.0,
+			"active": true,
+			"team": "defender"
+		}
+
+		if "arena" in world and "hazards" in world.arena:
+			world.arena.hazards.append(hq_core)
+
+		if defender_guild != "":
+			var GuildManager = load("res://src/system/guild.gd")
+			if GuildManager:
+				var gm = GuildManager.new()
+				if gm.has_method("get_hq_defenses"):
+					var defenses = gm.get_hq_defenses(defender_guild)
+					_spawn_defenses(world, hq_x, hq_y, defenses)
+
+	func _spawn_defenses(world_ref, cx, cy, defenses):
+		if not ("arena" in world_ref and "hazards" in world_ref.arena):
+			return
+
+		var turret_count = 0
+		var wall_count = 0
+		var trap_count = 0
+		if defenses.has("turret"): turret_count = defenses["turret"]
+		if defenses.has("wall"): wall_count = defenses["wall"]
+		if defenses.has("trap"): trap_count = defenses["trap"]
+
+		var hazard_idx = 990000
+
+		if wall_count > 0:
+			var wall_radius = 200.0
+			var angle_step = (2 * PI) / wall_count
+			for i in range(wall_count):
+				var angle = i * angle_step
+				var wx = cx + cos(angle) * wall_radius
+				var wy = cy + sin(angle) * wall_radius
+				world_ref.arena.hazards.append({
+					"id": hazard_idx, "x": wx, "y": wy, "kind": "bone_wall", "radius": 40.0, "active": true, "hp": 300.0, "team": "defender", "friendly_clan": "defender"
+				})
+				hazard_idx += 1
+
+		if turret_count > 0:
+			var turret_radius = 120.0
+			var angle_step = (2 * PI) / turret_count
+			for i in range(turret_count):
+				var angle = i * angle_step
+				var tx = cx + cos(angle) * turret_radius
+				var ty = cy + sin(angle) * turret_radius
+				world_ref.arena.hazards.append({
+					"id": hazard_idx, "x": tx, "y": ty, "kind": "turret", "radius": 30.0, "active": true, "hp": 150.0, "team": "defender", "cooldown": 1.0, "damage": 15.0, "range": 300.0, "friendly_clan": "defender"
+				})
+				hazard_idx += 1
+
+		if trap_count > 0:
+			for i in range(trap_count):
+				var angle = randf_range(0, 2 * PI)
+				var dist = randf_range(80.0, 400.0)
+				var tx = cx + cos(angle) * dist
+				var ty = cy + sin(angle) * dist
+				world_ref.arena.hazards.append({
+					"id": hazard_idx, "x": tx, "y": ty, "kind": "landmine", "radius": 25.0, "active": true, "hp": 50.0, "team": "defender", "friendly_clan": "defender"
+				})
+				hazard_idx += 1
+
+	func tick(world_ref, balls_ref: Array, delta: float = 0.016):
+		super.tick(world_ref, balls_ref, delta)
+		world = world_ref
+		balls = balls_ref
+
+		if war_resolved:
+			return
+
+		war_timer += delta
+
+		var hq_destroyed = false
+		if hq_core != null:
+			if hq_core.has("active") and not hq_core["active"]:
+				hq_destroyed = true
+			elif typeof(hq_core) == TYPE_OBJECT and hq_core.has_method("get_meta"):
+				if not hq_core.get_meta("active", true):
+					hq_destroyed = true
+
+		var time_up = war_timer >= max_duration
+
+		if hq_destroyed or time_up:
+			war_resolved = true
+			var GuildManager = load("res://src/system/guild.gd")
+			if GuildManager:
+				var gm = GuildManager.new()
+				if hq_destroyed and attacker_guild != "" and defender_guild != "":
+					if gm.has_method("record_siege_defense_broken"):
+						var stolen = gm.record_siege_defense_broken(attacker_guild, defender_guild, 1000)
+						if world.has_method("add_event"):
+							world.add_event("guild_war_victory", {"winner": attacker_guild, "loser": defender_guild, "stolen": stolen, "reason": "hq_destroyed"})
+				elif time_up and defender_guild != "":
+					if gm.has_method("record_siege_held"):
+						gm.record_siege_held(defender_guild, 500)
+						if world.has_method("add_event"):
+							world.add_event("guild_war_defense", {"winner": defender_guild, "loser": attacker_guild, "xp_reward": 500, "reason": "time_up"})
+			return
+
+		if "arena" in world and "hazards" in world.arena:
+			var new_projectiles = []
+			for h in world.arena.hazards:
+				var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY else (h.get_meta("kind") if h.has_method("get_meta") else h.get("kind"))
+				var h_active = h.get("active") if typeof(h) == TYPE_DICTIONARY else (h.get_meta("active") if h.has_method("get_meta") else true)
+
+				if h_kind == "turret" and h_active:
+					var h_cooldown = h.get("cooldown") if typeof(h) == TYPE_DICTIONARY else (h.get_meta("cooldown") if h.has_method("get_meta") else h.get("cooldown"))
+					h_cooldown -= delta
+
+					if h_cooldown <= 0:
+						var h_x = h.get("x") if typeof(h) == TYPE_DICTIONARY else (h.get_meta("x") if h.has_method("get_meta") else h.x)
+						var h_y = h.get("y") if typeof(h) == TYPE_DICTIONARY else (h.get_meta("y") if h.has_method("get_meta") else h.y)
+						var h_range = h.get("range", 300.0) if typeof(h) == TYPE_DICTIONARY else (h.get_meta("range", 300.0) if h.has_method("get_meta") else 300.0)
+
+						var best_target = null
+						var best_dist = 999999.0
+
+						for b in world.balls:
+							var b_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("alive") if b.has_method("get_meta") else b.alive)
+							if not b_alive: continue
+
+							var b_clan = ""
+							if typeof(b) == TYPE_DICTIONARY:
+								b_clan = b.get("clan", "")
+							else:
+								b_clan = b.get_meta("clan") if b.has_method("get_meta") and b.has_meta("clan") else b.get("clan")
+								if b_clan == null and b.has_method("get_clan"): b_clan = b.get_clan()
+
+							if b_clan != defender_guild:
+								var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if b.has_method("get_meta") else b.x)
+								var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if b.has_method("get_meta") else b.y)
+
+								var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+								if dist < h_range and dist < best_dist:
+									best_dist = dist
+									best_target = b
+
+						if best_target != null:
+							var t_x = best_target.get("x") if typeof(best_target) == TYPE_DICTIONARY else (best_target.get_meta("x") if best_target.has_method("get_meta") else best_target.x)
+							var t_y = best_target.get("y") if typeof(best_target) == TYPE_DICTIONARY else (best_target.get_meta("y") if best_target.has_method("get_meta") else best_target.y)
+
+							var angle = atan2(t_y - h_y, t_x - h_x)
+							var speed = 500.0
+							var p = {
+								"id": 999900 + world.arena.hazards.size(),
+								"x": h_x,
+								"y": h_y,
+								"radius": 5.0,
+								"kind": "laser_projectile",
+								"active": true,
+								"damage": 15.0,
+								"team": "defender",
+								"vx": cos(angle) * speed,
+								"vy": sin(angle) * speed
+							}
+							new_projectiles.append(p)
+							h_cooldown = 1.0
+
+					if typeof(h) == TYPE_DICTIONARY:
+						h["cooldown"] = h_cooldown
+					elif h.has_method("set_meta"):
+						h.set_meta("cooldown", h_cooldown)
+					else:
+						h.cooldown = h_cooldown
+
+			for p in new_projectiles:
+				world.arena.hazards.append(p)
+
 var GAME_MODES = {
+    "guild_war": GuildWarMode.new(),
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),

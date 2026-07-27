@@ -31480,7 +31480,207 @@ class MobilePlatformMode(GameMode):
                     b.x += dx
                     b.y += dy
 
+
+
+class GuildWarHQCore:
+    def __init__(self, x, y):
+        self.id = 999999
+        self.x = x
+        self.y = y
+        self.radius = 80.0
+        self.kind = "hq_core"
+        self.hp = 1000.0
+        self.active = True
+        self.team = "defender"
+        self.is_disabled_by_flare = False
+
+class GuildWarDefenseHazard:
+    def __init__(self, id_val, x, y, kind, radius, hp=100.0):
+        self.id = id_val
+        self.x = x
+        self.y = y
+        self.kind = kind
+        self.radius = radius
+        self.active = True
+        self.hp = hp
+        self.team = "defender"
+        self.is_disabled_by_flare = False
+        self.friendly_clan = "defender"
+        if kind == "turret":
+            self.cooldown = 1.0
+            self.damage = 15.0
+            self.range = 300.0
+
+class GuildWarProjectile:
+    def __init__(self, p_id, x, y, target, damage):
+        self.id = p_id
+        self.x = x
+        self.y = y
+        self.radius = 5.0
+        self.kind = "laser_projectile"
+        self.active = True
+        self.damage = damage
+        self.team = "defender"
+        import math
+        angle = math.atan2(target.y - y, target.x - x)
+        speed = 500.0
+        self.vx = math.cos(angle) * speed
+        self.vy = math.sin(angle) * speed
+        self.is_disabled_by_flare = False
+
+
+class GuildWarMode(GameMode):
+    """A mode where attackers try to destroy the defender's HQ which is fortified based on their purchased defenses."""
+    def __init__(self, attacker_guild=None, defender_guild=None):
+        super().__init__()
+        self.name = "Guild War"
+        self.description = "Attackers must break through defender's custom HQ defenses to steal resources."
+        self.attacker_guild = attacker_guild
+        self.defender_guild = defender_guild
+        self.hq_core = None
+        self.defenses_spawned = False
+        self.war_timer = 0.0
+        self.max_duration = 300.0 # 5 minutes
+        self.war_resolved = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.war_resolved = False
+        self.war_timer = 0.0
+
+        # Center of arena is HQ
+        hq_x = getattr(world.arena, 'width', 2000.0) / 2
+        hq_y = getattr(world.arena, 'height', 2000.0) / 2
+
+        self.hq_core = GuildWarHQCore(hq_x, hq_y)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            world.arena.hazards.append(self.hq_core)
+
+        try:
+            from system.guild import GuildManager
+            gm = GuildManager()
+
+            if self.defender_guild:
+                defenses = gm.get_hq_defenses(self.defender_guild)
+                # Spawn defenses
+                self._spawn_defenses(world, hq_x, hq_y, defenses)
+        except ImportError:
+            pass
+
+    def _spawn_defenses(self, world, cx, cy, defenses):
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        import math
+
+        turret_count = defenses.get("turret", 0)
+        wall_count = defenses.get("wall", 0)
+        trap_count = defenses.get("trap", 0)
+
+
+        hazard_idx = 990000
+
+        # Spawn walls in a circle
+        if wall_count > 0:
+            wall_radius = 200.0
+            angle_step = (2 * math.pi) / wall_count
+            for i in range(wall_count):
+                angle = i * angle_step
+                wx = cx + math.cos(angle) * wall_radius
+                wy = cy + math.sin(angle) * wall_radius
+                w = GuildWarDefenseHazard(hazard_idx, wx, wy, "bone_wall", 40.0, 300.0)
+                world.arena.hazards.append(w)
+                hazard_idx += 1
+
+        # Spawn turrets
+        if turret_count > 0:
+            turret_radius = 120.0
+            angle_step = (2 * math.pi) / turret_count
+            for i in range(turret_count):
+                angle = i * angle_step
+                tx = cx + math.cos(angle) * turret_radius
+                ty = cy + math.sin(angle) * turret_radius
+                t = GuildWarDefenseHazard(hazard_idx, tx, ty, "turret", 30.0, 150.0)
+                world.arena.hazards.append(t)
+                hazard_idx += 1
+
+        # Spawn traps randomly
+        if trap_count > 0:
+            import random
+            for i in range(trap_count):
+                angle = random.uniform(0, 2 * math.pi)
+                dist = random.uniform(80.0, 400.0)
+                tx = cx + math.cos(angle) * dist
+                ty = cy + math.sin(angle) * dist
+                t = GuildWarDefenseHazard(hazard_idx, tx, ty, "landmine", 25.0, 50.0)
+                world.arena.hazards.append(t)
+                hazard_idx += 1
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if self.war_resolved:
+            return
+
+        self.war_timer += delta
+
+        hq_destroyed = self.hq_core and not self.hq_core.active
+        time_up = self.war_timer >= self.max_duration
+
+        if hq_destroyed or time_up:
+            self.war_resolved = True
+            winner = self.attacker_guild if hq_destroyed else self.defender_guild
+            loser = self.defender_guild if hq_destroyed else self.attacker_guild
+
+            try:
+                from system.guild import GuildManager
+                gm = GuildManager()
+                if hq_destroyed and self.attacker_guild and self.defender_guild:
+                    stolen = gm.record_siege_defense_broken(self.attacker_guild, self.defender_guild, 1000)
+                    if hasattr(world, 'add_event'):
+                        world.add_event("guild_war_victory", {"winner": self.attacker_guild, "loser": self.defender_guild, "stolen": stolen, "reason": "hq_destroyed"})
+                elif time_up and self.defender_guild:
+                    gm.record_siege_held(self.defender_guild, 500)
+                    if hasattr(world, 'add_event'):
+                        world.add_event("guild_war_defense", {"winner": self.defender_guild, "loser": self.attacker_guild, "xp_reward": 500, "reason": "time_up"})
+            except ImportError:
+                pass
+
+            return
+
+        # Handle Turret logic
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "turret" and getattr(h, "active", True):
+                    # Reduce cooldown
+                    h.cooldown = getattr(h, "cooldown", 1.0) - delta
+                    if h.cooldown <= 0:
+                        # Find nearest attacker
+                        import math
+                        best_target = None
+                        best_dist = float('inf')
+
+                        for b in balls:
+                            if not b.alive: continue
+                            # Assuming attackers have clan/guild attribute or different team
+                            # For simplicity in mode, we just shoot any ball not matching defender clan
+                            b_clan = getattr(b, "clan", None) or (b['clan'] if isinstance(b, dict) and 'clan' in b else None)
+                            if b_clan != self.defender_guild:
+                                dist = math.hypot(b.x - h.x, b.y - h.y)
+                                if dist < getattr(h, "range", 300.0) and dist < best_dist:
+                                    best_dist = dist
+                                    best_target = b
+
+                        if best_target:
+                            # Fire projectile
+                            p_id = 999900 + len(world.arena.hazards)
+                            p = GuildWarProjectile(p_id, h.x, h.y, best_target, getattr(h, "damage", 15.0))
+                            world.arena.hazards.append(p)
+                            h.cooldown = 1.0
+
 GAME_MODES = {
+    'guild_war': GuildWarMode(),
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
