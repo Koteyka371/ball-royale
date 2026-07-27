@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1515] King of the Hill - Dynamic Capture Zones — *2026-07-27 00:08:59 UTC*
+
+Introduce dynamic capture zones that move around the arena. Teams earn points by staying inside the zone. If multiple teams are in the zone, points are contested. The zone shrinks over time, forcing closer combat.
+
+---
+
 ## [idea-1560] Mirror Illusion Mode — *2026-07-26 23:21:10 UTC*
 
 A game mode where every ball has a harmless mirror illusion on the opposite side of the arena that moves symmetrically, confusing opponents and absorbing single-target projectiles.
