@@ -47,11 +47,13 @@ def test_bouncing_projectiles_mutator():
     assert proj1.vx == 100
     assert getattr(proj1, "bounces", 0) == 3
 
-    # Proj1 bounces is 3. Put near right wall. It should dissipate.
+    # Proj1 bounces is 3. Put near right wall. It should bounce infinitely.
     proj1.x = 999
     mode.tick(world, [], 0.016)
-    assert not proj1.alive
-    assert proj1.hp == 0
+    assert proj1.alive
+    assert proj1.hp == 1
+    assert proj1.vx == -100
+    assert getattr(proj1, "bounces", 0) == 4
 
 def test_hazard_bouncing():
     mode = BouncingProjectilesMutatorMode()

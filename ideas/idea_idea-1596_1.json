@@ -1,0 +1,4 @@
+{
+    "title": "Projectile Fragmentation",
+    "description": "A new mutator where whenever a projectile bounces, it has a chance to fragment into two smaller, weaker projectiles, turning the arena into a chaotic bullet hell."
+}

@@ -28231,7 +28231,7 @@ class BouncingProjectilesMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Bouncing Projectiles Mutator"
-        self.description = "All projectiles (bullets, fireballs, snipes) bounce off walls and hazards up to 3 times before dissipating."
+        self.description = "All projectiles (bullets, fireballs, snipes) bounce off walls and hazards infinitely until they hit a player or lose all their velocity."
 
     def tick(self, world, balls, delta):
         super().tick(world, balls, delta)
@@ -28250,11 +28250,6 @@ class BouncingProjectilesMutatorMode(GameMode):
                 continue
 
             bounces = getattr(proj, "bounces", 0)
-            if bounces >= 3:
-                proj.alive = False
-                if hasattr(proj, "hp"):
-                    proj.hp = 0
-                continue
 
             x = getattr(proj, "x", 0)
             y = getattr(proj, "y", 0)
