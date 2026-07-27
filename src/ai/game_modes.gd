@@ -64668,6 +64668,443 @@ class IndestructibleLaserCoreMode extends GameMode:
 
 GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode.new()
 
+
+class UnstablePayloadMode extends GameMode:
+	var spawn_timer = 10.0
+
+	func _init():
+		super._init()
+		name = "Unstable Payload"
+		description = "Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		if typeof(world) == TYPE_DICTIONARY:
+			if not world.has("arena"): return
+		elif typeof(world) == TYPE_OBJECT:
+			if not "arena" in world and not world.has_method("get"): return
+
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY:
+			arena = world.get("arena")
+		else:
+			arena = world.get("arena") if "arena" in world else (world.get("arena") if world.has_method("get") else null)
+
+		if arena == null: return
+
+		var hazards = []
+		if typeof(arena) == TYPE_DICTIONARY:
+			hazards = arena.get("hazards", [])
+		elif typeof(arena) == TYPE_OBJECT:
+			if "hazards" in arena:
+				hazards = arena.hazards
+			elif arena.has_method("get"):
+				var h = arena.get("hazards")
+				if h != null: hazards = h
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			var has_payload = false
+			for h in hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					kind = h.get("kind", "")
+				elif typeof(h) == TYPE_OBJECT:
+					if "kind" in h: kind = h.kind
+					elif h.has_method("get"):
+						var val = h.get("kind")
+						if val != null: kind = val
+				if kind == "unstable_payload":
+					has_payload = true
+					break
+
+			if not has_payload:
+				spawn_timer = 30.0
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_width = arena.get("width", 1000.0)
+					arena_height = arena.get("height", 1000.0)
+				elif typeof(arena) == TYPE_OBJECT:
+					if "width" in arena: arena_width = arena.width
+					elif arena.has_method("get"):
+						var val = arena.get("width")
+						if val != null: arena_width = val
+					if "height" in arena: arena_height = arena.height
+					elif arena.has_method("get"):
+						var val = arena.get("height")
+						if val != null: arena_height = val
+
+				var cx = arena_width / 2.0
+				var cy = arena_height / 2.0
+
+				var h = {}
+				h["id"] = hazards.size() + 95000 + (randi() % 1000)
+				h["x"] = cx
+				h["y"] = cy
+				h["radius"] = 20.0
+				h["kind"] = "unstable_payload"
+				h["damage"] = 0.0
+				h["vx"] = 0.0
+				h["vy"] = 0.0
+				h["mass_timer"] = 0.0
+				h["active"] = true
+
+				hazards.append(h)
+
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena["hazards"] = hazards
+				elif typeof(arena) == TYPE_OBJECT:
+					if "hazards" in arena:
+						arena.hazards = hazards
+					elif arena.has_method("set"):
+						arena.set("hazards", hazards)
+
+		var hazards_to_remove = []
+
+		for h in hazards:
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY:
+				kind = h.get("kind", "")
+			elif typeof(h) == TYPE_OBJECT:
+				if "kind" in h: kind = h.kind
+				elif h.has_method("get"):
+					var val = h.get("kind")
+					if val != null: kind = val
+
+			if kind == "unstable_payload":
+				var mass_timer = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					mass_timer = h.get("mass_timer", 0.0)
+				elif typeof(h) == TYPE_OBJECT:
+					if "mass_timer" in h: mass_timer = h.mass_timer
+					elif h.has_method("get"):
+						var val = h.get("mass_timer")
+						if val != null: mass_timer = val
+
+				mass_timer += delta
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["mass_timer"] = mass_timer
+				elif typeof(h) == TYPE_OBJECT:
+					if "mass_timer" in h: h.mass_timer = mass_timer
+					elif h.has_method("set"): h.set("mass_timer", mass_timer)
+
+				var progress = min(1.0, mass_timer / 15.0)
+				var h_radius = 20.0 + (80.0 * progress)
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["radius"] = h_radius
+				elif typeof(h) == TYPE_OBJECT:
+					if "radius" in h: h.radius = h_radius
+					elif h.has_method("set"): h.set("radius", h_radius)
+
+				var vx = 0.0
+				var vy = 0.0
+				var hx = 0.0
+				var hy = 0.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					vx = h.get("vx", 0.0)
+					vy = h.get("vy", 0.0)
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+				elif typeof(h) == TYPE_OBJECT:
+					if "vx" in h: vx = h.vx
+					elif h.has_method("get"):
+						var val = h.get("vx")
+						if val != null: vx = val
+					if "vy" in h: vy = h.vy
+					elif h.has_method("get"):
+						var val = h.get("vy")
+						if val != null: vy = val
+					if "x" in h: hx = h.x
+					elif h.has_method("get"):
+						var val = h.get("x")
+						if val != null: hx = val
+					if "y" in h: hy = h.y
+					elif h.has_method("get"):
+						var val = h.get("y")
+						if val != null: hy = val
+
+				vx = vx * (1.0 - 1.5 * delta)
+				vy = vy * (1.0 - 1.5 * delta)
+				hx += vx * delta
+				hy += vy * delta
+
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_width = arena.get("width", 1000.0)
+					arena_height = arena.get("height", 1000.0)
+				elif typeof(arena) == TYPE_OBJECT:
+					if "width" in arena: arena_width = arena.width
+					elif arena.has_method("get"):
+						var val = arena.get("width")
+						if val != null: arena_width = val
+					if "height" in arena: arena_height = arena.height
+					elif arena.has_method("get"):
+						var val = arena.get("height")
+						if val != null: arena_height = val
+
+				if hx - h_radius < 0:
+					hx = h_radius
+					vx = abs(vx) * 0.8
+				elif hx + h_radius > arena_width:
+					hx = arena_width - h_radius
+					vx = -abs(vx) * 0.8
+
+				if hy - h_radius < 0:
+					hy = h_radius
+					vy = abs(vy) * 0.8
+				elif hy + h_radius > arena_height:
+					hy = arena_height - h_radius
+					vy = -abs(vy) * 0.8
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["vx"] = vx
+					h["vy"] = vy
+					h["x"] = hx
+					h["y"] = hy
+				elif typeof(h) == TYPE_OBJECT:
+					if "vx" in h: h.vx = vx
+					elif h.has_method("set"): h.set("vx", vx)
+					if "vy" in h: h.vy = vy
+					elif h.has_method("set"): h.set("vy", vy)
+					if "x" in h: h.x = hx
+					elif h.has_method("set"): h.set("x", hx)
+					if "y" in h: h.y = hy
+					elif h.has_method("set"): h.set("y", hy)
+
+				var rad_radius = h_radius * 2.5
+				var base_dmg = 5.0 + (15.0 * progress)
+
+				for b in balls:
+					var alive = false
+					var ball_type = ""
+
+					if typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+						ball_type = b.get("ball_type", "")
+					elif typeof(b) == TYPE_OBJECT:
+						if "alive" in b: alive = b.alive
+						elif b.has_method("get"):
+							var val = b.get("alive")
+							if val != null: alive = val
+						if "ball_type" in b: ball_type = b.ball_type
+						elif b.has_method("get"):
+							var val = b.get("ball_type")
+							if val != null: ball_type = val
+
+					if not alive or ball_type == "spectator":
+						continue
+
+					var bx = 0.0
+					var by = 0.0
+					var b_radius = 15.0
+					var hp = 100.0
+					var bvx = 0.0
+					var bvy = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						b_radius = b.get("radius", 15.0)
+						hp = b.get("hp", 100.0)
+						bvx = b.get("vx", 0.0)
+						bvy = b.get("vy", 0.0)
+					elif typeof(b) == TYPE_OBJECT:
+						if "x" in b: bx = b.x
+						elif b.has_method("get"):
+							var val = b.get("x")
+							if val != null: bx = val
+						if "y" in b: by = b.y
+						elif b.has_method("get"):
+							var val = b.get("y")
+							if val != null: by = val
+						if "radius" in b: b_radius = b.radius
+						elif b.has_method("get"):
+							var val = b.get("radius")
+							if val != null: b_radius = val
+						if "hp" in b: hp = b.hp
+						elif b.has_method("get"):
+							var val = b.get("hp")
+							if val != null: hp = val
+						if "vx" in b: bvx = b.vx
+						elif b.has_method("get"):
+							var val = b.get("vx")
+							if val != null: bvx = val
+						if "vy" in b: bvy = b.vy
+						elif b.has_method("get"):
+							var val = b.get("vy")
+							if val != null: bvy = val
+
+					var dx = bx - hx
+					var dy = by - hy
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist < rad_radius:
+						var dmg = base_dmg * (1.0 - dist/rad_radius) * delta
+						hp -= dmg
+						if hp <= 0:
+							hp = 0
+							alive = false
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = hp
+							b["alive"] = alive
+						elif typeof(b) == TYPE_OBJECT:
+							if "hp" in b: b.hp = hp
+							elif b.has_method("set"): b.set("hp", hp)
+							if "alive" in b: b.alive = alive
+							elif b.has_method("set"): b.set("alive", alive)
+
+					if dist <= h_radius + b_radius:
+						var overlap = h_radius + b_radius - dist
+						if dist > 0.001:
+							var nx = dx / dist
+							var ny = dy / dist
+
+							bx += nx * overlap
+							by += ny * overlap
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] = bx
+								b["y"] = by
+							elif typeof(b) == TYPE_OBJECT:
+								if "x" in b: b.x = bx
+								elif b.has_method("set"): b.set("x", bx)
+								if "y" in b: b.y = by
+								elif b.has_method("set"): b.set("y", by)
+
+							var rel_vx = bvx - vx
+							var rel_vy = bvy - vy
+							var impulse = (nx * rel_vx + ny * rel_vy)
+
+							if impulse < 0:
+								vx -= nx * abs(impulse) * 0.5
+								vy -= ny * abs(impulse) * 0.5
+
+								hp -= 10.0 * delta
+								if hp <= 0:
+									hp = 0
+									alive = false
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = hp
+									b["alive"] = alive
+								elif typeof(b) == TYPE_OBJECT:
+									if "hp" in b: b.hp = hp
+									elif b.has_method("set"): b.set("hp", hp)
+									if "alive" in b: b.alive = alive
+									elif b.has_method("set"): b.set("alive", alive)
+
+								if typeof(h) == TYPE_DICTIONARY:
+									h["vx"] = vx
+									h["vy"] = vy
+								elif typeof(h) == TYPE_OBJECT:
+									if "vx" in h: h.vx = vx
+									elif h.has_method("set"): h.set("vx", vx)
+									if "vy" in h: h.vy = vy
+									elif h.has_method("set"): h.set("vy", vy)
+
+				if mass_timer >= 15.0:
+					hazards_to_remove.append(h)
+
+		if hazards_to_remove.size() > 0:
+			for h in hazards_to_remove:
+				var hx = 0.0
+				var hy = 0.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+				elif typeof(h) == TYPE_OBJECT:
+					if "x" in h: hx = h.x
+					elif h.has_method("get"):
+						var val = h.get("x")
+						if val != null: hx = val
+					if "y" in h: hy = h.y
+					elif h.has_method("get"):
+						var val = h.get("y")
+						if val != null: hy = val
+
+				var idx = hazards.find(h)
+				if idx != -1:
+					hazards.remove_at(idx)
+
+				var blast_radius = 450.0
+				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("visual_effect", {"type": "massive_explosion", "x": hx, "y": hy, "radius": blast_radius})
+					world.add_event("unstable_payload_detonated", {"x": hx, "y": hy})
+
+				for b in balls:
+					var alive = false
+					var ball_type = ""
+
+					if typeof(b) == TYPE_DICTIONARY:
+						alive = b.get("alive", false)
+						ball_type = b.get("ball_type", "")
+					elif typeof(b) == TYPE_OBJECT:
+						if "alive" in b: alive = b.alive
+						elif b.has_method("get"):
+							var val = b.get("alive")
+							if val != null: alive = val
+						if "ball_type" in b: ball_type = b.ball_type
+						elif b.has_method("get"):
+							var val = b.get("ball_type")
+							if val != null: ball_type = val
+
+					if alive and ball_type != "spectator":
+						var bx = 0.0
+						var by = 0.0
+						var hp = 100.0
+
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+							hp = b.get("hp", 100.0)
+						elif typeof(b) == TYPE_OBJECT:
+							if "x" in b: bx = b.x
+							elif b.has_method("get"):
+								var val = b.get("x")
+								if val != null: bx = val
+							if "y" in b: by = b.y
+							elif b.has_method("get"):
+								var val = b.get("y")
+								if val != null: by = val
+							if "hp" in b: hp = b.hp
+							elif b.has_method("get"):
+								var val = b.get("hp")
+								if val != null: hp = val
+
+						var dx = bx - hx
+						var dy = by - hy
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist <= blast_radius:
+							if dist < blast_radius * 0.6:
+								hp = 0
+								alive = false
+							else:
+								var dmg = 200.0 * (1.0 - (dist - blast_radius*0.6)/(blast_radius*0.4))
+								hp -= dmg
+								if hp <= 0:
+									hp = 0
+									alive = false
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = hp
+								b["alive"] = alive
+							elif typeof(b) == TYPE_OBJECT:
+								if "hp" in b: b.hp = hp
+								elif b.has_method("set"): b.set("hp", hp)
+								if "alive" in b: b.alive = alive
+								elif b.has_method("set"): b.set("alive", alive)
+
 class BlindFragmentAuctionMode extends GameMode:
 	var auction_timer = 30.0
 	var auction_active = false
@@ -64910,6 +65347,7 @@ class BlindFragmentAuctionMode extends GameMode:
 							"item": current_item["name"]
 						})
 
+GAME_MODES["unstable_payload"] = UnstablePayloadMode.new()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
 GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
 GAME_MODES["kinetic_battery"] = load("res://src/ai/kinetic_battery.gd").new()
