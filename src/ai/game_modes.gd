@@ -4622,8 +4622,16 @@ class BattleRoyaleMode extends GameMode:
 		var shrink_ratio = max(0.0, min(1.0, 1.0 - (current_radius / max_arena_dim)))
 		var zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
 
+		if not self.has("player_path_history"):
+			self.set("player_path_history", {})
+		var history_dict = self.get("player_path_history")
+
 		for b in balls:
 			if b.alive and b.ball_type != "spectator":
+				var b_id = str(b.get("id")) if typeof(b) == TYPE_DICTIONARY and b.has("id") else str(b.id)
+				if not history_dict.has(b_id):
+					history_dict[b_id] = []
+
 				var b_x = 0.0
 				var b_y = 0.0
 				if "x" in b: b_x = b.x
@@ -4634,34 +4642,28 @@ class BattleRoyaleMode extends GameMode:
 				var distance_to_center = sqrt(pow(b_x - self.get("zone_x"), 2) + pow(b_y - self.get("zone_y"), 2))
 				# Check if ball is outside the circular safe zone bounds
 				if distance_to_center > self.get("zone_radius"):
-					# In this Battle Royale, outside the safe zone is LAVA!
-					var damage_amount = zone_damage_per_second * delta
-					damage_amount *= 1.5
-					if b.has_method("take_damage"):
-						b.take_damage(damage_amount)
-					elif "hp" in b:
-						b.hp -= damage_amount  # Apply continuous safe zone damage
-						if b.hp <= 0:
-							b.hp = 0
-							b.alive = false
-							if not "killer" in b or b.killer == null or b.killer == "":
-								if b.has_method("set_meta"):
-									b.set_meta("killer", "safe_zone")
-								else:
-									b.killer = "safe_zone"
+					if history_dict[b_id].size() > 0:
+						var prev_pos = history_dict[b_id].pop_back()
+						if "x" in b: b.x = prev_pos[0]
+						elif b.has_method("set_meta"): b.set_meta("x", prev_pos[0])
+						if typeof(b) == TYPE_DICTIONARY: b["x"] = prev_pos[0]
 
-					if typeof(b) == TYPE_OBJECT:
-						if "burn_timer" in b:
-							b.burn_timer = max(b.burn_timer, 2.0)
-						elif b.has_method("get_meta") and b.has_meta("burn_timer"):
-							b.set_meta("burn_timer", max(b.get_meta("burn_timer"), 2.0))
-						elif b.has_method("set_meta"):
-							b.set_meta("burn_timer", 2.0)
-					elif typeof(b) == TYPE_DICTIONARY:
-						if b.has("burn_timer"):
-							b["burn_timer"] = max(b["burn_timer"], 2.0)
-						else:
-							b["burn_timer"] = 2.0
+						if "y" in b: b.y = prev_pos[1]
+						elif b.has_method("set_meta"): b.set_meta("y", prev_pos[1])
+						if typeof(b) == TYPE_DICTIONARY: b["y"] = prev_pos[1]
+					else:
+						var angle = atan2(self.get("zone_y") - b_y, self.get("zone_x") - b_x)
+						if "x" in b: b.x += cos(angle) * 50 * delta
+						elif b.has_method("set_meta"): b.set_meta("x", b_x + cos(angle) * 50 * delta)
+						if typeof(b) == TYPE_DICTIONARY: b["x"] = b_x + cos(angle) * 50 * delta
+
+						if "y" in b: b.y += sin(angle) * 50 * delta
+						elif b.has_method("set_meta"): b.set_meta("y", b_y + sin(angle) * 50 * delta)
+						if typeof(b) == TYPE_DICTIONARY: b["y"] = b_y + sin(angle) * 50 * delta
+				else:
+					history_dict[b_id].append([b_x, b_y])
+					if history_dict[b_id].size() > 600:
+						history_dict[b_id].pop_front()
 
 
 		# Mutate hazards inside the shrinking safe zone

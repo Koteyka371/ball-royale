@@ -2741,36 +2741,36 @@ class BattleRoyaleMode(GameMode):
         shrink_ratio = max(0.0, min(1.0, 1.0 - (self.zone_radius / max_arena_dim)))
         zone_damage_per_second = 20.0 + (shrink_ratio * 80.0)
 
+        if not hasattr(self, "player_path_history"):
+            self.player_path_history = {}
+
         # Apply continuous damage to any ball standing outside the safe zone boundary
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                b_id = getattr(b, "id", str(id(b)))
+                if b_id not in self.player_path_history:
+                    self.player_path_history[b_id] = []
+
                 b_x = getattr(b, "x", 0.0)
                 b_y = getattr(b, "y", 0.0)
                 distance_to_center = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
 
                 # Check if player is outside the shrinking circular safe zone
                 if distance_to_center > self.zone_radius:
-                    # In this Battle Royale, outside the safe zone is LAVA!
-                    damage_amount = zone_damage_per_second * delta
-                    # Lava damage multiplier (more punishing than standard storm)
-                    damage_amount *= 1.5
-                    if hasattr(b, "take_damage"):
-                        b.take_damage(damage_amount)
+                    if len(self.player_path_history[b_id]) > 0:
+                        prev_x, prev_y = self.player_path_history[b_id].pop()
+                        b.x = prev_x
+                        b.y = prev_y
                     else:
-                        b.hp -= damage_amount  # Apply continuous safe zone damage
-                        if b.hp <= 0:
-                            b.hp = 0
-                            b.alive = False
-                            if not hasattr(b, "killer") or not b.killer:
-                                b.killer = "safe_zone"
-
-                    # Apply burn status effect (if not already burned/lava)
-                    if not hasattr(b, "burn_timer") or b.burn_timer <= 0:
-                        b.burn_timer = 2.0
-                    else:
-                        b.burn_timer = max(b.burn_timer, 2.0)
+                        angle = math.atan2(self.zone_y - b_y, self.zone_x - b_x)
+                        b.x += math.cos(angle) * 50 * delta
+                        b.y += math.sin(angle) * 50 * delta
+                else:
+                    self.player_path_history[b_id].append((b_x, b_y))
+                    if len(self.player_path_history[b_id]) > 600:
+                        self.player_path_history[b_id].pop(0)
 
         # Moving walls / hazards logic
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):

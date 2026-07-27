@@ -22,19 +22,31 @@ class MockBall:
         self.y = 0.0
         self.hp = 10.0
 
-def test_battle_royale_zone_damage_kills():
+def test_battle_royale_zone_reverses_time():
     mode = BattleRoyaleMode()
     world = MockWorld()
     world.arena = MockArena()
-    balls = [MockBall(1, "warrior")]
-    balls[0].x = 10000.0  # Far outside zone
+    balls = [MockBall("b1", "warrior")]
+
 
     mode.setup(world, balls)
+
+    # Put ball inside zone to build history
+    balls[0].x = 500.0
+    balls[0].y = 500.0
+    mode.tick(world, balls, delta=1.0) # tick 1
+
+    balls[0].x = 510.0
+    mode.tick(world, balls, delta=1.0) # tick 2
+
+    # Put ball outside zone
+    balls[0].x = 10000.0
+    balls[0].y = 500.0
     mode.tick(world, balls, delta=1.0)
 
-    assert balls[0].hp == 0
-    assert not balls[0].alive
-    assert balls[0].killer == "safe_zone"
+    # Should be reversed to tick 2 position
+    assert abs(balls[0].x - 510.0) < 5.0
+    assert abs(balls[0].y - 500.0) < 25.0
+    assert balls[0].hp == 10.0
+    assert balls[0].alive
 
-test_battle_royale_zone_damage_kills()
-print("test_battle_royale_zone_damage_kills passed")
