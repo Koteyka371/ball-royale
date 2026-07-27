@@ -31159,7 +31159,112 @@ class StickyCeilingsMutatorMode(GameMode):
                                 world.add_event("visual_effect", {"type": "stuck_in_glue", "target": getattr(b, "id", None)})
                                 b.last_stuck_event_time = getattr(world, "tick_timer", 0.0)
 
+
+class MercenaryOutpostMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mercenary Outpost"
+        self.description = "Players can capture mercenary outposts across the map. Once fully captured, friendly AI balls spawn periodically and help defend the capturing player."
+        self.outposts = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not getattr(world, 'arena', None):
+            return
+
+        import random
+        random.seed(int(getattr(world, "tick_timer", 0.0) * 1000) + 789)
+
+        # Spawn 2 outposts
+        for _ in range(2):
+            self.outposts.append({
+                "x": random.uniform(200, 800),
+                "y": random.uniform(200, 800),
+                "radius": 150.0,
+                "owner": None,
+                "capture_progress": 0.0,
+                "capturing_team": None,
+                "spawn_timer": 5.0
+            })
+        random.seed()
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        if not hasattr(self, 'outposts') or not self.outposts:
+            self.setup(world, balls)
+
+        for outpost in self.outposts:
+            occupants = []
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                br = getattr(b, "radius", 20.0)
+                dx = bx - outpost["x"]
+                dy = by - outpost["y"]
+                if dx*dx + dy*dy <= (outpost["radius"] + br)**2:
+                    occupants.append(b)
+
+            if not occupants:
+                if outpost["capture_progress"] > 0 and outpost["owner"] is None:
+                    outpost["capture_progress"] = max(0.0, outpost["capture_progress"] - delta * 10.0)
+            else:
+                first_occupant_team = getattr(occupants[0], "team", getattr(occupants[0], "ball_type", "unknown"))
+                same_team = all(getattr(b, "team", getattr(b, "ball_type", "unknown")) == first_occupant_team for b in occupants)
+
+                if same_team:
+                    if outpost["owner"] != first_occupant_team:
+                        if outpost["capturing_team"] == first_occupant_team:
+                            outpost["capture_progress"] += delta * 20.0
+                            if outpost["capture_progress"] >= 100.0:
+                                outpost["capture_progress"] = 100.0
+                                outpost["owner"] = first_occupant_team
+                                if hasattr(world, "add_event"):
+                                    world.add_event("outpost_captured", {"team": first_occupant_team, "outpost": outpost})
+                        else:
+                            outpost["capture_progress"] -= delta * 20.0
+                            if outpost["capture_progress"] <= 0:
+                                excess = abs(outpost["capture_progress"])
+                                outpost["capture_progress"] = excess
+                                outpost["capturing_team"] = first_occupant_team
+
+            if outpost["owner"] is not None:
+                outpost["spawn_timer"] -= delta
+                if outpost["spawn_timer"] <= 0:
+                    outpost["spawn_timer"] = 5.0
+
+                    class MinionBall:
+                        def __init__(self, id_val, team, x, y):
+                            self.id = id_val
+                            self.team = team
+                            self.ball_type = "minion"
+                            self.x = x
+                            self.y = y
+                            self.vx = 0.0
+                            self.vy = 0.0
+                            self.hp = 20.0
+                            self.max_hp = 20.0
+                            self.radius = 12.0
+                            self.alive = True
+
+                    import random
+                    minion_id = getattr(world, "next_id", random.randint(100000, 999999))
+                    if hasattr(world, "next_id"):
+                        world.next_id += 1
+
+                    minion = MinionBall(
+                        id_val=minion_id,
+                        team=outpost["owner"],
+                        x=outpost["x"] + random.uniform(-20, 20),
+                        y=outpost["y"] + random.uniform(-20, 20)
+                    )
+
+                    if hasattr(world, "balls"):
+                        world.balls.append(minion)
+
 GAME_MODES = {
+    'mercenary_outpost': MercenaryOutpostMode(),
+
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),

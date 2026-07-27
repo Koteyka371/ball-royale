@@ -49928,7 +49928,173 @@ class StickyCeilingsMutatorMode extends GameMode:
 								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 									world.add_event("visual_effect", {"type": "stuck_in_glue", "target": b_id})
 
+
+class MercenaryOutpostMode extends GameMode:
+	var outposts: Array = []
+
+	func _init() -> void:
+		name = "Mercenary Outpost"
+		description = "Players can capture mercenary outposts across the map. Once fully captured, friendly AI balls spawn periodically and help defend the capturing player."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		if not world.has("arena") or world["arena"] == null:
+			return
+
+		outposts.clear()
+
+		var tick_val: float = 0.0
+		if world.has("tick_timer"):
+			tick_val = world["tick_timer"]
+
+		var rng = RandomNumberGenerator.new()
+		rng.seed = int(tick_val * 1000) + 789
+
+		# Spawn 2 outposts
+		for i in range(2):
+			outposts.append({
+				"x": rng.randf_range(200, 800),
+				"y": rng.randf_range(200, 800),
+				"radius": 150.0,
+				"owner": null,
+				"capture_progress": 0.0,
+				"capturing_team": null,
+				"spawn_timer": 5.0
+			})
+
+	func apply_dynamic_traits(world: Dictionary, balls: Array, delta: float) -> void:
+		if outposts.size() == 0:
+			setup(world, balls)
+
+		for outpost in outposts:
+			var occupants: Array = []
+			for b in balls:
+				var alive: bool = false
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("alive"):
+						alive = b["alive"]
+					elif b.has("hp") and b["hp"] > 0:
+						alive = true
+				else:
+					if b.has_meta("alive"):
+						alive = b.get_meta("alive")
+					elif b.has_meta("hp") and b.get_meta("hp") > 0:
+						alive = true
+
+				if not alive:
+					continue
+
+				var b_type: String = ""
+				if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+					b_type = b["ball_type"]
+				elif typeof(b) == TYPE_OBJECT and b.has_meta("ball_type"):
+					b_type = b.get_meta("ball_type")
+
+				if b_type == "spectator":
+					continue
+
+				var bx: float = 0.0
+				var by: float = 0.0
+				var br: float = 20.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b["x"]
+					if b.has("y"): by = b["y"]
+					if b.has("radius"): br = b["radius"]
+				else:
+					if b.has_meta("x"): bx = b.get_meta("x")
+					if b.has_meta("y"): by = b.get_meta("y")
+					if b.has_meta("radius"): br = b.get_meta("radius")
+
+				var dx: float = bx - outpost["x"]
+				var dy: float = by - outpost["y"]
+				if dx*dx + dy*dy <= (outpost["radius"] + br) * (outpost["radius"] + br):
+					occupants.append(b)
+
+			if occupants.size() == 0:
+				if outpost["capture_progress"] > 0 and outpost["owner"] == null:
+					outpost["capture_progress"] -= delta * 10.0
+					if outpost["capture_progress"] < 0.0:
+						outpost["capture_progress"] = 0.0
+			else:
+				var first_b = occupants[0]
+				var first_occupant_team = "unknown"
+				if typeof(first_b) == TYPE_DICTIONARY:
+					if first_b.has("team"):
+						first_occupant_team = first_b["team"]
+					elif first_b.has("ball_type"):
+						first_occupant_team = first_b["ball_type"]
+				else:
+					if first_b.has_meta("team"):
+						first_occupant_team = first_b.get_meta("team")
+					elif first_b.has_meta("ball_type"):
+						first_occupant_team = first_b.get_meta("ball_type")
+
+				var same_team: bool = true
+				for b in occupants:
+					var b_team = "unknown"
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("team"):
+							b_team = b["team"]
+						elif b.has("ball_type"):
+							b_team = b["ball_type"]
+					else:
+						if b.has_meta("team"):
+							b_team = b.get_meta("team")
+						elif b.has_meta("ball_type"):
+							b_team = b.get_meta("ball_type")
+
+					if b_team != first_occupant_team:
+						same_team = false
+						break
+
+				if same_team:
+					if outpost["owner"] != first_occupant_team:
+						if outpost["capturing_team"] == first_occupant_team:
+							outpost["capture_progress"] += delta * 20.0
+							if outpost["capture_progress"] >= 100.0:
+								outpost["capture_progress"] = 100.0
+								outpost["owner"] = first_occupant_team
+								# Event could be added here
+						else:
+							outpost["capture_progress"] -= delta * 20.0
+							if outpost["capture_progress"] <= 0:
+								var excess = abs(outpost["capture_progress"])
+								outpost["capture_progress"] = excess
+								outpost["capturing_team"] = first_occupant_team
+
+			if outpost["owner"] != null:
+				outpost["spawn_timer"] -= delta
+				if outpost["spawn_timer"] <= 0:
+					outpost["spawn_timer"] = 5.0
+
+					var rng = RandomNumberGenerator.new()
+					rng.randomize()
+
+					var minion = {}
+					if world.has("next_id"):
+						minion["id"] = world["next_id"]
+						world["next_id"] += 1
+					else:
+						minion["id"] = rng.randi_range(100000, 999999)
+
+					minion["team"] = outpost["owner"]
+					minion["ball_type"] = "minion"
+					minion["x"] = outpost["x"] + rng.randf_range(-20.0, 20.0)
+					minion["y"] = outpost["y"] + rng.randf_range(-20.0, 20.0)
+					minion["vx"] = 0.0
+					minion["vy"] = 0.0
+					minion["hp"] = 20.0
+					minion["max_hp"] = 20.0
+					minion["radius"] = 12.0
+					minion["alive"] = true
+
+					if world.has("balls"):
+						world["balls"].append(minion)
+
 var GAME_MODES = {
+	"mercenary_outpost": MercenaryOutpostMode.new(),
+
 	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
