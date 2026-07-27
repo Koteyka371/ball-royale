@@ -1,0 +1,1 @@
+{"title": "Temporal Stasis Mine", "description": "A deployable mine that, upon detonation, creates a temporary zone where time is severely slowed down. Any entity (ball, projectile, or moving hazard) entering this zone has its velocity divided by 10 until it exits or the zone expires."}

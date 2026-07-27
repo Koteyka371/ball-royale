@@ -24,6 +24,89 @@ class GameMode:
 					if typeof(hazard) == TYPE_DICTIONARY and "kind" in hazard: h_kind = hazard.kind
 					elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
+
+					if h_kind == "momentum_mirror":
+						var m_x = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "x" in hazard: m_x = hazard.x
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("x"): m_x = hazard.get_meta("x")
+
+						var m_y = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and "y" in hazard: m_y = hazard.y
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("y"): m_y = hazard.get_meta("y")
+
+						var m_radius = 50.0
+						if typeof(hazard) == TYPE_DICTIONARY and "radius" in hazard: m_radius = hazard.radius
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("radius"): m_radius = hazard.get_meta("radius")
+
+						var affected_balls = []
+						if typeof(hazard) == TYPE_DICTIONARY and "affected_balls" in hazard: affected_balls = hazard.affected_balls
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("affected_balls"): affected_balls = hazard.get_meta("affected_balls")
+
+						var current_affected = []
+
+						for b in balls:
+							var is_alive = false
+							if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+							if is_alive and b_type != "spectator":
+								var b_x = 0.0
+								if typeof(b) == TYPE_DICTIONARY and "x" in b: b_x = b.x
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+
+								var b_y = 0.0
+								if typeof(b) == TYPE_DICTIONARY and "y" in b: b_y = b.y
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+								var b_radius = 15.0
+								if typeof(b) == TYPE_DICTIONARY and "radius" in b: b_radius = b.radius
+								elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+								var dist_sq = (b_x - m_x) * (b_x - m_x) + (b_y - m_y) * (b_y - m_y)
+								if dist_sq < (m_radius + b_radius) * (m_radius + b_radius):
+									var b_id = -1
+									if typeof(b) == TYPE_DICTIONARY and "id" in b: b_id = b.id
+									elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+									if b_id != -1:
+										current_affected.append(b_id)
+										var is_new = true
+										for ab_id in affected_balls:
+											if ab_id == b_id:
+												is_new = false
+												break
+
+										if is_new:
+											var b_vx = 0.0
+											if typeof(b) == TYPE_DICTIONARY and "vx" in b: b_vx = b.vx
+											elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("vx"): b_vx = b.get_meta("vx")
+
+											var b_vy = 0.0
+											if typeof(b) == TYPE_DICTIONARY and "vy" in b: b_vy = b.vy
+											elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("vy"): b_vy = b.get_meta("vy")
+
+											if typeof(b) == TYPE_DICTIONARY:
+												b.vx = -b_vx
+												b.vy = -b_vy
+											elif typeof(b) == TYPE_OBJECT:
+												if b.has_method("set_meta"):
+													b.set_meta("vx", -b_vx)
+													b.set_meta("vy", -b_vy)
+
+											if typeof(world) == TYPE_DICTIONARY and "events" in world:
+												world.events.append({"type": "mirror_bounce", "data": {"x": b_x, "y": b_y}})
+											elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+												world.add_event("mirror_bounce", {"x": b_x, "y": b_y})
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard.affected_balls = current_affected
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+							hazard.set_meta("affected_balls", current_affected)
+
 					if h_kind == "high_risk_nuke_mine":
 						var defusing_timers = {}
 						if typeof(hazard) == TYPE_DICTIONARY and "defusing_timers" in hazard: defusing_timers = hazard.defusing_timers

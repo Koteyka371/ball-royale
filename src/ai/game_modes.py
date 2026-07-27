@@ -34,6 +34,31 @@ class GameMode:
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards[:]:
+                if getattr(hazard, "kind", "") == "momentum_mirror":
+                    m_x = getattr(hazard, "x", 0.0)
+                    m_y = getattr(hazard, "y", 0.0)
+                    m_radius = getattr(hazard, "radius", 50.0)
+                    if not hasattr(hazard, "affected_balls"):
+                        hazard.affected_balls = set()
+                    current_affected = set()
+                    for b in balls:
+                        if not getattr(b, "alive", False): continue
+                        if getattr(b, "ball_type", "") == "spectator": continue
+                        b_x = getattr(b, "x", 0.0)
+                        b_y = getattr(b, "y", 0.0)
+                        b_radius = getattr(b, "radius", 15.0)
+                        dist_sq = (b_x - m_x)**2 + (b_y - m_y)**2
+                        if dist_sq < (m_radius + b_radius)**2:
+                            b_id = getattr(b, "id", None)
+                            if b_id is not None:
+                                current_affected.add(b_id)
+                                if b_id not in hazard.affected_balls:
+                                    b.vx = -getattr(b, "vx", 0.0)
+                                    b.vy = -getattr(b, "vy", 0.0)
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("mirror_bounce", {"x": b_x, "y": b_y})
+                    hazard.affected_balls = current_affected
+
                 if getattr(hazard, "kind", "") == "high_risk_nuke_mine":
                     # --- Defusing logic ---
                     defusing_timers = getattr(hazard, "defusing_timers", {})
