@@ -25909,7 +25909,7 @@
     },
     {
       "id": "idea-1513",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Tornado Warning Siren Trap",
@@ -39220,6 +39220,57 @@
         "src/ai/blackout.py",
         "src/ai/blackout.gd",
         "tests/test_blackout.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2295",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Health Mode",
+      "description": "Players constantly lose health unless they pick up health packs spawning randomly in the arena.",
+      "allowed_paths": [
+        "src/ai/shrinking_health.py",
+        "src/ai/shrinking_health.gd",
+        "tests/test_shrinking_health.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2296",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slippery Ice Rink",
+      "description": "Friction is practically zero. Balls slide around endlessly unless they use abilities to redirect momentum.",
+      "allowed_paths": [
+        "src/ai/slippery_ice_rink.py",
+        "src/ai/slippery_ice_rink.gd",
+        "tests/test_slippery_ice_rink.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2297",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bumper Cars Mode",
+      "description": "Balls are immune to regular damage but take massive knockback. Only environmental hazards can eliminate players.",
+      "allowed_paths": [
+        "src/ai/bumper_cars.py",
+        "src/ai/bumper_cars.gd",
+        "tests/test_bumper_cars.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1513] Tornado Warning Siren Trap — *2026-07-27 00:26:12 UTC*
+
+A deployable trap that emits a localized siren. If an enemy ball enters the zone, a minor tornado spawns directly on them after 3 seconds, launching them out of the arena.
+
+---
+
 ## [idea-1571] Neon Lightcycles Mode — *2026-07-27 00:09:04 UTC*
 
 Balls cannot stop moving and leave a permanent solid light trail behind them. Crossing any trail (including your own) instantly eliminates the ball. The last ball remaining wins.
