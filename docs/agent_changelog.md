@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1579] Shrink Ray Arena — *2026-07-27 07:24:42 UTC*
+
+A game mode where lasers sweep the arena. Any ball hit by a laser permanently shrinks by 10% and loses max HP, but gains speed. Getting hit too many times turns you into a tiny fragile speedster.
+
+---
+
 ## [idea-1573] Kinetic Reversal Zone — *2026-07-27 07:11:11 UTC*
 
 A special arena hazard zone that acts like a mirror to momentum. Any entity entering the zone immediately has their velocity vectors flipped by 180 degrees, bouncing them directly backward without applying any damage. Great for defensive placements.
