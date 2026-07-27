@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1571] Neon Lightcycles Mode — *2026-07-27 00:09:04 UTC*
+
+Balls cannot stop moving and leave a permanent solid light trail behind them. Crossing any trail (including your own) instantly eliminates the ball. The last ball remaining wins.
+
+---
+
 ## [idea-1515] King of the Hill - Dynamic Capture Zones — *2026-07-27 00:08:59 UTC*
 
 Introduce dynamic capture zones that move around the arena. Teams earn points by staying inside the zone. If multiple teams are in the zone, points are contested. The zone shrinks over time, forcing closer combat.
