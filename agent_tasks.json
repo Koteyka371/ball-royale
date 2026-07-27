@@ -40041,6 +40041,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2343",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ricochet Lasers",
+      "description": "Lasers that bounce off walls up to 3 times, requiring players to predict angles.",
+      "allowed_paths": [
+        "src/ai/ricochet_lasers.py",
+        "src/ai/ricochet_lasers.gd",
+        "tests/test_ricochet_lasers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2344",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Turret Overload Recoil Absorption",
+      "description": "When turrets overload, the engineer gains a temporary shield proportional to the amount of damage dealt by the overload explosion.",
+      "allowed_paths": [
+        "src/ai/turret_overload_recoil_absorption.py",
+        "src/ai/turret_overload_recoil_absorption.gd",
+        "tests/test_turret_overload_recoil_absorption.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2345",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Overload",
+      "description": "An upgrade for the turret overload skill where explosions from overloading turrets trigger secondary explosions if they destroy enemy projectiles.",
+      "allowed_paths": [
+        "src/ai/chain_reaction_overload.py",
+        "src/ai/chain_reaction_overload.gd",
+        "tests/test_chain_reaction_overload.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
