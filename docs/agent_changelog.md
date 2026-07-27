@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1540] Mercenary Outposts — *2026-07-27 05:53:12 UTC*
+
+Players can capture mercenary outposts across the map. Once fully captured, friendly AI balls spawn periodically and help defend the capturing player.
+
+---
+
 ## [idea-1581] Idea 1: Solar Flare Mode — *2026-07-27 01:57:30 UTC*
 
 Occasionally a solar flare strikes the arena, disabling all electronics (e.g. traps, drone hazards) and temporarily shrinking perception radius.
