@@ -1,0 +1,4 @@
+{
+    "title": "Sonar Beacon Item",
+    "description": "An item that periodically emits a sonar wave, revealing invisible enemies around the carrier for 3 seconds."
+}

@@ -1,0 +1,4 @@
+{
+    "title": "Flashbang Trap Mode",
+    "description": "Arena is littered with flashbang traps. When triggered, the trap momentarily blinds everyone except the ball that triggered it, temporarily setting perception_radius to 0."
+}

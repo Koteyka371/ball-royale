@@ -41481,3 +41481,119 @@ class BlindFragmentAuctionMode(GameMode):
                         })
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
+
+class PitchBlackIlluminationMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pitch Black Illumination"
+        self.description = "The arena is completely pitch black. Balls only become briefly visible when they bounce off walls, take damage, or attack. Attacks are skill shots that temporarily illuminate a small area."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.is_night = True
+
+        for b in balls:
+            if getattr(b, "ball_type", "") == "spectator":
+                continue
+            b.is_invisible = True
+            b._pb_vis_timer = 0.0
+            b._pb_prev_hp = getattr(b, "hp", 100.0)
+            b._pb_prev_vx = getattr(b, "vx", 0.0)
+            b._pb_prev_vy = getattr(b, "vy", 0.0)
+            b._pb_prev_attack_timer = getattr(b, "attack_timer", 0.0)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        import math, random
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            vis_trigger = False
+
+            # Check damage
+            current_hp = getattr(b, "hp", 100.0)
+            if current_hp < getattr(b, "_pb_prev_hp", current_hp):
+                vis_trigger = True
+            b._pb_prev_hp = current_hp
+
+            # Check attack
+            current_attack_timer = getattr(b, "attack_timer", 0.0)
+            prev_attack_timer = getattr(b, "_pb_prev_attack_timer", 0.0)
+            if current_attack_timer > prev_attack_timer and prev_attack_timer <= 0.0:
+                vis_trigger = True
+
+                # Spawn flare
+                vx = getattr(b, "vx", 0.0)
+                vy = getattr(b, "vy", 0.0)
+                speed = math.hypot(vx, vy)
+                if speed > 0.1:
+                    nx, ny = vx/speed, vy/speed
+                else:
+                    nx, ny = 1.0, 0.0
+
+                class FlareHazard:
+                    def __init__(self, id_val, x, y):
+                        self.id = id_val
+                        self.x = x
+                        self.y = y
+                        self.radius = 150.0
+                        self.kind = "flare"
+                        self.damage = 0.0
+                        self.active = True
+                        self.duration = 2.0
+                        self.vx = nx * 400.0
+                        self.vy = ny * 400.0
+
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    flare = FlareHazard(random.randint(10000, 99999), getattr(b, "x", 0.0), getattr(b, "y", 0.0))
+                    world.arena.hazards.append(flare)
+
+            b._pb_prev_attack_timer = current_attack_timer
+
+            # Check wall bounce
+            x = getattr(b, "x", 0.0)
+            y = getattr(b, "y", 0.0)
+            radius = getattr(b, "radius", 15.0)
+
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            prev_vx = getattr(b, "_pb_prev_vx", vx)
+            prev_vy = getattr(b, "_pb_prev_vy", vy)
+
+            near_edge_x = (x - radius <= 15.0) or (x + radius >= arena_width - 15.0)
+            near_edge_y = (y - radius <= 15.0) or (y + radius >= arena_height - 15.0)
+
+            if (near_edge_x and vx * prev_vx < 0) or (near_edge_y and vy * prev_vy < 0):
+                vis_trigger = True
+
+            b._pb_prev_vx = vx
+            b._pb_prev_vy = vy
+
+            if vis_trigger:
+                b._pb_vis_timer = 1.0
+
+            pb_vis_timer = getattr(b, "_pb_vis_timer", 0.0)
+            if pb_vis_timer > 0:
+                b._pb_vis_timer = pb_vis_timer - delta
+                b.is_invisible = False
+            else:
+                b.is_invisible = True
+
+        # Process flares
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards[:]:
+                if getattr(h, "kind", "") == "flare" and hasattr(h, "duration"):
+                    h.duration -= delta
+                    if hasattr(h, "vx") and hasattr(h, "vy"):
+                        h.x += h.vx * delta
+                        h.y += h.vy * delta
+                    if h.duration <= 0:
+                        world.arena.hazards.remove(h)
+
+GAME_MODES["pitch_black_illumination"] = PitchBlackIlluminationMode()

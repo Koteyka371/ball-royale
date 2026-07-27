@@ -64574,3 +64574,271 @@ class BlindFragmentAuctionMode extends GameMode:
 						})
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
+
+class PitchBlackIlluminationMode extends GameMode:
+	func _init() -> void:
+		name = "Pitch Black Illumination"
+		description = "The arena is completely pitch black. Balls only become briefly visible when they bounce off walls, take damage, or attack. Attacks are skill shots that temporarily illuminate a small area."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world and world.arena != null:
+			if "is_night" in world.arena:
+				world.arena.is_night = true
+			elif typeof(world.arena) != TYPE_DICTIONARY and world.arena.has_method("set"):
+				world.arena.set("is_night", true)
+
+		for b in balls:
+			var is_spec = false
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") == "spectator": is_spec = true
+			else:
+				if "ball_type" in b and b.ball_type == "spectator": is_spec = true
+			if is_spec:
+				continue
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["is_invisible"] = true
+				b["_pb_vis_timer"] = 0.0
+				b["_pb_prev_hp"] = b.get("hp", 100.0)
+				b["_pb_prev_vx"] = b.get("vx", 0.0)
+				b["_pb_prev_vy"] = b.get("vy", 0.0)
+				b["_pb_prev_attack_timer"] = b.get("attack_timer", 0.0)
+			else:
+				if "is_invisible" in b: b.is_invisible = true
+				elif b.has_method("set_meta"): b.set_meta("is_invisible", true)
+
+				if b.has_method("set_meta"):
+					b.set_meta("_pb_vis_timer", 0.0)
+					b.set_meta("_pb_prev_hp", b.get("hp") if "hp" in b else (b.get("hp") if b.has_method("get") else 100.0))
+					b.set_meta("_pb_prev_vx", b.get("vx") if "vx" in b else (b.get("vx") if b.has_method("get") else 0.0))
+					b.set_meta("_pb_prev_vy", b.get("vy") if "vy" in b else (b.get("vy") if b.has_method("get") else 0.0))
+					b.set_meta("_pb_prev_attack_timer", b.get("attack_timer") if "attack_timer" in b else (b.get("attack_timer") if b.has_method("get") else 0.0))
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_width = world.arena.width
+				elif world.arena.has_method("get"):
+					var w = world.arena.get("width")
+					if w != null: arena_width = w
+				if "height" in world.arena: arena_height = world.arena.height
+				elif world.arena.has_method("get"):
+					var h = world.arena.get("height")
+					if h != null: arena_height = h
+
+		for b in balls:
+			var is_alive = false
+			var is_spec = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				if b.get("ball_type", "") == "spectator": is_spec = true
+			else:
+				is_alive = b.get("alive") if "alive" in b else (b.get("alive") if b.has_method("get") else false)
+				if "ball_type" in b and b.ball_type == "spectator": is_spec = true
+
+			if not is_alive or is_spec:
+				continue
+
+			var vis_trigger = false
+
+			var current_hp = 100.0
+			var prev_hp = 100.0
+			var current_attack_timer = 0.0
+			var prev_attack_timer = 0.0
+			var bx = 0.0
+			var by = 0.0
+			var bvx = 0.0
+			var bvy = 0.0
+			var bradius = 15.0
+			var prev_vx = 0.0
+			var prev_vy = 0.0
+			var vis_timer = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				current_hp = b.get("hp", 100.0)
+				prev_hp = b.get("_pb_prev_hp", current_hp)
+				current_attack_timer = b.get("attack_timer", 0.0)
+				prev_attack_timer = b.get("_pb_prev_attack_timer", 0.0)
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				bvx = b.get("vx", 0.0)
+				bvy = b.get("vy", 0.0)
+				bradius = b.get("radius", 15.0)
+				prev_vx = b.get("_pb_prev_vx", bvx)
+				prev_vy = b.get("_pb_prev_vy", bvy)
+				vis_timer = b.get("_pb_vis_timer", 0.0)
+			else:
+				if "hp" in b: current_hp = b.hp
+				elif b.has_method("get") and b.get("hp") != null: current_hp = b.get("hp")
+
+				if b.has_method("has_meta") and b.has_meta("_pb_prev_hp"): prev_hp = b.get_meta("_pb_prev_hp")
+
+				if "attack_timer" in b: current_attack_timer = b.attack_timer
+				elif b.has_method("get") and b.get("attack_timer") != null: current_attack_timer = b.get("attack_timer")
+
+				if b.has_method("has_meta") and b.has_meta("_pb_prev_attack_timer"): prev_attack_timer = b.get_meta("_pb_prev_attack_timer")
+
+				if "x" in b: bx = b.x
+				if "y" in b: by = b.y
+				if "vx" in b: bvx = b.vx
+				if "vy" in b: bvy = b.vy
+				if "radius" in b: bradius = b.radius
+
+				if b.has_method("has_meta") and b.has_meta("_pb_prev_vx"): prev_vx = b.get_meta("_pb_prev_vx")
+				else: prev_vx = bvx
+				if b.has_method("has_meta") and b.has_meta("_pb_prev_vy"): prev_vy = b.get_meta("_pb_prev_vy")
+				else: prev_vy = bvy
+
+				if b.has_method("has_meta") and b.has_meta("_pb_vis_timer"): vis_timer = b.get_meta("_pb_vis_timer")
+
+			if current_hp < prev_hp:
+				vis_trigger = true
+
+			if current_attack_timer > prev_attack_timer and prev_attack_timer <= 0.0:
+				vis_trigger = true
+
+				var speed = sqrt(bvx*bvx + bvy*bvy)
+				var nx = 1.0
+				var ny = 0.0
+				if speed > 0.1:
+					nx = bvx / speed
+					ny = bvy / speed
+
+				var flare = {
+					"id": randi() % 90000 + 10000,
+					"x": bx,
+					"y": by,
+					"radius": 150.0,
+					"kind": "flare",
+					"damage": 0.0,
+					"active": true,
+					"duration": 2.0,
+					"vx": nx * 400.0,
+					"vy": ny * 400.0
+				}
+				if world != null and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if "hazards" in world.arena:
+							world.arena.hazards.append(flare)
+					else:
+						if "hazards" in world.arena:
+							world.arena.hazards.append(flare)
+
+			var near_edge_x = (bx - bradius <= 15.0) or (bx + bradius >= arena_width - 15.0)
+			var near_edge_y = (by - bradius <= 15.0) or (by + bradius >= arena_height - 15.0)
+
+			if (near_edge_x and bvx * prev_vx < 0) or (near_edge_y and bvy * prev_vy < 0):
+				vis_trigger = true
+
+			if vis_trigger:
+				vis_timer = 1.0
+
+			if vis_timer > 0:
+				vis_timer -= delta
+				if typeof(b) == TYPE_DICTIONARY:
+					b["is_invisible"] = false
+				else:
+					if "is_invisible" in b: b.is_invisible = false
+					elif b.has_method("set_meta"): b.set_meta("is_invisible", false)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["is_invisible"] = true
+				else:
+					if "is_invisible" in b: b.is_invisible = true
+					elif b.has_method("set_meta"): b.set_meta("is_invisible", true)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_pb_prev_hp"] = current_hp
+				b["_pb_prev_attack_timer"] = current_attack_timer
+				b["_pb_prev_vx"] = bvx
+				b["_pb_prev_vy"] = bvy
+				b["_pb_vis_timer"] = vis_timer
+			else:
+				if b.has_method("set_meta"):
+					b.set_meta("_pb_prev_hp", current_hp)
+					b.set_meta("_pb_prev_attack_timer", current_attack_timer)
+					b.set_meta("_pb_prev_vx", bvx)
+					b.set_meta("_pb_prev_vy", bvy)
+					b.set_meta("_pb_vis_timer", vis_timer)
+
+		if world != null and "arena" in world and world.arena != null:
+			var hazards = []
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if "hazards" in world.arena: hazards = world.arena.hazards
+			else:
+				if "hazards" in world.arena: hazards = world.arena.hazards
+
+			var i = hazards.size() - 1
+			while i >= 0:
+				var h = hazards[i]
+				var kind = ""
+				var hdur = 0.0
+				var has_dur = false
+				var hx = 0.0
+				var hy = 0.0
+				var hvx = 0.0
+				var hvy = 0.0
+				var has_v = false
+
+				if typeof(h) == TYPE_DICTIONARY:
+					kind = h.get("kind", "")
+					if "duration" in h:
+						hdur = h.duration
+						has_dur = true
+					if "vx" in h and "vy" in h:
+						hvx = h.vx
+						hvy = h.vy
+						has_v = true
+						hx = h.get("x", 0.0)
+						hy = h.get("y", 0.0)
+				else:
+					if "kind" in h: kind = h.kind
+					elif h.has_method("get") and h.get("kind") != null: kind = h.get("kind")
+
+					if "duration" in h:
+						hdur = h.duration
+						has_dur = true
+					elif h.has_method("get") and h.get("duration") != null:
+						hdur = h.get("duration")
+						has_dur = true
+
+					if ("vx" in h or (h.has_method("get") and h.get("vx") != null)) and ("vy" in h or (h.has_method("get") and h.get("vy") != null)):
+						hvx = h.vx if "vx" in h else h.get("vx")
+						hvy = h.vy if "vy" in h else h.get("vy")
+						hx = h.x if "x" in h else (h.get("x") if h.has_method("get") else 0.0)
+						hy = h.y if "y" in h else (h.get("y") if h.has_method("get") else 0.0)
+						has_v = true
+
+				if kind == "flare" and has_dur:
+					hdur -= delta
+					if has_v:
+						hx += hvx * delta
+						hy += hvy * delta
+
+					if typeof(h) == TYPE_DICTIONARY:
+						h["duration"] = hdur
+						if has_v:
+							h["x"] = hx
+							h["y"] = hy
+					else:
+						if "duration" in h: h.duration = hdur
+						elif h.has_method("set"): h.set("duration", hdur)
+						if has_v:
+							if "x" in h: h.x = hx
+							elif h.has_method("set"): h.set("x", hx)
+							if "y" in h: h.y = hy
+							elif h.has_method("set"): h.set("y", hy)
+
+					if hdur <= 0:
+						hazards.remove_at(i)
+				i -= 1
+
+GAME_MODES["pitch_black_illumination"] = PitchBlackIlluminationMode.new()
