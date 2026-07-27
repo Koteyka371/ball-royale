@@ -32501,6 +32501,12 @@ class TagTeamMode(GameMode):
                         dist_sq = (getattr(active, "x", 0.0) - getattr(downed, "x", 0.0))**2 + (getattr(active, "y", 0.0) - getattr(downed, "y", 0.0))**2
                         if dist_sq < 3600.0:
                             downed.revive_progress = getattr(downed, "revive_progress", 0.0) + delta
+                            # Emit revive aura to disrupt enemies
+                            for other in balls:
+                                if getattr(other, "alive", True) and getattr(other, "team", None) != getattr(downed, "tag_original_team", None):
+                                    enemy_dist_sq = (getattr(other, "x", 0.0) - getattr(downed, "x", 0.0))**2 + (getattr(other, "y", 0.0) - getattr(downed, "y", 0.0))**2
+                                    if enemy_dist_sq < 10000.0: # 100 units radius
+                                        other.slow_timer = max(getattr(other, "slow_timer", 0.0), 0.5)
                             if downed.revive_progress >= 3.0:
                                 downed.is_downed = False
                                 downed.revive_progress = 0.0
