@@ -63562,3 +63562,216 @@ class ShrapnelMistMode extends GameMode:
 GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode.new()
 
 GAME_MODES["magnet_ball"] = load("res://src/ai/magnet_ball.gd").new()
+
+class SweepingShrinkLasersMode extends GameMode:
+	var lasers_spawned = false
+
+	func _init():
+		super()
+		name = "Sweeping Shrink Lasers"
+		description = "Lasers sweep the arena. Getting hit permanently shrinks you by 10%, reduces max HP, but increases speed."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		lasers_spawned = false
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+		if not "arena" in world or not world.arena:
+			return
+
+		if not lasers_spawned:
+			lasers_spawned = true
+			var aw = 1000.0
+			if "width" in world.arena: aw = world.arena.width
+			elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"): aw = world.arena["width"]
+
+			var ah = 1000.0
+			if "height" in world.arena: ah = world.arena.height
+			elif typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"): ah = world.arena["height"]
+
+			var positions = [
+				Vector2(aw * 0.25, ah * 0.25),
+				Vector2(aw * 0.75, ah * 0.25),
+				Vector2(aw * 0.25, ah * 0.75),
+				Vector2(aw * 0.75, ah * 0.75),
+				Vector2(aw * 0.5, ah * 0.5)
+			]
+
+			var arena_ref = world.arena
+			var has_hazards = false
+			if typeof(arena_ref) == TYPE_DICTIONARY and arena_ref.has("hazards"): has_hazards = true
+			elif typeof(arena_ref) == TYPE_OBJECT and "hazards" in arena_ref: has_hazards = true
+
+			if not has_hazards:
+				if typeof(arena_ref) == TYPE_DICTIONARY:
+					arena_ref["hazards"] = []
+				else:
+					arena_ref.hazards = []
+
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+			for i in range(positions.size()):
+				var pos = positions[i]
+				var h_id = "shrink_laser_" + str(i)
+				var h = null
+				if ProceduralArenaScript != null:
+					h = ProceduralArenaScript.Hazard.new(h_id, pos.x, pos.y, 300.0, "spinning_laser", 0.0)
+					h.set_meta("angle", i * PI / 2.0)
+					h.set_meta("duration", 9999.0)
+					h.set_meta("is_shrink_laser", true)
+				else:
+					h = {
+						"id": h_id,
+						"x": pos.x,
+						"y": pos.y,
+						"radius": 300.0,
+						"kind": "spinning_laser",
+						"damage": 0.0,
+						"active": true,
+						"is_shrink_laser": true
+					}
+				if typeof(arena_ref) == TYPE_DICTIONARY:
+					arena_ref["hazards"].append(h)
+				else:
+					arena_ref.hazards.append(h)
+
+		var hazards_arr = []
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+			hazards_arr = world.arena["hazards"]
+		elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			hazards_arr = world.arena.hazards
+
+		for b in balls:
+			var alive = true
+			if "alive" in b: alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b["alive"]
+			if not alive:
+				continue
+
+			var cooldown = 0.0
+			if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("shrink_laser_cooldown"):
+				cooldown = b.get_meta("shrink_laser_cooldown")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("shrink_laser_cooldown"):
+				cooldown = b["shrink_laser_cooldown"]
+			elif "shrink_laser_cooldown" in b:
+				cooldown = b.shrink_laser_cooldown
+
+			if cooldown > 0:
+				var new_cd = cooldown - delta
+				if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+					b.set_meta("shrink_laser_cooldown", new_cd)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["shrink_laser_cooldown"] = new_cd
+				elif "shrink_laser_cooldown" in b:
+					b.shrink_laser_cooldown = new_cd
+				continue
+
+			var b_x = 0.0
+			var b_y = 0.0
+			var b_radius = 10.0
+
+			if "x" in b: b_x = b.x
+			elif typeof(b) == TYPE_DICTIONARY and b.has("x"): b_x = b["x"]
+			if "y" in b: b_y = b.y
+			elif typeof(b) == TYPE_DICTIONARY and b.has("y"): b_y = b["y"]
+			if "radius" in b: b_radius = b.radius
+			elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b["radius"]
+
+			for h in hazards_arr:
+				var h_kind = ""
+				if "kind" in h: h_kind = h.kind
+				elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h["kind"]
+
+				var is_shrink_laser = false
+				if typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("is_shrink_laser"):
+					is_shrink_laser = h.get_meta("is_shrink_laser")
+				elif typeof(h) == TYPE_DICTIONARY and h.has("is_shrink_laser"):
+					is_shrink_laser = h["is_shrink_laser"]
+				elif "is_shrink_laser" in h:
+					is_shrink_laser = h.is_shrink_laser
+
+				if h_kind == "spinning_laser" and is_shrink_laser:
+					var is_on = true
+					if typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("is_on"):
+						is_on = h.get_meta("is_on")
+					elif typeof(h) == TYPE_DICTIONARY and h.has("is_on"):
+						is_on = h["is_on"]
+					elif "is_on" in h:
+						is_on = h.is_on
+
+					if is_on:
+						var angle = 0.0
+						if typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("angle"):
+							angle = h.get_meta("angle")
+						elif typeof(h) == TYPE_DICTIONARY and h.has("angle"):
+							angle = h["angle"]
+						elif "angle" in h:
+							angle = h.angle
+
+						var beam_length = 300.0
+						if "radius" in h: beam_length = h.radius
+						elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): beam_length = h["radius"]
+
+						var beam_width = 20.0
+
+						var h_x = 0.0
+						var h_y = 0.0
+						if "x" in h: h_x = h.x
+						elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = h["x"]
+						if "y" in h: h_y = h.y
+						elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = h["y"]
+
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist < beam_length:
+							var normal_x = -sin(angle)
+							var normal_y = cos(angle)
+							var dist_to_beam = abs(dx * normal_x + dy * normal_y)
+
+							if dist_to_beam < beam_width + b_radius:
+								if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+									b.set_meta("shrink_laser_cooldown", 1.0)
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["shrink_laser_cooldown"] = 1.0
+								elif "shrink_laser_cooldown" in b:
+									b.shrink_laser_cooldown = 1.0
+
+								var old_r = b_radius
+								var new_r = old_r * 0.9
+								if typeof(b) == TYPE_DICTIONARY: b["radius"] = new_r
+								elif "radius" in b: b.radius = new_r
+
+								var old_max = 100.0
+								if "max_hp" in b: old_max = b.max_hp
+								elif typeof(b) == TYPE_DICTIONARY and b.has("max_hp"): old_max = b["max_hp"]
+
+								var new_max = old_max * 0.9
+								if typeof(b) == TYPE_DICTIONARY: b["max_hp"] = new_max
+								elif "max_hp" in b: b.max_hp = new_max
+
+								var old_hp = 100.0
+								if "hp" in b: old_hp = b.hp
+								elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): old_hp = b["hp"]
+
+								if old_hp > new_max:
+									if typeof(b) == TYPE_DICTIONARY: b["hp"] = new_max
+									elif "hp" in b: b.hp = new_max
+
+								var old_speed = 100.0
+								if "speed" in b: old_speed = b.speed
+								elif typeof(b) == TYPE_DICTIONARY and b.has("speed"): old_speed = b["speed"]
+
+								var new_speed = old_speed * 1.2
+								if typeof(b) == TYPE_DICTIONARY: b["speed"] = new_speed
+								elif "speed" in b: b.speed = new_speed
+
+								if typeof(b) == TYPE_DICTIONARY and b.has("base_speed"):
+									b["base_speed"] = b["base_speed"] * 1.2
+								elif "base_speed" in b:
+									b.base_speed = b.base_speed * 1.2
+
+								break
+
+GAME_MODES["sweeping_shrink_lasers"] = SweepingShrinkLasersMode.new()

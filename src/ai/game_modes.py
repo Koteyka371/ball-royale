@@ -40966,3 +40966,102 @@ GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode()
 
 from ai.magnet_ball import MagnetBallMode
 GAME_MODES["magnet_ball"] = MagnetBallMode()
+
+
+class SweepingShrinkLasersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Shrink Lasers"
+        self.description = "Lasers sweep the arena. Getting hit permanently shrinks you by 10%, reduces max HP, but increases speed."
+        self.lasers_spawned = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.lasers_spawned = False
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena"): return
+
+        if not self.lasers_spawned:
+            self.lasers_spawned = True
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+
+            import math
+            positions = [
+                (aw * 0.25, ah * 0.25),
+                (aw * 0.75, ah * 0.25),
+                (aw * 0.25, ah * 0.75),
+                (aw * 0.75, ah * 0.75),
+                (aw * 0.5, ah * 0.5)
+            ]
+            for i, (x, y) in enumerate(positions):
+                h_id = f"shrink_laser_{i}"
+                h = Hazard(id=h_id, x=x, y=y, radius=300.0, kind="spinning_laser", damage=0.0)
+                h.angle = (i * math.pi / 2.0)
+                h.duration = 9999.0
+                h.is_shrink_laser = True
+                world.arena.hazards.append(h)
+
+        import math
+        current_tick = getattr(world, "tick", 0)
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            cooldown = getattr(b, "shrink_laser_cooldown", 0.0)
+            if cooldown > 0:
+                b.shrink_laser_cooldown = cooldown - delta
+                continue
+
+            for h in getattr(world.arena, "hazards", []):
+                if getattr(h, "kind", "") == "spinning_laser" and getattr(h, "is_shrink_laser", False) and getattr(h, "is_on", True):
+                    angle = getattr(h, "angle", 0.0)
+                    beam_length = h.radius
+                    beam_width = 20.0
+
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+
+                    if dist < beam_length:
+                        normal_x = -math.sin(angle)
+                        normal_y = math.cos(angle)
+                        dist_to_beam = abs(dx * normal_x + dy * normal_y)
+
+                        if dist_to_beam < beam_width + b.radius:
+                            b.shrink_laser_cooldown = 1.0
+                            b.radius = getattr(b, "radius", 10.0) * 0.9
+                            old_max_hp = getattr(b, "max_hp", 100.0)
+                            new_max_hp = old_max_hp * 0.9
+                            b.max_hp = new_max_hp
+                            current_hp = getattr(b, "hp", 100.0)
+                            if current_hp > new_max_hp:
+                                b.hp = new_max_hp
+                            if hasattr(b, "speed"):
+                                b.speed *= 1.2
+                            if hasattr(b, "base_speed"):
+                                b.base_speed *= 1.2
+                            break
+
+GAME_MODES["sweeping_shrink_lasers"] = SweepingShrinkLasersMode()
