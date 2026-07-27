@@ -31159,7 +31159,120 @@ class StickyCeilingsMutatorMode(GameMode):
                                 world.add_event("visual_effect", {"type": "stuck_in_glue", "target": getattr(b, "id", None)})
                                 b.last_stuck_event_time = getattr(world, "tick_timer", 0.0)
 
+
+class DynamicCaptureZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Dynamic Capture Zone"
+        self.description = "A shrinking capture zone moves around the arena. Earn points by controlling it. First to 100 points wins."
+        self.tick_timer = 0.0
+        self.game_time = 0.0
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.target_x = 500.0
+        self.target_y = 500.0
+        self.zone_radius = 250.0
+        self.rng_seed = 0
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.game_time = 0.0
+
+        arena_width = 1000.0
+        arena_height = 1000.0
+        if hasattr(world, "arena") and world.arena:
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.target_x = self.zone_x
+        self.target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) * 0.4
+
+        import random
+        self.rng = random.Random(getattr(world, "tick_timer", 0))
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.score = 0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+        self.game_time += delta
+        self.tick_timer += delta
+
+        arena_width = 1000.0
+        arena_height = 1000.0
+        if hasattr(world, "arena") and world.arena:
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+        # Move zone towards target
+        dx = self.target_x - self.zone_x
+        dy = self.target_y - self.zone_y
+        dist = (dx**2 + dy**2)**0.5
+
+        speed = 50.0
+        if dist > 0:
+            self.zone_x += (dx / dist) * speed * delta
+            self.zone_y += (dy / dist) * speed * delta
+
+        # Update target periodically
+        if self.tick_timer >= 5.0 or dist < 10.0:
+            self.tick_timer = 0.0
+            if not hasattr(self, "rng"):
+                import random
+                self.rng = random.Random(getattr(world, "tick_timer", 0))
+            self.target_x = self.rng.uniform(200.0, arena_width - 200.0)
+            self.target_y = self.rng.uniform(200.0, arena_height - 200.0)
+
+        # Shrink zone
+        min_radius = min(arena_width, arena_height) * 0.1
+        self.zone_radius = max(min_radius, self.zone_radius - delta * 2.0)
+
+        # Calculate points
+        teams_in_zone = set()
+        balls_in_zone = []
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dist_sq = (b.x - self.zone_x)**2 + (b.y - self.zone_y)**2
+                if dist_sq <= self.zone_radius**2:
+                    balls_in_zone.append(b)
+                    teams_in_zone.add(getattr(b, "team", b.ball_type))
+
+        # Give points if only one team is in the zone
+        if len(teams_in_zone) == 1:
+            for b in balls_in_zone:
+                b.score = getattr(b, "score", 0) + 1 * delta * 60 # approx 1 point per tick
+
+    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+
+        best_score = -1
+        best_team = None
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                score = getattr(b, "score", 0)
+                if score >= 100:
+                    return getattr(b, "team", b.ball_type)
+                if score > best_score:
+                    best_score = score
+                    best_team = getattr(b, "team", b.ball_type)
+        return None
+
+
 GAME_MODES = {
+    "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
