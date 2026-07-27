@@ -1,4 +1,4 @@
 {
-    "title": "Chain Lightning Trap",
-    "description": "A trap that deals minimal damage but links to nearby enemies when triggered, shocking them repeatedly and briefly stunning them if they stay too close to each other."
+  "title": "Reverse Pull Traps",
+  "description": "A new trap variant that functions similarly to the black hole, except instead of pulling balls in, it rapidly throws them out in a randomized spread trajectory to disorient them."
 }

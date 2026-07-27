@@ -18695,6 +18695,7 @@ class BlackMarketMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -27586,6 +27587,7 @@ class ChargedMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         self.charge_flip_timer += delta
 
@@ -29542,6 +29544,7 @@ class CurrencyBurdenMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         # Suppress generic boosters
         if hasattr(world, "boosters"):
