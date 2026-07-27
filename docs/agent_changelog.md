@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1577] Revival Disruption Aura — *2026-07-27 08:02:51 UTC*
+
+During the reviving process, the downed player emits an aura that slightly slows down enemies or disrupts their abilities, providing a small tactical window of safety for the active player trying to pull off the revive.
+
+---
+
 ## [idea-1590] Decoy Trail Mode — *2026-07-27 08:02:46 UTC*
 
 Players periodically leave behind a trail of decoys that inherit their current appearance and velocity for a short duration, confusing opponents in high-speed chases.
