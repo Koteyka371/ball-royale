@@ -582,14 +582,14 @@ class BattleSimulation:
                         })
                 frame_hazards = []
                 if hasattr(self.arena, "hazards"):
-                    for h in self.arena.hazards:
+                    for idx, h in enumerate(self.arena.hazards):
                         if getattr(h, "active", True):
                             frame_hazards.append({
-                                "id": h.id,
+                                "id": getattr(h, "id", getattr(h, "kind", f"hazard_{idx}")),
                                 "x": round(h.x, 1),
                                 "y": round(h.y, 1),
-                                "radius": round(h.radius, 1),
-                                "kind": h.kind
+                                "radius": round(getattr(h, "radius", 10), 1),
+                                "kind": getattr(h, "kind", "hazard")
                             })
                 self.history.append({
                     "tick": self.tick,

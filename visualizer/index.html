@@ -1297,32 +1297,52 @@
                         "ai/emotion.py",
                         "ai/decision.py",
                         "ai/action.py",
+                        "ai/neural_network_brain.py",
+                        "ai/neural_net.py",
+                        "ai/personality.py",
+                        "ai/game_modes.py",
+                        "arena/arena_types.py",
+                        "arena/basic_arena.py",
+                        "arena/procedural_arena.py",
+                        "system/crowd_system.py",
+                        "system/profile.py",
+                        "system/guild.py",
+                        "system/leaderboard.py",
+                        "system/lobby.py",
                         "tests/simulate_battle.py"
                     ];
                     
-                    // Create directories
+                    // Create directories in Pyodide FS
+                    try { pyodideInstance.FS.mkdir("src"); } catch(e) {}
+                    try { pyodideInstance.FS.mkdir("src/ai"); } catch(e) {}
+                    try { pyodideInstance.FS.mkdir("src/arena"); } catch(e) {}
+                    try { pyodideInstance.FS.mkdir("src/system"); } catch(e) {}
                     try { pyodideInstance.FS.mkdir("ai"); } catch(e) {}
+                    try { pyodideInstance.FS.mkdir("arena"); } catch(e) {}
+                    try { pyodideInstance.FS.mkdir("system"); } catch(e) {}
                     try { pyodideInstance.FS.mkdir("tests"); } catch(e) {}
 
                     // Fetch with fallback: try GitHub Pages path first, then local dev path
                     async function fetchWithFallback(file) {
-                        // Path 1: GitHub Pages (files copied into data/ by deploy workflow)
                         const pagesUrl = "data/" + file;
-                        // Path 2: Local dev server (running from repo root)
-                        const localUrl = file.startsWith("ai/") ? ("../src/" + file) : ("../" + file);
+                        const pagesSrcUrl = "data/src/" + (file.startsWith("tests/") ? file.replace("tests/", "../tests/") : file);
+                        const localUrl = file.startsWith("tests/") ? ("../" + file) : ("../src/" + file);
 
-                        for (const url of [pagesUrl, localUrl]) {
+                        for (const url of [pagesUrl, pagesSrcUrl, localUrl]) {
                             try {
                                 const resp = await fetch(url);
                                 if (resp.ok) return await resp.text();
                             } catch(e) { /* try next */ }
                         }
-                        throw new Error(`Failed to fetch ${file} from any path`);
+                        return null;
                     }
 
                     for (const file of files) {
                         const text = await fetchWithFallback(file);
-                        pyodideInstance.FS.writeFile(file, text);
+                        if (text !== null) {
+                            try { pyodideInstance.FS.writeFile(file, text); } catch(e) {}
+                            try { pyodideInstance.FS.writeFile("src/" + file, text); } catch(e) {}
+                        }
                     }
                 }
 
@@ -1332,6 +1352,10 @@
                 const runCode = `
 import sys
 import json
+if "src" not in sys.path:
+    sys.path.insert(0, "src")
+if "." not in sys.path:
+    sys.path.insert(0, ".")
 if "" not in sys.path:
     sys.path.insert(0, "")
 

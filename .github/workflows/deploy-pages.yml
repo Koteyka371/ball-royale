@@ -33,13 +33,15 @@ jobs:
 
       - name: Copy Python files for WASM simulator
         run: |
+          mkdir -p visualizer/data/src
           mkdir -p visualizer/data/ai
+          mkdir -p visualizer/data/arena
+          mkdir -p visualizer/data/system
           mkdir -p visualizer/data/tests
-          cp src/ai/ball_brain.py    visualizer/data/ai/
-          cp src/ai/perception.py    visualizer/data/ai/
-          cp src/ai/emotion.py       visualizer/data/ai/
-          cp src/ai/decision.py      visualizer/data/ai/
-          cp src/ai/action.py        visualizer/data/ai/
+          cp -r src/* visualizer/data/src/
+          cp -r src/ai/* visualizer/data/ai/
+          cp -r src/arena/* visualizer/data/arena/
+          cp -r src/system/* visualizer/data/system/
           cp tests/simulate_battle.py visualizer/data/tests/
 
       - name: Upload artifact
