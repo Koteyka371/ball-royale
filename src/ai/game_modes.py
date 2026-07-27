@@ -20716,9 +20716,9 @@ class SweepingLasersMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Sweeping Lasers"
-        self.description = "Solid beam lasers sweep across the arena, dealing high continuous damage if players touch them."
+        self.description = "Lasers sweep the arena. Any ball hit permanently shrinks by 10%, loses max HP, and gains speed. Multiple hits turn you into a tiny fragile speedster."
         self.sweep_timer = 0.0
-        self.laser_damage_per_second = 500.0
+        self.laser_damage_per_second = 100.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         pass
@@ -20766,6 +20766,12 @@ class SweepingLasersMode(GameMode):
                     # Sweep left and right
                     h.x = center_x + math.sin(self.sweep_timer * 2.0) * (arena_width / 2.0 - 150.0)
 
+        for b in balls:
+            if getattr(b, "alive", False):
+                cd = getattr(b, "sweeping_laser_cd", 0.0)
+                if isinstance(cd, (int, float)) and cd > 0:
+                    setattr(b, "sweeping_laser_cd", cd - delta)
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
                 if getattr(h, "kind", "") == "sweeping_laser":
@@ -20778,6 +20784,26 @@ class SweepingLasersMode(GameMode):
                                     b.take_damage(dmg)
                                 else:
                                     b.hp = getattr(b, "hp", 100) - dmg
+
+                                cd = getattr(b, "sweeping_laser_cd", 0.0)
+                                if isinstance(cd, (int, float)) and cd <= 0:
+                                    # Shrink by 10%
+                                    current_radius = getattr(b, "radius", 25.0)
+                                    setattr(b, "radius", current_radius * 0.9)
+
+                                    # Lose max HP by 10%
+                                    current_max_hp = getattr(b, "max_hp", 100.0)
+                                    new_max_hp = current_max_hp * 0.9
+                                    setattr(b, "max_hp", new_max_hp)
+                                    if getattr(b, "hp", 100.0) > new_max_hp:
+                                        setattr(b, "hp", new_max_hp)
+
+                                    # Gain speed
+                                    current_speed = getattr(b, "speed_multiplier", 1.0)
+                                    setattr(b, "speed_multiplier", current_speed * 1.2)
+
+                                    # Set cooldown
+                                    setattr(b, "sweeping_laser_cd", 1.0)
 
 class MazeSafeZoneMode(GameMode):
     def __init__(self):
