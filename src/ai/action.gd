@@ -43919,6 +43919,95 @@ func _update_skill_timer(delta: float):
                                             self.ball.y += ny * force
 
 
+                if h_kind == "repulsion_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    if owner_id != null and owner_id != b_id:
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get"): h_x = hazard.get("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get"): h_y = hazard.get("y")
+
+                        var h_radius = 40.0
+                        if "radius" in hazard: h_radius = hazard.radius
+                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get"): h_radius = hazard.get("radius")
+
+                        var b_radius = 10.0
+                        if "radius" in self.ball: b_radius = self.ball.radius
+                        elif self.ball.has_method("get"): b_radius = self.ball.get("radius")
+
+                        var trigger_radius = h_radius + b_radius
+                        var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+
+                        if dist_sq < trigger_radius * trigger_radius:
+                            var dist = sqrt(dist_sq)
+                            if dist < 0.0001:
+                                dist = 0.0001
+
+                            var balls_list = []
+                            if "balls" in self.world: balls_list = self.world.balls
+                            elif self.world.has_method("get"): balls_list = self.world.get("balls")
+
+                            for b in balls_list:
+                                var is_alive = true
+                                if "alive" in b: is_alive = b.alive
+                                elif typeof(b) == TYPE_OBJECT and b.has_method("get"): is_alive = b.get("alive")
+
+                                var cb_id = null
+                                if "id" in b: cb_id = b.id
+                                elif typeof(b) == TYPE_OBJECT and b.has_method("get"): cb_id = b.get("id")
+
+                                if is_alive and cb_id != owner_id:
+                                    var cb_x = b.x if "x" in b else (b.get("x") if typeof(b) == TYPE_OBJECT and b.has_method("get") else 0.0)
+                                    var cb_y = b.y if "y" in b else (b.get("y") if typeof(b) == TYPE_OBJECT and b.has_method("get") else 0.0)
+                                    var cb_dist_sq = (h_x - cb_x)*(h_x - cb_x) + (h_y - cb_y)*(h_y - cb_y)
+                                    var explosion_radius = h_radius * 3.0
+
+                                    if cb_dist_sq < explosion_radius * explosion_radius:
+                                        var cb_dist = sqrt(cb_dist_sq)
+                                        if cb_dist < 0.0001:
+                                            cb_dist = 0.0001
+                                        var nx = (cb_x - h_x) / cb_dist
+                                        var ny = (cb_y - h_y) / cb_dist
+
+                                        var anchor_timer = 0.0
+                                        if "anchor_booster_timer" in b: anchor_timer = b.anchor_booster_timer
+                                        elif typeof(b) == TYPE_OBJECT and b.has_method("get"): anchor_timer = b.get("anchor_booster_timer")
+                                        if anchor_timer == null: anchor_timer = 0.0
+
+                                        if anchor_timer <= 0:
+                                            var knockback_force = 5000.0
+
+                                            var cur_vx = 0.0
+                                            if "vx" in b: cur_vx = b.vx
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get"): cur_vx = b.get("vx")
+                                            if cur_vx == null: cur_vx = 0.0
+
+                                            var cur_vy = 0.0
+                                            if "vy" in b: cur_vy = b.vy
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("get"): cur_vy = b.get("vy")
+                                            if cur_vy == null: cur_vy = 0.0
+
+                                            if "vx" in b: b.vx = cur_vx + nx * knockback_force
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("vx", cur_vx + nx * knockback_force)
+
+                                            if "vy" in b: b.vy = cur_vy + ny * knockback_force
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("vy", cur_vy + ny * knockback_force)
+
+                                            if "is_frictionless" in b: b.is_frictionless = true
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("is_frictionless", true)
+
+                            if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+
                 if h_kind == "time_rewind_trap":
                     var h_x = 0.0
                     if "x" in hazard: h_x = hazard.x
