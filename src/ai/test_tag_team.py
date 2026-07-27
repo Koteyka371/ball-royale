@@ -157,6 +157,36 @@ def test_tag_team_downed_state_and_revive():
     # Revive tick for 0.2 seconds
     mode.tick(world, balls, delta=0.2)
     assert getattr(active, "is_downed", False) == False # revived
-    assert active.hp == 50.0
+    assert active.hp == active.max_hp * 0.5
     assert active.ball_type == "spectator" # stays spectator, inactive is playing
     assert active.x == -1000.0
+
+def test_tag_team_downed_bleed_out():
+    mode = GAME_MODES["tag_team"]
+    world = MockWorld()
+    b1 = MockBall(1, 10.0, 10.0)
+    b2 = MockBall(2, 20.0, 20.0)
+    balls = [b1, b2]
+    mode.setup(world, balls)
+
+    if b1.ball_type == "player":
+        active = b1
+        inactive = b2
+    else:
+        active = b2
+        inactive = b1
+
+    active.hp = 0.0
+    mode.tick(world, balls, delta=0.1)
+
+    assert getattr(active, "is_downed", False) == True
+    assert active.max_hp < 100.0
+
+    # Bleed out over time
+    mode.tick(world, balls, delta=20.0)
+
+    assert getattr(active, "is_downed", False) == False
+    assert active.alive == False
+    assert active.hp == 0.0
+    assert active.max_hp == 0.0
+    assert active.id in world.dead_balls

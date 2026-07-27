@@ -32319,24 +32319,35 @@ class TagTeamMode(GameMode):
 
                 downed = next((m for m in members if getattr(m, "is_downed", False)), None)
                 active = next((m for m in members if not getattr(m, "is_downed", False) and getattr(m, "ball_type", "") != "spectator"), None)
-                if downed and active and getattr(active, "alive", False):
-                    downed.vx, downed.vy = 0.0, 0.0
-                    downed.hp = 1.0
-                    downed.alive = True
-                    dist_sq = (getattr(active, "x", 0.0) - getattr(downed, "x", 0.0))**2 + (getattr(active, "y", 0.0) - getattr(downed, "y", 0.0))**2
-                    if dist_sq < 3600.0:
-                        downed.revive_progress = getattr(downed, "revive_progress", 0.0) + delta
-                        if downed.revive_progress >= 3.0:
-                            downed.is_downed = False
+                if downed:
+                    downed.max_hp = getattr(downed, "max_hp", 100.0) - 5.0 * delta
+                    if downed.max_hp <= 0:
+                        downed.max_hp = 0
+                        downed.hp = 0
+                        downed.is_downed = False
+                        downed.alive = False
+                        if hasattr(world, "dead_balls") and getattr(downed, "id", -1) not in world.dead_balls:
+                            world.dead_balls.append(downed.id)
+                        if hasattr(world, "add_event"):
+                            world.add_event("tag_eliminated", {"type": "tag_eliminated", "message": "Player bled out!"})
+                    elif active and getattr(active, "alive", False):
+                        downed.vx, downed.vy = 0.0, 0.0
+                        downed.hp = 1.0
+                        downed.alive = True
+                        dist_sq = (getattr(active, "x", 0.0) - getattr(downed, "x", 0.0))**2 + (getattr(active, "y", 0.0) - getattr(downed, "y", 0.0))**2
+                        if dist_sq < 3600.0:
+                            downed.revive_progress = getattr(downed, "revive_progress", 0.0) + delta
+                            if downed.revive_progress >= 3.0:
+                                downed.is_downed = False
+                                downed.revive_progress = 0.0
+                                downed.hp = getattr(downed, "max_hp", 100.0) * 0.5
+                                downed.ball_type = "spectator"
+                                downed.team = "spectator"
+                                downed.x, downed.y = -1000.0, -1000.0
+                                if hasattr(world, "add_event"):
+                                    world.add_event("tag_revive", {"type": "tag_revive", "message": "Teammate revived!"})
+                        else:
                             downed.revive_progress = 0.0
-                            downed.hp = getattr(downed, "max_hp", 100.0) * 0.5
-                            downed.ball_type = "spectator"
-                            downed.team = "spectator"
-                            downed.x, downed.y = -1000.0, -1000.0
-                            if hasattr(world, "add_event"):
-                                world.add_event("tag_revive", {"type": "tag_revive", "message": "Teammate revived!"})
-                    else:
-                        downed.revive_progress = 0.0
 
         self.swap_timer += delta
         if self.swap_timer >= self.swap_interval:
