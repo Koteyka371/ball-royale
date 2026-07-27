@@ -1320,32 +1320,29 @@
                         }
                     }
 
-                    // Fetch with fallback: try GitHub Pages path first, then local dev path
-                    async function fetchWithFallback(file) {
+                    async function fetchFile(file) {
                         const pagesUrl = "data/" + file;
                         const localUrl = file.startsWith("tests/") ? ("../" + file) : ("../" + file);
 
                         for (const url of [pagesUrl, localUrl]) {
                             try {
                                 const resp = await fetch(url);
-                                if (resp.ok) return await resp.text();
-                            } catch(e) { /* try next */ }
+                                if (resp.ok) {
+                                    const text = await resp.text();
+                                    mkdirRecursive(file);
+                                    try { pyodideInstance.FS.writeFile(file, text); } catch(e) {}
+                                    if (file.startsWith("src/")) {
+                                        const rel = file.replace("src/", "");
+                                        mkdirRecursive(rel);
+                                        try { pyodideInstance.FS.writeFile(rel, text); } catch(e) {}
+                                    }
+                                    return;
+                                }
+                            } catch(e) {}
                         }
-                        return null;
                     }
 
-                    for (const file of files) {
-                        mkdirRecursive(file);
-                        const text = await fetchWithFallback(file);
-                        if (text !== null) {
-                            try { pyodideInstance.FS.writeFile(file, text); } catch(e) {}
-                            if (file.startsWith("src/")) {
-                                const rel = file.replace("src/", "");
-                                mkdirRecursive(rel);
-                                try { pyodideInstance.FS.writeFile(rel, text); } catch(e) {}
-                            }
-                        }
-                    }
+                    await Promise.all(files.map(f => fetchFile(f)));
                 }
 
                 simStatus.textContent = "Simulating Battle Royale...";

@@ -37,7 +37,7 @@ jobs:
           mkdir -p visualizer/data/tests
           cp -r src/* visualizer/data/src/
           cp tests/simulate_battle.py visualizer/data/tests/
-          python3 -c "import os, json; files = [os.path.relpath(os.path.join(r, f), 'visualizer/data').replace('\\\\', '/') for r, d, fs in os.walk('visualizer/data') for f in fs if f.endswith('.py')]; open('visualizer/data/manifest.json', 'w').write(json.dumps(files, indent=2))"
+          python3 -c "import os, json; files = [os.path.relpath(os.path.join(r, f), 'visualizer/data').replace('\\\\', '/') for r, d, fs in os.walk('visualizer/data') for f in fs if f.endswith('.py') and ('/ai/' in r.replace('\\\\', '/') or '/arena/' in r.replace('\\\\', '/') or '/system/' in r.replace('\\\\', '/') or f == 'simulate_battle.py')]; open('visualizer/data/manifest.json', 'w').write(json.dumps(files, indent=2))"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
