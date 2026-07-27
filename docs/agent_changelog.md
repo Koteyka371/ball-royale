@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1568] Time Loop Trap — *2026-07-27 00:43:31 UTC*
+
+A trap that records the triggering ball's position and HP over 3 seconds. After 3 seconds, the ball is teleported back to its recorded position and its HP is restored to what it was, essentially 'rewinding' them.
+
+---
+
 ## [idea-1497] Boss Mutations per Tier — *2026-07-27 00:31:47 UTC*
 
 Introduce dynamic mutations for guild bosses that scale with tier. For example, a tier 2 boss might reflect 10% of damage, while a tier 3 boss might spawn minions periodically during the fight.
