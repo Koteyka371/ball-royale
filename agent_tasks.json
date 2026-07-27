@@ -26437,7 +26437,7 @@
     },
     {
       "id": "idea-1544",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Boomerang Projectile",
@@ -39628,6 +39628,40 @@
         "src/ai/billiards.py",
         "src/ai/billiards.gd",
         "tests/test_billiards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2319",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Tethers Game Mode",
+      "description": "Players are paired randomly and tethered by an invisible quantum link. If the distance between the two players exceeds a certain threshold, the link breaks, dealing massive damage to both and applying a long-duration slow. Working together with your random partner is essential, but if your partner dies, you gain a massive, temporary berserk buff before self-destructing.",
+      "allowed_paths": [
+        "src/ai/quantum_tethers_game.py",
+        "src/ai/quantum_tethers_game.gd",
+        "tests/test_quantum_tethers_game.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2320",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Strike Hazard",
+      "description": "A new hazard type that targets the ground where a high-velocity ball was located 2 seconds ago. It discourages standing still after moving quickly. If a player is hit by an Echo Strike, their velocity vector is immediately inverted, throwing them backward into their own path.",
+      "allowed_paths": [
+        "src/arena/echo_strike.py",
+        "src/arena/echo_strike.gd",
+        "tests/test_echo_strike.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
