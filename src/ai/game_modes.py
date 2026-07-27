@@ -41569,6 +41569,169 @@ class IndestructibleLaserCoreMode(GameMode):
 
 GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode()
 
+
+class UnstablePayloadMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Unstable Payload"
+        self.description = "Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius."
+        self.spawn_timer = 10.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            # Check if one already exists
+            has_payload = any(getattr(h, "kind", "") == "unstable_payload" for h in world.arena.hazards)
+            if not has_payload:
+                self.spawn_timer = 30.0 # Next spawn
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+                cx = arena_width / 2.0
+                cy = arena_height / 2.0
+
+                try:
+                    from arena.procedural_arena import Hazard
+                    h = Hazard(id=len(world.arena.hazards) + 95000 + random.randint(0, 1000), x=cx, y=cy, radius=20.0, kind="unstable_payload", damage=0.0)
+                except ImportError:
+                    class DummyHazardUP:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                    h = DummyHazardUP(len(world.arena.hazards) + 95000 + random.randint(0, 1000), cx, cy, 20.0, "unstable_payload", 0.0)
+
+                setattr(h, "vx", 0.0)
+                setattr(h, "vy", 0.0)
+                setattr(h, "mass_timer", 0.0)
+                setattr(h, "active", True)
+                world.arena.hazards.append(h)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("unstable_payload_spawned", {"x": cx, "y": cy})
+            else:
+                self.spawn_timer = 5.0 # Check again soon
+
+        hazards_to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "unstable_payload" and getattr(h, "active", True):
+                h.mass_timer = getattr(h, "mass_timer", 0.0) + delta
+
+                # Expand payload over time (starts at 20, grows up to 100 over 15 seconds)
+                progress = min(1.0, h.mass_timer / 15.0)
+                h.radius = 20.0 + (80.0 * progress)
+
+                # Update position based on velocity with friction
+                h.vx = getattr(h, "vx", 0.0) * (1.0 - 1.5 * delta)
+                h.vy = getattr(h, "vy", 0.0) * (1.0 - 1.5 * delta)
+                h.x += h.vx * delta
+                h.y += h.vy * delta
+
+                # Bounce off walls
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+                if h.x - h.radius < 0:
+                    h.x = h.radius
+                    h.vx = abs(h.vx) * 0.8
+                elif h.x + h.radius > arena_width:
+                    h.x = arena_width - h.radius
+                    h.vx = -abs(h.vx) * 0.8
+
+                if h.y - h.radius < 0:
+                    h.y = h.radius
+                    h.vy = abs(h.vy) * 0.8
+                elif h.y + h.radius > arena_height:
+                    h.y = arena_height - h.radius
+                    h.vy = -abs(h.vy) * 0.8
+
+                # Radiation damage to nearby players (scales with size)
+                rad_radius = h.radius * 2.5
+                base_dmg = 5.0 + (15.0 * progress)
+
+                for b in balls:
+                    if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                        continue
+
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+
+                    if dist < rad_radius:
+                        dmg = base_dmg * (1.0 - dist/rad_radius) * delta
+                        b.hp = getattr(b, "hp", 100.0) - dmg
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+
+                    # Collision / Attack logic
+                    # If player touches it, push it!
+                    if dist <= h.radius + getattr(b, "radius", 15.0):
+                        overlap = h.radius + getattr(b, "radius", 15.0) - dist
+                        if dist > 0.001:
+                            nx = dx / dist
+                            ny = dy / dist
+
+                            # push ball out
+                            b.x += nx * overlap
+                            b.y += ny * overlap
+
+                            # transfer some momentum to payload based on relative velocity
+                            rel_vx = getattr(b, "vx", 0.0) - h.vx
+                            rel_vy = getattr(b, "vy", 0.0) - h.vy
+                            impulse = (nx * rel_vx + ny * rel_vy)
+
+                            if impulse < 0:
+                                # Ball is moving towards payload
+                                h.vx -= nx * abs(impulse) * 0.5
+                                h.vy -= ny * abs(impulse) * 0.5
+                                # Also deal tiny damage to player for touching
+                                b.hp = getattr(b, "hp", 100.0) - 10.0 * delta
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = False
+
+                # Explode at critical mass
+                if h.mass_timer >= 15.0:
+                    hazards_to_remove.append(h)
+
+        for h in hazards_to_remove:
+            world.arena.hazards.remove(h)
+
+            # Massive explosion
+            blast_radius = 450.0
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "massive_explosion", "x": h.x, "y": h.y, "radius": blast_radius})
+                world.add_event("unstable_payload_detonated", {"x": h.x, "y": h.y})
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    import math
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= blast_radius:
+                        # Instant elimination if close, high damage if at edge
+                        if dist < blast_radius * 0.6:
+                            b.hp = 0
+                            b.alive = False
+                        else:
+                            dmg = 200.0 * (1.0 - (dist - blast_radius*0.6)/(blast_radius*0.4))
+                            b.hp = getattr(b, "hp", 100.0) - dmg
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+
 class BlindFragmentAuctionMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -41664,5 +41827,6 @@ class BlindFragmentAuctionMode(GameMode):
                             "item": self.current_item["name"]
                         })
 
+GAME_MODES["unstable_payload"] = UnstablePayloadMode()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
 GAME_MODES["mobile_platform"] = MobilePlatformMode()
