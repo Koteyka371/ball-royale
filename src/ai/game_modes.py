@@ -41182,3 +41182,63 @@ GAME_MODES['dynamic_mutators'] = DynamicWeatherMutatorsMode()
 
 from ai.reflective_walls import ReflectiveWallsArena
 GAME_MODES["reflective_walls"] = ReflectiveWallsArena()
+
+class PulsatingCoreMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pulsating Core"
+        self.spawn_timer = 15.0
+
+    def tick(self, world, balls, delta=0.016):
+        import random
+        import math
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 20.0
+            if hasattr(world, "arena"):
+                class PulsatingCore:
+                    def __init__(self):
+                        self.kind = "pulsating_core"
+                        self.x = random.uniform(200, 600)
+                        self.y = random.uniform(200, 400)
+                        self.radius = 20.0
+                        self.pulse_timer = 3.0
+                        self.pulse_radius = 250.0
+                        self.team = random.choice(["Team A", "Team B"])
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(PulsatingCore())
+        super().tick(world, balls, delta)
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        import math
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for hazard in world.arena.hazards:
+                if getattr(hazard, "kind", "") == "pulsating_core":
+                    hazard.pulse_timer = getattr(hazard, "pulse_timer", 3.0) - delta
+                    if hazard.pulse_timer <= 0:
+                        hazard.pulse_timer = 3.0
+                        h_team = getattr(hazard, "team", "")
+                        h_x = getattr(hazard, "x", 0.0)
+                        h_y = getattr(hazard, "y", 0.0)
+                        h_rad = getattr(hazard, "pulse_radius", 250.0)
+                        for b in balls:
+                            if not getattr(b, "alive", True): continue
+                            dx = getattr(b, "x", 0.0) - h_x
+                            dy = getattr(b, "y", 0.0) - h_y
+                            dist = math.hypot(dx, dy)
+                            if dist < h_rad and dist > 0.001:
+                                b_team = getattr(b, "team", "")
+                                dir_x = dx / dist
+                                dir_y = dy / dist
+                                force = 500.0 * (1.0 - (dist / h_rad)) # Stronger close up
+                                if b_team == h_team:
+                                    # Pull allies
+                                    b.vx = getattr(b, "vx", 0.0) - dir_x * force * delta * 50
+                                    b.vy = getattr(b, "vy", 0.0) - dir_y * force * delta * 50
+                                else:
+                                    # Push enemies
+                                    b.vx = getattr(b, "vx", 0.0) + dir_x * force * delta * 50
+                                    b.vy = getattr(b, "vy", 0.0) + dir_y * force * delta * 50
+
+GAME_MODES["pulsating_core_mode"] = PulsatingCoreMode()

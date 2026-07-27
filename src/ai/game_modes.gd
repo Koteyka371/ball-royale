@@ -63911,3 +63911,137 @@ GAME_MODES['dynamic_mutators'] = load('res://src/ai/dynamic_mutators.gd').new()
 var reflective_walls_script = load("res://src/ai/reflective_walls.gd")
 if reflective_walls_script:
     GAME_MODES["reflective_walls"] = reflective_walls_script.new()
+
+class PulsatingCoreMode extends GameMode:
+	var spawn_timer: float = 15.0
+
+	func _init() -> void:
+		super()
+		name = "Pulsating Core"
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 20.0
+			if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var arena = world.arena
+				var PulsatingCore = {
+					"kind": "pulsating_core",
+					"x": randf_range(200.0, 600.0),
+					"y": randf_range(200.0, 400.0),
+					"radius": 20.0,
+					"pulse_timer": 3.0,
+					"pulse_radius": 250.0,
+					"team": "Team A" if randf() > 0.5 else "Team B"
+				}
+				if not "hazards" in arena:
+					arena.hazards = []
+				arena.hazards.append(PulsatingCore)
+			elif world != null and typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+				var arena = world.arena
+				var PulsatingCore = {
+					"kind": "pulsating_core",
+					"x": randf_range(200.0, 600.0),
+					"y": randf_range(200.0, 400.0),
+					"radius": 20.0,
+					"pulse_timer": 3.0,
+					"pulse_radius": 250.0,
+					"team": "Team A" if randf() > 0.5 else "Team B"
+				}
+				if not arena.has("hazards"):
+					arena["hazards"] = []
+				arena["hazards"].append(PulsatingCore)
+
+		super.tick(world, balls, delta)
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		if world != null:
+			var hazards = []
+			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:
+				hazards = world.arena.hazards
+			elif typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+				hazards = world.arena.hazards
+
+			for hazard in hazards:
+				var h_kind = ""
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): h_kind = hazard.kind
+				elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: h_kind = hazard.kind
+
+				if h_kind == "pulsating_core":
+					var timer = 3.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_timer"): timer = hazard.pulse_timer
+					elif typeof(hazard) == TYPE_OBJECT and "pulse_timer" in hazard: timer = hazard.pulse_timer
+
+					timer -= delta
+
+					if timer <= 0:
+						timer = 3.0
+						var h_team = ""
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+						elif typeof(hazard) == TYPE_OBJECT and "team" in hazard: h_team = hazard.team
+
+						var h_x = 0.0
+						var h_y = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): h_x = hazard.x
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): h_y = hazard.y
+						elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: h_x = hazard.x
+						elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: h_y = hazard.y
+
+						var h_rad = 250.0
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_radius"): h_rad = hazard.pulse_radius
+						elif typeof(hazard) == TYPE_OBJECT and "pulse_radius" in hazard: h_rad = hazard.pulse_radius
+
+						for b in balls:
+							var is_alive = true
+							if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b.alive
+							elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+							if not is_alive: continue
+
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = b.x
+							if typeof(b) == TYPE_DICTIONARY and b.has("y"): by = b.y
+							elif typeof(b) == TYPE_OBJECT and "x" in b: bx = b.x
+							elif typeof(b) == TYPE_OBJECT and "y" in b: by = b.y
+
+							var dx = bx - h_x
+							var dy = by - h_y
+							var dist = sqrt(dx*dx + dy*dy)
+
+							if dist < h_rad and dist > 0.001:
+								var b_team = ""
+								if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+								elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+
+								var dir_x = dx / dist
+								var dir_y = dy / dist
+								var force = 500.0 * (1.0 - (dist / h_rad))
+
+								var bvx = 0.0
+								var bvy = 0.0
+								if typeof(b) == TYPE_DICTIONARY and b.has("vx"): bvx = b.vx
+								if typeof(b) == TYPE_DICTIONARY and b.has("vy"): bvy = b.vy
+								elif typeof(b) == TYPE_OBJECT and "vx" in b: bvx = b.vx
+								elif typeof(b) == TYPE_OBJECT and "vy" in b: bvy = b.vy
+
+								if b_team == h_team:
+									bvx -= dir_x * force * delta * 50
+									bvy -= dir_y * force * delta * 50
+								else:
+									bvx += dir_x * force * delta * 50
+									bvy += dir_y * force * delta * 50
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b.vx = bvx
+									b.vy = bvy
+								elif typeof(b) == TYPE_OBJECT:
+									b.vx = bvx
+									b.vy = bvy
+
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard.pulse_timer = timer
+					elif typeof(hazard) == TYPE_OBJECT:
+						hazard.pulse_timer = timer
+
+		super.apply_dynamic_traits(world, balls, delta)
+GAME_MODES["pulsating_core"] = PulsatingCoreMode.new()
