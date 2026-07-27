@@ -63865,6 +63865,143 @@ GAME_MODES['mercenary_outposts'] = load('res://src/ai/mercenary_outposts.gd').ne
 
 GAME_MODES['necromantic_area_denial'] = load('res://src/ai/necromantic_area_denial.gd').new()
 
+
+class HazardLinesMode extends GameMode:
+	var spawn_timer: float = 0.0
+	var spawn_interval: float = 5.0
+	var hazard_speed: float = 150.0
+
+	func _init() -> void:
+		name = "Hazard Lines"
+		description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if not "hazards" in world.arena:
+					world.arena.hazards = []
+			spawn_timer = 0.1
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if ("arena" in world) and world.arena != null:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+		else:
+			if world.get("arena") != null:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+
+			if "arena" in world and "hazards" in world.arena:
+				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+				var is_vertical = (randi() % 2 == 0)
+				var hid = randi() % 90000 + 10000
+				var h = null
+
+				if is_vertical:
+					var start_x = 0.0 if (randi() % 2 == 0) else arena_width
+					h = ProceduralArena.Hazard.new(hid, start_x, arena_height / 2.0, 50.0, "hazard_line_vertical", 20.0)
+					h.set_meta("vx", hazard_speed if start_x == 0.0 else -hazard_speed)
+					h.set_meta("vy", 0.0)
+				else:
+					var start_y = 0.0 if (randi() % 2 == 0) else arena_height
+					h = ProceduralArena.Hazard.new(hid, arena_width / 2.0, start_y, 50.0, "hazard_line_horizontal", 20.0)
+					h.set_meta("vx", 0.0)
+					h.set_meta("vy", hazard_speed if start_y == 0.0 else -hazard_speed)
+
+				world.arena.hazards.append(h)
+
+		if "arena" in world and "hazards" in world.arena:
+			var active_hazards = []
+			for h in world.arena.hazards:
+				var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else h.kind
+				if kind == "hazard_line_vertical" or kind == "hazard_line_horizontal":
+					var vx = 0.0
+					var vy = 0.0
+					if typeof(h) == TYPE_DICTIONARY:
+						vx = h.get("vx", 0.0)
+						vy = h.get("vy", 0.0)
+						h["x"] += vx * delta
+						h["y"] += vy * delta
+					else:
+						vx = h.get_meta("vx") if h.has_meta("vx") else 0.0
+						vy = h.get_meta("vy") if h.has_meta("vy") else 0.0
+						h.x += vx * delta
+						h.y += vy * delta
+
+					var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else h.x
+					var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else h.y
+					var h_r = h.get("radius", 50.0) if typeof(h) == TYPE_DICTIONARY else h.radius
+					var h_dmg = h.get("damage", 20.0) if typeof(h) == TYPE_DICTIONARY else h.damage
+
+					if kind == "hazard_line_vertical":
+						if (vx > 0 and h_x > arena_width + 100) or (vx < 0 and h_x < -100):
+							continue
+					else:
+						if (vy > 0 and h_y > arena_height + 100) or (vy < 0 and h_y < -100):
+							continue
+
+					active_hazards.append(h)
+
+					for b in balls:
+						var alive = false
+						if "alive" in b: alive = b.alive
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+
+						if alive:
+							var b_x = 0.0
+							var b_y = 0.0
+							if "x" in b: b_x = b.x
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("x"): b_x = b.x
+
+							if "y" in b: b_y = b.y
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+							elif typeof(b) == TYPE_DICTIONARY and b.has("y"): b_y = b.y
+
+							var dist = 0.0
+							if kind == "hazard_line_vertical":
+								dist = abs(b_x - h_x)
+							else:
+								dist = abs(b_y - h_y)
+
+							if dist < h_r:
+								var dmg = h_dmg * delta
+								if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+									b.take_damage(dmg)
+								else:
+									var hp = 100.0
+									if "hp" in b: hp = b.hp
+									elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"): hp = b.get_meta("hp")
+									elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): hp = b.hp
+
+									if typeof(b) == TYPE_DICTIONARY: b["hp"] = hp - dmg
+									elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+										b.set_meta("hp", hp - dmg)
+										if "hp" in b: b.hp = hp - dmg
+				else:
+					active_hazards.append(h)
+
+			world.arena.hazards = active_hazards
+
+
+GAME_MODES["hazard_lines"] = HazardLinesMode.new()
 GAME_MODES['dynamic_mutators'] = load('res://src/ai/dynamic_mutators.gd').new()
 
 var reflective_walls_script = load("res://src/ai/reflective_walls.gd")

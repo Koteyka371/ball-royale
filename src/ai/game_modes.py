@@ -41168,3 +41168,109 @@ GAME_MODES['dynamic_mutators'] = DynamicWeatherMutatorsMode()
 
 from ai.reflective_walls import ReflectiveWallsArena
 GAME_MODES["reflective_walls"] = ReflectiveWallsArena()
+
+
+class HazardLinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hazard Lines"
+        self.description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+        self.spawn_timer = 0.0
+        self.spawn_interval = 5.0
+        self.hazard_speed = 150.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            self.spawn_timer = 0.1
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+
+            if hasattr(world, "arena") and world.arena:
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+
+                try:
+                    from arena.procedural_arena import Hazard
+                    def create_hazard(hid, hx, hy, r, k):
+                        return Hazard(id=hid, x=hx, y=hy, radius=r, kind=k, damage=20.0)
+                except ImportError:
+                    class FallbackHazard:
+                        def __init__(self, hid, hx, hy, r, k):
+                            self.id = hid
+                            self.x = hx
+                            self.y = hy
+                            self.radius = r
+                            self.kind = k
+                            self.damage = 20.0
+                    def create_hazard(hid, hx, hy, r, k):
+                        return FallbackHazard(hid, hx, hy, r, k)
+
+                import random
+                is_vertical = random.choice([True, False])
+
+                hid = random.randint(10000, 99999)
+                if is_vertical:
+                    start_x = 0.0 if random.choice([True, False]) else arena_width
+                    h = create_hazard(hid, start_x, arena_height / 2.0, 50.0, "hazard_line_vertical")
+                    setattr(h, "vx", self.hazard_speed if start_x == 0.0 else -self.hazard_speed)
+                    setattr(h, "vy", 0.0)
+                else:
+                    start_y = 0.0 if random.choice([True, False]) else arena_height
+                    h = create_hazard(hid, arena_width / 2.0, start_y, 50.0, "hazard_line_horizontal")
+                    setattr(h, "vx", 0.0)
+                    setattr(h, "vy", self.hazard_speed if start_y == 0.0 else -self.hazard_speed)
+
+                world.arena.hazards.append(h)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            active_hazards = []
+            for h in world.arena.hazards:
+                kind = getattr(h, "kind", "")
+                if kind in ["hazard_line_vertical", "hazard_line_horizontal"]:
+                    vx = getattr(h, "vx", 0.0)
+                    vy = getattr(h, "vy", 0.0)
+                    h.x += vx * delta
+                    h.y += vy * delta
+
+                    if kind == "hazard_line_vertical":
+                        if (vx > 0 and h.x > arena_width + 100) or (vx < 0 and h.x < -100):
+                            continue
+                    else:
+                        if (vy > 0 and h.y > arena_height + 100) or (vy < 0 and h.y < -100):
+                            continue
+
+                    active_hazards.append(h)
+
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            if kind == "hazard_line_vertical":
+                                dist = abs(b.x - h.x)
+                            else:
+                                dist = abs(b.y - h.y)
+
+                            if dist < getattr(h, "radius", 50.0):
+                                dmg = getattr(h, "damage", 20.0) * delta
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(dmg)
+                                else:
+                                    b.hp = getattr(b, "hp", 100) - dmg
+                else:
+                    active_hazards.append(h)
+
+            world.arena.hazards = active_hazards
+
+GAME_MODES["hazard_lines"] = HazardLinesMode()
