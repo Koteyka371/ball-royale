@@ -1,4 +1,4 @@
 {
-  "title": "Quantum Swap Trap",
-  "description": "A new trap that, when triggered, instantly swaps the positions of the ball that triggered it and a random enemy ball, disorienting both players and potentially putting the enemy in a dangerous spot."
+  "title": "Gravity Inversion Bomb",
+  "description": "A throwable item that creates a temporary field where gravity is reversed, causing balls to float upwards."
 }
