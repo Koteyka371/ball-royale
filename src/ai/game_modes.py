@@ -41481,3 +41481,105 @@ class BlindFragmentAuctionMode(GameMode):
                         })
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
+
+class SweepingHazardLinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Sweeping Hazard Lines"
+        self.description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+        self.spawn_timer = 5.0
+        self.hazard_speed = 150.0
+        self.damage_per_second = 50.0
+        self.hazard_counter = 0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena:
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+        self.spawn_timer = 2.0
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 5.0
+            self.hazard_counter += 1
+
+            class DummyHazard:
+                def __init__(self, hid, hx, hy, r, k):
+                    self.id = hid
+                    self.x = hx
+                    self.y = hy
+                    self.radius = r
+                    self.kind = k
+                    self.damage = 0.0
+                    self.vx = 0.0
+                    self.vy = 0.0
+
+            import random
+            start_side = random.choice(["left", "right", "top", "bottom"])
+            h = DummyHazard(f"sweep_line_{self.hazard_counter}", 0, 0, 30.0, "sweeping_hazard_line")
+
+            if start_side == "left":
+                h.x, h.y = -50, arena_height / 2
+                h.vx, h.vy = self.hazard_speed, 0
+                h.radius = arena_height / 2
+            elif start_side == "right":
+                h.x, h.y = arena_width + 50, arena_height / 2
+                h.vx, h.vy = -self.hazard_speed, 0
+                h.radius = arena_height / 2
+            elif start_side == "top":
+                h.x, h.y = arena_width / 2, -50
+                h.vx, h.vy = 0, self.hazard_speed
+                h.radius = arena_width / 2
+            else:
+                h.x, h.y = arena_width / 2, arena_height + 50
+                h.vx, h.vy = 0, -self.hazard_speed
+                h.radius = arena_width / 2
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(h)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            active_hazards = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "sweeping_hazard_line":
+                    h.x += getattr(h, "vx", 0) * delta
+                    h.y += getattr(h, "vy", 0) * delta
+
+                    keep = True
+                    if h.vx > 0 and h.x > arena_width + 100: keep = False
+                    if h.vx < 0 and h.x < -100: keep = False
+                    if h.vy > 0 and h.y > arena_height + 100: keep = False
+                    if h.vy < 0 and h.y < -100: keep = False
+
+                    if keep:
+                        active_hazards.append(h)
+                        for b in balls:
+                            if getattr(b, "alive", False):
+                                # Simple line collision. If horizontal line (vy != 0, so it's a horizontal line moving vertically), we check y diff.
+                                if getattr(h, "vx", 0) != 0:
+                                    # Moving horizontally, so it's a vertical line
+                                    dist = abs(b.x - h.x)
+                                    if dist < 30.0 + getattr(b, "radius", 10.0):
+                                        if hasattr(b, "take_damage"): b.take_damage(self.damage_per_second * delta)
+                                        else: b.hp = getattr(b, "hp", 100) - (self.damage_per_second * delta)
+                                else:
+                                    # Moving vertically, so it's a horizontal line
+                                    dist = abs(b.y - h.y)
+                                    if dist < 30.0 + getattr(b, "radius", 10.0):
+                                        if hasattr(b, "take_damage"): b.take_damage(self.damage_per_second * delta)
+                                        else: b.hp = getattr(b, "hp", 100) - (self.damage_per_second * delta)
+                else:
+                    active_hazards.append(h)
+            world.arena.hazards = active_hazards
+
+GAME_MODES["sweeping_hazard_lines"] = SweepingHazardLinesMode()

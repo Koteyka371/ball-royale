@@ -64574,3 +64574,178 @@ class BlindFragmentAuctionMode extends GameMode:
 						})
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
+
+class SweepingHazardLinesMode extends GameMode:
+    var spawn_timer: float = 5.0
+    var hazard_speed: float = 150.0
+    var damage_per_second: float = 50.0
+    var hazard_counter: int = 0
+
+    func _init() -> void:
+        name = "Sweeping Hazard Lines"
+        description = "Hazard lines periodically spawn and move across the arena, damaging anyone caught."
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        if world != null:
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if not "hazards" in world.arena:
+                    world.arena.hazards = []
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if not "hazards" in world.arena:
+                    world.arena.hazards = []
+        spawn_timer = 2.0
+
+    func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+        pass
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+        spawn_timer -= delta
+
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if world != null:
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if "width" in world.arena: arena_width = world.arena.width
+                if "height" in world.arena: arena_height = world.arena.height
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+                if "width" in world.arena: arena_width = world.arena.width
+                if "height" in world.arena: arena_height = world.arena.height
+
+        if spawn_timer <= 0:
+            spawn_timer = 5.0
+            hazard_counter += 1
+
+            var h = {}
+            h["id"] = "sweep_line_" + str(hazard_counter)
+            h["kind"] = "sweeping_hazard_line"
+            h["damage"] = 0.0
+
+            var sides = ["left", "right", "top", "bottom"]
+            var start_side = sides[randi() % sides.size()]
+
+            if start_side == "left":
+                h["x"] = -50
+                h["y"] = arena_height / 2.0
+                h["vx"] = hazard_speed
+                h["vy"] = 0.0
+                h["radius"] = arena_height / 2.0
+            elif start_side == "right":
+                h["x"] = arena_width + 50
+                h["y"] = arena_height / 2.0
+                h["vx"] = -hazard_speed
+                h["vy"] = 0.0
+                h["radius"] = arena_height / 2.0
+            elif start_side == "top":
+                h["x"] = arena_width / 2.0
+                h["y"] = -50
+                h["vx"] = 0.0
+                h["vy"] = hazard_speed
+                h["radius"] = arena_width / 2.0
+            else:
+                h["x"] = arena_width / 2.0
+                h["y"] = arena_height + 50
+                h["vx"] = 0.0
+                h["vy"] = -hazard_speed
+                h["radius"] = arena_width / 2.0
+
+            if world != null:
+                if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+                    world.arena.hazards.append(h)
+                elif typeof(world) != TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+                    world.arena.hazards.append(h)
+
+        if world != null:
+            var hazards = []
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+                hazards = world.arena.hazards
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+                hazards = world.arena.hazards
+
+            var active_hazards = []
+            for i in range(hazards.size()):
+                var h = hazards[i]
+                if typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "sweeping_hazard_line":
+                    h["x"] += h.get("vx", 0.0) * delta
+                    h["y"] += h.get("vy", 0.0) * delta
+
+                    var keep = true
+                    var vx = h.get("vx", 0.0)
+                    var vy = h.get("vy", 0.0)
+                    if vx > 0 and h["x"] > arena_width + 100: keep = false
+                    if vx < 0 and h["x"] < -100: keep = false
+                    if vy > 0 and h["y"] > arena_height + 100: keep = false
+                    if vy < 0 and h["y"] < -100: keep = false
+
+                    if keep:
+                        active_hazards.append(h)
+                        for b_i in range(balls.size()):
+                            var b = balls[b_i]
+                            var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+                            if b_alive:
+                                var dist = 0.0
+                                var b_radius = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+                                var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+                                var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+
+                                if vx != 0.0:
+                                    dist = abs(b_x - h["x"])
+                                else:
+                                    dist = abs(b_y - h["y"])
+
+                                if dist < 30.0 + b_radius:
+                                    var dmg = damage_per_second * delta
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        if b.has("hp"): b["hp"] -= dmg
+                                    elif b.has_method("take_damage"):
+                                        b.take_damage(dmg)
+                                    else:
+                                        b.set("hp", b.get("hp", 100.0) - dmg)
+                elif typeof(h) != TYPE_DICTIONARY and h.get("kind") == "sweeping_hazard_line":
+                    var current_x = h.get("x")
+                    var current_y = h.get("y")
+                    var vx = h.get("vx")
+                    var vy = h.get("vy")
+                    h.set("x", current_x + vx * delta)
+                    h.set("y", current_y + vy * delta)
+
+                    var keep = true
+                    if vx > 0 and h.get("x") > arena_width + 100: keep = false
+                    if vx < 0 and h.get("x") < -100: keep = false
+                    if vy > 0 and h.get("y") > arena_height + 100: keep = false
+                    if vy < 0 and h.get("y") < -100: keep = false
+
+                    if keep:
+                        active_hazards.append(h)
+                        for b_i in range(balls.size()):
+                            var b = balls[b_i]
+                            var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+                            if b_alive:
+                                var dist = 0.0
+                                var b_radius = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+                                var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+                                var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+
+                                if vx != 0.0:
+                                    dist = abs(b_x - h.get("x"))
+                                else:
+                                    dist = abs(b_y - h.get("y"))
+
+                                if dist < 30.0 + b_radius:
+                                    var dmg = damage_per_second * delta
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        if b.has("hp"): b["hp"] -= dmg
+                                    elif b.has_method("take_damage"):
+                                        b.take_damage(dmg)
+                                    else:
+                                        b.set("hp", b.get("hp", 100.0) - dmg)
+                else:
+                    active_hazards.append(h)
+
+            if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+                world.arena.hazards = active_hazards
+            elif typeof(world) != TYPE_DICTIONARY and "arena" in world:
+                world.arena.hazards = active_hazards
+
+GAME_MODES["sweeping_hazard_lines"] = SweepingHazardLinesMode.new()
