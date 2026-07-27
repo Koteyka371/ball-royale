@@ -64330,3 +64330,247 @@ class IndestructibleLaserCoreMode extends GameMode:
 						h.vy = vy
 
 GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode.new()
+
+class BlindFragmentAuctionMode extends GameMode:
+	var auction_timer = 30.0
+	var auction_active = false
+	var auction_duration = 10.0
+	var bids = {}
+	var auction_items = [
+		{"type": "buff", "stat": "base_damage", "multiplier": 1.5, "name": "Ultra Rare Booster: Damage"},
+		{"type": "buff", "stat": "base_speed", "multiplier": 1.5, "name": "Ultra Rare Booster: Speed"},
+		{"type": "buff", "stat": "max_hp", "addition": 200.0, "name": "Omega Shield"},
+		{"type": "cosmetic", "item": "golden_crown", "name": "Exclusive Cosmetic: Golden Crown"}
+	]
+	var current_item = {}
+
+	func _init():
+		name = "Blind Fragment Auction"
+		description = "Players secretly wager their collected loadout fragments for an ultra-rare game-changing item or exclusive cosmetic."
+		current_item = auction_items[randi() % auction_items.size()]
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			elif typeof(b) == TYPE_OBJECT:
+				if "alive" in b:
+					is_alive = b.alive
+				elif b.has_method("get"):
+					is_alive = b.get("alive") != null and b.get("alive") == true
+
+				if "ball_type" in b:
+					b_type = b.ball_type
+				elif b.has_method("get"):
+					var bt = b.get("ball_type")
+					if bt != null:
+						b_type = bt
+			if is_alive and b_type != "spectator":
+				alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return
+
+		if not auction_active:
+			auction_timer -= delta
+			if auction_timer <= 0:
+				auction_active = true
+				auction_duration = 10.0
+				bids = {}
+				current_item = auction_items[randi() % auction_items.size()]
+				if world != null and world.has_method("add_event"):
+					world.add_event("blind_auction_started", {"item": current_item["name"]})
+		else:
+			auction_duration -= delta
+
+			for b in alive_balls:
+				var b_id = null
+				var fragments = 0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b_id = b.get("id", null)
+					fragments = b.get("collected_fragments", 0)
+				elif typeof(b) == TYPE_OBJECT:
+					if "id" in b:
+						b_id = b.id
+					elif b.has_method("get"):
+						b_id = b.get("id")
+
+					if "collected_fragments" in b:
+						fragments = b.collected_fragments
+					elif b.has_method("get"):
+						var val = b.get("collected_fragments")
+						if val != null:
+							fragments = val
+
+				if b_id != null and fragments > 0 and randf() < 2.0 * delta:
+					var current_bid = bids.get(b_id, 0)
+					if current_bid < fragments:
+						var bid_increase = (randi() % (fragments - current_bid)) + 1
+						bids[b_id] = current_bid + bid_increase
+
+			if auction_duration <= 0:
+				auction_active = false
+				auction_timer = randf_range(30.0, 50.0)
+
+				if bids.size() > 0:
+					var highest_bid = 0
+					for b_id in bids.keys():
+						if bids[b_id] > highest_bid:
+							highest_bid = bids[b_id]
+
+					var top_bidders = []
+					for b_id in bids.keys():
+						if bids[b_id] == highest_bid:
+							top_bidders.append(b_id)
+
+					var winner_id = top_bidders[randi() % top_bidders.size()]
+					var winner = null
+
+					for b in alive_balls:
+						var b_id = null
+						if typeof(b) == TYPE_DICTIONARY:
+							b_id = b.get("id", null)
+						elif typeof(b) == TYPE_OBJECT:
+							if "id" in b:
+								b_id = b.id
+							elif b.has_method("get"):
+								b_id = b.get("id")
+						if b_id == winner_id:
+							winner = b
+							break
+
+					if winner != null:
+						if typeof(winner) == TYPE_DICTIONARY:
+							winner["collected_fragments"] = winner.get("collected_fragments", 0) - highest_bid
+
+							if current_item["type"] == "buff":
+								if current_item.has("multiplier"):
+									var stat = current_item["stat"]
+									winner[stat] = winner.get(stat, 1.0) * current_item["multiplier"]
+									if stat == "base_damage":
+										winner["damage"] = winner.get("damage", 10.0) * current_item["multiplier"]
+									elif stat == "base_speed":
+										winner["speed"] = winner.get("speed", 100.0) * current_item["multiplier"]
+								elif current_item.has("addition"):
+									var stat = current_item["stat"]
+									winner[stat] = winner.get(stat, 100.0) + current_item["addition"]
+									if stat == "max_hp":
+										winner["hp"] = winner.get("hp", 100.0) + current_item["addition"]
+							elif current_item["type"] == "cosmetic":
+								var cosmetics = winner.get("cosmetics", [])
+								if not current_item["item"] in cosmetics:
+									cosmetics.append(current_item["item"])
+									winner["cosmetics"] = cosmetics
+
+						elif typeof(winner) == TYPE_OBJECT:
+							var cur_frag = 0
+							if "collected_fragments" in winner:
+								cur_frag = winner.collected_fragments
+								winner.collected_fragments = cur_frag - highest_bid
+							elif winner.has_method("get"):
+								var val = winner.get("collected_fragments")
+								if val != null:
+									cur_frag = val
+								if winner.has_method("set"):
+									winner.set("collected_fragments", cur_frag - highest_bid)
+
+							if current_item["type"] == "buff":
+								if current_item.has("multiplier"):
+									var stat = current_item["stat"]
+									var stat_val = 1.0
+									if stat in winner:
+										stat_val = winner.get(stat)
+										winner.set(stat, stat_val * current_item["multiplier"])
+									elif winner.has_method("get"):
+										var val = winner.get(stat)
+										if val != null:
+											stat_val = val
+										if winner.has_method("set"):
+											winner.set(stat, stat_val * current_item["multiplier"])
+
+									if stat == "base_damage":
+										var dmg = 10.0
+										if "damage" in winner:
+											dmg = winner.damage
+											winner.damage = dmg * current_item["multiplier"]
+										elif winner.has_method("get"):
+											var val = winner.get("damage")
+											if val != null:
+												dmg = val
+											if winner.has_method("set"):
+												winner.set("damage", dmg * current_item["multiplier"])
+									elif stat == "base_speed":
+										var spd = 100.0
+										if "speed" in winner:
+											spd = winner.speed
+											winner.speed = spd * current_item["multiplier"]
+										elif winner.has_method("get"):
+											var val = winner.get("speed")
+											if val != null:
+												spd = val
+											if winner.has_method("set"):
+												winner.set("speed", spd * current_item["multiplier"])
+
+								elif current_item.has("addition"):
+									var stat = current_item["stat"]
+									var stat_val = 100.0
+									if stat in winner:
+										stat_val = winner.get(stat)
+										winner.set(stat, stat_val + current_item["addition"])
+									elif winner.has_method("get"):
+										var val = winner.get(stat)
+										if val != null:
+											stat_val = val
+										if winner.has_method("set"):
+											winner.set(stat, stat_val + current_item["addition"])
+
+									if stat == "max_hp":
+										var hp_val = 100.0
+										if "hp" in winner:
+											hp_val = winner.hp
+											winner.hp = hp_val + current_item["addition"]
+										elif winner.has_method("get"):
+											var val = winner.get("hp")
+											if val != null:
+												hp_val = val
+											if winner.has_method("set"):
+												winner.set("hp", hp_val + current_item["addition"])
+
+							elif current_item["type"] == "cosmetic":
+								var cosmetics = []
+								if "cosmetics" in winner:
+									cosmetics = winner.cosmetics
+									if not current_item["item"] in cosmetics:
+										cosmetics.append(current_item["item"])
+										winner.cosmetics = cosmetics
+								elif winner.has_method("get"):
+									var val = winner.get("cosmetics")
+									if val != null:
+										cosmetics = val
+									if not current_item["item"] in cosmetics:
+										cosmetics.append(current_item["item"])
+										if winner.has_method("set"):
+											winner.set("cosmetics", cosmetics)
+
+						if world != null and world.has_method("add_event"):
+							world.add_event("blind_auction_ended", {
+								"winner_id": winner_id,
+								"winning_bid": highest_bid,
+								"item": current_item["name"]
+							})
+				else:
+					if world != null and world.has_method("add_event"):
+						world.add_event("blind_auction_ended", {
+							"winner_id": null,
+							"winning_bid": 0,
+							"item": current_item["name"]
+						})
+
+GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()

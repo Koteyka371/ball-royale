@@ -41384,3 +41384,100 @@ class IndestructibleLaserCoreMode(GameMode):
                     hazard.vy = math.sin(new_angle) * current_speed
 
 GAME_MODES["indestructible_laser_core"] = IndestructibleLaserCoreMode()
+
+class BlindFragmentAuctionMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blind Fragment Auction"
+        self.description = "Players secretly wager their collected loadout fragments for an ultra-rare game-changing item or exclusive cosmetic."
+        self.auction_timer = 30.0
+        self.auction_active = False
+        self.auction_duration = 10.0
+        self.bids = {}
+        self.auction_items = [
+            {"type": "buff", "stat": "base_damage", "multiplier": 1.5, "name": "Ultra Rare Booster: Damage"},
+            {"type": "buff", "stat": "base_speed", "multiplier": 1.5, "name": "Ultra Rare Booster: Speed"},
+            {"type": "buff", "stat": "max_hp", "addition": 200.0, "name": "Omega Shield"},
+            {"type": "cosmetic", "item": "golden_crown", "name": "Exclusive Cosmetic: Golden Crown"}
+        ]
+        import random
+        self.current_item = random.choice(self.auction_items)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+        if not alive_balls:
+            return
+
+        if not self.auction_active:
+            self.auction_timer -= delta
+            if self.auction_timer <= 0:
+                self.auction_active = True
+                self.auction_duration = 10.0
+                self.bids = {}
+                self.current_item = random.choice(self.auction_items)
+                if hasattr(world, "add_event"):
+                    world.add_event("blind_auction_started", {"item": self.current_item["name"]})
+        else:
+            self.auction_duration -= delta
+
+            for b in alive_balls:
+                b_id = getattr(b, "id", None)
+                fragments = getattr(b, "collected_fragments", 0)
+                if fragments > 0 and random.random() < 2.0 * delta:
+                    current_bid = self.bids.get(b_id, 0)
+                    if current_bid < fragments:
+                        bid_increase = random.randint(1, fragments - current_bid)
+                        self.bids[b_id] = current_bid + bid_increase
+
+            if self.auction_duration <= 0:
+                self.auction_active = False
+                self.auction_timer = random.uniform(30.0, 50.0)
+
+                if self.bids:
+                    highest_bid = max(self.bids.values())
+                    top_bidders = [b_id for b_id, bid in self.bids.items() if bid == highest_bid]
+                    winner_id = random.choice(top_bidders)
+
+                    winner = next((b for b in alive_balls if getattr(b, "id", None) == winner_id), None)
+                    if winner:
+                        winner.collected_fragments = getattr(winner, "collected_fragments", 0) - highest_bid
+
+                        if self.current_item["type"] == "buff":
+                            if "multiplier" in self.current_item:
+                                stat = self.current_item["stat"]
+                                current_val = getattr(winner, stat, 1.0)
+                                setattr(winner, stat, current_val * self.current_item["multiplier"])
+                                # Adjust non-base stat as well for immediate effect if applicable
+                                if stat == "base_damage":
+                                    winner.damage = getattr(winner, "damage", 10.0) * self.current_item["multiplier"]
+                                elif stat == "base_speed":
+                                    winner.speed = getattr(winner, "speed", 100.0) * self.current_item["multiplier"]
+                            elif "addition" in self.current_item:
+                                stat = self.current_item["stat"]
+                                current_val = getattr(winner, stat, 100.0)
+                                setattr(winner, stat, current_val + self.current_item["addition"])
+                                if stat == "max_hp":
+                                    winner.hp = getattr(winner, "hp", 100.0) + self.current_item["addition"]
+                        elif self.current_item["type"] == "cosmetic":
+                            cosmetics = getattr(winner, "cosmetics", [])
+                            if self.current_item["item"] not in cosmetics:
+                                cosmetics.append(self.current_item["item"])
+                                winner.cosmetics = cosmetics
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("blind_auction_ended", {
+                                "winner_id": winner_id,
+                                "winning_bid": highest_bid,
+                                "item": self.current_item["name"]
+                            })
+                else:
+                    if hasattr(world, "add_event"):
+                        world.add_event("blind_auction_ended", {
+                            "winner_id": None,
+                            "winning_bid": 0,
+                            "item": self.current_item["name"]
+                        })
+
+GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
