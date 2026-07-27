@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1566] Black Hole Anomaly — *2026-07-27 23:07:47 UTC*
+
+Periodically, a massive gravity well appears that sucks in projecticles and items, changing weapon trajectories and creating a dangerous pull effect.
+
+---
+
 ## [idea-1610] Quantum Doppelgänger Event — *2026-07-27 22:29:34 UTC*
 
 Using a quantum teleporter has a small chance to spawn an aggressive clone of the player at the exit point that mirrors their stats and attacks them.

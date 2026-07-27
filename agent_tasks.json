@@ -26813,7 +26813,7 @@
     },
     {
       "id": "idea-1566",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Anomaly",
@@ -40223,6 +40223,40 @@
         "src/arena/mimic_chest.py",
         "src/arena/mimic_chest.gd",
         "tests/test_mimic_chest.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2354",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Resonance Zone",
+      "description": "A new hazard type that acts like an area-of-effect quantum field. If multiple balls enter the field simultaneously, their positions are randomly swapped and they all receive a minor temporary shield.",
+      "allowed_paths": [
+        "src/ai/quantum_resonance_zone.py",
+        "src/ai/quantum_resonance_zone.gd",
+        "tests/test_quantum_resonance_zone.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2355",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Unstable Cloning Vats Mode",
+      "description": "A new game mode where balls periodically spawn fragile clones of themselves that duplicate their attacks but die instantly if they take any damage. The clones also explode upon death, damaging nearby enemies.",
+      "allowed_paths": [
+        "src/ai/unstable_cloning_vats.py",
+        "src/ai/unstable_cloning_vats.gd",
+        "tests/test_unstable_cloning_vats.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
