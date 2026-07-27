@@ -27272,7 +27272,7 @@
     },
     {
       "id": "idea-1593",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Mirror Arenas",
@@ -39713,6 +39713,74 @@
         "src/ai/revive_shield_aura.py",
         "src/ai/revive_shield_aura.gd",
         "tests/test_revive_shield_aura.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2324",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Windstorm Mode",
+      "description": "Periodically, strong winds blow across the arena, affecting ball movement speed and direction.",
+      "allowed_paths": [
+        "src/ai/windstorm.py",
+        "src/ai/windstorm.gd",
+        "tests/test_windstorm.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2325",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Glue Gun",
+      "description": "A weapon that shoots glue projectiles.",
+      "allowed_paths": [
+        "src/ai/glue_gun.py",
+        "src/ai/glue_gun.gd",
+        "tests/test_glue_gun.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2326",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Tag Team Resurgence",
+      "description": "When an active player gets downed, instead of bleeding out immediately, they enter a 'last stand' mode where they can only move slowly and drop mini-traps, giving the inactive partner 15 seconds to tag in manually and revive them.",
+      "allowed_paths": [
+        "src/ai/tag_team_resurgence.py",
+        "src/ai/tag_team_resurgence.gd",
+        "tests/test_tag_team_resurgence.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2327",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Link",
+      "description": "Tag team partners can link up for a devastating double-team attack when the combo chain maxes out, briefly summoning both balls to perform a synchronized spinning lariat move that clears a large area before the inactive ball retreats.",
+      "allowed_paths": [
+        "src/ai/nemesis_link.py",
+        "src/ai/nemesis_link.gd",
+        "tests/test_nemesis_link.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

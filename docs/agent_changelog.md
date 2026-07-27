@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1593] Mirror Arenas — *2026-07-27 08:38:08 UTC*
+
+Certain walls bounce projectiles back perfectly and sometimes duplicate them to double the chaos.
+
+---
+
 ## [idea-1584] Idea 2: Gravity Pulse Mine — *2026-07-27 08:11:40 UTC*
 
 A rare drop hazard that periodically pulsates, pushing away enemies in a large radius but pulling in allies.
