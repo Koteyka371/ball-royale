@@ -40941,3 +40941,6 @@ class ShrapnelMistMode(GameMode):
             world.arena.hazards.extend(new_hazards)
 
 GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode()
+
+from ai.magnet_ball import MagnetBallMode
+GAME_MODES["magnet_ball"] = MagnetBallMode()
