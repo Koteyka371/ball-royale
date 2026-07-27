@@ -7940,6 +7940,25 @@ class Action:
                                         if hasattr(self.world, "events"):
                                             self.world.events.append({'type': 'visual_effect', 'data': {'x': old_x, 'y': old_y, 'target_x': self.ball.x, 'target_y': self.ball.y, 'kind': 'quantum_trail'}})
 
+                                        self.ball.last_teleport_tick = current_tick
+                                        import random
+                                        if random.random() < 0.15:
+                                            import copy
+                                            try:
+                                                clone = copy.deepcopy(self.ball)
+                                            except TypeError:
+                                                clone = copy.copy(self.ball) # Fallback if deepcopy fails
+                                            tick_val = getattr(self.world, "tick", 0)
+                                            clone.id = f"clone_{getattr(self.ball, 'id', 0)}_{tick_val}"
+                                            clone.team = 3 - getattr(self.ball, "team", 1) if getattr(self.ball, "team", 1) in (1, 2) else 99
+                                            clone.ball_type = "clone"
+                                            clone.x = self.ball.x
+                                            clone.y = self.ball.y
+                                            getattr(self.world, "balls", []).append(clone)
+                                            if hasattr(self.world, "events"):
+                                                self.world.events.append({'type': 'visual_effect', 'data': {'x': clone.x, 'y': clone.y, 'kind': 'quantum_trail'}})
+                                                self.world.events.append({'type': 'spawn', 'data': {'message': 'An aggressive quantum clone spawned!', 'x': clone.x, 'y': clone.y}})
+
                                         if getattr(self.ball, "quantum_teleporter_booster_timer", 0.0) > 0:
                                             allies = self._get_allies()
                                             for ally in allies:

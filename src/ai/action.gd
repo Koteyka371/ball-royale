@@ -15816,6 +15816,45 @@ func execute(strategy: String, delta: float):
                                         var eff = {"type": "visual_effect", "data": {"x": old_x, "y": old_y, "target_x": self.ball.x, "target_y": self.ball.y, "kind": "quantum_trail"}}
                                         self.world.events.append(eff)
 
+                                    var r_clone = randf()
+                                    if r_clone < 0.15:
+                                        var clone = null
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            clone = self.ball.duplicate(true)
+                                        elif self.ball.has_method("duplicate"):
+                                            clone = self.ball.duplicate()
+
+                                        if clone != null:
+                                            var b_id_c = 0
+                                            if "id" in self.ball: b_id_c = self.ball.id
+                                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("id") != null: b_id_c = self.ball.get("id")
+
+                                            var new_id = "clone_" + str(b_id_c) + "_" + str(current_tick)
+                                            if typeof(clone) == TYPE_DICTIONARY:
+                                                clone["id"] = new_id
+                                                var orig_team = 1
+                                                if "team" in self.ball: orig_team = self.ball.team
+                                                clone["team"] = 3 - orig_team if orig_team == 1 or orig_team == 2 else 99
+                                                clone["ball_type"] = "clone"
+                                                clone["x"] = self.ball.x
+                                                clone["y"] = self.ball.y
+                                            else:
+                                                if "id" in clone: clone.id = new_id
+                                                var orig_team = 1
+                                                if "team" in self.ball: orig_team = self.ball.team
+                                                if "team" in clone: clone.team = 3 - orig_team if orig_team == 1 or orig_team == 2 else 99
+                                                if "ball_type" in clone: clone.ball_type = "clone"
+                                                if "x" in clone: clone.x = self.ball.x
+                                                if "y" in clone: clone.y = self.ball.y
+
+                                            if self.world != null and "balls" in self.world:
+                                                self.world.balls.append(clone)
+                                            if self.world.get("events") != null:
+                                                var eff_c = {"type": "visual_effect", "data": {"x": clone.x, "y": clone.y, "kind": "quantum_trail"}}
+                                                self.world.events.append(eff_c)
+                                                var spawn_c = {"type": "spawn", "data": {"message": "An aggressive quantum clone spawned!", "x": clone.x, "y": clone.y}}
+                                                self.world.events.append(spawn_c)
+
                                     var qtbt_val = 0.0
                                     if self.ball.has_method("has_meta") and self.ball.has_meta("quantum_teleporter_booster_timer"):
                                         qtbt_val = self.ball.get_meta("quantum_teleporter_booster_timer")
