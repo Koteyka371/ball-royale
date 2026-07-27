@@ -11,17 +11,17 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1509",
+      "status": "assigned",
+      "started_at": "2026-07-27T07:03:02.517004+00:00",
       "cycles_today": 3
     },
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1564",
+      "status": "assigned",
+      "started_at": "2026-07-27T07:03:02.517004+00:00",
       "cycles_today": 2
     },
     "agent-4": {
@@ -131,9 +131,9 @@
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1567",
+      "started_at": "2026-07-27T07:03:02.517004+00:00",
       "cycles_today": 4
     },
     "agent-17": {
@@ -147,9 +147,9 @@
     "agent-18": {
       "name": "Jules Worker 18",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1585",
+      "started_at": "2026-07-27T07:03:02.517004+00:00",
       "cycles_today": 1
     },
     "agent-19": {
@@ -163,17 +163,17 @@
     "agent-20": {
       "name": "Jules Worker 20",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1586",
+      "started_at": "2026-07-27T07:03:02.517004+00:00",
       "cycles_today": 2
     },
     "agent-21": {
       "name": "Jules Worker 21",
       "area": "ai-core",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1587",
+      "started_at": "2026-07-27T07:03:02.517004+00:00",
       "cycles_today": 3
     },
     "agent-22": {
@@ -227,9 +227,9 @@
     "agent-28": {
       "name": "Jules Worker 28",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1588",
+      "started_at": "2026-07-27T07:03:02.517004+00:00",
       "cycles_today": 0
     },
     "agent-29": {
