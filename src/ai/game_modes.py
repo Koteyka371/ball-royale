@@ -41481,3 +41481,68 @@ class BlindFragmentAuctionMode(GameMode):
                         })
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
+
+class LinkedBootsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Linked Boots"
+        self.description = "A cosmetic boot loadout that links your movement and knockback with your nearest ally. Halves knockback taken and applies the rest to the ally, sharing status effect durations."
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        if getattr(self, "active_timer", 0) <= 0:
+            return
+
+        for ball in balls:
+            if not getattr(ball, "is_alive", True):
+                continue
+
+            nearest_ally = None
+            min_dist = float('inf')
+
+            for other in balls:
+                if other != ball and getattr(other, "is_alive", True) and getattr(other, "team", None) == getattr(ball, "team", None):
+                    bx, by = getattr(ball, "x", 0), getattr(ball, "y", 0)
+                    ox, oy = getattr(other, "x", 0), getattr(other, "y", 0)
+                    dist = math.hypot(bx - ox, by - oy)
+                    if dist < min_dist:
+                        min_dist = dist
+                        nearest_ally = other
+
+            if not nearest_ally:
+                setattr(ball, "lb_prev_vx", getattr(ball, "vx", 0.0))
+                setattr(ball, "lb_prev_vy", getattr(ball, "vy", 0.0))
+                continue
+
+            prev_vx = getattr(ball, "lb_prev_vx", getattr(ball, "vx", 0.0))
+            prev_vy = getattr(ball, "lb_prev_vy", getattr(ball, "vy", 0.0))
+
+            vx = getattr(ball, "vx", 0.0)
+            vy = getattr(ball, "vy", 0.0)
+
+            delta_vx = vx - prev_vx
+            delta_vy = vy - prev_vy
+
+            speed_change = math.hypot(delta_vx, delta_vy)
+
+            if speed_change > 100.0:
+                ball.vx = prev_vx + delta_vx / 2.0
+                ball.vy = prev_vy + delta_vy / 2.0
+                nearest_ally.vx = getattr(nearest_ally, "vx", 0.0) + delta_vx / 2.0
+                nearest_ally.vy = getattr(nearest_ally, "vy", 0.0) + delta_vy / 2.0
+                setattr(nearest_ally, "lb_prev_vx", nearest_ally.vx)
+                setattr(nearest_ally, "lb_prev_vy", nearest_ally.vy)
+
+            setattr(ball, "lb_prev_vx", getattr(ball, "vx", 0.0))
+            setattr(ball, "lb_prev_vy", getattr(ball, "vy", 0.0))
+
+            status_effects = ["speed_boost_timer", "reflect_shield_timer", "invulnerable_timer", "ghost_timer"]
+            for effect in status_effects:
+                b_timer = getattr(ball, effect, 0.0)
+                a_timer = getattr(nearest_ally, effect, 0.0)
+                shared_timer = (b_timer + a_timer) / 2.0
+                if shared_timer > 0.0:
+                    setattr(ball, effect, shared_timer)
+                    setattr(nearest_ally, effect, shared_timer)
+
+GAME_MODES["linked_boots"] = LinkedBootsMode()

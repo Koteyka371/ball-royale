@@ -64574,3 +64574,141 @@ class BlindFragmentAuctionMode extends GameMode:
 						})
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
+
+class LinkedBootsMode extends GameMode:
+    func _init():
+        super._init()
+        name = "Linked Boots"
+        description = "A cosmetic boot loadout that links your movement and knockback with your nearest ally. Halves knockback taken and applies the rest to the ally, sharing status effect durations."
+
+    func tick(world, balls, delta = 0.016):
+        if get_meta("active_timer", 0.0) <= 0:
+            return
+
+        for i in range(balls.size()):
+            var ball = balls[i]
+            if typeof(ball) == TYPE_DICTIONARY:
+                if not ball.get("is_alive", true):
+                    continue
+
+                var nearest_ally = null
+                var min_dist = 999999.0
+
+                for j in range(balls.size()):
+                    var other = balls[j]
+                    if typeof(other) == TYPE_DICTIONARY and other != ball:
+                        if other.get("is_alive", true) and other.get("team", -1) == ball.get("team", -2):
+                            var bx = ball.get("x", 0.0)
+                            var by = ball.get("y", 0.0)
+                            var ox = other.get("x", 0.0)
+                            var oy = other.get("y", 0.0)
+                            var dist = sqrt(pow(bx - ox, 2) + pow(by - oy, 2))
+                            if dist < min_dist:
+                                min_dist = dist
+                                nearest_ally = other
+
+                if nearest_ally == null:
+                    ball["lb_prev_vx"] = ball.get("vx", 0.0)
+                    ball["lb_prev_vy"] = ball.get("vy", 0.0)
+                    continue
+
+                var prev_vx = ball.get("lb_prev_vx", ball.get("vx", 0.0))
+                var prev_vy = ball.get("lb_prev_vy", ball.get("vy", 0.0))
+
+                var vx = ball.get("vx", 0.0)
+                var vy = ball.get("vy", 0.0)
+
+                var delta_vx = vx - prev_vx
+                var delta_vy = vy - prev_vy
+
+                var speed_change = sqrt(pow(delta_vx, 2) + pow(delta_vy, 2))
+
+                if speed_change > 100.0:
+                    ball["vx"] = prev_vx + delta_vx / 2.0
+                    ball["vy"] = prev_vy + delta_vy / 2.0
+                    nearest_ally["vx"] = nearest_ally.get("vx", 0.0) + delta_vx / 2.0
+                    nearest_ally["vy"] = nearest_ally.get("vy", 0.0) + delta_vy / 2.0
+                    nearest_ally["lb_prev_vx"] = nearest_ally.get("vx", 0.0)
+                    nearest_ally["lb_prev_vy"] = nearest_ally.get("vy", 0.0)
+
+                ball["lb_prev_vx"] = ball.get("vx", 0.0)
+                ball["lb_prev_vy"] = ball.get("vy", 0.0)
+
+                var status_effects = ["speed_boost_timer", "reflect_shield_timer", "invulnerable_timer", "ghost_timer"]
+                for effect in status_effects:
+                    var b_timer = ball.get(effect, 0.0)
+                    var a_timer = nearest_ally.get(effect, 0.0)
+                    var shared_timer = (b_timer + a_timer) / 2.0
+                    if shared_timer > 0.0:
+                        ball[effect] = shared_timer
+                        nearest_ally[effect] = shared_timer
+
+            else:
+                if ball.get("is_alive") != null and not ball.get("is_alive"):
+                    continue
+
+                var nearest_ally = null
+                var min_dist = 999999.0
+
+                for j in range(balls.size()):
+                    var other = balls[j]
+                    if typeof(other) == TYPE_OBJECT and other != ball:
+                        if (other.get("is_alive") == null or other.get("is_alive")) and other.get("team") != null and ball.get("team") != null and other.get("team") == ball.get("team"):
+                            var bx = ball.get("x") if ball.get("x") != null else 0.0
+                            var by = ball.get("y") if ball.get("y") != null else 0.0
+                            var ox = other.get("x") if other.get("x") != null else 0.0
+                            var oy = other.get("y") if other.get("y") != null else 0.0
+                            var dist = sqrt(pow(bx - ox, 2) + pow(by - oy, 2))
+                            if dist < min_dist:
+                                min_dist = dist
+                                nearest_ally = other
+
+                if nearest_ally == null:
+                    ball.set_meta("lb_prev_vx", ball.get("vx") if ball.get("vx") != null else 0.0)
+                    ball.set_meta("lb_prev_vy", ball.get("vy") if ball.get("vy") != null else 0.0)
+                    continue
+
+                var prev_vx = ball.get_meta("lb_prev_vx", ball.get("vx") if ball.get("vx") != null else 0.0)
+                var prev_vy = ball.get_meta("lb_prev_vy", ball.get("vy") if ball.get("vy") != null else 0.0)
+
+                var vx = ball.get("vx") if ball.get("vx") != null else 0.0
+                var vy = ball.get("vy") if ball.get("vy") != null else 0.0
+
+                var delta_vx = vx - prev_vx
+                var delta_vy = vy - prev_vy
+
+                var speed_change = sqrt(pow(delta_vx, 2) + pow(delta_vy, 2))
+
+                if speed_change > 100.0:
+                    if ball.get("vx") != null:
+                        ball.set("vx", prev_vx + delta_vx / 2.0)
+                    if ball.get("vy") != null:
+                        ball.set("vy", prev_vy + delta_vy / 2.0)
+                    if nearest_ally.get("vx") != null:
+                        nearest_ally.set("vx", nearest_ally.get("vx") + delta_vx / 2.0)
+                    if nearest_ally.get("vy") != null:
+                        nearest_ally.set("vy", nearest_ally.get("vy") + delta_vy / 2.0)
+                        if nearest_ally.get("vx") != null:
+                            nearest_ally.set_meta("lb_prev_vx", nearest_ally.get("vx"))
+                        if nearest_ally.get("vy") != null:
+                            nearest_ally.set_meta("lb_prev_vy", nearest_ally.get("vy"))
+
+                ball.set_meta("lb_prev_vx", ball.get("vx") if ball.get("vx") != null else 0.0)
+                ball.set_meta("lb_prev_vy", ball.get("vy") if ball.get("vy") != null else 0.0)
+
+                var status_effects = ["speed_boost_timer", "reflect_shield_timer", "invulnerable_timer", "ghost_timer"]
+                for effect in status_effects:
+                    var b_timer = ball.get(effect) if ball.get(effect) != null else 0.0
+                    var a_timer = nearest_ally.get(effect) if nearest_ally.get(effect) != null else 0.0
+                    var shared_timer = (b_timer + a_timer) / 2.0
+                    if shared_timer > 0.0:
+                        if ball.get(effect) != null:
+                            ball.set(effect, shared_timer)
+                        else:
+                            ball.set_meta(effect, shared_timer)
+                        if nearest_ally.get(effect) != null:
+                            nearest_ally.set(effect, shared_timer)
+                        else:
+                            nearest_ally.set_meta(effect, shared_timer)
+
+GAME_MODES["linked_boots"] = LinkedBootsMode.new()

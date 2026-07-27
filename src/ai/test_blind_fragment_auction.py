@@ -12,6 +12,7 @@ class MockBall:
     def __init__(self, id_val, collected_fragments):
         self.id = id_val
         self.alive = True
+        self.is_alive = True
         self.ball_type = "player"
         self.collected_fragments = collected_fragments
         self.base_damage = 10.0
