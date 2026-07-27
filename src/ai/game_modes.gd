@@ -11477,6 +11477,110 @@ class MassiveGravityWellMode extends GameMode:
 			for h in hazards_to_remove:
 				world.arena.hazards.erase(h)
 
+
+		if "projectiles" in world:
+			var projectiles_to_remove = []
+			var projectiles = world.projectiles if typeof(world) == TYPE_OBJECT else world.get("projectiles", [])
+			for p in projectiles:
+				var px = p.x if typeof(p) == TYPE_OBJECT else p.get("x", 0.0)
+				var py = p.y if typeof(p) == TYPE_OBJECT else p.get("y", 0.0)
+				var dx = mgw_x - px
+				var dy = mgw_y - py
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < mgw_radius:
+					projectiles_to_remove.append(p)
+				elif dist > 0:
+					var pull_strength = 30000.0 * (mgw_radius / 150.0) / (dist * dist)
+					if pull_strength > 300.0: pull_strength = 300.0
+					if typeof(p) == TYPE_OBJECT:
+						if "vx" in p: p.vx += (dx / dist) * pull_strength * delta
+						if "vy" in p: p.vy += (dy / dist) * pull_strength * delta
+					elif typeof(p) == TYPE_DICTIONARY:
+						if p.has("vx"): p["vx"] += (dx / dist) * pull_strength * delta
+						if p.has("vy"): p["vy"] += (dy / dist) * pull_strength * delta
+			for p in projectiles_to_remove:
+				if typeof(world) == TYPE_OBJECT:
+					world.projectiles.erase(p)
+				elif typeof(world) == TYPE_DICTIONARY:
+					world["projectiles"].erase(p)
+
+		if "items" in world:
+			var items_to_remove = []
+			var items = world.items if typeof(world) == TYPE_OBJECT else world.get("items", [])
+			for item in items:
+				var ix = item.x if typeof(item) == TYPE_OBJECT else item.get("x", 0.0)
+				var iy = item.y if typeof(item) == TYPE_OBJECT else item.get("y", 0.0)
+				var dx = mgw_x - ix
+				var dy = mgw_y - iy
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < mgw_radius:
+					items_to_remove.append(item)
+				elif dist > 0:
+					var pull_strength = 30000.0 * (mgw_radius / 150.0) / (dist * dist)
+					if pull_strength > 300.0: pull_strength = 300.0
+					if typeof(item) == TYPE_OBJECT:
+						if "x" in item: item.x += (dx / dist) * pull_strength * delta
+						if "y" in item: item.y += (dy / dist) * pull_strength * delta
+					elif typeof(item) == TYPE_DICTIONARY:
+						if item.has("x"): item["x"] += (dx / dist) * pull_strength * delta
+						if item.has("y"): item["y"] += (dy / dist) * pull_strength * delta
+			for item in items_to_remove:
+				if typeof(world) == TYPE_OBJECT:
+					world.items.erase(item)
+				elif typeof(world) == TYPE_DICTIONARY:
+					world["items"].erase(item)
+
+		if "projectiles" in world:
+			var projectiles_to_remove = []
+			var projectiles = world.projectiles if typeof(world) == TYPE_OBJECT else world.get("projectiles", [])
+			for p in projectiles:
+				var px = p.x if typeof(p) == TYPE_OBJECT else p.get("x", 0.0)
+				var py = p.y if typeof(p) == TYPE_OBJECT else p.get("y", 0.0)
+				var dx = mgw_x - px
+				var dy = mgw_y - py
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < mgw_radius:
+					projectiles_to_remove.append(p)
+				elif dist > 0:
+					var pull_strength = 30000.0 * (mgw_radius / 150.0) / (dist * dist)
+					if pull_strength > 300.0: pull_strength = 300.0
+					if typeof(p) == TYPE_OBJECT:
+						if "vx" in p: p.vx += (dx / dist) * pull_strength * delta
+						if "vy" in p: p.vy += (dy / dist) * pull_strength * delta
+					elif typeof(p) == TYPE_DICTIONARY:
+						if p.has("vx"): p["vx"] += (dx / dist) * pull_strength * delta
+						if p.has("vy"): p["vy"] += (dy / dist) * pull_strength * delta
+			for p in projectiles_to_remove:
+				if typeof(world) == TYPE_OBJECT:
+					world.projectiles.erase(p)
+				elif typeof(world) == TYPE_DICTIONARY:
+					world["projectiles"].erase(p)
+
+		if "items" in world:
+			var items_to_remove = []
+			var items = world.items if typeof(world) == TYPE_OBJECT else world.get("items", [])
+			for item in items:
+				var ix = item.x if typeof(item) == TYPE_OBJECT else item.get("x", 0.0)
+				var iy = item.y if typeof(item) == TYPE_OBJECT else item.get("y", 0.0)
+				var dx = mgw_x - ix
+				var dy = mgw_y - iy
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < mgw_radius:
+					items_to_remove.append(item)
+				elif dist > 0:
+					var pull_strength = 30000.0 * (mgw_radius / 150.0) / (dist * dist)
+					if pull_strength > 300.0: pull_strength = 300.0
+					if typeof(item) == TYPE_OBJECT:
+						if "x" in item: item.x += (dx / dist) * pull_strength * delta
+						if "y" in item: item.y += (dy / dist) * pull_strength * delta
+					elif typeof(item) == TYPE_DICTIONARY:
+						if item.has("x"): item["x"] += (dx / dist) * pull_strength * delta
+						if item.has("y"): item["y"] += (dy / dist) * pull_strength * delta
+			for item in items_to_remove:
+				if typeof(world) == TYPE_OBJECT:
+					world.items.erase(item)
+				elif typeof(world) == TYPE_DICTIONARY:
+					world["items"].erase(item)
 	func check_winner(world, balls: Array) -> String:
 		var alive = []
 		for b in balls:
