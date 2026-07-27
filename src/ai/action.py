@@ -900,8 +900,29 @@ class Action:
             if hasattr(target, "reflect_shield_timer") and getattr(target, "reflect_shield_timer", 0.0) <= 0 and has_reflect_shield:
                 has_reflect_shield = False
 
+            has_healing_shield = getattr(target, "healing_shield_active", False)
+            if hasattr(target, "healing_shield_timer") and getattr(target, "healing_shield_timer", 0.0) <= 0 and has_healing_shield:
+                has_healing_shield = False
+
+            if has_healing_shield:
+                capacity = getattr(target, "healing_shield_capacity", 50.0)
+                damage_to_absorb = min(capacity, original_damage)
+                capacity -= damage_to_absorb
+
+                target.healing_shield_stored_healing = getattr(target, "healing_shield_stored_healing", 0.0) + damage_to_absorb
+
+                if capacity <= 0:
+                    target.healing_shield_active = False
+                    target.healing_shield_capacity = 0.0
+                else:
+                    target.healing_shield_capacity = capacity
+
+                original_damage -= damage_to_absorb
+
             # Calculate base damage dealing
-            if has_ricochet:
+            if original_damage <= 0:
+                pass # Fully absorbed
+            elif has_ricochet:
                 if hasattr(self.world, "_deal_damage"):
                     self.world._deal_damage(target, attacker)
             elif has_reflect_shield:
@@ -14893,6 +14914,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "healing_shield_booster":
+                    self.ball.healing_shield_active = True
+                    self.ball.healing_shield_timer = 5.0
+                    self.ball.healing_shield_capacity = 100.0
+                    self.ball.healing_shield_initial_capacity = self.ball.healing_shield_capacity
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "layer_reflect_shield_booster":
                     self.ball.reflect_shield_active = True
                     self.ball.reflect_shield_timer = 5.0 + getattr(self.ball, "bonus_reflect_shield_duration", 0.0)
@@ -19545,6 +19576,13 @@ class Action:
                     self._spawn_skill_particles("toggle_polarity")
 
 
+            elif skill_name == "healing_shield":
+                self.ball.healing_shield_active = True
+                self.ball.healing_shield_timer = 5.0
+                self.ball.healing_shield_capacity = 100.0
+                self.ball.healing_shield_initial_capacity = self.ball.healing_shield_capacity
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("shield")
             elif skill_name == "reflect_shield":
                 # Activate reflect shield
                 self.ball.reflect_shield_active = True
@@ -22999,6 +23037,20 @@ class Action:
             if self.ball.speed_boost_timer <= 0:
                 self.ball.speed_boost_timer = 0.0
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0)
+        if getattr(self.ball, "healing_shield_stored_healing", 0.0) > 0:
+            heal_rate = 20.0 * delta # 20 hp per second
+            heal_amount = min(heal_rate, self.ball.healing_shield_stored_healing)
+            if heal_amount > 0:
+                self.ball.healing_shield_stored_healing -= heal_amount
+                self.ball.hp = min(getattr(self.ball, "max_hp", 100), self.ball.hp + heal_amount)
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("heal", {"id": getattr(self.ball, "id", None), "amount": heal_amount})
+
+        if hasattr(self.ball, "healing_shield_timer") and self.ball.healing_shield_timer > 0:
+            self.ball.healing_shield_timer -= delta
+            if self.ball.healing_shield_timer <= 0:
+                self.ball.healing_shield_active = False
+
         if hasattr(self.ball, "reflect_shield_timer") and self.ball.reflect_shield_timer > 0:
             self.ball.reflect_shield_timer -= delta
             if self.ball.reflect_shield_timer <= 0:
