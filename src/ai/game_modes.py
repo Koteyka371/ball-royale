@@ -1,3 +1,4 @@
+import math
 
 class WeekendBoss:
     def __init__(self, id_val, x, y):
