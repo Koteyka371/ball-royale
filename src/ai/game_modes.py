@@ -33225,12 +33225,23 @@ class SolarFlareMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("solar_flare_start", {"message": "Solar Flare Active! Hazards disabled and skills paused!"})
 
+            # Temporarily shrink perception radius for all balls
+            for b in balls:
+                if not hasattr(b, "base_perception_radius"):
+                    b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                b.perception_radius = b.base_perception_radius * 0.5
+
         elif self.is_flaring and self.flare_timer >= self.flare_duration:
             self.is_flaring = False
             self.flare_timer = 0.0
             world.solar_flare_active = False
             if hasattr(world, "add_event"):
                 world.add_event("solar_flare_end", {"message": "Solar Flare Ended."})
+
+            # Restore perception radius for all balls
+            for b in balls:
+                if hasattr(b, "base_perception_radius"):
+                    b.perception_radius = b.base_perception_radius
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
