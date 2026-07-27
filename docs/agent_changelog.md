@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1603] Kinetic Energy Battery Mode — *2026-07-27 23:07:52 UTC*
+
+A mode where balls don't do damage directly. Instead, moving fast and bouncing off walls charges up their personal kinetic battery. Once fully charged, they can unleash a massive, instantaneous shockwave that damages all nearby enemies.
+
+---
+
 ## [idea-1566] Black Hole Anomaly — *2026-07-27 23:07:47 UTC*
 
 Periodically, a massive gravity well appears that sucks in projecticles and items, changing weapon trajectories and creating a dangerous pull effect.
