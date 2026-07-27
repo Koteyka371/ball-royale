@@ -13074,6 +13074,8 @@ class Action:
         self.ball.y += comb_ny * step
 
     def _attack(self, delta: float) -> None:
+        if getattr(self.ball, "invisibility_timer", 0.0) > 0.0:
+            self.ball.invisibility_timer = 0.0
         if getattr(self.ball, "ghost_mode_timer", 0.0) > 0.0:
             self.ball.ghost_mode_timer = 0.0
             if getattr(self.ball, "ghost_mode_active", False):
@@ -15751,6 +15753,8 @@ class Action:
             self._idle(delta)
 
     def _use_skill(self) -> None:
+        if getattr(self.ball, "invisibility_timer", 0.0) > 0.0:
+            self.ball.invisibility_timer = 0.0
         if (getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0) and not getattr(self.ball, "phantom_stride_active", False):
             return
         import random

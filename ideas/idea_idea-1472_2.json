@@ -1,0 +1,4 @@
+{
+  "title": "Billiards Mode",
+  "description": "An arena mode where players bounce perfectly off the walls (no friction loss), and hitting another player at high speed transfers a portion of the momentum. The arena has 6 pockets in the corners and middle edges, acting as instant kill zones, simulating a pool table."
+}

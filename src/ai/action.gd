@@ -25582,6 +25582,13 @@ func _chase(delta: float):
     self.ball.y += comb_ny * step
 
 func _attack(delta: float):
+    var inv_timer = 0.0
+    if "invisibility_timer" in self.ball: inv_timer = self.ball.invisibility_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("invisibility_timer"): inv_timer = self.ball.get_meta("invisibility_timer")
+    if inv_timer > 0.0:
+        if "invisibility_timer" in self.ball: self.ball.invisibility_timer = 0.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("invisibility_timer", 0.0)
+
     var ghost_timer = 0.0
     if "ghost_mode_timer" in self.ball: ghost_timer = self.ball.ghost_mode_timer
     elif self.ball.has_method("get_meta") and self.ball.has_meta("ghost_mode_timer"): ghost_timer = self.ball.get_meta("ghost_mode_timer")
@@ -30579,6 +30586,13 @@ func _collect_booster(delta: float):
         _idle(delta)
 
 func _use_skill():
+    var inv_timer = 0.0
+    if "invisibility_timer" in self.ball: inv_timer = self.ball.invisibility_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("invisibility_timer"): inv_timer = self.ball.get_meta("invisibility_timer")
+    if inv_timer > 0.0:
+        if "invisibility_timer" in self.ball: self.ball.invisibility_timer = 0.0
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("invisibility_timer", 0.0)
+
     var phantom_active = false
     if "phantom_stride_active" in self.ball: phantom_active = self.ball.phantom_stride_active
     elif self.ball.has_method("has_meta") and self.ball.has_meta("phantom_stride_active"): phantom_active = self.ball.get_meta("phantom_stride_active")
