@@ -3386,7 +3386,7 @@ class BattleRoyaleMode(GameMode):
                         self.ball_type = "booster"
                         self.active = True
 
-                booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+                booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "linked_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -4194,7 +4194,7 @@ class BattleRoyaleMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
                     if hasattr(world, "boosters"):
-                        booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+                        booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "linked_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
                         for i in range(3):
                             class DroppedBooster:
                                 def __init__(self, id, x, y, kind):
@@ -6916,6 +6916,7 @@ class SurvivalMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
         current_tick = getattr(world, "tick", 0)
         # Periodic obstacle generation
         if current_tick % 60 == 0 and hasattr(world, "arena"):
@@ -14483,6 +14484,7 @@ class GravityWellMode(GameMode):
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         # Process existing gravity wells for collapse and explosion
         hazards_to_remove = []
@@ -14602,7 +14604,7 @@ class SupernovaMode(GameMode):
 
                 # Scatter rare boosters upon explosion
                 if hasattr(world, "boosters"):
-                    booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+                    booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "linked_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
                     import random
                     class DroppedBooster:
                         def __init__(self, id, x, y, kind):
@@ -18695,6 +18697,7 @@ class BlackMarketMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -19129,6 +19132,7 @@ class BlizzardMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         if not self.blizzard_active:
             self.blizzard_timer += delta
@@ -19351,6 +19355,7 @@ class MeteorShowerMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         self.spawn_timer += delta
 
@@ -22774,6 +22779,7 @@ class BlacksmithBossMode(GameMode):
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         # Spawn anvil pieces at the beginning
         if not self.anvil_pieces_spawned:
@@ -22991,6 +22997,7 @@ class WeaponCollectionMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         self.weapon_spawn_timer += delta
 
@@ -25605,6 +25612,7 @@ class StationaryTurretsMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import random
+        import math
 
         self.spawn_timer += delta
         if self.spawn_timer >= self.spawn_interval:
@@ -25694,6 +25702,7 @@ class SacrificeAltarMode(GameMode):
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         if not hasattr(world, "sacrifice_altars"):
             return
@@ -27586,6 +27595,7 @@ class ChargedMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         self.charge_flip_timer += delta
 
@@ -29542,6 +29552,7 @@ class CurrencyBurdenMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         # Suppress generic boosters
         if hasattr(world, "boosters"):
@@ -30342,6 +30353,7 @@ class MovingWallsMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         if not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
@@ -31486,6 +31498,7 @@ class HazardLinesMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         if not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
@@ -33327,6 +33340,7 @@ class RiftRouletteMode(GameMode):
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
         from arena.procedural_arena import Hazard
 
         self.cycle_timer -= delta
@@ -33402,7 +33416,7 @@ class ItemMorphMode(GameMode):
         super().__init__()
         self.morph_timer = 0.0
         self.morph_interval = 10.0
-        self.booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+        self.booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "linked_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
         import random
         self.random = random
 
@@ -34240,6 +34254,7 @@ class DisguisedTrapsMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import random
+        import math
         from arena.procedural_arena import Hazard
 
         self.trap_timer += delta
@@ -34760,6 +34775,7 @@ class ConstrictingBoundaryTrapMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import random
+        import math
 
         if not self.trap_active:
             # Randomly activate the trap, say every 30 seconds on average
@@ -37146,6 +37162,7 @@ class BountyContractEventMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import random
+        import math
 
         alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
         if not alive_balls:
@@ -40623,6 +40640,7 @@ class AuctionEventMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import random
+        import math
 
         alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
         if not alive_balls:
@@ -41590,6 +41608,7 @@ class BlindFragmentAuctionMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
         import random
+        import math
         alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
         if not alive_balls:
             return

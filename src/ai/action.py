@@ -8486,9 +8486,32 @@ class Action:
                                 pull_strength = 80.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
+                                    if c == "linked_boots":
+                                        nearest_ally = None
+                                        min_dist_sq = float('inf')
+                                        if hasattr(self.world, "balls"):
+                                            for _b in self.world.balls:
+                                                if _b is self.ball or not getattr(_b, "alive", True): continue
+                                                if getattr(_b, "team", None) == getattr(self.ball, "team", None):
+                                                    dist_sq = (_b.x - self.ball.x)**2 + (_b.y - self.ball.y)**2
+                                                    if dist_sq < min_dist_sq:
+                                                        min_dist_sq = dist_sq
+                                                        nearest_ally = _b
+                                        if nearest_ally:
+                                            # Re-apply the movement to ally
+                                            nearest_ally.x += nx * pull_strength * mod
+                                            nearest_ally.y += ny * pull_strength * mod
+                                            positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                            for attr in positive_timers:
+                                                my_val = getattr(self.ball, attr, 0.0)
+                                                ally_val = getattr(nearest_ally, attr, 0.0)
+                                                if my_val > ally_val:
+                                                    setattr(nearest_ally, attr, my_val)
+                                                elif ally_val > my_val:
+                                                    setattr(self.ball, attr, ally_val)
 
                             dmg = getattr(hazard, "damage", 30.0) * delta
                             if hasattr(self.ball, "hp"):
@@ -8891,9 +8914,32 @@ class Action:
                                                     pull_strength = -pull_strength
                                                 if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                     c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
-                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                                     b.x += bnx * pull_strength * mod
                                                     b.y += bny * pull_strength * mod
+                                                    if c == "linked_boots":
+                                                        nearest_ally = None
+                                                        min_dist_sq = float('inf')
+                                                        if hasattr(self.world, "balls"):
+                                                            for _b in self.world.balls:
+                                                                if _b is b or not getattr(_b, "alive", True): continue
+                                                                if getattr(_b, "team", None) == getattr(b, "team", None):
+                                                                    dist_sq = (_b.x - b.x)**2 + (_b.y - b.y)**2
+                                                                    if dist_sq < min_dist_sq:
+                                                                        min_dist_sq = dist_sq
+                                                                        nearest_ally = _b
+                                                        if nearest_ally:
+                                                            # Re-apply the movement to ally
+                                                            nearest_ally.x += bnx * pull_strength * mod
+                                                            nearest_ally.y += bny * pull_strength * mod
+                                                            positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                                            for attr in positive_timers:
+                                                                my_val = getattr(b, attr, 0.0)
+                                                                ally_val = getattr(nearest_ally, attr, 0.0)
+                                                                if my_val > ally_val:
+                                                                    setattr(nearest_ally, attr, my_val)
+                                                                elif ally_val > my_val:
+                                                                    setattr(b, attr, ally_val)
                                                 if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
                                                     # Slingshot velocity addition
                                                     import math as _math
@@ -8909,18 +8955,64 @@ class Action:
                                                             effect_ny = b.vy / speed
                                                             if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                                 c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
-                                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                                                 b.vx += effect_nx * slingshot_strength * delta * mod
                                                                 b.vy += effect_ny * slingshot_strength * delta * mod
+                                                                if c == "linked_boots":
+                                                                    nearest_ally = None
+                                                                    min_dist_sq = float('inf')
+                                                                    if hasattr(self.world, "balls"):
+                                                                        for _b in self.world.balls:
+                                                                            if _b is b or not getattr(_b, "alive", True): continue
+                                                                            if getattr(_b, "team", None) == getattr(b, "team", None):
+                                                                                dist_sq = (_b.x - b.x)**2 + (_b.y - b.y)**2
+                                                                                if dist_sq < min_dist_sq:
+                                                                                    min_dist_sq = dist_sq
+                                                                                    nearest_ally = _b
+                                                                    if nearest_ally:
+                                                                        # Re-apply the movement to ally
+                                                                        nearest_ally.vx += effect_nx * slingshot_strength * delta * mod
+                                                                        nearest_ally.vy += effect_ny * slingshot_strength * delta * mod
+                                                                        positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                                                        for attr in positive_timers:
+                                                                            my_val = getattr(b, attr, 0.0)
+                                                                            ally_val = getattr(nearest_ally, attr, 0.0)
+                                                                            if my_val > ally_val:
+                                                                                setattr(nearest_ally, attr, my_val)
+                                                                            elif ally_val > my_val:
+                                                                                setattr(b, attr, ally_val)
                                                         else:
                                                             slingshot_strength = pull_strength * 2.0 / delta
                                                             dot = bnx * b.vx + bny * b.vy
                                                             if dot > -speed * 0.8: # If not flying directly into it
                                                                 if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                                     c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
-                                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                                                     b.vx += effect_nx * slingshot_strength * delta * mod
                                                                     b.vy += effect_ny * slingshot_strength * delta * mod
+                                                                    if c == "linked_boots":
+                                                                        nearest_ally = None
+                                                                        min_dist_sq = float('inf')
+                                                                        if hasattr(self.world, "balls"):
+                                                                            for _b in self.world.balls:
+                                                                                if _b is b or not getattr(_b, "alive", True): continue
+                                                                                if getattr(_b, "team", None) == getattr(b, "team", None):
+                                                                                    dist_sq = (_b.x - b.x)**2 + (_b.y - b.y)**2
+                                                                                    if dist_sq < min_dist_sq:
+                                                                                        min_dist_sq = dist_sq
+                                                                                        nearest_ally = _b
+                                                                        if nearest_ally:
+                                                                            # Re-apply the movement to ally
+                                                                            nearest_ally.vx += effect_nx * slingshot_strength * delta * mod
+                                                                            nearest_ally.vy += effect_ny * slingshot_strength * delta * mod
+                                                                            positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                                                            for attr in positive_timers:
+                                                                                my_val = getattr(b, attr, 0.0)
+                                                                                ally_val = getattr(nearest_ally, attr, 0.0)
+                                                                                if my_val > ally_val:
+                                                                                    setattr(nearest_ally, attr, my_val)
+                                                                                elif ally_val > my_val:
+                                                                                    setattr(b, attr, ally_val)
                                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                                     # Wind physics: tangential orbital pull
                                                     tx, ty = -bny, bnx
@@ -9000,9 +9092,32 @@ class Action:
 
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
+                                    if c == "linked_boots":
+                                        nearest_ally = None
+                                        min_dist_sq = float('inf')
+                                        if hasattr(self.world, "balls"):
+                                            for _b in self.world.balls:
+                                                if _b is self.ball or not getattr(_b, "alive", True): continue
+                                                if getattr(_b, "team", None) == getattr(self.ball, "team", None):
+                                                    dist_sq = (_b.x - self.ball.x)**2 + (_b.y - self.ball.y)**2
+                                                    if dist_sq < min_dist_sq:
+                                                        min_dist_sq = dist_sq
+                                                        nearest_ally = _b
+                                        if nearest_ally:
+                                            # Re-apply the movement to ally
+                                            nearest_ally.x += nx * pull_strength * mod
+                                            nearest_ally.y += ny * pull_strength * mod
+                                            positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                            for attr in positive_timers:
+                                                my_val = getattr(self.ball, attr, 0.0)
+                                                ally_val = getattr(nearest_ally, attr, 0.0)
+                                                if my_val > ally_val:
+                                                    setattr(nearest_ally, attr, my_val)
+                                                elif ally_val > my_val:
+                                                    setattr(self.ball, attr, ally_val)
                                 if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                     # Slingshot velocity addition
                                     import math as _math
@@ -9018,18 +9133,64 @@ class Action:
                                             effect_ny = self.ball.vy / speed
                                             if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                                 c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                                 self.ball.vx += effect_nx * slingshot_strength * delta * mod
                                                 self.ball.vy += effect_ny * slingshot_strength * delta * mod
+                                                if c == "linked_boots":
+                                                    nearest_ally = None
+                                                    min_dist_sq = float('inf')
+                                                    if hasattr(self.world, "balls"):
+                                                        for _b in self.world.balls:
+                                                            if _b is self.ball or not getattr(_b, "alive", True): continue
+                                                            if getattr(_b, "team", None) == getattr(self.ball, "team", None):
+                                                                dist_sq = (_b.x - self.ball.x)**2 + (_b.y - self.ball.y)**2
+                                                                if dist_sq < min_dist_sq:
+                                                                    min_dist_sq = dist_sq
+                                                                    nearest_ally = _b
+                                                    if nearest_ally:
+                                                        # Re-apply the movement to ally
+                                                        nearest_ally.vx += effect_nx * slingshot_strength * delta * mod
+                                                        nearest_ally.vy += effect_ny * slingshot_strength * delta * mod
+                                                        positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                                        for attr in positive_timers:
+                                                            my_val = getattr(self.ball, attr, 0.0)
+                                                            ally_val = getattr(nearest_ally, attr, 0.0)
+                                                            if my_val > ally_val:
+                                                                setattr(nearest_ally, attr, my_val)
+                                                            elif ally_val > my_val:
+                                                                setattr(self.ball, attr, ally_val)
                                         else:
                                             slingshot_strength = pull_strength * 2.0 / delta
                                             dot = nx * self.ball.vx + ny * self.ball.vy
                                             if dot > -speed * 0.8: # If not flying directly into it
                                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                                     self.ball.vx += effect_nx * slingshot_strength * delta * mod
                                                     self.ball.vy += effect_ny * slingshot_strength * delta * mod
+                                                    if c == "linked_boots":
+                                                        nearest_ally = None
+                                                        min_dist_sq = float('inf')
+                                                        if hasattr(self.world, "balls"):
+                                                            for _b in self.world.balls:
+                                                                if _b is self.ball or not getattr(_b, "alive", True): continue
+                                                                if getattr(_b, "team", None) == getattr(self.ball, "team", None):
+                                                                    dist_sq = (_b.x - self.ball.x)**2 + (_b.y - self.ball.y)**2
+                                                                    if dist_sq < min_dist_sq:
+                                                                        min_dist_sq = dist_sq
+                                                                        nearest_ally = _b
+                                                        if nearest_ally:
+                                                            # Re-apply the movement to ally
+                                                            nearest_ally.vx += effect_nx * slingshot_strength * delta * mod
+                                                            nearest_ally.vy += effect_ny * slingshot_strength * delta * mod
+                                                            positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                                            for attr in positive_timers:
+                                                                my_val = getattr(self.ball, attr, 0.0)
+                                                                ally_val = getattr(nearest_ally, attr, 0.0)
+                                                                if my_val > ally_val:
+                                                                    setattr(nearest_ally, attr, my_val)
+                                                                elif ally_val > my_val:
+                                                                    setattr(self.ball, attr, ally_val)
                                 if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                     # Wind physics: tangential orbital pull
                                     tx, ty = -ny, nx
@@ -9866,6 +10027,29 @@ class Action:
                                     knockback_force *= 0.1
                                 elif cosmetic == "rooted_boots":
                                     knockback_force *= 0.05
+                                elif cosmetic == "linked_boots":
+                                    knockback_force *= 0.5
+                                    nearest_ally = None
+                                    min_dist_sq = float('inf')
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if b is self.ball or not getattr(b, "alive", True): continue
+                                            if getattr(b, "team", None) == getattr(self.ball, "team", None):
+                                                dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                                if dist_sq < min_dist_sq:
+                                                    min_dist_sq = dist_sq
+                                                    nearest_ally = b
+                                    if nearest_ally:
+                                        nearest_ally.x += nx * knockback_force
+                                        nearest_ally.y += ny * knockback_force
+                                        positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                        for attr in positive_timers:
+                                            my_val = getattr(self.ball, attr, 0.0)
+                                            ally_val = getattr(nearest_ally, attr, 0.0)
+                                            if my_val > ally_val:
+                                                setattr(nearest_ally, attr, my_val)
+                                            elif ally_val > my_val:
+                                                setattr(self.ball, attr, ally_val)
                                 self.ball.x += nx * knockback_force
                                 self.ball.y += ny * knockback_force
                             continue
@@ -19981,6 +20165,38 @@ class Action:
                     knockback_multiplier *= 0.05
                 elif cosmetic == "hover_boots":
                     knockback_multiplier *= 1.5
+                elif cosmetic == "linked_boots":
+                    # Reduce own knockback
+                    knockback_multiplier *= 0.5
+
+                    # Find nearest ally
+                    nearest_ally = None
+                    min_dist_sq = float('inf')
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if b is self.ball or not getattr(b, "alive", True): continue
+                            if getattr(b, "team", None) == getattr(self.ball, "team", None):
+                                dist_sq = (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2
+                                if dist_sq < min_dist_sq:
+                                    min_dist_sq = dist_sq
+                                    nearest_ally = b
+
+                    # Apply half knockback to nearest ally, and share statuses
+                    if nearest_ally:
+                        # Transfer half of knockback
+                        nearest_ally.x += nx * overlap * 0.5
+                        nearest_ally.y += ny * overlap * 0.5
+
+                        # Sync positive effects
+                        positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                        for attr in positive_timers:
+                            my_val = getattr(self.ball, attr, 0.0)
+                            ally_val = getattr(nearest_ally, attr, 0.0)
+                            if my_val > ally_val:
+                                setattr(nearest_ally, attr, my_val)
+                            elif ally_val > my_val:
+                                setattr(self.ball, attr, ally_val)
+
                 elif (cosmetic == "kinetic_absorber" or getattr(self.ball, "has_kinetic_absorber", False)) and getattr(other, "team", None) != getattr(self.ball, "team", None):
                     if cosmetic == "kinetic_absorber":
                         knockback_multiplier = 0.0
@@ -21777,9 +21993,32 @@ class Action:
                                 pull_strength = 100.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
+                                    if c == "linked_boots":
+                                        nearest_ally = None
+                                        min_dist_sq = float('inf')
+                                        if hasattr(self.world, "balls"):
+                                            for _b in self.world.balls:
+                                                if _b is self.ball or not getattr(_b, "alive", True): continue
+                                                if getattr(_b, "team", None) == getattr(self.ball, "team", None):
+                                                    dist_sq = (_b.x - self.ball.x)**2 + (_b.y - self.ball.y)**2
+                                                    if dist_sq < min_dist_sq:
+                                                        min_dist_sq = dist_sq
+                                                        nearest_ally = _b
+                                        if nearest_ally:
+                                            # Re-apply the movement to ally
+                                            nearest_ally.x += nx * pull_strength * mod
+                                            nearest_ally.y += ny * pull_strength * mod
+                                            positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                            for attr in positive_timers:
+                                                my_val = getattr(self.ball, attr, 0.0)
+                                                ally_val = getattr(nearest_ally, attr, 0.0)
+                                                if my_val > ally_val:
+                                                    setattr(nearest_ally, attr, my_val)
+                                                elif ally_val > my_val:
+                                                    setattr(self.ball, attr, ally_val)
                                 if hasattr(self.ball, "hp"):
                                     # Continuous damage when triggered
                                     dmg = getattr(hazard, "damage", 10.0) * delta
@@ -21877,9 +22116,32 @@ class Action:
                                 pull_strength = 200.0 * delta # Faster pull than pull_trap
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "linked_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
+                                    if c == "linked_boots":
+                                        nearest_ally = None
+                                        min_dist_sq = float('inf')
+                                        if hasattr(self.world, "balls"):
+                                            for _b in self.world.balls:
+                                                if _b is self.ball or not getattr(_b, "alive", True): continue
+                                                if getattr(_b, "team", None) == getattr(self.ball, "team", None):
+                                                    dist_sq = (_b.x - self.ball.x)**2 + (_b.y - self.ball.y)**2
+                                                    if dist_sq < min_dist_sq:
+                                                        min_dist_sq = dist_sq
+                                                        nearest_ally = _b
+                                        if nearest_ally:
+                                            # Re-apply the movement to ally
+                                            nearest_ally.x += nx * pull_strength * mod
+                                            nearest_ally.y += ny * pull_strength * mod
+                                            positive_timers = ["speed_boost_timer", "shield_timer", "attack_boost_timer", "supercharge_timer", "invisible_timer", "intangible_timer"]
+                                            for attr in positive_timers:
+                                                my_val = getattr(self.ball, attr, 0.0)
+                                                ally_val = getattr(nearest_ally, attr, 0.0)
+                                                if my_val > ally_val:
+                                                    setattr(nearest_ally, attr, my_val)
+                                                elif ally_val > my_val:
+                                                    setattr(self.ball, attr, ally_val)
 
                                 # Send visual effect for grappling hook
                                 if hasattr(self.world, "events"):
