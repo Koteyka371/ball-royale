@@ -50443,6 +50443,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"boss_fight": BossFightMode.new(),
 	"echo": EchoMode.new(),
 	"juggernaut": JuggernautMode.new(),
+	"decaying_juggernaut": DecayingJuggernautMode.new(),
 	"guild_boss_fight": GuildBossFightMode.new(),
 	"gvg": GuildVsGuildMode.new(),
 	"vip_defense": VIPDefenseMode.new(),
@@ -54911,6 +54912,7 @@ class InvisibleMinesMode extends GameMode:
 GAME_MODES["invisible_mines"] = InvisibleMinesMode.new()
 
 GAME_MODES["phantom_juggernaut"] = PhantomJuggernautMode.new()
+GAME_MODES["decaying_juggernaut"] = DecayingJuggernautMode.new()
 GAME_MODES["chicken_curse"] = ChickenCurseMode.new()
 
 GAME_MODES["magnetic_bumpers"] = MagneticBumpersMode.new()
@@ -63244,6 +63246,7 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode.new()
 const DoubleJuggernautMode = preload("res://src/ai/double_juggernaut.gd")
+const DecayingJuggernautMode = preload("res://src/ai/decaying_juggernaut.gd")
 class LaserGridSurvivalMode extends GameMode:
 	var grid_offset_x: float = 0.0
 	var grid_offset_y: float = 0.0

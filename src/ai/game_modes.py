@@ -30923,6 +30923,7 @@ class VampiricMutatorMode(GameMode):
                         world.add_event("death", {"id": getattr(b, "id", None), "reason": "vampiric_drain"})
 
 from ai.double_juggernaut import DoubleJuggernautMode
+from ai.decaying_juggernaut import DecayingJuggernautMode
 
 class LaserGridSurvivalMode(GameMode):
     def __init__(self):
@@ -31449,6 +31450,7 @@ GAME_MODES = {
     "boss_fight": BossFightMode(),
     "echo": EchoMode(),
     "juggernaut": JuggernautMode(),
+    "decaying_juggernaut": DecayingJuggernautMode(),
     "guild_boss_fight": GuildBossFightMode(),
     "gvg": GuildVsGuildMode(),
     "vip_defense": VIPDefenseMode(),
@@ -35687,6 +35689,7 @@ class InvisibleMinesMode(GameMode):
 GAME_MODES["invisible_mines"] = InvisibleMinesMode()
 
 GAME_MODES['phantom_juggernaut'] = PhantomJuggernautMode()
+GAME_MODES['decaying_juggernaut'] = DecayingJuggernautMode()
 
 GAME_MODES["chicken_curse"] = ChickenCurseMode()
 
