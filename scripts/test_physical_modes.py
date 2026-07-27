@@ -12,6 +12,9 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Tuple
 
+# Enable real-time line buffering for live UI logging
+sys.stdout.reconfigure(line_buffering=True)
+
 
 ANOMALY_LOG_FILE = Path("docs/observability_anomalies.md")
 

@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
+
+# Enable real-time line buffering for live UI logging
+sys.stdout.reconfigure(line_buffering=True)
 from typing import Any
 
 

@@ -2,11 +2,14 @@
 Auto-Improvement Loop.
 Runs quality checks, idea generation, test validation, and automatically creates task entries.
 """
+import sys
 import json
 import re
 import subprocess
-import sys
 from pathlib import Path
+
+# Enable real-time line buffering for live UI logging
+sys.stdout.reconfigure(line_buffering=True)
 
 # Paths
 TASK_FILE = Path("agent_tasks.json")
