@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1596] Bouncing Bullets Mode — *2026-07-27 08:40:27 UTC*
+
+All projectiles fired by players bounce off walls infinitely until they hit a player or lose all their velocity.
+
+---
+
 ## [idea-1593] Mirror Arenas — *2026-07-27 08:38:08 UTC*
 
 Certain walls bounce projectiles back perfectly and sometimes duplicate them to double the chaos.

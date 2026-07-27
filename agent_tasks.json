@@ -27323,7 +27323,7 @@
     },
     {
       "id": "idea-1596",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Bullets Mode",
@@ -39781,6 +39781,23 @@
         "src/ai/nemesis_link.py",
         "src/ai/nemesis_link.gd",
         "tests/test_nemesis_link.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2328",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Reaction Mode",
+      "description": "Whenever a ball is destroyed, it releases a shockwave that deals minor damage and knocks back nearby balls. If this shockwave destroys another ball, the resulting explosion is larger and more damaging, creating chain reactions.",
+      "allowed_paths": [
+        "src/ai/chain_reaction.py",
+        "src/ai/chain_reaction.gd",
+        "tests/test_chain_reaction.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
