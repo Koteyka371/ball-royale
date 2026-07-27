@@ -26454,7 +26454,7 @@
     },
     {
       "id": "idea-1545",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Shrapnel Mode",
@@ -39900,6 +39900,40 @@
         "src/ai/decoy_volatile_barrel.py",
         "src/ai/decoy_volatile_barrel.gd",
         "tests/test_decoy_volatile_barrel.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2335",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Synergy: Blood Brothers",
+      "description": "A synergy that activates when two players of the same clan remain close to each other for over 10 seconds. They share a 'blood link', where 20% of damage taken by one is redirected to the other, but they both gain a 15% bonus to their movement speed and base damage as long as they stay in proximity.",
+      "allowed_paths": [
+        "src/ai/synergy_blood_brothers.py",
+        "src/ai/synergy_blood_brothers.gd",
+        "tests/test_synergy_blood_brothers.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2336",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Swap Bomb Hazard",
+      "description": "A new hazard type that, when triggered, swaps the positions of the two closest players and deals a moderate amount of damage to both. This would heavily disrupt positioning and allow for chaotic, unpredictable mid-game shifts.",
+      "allowed_paths": [
+        "src/arena/quantum_swap_bomb.py",
+        "src/arena/quantum_swap_bomb.gd",
+        "tests/test_quantum_swap_bomb.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

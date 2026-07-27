@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1545] Shrinking Shrapnel Mode — *2026-07-27 10:25:37 UTC*
+
+A game mode where shrapnel hazards progressively split into smaller, faster projectiles over time, eventually dissolving into a fine mist that slightly obscures vision.
+
+---
+
 ## [idea-1509] Quantum Reflect — *2026-07-27 10:14:44 UTC*
 
 A new reflect shield variant that stores absorbed damage and converts it into healing over time for the user, rather than reflecting it back.
