@@ -26949,7 +26949,7 @@
     },
     {
       "id": "idea-1574",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Juggernaut Mode",
@@ -39441,6 +39441,74 @@
         "src/ai/parasitic_hive_mutator.py",
         "src/ai/parasitic_hive_mutator.gd",
         "tests/test_parasitic_hive_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2308",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mimic Booster",
+      "description": "A special booster that looks exactly like a normal booster (e.g. healing or speed), but when picked up, it releases a short-ranged poison cloud and roots the player in place for a few seconds.",
+      "allowed_paths": [
+        "src/ai/mimic_booster.py",
+        "src/ai/mimic_booster.gd",
+        "tests/test_mimic_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2309",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Turret Deployment Module",
+      "description": "A consumable item that lets players deploy a stationary turret that fires low-damage projectiles at nearby enemies.",
+      "allowed_paths": [
+        "src/ai/turret_deployment_module.py",
+        "src/ai/turret_deployment_module.gd",
+        "tests/test_turret_deployment_module.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2310",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chronos Reversal Mine",
+      "description": "A trap hazard that, when triggered by an enemy, instantly reverts their position, momentum, and health to what it was 3 seconds ago, disorienting them and stripping recent buffs.",
+      "allowed_paths": [
+        "src/ai/chronos_reversal_mine.py",
+        "src/ai/chronos_reversal_mine.gd",
+        "tests/test_chronos_reversal_mine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2311",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Capture Point Mode",
+      "description": "An arena mode where teams compete to hold multiple control zones. Holding zones generates points over time, and the first team to reach the score limit wins.",
+      "allowed_paths": [
+        "src/ai/capture_point.py",
+        "src/ai/capture_point.gd",
+        "tests/test_capture_point.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

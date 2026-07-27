@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1574] Shrinking Juggernaut Mode — *2026-07-27 06:47:05 UTC*
+
+Similar to Juggernaut mode, but the Juggernaut's stats slowly decay over time, pushing players to stay aggressive and preventing endless stalling.
+
+---
+
 ## [idea-1540] Mercenary Outposts — *2026-07-27 05:53:12 UTC*
 
 Players can capture mercenary outposts across the map. Once fully captured, friendly AI balls spawn periodically and help defend the capturing player.
