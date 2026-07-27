@@ -49928,7 +49928,164 @@ class StickyCeilingsMutatorMode extends GameMode:
 								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 									world.add_event("visual_effect", {"type": "stuck_in_glue", "target": b_id})
 
+
+class DynamicCaptureZoneMode extends GameMode:
+	var tick_timer = 0.0
+	var game_time = 0.0
+	var zone_x = 500.0
+	var zone_y = 500.0
+	var target_x = 500.0
+	var target_y = 500.0
+	var zone_radius = 250.0
+
+	func _init() -> void:
+		name = "Dynamic Capture Zone"
+		description = "A shrinking capture zone moves around the arena. Earn points by controlling it. First to 100 points wins."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		game_time += delta
+		tick_timer += delta
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+
+		var arena = null
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			arena = world.arena
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			arena = world.arena
+
+		if arena != null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				if "width" in arena: arena_width = arena.width
+				if "height" in arena: arena_height = arena.height
+			else:
+				if "width" in arena: arena_width = arena.width
+				if "height" in arena: arena_height = arena.height
+
+		var dx = target_x - zone_x
+		var dy = target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+
+		var speed = 50.0
+		if dist > 0:
+			zone_x += (dx / dist) * speed * delta
+			zone_y += (dy / dist) * speed * delta
+
+		if tick_timer >= 5.0 or dist < 10.0:
+			tick_timer = 0.0
+			var rng = RandomNumberGenerator.new()
+			# Deterministic random if we can
+			if typeof(world) == TYPE_DICTIONARY and "tick_timer" in world:
+				rng.seed = hash(world.tick_timer)
+			elif typeof(world) == TYPE_OBJECT and "tick_timer" in world:
+				rng.seed = hash(world.tick_timer)
+
+			target_x = rng.randf_range(200.0, arena_width - 200.0)
+			target_y = rng.randf_range(200.0, arena_height - 200.0)
+
+		var min_radius = min(arena_width, arena_height) * 0.1
+		zone_radius = max(min_radius, zone_radius - delta * 2.0)
+
+		var teams_in_zone = {}
+		var balls_in_zone = []
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.alive if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if is_alive and b_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				else:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+
+				var dist_sq = (bx - zone_x)*(bx - zone_x) + (by - zone_y)*(by - zone_y)
+				if dist_sq <= zone_radius*zone_radius:
+					balls_in_zone.append(b)
+					var b_team = b_type
+					if typeof(b) == TYPE_DICTIONARY and "team" in b:
+						b_team = b.team
+					elif typeof(b) == TYPE_OBJECT and "team" in b:
+						b_team = b.team
+					teams_in_zone[b_team] = true
+
+		if teams_in_zone.size() == 1:
+			for b in balls_in_zone:
+				var current_score = 0
+				if typeof(b) == TYPE_DICTIONARY:
+					current_score = b.get("score", 0)
+					b["score"] = current_score + 1 * delta * 60
+				else:
+					current_score = b.score if "score" in b else 0
+					if b.has_method("set"):
+						b.set("score", current_score + 1 * delta * 60)
+					else:
+						b.score = current_score + 1 * delta * 60
+
+	func check_winner(world, balls: Array) -> String:
+		var alive = []
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			else:
+				is_alive = b.alive if "alive" in b else false
+				b_type = b.ball_type if "ball_type" in b else ""
+			if is_alive and b_type != "spectator" and b_type != "shadow_monster":
+				alive.append(b)
+
+		if alive.size() == 0:
+			return "Draw"
+
+		var best_score = -1
+		var best_team = ""
+
+		for b in balls:
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if b_type != "spectator":
+				var score = 0
+				var b_team = b_type
+				if typeof(b) == TYPE_DICTIONARY:
+					score = b.get("score", 0)
+					if "team" in b: b_team = b.team
+				else:
+					score = b.score if "score" in b else 0
+					if "team" in b: b_team = b.team
+
+				if score >= 100:
+					return b_team
+				if score > best_score:
+					best_score = score
+					best_team = b_team
+
+		return ""
+
 var GAME_MODES = {
+	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
