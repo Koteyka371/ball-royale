@@ -31399,6 +31399,87 @@ class DynamicCaptureZoneMode(GameMode):
         return None
 
 
+
+class MobilePlatformMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mobile Platform Mode"
+        self.description = "A mobile platform moves around the arena. Turrets deployed on it move with it."
+        self.platform = None
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not getattr(world, 'arena', None):
+            return
+
+        import random
+        # Spawn a mobile platform
+        platform = {
+            "kind": "mobile_platform",
+            "x": world.arena.width / 2.0,
+            "y": world.arena.height / 2.0,
+            "radius": 150.0,
+            "vx": 100.0,
+            "vy": 100.0,
+            "active": True
+        }
+
+        # Determine movement direction randomly or just pick a diagonal
+        angle = random.uniform(0, 6.28)
+        import math
+        speed = 100.0
+        platform["vx"] = math.cos(angle) * speed
+        platform["vy"] = math.sin(angle) * speed
+
+        # Since it's a dict, we need to create a simple object to add to arena hazards or just use a class
+        class PlatformHazard:
+            def __init__(self, data):
+                for k, v in data.items():
+                    setattr(self, k, v)
+
+        self.platform = PlatformHazard(platform)
+        world.arena.hazards.append(self.platform)
+
+    def tick(self, world, balls, delta: float):
+        super().tick(world, balls, delta)
+
+        if not self.platform:
+            return
+
+        old_x = self.platform.x
+        old_y = self.platform.y
+
+        self.platform.x += self.platform.vx * delta
+        self.platform.y += self.platform.vy * delta
+
+        if getattr(world, "arena", None):
+            # Bounce off walls
+            if self.platform.x - self.platform.radius < 0:
+                self.platform.x = self.platform.radius
+                self.platform.vx *= -1
+            elif self.platform.x + self.platform.radius > world.arena.width:
+                self.platform.x = world.arena.width - self.platform.radius
+                self.platform.vx *= -1
+
+            if self.platform.y - self.platform.radius < 0:
+                self.platform.y = self.platform.radius
+                self.platform.vy *= -1
+            elif self.platform.y + self.platform.radius > world.arena.height:
+                self.platform.y = world.arena.height - self.platform.radius
+                self.platform.vy *= -1
+
+        dx = self.platform.x - old_x
+        dy = self.platform.y - old_y
+
+        # Move any turrets that are inside the platform's radius at the start of the tick
+        import math
+        for b in balls:
+            if getattr(b, "is_turret", False) and getattr(b, "alive", True):
+                dist_sq = (b.x - old_x) ** 2 + (b.y - old_y) ** 2
+                if dist_sq <= self.platform.radius ** 2:
+                    b.x += dx
+                    b.y += dy
+
 GAME_MODES = {
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),
@@ -41481,3 +41562,4 @@ class BlindFragmentAuctionMode(GameMode):
                         })
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
+GAME_MODES["mobile_platform"] = MobilePlatformMode()
