@@ -63504,3 +63504,5 @@ class ShrapnelMistMode extends GameMode:
 			world.arena.hazards.append(nh)
 
 GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode.new()
+
+GAME_MODES["magnet_ball"] = load("res://src/ai/magnet_ball.gd").new()
