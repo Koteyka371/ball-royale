@@ -29150,6 +29150,91 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "mirrored_clone_booster":
+                for i in range(2):
+                    var clone = null
+                    if self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                        clone = self.ball.duplicate()
+
+                    if clone != null:
+                        if "id" in clone:
+                            clone.id = randi() % 90000 + 10000
+                        if "hp" in clone and "max_hp" in clone:
+                            clone.max_hp = 1.0
+                            clone.hp = 1.0
+                        if "damage" in clone:
+                            clone.damage = 0.0
+                        if "base_damage" in clone:
+                            clone.base_damage = 0.0
+                        if "speed" in clone and "speed" in self.ball:
+                            clone.speed = self.ball.speed
+
+                        if "x" in clone and "y" in clone:
+                            clone.x = self.ball.x
+                            clone.y = self.ball.y
+
+                        if "vx" in clone and "vy" in clone:
+                            if i == 0:
+                                clone.vx = -self.ball.vx if "vx" in self.ball else 0.0
+                                clone.vy = self.ball.vy if "vy" in self.ball else 0.0
+                            else:
+                                clone.vx = self.ball.vx if "vx" in self.ball else 0.0
+                                clone.vy = -self.ball.vy if "vy" in self.ball else 0.0
+
+                        var self_id_stat = -2
+                        if "id" in self.ball: self_id_stat = self.ball.id
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id_stat = self.ball.get_meta("id")
+
+                        if clone.has_method("set_meta"):
+                            clone.set_meta("owner_id", self_id_stat)
+                            clone.set_meta("is_decoy", true)
+                            clone.set_meta("is_mirrored_clone", true)
+                            clone.set_meta("intangible", true)
+                            clone.set_meta("decoy_timer", 5.0)
+                            clone.set_meta("skill_timer", 9999.0)
+                            clone.set_meta("attack_timer", 9999.0)
+                            clone.set_meta("SKILL", null)
+                            clone.set_meta("skill", null)
+                            clone.set_meta("active_skill", null)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["owner_id"] = self_id_stat
+                            clone["is_decoy"] = true
+                            clone["is_mirrored_clone"] = true
+                            clone["intangible"] = true
+                            clone["decoy_timer"] = 5.0
+                            clone["skill_timer"] = 9999.0
+                            clone["attack_timer"] = 9999.0
+                            clone["SKILL"] = null
+                            clone["skill"] = null
+                            clone["active_skill"] = null
+                        else:
+                            clone.owner_id = self_id_stat
+                            clone.is_decoy = true
+                            clone.is_mirrored_clone = true
+                            clone.intangible = true
+                            clone.decoy_timer = 5.0
+                            clone.skill_timer = 9999.0
+                            clone.attack_timer = 9999.0
+                            clone.SKILL = null
+                            clone.skill = null
+                            clone.active_skill = null
+
+                        if typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                            self.world.balls.append(clone)
+                        elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                            self.world.balls.append(clone)
+
+                if typeof(self.world) == TYPE_OBJECT and "arena" in self.world and "hazards" in self.world.arena:
+                    self.world.arena.hazards.erase(nearest)
+                elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                    self.world.arena.hazards.erase(nearest)
+
+                if typeof(self.world) == TYPE_OBJECT and "boosters" in self.world:
+                    self.world.boosters.erase(nearest)
+                elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("boosters"):
+                    self.world.boosters.erase(nearest)
             elif "kind" in nearest and nearest.kind == "clone_booster":
                 for i in range(2):
                     var clone = null
@@ -29162,8 +29247,8 @@ func _collect_booster(delta: float):
                         if "id" in clone:
                             clone.id = randi() % 90000 + 10000
                         if "hp" in clone and "max_hp" in clone:
-                            clone.max_hp = float(self.ball.max_hp)
-                            clone.hp = clone.max_hp
+                            clone.max_hp = 1.0
+                            clone.hp = 1.0
                         if "damage" in clone:
                             clone.damage = 0.0
                         if "base_damage" in clone:

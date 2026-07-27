@@ -14658,6 +14658,51 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "mirrored_clone_booster":
+                    import copy
+                    import math
+                    if hasattr(self.world, "balls"):
+                        for i in range(2):
+                            clone = copy.copy(self.ball)
+                            clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                            if hasattr(self.world, "next_id"):
+                                self.world.next_id += 1
+
+                            clone.hp = 1
+                            clone.max_hp = 1
+                            clone.damage = 0
+                            if hasattr(clone, "base_damage"): clone.base_damage = 0
+                            clone.speed = getattr(self.ball, "speed", 2.0)
+                            clone.owner_id = getattr(self.ball, "id", None)
+                            clone.is_decoy = True
+                            clone.is_mirrored_clone = True
+                            clone.intangible = True
+                            clone.decoy_timer = 5.0
+                            clone.skill_timer = 9999.0
+                            clone.attack_timer = 9999.0
+                            clone.SKILL = None
+                            clone.skill = None
+                            clone.active_skill = None
+
+                            # Initially place them exactly at the ball
+                            clone.x = self.ball.x
+                            clone.y = self.ball.y
+
+                            # Give them mirrored direction
+                            if i == 0:
+                                clone.vx = -getattr(self.ball, "vx", 0.0)
+                                clone.vy = getattr(self.ball, "vy", 0.0)
+                            else:
+                                clone.vx = getattr(self.ball, "vx", 0.0)
+                                clone.vy = -getattr(self.ball, "vy", 0.0)
+
+                            self.world.balls.append(clone)
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "clone_booster":
                     import copy
                     import math
