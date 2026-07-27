@@ -51167,60 +51167,89 @@ class TagTeamMode extends GameMode:
 					elif m_type != "spectator":
 						active = m
 
-				if downed != null and active != null:
-					var a_alive = active.get("alive") if typeof(active) == TYPE_DICTIONARY else (active.get("alive") if "alive" in active else false)
-					if a_alive:
+				if downed != null:
+					if typeof(downed) == TYPE_OBJECT:
+						var max_h = downed.get("max_hp") if "max_hp" in downed else 100.0
+						downed.set("max_hp", max_h - 5.0 * delta)
+					else:
+						var max_h = downed.get("max_hp", 100.0)
+						downed["max_hp"] = max_h - 5.0 * delta
+
+					var cur_max_hp = downed.get("max_hp") if typeof(downed) == TYPE_DICTIONARY else (downed.get("max_hp") if "max_hp" in downed else 100.0)
+					if cur_max_hp <= 0:
 						if typeof(downed) == TYPE_OBJECT:
-							downed.set("vx", 0.0)
-							downed.set("vy", 0.0)
-							downed.set("hp", 1.0)
-							downed.set("alive", true)
+							downed.set("max_hp", 0.0)
+							downed.set("hp", 0.0)
+							downed.set_meta("is_downed", false)
+							downed.set("alive", false)
 						else:
-							downed["vx"] = 0.0
-							downed["vy"] = 0.0
-							downed["hp"] = 1.0
-							downed["alive"] = true
+							downed["max_hp"] = 0.0
+							downed["hp"] = 0.0
+							downed["is_downed"] = false
+							downed["alive"] = false
 
-						var ax = active.get("x") if typeof(active) == TYPE_DICTIONARY else (active.get("x") if "x" in active else 0.0)
-						var ay = active.get("y") if typeof(active) == TYPE_DICTIONARY else (active.get("y") if "y" in active else 0.0)
-						var dx = downed.get("x") if typeof(downed) == TYPE_DICTIONARY else (downed.get("x") if "x" in downed else 0.0)
-						var dy = downed.get("y") if typeof(downed) == TYPE_DICTIONARY else (downed.get("y") if "y" in downed else 0.0)
-
-						var dist_sq = (ax - dx) * (ax - dx) + (ay - dy) * (ay - dy)
-						if dist_sq < 3600.0:
+						var world_is_dict = typeof(world) == TYPE_DICTIONARY
+						var mid = downed.get("id") if typeof(downed) == TYPE_DICTIONARY else (downed.id if "id" in downed else null)
+						if world_is_dict and ("dead_balls" in world):
+							if not world["dead_balls"].has(mid):
+								world["dead_balls"].append(mid)
+						elif not world_is_dict and world != null and "dead_balls" in world:
+							if mid != null and not world.dead_balls.has(mid):
+								world.dead_balls.append(mid)
+					elif active != null:
+						var a_alive = active.get("alive") if typeof(active) == TYPE_DICTIONARY else (active.get("alive") if "alive" in active else false)
+						if a_alive:
 							if typeof(downed) == TYPE_OBJECT:
-								var rp = downed.get_meta("revive_progress") if downed.has_meta("revive_progress") else 0.0
-								rp += delta
-								if rp >= 3.0:
-									downed.set_meta("is_downed", false)
+								downed.set("vx", 0.0)
+								downed.set("vy", 0.0)
+								downed.set("hp", 1.0)
+								downed.set("alive", true)
+							else:
+								downed["vx"] = 0.0
+								downed["vy"] = 0.0
+								downed["hp"] = 1.0
+								downed["alive"] = true
+
+							var ax = active.get("x") if typeof(active) == TYPE_DICTIONARY else (active.get("x") if "x" in active else 0.0)
+							var ay = active.get("y") if typeof(active) == TYPE_DICTIONARY else (active.get("y") if "y" in active else 0.0)
+							var dx = downed.get("x") if typeof(downed) == TYPE_DICTIONARY else (downed.get("x") if "x" in downed else 0.0)
+							var dy = downed.get("y") if typeof(downed) == TYPE_DICTIONARY else (downed.get("y") if "y" in downed else 0.0)
+
+							var dist_sq = (ax - dx) * (ax - dx) + (ay - dy) * (ay - dy)
+							if dist_sq < 3600.0:
+								if typeof(downed) == TYPE_OBJECT:
+									var rp = downed.get_meta("revive_progress") if downed.has_meta("revive_progress") else 0.0
+									rp += delta
+									if rp >= 3.0:
+										downed.set_meta("is_downed", false)
+										downed.set_meta("revive_progress", 0.0)
+										var mx_hp = downed.get("max_hp") if "max_hp" in downed else 100.0
+										downed.set("hp", mx_hp * 0.5)
+										downed.set("ball_type", "spectator")
+										downed.set("team", "spectator")
+										downed.set("x", -1000.0)
+										downed.set("y", -1000.0)
+									else:
+										downed.set_meta("revive_progress", rp)
+								else:
+									var rp = downed.get("revive_progress", 0.0)
+									rp += delta
+									if rp >= 3.0:
+										downed["is_downed"] = false
+										downed["revive_progress"] = 0.0
+										var mx_hp = downed.get("max_hp", 100.0)
+										downed["hp"] = mx_hp * 0.5
+										downed["ball_type"] = "spectator"
+										downed["team"] = "spectator"
+										downed["x"] = -1000.0
+										downed["y"] = -1000.0
+									else:
+										downed["revive_progress"] = rp
+							else:
+								if typeof(downed) == TYPE_OBJECT:
 									downed.set_meta("revive_progress", 0.0)
-									var mx_hp = downed.get("max_hp") if "max_hp" in downed else 100.0
-									downed.set("hp", mx_hp * 0.5)
-									downed.set("ball_type", "spectator")
-									downed.set("team", "spectator")
-									downed.set("x", -1000.0)
-									downed.set("y", -1000.0)
 								else:
-									downed.set_meta("revive_progress", rp)
-							else:
-								var rp = downed.get("revive_progress", 0.0)
-								rp += delta
-								if rp >= 3.0:
-									downed["is_downed"] = false
 									downed["revive_progress"] = 0.0
-									var mx_hp = downed.get("max_hp", 100.0)
-									downed["hp"] = mx_hp * 0.5
-									downed["ball_type"] = "spectator"
-									downed["team"] = "spectator"
-									downed["x"] = -1000.0
-									downed["y"] = -1000.0
-								else:
-									downed["revive_progress"] = rp
-						else:
-							if typeof(downed) == TYPE_OBJECT:
-								downed.set_meta("revive_progress", 0.0)
-							else:
-								downed["revive_progress"] = 0.0
 
 		swap_timer += delta
 		if swap_timer >= swap_interval:
