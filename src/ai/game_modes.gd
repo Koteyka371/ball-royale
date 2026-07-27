@@ -63361,3 +63361,4 @@ class LaserGridSurvivalMode extends GameMode:
 
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
 GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
+GAME_MODES["neon_lightcycles"] = load("res://src/ai/neon_lightcycles.gd").new()
