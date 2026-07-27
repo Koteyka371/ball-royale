@@ -1,3 +1,5 @@
+import math
+import random
 
 class WeekendBoss:
     def __init__(self, id_val, x, y):
@@ -41789,7 +41791,7 @@ class BlindFragmentAuctionMode(GameMode):
 
                     winner = next((b for b in alive_balls if getattr(b, "id", None) == winner_id), None)
                     if winner:
-                        winner.collected_fragments = getattr(winner, "collected_fragments", 0) - highest_bid
+                        winner.collected_fragments = max(0, getattr(winner, "collected_fragments", 0) - highest_bid)
 
                         if self.current_item["type"] == "buff":
                             if "multiplier" in self.current_item:
@@ -41830,3 +41832,80 @@ class BlindFragmentAuctionMode(GameMode):
 GAME_MODES["unstable_payload"] = UnstablePayloadMode()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
 GAME_MODES["mobile_platform"] = MobilePlatformMode()
+
+
+class ChaosHazardMode(GameMode):
+    """
+    A mode where a hazard periodically applies randomized stat modifications to all entities inside it.
+    """
+    def __init__(self):
+        super().__init__()
+        self.tick_interval = 2.0
+        # Valid stats to randomize. Each entry has stat, min_multiplier, max_multiplier
+        self.mutation_pool = [
+            ("speed", 0.5, 2.0),
+            ("damage", 0.5, 2.0),
+            ("max_hp", 0.5, 2.0)
+        ]
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        arena_w = getattr(world.arena, "width", 800)
+        arena_h = getattr(world.arena, "height", 600)
+        self.hazard = {
+            "kind": "chaos_hazard",
+            "x": arena_w / 2.0,
+            "y": arena_h / 2.0,
+            "radius": min(arena_w, arena_h) * 0.25,
+            "timer": 0.0
+        }
+        world.arena.hazards.append(self.hazard)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not hasattr(self, "hazard") or not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        hazard_in_arena = False
+        for h in world.arena.hazards:
+            if isinstance(h, dict) and h.get("kind") == "chaos_hazard":
+                hazard_in_arena = True
+                break
+            elif getattr(h, "kind", "") == "chaos_hazard":
+                hazard_in_arena = True
+                break
+
+        if not hazard_in_arena:
+            return
+
+        self.hazard["timer"] += delta
+
+        if self.hazard["timer"] >= self.tick_interval:
+            self.hazard["timer"] -= self.tick_interval
+
+            for b in balls:
+                if not getattr(b, "is_alive", True):
+                    continue
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                dist = math.hypot(bx - self.hazard["x"], by - self.hazard["y"])
+
+                if dist <= self.hazard["radius"]:
+                    mutation = random.choice(self.mutation_pool)
+                    stat, min_mult, max_mult = mutation
+                    multiplier = random.uniform(min_mult, max_mult)
+
+                    base_val = getattr(b, f"base_{stat}", getattr(b, stat, None))
+
+                    if base_val is not None:
+                        new_val = base_val * multiplier
+                        setattr(b, stat, new_val)
+                        if stat == "max_hp":
+                            hp = getattr(b, "hp", base_val)
+                            hp_ratio = hp / base_val if base_val > 0 else 1.0
+                            b.hp = new_val * hp_ratio
+
+GAME_MODES["chaos_hazard"] = ChaosHazardMode()

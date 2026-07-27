@@ -64808,3 +64808,126 @@ class BlindFragmentAuctionMode extends GameMode:
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
 GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
+
+
+class ChaosHazardMode extends GameMode:
+	var tick_interval = 2.0
+	var mutation_pool = [
+		{"stat": "speed", "min": 0.5, "max": 2.0},
+		{"stat": "damage", "min": 0.5, "max": 2.0},
+		{"stat": "max_hp", "min": 0.5, "max": 2.0}
+	]
+	var hazard = null
+
+	func _init():
+		name = "Chaos Hazard"
+
+	func setup(world, balls):
+		if world == null or not "arena" in world or world.arena == null:
+			return
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var arena_w = 800.0
+		if "width" in world.arena:
+			arena_w = float(world.arena.width)
+		elif world.arena.has_method("get"):
+			var w = world.arena.get("width")
+			if w != null: arena_w = float(w)
+
+		var arena_h = 600.0
+		if "height" in world.arena:
+			arena_h = float(world.arena.height)
+		elif world.arena.has_method("get"):
+			var h = world.arena.get("height")
+			if h != null: arena_h = float(h)
+
+		var radius = min(arena_w, arena_h) * 0.25
+
+		hazard = {
+			"kind": "chaos_hazard",
+			"x": arena_w / 2.0,
+			"y": arena_h / 2.0,
+			"radius": radius,
+			"timer": 0.0
+		}
+		world.arena.hazards.append(hazard)
+
+	func tick(world, balls, delta = 0.016):
+		if hazard == null or world == null or not "arena" in world or world.arena == null or not "hazards" in world.arena:
+			return
+
+		var hazard_in_arena = false
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h["kind"] == "chaos_hazard":
+				hazard_in_arena = true
+				break
+		if not hazard_in_arena:
+			return
+
+		hazard["timer"] += delta
+		if hazard["timer"] >= tick_interval:
+			hazard["timer"] -= tick_interval
+
+			for b in balls:
+				var is_alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("is_alive"):
+						is_alive = b["is_alive"]
+				elif b.has_method("get"):
+					var alive_val = b.get("is_alive")
+					if alive_val != null:
+						is_alive = alive_val
+				if not is_alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = float(b["x"])
+					if b.has("y"): by = float(b["y"])
+				elif b.has_method("get"):
+					var x_val = b.get("x")
+					var y_val = b.get("y")
+					if x_val != null: bx = float(x_val)
+					if y_val != null: by = float(y_val)
+
+				var dist = sqrt(pow(bx - hazard["x"], 2) + pow(by - hazard["y"], 2))
+
+				if dist <= hazard["radius"]:
+					var mutation = mutation_pool[randi() % mutation_pool.size()]
+					var stat = mutation["stat"]
+					var multiplier = randf_range(mutation["min"], mutation["max"])
+
+					var base_val = null
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("base_" + stat):
+							base_val = b["base_" + stat]
+						elif b.has(stat):
+							base_val = b[stat]
+					elif b.has_method("get"):
+						base_val = b.get("base_" + stat)
+						if base_val == null:
+							base_val = b.get(stat)
+
+					if base_val != null:
+						var new_val = base_val * multiplier
+						if typeof(b) == TYPE_DICTIONARY:
+							b[stat] = new_val
+							if stat == "max_hp":
+								var hp = new_val
+								if b.has("hp"): hp = b["hp"]
+								var hp_ratio = 1.0
+								if base_val > 0: hp_ratio = float(hp) / float(base_val)
+								b["hp"] = new_val * hp_ratio
+						elif b.has_method("set"):
+							b.set(stat, new_val)
+							if stat == "max_hp":
+								var hp = new_val
+								var hp_val = b.get("hp")
+								if hp_val != null: hp = hp_val
+								var hp_ratio = 1.0
+								if base_val > 0: hp_ratio = float(hp) / float(base_val)
+								b.set("hp", new_val * hp_ratio)
+
+GAME_MODES["chaos_hazard"] = ChaosHazardMode.new()
