@@ -1,4 +1,0 @@
-{
-  "title": "Echo Strike Hazard",
-  "description": "A new hazard type that targets the ground where a high-velocity ball was located 2 seconds ago. It discourages standing still after moving quickly. If a player is hit by an Echo Strike, their velocity vector is immediately inverted, throwing them backward into their own path."
-}

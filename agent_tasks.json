@@ -40007,6 +40007,40 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2341",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Shield Link",
+      "description": "An ability that creates a linked shield between you and your nemesis. Any damage your nemesis takes grants you a temporary shield, and any damage you take reduces their shield, turning them into a reluctant damage battery.",
+      "allowed_paths": [
+        "src/ai/nemesis_shield_link.py",
+        "src/ai/nemesis_shield_link.gd",
+        "tests/test_nemesis_shield_link.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2342",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Swap Trap",
+      "description": "A trap that, when triggered by any player, instantly swaps the positions of the trap-layer and their highest-ranked nemesis, potentially dropping the nemesis into a hazardous situation they were completely unprepared for.",
+      "allowed_paths": [
+        "src/arena/nemesis_swap_trap.py",
+        "src/arena/nemesis_swap_trap.gd",
+        "tests/test_nemesis_swap_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

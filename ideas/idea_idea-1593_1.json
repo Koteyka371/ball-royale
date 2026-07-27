@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Tunnels",
-  "description": "Portals spawn on opposite sides of the arena. When a ball enters one, it exits the other while maintaining its velocity, but the environment's properties (like gravity or friction) are inverted for 5 seconds upon exiting."
-}
