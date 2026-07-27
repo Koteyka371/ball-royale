@@ -1291,44 +1291,41 @@
                     pyodideInstance = await loadPyodide();
                     simStatus.textContent = "Fetching simulation scripts...";
                     
-                    const files = [
-                        "ai/ball_brain.py",
-                        "ai/perception.py",
-                        "ai/emotion.py",
-                        "ai/decision.py",
-                        "ai/action.py",
-                        "ai/neural_network_brain.py",
-                        "ai/neural_net.py",
-                        "ai/personality.py",
-                        "ai/game_modes.py",
-                        "arena/arena_types.py",
-                        "arena/basic_arena.py",
-                        "arena/procedural_arena.py",
-                        "system/crowd_system.py",
-                        "system/profile.py",
-                        "system/guild.py",
-                        "system/leaderboard.py",
-                        "system/lobby.py",
-                        "tests/simulate_battle.py"
-                    ];
-                    
-                    // Create directories in Pyodide FS
-                    try { pyodideInstance.FS.mkdir("src"); } catch(e) {}
-                    try { pyodideInstance.FS.mkdir("src/ai"); } catch(e) {}
-                    try { pyodideInstance.FS.mkdir("src/arena"); } catch(e) {}
-                    try { pyodideInstance.FS.mkdir("src/system"); } catch(e) {}
-                    try { pyodideInstance.FS.mkdir("ai"); } catch(e) {}
-                    try { pyodideInstance.FS.mkdir("arena"); } catch(e) {}
-                    try { pyodideInstance.FS.mkdir("system"); } catch(e) {}
-                    try { pyodideInstance.FS.mkdir("tests"); } catch(e) {}
+                    let files = [];
+                    try {
+                        const manifestResp = await fetch("data/manifest.json");
+                        if (manifestResp.ok) {
+                            files = await manifestResp.json();
+                        }
+                    } catch(e) {}
+
+                    if (!files || files.length === 0) {
+                        files = [
+                            "src/ai/ball_brain.py", "src/ai/perception.py", "src/ai/emotion.py",
+                            "src/ai/decision.py", "src/ai/action.py", "src/ai/neural_network_brain.py",
+                            "src/ai/neural_decision.py", "src/ai/neural_net.py", "src/ai/personality.py",
+                            "src/ai/game_modes.py", "src/arena/arena_types.py", "src/arena/basic_arena.py",
+                            "src/arena/procedural_arena.py", "src/system/crowd_system.py", "src/system/profile.py",
+                            "src/system/guild.py", "src/system/leaderboard.py", "src/system/lobby.py",
+                            "tests/simulate_battle.py"
+                        ];
+                    }
+
+                    function mkdirRecursive(path) {
+                        const parts = path.split("/");
+                        let curr = "";
+                        for (let i = 0; i < parts.length - 1; i++) {
+                            curr += (curr ? "/" : "") + parts[i];
+                            try { pyodideInstance.FS.mkdir(curr); } catch(err) {}
+                        }
+                    }
 
                     // Fetch with fallback: try GitHub Pages path first, then local dev path
                     async function fetchWithFallback(file) {
                         const pagesUrl = "data/" + file;
-                        const pagesSrcUrl = "data/src/" + (file.startsWith("tests/") ? file.replace("tests/", "../tests/") : file);
-                        const localUrl = file.startsWith("tests/") ? ("../" + file) : ("../src/" + file);
+                        const localUrl = file.startsWith("tests/") ? ("../" + file) : ("../" + file);
 
-                        for (const url of [pagesUrl, pagesSrcUrl, localUrl]) {
+                        for (const url of [pagesUrl, localUrl]) {
                             try {
                                 const resp = await fetch(url);
                                 if (resp.ok) return await resp.text();
@@ -1338,10 +1335,15 @@
                     }
 
                     for (const file of files) {
+                        mkdirRecursive(file);
                         const text = await fetchWithFallback(file);
                         if (text !== null) {
                             try { pyodideInstance.FS.writeFile(file, text); } catch(e) {}
-                            try { pyodideInstance.FS.writeFile("src/" + file, text); } catch(e) {}
+                            if (file.startsWith("src/")) {
+                                const rel = file.replace("src/", "");
+                                mkdirRecursive(rel);
+                                try { pyodideInstance.FS.writeFile(rel, text); } catch(e) {}
+                            }
                         }
                     }
                 }

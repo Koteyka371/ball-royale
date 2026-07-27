@@ -34,15 +34,10 @@ jobs:
       - name: Copy Python files for WASM simulator
         run: |
           mkdir -p visualizer/data/src
-          mkdir -p visualizer/data/ai
-          mkdir -p visualizer/data/arena
-          mkdir -p visualizer/data/system
           mkdir -p visualizer/data/tests
           cp -r src/* visualizer/data/src/
-          cp -r src/ai/* visualizer/data/ai/
-          cp -r src/arena/* visualizer/data/arena/
-          cp -r src/system/* visualizer/data/system/
           cp tests/simulate_battle.py visualizer/data/tests/
+          python3 -c "import os, json; files = [os.path.relpath(os.path.join(r, f), 'visualizer/data').replace('\\\\', '/') for r, d, fs in os.walk('visualizer/data') for f in fs if f.endswith('.py')]; open('visualizer/data/manifest.json', 'w').write(json.dumps(files, indent=2))"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
