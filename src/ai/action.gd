@@ -21143,6 +21143,45 @@ func execute(strategy: String, delta: float):
                             elif "glitch_timer" in self.ball:
                                 self.ball.glitch_timer = 2.0
                         continue
+                    elif hazard.kind == "blindness_zone":
+                        var b_x = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
+                        var b_y = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]
+                        var b_radius = self.ball.radius if (typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball) else (self.ball["radius"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius") else 10.0)
+                        var h_radius = hazard.radius if (typeof(hazard) == TYPE_OBJECT and "radius" in hazard) else (hazard["radius"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius") else 30.0)
+                        var dist_sq = (b_x - hazard.x) * (b_x - hazard.x) + (b_y - hazard.y) * (b_y - hazard.y)
+                        if dist_sq < (b_radius + h_radius) * (b_radius + h_radius):
+                            var is_blinded = false
+                            if "is_blinded" in self.ball: is_blinded = self.ball.is_blinded
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("is_blinded"): is_blinded = self.ball.get_meta("is_blinded")
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_blinded"): is_blinded = self.ball["is_blinded"]
+
+                            if not is_blinded:
+                                if typeof(self.ball) == TYPE_OBJECT:
+                                    if self.ball.has_method("set_meta"): self.ball.set_meta("is_blinded", true)
+                                    if "is_blinded" in self.ball: self.ball.is_blinded = true
+
+                                    if not ("base_perception_radius" in self.ball) and not (self.ball.has_method("has_meta") and self.ball.has_meta("base_perception_radius")):
+                                        var current_pr = 250.0
+                                        if "perception_radius" in self.ball: current_pr = float(self.ball.perception_radius)
+                                        if self.ball.has_method("set_meta"): self.ball.set_meta("base_perception_radius", current_pr)
+                                        if "base_perception_radius" in self.ball: self.ball.base_perception_radius = current_pr
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["is_blinded"] = true
+                                    if not self.ball.has("base_perception_radius"):
+                                        self.ball["base_perception_radius"] = self.ball.get("perception_radius", 250.0)
+
+                            if typeof(self.ball) == TYPE_OBJECT:
+                                if self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("blindness_timer", 0.2)
+                                if "blindness_timer" in self.ball:
+                                    self.ball.blindness_timer = 0.2
+                                if "perception_radius" in self.ball:
+                                    self.ball.perception_radius = 0.0
+                                elif self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("perception_radius", 0.0)
+                            elif typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["blindness_timer"] = 0.2
+                                self.ball["perception_radius"] = 0.0
                     elif hazard.kind == "amnesia_cloud":
                         var b_x = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
                         var b_y = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]

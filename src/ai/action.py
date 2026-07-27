@@ -10813,6 +10813,15 @@ class Action:
                         elif hazard.kind == "glitch_zone":
                             self.ball.glitch_timer = 2.0
                             continue
+                        elif hazard.kind == "blindness_zone":
+                            dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
+                            if dist_sq < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 30.0))**2:
+                                if not getattr(self.ball, "is_blinded", False):
+                                    self.ball.is_blinded = True
+                                    if not hasattr(self.ball, "base_perception_radius"):
+                                        self.ball.base_perception_radius = getattr(self.ball, "perception_radius", 250.0)
+                                self.ball.blindness_timer = 0.2
+                                self.ball.perception_radius = 0.0
                         elif hazard.kind == "amnesia_cloud":
                             dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
                             if dist_sq < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 30.0))**2:
