@@ -541,3 +541,9 @@ def test_purchase_and_interact_pet(temp_guild_file):
 
     # Invalid index
     assert gm.interact_with_pet("PetGuild", 99, "pet") == {}
+
+def test_boss_mutations(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    assert gm.get_boss_mutations(1) == []
+    assert gm.get_boss_mutations(2) == [{"type": "damage_reflect", "value": 0.1}]
+    assert gm.get_boss_mutations(3) == [{"type": "damage_reflect", "value": 0.1}, {"type": "periodic_minions", "interval": 10}]

@@ -601,6 +601,15 @@ class GuildManager:
                 return True
         return False
 
+
+    def get_boss_mutations(self, tier: int) -> list:
+        mutations = []
+        if tier >= 2:
+            mutations.append({"type": "damage_reflect", "value": 0.1})
+        if tier >= 3:
+            mutations.append({"type": "periodic_minions", "interval": 10})
+        return mutations
+
     def _get_alliance_boss_damage(self, guild_name, week_id, tier_str):
         total_damage = 0.0
 

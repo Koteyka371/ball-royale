@@ -766,6 +766,15 @@ func break_alliance(guild1_name: String, guild2_name: String) -> bool:
             return true
     return false
 
+
+func get_boss_mutations(tier: int) -> Array:
+    var mutations = []
+    if tier >= 2:
+        mutations.append({"type": "damage_reflect", "value": 0.1})
+    if tier >= 3:
+        mutations.append({"type": "periodic_minions", "interval": 10})
+    return mutations
+
 func _get_alliance_boss_damage(guild_name: String, week_id: String, tier_str: String) -> float:
     var total_damage = 0.0
 
