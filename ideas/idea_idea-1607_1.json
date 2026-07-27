@@ -1,4 +1,4 @@
 {
-    "title": "Conveyor Belt Arena",
-    "description": "An arena mode where the ground is a series of conveyor belts that push balls in specific directions, requiring players to constantly adjust their movement and aim to stay in position or reach their targets."
+  "title": "Quantum Swap Mutator",
+  "description": "Every 30 seconds, all players swap positions randomly with each other, forcing them to adapt to new environments and enemies immediately."
 }
