@@ -9401,6 +9401,41 @@ func execute(strategy: String, delta: float):
 			self.ball.silence_timer = max(0.0, st)
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("reverse_gravity_item") and self.ball.get("use_item", false):
+			self.ball.reverse_gravity_item_timer = 5.0
+			inv.erase("reverse_gravity_item")
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["inventory"] = inv
+			elif "inventory" in self.ball:
+				self.ball.inventory = inv
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("inventory", inv)
+			if "use_item" in self.ball:
+				self.ball.use_item = false
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["use_item"] = false
+
+		if self.ball.get("reverse_gravity_item_timer", 0.0) > 0.0:
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["gravity_multiplier"] = -1.0
+				self.ball["reverse_gravity_item_timer"] = self.ball.get("reverse_gravity_item_timer", 0.0) - delta
+				if self.ball["reverse_gravity_item_timer"] <= 0.0:
+					self.ball["reverse_gravity_item_timer"] = 0.0
+					self.ball["gravity_multiplier"] = 1.0
+			else:
+				if not "gravity_multiplier" in self.ball:
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+						self.ball.set_meta("gravity_multiplier", -1.0)
+				else:
+					self.ball.gravity_multiplier = -1.0
+				self.ball.reverse_gravity_item_timer -= delta
+				if self.ball.reverse_gravity_item_timer <= 0.0:
+					self.ball.reverse_gravity_item_timer = 0.0
+					if "gravity_multiplier" in self.ball:
+						self.ball.gravity_multiplier = 1.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+						self.ball.set_meta("gravity_multiplier", 1.0)
+
 		if inv.has("smoke_grenade"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -30475,6 +30510,28 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "reverse_gravity_item":
+                var inv = []
+                if "inventory" in self.ball: inv = self.ball.inventory
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                if typeof(inv) != TYPE_ARRAY: inv = []
+                inv.append("reverse_gravity_item")
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["inventory"] = inv
+                elif "inventory" in self.ball:
+                    self.ball.inventory = inv
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("inventory", inv)
+                if nearest.has("active"):
+                    nearest.active = false
+                elif typeof(nearest) == TYPE_OBJECT and "active" in nearest:
+                    nearest.active = false
+                if world != null and world.has("arena") and world.arena != null and world.arena.has("hazards"):
+                    var idx = world.arena.hazards.find(nearest)
+                    if idx != -1: world.arena.hazards.remove_at(idx)
+                if world != null and world.has("boosters"):
+                    var idx = world.boosters.find(nearest)
+                    if idx != -1: world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "lightning_rod_item":
                 var inv = []
                 if "inventory" in self.ball: inv = self.ball.inventory
