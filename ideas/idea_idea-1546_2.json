@@ -1,0 +1,4 @@
+{
+  "title": "Magnetic polarity shift",
+  "description": "Every 15 seconds, a polarity is assigned to all players (positive or negative). Players with opposite polarities are pulled toward each other, while those with the same polarity are repelled."
+}
