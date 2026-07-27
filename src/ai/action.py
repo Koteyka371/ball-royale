@@ -18999,6 +18999,20 @@ class Action:
                     setattr(tornado, 'vx', random.uniform(-100.0, 100.0))
                     setattr(tornado, 'vy', random.uniform(-100.0, 100.0))
                     self.world.arena.hazards.append(tornado)
+            elif skill_name == "nemesis_pull":
+                pm = getattr(self.world, "profile_manager", None)
+                if pm and hasattr(pm, "is_nemesis") and hasattr(self.world, "balls"):
+                    for other in self.world.balls:
+                        if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "hp", 0) > 0:
+                            if hasattr(self.ball, "ball_type") and hasattr(other, "ball_type"):
+                                # check if the other ball is my nemesis (i.e. I am the victim, they are the killer)
+                                if pm.is_nemesis(other.ball_type, self.ball.ball_type):
+                                    other.nemesis_pull_source = self.ball
+                                    other.nemesis_pull_timer = 5.0
+
+                self.ball.skill_timer = getattr(self.ball, "skill_cooldown", 8.0)
+                if hasattr(self, "_spawn_skill_particles"):
+                    self._spawn_skill_particles("nemesis_pull")
             elif skill_name == "nemesis_explosion":
                 enemies = self._get_enemies()
 
@@ -22352,6 +22366,25 @@ class Action:
                     target.x += (dx / dist) * pull_strength
                     target.y += (dy / dist) * pull_strength
             self.ball.tether_booster_timer = tether_booster_timer - delta
+
+        nemesis_pull_timer = getattr(self.ball, "nemesis_pull_timer", 0.0)
+        if nemesis_pull_timer > 0:
+            target = getattr(self.ball, "nemesis_pull_source", None)
+            if target and getattr(target, "alive", True):
+                import math as _math
+                dx = target.x - self.ball.x
+                dy = target.y - self.ball.y
+                import math
+                dist = math.hypot(dx, dy)
+                if dist > 0:
+                    pull_speed = getattr(self.ball, "speed", 2.0) * 1.5
+                    if not hasattr(self.ball, "vx"): self.ball.vx = 0
+                    if not hasattr(self.ball, "vy"): self.ball.vy = 0
+                    self.ball.x += (dx / dist) * pull_speed * delta
+                    self.ball.y += (dy / dist) * pull_speed * delta
+
+                    self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 0.5)
+            self.ball.nemesis_pull_timer = nemesis_pull_timer - delta
 
         magnet_tether_timer = getattr(self.ball, "magnet_tether_timer", 0.0)
         if magnet_tether_timer > 0:
