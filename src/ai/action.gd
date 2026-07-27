@@ -1676,6 +1676,58 @@ func _attempt_damage_internal(attacker, target) -> void:
 		elif attacker.has_method("set_meta"): attacker.set_meta("reflect_shield_timer", 5.0 + bonus_dur)
 
 	else:
+		var has_healing_shield = false
+		if "healing_shield_active" in target and target.healing_shield_active:
+			has_healing_shield = true
+		elif target.has_method("has_meta") and target.has_meta("healing_shield_active") and target.get_meta("healing_shield_active"):
+			has_healing_shield = true
+
+		if has_healing_shield:
+			var hs_timer = 0.0
+			if "healing_shield_timer" in target: hs_timer = float(target.healing_shield_timer)
+			elif target.has_method("has_meta") and target.has_meta("healing_shield_timer"): hs_timer = float(target.get_meta("healing_shield_timer"))
+			if hs_timer <= 0.0:
+				has_healing_shield = false
+
+		if has_healing_shield:
+			var hs_cap = 50.0
+			if "healing_shield_capacity" in target: hs_cap = float(target.healing_shield_capacity)
+			elif target.has_method("has_meta") and target.has_meta("healing_shield_capacity"): hs_cap = float(target.get_meta("healing_shield_capacity"))
+
+			var dmg_to_absorb = min(hs_cap, original_damage)
+			hs_cap -= dmg_to_absorb
+
+			var cur_stored = 0.0
+			if "healing_shield_stored_healing" in target: cur_stored = float(target.healing_shield_stored_healing)
+			elif target.has_method("has_meta") and target.has_meta("healing_shield_stored_healing"): cur_stored = float(target.get_meta("healing_shield_stored_healing"))
+
+			if typeof(target) == TYPE_DICTIONARY:
+				target["healing_shield_stored_healing"] = cur_stored + dmg_to_absorb
+				if hs_cap <= 0.0:
+					target["healing_shield_active"] = false
+					target["healing_shield_capacity"] = 0.0
+				else:
+					target["healing_shield_capacity"] = hs_cap
+			else:
+				if target.has_method("set_meta"):
+					target.set_meta("healing_shield_stored_healing", cur_stored + dmg_to_absorb)
+					if hs_cap <= 0.0:
+						target.set_meta("healing_shield_active", false)
+						target.set_meta("healing_shield_capacity", 0.0)
+					else:
+						target.set_meta("healing_shield_capacity", hs_cap)
+				else:
+					target.healing_shield_stored_healing = cur_stored + dmg_to_absorb
+					if hs_cap <= 0.0:
+						target.healing_shield_active = false
+						target.healing_shield_capacity = 0.0
+					else:
+						target.healing_shield_capacity = hs_cap
+
+			original_damage -= dmg_to_absorb
+			if original_damage <= 0.0:
+				return # Fully absorbed
+
 		if is_nemesis_active:
 			if "damage" in attacker:
 				attacker.damage = original_damage * 1.2
@@ -29497,6 +29549,29 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "healing_shield_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["healing_shield_active"] = true
+                    self.ball["healing_shield_timer"] = 5.0
+                    self.ball["healing_shield_capacity"] = 100.0
+                    self.ball["healing_shield_initial_capacity"] = 100.0
+                else:
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("healing_shield_active", true)
+                        self.ball.set_meta("healing_shield_timer", 5.0)
+                        self.ball.set_meta("healing_shield_capacity", 100.0)
+                        self.ball.set_meta("healing_shield_initial_capacity", 100.0)
+                    else:
+                        self.ball.healing_shield_active = true
+                        self.ball.healing_shield_timer = 5.0
+                        self.ball.healing_shield_capacity = 100.0
+                        self.ball.healing_shield_initial_capacity = 100.0
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx >= 0: self.world.arena.hazards.remove(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx >= 0: self.world.boosters.remove(idx)
             elif "kind" in nearest and nearest.kind == "layer_reflect_shield_booster":
                 var bonus_dur = 0.0
                 if "bonus_reflect_shield_duration" in self.ball: bonus_dur = self.ball.bonus_reflect_shield_duration
@@ -38083,6 +38158,19 @@ func _use_skill():
                 self.ball.x += cos(angle) * 150.0
                 self.ball.y += sin(angle) * 150.0
 
+        elif skill_name == "healing_shield":
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("healing_shield_active", true)
+                self.ball.set_meta("healing_shield_timer", 5.0)
+                self.ball.set_meta("healing_shield_capacity", 100.0)
+                self.ball.set_meta("healing_shield_initial_capacity", 100.0)
+            else:
+                self.ball.healing_shield_active = true
+                self.ball.healing_shield_timer = 5.0
+                self.ball.healing_shield_capacity = 100.0
+                self.ball.healing_shield_initial_capacity = 100.0
+            if self.has_method("_spawn_skill_particles"):
+                self._spawn_skill_particles("shield")
         elif skill_name == "reflect_shield":
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("reflect_shield_active", true)
@@ -44442,6 +44530,61 @@ func _update_skill_timer(delta: float):
             is_sf = self.world.solar_flare_active
         if not is_sf:
             self.ball.skill_timer -= delta * cooldown_mult
+
+    var cur_hs_stored = 0.0
+    if "healing_shield_stored_healing" in self.ball: cur_hs_stored = float(self.ball.healing_shield_stored_healing)
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("healing_shield_stored_healing"): cur_hs_stored = float(self.ball.get_meta("healing_shield_stored_healing"))
+
+    if cur_hs_stored > 0.0:
+        var heal_rate = 20.0 * delta
+        var heal_amount = min(heal_rate, cur_hs_stored)
+        if heal_amount > 0.0:
+            var cur_hp = 100.0
+            if "hp" in self.ball: cur_hp = float(self.ball.hp)
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("hp"): cur_hp = float(self.ball.get_meta("hp"))
+
+            var max_hp = 100.0
+            if "max_hp" in self.ball: max_hp = float(self.ball.max_hp)
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("max_hp"): max_hp = float(self.ball.get_meta("max_hp"))
+
+            var new_hp = min(max_hp, cur_hp + heal_amount)
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["healing_shield_stored_healing"] = cur_hs_stored - heal_amount
+                self.ball["hp"] = new_hp
+            else:
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("healing_shield_stored_healing", cur_hs_stored - heal_amount)
+                    self.ball.set_meta("hp", new_hp)
+                else:
+                    self.ball.healing_shield_stored_healing = cur_hs_stored - heal_amount
+                    self.ball.hp = new_hp
+
+    var hs_timer = 0.0
+    if "healing_shield_timer" in self.ball: hs_timer = float(self.ball.healing_shield_timer)
+    elif self.ball.has_method("has_meta") and self.ball.has_meta("healing_shield_timer"): hs_timer = float(self.ball.get_meta("healing_shield_timer"))
+
+    if hs_timer > 0.0:
+        hs_timer -= delta
+        if hs_timer <= 0.0:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["healing_shield_active"] = false
+                self.ball["healing_shield_timer"] = 0.0
+            else:
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("healing_shield_active", false)
+                    self.ball.set_meta("healing_shield_timer", 0.0)
+                else:
+                    self.ball.healing_shield_active = false
+                    self.ball.healing_shield_timer = 0.0
+        else:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["healing_shield_timer"] = hs_timer
+            else:
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("healing_shield_timer", hs_timer)
+                else:
+                    self.ball.healing_shield_timer = hs_timer
 
     var reflect_shield_timer = 0.0
     if "reflect_shield_timer" in self.ball:
