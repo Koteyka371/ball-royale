@@ -4629,6 +4629,89 @@ func execute(strategy: String, delta: float):
         if "hp" in self.ball: self.ball.hp = _hp
         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("hp", _hp)
 
+    var _is_ol = false
+    if "is_overloaded" in self.ball: _is_ol = self.ball.is_overloaded
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_overloaded"): _is_ol = self.ball.get_meta("is_overloaded")
+
+    if _is_turret and _is_ol and _alive:
+        var ol_timer = 10.0
+        if "overload_timer" in self.ball: ol_timer = self.ball.overload_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("overload_timer"): ol_timer = self.ball.get_meta("overload_timer")
+
+        ol_timer -= delta
+        if "overload_timer" in self.ball: self.ball.overload_timer = ol_timer
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("overload_timer", ol_timer)
+
+        if ol_timer <= 0:
+            if "hp" in self.ball:
+                self.ball.hp = 0
+                if "alive" in self.ball: self.ball.alive = false
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+            elif self.ball.has_method("get_meta") and self.ball.has_meta("hp"):
+                self.ball.set_meta("hp", 0)
+                self.ball.set_meta("alive", false)
+
+            if self.world != null and "events" in self.world:
+                var my_id = 0
+                if "id" in self.ball: my_id = self.ball.id
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+                var my_x = 0.0
+                if "x" in self.ball: my_x = self.ball.x
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("x"): my_x = self.ball.get_meta("x")
+                var my_y = 0.0
+                if "y" in self.ball: my_y = self.ball.y
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("y"): my_y = self.ball.get_meta("y")
+
+                self.world.events.append({"type": "explosion", "source": my_id, "x": my_x, "y": my_y, "radius": 150.0, "damage": 50.0})
+
+            if self.world != null and "balls" in self.world:
+                var my_x = 0.0
+                if "x" in self.ball: my_x = self.ball.x
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("x"): my_x = self.ball.get_meta("x")
+                var my_y = 0.0
+                if "y" in self.ball: my_y = self.ball.y
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("y"): my_y = self.ball.get_meta("y")
+
+                for b in self.world.balls:
+                    var b_alive = true
+                    if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+                    elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                    if b != self.ball and b_alive:
+                        var b_x = 0.0
+                        if typeof(b) == TYPE_DICTIONARY and b.has("x"): b_x = b.x
+                        elif typeof(b) == TYPE_OBJECT and "x" in b: b_x = b.x
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+
+                        var b_y = 0.0
+                        if typeof(b) == TYPE_DICTIONARY and b.has("y"): b_y = b.y
+                        elif typeof(b) == TYPE_OBJECT and "y" in b: b_y = b.y
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+                        var dx = b_x - my_x
+                        var dy = b_y - my_y
+                        if dx*dx + dy*dy <= 22500.0:
+                            if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+                                b.hp -= 50.0
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = false
+                            elif typeof(b) == TYPE_OBJECT and "hp" in b:
+                                b.hp -= 50.0
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    if "alive" in b: b.alive = false
+                                    elif b.has_method("set_meta"): b.set_meta("alive", false)
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
+                                var bhp = b.get_meta("hp")
+                                bhp -= 50.0
+                                if bhp <= 0:
+                                    bhp = 0
+                                    if "alive" in b: b.alive = false
+                                    elif b.has_method("set_meta"): b.set_meta("alive", false)
+                                b.set_meta("hp", bhp)
+
     var wall_stick = false
     var ws_timer = 0.0
     if typeof(self.ball) == TYPE_DICTIONARY:
@@ -27910,7 +27993,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -31420,6 +31503,28 @@ func _use_skill():
                         if dist_sq < 22500.0: # 150 squared
                             can_recast = true
                             break
+    elif skill_timer > 0.0 and skill_name == "turret_overload":
+        if self.world.has("balls"):
+            for b in self.world.balls:
+                var is_turret = false
+                if "is_turret" in b: is_turret = b.is_turret
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+
+                var b_owner_id = null
+                if "owner_id" in b: b_owner_id = b.owner_id
+                elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("owner_id"): b_owner_id = b.get_meta("owner_id")
+
+                var my_id = null
+                if "id" in self.ball: my_id = self.ball.id
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                if is_turret and b_owner_id != null and my_id != null and b_owner_id == my_id:
+                    var is_ol = false
+                    if "is_overloaded" in b: is_ol = b.is_overloaded
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_overloaded"): is_ol = b.get_meta("is_overloaded")
+                    if not is_ol:
+                        can_recast = true
+                        break
 
     if skill_timer <= 0.0 or can_recast:
         if skill_timer <= 0.0 and self.ball.has_method("use_skill"):
@@ -32978,6 +33083,72 @@ func _use_skill():
                     self.ball.skill_timer = cd
                 else:
                     self.ball.skill_timer = 5.0
+        elif skill_name == "turret_overload":
+            var found = false
+            if self.world != null and "balls" in self.world:
+                for b in self.world.balls:
+                    var is_turret = false
+                    if typeof(b) == TYPE_DICTIONARY and b.has("is_turret"): is_turret = b.is_turret
+                    elif typeof(b) == TYPE_OBJECT and "is_turret" in b: is_turret = b.is_turret
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+
+                    var b_owner_id = null
+                    if typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): b_owner_id = b.owner_id
+                    elif typeof(b) == TYPE_OBJECT and "owner_id" in b: b_owner_id = b.owner_id
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("owner_id"): b_owner_id = b.get_meta("owner_id")
+
+                    var my_id = null
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                    if is_turret and b_owner_id != null and my_id != null and b_owner_id == my_id:
+                        var is_ol = false
+                        if typeof(b) == TYPE_DICTIONARY and b.has("is_overloaded"): is_ol = b.is_overloaded
+                        elif typeof(b) == TYPE_OBJECT and "is_overloaded" in b: is_ol = b.is_overloaded
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_overloaded"): is_ol = b.get_meta("is_overloaded")
+
+                        if not is_ol:
+                            if typeof(b) == TYPE_DICTIONARY:
+                                b.is_overloaded = true
+                                b.overload_timer = 10.0
+                                if b.has("damage"): b.damage = b.damage * 1.5
+                                else: b.damage = 15.0 * 1.5
+                                if b.has("base_attack_time"): b.base_attack_time = b.base_attack_time / 1.5
+                                else: b.base_attack_time = 1.0 / 1.5
+                            elif typeof(b) == TYPE_OBJECT:
+                                if "is_overloaded" in b: b.is_overloaded = true
+                                elif b.has_method("set_meta"): b.set_meta("is_overloaded", true)
+
+                                if "overload_timer" in b: b.overload_timer = 10.0
+                                elif b.has_method("set_meta"): b.set_meta("overload_timer", 10.0)
+
+                                var bdmg = 15.0
+                                if "damage" in b: bdmg = b.damage
+                                elif b.has_method("has_meta") and b.has_meta("damage"): bdmg = b.get_meta("damage")
+                                if "damage" in b: b.damage = bdmg * 1.5
+                                elif b.has_method("set_meta"): b.set_meta("damage", bdmg * 1.5)
+
+                                var bat = 1.0
+                                if "base_attack_time" in b: bat = b.base_attack_time
+                                elif b.has_method("has_meta") and b.has_meta("base_attack_time"): bat = b.get_meta("base_attack_time")
+                                if "base_attack_time" in b: b.base_attack_time = bat / 1.5
+                                elif b.has_method("set_meta"): b.set_meta("base_attack_time", bat / 1.5)
+
+                            found = true
+
+            if found:
+                if self.has_method("_spawn_skill_particles"):
+                    self._spawn_skill_particles("overload")
+                var cd = 20.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cd = float(self.ball.SKILL_COOLDOWN)
+                elif typeof(self.ball) == TYPE_OBJECT and "SKILL_COOLDOWN" in self.ball: cd = float(self.ball.SKILL_COOLDOWN)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = float(self.ball.get_meta("SKILL_COOLDOWN"))
+
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball.skill_timer = cd
+                elif typeof(self.ball) == TYPE_OBJECT and "skill_timer" in self.ball: self.ball.skill_timer = cd
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cd)
+
         elif skill_name == "deploy_turret":
             if can_recast:
                 if self.world.has("balls"):
