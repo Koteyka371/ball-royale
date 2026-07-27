@@ -3347,6 +3347,51 @@ func execute(strategy: String, delta: float):
 				trail = {"id": world.get_arena().hazards.size() + 9000, "x": x, "y": y, "radius": r + 5.0, "kind": "burning_trail_puddle", "damage": 0.0, "active": true, "duration": 2.0}
 				trail["owner_id"] = self.ball.get_meta("burning_trail_owner_id") if self.ball.has_meta("burning_trail_owner_id") else -1
 				world.get_arena().hazards.append(trail)
+
+	if "decoy_trail_timer" in self.ball and self.ball.decoy_trail_timer > 0.0:
+		self.ball.decoy_trail_timer -= delta
+		if "decoy_trail_spawn_timer" in self.ball and self.ball.decoy_trail_spawn_timer > 0.0:
+			self.ball.decoy_trail_spawn_timer -= delta
+
+		if self.ball.decoy_trail_timer < 0.0:
+			self.ball.decoy_trail_timer = 0.0
+
+		if (!("decoy_trail_spawn_timer" in self.ball) or self.ball.decoy_trail_spawn_timer <= 0.0) and world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+			if abs(self.ball.vx) > 0.1 or abs(self.ball.vy) > 0.1:
+				self.ball.decoy_trail_spawn_timer = 0.5
+				var b_team = self.ball.team if "team" in self.ball else ""
+				var b_cosmetic = self.ball.cosmetic if "cosmetic" in self.ball else ""
+				var b_color = self.ball.color if "color" in self.ball else ""
+				var trail_dur = self.ball.decoy_trail_duration if "decoy_trail_duration" in self.ball else 2.0
+				var trail = {"id": world.get_arena().hazards.size() + 9000, "x": self.ball.x, "y": self.ball.y, "radius": self.ball.radius, "kind": "mirage_decoy", "damage": 0.0, "active": true, "duration": trail_dur, "vx": self.ball.vx, "vy": self.ball.vy, "team": b_team, "cosmetic": b_cosmetic, "color": b_color, "owner_id": self.ball.id}
+				world.get_arena().hazards.append(trail)
+
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("decoy_trail_timer") and self.ball.get_meta("decoy_trail_timer") > 0.0:
+		var timer = self.ball.get_meta("decoy_trail_timer")
+		timer -= delta
+		var spawn_timer = self.ball.get_meta("decoy_trail_spawn_timer") if self.ball.has_meta("decoy_trail_spawn_timer") else 0.0
+		if spawn_timer > 0.0:
+			spawn_timer -= delta
+		if timer < 0.0:
+			timer = 0.0
+		self.ball.set_meta("decoy_trail_timer", timer)
+		self.ball.set_meta("decoy_trail_spawn_timer", spawn_timer)
+
+		if spawn_timer <= 0.0 and world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
+			var vx = self.ball.get_meta("vx") if self.ball.has_meta("vx") else (self.ball.vx if "vx" in self.ball else 0.0)
+			var vy = self.ball.get_meta("vy") if self.ball.has_meta("vy") else (self.ball.vy if "vy" in self.ball else 0.0)
+			if abs(vx) > 0.1 or abs(vy) > 0.1:
+				self.ball.set_meta("decoy_trail_spawn_timer", 0.5)
+				var x = self.ball.get_meta("x") if self.ball.has_meta("x") else (self.ball.x if "x" in self.ball else 0.0)
+				var y = self.ball.get_meta("y") if self.ball.has_meta("y") else (self.ball.y if "y" in self.ball else 0.0)
+				var r = self.ball.get_meta("radius") if self.ball.has_meta("radius") else (self.ball.radius if "radius" in self.ball else 15.0)
+				var b_team = self.ball.get_meta("team") if self.ball.has_meta("team") else (self.ball.team if "team" in self.ball else "")
+				var b_cosmetic = self.ball.get_meta("cosmetic") if self.ball.has_meta("cosmetic") else (self.ball.cosmetic if "cosmetic" in self.ball else "")
+				var b_color = self.ball.get_meta("color") if self.ball.has_meta("color") else (self.ball.color if "color" in self.ball else "")
+				var trail_dur = self.ball.get_meta("decoy_trail_duration") if self.ball.has_meta("decoy_trail_duration") else (self.ball.decoy_trail_duration if "decoy_trail_duration" in self.ball else 2.0)
+				var owner_id = self.ball.get_meta("id") if self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else -1)
+				var trail = {"id": world.get_arena().hazards.size() + 9000, "x": x, "y": y, "radius": r, "kind": "mirage_decoy", "damage": 0.0, "active": true, "duration": trail_dur, "vx": vx, "vy": vy, "team": b_team, "cosmetic": b_cosmetic, "color": b_color, "owner_id": owner_id}
+				world.get_arena().hazards.append(trail)
 	var wp_cosmetic: String = ""
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		wp_cosmetic = self.ball.get("cosmetic", "").to_lower().replace(" ", "_")

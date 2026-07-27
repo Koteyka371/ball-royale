@@ -1770,6 +1770,41 @@ class Action:
                 trail.duration = 2.0
                 trail.owner_id = getattr(self.ball, "burning_trail_owner_id", -1)
                 self.world.arena.hazards.append(trail)
+
+        if getattr(self.ball, "decoy_trail_timer", 0.0) > 0.0:
+            self.ball.decoy_trail_timer -= delta
+            if getattr(self.ball, "decoy_trail_spawn_timer", 0.0) > 0:
+                self.ball.decoy_trail_spawn_timer -= delta
+
+            if self.ball.decoy_trail_timer < 0.0:
+                self.ball.decoy_trail_timer = 0.0
+
+            if getattr(self.ball, "decoy_trail_spawn_timer", 0.0) <= 0.0 and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and (abs(self.ball.vx) > 0.1 or abs(self.ball.vy) > 0.1):
+                self.ball.decoy_trail_spawn_timer = 0.5  # spawn every 0.5s
+                trail_id = len(self.world.arena.hazards) + 9000
+                class MockTrail:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                try:
+                    from arena.procedural_arena import Hazard
+                    trail = Hazard(trail_id, self.ball.x, self.ball.y, getattr(self.ball, "radius", 15.0), "mirage_decoy", 0.0)
+                except ImportError:
+                    trail = MockTrail(trail_id, self.ball.x, self.ball.y, getattr(self.ball, "radius", 15.0), "mirage_decoy", 0.0)
+
+                trail.duration = getattr(self.ball, "decoy_trail_duration", 2.0)
+                trail.owner_id = getattr(self.ball, "id", -1)
+                trail.team = getattr(self.ball, "team", "")
+                trail.cosmetic = getattr(self.ball, "cosmetic", "")
+                trail.color = getattr(self.ball, "color", "")
+                trail.vx = self.ball.vx
+                trail.vy = self.ball.vy
+                self.world.arena.hazards.append(trail)
         cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
         if cosmetic == "wall_grappler" and strategy in ("flee", "attack", "chase"):
             import math

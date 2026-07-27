@@ -52140,6 +52140,45 @@ class RiftRouletteMode extends GameMode:
 						world.arena.hazards.append(h)
 
 
+class DecoyTrailMode extends GameMode:
+	var cycle_timer = 0.0
+
+	func _init():
+		self.name = "Decoy Trail"
+		self.description = "Players periodically leave behind a trail of decoys that inherit their current appearance and velocity for a short duration, confusing opponents in high-speed chases."
+
+	func tick(world, balls, delta=0.016):
+		.tick(world, balls, delta)
+		self.cycle_timer += delta
+		if self.cycle_timer > 5.0:
+			self.cycle_timer = 0.0
+			for ball in balls:
+				var is_alive = true
+				if typeof(ball) == TYPE_OBJECT:
+					if ball.has_meta("alive"): is_alive = ball.get_meta("alive")
+					elif "alive" in ball: is_alive = ball.alive
+				elif typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("alive"): is_alive = ball.alive
+
+				var is_decoy = false
+				if typeof(ball) == TYPE_OBJECT:
+					if ball.has_meta("is_decoy"): is_decoy = ball.get_meta("is_decoy")
+					elif "is_decoy" in ball: is_decoy = ball.is_decoy
+				elif typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("is_decoy"): is_decoy = ball.is_decoy
+
+				if is_alive and not is_decoy:
+					if typeof(ball) == TYPE_OBJECT:
+						if ball.has_method("set_meta"):
+							ball.set_meta("decoy_trail_timer", 2.0)
+							ball.set_meta("decoy_trail_duration", 1.0)
+						else:
+							ball.decoy_trail_timer = 2.0
+							ball.decoy_trail_duration = 1.0
+					elif typeof(ball) == TYPE_DICTIONARY:
+						ball["decoy_trail_timer"] = 2.0
+						ball["decoy_trail_duration"] = 1.0
+
 class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
 	var morph_interval: float = 10.0
@@ -54295,6 +54334,8 @@ class MeteorBombardmentMode extends GameMode:
 
 
 GAME_MODES['capture_the_flag_elements_in_battle_royale'] = load("res://src/ai/capture_the_flag_elements_in_battle_royale.gd").CaptureTheFlagElementsInBattleRoyaleMode.new()
+
+GAME_MODES['decoy_trail'] = DecoyTrailMode.new()
 GAME_MODES['ghost_companion'] = load("res://src/ai/ghost_companion.gd").new()
 
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
