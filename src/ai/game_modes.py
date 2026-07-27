@@ -40813,3 +40813,131 @@ GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
 GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
 from ai.neon_lightcycles import NeonLightcyclesMode
 GAME_MODES["neon_lightcycles"] = NeonLightcyclesMode()
+
+class ShrapnelMistMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrapnel Mist"
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"):
+            class MockArena:
+                hazards = []
+            world.arena = MockArena()
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 5.0
+
+            import random
+            import math
+            class SplittingShrapnel:
+                pass
+            shrapnel = SplittingShrapnel()
+            shrapnel.kind = "shrapnel_mist_hazard"
+            shrapnel.x = random.uniform(100, 700)
+            shrapnel.y = random.uniform(100, 500)
+            angle = random.uniform(0, 2 * math.pi)
+            speed = 100.0
+            shrapnel.vx = math.cos(angle) * speed
+            shrapnel.vy = math.sin(angle) * speed
+            shrapnel.radius = 20.0
+            shrapnel.duration = 2.0
+            shrapnel.damage = 15.0
+            shrapnel.split_count = 0
+            world.arena.hazards.append(shrapnel)
+
+        new_hazards = []
+        active_hazards = []
+        import math
+        import random
+        for hazard in getattr(world.arena, "hazards", []):
+            keep_hazard = True
+            if getattr(hazard, "kind", "") == "shrapnel_mist_hazard":
+                hazard.x += getattr(hazard, "vx", 0) * delta
+                hazard.y += getattr(hazard, "vy", 0) * delta
+
+                # Loose bounds to keep them inside typical arena
+                if hazard.x < 0 or hazard.x > 800:
+                    hazard.vx *= -1
+                if hazard.y < 0 or hazard.y > 600:
+                    hazard.vy *= -1
+
+                hazard.duration -= delta
+                if hazard.duration <= 0:
+                    keep_hazard = False
+                    if getattr(hazard, "split_count", 0) < 3:
+                        split_count = getattr(hazard, "split_count", 0) + 1
+                        num_pieces = 3
+                        base_angle = math.atan2(hazard.vy, hazard.vx)
+                        for i in range(num_pieces):
+                            class SmShrapnel:
+                                pass
+                            sm = SmShrapnel()
+                            sm.kind = "shrapnel_mist_hazard"
+                            sm.x = hazard.x
+                            sm.y = hazard.y
+                            angle = base_angle + (i - 1) * 0.5 + random.uniform(-0.2, 0.2)
+                            speed = math.hypot(hazard.vx, hazard.vy) * 1.5
+                            sm.vx = math.cos(angle) * speed
+                            sm.vy = math.sin(angle) * speed
+                            sm.radius = hazard.radius * 0.6
+                            sm.duration = 2.0
+                            sm.damage = hazard.damage * 0.5
+                            sm.split_count = split_count
+                            new_hazards.append(sm)
+
+                    elif getattr(hazard, "split_count", 0) >= 3:
+                        if hasattr(world, "events"):
+                            world.events.append({
+                                'type': 'visual_effect',
+                                'data': {
+                                    'type': 'explosion',
+                                    'x': hazard.x,
+                                    'y': hazard.y,
+                                    'radius': 50.0,
+                                    'duration': 4.0
+                                }
+                            })
+
+                        class MistHazard:
+                            pass
+                        mist = MistHazard()
+                        mist.kind = "shrapnel_mist_cloud"
+                        mist.x = hazard.x
+                        mist.y = hazard.y
+                        mist.radius = 50.0
+                        mist.duration = 4.0
+                        mist.damage = 1.0
+                        new_hazards.append(mist)
+
+            elif getattr(hazard, "kind", "") == "shrapnel_mist_cloud":
+                hazard.duration -= delta
+                if hazard.duration <= 0:
+                    keep_hazard = False
+                else:
+                    for b in balls:
+                        if getattr(b, "alive", True):
+                            dx = b.x - hazard.x
+                            dy = b.y - hazard.y
+                            if math.hypot(dx, dy) < hazard.radius:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(hazard.damage * delta)
+                                else:
+                                    b.hp -= hazard.damage * delta
+                                    if b.hp <= 0:
+                                        b.alive = False
+            if keep_hazard:
+                active_hazards.append(hazard)
+
+        world.arena.hazards = active_hazards
+        if new_hazards:
+            world.arena.hazards.extend(new_hazards)
+
+GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode()
