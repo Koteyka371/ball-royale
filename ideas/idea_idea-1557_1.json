@@ -1,4 +1,4 @@
 {
-  "title": "Nemesis Link Damage Transfer",
-  "description": "An ability that creates a link between you and your nemesis. A portion of the damage you take is transferred to them as long as the link is active and they remain within a certain radius."
+  "title": "Nemesis Shield Link",
+  "description": "An ability that creates a linked shield between you and your nemesis. Any damage your nemesis takes grants you a temporary shield, and any damage you take reduces their shield, turning them into a reluctant damage battery."
 }
