@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1602] Unstable Payload Event — *2026-07-27 23:27:02 UTC*
+
+Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius.
+
+---
+
 ## [idea-1603] Kinetic Energy Battery Mode — *2026-07-27 23:07:52 UTC*
 
 A mode where balls don't do damage directly. Instead, moving fast and bouncing off walls charges up their personal kinetic battery. Once fully charged, they can unleash a massive, instantaneous shockwave that damages all nearby enemies.

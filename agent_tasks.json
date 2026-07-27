@@ -27425,7 +27425,7 @@
     },
     {
       "id": "idea-1602",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Unstable Payload Event",
@@ -40257,6 +40257,74 @@
         "src/ai/unstable_cloning_vats.py",
         "src/ai/unstable_cloning_vats.gd",
         "tests/test_unstable_cloning_vats.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2356",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Pull Traps",
+      "description": "A new trap variant that functions similarly to the black hole, except instead of pulling balls in, it rapidly throws them out in a randomized spread trajectory to disorient them.",
+      "allowed_paths": [
+        "src/arena/reverse_pull_traps.py",
+        "src/arena/reverse_pull_traps.gd",
+        "tests/test_reverse_pull_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2357",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Slingshot Booster",
+      "description": "A booster item that, when picked up, allows the player to manually deploy a mini gravity well to slingshot themselves or trap enemies.",
+      "allowed_paths": [
+        "src/ai/gravity_slingshot_booster.py",
+        "src/ai/gravity_slingshot_booster.gd",
+        "tests/test_gravity_slingshot_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2358",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Event Horizon Mode",
+      "description": "A survival mode where the arena slowly collapses into a central massive gravity well, and players must stay on a shrinking safe zone ring while fighting.",
+      "allowed_paths": [
+        "src/ai/horizon.py",
+        "src/ai/horizon.gd",
+        "tests/test_horizon.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2359",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Buff",
+      "description": "Balls that get closely packed will share a chain lightning effect that travels between allies to strike enemies.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_buff.py",
+        "src/ai/chain_lightning_buff.gd",
+        "tests/test_chain_lightning_buff.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
