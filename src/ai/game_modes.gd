@@ -63204,3 +63204,6 @@ class LaserGridSurvivalMode extends GameMode:
 
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
 GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
+
+var EcholocationOnlyMode = load("res://src/ai/echolocation_only.gd")
+GAME_MODES["echolocation_only"] = EcholocationOnlyMode.new()
