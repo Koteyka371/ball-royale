@@ -75,3 +75,31 @@ class ReflectiveWallsArena(GameMode):
                     if dot < 0:
                         obj.vx = vx - 2 * dot * nx
                         obj.vy = vy - 2 * dot * ny
+
+                        if random.random() < 0.2:
+                            import copy
+                            clone = None
+                            if hasattr(obj, 'duplicate'):
+                                clone = obj.duplicate()
+                            elif isinstance(obj, dict):
+                                clone = obj.copy()
+                            else:
+                                clone = copy.copy(obj)
+
+                            # Slightly alter the velocity so they don't perfectly overlap forever
+                            cvx = obj.vx + random.uniform(-20, 20)
+                            cvy = obj.vy + random.uniform(-20, 20)
+
+                            if isinstance(clone, dict):
+                                clone['vx'] = cvx
+                                clone['vy'] = cvy
+                            else:
+                                clone.vx = cvx
+                                clone.vy = cvy
+
+                            if obj in projectiles:
+                                if hasattr(world, 'projectiles'):
+                                    world.projectiles.append(clone)
+                            else:
+                                if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                                    world.arena.hazards.append(clone)

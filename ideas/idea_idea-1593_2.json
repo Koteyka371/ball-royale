@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Mode",
+  "description": "Whenever a ball is destroyed, it releases a shockwave that deals minor damage and knocks back nearby balls. If this shockwave destroys another ball, the resulting explosion is larger and more damaging, creating chain reactions."
+}
