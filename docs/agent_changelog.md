@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1572] Quantum Leap Traps — *2026-07-27 21:33:16 UTC*
+
+Placeable traps that don't deal damage but randomly teleport the victim across the arena while simultaneously scrambling their controls for a few seconds.
+
+---
+
 ## [idea-1600] Gravity Swap Hazard — *2026-07-27 21:33:10 UTC*
 
 A hazard zone that reverses the controls and gravity effects of anyone who enters it for a few seconds.
