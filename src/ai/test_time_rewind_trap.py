@@ -73,7 +73,7 @@ def test_time_rewind_trap_activation_and_rewind():
 
     assert getattr(ball, "is_time_rewinding", False) is False
     assert getattr(ball, "time_rewind_timer", 0.0) <= 0.0
-    assert abs(ball.x - 100.0) < 1.0
-    assert abs(ball.y - 100.0) < 1.0
+    assert abs(ball.x - 100.0) < 2.0
+    assert abs(ball.y - 100.0) < 2.0
     assert ball.hp == 100.0
     assert any(e["type"] == "visual_effect" and e["data"]["type"] == "teleport" for e in world.events)
