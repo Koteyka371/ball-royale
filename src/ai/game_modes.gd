@@ -49949,6 +49949,7 @@ var GAME_MODES = {
     "lava_eruption_event": LavaEruptionEventMode.new(),
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
+	"ricochet": RicochetMode.new(),
 	"aura_pulse_event": AuraPulseEventMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
@@ -63204,3 +63205,123 @@ class LaserGridSurvivalMode extends GameMode:
 
 GAME_MODES["double_juggernaut"] = DoubleJuggernautMode.new()
 GAME_MODES["laser_grid_survival"] = LaserGridSurvivalMode.new()
+
+
+class RicochetMode extends GameMode:
+	func _init():
+		name = "Ricochet Arena"
+		description = "All projectiles bounce off walls infinitely until they hit a target or their duration expires, making positioning extremely important."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena = world.get("arena", {})
+		var arena_width = arena.get("width", 1000.0)
+		var arena_height = arena.get("height", 1000.0)
+		var projectiles = world.get("projectiles", [])
+		var hazards = arena.get("hazards", [])
+
+		var all_entities = []
+		for p in projectiles:
+			all_entities.append(p)
+		for h in hazards:
+			all_entities.append(h)
+
+		for proj in all_entities:
+			var is_alive = true
+			if typeof(proj) == TYPE_OBJECT:
+				if proj.has_method("is_alive"):
+					is_alive = proj.is_alive()
+				else:
+					is_alive = proj.get("alive") if proj.get("alive") != null else true
+			elif typeof(proj) == TYPE_DICTIONARY:
+				is_alive = proj.get("alive") if proj.get("alive") != null else true
+
+			var hp = 1.0
+			if typeof(proj) == TYPE_OBJECT:
+				hp = proj.get("hp") if proj.get("hp") != null else 1.0
+			elif typeof(proj) == TYPE_DICTIONARY:
+				hp = proj.get("hp") if proj.get("hp") != null else 1.0
+
+			if not is_alive and hp <= 0:
+				continue
+
+			var b_type = ""
+			if typeof(proj) == TYPE_OBJECT:
+				b_type = proj.get("ball_type") if proj.get("ball_type") != null else (proj.get("kind") if proj.get("kind") != null else "")
+			elif typeof(proj) == TYPE_DICTIONARY:
+				b_type = proj.get("ball_type") if proj.get("ball_type") != null else (proj.get("kind") if proj.get("kind") != null else "")
+
+			var is_proj_flag = false
+			if typeof(proj) == TYPE_OBJECT:
+				is_proj_flag = proj.get("is_projectile") if proj.get("is_projectile") != null else false or proj.get("is_spell") if proj.get("is_spell") != null else false
+			elif typeof(proj) == TYPE_DICTIONARY:
+				is_proj_flag = proj.get("is_projectile") if proj.get("is_projectile") != null else false or proj.get("is_spell") if proj.get("is_spell") != null else false
+
+			var is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or is_proj_flag
+
+			if not is_proj:
+				continue
+
+			if typeof(proj) == TYPE_OBJECT:
+				if "bounces" in proj:
+					proj.set("bounces", 0)
+				elif proj.has_meta("bounces"):
+					proj.set_meta("bounces", 0)
+				if "bounces_left" in proj:
+					proj.set("bounces_left", 9999)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				if proj.has("bounces"):
+					proj["bounces"] = 0
+				if proj.has("bounces_left"):
+					proj["bounces_left"] = 9999
+
+			var x = 0.0
+			var y = 0.0
+			var radius = 5.0
+			var vx = 0.0
+			var vy = 0.0
+
+			if typeof(proj) == TYPE_OBJECT:
+				x = proj.get("x") if proj.get("x") != null else 0.0
+				y = proj.get("y") if proj.get("y") != null else 0.0
+				radius = proj.get("radius") if proj.get("radius") != null else 5.0
+				vx = proj.get("vx") if proj.get("vx") != null else 0.0
+				vy = proj.get("vy") if proj.get("vy") != null else 0.0
+			elif typeof(proj) == TYPE_DICTIONARY:
+				x = proj.get("x") if proj.get("x") != null else 0.0
+				y = proj.get("y") if proj.get("y") != null else 0.0
+				radius = proj.get("radius") if proj.get("radius") != null else 5.0
+				vx = proj.get("vx") if proj.get("vx") != null else 0.0
+				vy = proj.get("vy") if proj.get("vy") != null else 0.0
+
+			var bounced = false
+			if x - radius < 0 and vx < 0:
+				vx = -vx
+				x = radius
+				bounced = true
+			elif x + radius > arena_width and vx > 0:
+				vx = -vx
+				x = arena_width - radius
+				bounced = true
+
+			if y - radius < 0 and vy < 0:
+				vy = -vy
+				y = radius
+				bounced = true
+			elif y + radius > arena_height and vy > 0:
+				vy = -vy
+				y = arena_height - radius
+				bounced = true
+
+			if bounced:
+				if typeof(proj) == TYPE_OBJECT:
+					proj.set("x", x)
+					proj.set("y", y)
+					proj.set("vx", vx)
+					proj.set("vy", vy)
+				elif typeof(proj) == TYPE_DICTIONARY:
+					proj["x"] = x
+					proj["y"] = y
+					proj["vx"] = vx
+					proj["vy"] = vy

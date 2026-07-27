@@ -31159,6 +31159,67 @@ class StickyCeilingsMutatorMode(GameMode):
                                 world.add_event("visual_effect", {"type": "stuck_in_glue", "target": getattr(b, "id", None)})
                                 b.last_stuck_event_time = getattr(world, "tick_timer", 0.0)
 
+
+class RicochetMode(GameMode):
+    """
+    Ricochet Mode
+    All projectiles bounce off walls infinitely until they hit a target or their duration expires, making positioning extremely important.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Ricochet Arena Mode"
+        self.description = "All projectiles bounce off walls infinitely until they hit a target or their duration expires, making positioning extremely important."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or world.arena is None:
+            return
+
+        arena_width = getattr(world.arena, "width", 800.0)
+        arena_height = getattr(world.arena, "height", 600.0)
+
+        for proj in getattr(world, "projectiles", []) + getattr(world.arena, "hazards", []):
+            if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                continue
+
+            b_type = getattr(proj, "ball_type", getattr(proj, "kind", ""))
+            is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(proj, "is_projectile", False) or getattr(proj, "is_spell", False)
+
+            if not is_proj:
+                continue
+
+            if hasattr(proj, "bounces"):
+                proj.bounces = 0
+
+            if hasattr(proj, "bounces_left"):
+                proj.bounces_left = 9999
+
+            x = getattr(proj, "x", 0)
+            y = getattr(proj, "y", 0)
+            radius = getattr(proj, "radius", 5.0)
+            vx = getattr(proj, "vx", 0)
+            vy = getattr(proj, "vy", 0)
+
+            bounced = False
+            if x - radius < 0 and vx < 0:
+                proj.vx = -vx
+                proj.x = radius
+                bounced = True
+            elif x + radius > arena_width and vx > 0:
+                proj.vx = -vx
+                proj.x = arena_width - radius
+                bounced = True
+
+            if y - radius < 0 and vy < 0:
+                proj.vy = -vy
+                proj.y = radius
+                bounced = True
+            elif y + radius > arena_height and vy > 0:
+                proj.vy = -vy
+                proj.y = arena_height - radius
+                bounced = True
+
 GAME_MODES = {
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
@@ -31181,6 +31242,7 @@ GAME_MODES = {
     "aura_siphon": AuraSiphonMode(),
     'expanding_lava_royale': ExpandingLavaRoyaleMode(),
     'massive_pinball_arena': MassivePinballArenaMode(),
+    'ricochet': RicochetMode(),
     "aura_pulse_event": AuraPulseEventMode(),
     'trickster_event': TricksterEventMode(),
     "collapsing_ceiling": CollapsingCeilingMode(),
