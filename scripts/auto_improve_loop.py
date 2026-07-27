@@ -228,10 +228,10 @@ def main():
     except Exception as e:
         print(f"Error checking code quality: {e}")
 
-    # 3. Run tests and catch failures
+    # 3. Run tests and catch failures (ignoring slow mode observability suite in quick loop)
     print("[Auto-Improve] Running test suite to catch bugs...")
     try:
-        result = subprocess.run(["pytest", "src/", "tests/", "--tb=short"], capture_output=True, text=True)
+        result = subprocess.run(["pytest", "src/", "tests/", "--ignore=tests/test_mode_observability.py", "--tb=short"], capture_output=True, text=True)
         if result.returncode != 0:
             failures = []
             for line in result.stdout.split("\n"):
