@@ -35121,6 +35121,15 @@ class ClanWarMode(GameMode):
 
         owner = cm.get_territory_owner("Arena_1")
 
+        if owner and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for hazard in world.arena.hazards:
+                if getattr(hazard, "kind", "") in ["lava_geyser", "poison_trap", "lava", "poison_cloud"]:
+                    hazard.friendly_clan = owner
+                    # Also try to set the team if there's a ball in that clan
+                    owner_balls = [b for b in balls if getattr(b, "clan", None) == owner]
+                    if owner_balls:
+                        hazard.team = getattr(owner_balls[0], "team", None)
+
         for ball in balls:
             team_clan = getattr(ball, "clan", None)
             if team_clan and team_clan == owner:

@@ -11437,6 +11437,8 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             for hazard in getattr(self.world.arena, "hazards", []):
+                if getattr(hazard, "friendly_clan", None) and getattr(self.ball, "clan", None) == getattr(hazard, "friendly_clan", None):
+                    continue
                 if getattr(hazard, "kind", "") in ["tall_grass_seed", "healing_fruit_seed"]:
                     if hasattr(hazard, "growth_timer"):
                         hazard.growth_timer -= delta

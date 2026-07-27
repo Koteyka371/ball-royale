@@ -9831,7 +9831,16 @@ func execute(strategy: String, delta: float):
 	# Gravity Well and Repulsor Hazard Logic
 	if world != null and "arena" in world and "hazards" in world.arena:
 		var current_tick = world.get("tick", 0)
+		var b_clan = null
+		if "clan" in self.ball: b_clan = self.ball.clan
+		elif self.ball.has_method("get_clan"): b_clan = self.ball.get_clan()
+
 		for hazard in world.arena.hazards:
+			var f_clan = null
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("friendly_clan"): f_clan = hazard.friendly_clan
+			elif typeof(hazard) == TYPE_OBJECT and "friendly_clan" in hazard: f_clan = hazard.friendly_clan
+			if f_clan != null and b_clan != null and f_clan == b_clan:
+				continue
 			var kind = hazard.get("kind", "")
 			var is_active = hazard.get("active", true)
 			if (kind == "gravity_well" or kind == "repulsor") and is_active:

@@ -53541,6 +53541,36 @@ class ClanWarMode extends GameMode:
 		var cm = load("res://src/system/clan.gd").new()
 		var owner = cm.get_territory_owner("Arena_1")
 
+		if owner and typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+			var owner_team = null
+			for b in balls:
+				var team_clan = null
+				if "clan" in b:
+					team_clan = b.clan
+				elif b.has_method("get_clan"):
+					team_clan = b.get_clan()
+				if team_clan == owner:
+					if "team" in b:
+						owner_team = b.team
+					break
+
+			for hazard in world.arena.hazards:
+				var kind = ""
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"):
+					kind = hazard.kind
+				elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard:
+					kind = hazard.kind
+
+				if kind in ["lava_geyser", "poison_trap", "lava", "poison_cloud"]:
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard["friendly_clan"] = owner
+						if owner_team != null:
+							hazard["team"] = owner_team
+					else:
+						hazard.friendly_clan = owner
+						if owner_team != null:
+							hazard.team = owner_team
+
 		for ball in balls:
 			var team_clan = null
 			if "clan" in ball:
