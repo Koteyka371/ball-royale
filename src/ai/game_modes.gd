@@ -63564,3 +63564,5 @@ GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode.new()
 GAME_MODES["magnet_ball"] = load("res://src/ai/magnet_ball.gd").new()
 
 GAME_MODES['mercenary_outposts'] = load('res://src/ai/mercenary_outposts.gd').new()
+
+GAME_MODES['necromantic_area_denial'] = load('res://src/ai/necromantic_area_denial.gd').new()

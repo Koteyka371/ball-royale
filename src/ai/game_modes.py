@@ -40969,3 +40969,6 @@ GAME_MODES["magnet_ball"] = MagnetBallMode()
 
 from ai.mercenary_outposts import MercenaryOutpostsMode
 GAME_MODES['mercenary_outposts'] = MercenaryOutpostsMode()
+
+from ai.necromantic_area_denial import NecromanticAreaDenialMode
+GAME_MODES['necromantic_area_denial'] = NecromanticAreaDenialMode()
