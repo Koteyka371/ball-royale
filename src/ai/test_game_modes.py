@@ -1812,11 +1812,10 @@ def test_inverse_controls_zone_mode():
     # Inside zone
     ball_in_zone = MockEntity(500.0, 500.0, 100.0, 0.0)
     mode.tick(world, [ball_in_zone], delta=1.0)
-    # The normal physics engine would add vx * delta (+100).
-    # Since we subtracted vx * delta * 2 (-200), the net movement is -100.
-    # Therefore, we just test if x was modified appropriately by tick.
-    assert ball_in_zone.x == 300.0
-    assert ball_in_zone.y == 500.0
+    # The physics engine relies on debuff timers, not raw movement modification
+    # So we check if the correct debuffs were applied.
+    assert getattr(ball_in_zone, "invert_timer", 0.0) >= 3.0
+    assert getattr(ball_in_zone, "gravity_multiplier_timer", 0.0) >= 3.0
 
     # Outside zone
     ball_out_zone = MockEntity(100.0, 100.0, 100.0, 0.0)

@@ -36619,12 +36619,15 @@ class InverseControlsZoneMode(GameMode):
             dist = math.hypot(dx, dy)
 
             if dist <= self.zone_radius:
-                vx = getattr(b, "vx", getattr(b, "velocity_x", 0.0))
-                vy = getattr(b, "vy", getattr(b, "velocity_y", 0.0))
+                # Reverse controls
+                b.invert_timer = max(getattr(b, "invert_timer", 0.0), 3.0)
 
-                # Apply reverse movement to counteract normal physics
-                b.x -= vx * delta * 2
-                b.y -= vy * delta * 2
+                # Reverse gravity effects
+                b.gravity_multiplier_timer = max(getattr(b, "gravity_multiplier_timer", 0.0), 3.0)
+
+                # Check for other gravity variables
+                if hasattr(b, "reverse_gravity_timer"):
+                    b.reverse_gravity_timer = max(b.reverse_gravity_timer, 3.0)
 
 class EdgeSlingshotsMode(GameMode):
     """
