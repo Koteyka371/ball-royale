@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1597] Gravity Inverter Zone — *2026-07-27 10:34:42 UTC*
+
+A specific zone in the arena where the effects of gravity and knockbacks are completely reversed for all entities inside.
+
+---
+
 ## [idea-1576] Bouncing Laser Core — *2026-07-27 10:30:42 UTC*
 
 A single indestructible laser core spawns in the center of the map. It fires two continuous solid beam lasers in opposite directions and slowly rotates. Over time, the core bounces around the arena like a paddle ball, randomly changing direction when hitting a wall, making dodging extremely unpredictable.
