@@ -51328,6 +51328,28 @@ class TagTeamMode extends GameMode:
 
 							var dist_sq = (ax - dx) * (ax - dx) + (ay - dy) * (ay - dy)
 							if dist_sq < 3600.0:
+								# Emit revive aura to disrupt enemies
+								for other in balls:
+									var o_alive = other.get("alive") if typeof(other) == TYPE_DICTIONARY else (other.get("alive") if "alive" in other else true)
+									var o_team = other.get("team") if typeof(other) == TYPE_DICTIONARY else (other.get("team") if "team" in other else null)
+									var d_team = downed.get("tag_original_team") if typeof(downed) == TYPE_DICTIONARY else (downed.get("tag_original_team") if "tag_original_team" in downed else null)
+									if o_alive and o_team != d_team:
+										var ox = other.get("x") if typeof(other) == TYPE_DICTIONARY else (other.get("x") if "x" in other else 0.0)
+										var oy = other.get("y") if typeof(other) == TYPE_DICTIONARY else (other.get("y") if "y" in other else 0.0)
+										var enemy_dist_sq = (ox - dx) * (ox - dx) + (oy - dy) * (oy - dy)
+										if enemy_dist_sq < 10000.0:
+											if typeof(other) == TYPE_OBJECT:
+												if "slow_timer" in other:
+													other.slow_timer = max(other.slow_timer if other.slow_timer != null else 0.0, 0.5)
+												elif other.has_method("set_meta"):
+													var st = other.get_meta("slow_timer") if other.has_meta("slow_timer") else 0.0
+													other.set_meta("slow_timer", max(st, 0.5))
+											else:
+												if other.has("slow_timer"):
+													other["slow_timer"] = max(other["slow_timer"] if other["slow_timer"] != null else 0.0, 0.5)
+												else:
+													other["slow_timer"] = 0.5
+
 								if typeof(downed) == TYPE_OBJECT:
 									var rp = downed.get_meta("revive_progress") if downed.has_meta("revive_progress") else 0.0
 									rp += delta
