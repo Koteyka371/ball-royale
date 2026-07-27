@@ -7654,6 +7654,90 @@ class MassiveGravityWellMode(GameMode):
                 if h in world.arena.hazards:
                     world.arena.hazards.remove(h)
 
+
+        # Pull projectiles
+        if hasattr(world, "projectiles"):
+            projectiles_to_remove = []
+            for p in world.projectiles:
+                dx = self.mgw_x - getattr(p, "x", 0.0)
+                dy = self.mgw_y - getattr(p, "y", 0.0)
+                dist = math.hypot(dx, dy)
+                if dist < self.mgw_radius:
+                    projectiles_to_remove.append(p)
+                elif dist > 0:
+                    pull_strength = 30000.0 * (self.mgw_radius / 150.0) / (dist * dist)
+                    pull_strength = min(pull_strength, 300.0)
+                    p.vx = getattr(p, "vx", 0.0) + (dx / dist) * pull_strength * delta
+                    p.vy = getattr(p, "vy", 0.0) + (dy / dist) * pull_strength * delta
+            for p in projectiles_to_remove:
+                if p in world.projectiles:
+                    world.projectiles.remove(p)
+
+        # Pull items
+        if hasattr(world, "items"):
+            items_to_remove = []
+            for item in world.items:
+                ix = item.get("x", 0.0) if isinstance(item, dict) else getattr(item, "x", 0.0)
+                iy = item.get("y", 0.0) if isinstance(item, dict) else getattr(item, "y", 0.0)
+                dx = self.mgw_x - ix
+                dy = self.mgw_y - iy
+                dist = math.hypot(dx, dy)
+                if dist < self.mgw_radius:
+                    items_to_remove.append(item)
+                elif dist > 0:
+                    pull_strength = 30000.0 * (self.mgw_radius / 150.0) / (dist * dist)
+                    pull_strength = min(pull_strength, 300.0)
+                    if isinstance(item, dict):
+                        item["x"] = ix + (dx / dist) * pull_strength * delta
+                        item["y"] = iy + (dy / dist) * pull_strength * delta
+                    else:
+                        item.x = ix + (dx / dist) * pull_strength * delta
+                        item.y = iy + (dy / dist) * pull_strength * delta
+            for item in items_to_remove:
+                if item in world.items:
+                    world.items.remove(item)
+
+        # Pull projectiles
+        if hasattr(world, "projectiles"):
+            projectiles_to_remove = []
+            for p in world.projectiles:
+                dx = self.mgw_x - getattr(p, "x", 0.0)
+                dy = self.mgw_y - getattr(p, "y", 0.0)
+                dist = math.hypot(dx, dy)
+                if dist < self.mgw_radius:
+                    projectiles_to_remove.append(p)
+                elif dist > 0:
+                    pull_strength = 30000.0 * (self.mgw_radius / 150.0) / (dist * dist)
+                    pull_strength = min(pull_strength, 300.0)
+                    p.vx = getattr(p, "vx", 0.0) + (dx / dist) * pull_strength * delta
+                    p.vy = getattr(p, "vy", 0.0) + (dy / dist) * pull_strength * delta
+            for p in projectiles_to_remove:
+                if p in world.projectiles:
+                    world.projectiles.remove(p)
+
+        # Pull items
+        if hasattr(world, "items"):
+            items_to_remove = []
+            for item in world.items:
+                ix = item.get("x", 0.0) if isinstance(item, dict) else getattr(item, "x", 0.0)
+                iy = item.get("y", 0.0) if isinstance(item, dict) else getattr(item, "y", 0.0)
+                dx = self.mgw_x - ix
+                dy = self.mgw_y - iy
+                dist = math.hypot(dx, dy)
+                if dist < self.mgw_radius:
+                    items_to_remove.append(item)
+                elif dist > 0:
+                    pull_strength = 30000.0 * (self.mgw_radius / 150.0) / (dist * dist)
+                    pull_strength = min(pull_strength, 300.0)
+                    if isinstance(item, dict):
+                        item["x"] = ix + (dx / dist) * pull_strength * delta
+                        item["y"] = iy + (dy / dist) * pull_strength * delta
+                    else:
+                        item.x = ix + (dx / dist) * pull_strength * delta
+                        item.y = iy + (dy / dist) * pull_strength * delta
+            for item in items_to_remove:
+                if item in world.items:
+                    world.items.remove(item)
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
         if not alive:
@@ -18695,6 +18779,7 @@ class BlackMarketMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -27586,6 +27671,7 @@ class ChargedMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         self.charge_flip_timer += delta
 
@@ -29542,6 +29628,7 @@ class CurrencyBurdenMode(GameMode):
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import random
+        import math
 
         # Suppress generic boosters
         if hasattr(world, "boosters"):
