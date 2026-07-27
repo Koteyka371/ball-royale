@@ -99,3 +99,27 @@ func tick(world, balls, delta=0.016):
                         else:
                             obj.vx = nvx
                             obj.vy = nvy
+
+                        if randf() < 0.2:
+                            var clone = null
+                            if typeof(obj) == TYPE_OBJECT and obj.has_method("duplicate"):
+                                clone = obj.duplicate()
+                            elif typeof(obj) == TYPE_DICTIONARY:
+                                clone = obj.duplicate(true)
+
+                            if clone != null:
+                                var cvx = nvx + rand_range(-20, 20)
+                                var cvy = nvy + rand_range(-20, 20)
+                                if typeof(clone) == TYPE_DICTIONARY:
+                                    clone["vx"] = cvx
+                                    clone["vy"] = cvy
+                                else:
+                                    clone.vx = cvx
+                                    clone.vy = cvy
+
+                                if obj in projectiles:
+                                    if "projectiles" in world:
+                                        world.projectiles.append(clone)
+                                else:
+                                    if "arena" in world and "hazards" in world.arena:
+                                        world.arena.hazards.append(clone)
