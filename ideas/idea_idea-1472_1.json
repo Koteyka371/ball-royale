@@ -1,4 +1,4 @@
 {
-  "title": "Quantum Swap Powerup",
-  "description": "A new powerup that causes the collector to swap places with a random enemy after a 3 second delay. A visual indicator (like a tether) connects the two players during the delay, warning the target and allowing them to try to get themselves into a better position (or maneuver to put the swapper into a bad position)."
+    "title": "Quantum Swap Powerup",
+    "description": "A new temporary powerup that allows the player to swap places with the nearest enemy within a 500-unit radius upon activation. Excellent for escaping bad situations or trapping opponents into hazards."
 }
