@@ -1,3 +1,4 @@
+import math
 
 class WeekendBoss:
     def __init__(self, id_val, x, y):
@@ -31666,7 +31667,10 @@ class HazardLinesMode(GameMode):
                     world.arena.hazards.remove(r)
 
 
+from ai.kinetic_battery import KineticBatteryMode
+
 GAME_MODES = {
+    "kinetic_battery": KineticBatteryMode(),
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
