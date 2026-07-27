@@ -105,10 +105,17 @@ def main():
     manifest = load_json(TASK_FILE)
     modified = False
 
-    # 0. Process Agent Ideas Inbox
+    # 0. Process Agent Ideas Inbox through Inter-Agent Debate & Criticality Filter
     ideas_dir = Path("ideas")
     if ideas_dir.exists():
-        print("[Auto-Improve] Processing ideas inbox...")
+        print("[Auto-Improve] Processing ideas inbox through Inter-Agent Debate & Criticality Filter...")
+        try:
+            from scripts.agent_debate import AgentDebateEngine
+            debate_engine = AgentDebateEngine()
+        except Exception as e:
+            print(f"[Auto-Improve] Warning: Could not initialize debate engine: {e}")
+            debate_engine = None
+
         for idea_file in ideas_dir.glob("*.json"):
             try:
                 idea_data = load_json(idea_file)
@@ -127,15 +134,35 @@ def main():
                                 except ValueError:
                                     pass
                         task_id = t.get("id", f"idea-{max_id + 1}")
-                        if add_task(manifest, task_id, t["title"], t["description"], 
-                                  t.get("area", "innovation"), t.get("risk", "medium"), 
-                                  t.get("allowed_paths"), t.get("acceptance")):
-                            modified = True
+                        
+                        # Run Inter-Agent Debate & Importance Filter
+                        approved = True
+                        if debate_engine:
+                            approved, score, reason = debate_engine.debate_idea(
+                                task_id, t["title"], t["description"], t.get("area", "innovation")
+                            )
+                            print(f"[Auto-Improve] Inter-Agent Debate for '{t['title']}': {reason}")
+
+                        if approved:
+                            if add_task(manifest, task_id, t["title"], t["description"], 
+                                      t.get("area", "innovation"), t.get("risk", "high" if "critical" in t.get("title", "").lower() else "medium"), 
+                                      t.get("allowed_paths"), t.get("acceptance")):
+                                modified = True
+                        else:
+                            print(f"[Auto-Improve] Idea '{t['title']}' rejected by debate engine.")
+
                 idea_file.unlink() # Delete the file after processing
             except Exception as e:
                 print(f"Error processing idea {idea_file}: {e}")
 
-    # 1. Run generate_ideas.py to pull tasks from game_design.md
+    # 1. Run physical mode observability testing
+    print("[Auto-Improve] Running Physical Mode Observability Suite...")
+    try:
+        subprocess.run([sys.executable, "scripts/test_physical_modes.py"], check=False)
+    except Exception as e:
+        print(f"[Auto-Improve] Error running physical mode suite: {e}")
+
+    # 2. Run idea generator
     print("[Auto-Improve] Running idea generator...")
     try:
         if modified:
