@@ -32410,6 +32410,15 @@ class TagTeamMode(GameMode):
         super().tick(world, balls, delta)
 
         for b in balls:
+            if getattr(b, "ultra_ball_timer", 0.0) > 0.0:
+                b.ultra_ball_timer -= delta
+                if b.ultra_ball_timer <= 0.0:
+                    b.ultra_ball_timer = 0.0
+                    if hasattr(b, "tag_original_traits"):
+                        b.traits = list(b.tag_original_traits)
+                    if hasattr(world, "add_event"):
+                        world.add_event("ultra_ball_end", {"type": "ultra_ball_end", "message": "Ultra Ball expired!"})
+
             if getattr(b, "tag_recent_hit_timer", 0.0) > 0.0:
                 b.tag_recent_hit_timer -= delta
 
@@ -32564,6 +32573,20 @@ class TagTeamMode(GameMode):
 
                     # Check for combo
                     if getattr(active, "tag_recent_hit_timer", 0.0) > 0.0:
+                        inactive.tag_combo_chain = getattr(active, "tag_combo_chain", 0) + 1
+                        if inactive.tag_combo_chain >= 3:
+                            inactive.ultra_ball_timer = 10.0
+                            inactive.tag_combo_chain = 0
+                            if not hasattr(inactive, "tag_original_traits"):
+                                inactive.tag_original_traits = list(getattr(inactive, "traits", []))
+                            active_traits = getattr(active, "tag_original_traits", getattr(active, "traits", []))
+                            merged = list(set(inactive.tag_original_traits + active_traits))
+                            inactive.traits = merged
+                            if hasattr(world, "events"):
+                                world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': inactive.x, 'y': inactive.y, 'radius': 300.0, 'color': 'gold'}})
+                            if hasattr(world, "add_event"):
+                                world.add_event("ultra_ball", {"type": "ultra_ball", "message": "ULTRA BALL UNLOCKED!"})
+
                         if hasattr(world, "events"):
                             world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': active.x, 'y': active.y, 'radius': 200.0}})
                         if hasattr(world, "add_event"):
@@ -32583,6 +32606,9 @@ class TagTeamMode(GameMode):
                                         b_enemy.take_damage(50.0)
                                     elif hasattr(b_enemy, "hp"):
                                         b_enemy.hp -= 50.0
+
+                    else:
+                        inactive.tag_combo_chain = 0
 
                     # Active becomes inactive
                     active.ball_type = "spectator"
