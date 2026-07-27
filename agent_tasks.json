@@ -25210,7 +25210,7 @@
     },
     {
       "id": "idea-1472",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Stealth Camouflage Booster",
@@ -39798,6 +39798,74 @@
         "src/ai/chain_reaction.py",
         "src/ai/chain_reaction.gd",
         "tests/test_chain_reaction.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2329",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "EMP Overload Station",
+      "description": "A capturable node that periodically emits EMP bursts disabling boosters of enemy balls within range.",
+      "allowed_paths": [
+        "src/ai/emp_overload_station.py",
+        "src/ai/emp_overload_station.gd",
+        "tests/test_emp_overload_station.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2330",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Inversion Bomb",
+      "description": "A throwable item that creates a temporary field where gravity is reversed, causing balls to float upwards.",
+      "allowed_paths": [
+        "src/ai/gravity_inversion_bomb.py",
+        "src/ai/gravity_inversion_bomb.gd",
+        "tests/test_gravity_inversion_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2331",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Energy Absorption Shield",
+      "description": "A new ability or booster that allows a ball to absorb the kinetic energy of projectiles that hit its shield, converting the speed of the projectile into a temporary speed boost or healing.",
+      "allowed_paths": [
+        "src/ai/kinetic_energy_absorption_shield.py",
+        "src/ai/kinetic_energy_absorption_shield.gd",
+        "tests/test_kinetic_energy_absorption_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2332",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Projectile Fragmentation",
+      "description": "A new mutator where whenever a projectile bounces, it has a chance to fragment into two smaller, weaker projectiles, turning the arena into a chaotic bullet hell.",
+      "allowed_paths": [
+        "src/ai/projectile_fragmentation.py",
+        "src/ai/projectile_fragmentation.gd",
+        "tests/test_projectile_fragmentation.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

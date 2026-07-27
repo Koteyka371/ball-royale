@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1472] Stealth Camouflage Booster — *2026-07-27 08:52:12 UTC*
+
+A new temporary booster that grants complete invisibility on the minimap and makes the player transparent in the arena for 10 seconds, broken upon attacking or using an ability.
+
+---
+
 ## [idea-1596] Bouncing Bullets Mode — *2026-07-27 08:40:27 UTC*
 
 All projectiles fired by players bounce off walls infinitely until they hit a player or lose all their velocity.
