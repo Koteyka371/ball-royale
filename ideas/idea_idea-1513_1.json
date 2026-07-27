@@ -1,0 +1,4 @@
+{
+  "title": "Siren Traps with Expanding AOE",
+  "description": "A new variant of the siren trap that doesn't spawn a tornado but instead expands its detection radius every second until triggered, resetting upon activation."
+}

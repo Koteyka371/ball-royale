@@ -42706,6 +42706,124 @@ func _update_skill_timer(delta: float):
                                     if "duration" in hazard: hazard.duration = 0.0
                                     elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                     elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                if h_kind == "siren_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    if owner_id != null and owner_id != b_id:
+                        var h_x = 0.0
+                        if "x" in hazard: h_x = hazard.x
+                        elif hazard.has_method("get_meta") and hazard.has_meta("x"): h_x = hazard.get_meta("x")
+                        var h_y = 0.0
+                        if "y" in hazard: h_y = hazard.y
+                        elif hazard.has_method("get_meta") and hazard.has_meta("y"): h_y = hazard.get_meta("y")
+                        var h_rad = 50.0
+                        if "radius" in hazard: h_rad = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = hazard.get_meta("radius")
+
+                        var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+                        if dist_sq < h_rad * h_rad:
+
+                            if world != null and "events" in world:
+                                world.events.append({
+                                    "type": "visual_effect",
+                                    "data": {
+                                        "type": "siren_alert",
+                                        "x": h_x,
+                                        "y": h_y,
+                                        "radius": h_rad
+                                    }
+                                })
+
+                            var target_timers = {}
+                            if "siren_target_timers" in hazard: target_timers = hazard.siren_target_timers
+                            elif hazard.has_method("has_meta") and hazard.has_meta("siren_target_timers"): target_timers = hazard.get_meta("siren_target_timers")
+
+                            var timer_val = 0.0
+                            if typeof(target_timers) == TYPE_DICTIONARY and target_timers.has(b_id):
+                                timer_val = target_timers[b_id]
+
+                            timer_val += delta
+                            target_timers[b_id] = timer_val
+
+                            if "siren_target_timers" in hazard: hazard.siren_target_timers = target_timers
+                            elif hazard.has_method("set_meta"): hazard.set_meta("siren_target_timers", target_timers)
+                            elif typeof(hazard) == TYPE_DICTIONARY: hazard["siren_target_timers"] = target_timers
+
+                            if timer_val >= 3.0:
+                                var trap = null
+                                if load("res://src/arena/procedural_arena.gd") != null:
+                                    trap = load("res://src/arena/procedural_arena.gd").Hazard.new()
+
+                                    var trap_id = 99999 + (randi() % 10000)
+                                    if world != null and "next_id" in world:
+                                        trap_id = world.next_id
+                                        world.next_id += 1
+
+                                    trap.id = trap_id
+                                    trap.x = self.ball.x
+                                    trap.y = self.ball.y
+                                    trap.radius = 30.0
+                                    trap.kind = "local_tornado"
+                                    trap.damage = 5.0
+
+                                    trap.set_meta("duration", 5.0)
+
+                                    var cx = 1000.0
+                                    var cy = 1000.0
+                                    if world != null and "arena" in world:
+                                        if "width" in world.arena: cx = world.arena.width / 2.0
+                                        if "height" in world.arena: cy = world.arena.height / 2.0
+
+                                    var tdx = self.ball.x - cx
+                                    var tdy = self.ball.y - cy
+                                    var dist_center = sqrt(tdx*tdx + tdy*tdy)
+                                    var nx = 1.0
+                                    var ny = 0.0
+                                    if dist_center > 0.1:
+                                        nx = tdx / dist_center
+                                        ny = tdy / dist_center
+
+                                    trap.set_meta("vx", nx * 5000.0)
+                                    trap.set_meta("vy", ny * 5000.0)
+
+                                    if "vx" in self.ball: self.ball.vx = nx * 5000.0
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", nx * 5000.0)
+                                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["vx"] = nx * 5000.0
+
+                                    if "vy" in self.ball: self.ball.vy = ny * 5000.0
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", ny * 5000.0)
+                                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["vy"] = ny * 5000.0
+
+                                    if "is_frictionless" in self.ball: self.ball.is_frictionless = true
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_frictionless", true)
+                                    elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_frictionless"] = true
+
+                                    if world != null and "arena" in world and "hazards" in world.arena:
+                                        world.arena.hazards.append(trap)
+
+                                if "duration" in hazard: hazard.duration = 0.0
+                                elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                                elif typeof(hazard) == TYPE_DICTIONARY: hazard["duration"] = 0.0
+                        else:
+                            var target_timers = {}
+                            if "siren_target_timers" in hazard: target_timers = hazard.siren_target_timers
+                            elif hazard.has_method("has_meta") and hazard.has_meta("siren_target_timers"): target_timers = hazard.get_meta("siren_target_timers")
+
+                            if typeof(target_timers) == TYPE_DICTIONARY and target_timers.has(b_id):
+                                var timer_val = target_timers[b_id]
+                                timer_val = max(0.0, timer_val - delta)
+                                target_timers[b_id] = timer_val
+
+                                if "siren_target_timers" in hazard: hazard.siren_target_timers = target_timers
+                                elif hazard.has_method("set_meta"): hazard.set_meta("siren_target_timers", target_timers)
+                                elif typeof(hazard) == TYPE_DICTIONARY: hazard["siren_target_timers"] = target_timers
                 if h_kind == "ethereal_trap":
                     var h_x = 0.0
                     if "x" in hazard: h_x = hazard.x
