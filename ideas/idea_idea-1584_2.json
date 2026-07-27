@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Hazard",
+  "description": "A hazard that triggers a position swap between two random balls when activated."
+}
