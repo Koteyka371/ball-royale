@@ -41180,6 +41180,8 @@ class ShrapnelMistMode(GameMode):
                                     b.hp -= hazard.damage * delta
                                     if b.hp <= 0:
                                         b.alive = False
+                                b.is_blinded = True
+                                b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 0.2)
             if keep_hazard:
                 active_hazards.append(hazard)
 
