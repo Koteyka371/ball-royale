@@ -40966,3 +40966,5 @@ GAME_MODES["shrapnel_mist_mode"] = ShrapnelMistMode()
 
 from ai.magnet_ball import MagnetBallMode
 GAME_MODES["magnet_ball"] = MagnetBallMode()
+from ai.ricochet import RicochetMode
+GAME_MODES["ricochet"] = RicochetMode()
