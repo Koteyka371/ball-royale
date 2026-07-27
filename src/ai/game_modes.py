@@ -33087,6 +33087,23 @@ class RiftRouletteMode(GameMode):
 
 GAME_MODES["rift_roulette"] = RiftRouletteMode()
 
+class DecoyTrailMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Decoy Trail"
+        self.description = "Players periodically leave behind a trail of decoys that inherit their current appearance and velocity for a short duration, confusing opponents in high-speed chases."
+        self.cycle_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.cycle_timer += delta
+        if self.cycle_timer > 5.0:
+            self.cycle_timer = 0.0
+            for ball in balls:
+                if getattr(ball, "alive", True) and not getattr(ball, "is_decoy", False):
+                    ball.decoy_trail_timer = 2.0  # leave a trail for 2 seconds
+                    ball.decoy_trail_duration = 1.0  # decoys last 1 second
+
 class ItemMorphMode(GameMode):
     """
     Periodically, all active items and boosters in the arena randomly transform
@@ -40847,6 +40864,8 @@ GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode()
 
 from ai.capture_the_flag_elements_in_battle_royale import CaptureTheFlagElementsInBattleRoyaleMode
 GAME_MODES['capture_the_flag_elements_in_battle_royale'] = CaptureTheFlagElementsInBattleRoyaleMode()
+
+GAME_MODES['decoy_trail'] = DecoyTrailMode()
 
 from ai.ghost_companion import GhostCompanionMode
 GAME_MODES['ghost_companion'] = GhostCompanionMode()
