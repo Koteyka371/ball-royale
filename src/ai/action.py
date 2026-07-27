@@ -2235,6 +2235,25 @@ class Action:
             if self.ball.hp <= 0:
                 self.ball.hp = 0
                 self.ball.alive = False
+
+        if getattr(self.ball, "is_turret", False) and getattr(self.ball, "is_overloaded", False) and getattr(self.ball, "alive", True):
+            self.ball.overload_timer = getattr(self.ball, "overload_timer", 10.0) - delta
+            if self.ball.overload_timer <= 0:
+                self.ball.hp = 0
+                self.ball.alive = False
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "explosion", "source": getattr(self.ball, "id", 0), "x": getattr(self.ball, "x", 0), "y": getattr(self.ball, "y", 0), "radius": 150.0, "damage": 50.0})
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if b != self.ball and getattr(b, "alive", True):
+                            import math
+                            dx = getattr(b, "x", 0) - getattr(self.ball, "x", 0)
+                            dy = getattr(b, "y", 0) - getattr(self.ball, "y", 0)
+                            if dx*dx + dy*dy <= 22500.0: # 150 squared
+                                b.hp -= 50.0
+                                if b.hp <= 0:
+                                    b.hp = 0
+                                    b.alive = False
         if getattr(self.ball, "wall_stick_timer", 0.0) > 0.0:
             self.ball.wall_stick_timer = max(0.0, self.ball.wall_stick_timer - delta)
             if self.ball.wall_stick_timer <= 0.0:
@@ -13993,7 +14012,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -15918,6 +15937,13 @@ class Action:
                             if math.hypot(b.x - self.ball.x, b.y - self.ball.y) < 150.0:
                                 can_recast = True
                                 break
+        elif skill_timer > 0 and skill_name == "turret_overload":
+            if hasattr(self.world, "balls"):
+                for b in getattr(self.world, "balls", []):
+                    if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
+                        if not getattr(b, "is_overloaded", False):
+                            can_recast = True
+                            break
 
         if skill_timer <= 0 or can_recast:
             if hasattr(self.ball, "use_skill") and skill_timer <= 0:
@@ -16832,6 +16858,21 @@ class Action:
                     self.world.arena.hazards.append(p1)
                     self.world.arena.hazards.append(p2)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+            elif skill_name == "turret_overload":
+                found = False
+                if hasattr(self.world, "balls"):
+                    for b in getattr(self.world, "balls", []):
+                        if getattr(b, "is_turret", False) and getattr(b, "owner_id", None) == self.ball.id:
+                            if not getattr(b, "is_overloaded", False):
+                                b.is_overloaded = True
+                                b.overload_timer = 10.0
+                                b.damage = getattr(b, "damage", 15.0) * 1.5
+                                b.base_attack_time = getattr(b, "base_attack_time", 1.0) / 1.5
+                                found = True
+                if found:
+                    if hasattr(self, "_spawn_skill_particles"):
+                        self._spawn_skill_particles("overload")
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 20.0)
             elif skill_name == "deploy_turret":
                 if can_recast:
                     if hasattr(self.world, "balls"):
