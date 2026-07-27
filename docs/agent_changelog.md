@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1584] Idea 2: Gravity Pulse Mine — *2026-07-27 08:11:40 UTC*
+
+A rare drop hazard that periodically pulsates, pushing away enemies in a large radius but pulling in allies.
+
+---
+
 ## [idea-1591] Sticky Floor Hazard — *2026-07-27 08:11:35 UTC*
 
 Certain areas of the map act as sticky floors that slowly reduce movement speed over time while a player remains on them, but drastically increase traction/defense against pushing.
