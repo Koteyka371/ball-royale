@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1576] Bouncing Laser Core — *2026-07-27 10:30:42 UTC*
+
+A single indestructible laser core spawns in the center of the map. It fires two continuous solid beam lasers in opposite directions and slowly rotates. Over time, the core bounces around the arena like a paddle ball, randomly changing direction when hitting a wall, making dodging extremely unpredictable.
+
+---
+
 ## [idea-1545] Shrinking Shrapnel Mode — *2026-07-27 10:25:37 UTC*
 
 A game mode where shrapnel hazards progressively split into smaller, faster projectiles over time, eventually dissolving into a fine mist that slightly obscures vision.

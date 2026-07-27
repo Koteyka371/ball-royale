@@ -26983,7 +26983,7 @@
     },
     {
       "id": "idea-1576",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncing Laser Core",
@@ -39934,6 +39934,40 @@
         "src/arena/quantum_swap_bomb.py",
         "src/arena/quantum_swap_bomb.gd",
         "tests/test_quantum_swap_bomb.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2337",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Phantom Juggernaut Arena Mode",
+      "description": "A single oversized ball controlled by the AI hunts players. It is invisible most of the time, briefly revealing itself only when it takes damage or bounces off a wall.",
+      "allowed_paths": [
+        "src/arena/phantom_juggernaut_arena.py",
+        "src/arena/phantom_juggernaut_arena.gd",
+        "tests/test_phantom_juggernaut_arena.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2338",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Entanglement Traps",
+      "description": "Traps that appear paired across the arena. Triggering one randomly teleports the offending ball to the other, optionally carrying the trap's elemental effect (e.g., burn or slow) to the other side.",
+      "allowed_paths": [
+        "src/arena/quantum_entanglement_traps.py",
+        "src/arena/quantum_entanglement_traps.gd",
+        "tests/test_quantum_entanglement_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
