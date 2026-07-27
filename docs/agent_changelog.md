@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1607] Mobile Turret Platform — *2026-07-27 21:25:35 UTC*
+
+A new hazard that acts as a mobile platform. Any turret deployed on it will move around the arena along a predefined path, giving the Engineer a moving defensive point.
+
+---
+
 ## [idea-1588] Black Market Auction Event — *2026-07-27 16:22:32 UTC*
 
 A mid-game event where players can wager their collected loadout fragments in a fast-paced blind auction to secure ultra-rare, game-changing booster items or exclusive cosmetics.
