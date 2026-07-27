@@ -39429,6 +39429,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2307",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Parasitic Hive Mutator",
+      "description": "A game mode mutator where defeated balls spawn a swarm of small homing parasite minions. These parasites latch onto nearby alive balls, slowly draining their HP and transferring a portion of it back to the hive nest to spawn more parasites.",
+      "allowed_paths": [
+        "src/ai/parasitic_hive_mutator.py",
+        "src/ai/parasitic_hive_mutator.gd",
+        "tests/test_parasitic_hive_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
