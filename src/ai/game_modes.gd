@@ -50327,6 +50327,110 @@ class DynamicCaptureZoneMode extends GameMode:
 
 		return ""
 
+
+class MobilePlatformMode extends GameMode:
+	var platform = null
+
+	func _init():
+		name = "Mobile Platform Mode"
+		description = "A mobile platform moves around the arena. Turrets deployed on it move with it."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not world.has("arena") or world.arena == null:
+			return
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if "width" in world.arena: arena_width = float(world.arena.width)
+		if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var angle = randf() * 6.28
+		var speed = 100.0
+		var p_vx = cos(angle) * speed
+		var p_vy = sin(angle) * speed
+
+		platform = {
+			"kind": "mobile_platform",
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"radius": 150.0,
+			"vx": p_vx,
+			"vy": p_vy,
+			"active": true
+		}
+
+		if "hazards" in world.arena:
+			world.arena.hazards.append(platform)
+
+	func tick(world, balls, delta: float):
+		super.tick(world, balls, delta)
+
+		if platform == null:
+			return
+
+		var old_x = float(platform["x"])
+		var old_y = float(platform["y"])
+
+		var p_vx = float(platform.get("vx", 0.0))
+		var p_vy = float(platform.get("vy", 0.0))
+		var p_rad = float(platform.get("radius", 150.0))
+
+		var new_x = old_x + p_vx * delta
+		var new_y = old_y + p_vy * delta
+
+		if world.has("arena") and world.arena != null:
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if "width" in world.arena: arena_w = float(world.arena.width)
+			if "height" in world.arena: arena_h = float(world.arena.height)
+
+			if new_x - p_rad < 0:
+				new_x = p_rad
+				p_vx *= -1.0
+			elif new_x + p_rad > arena_w:
+				new_x = arena_w - p_rad
+				p_vx *= -1.0
+
+			if new_y - p_rad < 0:
+				new_y = p_rad
+				p_vy *= -1.0
+			elif new_y + p_rad > arena_h:
+				new_y = arena_h - p_rad
+				p_vy *= -1.0
+
+		platform["x"] = new_x
+		platform["y"] = new_y
+		platform["vx"] = p_vx
+		platform["vy"] = p_vy
+
+		var dx = new_x - old_x
+		var dy = new_y - old_y
+
+		for b in balls:
+			var is_turret = false
+			if "is_turret" in b: is_turret = b.is_turret
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_turret"): is_turret = b.get_meta("is_turret")
+
+			var is_alive = true
+			if "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+			if is_turret and is_alive:
+				var b_x = 0.0
+				var b_y = 0.0
+				if "x" in b: b_x = float(b.x)
+				if "y" in b: b_y = float(b.y)
+
+				var dist_sq = (b_x - old_x) * (b_x - old_x) + (b_y - old_y) * (b_y - old_y)
+				if dist_sq <= p_rad * p_rad:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = b_x + dx
+						b["y"] = b_y + dy
+					elif typeof(b) == TYPE_OBJECT:
+						if "x" in b: b.x = b_x + dx
+						if "y" in b: b.y = b_y + dy
+
 var GAME_MODES = {
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),
@@ -64574,3 +64678,4 @@ class BlindFragmentAuctionMode extends GameMode:
 						})
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
+GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
