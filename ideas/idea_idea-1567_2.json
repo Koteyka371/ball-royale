@@ -1,0 +1,4 @@
+{
+  "title": "Reflective Shield Module",
+  "description": "A new equippable module or booster that creates a brief directional shield for the player. When an infinitely ricocheting projectile hits this shield, it bounces back with a homing property targeting the original owner, turning their own infinite duration weapons against them."
+}

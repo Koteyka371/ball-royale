@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Pinball Mode",
+  "description": "A game mode where all projectiles infinitely ricochet. Additionally, upon each bounce, projectiles undergo 'quantum entanglement' - randomly splitting into two independent projectiles with reduced damage but higher velocity. The arena walls become progressively bouncier as more projectiles exist, causing chaotic bullet-hell scenarios."
+}
