@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1548] Gravity Boots Active Item — *2026-07-27 21:25:43 UTC*
+
+An active item that players can pick up and activate to individually reverse their own gravity for a short time. Useful for dodging floor-based hazards like lava or spikes, or escaping a dense group of enemies.
+
+---
+
 ## [idea-1607] Mobile Turret Platform — *2026-07-27 21:25:35 UTC*
 
 A new hazard that acts as a mobile platform. Any turret deployed on it will move around the arena along a predefined path, giving the Engineer a moving defensive point.
