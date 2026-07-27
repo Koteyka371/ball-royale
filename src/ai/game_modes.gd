@@ -63870,3 +63870,149 @@ GAME_MODES['dynamic_mutators'] = load('res://src/ai/dynamic_mutators.gd').new()
 var reflective_walls_script = load("res://src/ai/reflective_walls.gd")
 if reflective_walls_script:
     GAME_MODES["reflective_walls"] = reflective_walls_script.new()
+
+
+class BlindAuctionEventMode extends GameMode:
+	var auction_timer = 20.0
+	var auction_active = false
+	var auction_duration = 5.0
+	var bids = {}
+	var item_reward = {}
+	var cosmetic_reward = ""
+
+	func _init():
+		super()
+		name = "Blind Auction Event"
+		description = "Players wager their collected loadout fragments in a fast-paced blind auction to secure ultra-rare booster items or exclusive cosmetics."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var alive_balls = []
+		for b in balls:
+			if (typeof(b) == TYPE_DICTIONARY and b.get("alive", false) and b.get("ball_type", "") != "spectator") or (typeof(b) == TYPE_OBJECT and b.get("alive") and b.get("ball_type") != "spectator"):
+				alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return
+
+		if not auction_active:
+			auction_timer -= delta
+			if auction_timer <= 0:
+				auction_active = true
+				auction_duration = 5.0
+				bids.clear()
+
+				if randf() < 0.5:
+					item_reward = {
+						"max_hp": randi() % 101 + 50,
+						"base_speed": randi() % 51 + 30,
+						"base_damage": randi() % 26 + 15
+					}
+					cosmetic_reward = ""
+				else:
+					item_reward.clear()
+					var cosmetics = ["Golden Aura", "Void Trail", "Neon Crown", "Spectral Wings"]
+					cosmetic_reward = cosmetics[randi() % cosmetics.size()]
+
+				if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+					world.add_event("blind_auction_started", {})
+				elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("blind_auction_started", {})
+		else:
+			auction_duration -= delta
+
+			for b in alive_balls:
+				var b_id = null
+				if typeof(b) == TYPE_DICTIONARY and b.has("id"):
+					b_id = b["id"]
+				elif typeof(b) == TYPE_OBJECT and 'id' in b:
+					b_id = b.get("id")
+
+				if b_id == null:
+					continue
+
+				var fragments = 0
+				if typeof(b) == TYPE_DICTIONARY and b.has("loadout_fragments"):
+					fragments = b["loadout_fragments"]
+				elif typeof(b) == TYPE_OBJECT and 'loadout_fragments' in b:
+					fragments = b.get("loadout_fragments")
+
+				if not bids.has(b_id) and fragments > 0 and randf() < 3.0 * delta:
+					var bid_amount = (randi() % fragments) + 1
+					bids[b_id] = bid_amount
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event("blind_auction_bid_placed", {"bidder_id": b_id})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("blind_auction_bid_placed", {"bidder_id": b_id})
+
+			if auction_duration <= 0:
+				auction_active = false
+				auction_timer = randf_range(20.0, 40.0)
+
+				if bids.size() > 0:
+					var highest_bidder_id = null
+					var highest_bid = -1
+					for k in bids.keys():
+						if bids[k] > highest_bid:
+							highest_bid = bids[k]
+							highest_bidder_id = k
+
+					var winner = null
+					for b in alive_balls:
+						var b_id = null
+						if typeof(b) == TYPE_DICTIONARY and b.has("id"):
+							b_id = b["id"]
+						elif typeof(b) == TYPE_OBJECT and 'id' in b:
+							b_id = b.get("id")
+						if b_id == highest_bidder_id:
+							winner = b
+							break
+
+					if winner != null:
+						if typeof(winner) == TYPE_DICTIONARY:
+							winner["loadout_fragments"] = winner.get("loadout_fragments", 0) - highest_bid
+							if item_reward.size() > 0:
+								winner["max_hp"] = winner.get("max_hp", 100.0) + item_reward["max_hp"]
+								winner["hp"] = winner.get("hp", 100.0) + item_reward["max_hp"]
+								winner["base_speed"] = winner.get("base_speed", 100.0) + item_reward["base_speed"]
+								winner["base_damage"] = winner.get("base_damage", 10.0) + item_reward["base_damage"]
+							if cosmetic_reward != "":
+								var cos = winner.get("cosmetics", [])
+								cos.append(cosmetic_reward)
+								winner["cosmetics"] = cos
+						else:
+							winner.set("loadout_fragments", winner.get("loadout_fragments") - highest_bid)
+							if item_reward.size() > 0:
+								winner.set("max_hp", winner.get("max_hp") + item_reward["max_hp"])
+								winner.set("hp", winner.get("hp") + item_reward["max_hp"])
+								winner.set("base_speed", winner.get("base_speed") + item_reward["base_speed"])
+								winner.set("base_damage", winner.get("base_damage") + item_reward["base_damage"])
+							if cosmetic_reward != "":
+								var cos = winner.get("cosmetics")
+								if cos == null:
+									cos = []
+								cos.append(cosmetic_reward)
+								winner.set("cosmetics", cos)
+
+						if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+							world.add_event("blind_auction_won", {
+								"winner_id": highest_bidder_id,
+								"cost": highest_bid,
+								"item_reward": item_reward,
+								"cosmetic_reward": cosmetic_reward
+							})
+						elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("blind_auction_won", {
+								"winner_id": highest_bidder_id,
+								"cost": highest_bid,
+								"item_reward": item_reward,
+								"cosmetic_reward": cosmetic_reward
+							})
+				else:
+					if typeof(world) == TYPE_DICTIONARY and world.has("add_event"):
+						world.add_event("blind_auction_failed", {})
+					elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("blind_auction_failed", {})
+
+GAME_MODES['blind_auction_event'] = BlindAuctionEventMode.new()

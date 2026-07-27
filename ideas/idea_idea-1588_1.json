@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Leap Mutator",
+  "description": "Periodically teleports random groups of players to different regions of the arena while preserving their momentum. It forces players to adapt quickly to new surroundings or risk colliding with hazards right after teleporting."
+}

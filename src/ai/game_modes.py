@@ -41168,3 +41168,94 @@ GAME_MODES['dynamic_mutators'] = DynamicWeatherMutatorsMode()
 
 from ai.reflective_walls import ReflectiveWallsArena
 GAME_MODES["reflective_walls"] = ReflectiveWallsArena()
+
+
+class BlindAuctionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Blind Auction Event"
+        self.description = "Players wager their collected loadout fragments in a fast-paced blind auction to secure ultra-rare booster items or exclusive cosmetics."
+        self.auction_timer = 20.0
+        self.auction_active = False
+        self.auction_duration = 5.0
+        self.bids = {}
+        self.item_reward = {}
+        self.cosmetic_reward = ""
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+        if not alive_balls:
+            return
+
+        if not self.auction_active:
+            self.auction_timer -= delta
+            if self.auction_timer <= 0:
+                self.auction_active = True
+                self.auction_duration = 5.0
+                self.bids = {}
+
+                if random.random() < 0.5:
+                    self.item_reward = {
+                        "max_hp": random.randint(50, 150),
+                        "base_speed": random.randint(30, 80),
+                        "base_damage": random.randint(15, 40)
+                    }
+                    self.cosmetic_reward = ""
+                else:
+                    self.item_reward = {}
+                    self.cosmetic_reward = random.choice(["Golden Aura", "Void Trail", "Neon Crown", "Spectral Wings"])
+
+                if hasattr(world, "add_event"):
+                    world.add_event("blind_auction_started", {})
+        else:
+            self.auction_duration -= delta
+
+            for b in alive_balls:
+                b_id = getattr(b, "id", None)
+                if b_id is None:
+                    continue
+                fragments = getattr(b, "loadout_fragments", 0)
+                if b_id not in self.bids and fragments > 0 and random.random() < 3.0 * delta:
+                    bid_amount = random.randint(1, fragments)
+                    self.bids[b_id] = bid_amount
+                    if hasattr(world, "add_event"):
+                        world.add_event("blind_auction_bid_placed", {"bidder_id": b_id})
+
+            if self.auction_duration <= 0:
+                self.auction_active = False
+                self.auction_timer = random.uniform(20.0, 40.0)
+
+                if self.bids:
+                    highest_bidder_id = max(self.bids, key=self.bids.get)
+                    highest_bid = self.bids[highest_bidder_id]
+
+                    winner = next((b for b in alive_balls if getattr(b, "id", None) == highest_bidder_id), None)
+                    if winner:
+                        winner.loadout_fragments = getattr(winner, "loadout_fragments", 0) - highest_bid
+
+                        if self.item_reward:
+                            winner.max_hp = getattr(winner, "max_hp", 100.0) + self.item_reward.get("max_hp", 0)
+                            winner.hp = getattr(winner, "hp", 100.0) + self.item_reward.get("max_hp", 0)
+                            winner.base_speed = getattr(winner, "base_speed", 100.0) + self.item_reward.get("base_speed", 0)
+                            winner.base_damage = getattr(winner, "base_damage", 10.0) + self.item_reward.get("base_damage", 0)
+                        if self.cosmetic_reward:
+                            cosmetics = getattr(winner, "cosmetics", [])
+                            if isinstance(cosmetics, list):
+                                cosmetics.append(self.cosmetic_reward)
+                                winner.cosmetics = cosmetics
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("blind_auction_won", {
+                                "winner_id": highest_bidder_id,
+                                "cost": highest_bid,
+                                "item_reward": self.item_reward,
+                                "cosmetic_reward": self.cosmetic_reward
+                            })
+                else:
+                    if hasattr(world, "add_event"):
+                        world.add_event("blind_auction_failed", {})
+
+GAME_MODES["blind_auction_event"] = BlindAuctionEventMode()
