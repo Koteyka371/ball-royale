@@ -41481,3 +41481,120 @@ class BlindFragmentAuctionMode(GameMode):
                         })
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
+
+class GuildHQDefenseMode(GameMode):
+    """Guild War game mode where players attack a defending guild's HQ and its built defenses."""
+    def __init__(self, defending_guild="GuildA"):
+        super().__init__()
+        self.name = "Guild HQ Defense"
+        self.description = "Attackers try to destroy the defending guild's HQ while avoiding turrets and traps."
+        self.defending_guild = defending_guild
+        self.defenders = []
+        self.attackers = []
+        self.turrets = []
+        self.traps = []
+        self.walls = []
+        self.hq_hp = 5000.0
+        self.active_timer = 300.0
+        self.completed = False
+        self.winner = None
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        mid = len(balls) // 2
+        self.defenders = [b.id for b in balls[:mid]]
+        self.attackers = [b.id for b in balls[mid:]]
+
+        try:
+            from system.guild import GuildManager
+            gm = GuildManager()
+            defenses = getattr(gm, "get_hq_defenses", lambda x: {})(self.defending_guild)
+
+            num_turrets = defenses.get("turret", 0)
+            for i in range(num_turrets):
+                self.turrets.append({"x": 500 + i*50, "y": 500 - i*50, "cooldown": 0.0, "range": 300.0})
+
+            num_traps = defenses.get("trap", 0)
+            for i in range(num_traps):
+                self.traps.append({"x": 300 + i*100, "y": 300, "radius": 50.0, "active": True})
+
+            num_walls = defenses.get("wall", 0)
+            for i in range(num_walls):
+                self.walls.append({"x": 400 + i*10, "y": 400 + i*10, "radius": 20.0, "hp": 500.0})
+        except ImportError:
+            pass
+
+    def _tick(self, delta):
+        if self.completed:
+            return
+
+        import math
+
+        self.active_timer -= delta
+        if self.active_timer <= 0:
+            self.completed = True
+            self.winner = "defenders"
+            if hasattr(self.world, "add_event"):
+                self.world.add_event("guild_war_ended", {"winner": "defenders"})
+            return
+
+        # HQ mechanics
+        attackers_near_hq = 0
+        for b in self.world.balls:
+            if b.id in self.attackers and b.alive:
+                dx = b.x - 500
+                dy = b.y - 500
+                if math.sqrt(dx*dx + dy*dy) < 150:
+                    attackers_near_hq += 1
+
+        if attackers_near_hq > 0:
+            self.hq_hp -= 50.0 * attackers_near_hq * delta
+
+        if self.hq_hp <= 0:
+            self.completed = True
+            self.winner = "attackers"
+            if hasattr(self.world, "add_event"):
+                self.world.add_event("guild_war_ended", {"winner": "attackers"})
+            return
+
+        # Turrets
+        for t in self.turrets:
+            t["cooldown"] -= delta
+            if t["cooldown"] <= 0:
+                for b in self.world.balls:
+                    if b.id in self.attackers and b.alive:
+                        dx = b.x - t["x"]
+                        dy = b.y - t["y"]
+                        if math.sqrt(dx*dx + dy*dy) <= t["range"]:
+                            b.hp -= 15.0
+                            t["cooldown"] = 2.0
+                            break
+
+        # Traps
+        for tr in self.traps:
+            if tr["active"]:
+                for b in self.world.balls:
+                    if b.id in self.attackers and b.alive:
+                        dx = b.x - tr["x"]
+                        dy = b.y - tr["y"]
+                        if math.sqrt(dx*dx + dy*dy) <= tr["radius"]:
+                            b.hp -= 50.0
+                            b.stutter_timer = getattr(b, "stutter_timer", 0.0) + 2.0
+                            tr["active"] = False
+                            break
+
+        # Walls
+        for w in self.walls:
+            if w["hp"] > 0:
+                for b in self.world.balls:
+                    if b.id in self.attackers and b.alive:
+                        dx = b.x - w["x"]
+                        dy = b.y - w["y"]
+                        if math.sqrt(dx*dx + dy*dy) <= w["radius"] + getattr(b, "radius", 15.0):
+                            w["hp"] -= 10.0 * delta
+                            # bounce
+                            b.vx *= -1
+                            b.vy *= -1
+
+GAME_MODES["guild_hq_defense"] = GuildHQDefenseMode()

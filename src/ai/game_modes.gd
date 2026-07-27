@@ -64574,3 +64574,150 @@ class BlindFragmentAuctionMode extends GameMode:
 						})
 
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
+
+class GuildHQDefenseMode extends GameMode:
+	var defending_guild = "GuildA"
+	var defenders = []
+	var attackers = []
+	var turrets = []
+	var traps = []
+	var hq_walls = []
+	var hq_hp = 5000.0
+	var completed = false
+	var winner = ""
+
+	func _init(dg="GuildA"):
+		super._init()
+		name = "Guild HQ Defense"
+		description = "Attackers try to destroy the defending guild's HQ while avoiding turrets and traps."
+		defending_guild = dg
+
+	func setup(world_obj, balls_array):
+		super.setup(world_obj, balls_array)
+		var mid = balls_array.size() / 2
+		for i in range(mid):
+			var b = balls_array[i]
+			if typeof(b) == TYPE_DICTIONARY:
+				defenders.append(b.id)
+			else:
+				defenders.append(b.get("id"))
+
+		for i in range(mid, balls_array.size()):
+			var b = balls_array[i]
+			if typeof(b) == TYPE_DICTIONARY:
+				attackers.append(b.id)
+			else:
+				attackers.append(b.get("id"))
+
+		var GuildManager = load("res://src/system/guild.gd")
+		if GuildManager != null:
+			var gm = GuildManager.new()
+			if gm.has_method("get_hq_defenses"):
+				var defenses = gm.get_hq_defenses(defending_guild)
+				var num_turrets = defenses.get("turret", 0)
+				for i in range(num_turrets):
+					turrets.append({"x": 500 + i*50, "y": 500 - i*50, "cooldown": 0.0, "range": 300.0})
+				var num_traps = defenses.get("trap", 0)
+				for i in range(num_traps):
+					traps.append({"x": 300 + i*100, "y": 300, "radius": 50.0, "active": true})
+				var num_walls = defenses.get("wall", 0)
+				for i in range(num_walls):
+					hq_walls.append({"x": 400 + i*10, "y": 400 + i*10, "radius": 20.0, "hp": 500.0})
+
+	func tick(world_obj, balls_array, delta=0.016):
+		if completed:
+			return
+		active_timer -= delta
+		if active_timer <= 0:
+			completed = true
+			winner = "defenders"
+			if world_obj != null and world_obj.has_method("add_event"):
+				world_obj.add_event("guild_war_ended", {"winner": "defenders"})
+			return
+
+		var attackers_near_hq = 0
+		for b in balls_array:
+			var bid = b.id if typeof(b) == TYPE_DICTIONARY else b.get("id")
+			var balive = b.alive if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			var bx = b.x if typeof(b) == TYPE_DICTIONARY else b.get("x")
+			var by = b.y if typeof(b) == TYPE_DICTIONARY else b.get("y")
+			if bid in attackers and balive:
+				var dx = bx - 500
+				var dy = by - 500
+				if sqrt(dx*dx + dy*dy) < 150:
+					attackers_near_hq += 1
+
+		if attackers_near_hq > 0:
+			hq_hp -= 50.0 * attackers_near_hq * delta
+
+		if hq_hp <= 0:
+			completed = true
+			winner = "attackers"
+			if world_obj != null and world_obj.has_method("add_event"):
+				world_obj.add_event("guild_war_ended", {"winner": "attackers"})
+			return
+
+		for t in turrets:
+			t["cooldown"] -= delta
+			if t["cooldown"] <= 0:
+				for b in balls_array:
+					var bid = b.id if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var balive = b.alive if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if bid in attackers and balive:
+						var bx = b.x if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.y if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var dx = bx - t["x"]
+						var dy = by - t["y"]
+						if sqrt(dx*dx + dy*dy) <= t["range"]:
+							if typeof(b) == TYPE_DICTIONARY:
+								b.hp -= 15.0
+							else:
+								b.set("hp", b.get("hp") - 15.0)
+							t["cooldown"] = 2.0
+							break
+
+		for tr in traps:
+			if tr["active"]:
+				for b in balls_array:
+					var bid = b.id if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var balive = b.alive if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if bid in attackers and balive:
+						var bx = b.x if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.y if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var dx = bx - tr["x"]
+						var dy = by - tr["y"]
+						if sqrt(dx*dx + dy*dy) <= tr["radius"]:
+							if typeof(b) == TYPE_DICTIONARY:
+								b.hp -= 50.0
+								b.stutter_timer = b.get("stutter_timer", 0.0) + 2.0
+							else:
+								b.set("hp", b.get("hp") - 50.0)
+								var st = b.get("stutter_timer")
+								if st == null:
+									st = 0.0
+								b.set("stutter_timer", st + 2.0)
+							tr["active"] = false
+							break
+
+		for w in hq_walls:
+			if w["hp"] > 0:
+				for b in balls_array:
+					var bid = b.id if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					var balive = b.alive if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if bid in attackers and balive:
+						var bx = b.x if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.y if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var br = b.radius if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+						if br == null: br = 15.0
+						var dx = bx - w["x"]
+						var dy = by - w["y"]
+						if sqrt(dx*dx + dy*dy) <= w["radius"] + br:
+							w["hp"] -= 10.0 * delta
+							if typeof(b) == TYPE_DICTIONARY:
+								b.vx *= -1
+								b.vy *= -1
+							else:
+								b.set("vx", b.get("vx") * -1)
+								b.set("vy", b.get("vy") * -1)
+
+GAME_MODES["guild_hq_defense"] = GuildHQDefenseMode.new()
