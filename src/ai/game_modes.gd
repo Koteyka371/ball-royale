@@ -52342,7 +52342,193 @@ class NetworkedBlackHolesMode extends GameMode:
 								world.add_event("visual_effect", {"type": "teleport", "x": next_x, "y": next_y})
 							break
 
+
+class ImplodingHazardMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		self.name = "Imploding Hazard"
+		self.description = "A hazard that slowly pulls entities toward its center. When it expires, it violently explodes, pushing everyone away."
+
+	func tick(world, balls, delta=0.016):
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 15.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world or typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var arena_width = 1000.0
+				var arena_height = 1000.0
+				if typeof(world) == TYPE_OBJECT and "arena" in world:
+					if "width" in world.arena: arena_width = world.arena.width
+					if "height" in world.arena: arena_height = world.arena.height
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					arena_width = world.arena.get("width", 1000.0)
+					arena_height = world.arena.get("height", 1000.0)
+
+				var cx = randf_range(200, arena_width - 200)
+				var cy = randf_range(200, arena_height - 200)
+
+				var h = {
+					"id": randi(),
+					"x": cx,
+					"y": cy,
+					"radius": 250.0,
+					"kind": "imploding_hazard",
+					"duration": 10.0,
+					"pull_strength": 200.0,
+					"push_strength": 1500.0,
+					"damage": 0.0
+				}
+
+				if typeof(world) == TYPE_OBJECT and "arena" in world:
+					if not ("hazards" in world.arena):
+						world.arena.hazards = []
+					world.arena.hazards.append(h)
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					if not world.arena.has("hazards"):
+						world.arena["hazards"] = []
+					world.arena["hazards"].append(h)
+
+		var hazards = []
+		if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+			hazards = world.arena.hazards
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+			hazards = world.arena["hazards"]
+
+		var active_hazards = []
+		for h in hazards:
+			var h_kind = ""
+			if typeof(h) == TYPE_OBJECT and "kind" in h: h_kind = h.kind
+			elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): h_kind = h.kind
+
+			if h_kind == "imploding_hazard":
+				var h_duration = 0.0
+				if typeof(h) == TYPE_OBJECT and "duration" in h: h_duration = h.duration
+				elif typeof(h) == TYPE_DICTIONARY and h.has("duration"): h_duration = h.duration
+
+				h_duration -= delta
+
+				if typeof(h) == TYPE_OBJECT and "duration" in h: h.duration = h_duration
+				elif typeof(h) == TYPE_DICTIONARY and h.has("duration"): h["duration"] = h_duration
+
+				if h_duration > 0:
+					active_hazards.append(h)
+					var hx = 0.0
+					var hy = 0.0
+					var pull_radius = 250.0
+					var pull_strength = 200.0
+					if typeof(h) == TYPE_OBJECT:
+						if "x" in h: hx = h.x
+						if "y" in h: hy = h.y
+						if "radius" in h: pull_radius = h.radius
+						if "pull_strength" in h: pull_strength = h.pull_strength
+					elif typeof(h) == TYPE_DICTIONARY:
+						hx = h.get("x", 0.0)
+						hy = h.get("y", 0.0)
+						pull_radius = h.get("radius", 250.0)
+						pull_strength = h.get("pull_strength", 200.0)
+
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+						var b_type = ""
+						if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+						elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+
+						if b_alive and b_type != "spectator":
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_OBJECT:
+								if "x" in b: bx = b.x
+								if "y" in b: by = b.y
+							elif typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+
+							var dx = hx - bx
+							var dy = hy - by
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist > 0 and dist < pull_radius:
+								var nx = dx / dist
+								var ny = dy / dist
+								if typeof(b) == TYPE_OBJECT:
+									if "vx" in b: b.vx += nx * pull_strength * delta
+									if "vy" in b: b.vy += ny * pull_strength * delta
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("vx"): b["vx"] += nx * pull_strength * delta
+									if b.has("vy"): b["vy"] += ny * pull_strength * delta
+				else:
+					var hx = 0.0
+					var hy = 0.0
+					var push_radius = 300.0
+					var push_strength = 1500.0
+					if typeof(h) == TYPE_OBJECT:
+						if "x" in h: hx = h.x
+						if "y" in h: hy = h.y
+						if "radius" in h: push_radius = h.radius * 1.2
+						if "push_strength" in h: push_strength = h.push_strength
+					elif typeof(h) == TYPE_DICTIONARY:
+						hx = h.get("x", 0.0)
+						hy = h.get("y", 0.0)
+						push_radius = h.get("radius", 250.0) * 1.2
+						push_strength = h.get("push_strength", 1500.0)
+
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+						elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+						var b_type = ""
+						if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+						elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+
+						if b_alive and b_type != "spectator":
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_OBJECT:
+								if "x" in b: bx = b.x
+								if "y" in b: by = b.y
+							elif typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+
+							var dx = bx - hx
+							var dy = by - hy
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist > 0 and dist < push_radius:
+								var nx = dx / dist
+								var ny = dy / dist
+								if typeof(b) == TYPE_OBJECT:
+									if "vx" in b: b.vx += nx * push_strength
+									if "vy" in b: b.vy += ny * push_strength
+									if b.has_method("take_damage"):
+										b.take_damage(30.0)
+									else:
+										b.hp -= 30.0
+										if b.hp <= 0:
+											b.hp = 0
+											b.alive = false
+								elif typeof(b) == TYPE_DICTIONARY:
+									if b.has("vx"): b["vx"] += nx * push_strength
+									if b.has("vy"): b["vy"] += ny * push_strength
+									b["hp"] -= 30.0
+									if b["hp"] <= 0:
+										b["hp"] = 0
+										b["alive"] = false
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "imploding_hazard_explosion", "x": hx, "y": hy, "radius": push_radius})
+					elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+						world.events.append({"type": "visual_effect", "data": {"type": "imploding_hazard_explosion", "x": hx, "y": hy, "radius": push_radius}})
+			else:
+				active_hazards.append(h)
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			world.arena.hazards = active_hazards
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			world.arena["hazards"] = active_hazards
+
 var GAME_MODES = {
+	"imploding_hazard": ImplodingHazardMode.new(),
 	"networked_black_holes": NetworkedBlackHolesMode.new(),
 
 	"bumper_frenzy": BumperFrenzyMode.new(),
