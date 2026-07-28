@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1589] Pinball Bumper Mutator — *2026-07-28 22:21:34 UTC*
+
+A game mode mutator where colliding with any other ball automatically arms a Stun Explosion on both entities, creating an arena filled with constant bouncing and cascading stun effects.
+
+---
+
 ## [idea-1595] Reverse Time Zone — *2026-07-28 14:38:35 UTC*
 
 A battle royale where being outside the safe zone doesn't deal damage, but instead continuously reverses the player's position back in time, trapping them in the storm forever.
