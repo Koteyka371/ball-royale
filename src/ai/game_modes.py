@@ -25683,7 +25683,7 @@ class BountyTagMode(GameMode):
         super().setup(world, balls)
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
         if valid_balls:
-            ; first_bounty = random.choice(valid_balls)
+            first_bounty = random.choice(valid_balls)
             self._make_bounty(first_bounty)
             self.current_bounty_id = getattr(first_bounty, "id", None)
 
@@ -25729,7 +25729,7 @@ class BountyTagMode(GameMode):
             # Need a new bounty if none alive
             alive_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
             if alive_balls:
-                ; new_b = random.choice(alive_balls)
+                new_b = random.choice(alive_balls)
                 self._make_bounty(new_b)
                 self.current_bounty_id = getattr(new_b, "id", None)
 
@@ -32715,7 +32715,6 @@ class ImplodingHazardMode(GameMode):
 
                 if not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
-                import random
                 class DummyHazardImploding:
                     def __init__(self, id_val, x, y):
                         self.id = id_val
