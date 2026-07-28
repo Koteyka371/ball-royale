@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1617] Orbital Mine Sweeper Power-up — *2026-07-28 06:30:21 UTC*
+
+A new temporary power-up that makes the collecting ball immune to orbital mine damage and allows them to collect orbital mines as ammo or buffs instead.
+
+---
+
 ## [idea-1613] Chain Reaction Decoy — *2026-07-28 06:22:20 UTC*
 
 A new skill that deploys a special decoy that links to nearby enemies with tethers. When the decoy explodes or takes enough damage, it transfers a portion of the damage back to all linked enemies.

@@ -27680,7 +27680,7 @@
     },
     {
       "id": "idea-1617",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Orbital Mine Sweeper Power-up",
@@ -40905,6 +40905,23 @@
         "src/ai/nemesis_tracker.py",
         "src/ai/nemesis_tracker.gd",
         "tests/test_nemesis_tracker.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2394",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Field Hazard",
+      "description": "A deployable hazard zone that randomly renders friendly entities invisible while inside and spawns fake copies of them that run in random directions to confuse enemies.",
+      "allowed_paths": [
+        "src/arena/mirage_field.py",
+        "src/arena/mirage_field.gd",
+        "tests/test_mirage_field.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
