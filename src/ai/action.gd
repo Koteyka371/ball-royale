@@ -23268,59 +23268,61 @@ func execute(strategy: String, delta: float):
         if typeof(self.ball) == TYPE_DICTIONARY:
             self.ball["hp"] = 1.0
             self.ball["death_defy_active"] = false
+            self.ball["intangible"] = true
+            self.ball["intangible_timer"] = 2.0
         else:
             self.ball.hp = 1.0
             if "death_defy_active" in self.ball:
                 self.ball.death_defy_active = false
             elif self.ball.has_method("set_meta"):
                 self.ball.set_meta("death_defy_active", false)
+            if "intangible" in self.ball:
+                self.ball.intangible = true
+                self.ball.intangible_timer = 2.0
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("intangible", true)
+                self.ball.set_meta("intangible_timer", 2.0)
         current_hp = 1.0
         damage_taken = 0.0
 
-        var cur_stealth = 0.0
-        if typeof(self.ball) == TYPE_DICTIONARY:
-            cur_stealth = self.ball.get("stealth_booster_timer", 0.0)
-        elif typeof(self.ball) == TYPE_OBJECT and "stealth_booster_timer" in self.ball:
-            cur_stealth = self.ball.stealth_booster_timer
-        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stealth_booster_timer"):
-            cur_stealth = self.ball.get_meta("stealth_booster_timer")
+        var explosion_radius = 150.0
+        var explosion_damage = 50.0
 
-        var new_stealth = max(cur_stealth, 2.0)
-        if typeof(self.ball) == TYPE_DICTIONARY:
-            self.ball["stealth_booster_timer"] = new_stealth
-        elif typeof(self.ball) == TYPE_OBJECT and "stealth_booster_timer" in self.ball:
-            self.ball.stealth_booster_timer = new_stealth
-        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-            self.ball.set_meta("stealth_booster_timer", new_stealth)
+        var bx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball.get("x", 0.0)
+        var by = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball.get("y", 0.0)
+        var bteam = self.ball.team if typeof(self.ball) == TYPE_OBJECT else self.ball.get("team", "")
 
-        if self.world != null and "balls" in self.world:
-            var decoy = {}
-            if typeof(self.ball) == TYPE_DICTIONARY:
-                for k in self.ball.keys():
-                    decoy[k] = self.ball[k]
-            elif typeof(self.ball) == TYPE_OBJECT:
-                decoy["x"] = self.ball.x if "x" in self.ball else 0.0
-                decoy["y"] = self.ball.y if "y" in self.ball else 0.0
-                decoy["team"] = self.ball.team if "team" in self.ball else ""
-                decoy["ball_type"] = self.ball.ball_type if "ball_type" in self.ball else "basic"
-            decoy["id"] = randi() % 90000 + 10000
-            decoy["hp"] = 0
-            var b_max_hp = 100.0
-            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): b_max_hp = self.ball["max_hp"]
-            elif typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: b_max_hp = self.ball.max_hp
-            decoy["max_hp"] = b_max_hp
-            decoy["damage"] = 0
-            decoy["is_decoy"] = true
-            decoy["is_decoy_clone"] = true
-            decoy["decoy_timer"] = 2.0
+        if self.world != null:
+            if self.world.has_method("add_event"):
+                self.world.add_event("explosion", {"x": bx, "y": by, "radius": explosion_radius, "damage": explosion_damage})
+            if "balls" in self.world:
+                for b in self.world.balls:
+                    var balive = b.alive if typeof(b) == TYPE_OBJECT else b.get("alive", false)
+                    var b_t = b.team if typeof(b) == TYPE_OBJECT else b.get("team", "")
+                    if balive and b_t != bteam:
+                        var ox = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+                        var oy = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+                        var dx = ox - bx
+                        var dy = oy - by
+                        var dist = sqrt(dx*dx + dy*dy)
+                        if dist <= explosion_radius:
+                            if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                b.take_damage(explosion_damage)
+                            elif typeof(b) == TYPE_OBJECT and "hp" in b:
+                                b.hp -= explosion_damage
+                            elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+                                b["hp"] -= explosion_damage
 
-            var o_id = null
-            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): o_id = self.ball["id"]
-            elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: o_id = self.ball.id
-            if o_id != null:
-                decoy["owner_id"] = o_id
-
-            self.world.balls.append(decoy)
+                            if dist > 0.001:
+                                var nx = dx / dist
+                                var ny = dy / dist
+                                var push_force = 1500.0 * (1.0 - dist / explosion_radius)
+                                if typeof(b) == TYPE_OBJECT:
+                                    if "vx" in b: b.vx += nx * push_force
+                                    if "vy" in b: b.vy += ny * push_force
+                                elif typeof(b) == TYPE_DICTIONARY:
+                                    b["vx"] = b.get("vx", 0.0) + nx * push_force
+                                    b["vy"] = b.get("vy", 0.0) + ny * push_force
 
     var phylactery_active = false
     if typeof(self.ball) == TYPE_DICTIONARY: phylactery_active = self.ball.get("phylactery_active", false)

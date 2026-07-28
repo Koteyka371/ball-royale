@@ -1955,7 +1955,8 @@ class Action:
                                             y=h.y,
                                             radius=40.0,
                                             kind="emp_burst",
-                                            damage=20.0
+                                            damage=20.0,
+                                            owner_id=getattr(h, "owner_id", -1)
                                         )
                                         setattr(emp, "duration", 0.5)
                                         setattr(emp, "owner_id", owner_id)
@@ -3369,7 +3370,8 @@ class Action:
                             y=self.ball.y,
                             radius=getattr(self.ball, "radius", 10.0),
                             kind="mirage_decoy",
-                            damage=0.0
+                            damage=0.0,
+                            owner_id=getattr(self.ball, "id", None)
                         )
                         setattr(mirage, "duration", 5.0)
                         setattr(mirage, "owner_id", getattr(self.ball, "id", None))
@@ -11582,23 +11584,31 @@ class Action:
             current_hp = 1.0
             damage_taken = 0.0
             self.ball.death_defy_active = False
-            self.ball.stealth_booster_timer = max(getattr(self.ball, "stealth_booster_timer", 0.0), 2.0)
+            self.ball.intangible = True
+            self.ball.intangible_timer = 2.0
 
-            # Spawn a decoy mirror image that explodes
-            import copy
+            # The explosion damages and knocks back all nearby balls
+            explosion_radius = 150.0
+            explosion_damage = 50.0
+            if hasattr(self.world, "add_event"):
+                self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": explosion_radius, "damage": explosion_damage})
             if hasattr(self.world, "balls"):
-                decoy = copy.copy(self.ball)
-                decoy.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
-                if hasattr(self.world, "next_id"):
-                    self.world.next_id += 1
-                decoy.hp = 0  # To trigger explosion logic if it's like Trickster's decoy, or just make it explode
-                decoy.max_hp = getattr(self.ball, "max_hp", 100)
-                decoy.damage = 0
-                decoy.is_decoy = True
-                decoy.is_decoy_clone = True
-                decoy.decoy_timer = 2.0
-                decoy.owner_id = getattr(self.ball, "id", None)
-                self.world.balls.append(decoy)
+                for b in self.world.balls:
+                    if getattr(b, "alive", True) and getattr(b, "team", "") != getattr(self.ball, "team", ""):
+                        dx = b.x - self.ball.x
+                        dy = b.y - self.ball.y
+                        dist = (dx**2 + dy**2)**0.5
+                        if dist <= explosion_radius:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(explosion_damage)
+                            elif hasattr(b, "hp"):
+                                b.hp -= explosion_damage
+                            if dist > 0.001:
+                                nx = dx / dist
+                                ny = dy / dist
+                                push_force = 1500.0 * (1.0 - dist / explosion_radius)
+                                b.vx = getattr(b, "vx", 0.0) + nx * push_force
+                                b.vy = getattr(b, "vy", 0.0) + ny * push_force
 
         # Phylactery activation (when Necromancer dies with active buff)
         if start_hp > 0 and current_hp <= 0 and getattr(self.ball, "phylactery_active", False):
@@ -20378,7 +20388,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     m_id = f"hm_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
-                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0, owner_id=getattr(self.ball, "id", -1))
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
@@ -23776,7 +23786,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     m_id = f"hm_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
-                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0, owner_id=getattr(self.ball, "id", -1))
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
 
