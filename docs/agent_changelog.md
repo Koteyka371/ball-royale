@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1631] Weather Mastery Trait — *2026-07-28 22:22:37 UTC*
+
+A new trait 'Weather Mastery' that grants a 20% speed and defense bonus when standing in extreme weather events or specific hazards, converting environmental danger into an advantage.
+
+---
+
 ## [idea-1636] Wormhole network — *2026-07-28 22:21:39 UTC*
 
 Black holes periodically form a network to transport balls.
