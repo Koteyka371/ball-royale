@@ -51531,7 +51531,87 @@ class BumperRoyaleMode extends GameMode:
 				return winner.team if "team" in winner else (winner.ball_type if "ball_type" in winner else "Unknown")
 		return null
 
+class HazardShiftEventMode extends GameMode:
+	var event_timer = 15.0
+	var is_active = false
+	var duration = 3.0
+	var active_timer = 0.0
+
+	func _init():
+		super._init()
+		self.name = "Hazard Shift Event"
+		self.description = "A random arena event that randomly shifts hazard positions and adds small random velocity impulses to all balls for a short duration."
+
+	func apply_dynamic_traits(world, balls, delta=0.016):
+		super.apply_dynamic_traits(world, balls, delta)
+
+		if not is_active:
+			event_timer -= delta
+			if event_timer <= 0.0:
+				is_active = true
+				active_timer = duration
+				if _has_prop(world, "add_event"):
+					world.add_event("hazard_shift_start", {"duration": duration})
+
+				# Shift hazard positions once
+				if _has_prop(world, "arena"):
+					var arena = _get_prop(world, "arena", null)
+					if arena != null and _has_prop(arena, "hazards"):
+						var hazards = _get_prop(arena, "hazards", [])
+						var arena_width = _get_prop(arena, "width", 2000.0)
+						var arena_height = _get_prop(arena, "height", 2000.0)
+
+						for h in hazards:
+							if _has_prop(h, "x") and _has_prop(h, "y"):
+								var dx = randf_range(-200.0, 200.0)
+								var dy = randf_range(-200.0, 200.0)
+								var new_x = max(0.0, min(arena_width, _get_prop(h, "x", 0.0) + dx))
+								var new_y = max(0.0, min(arena_height, _get_prop(h, "y", 0.0) + dy))
+
+								if typeof(h) == TYPE_DICTIONARY:
+									h["x"] = new_x
+									h["y"] = new_y
+								else:
+									if "x" in h:
+										h.x = new_x
+									else:
+										if h.has_method("set_meta"): h.set_meta("x", new_x)
+									if "y" in h:
+										h.y = new_y
+									else:
+										if h.has_method("set_meta"): h.set_meta("y", new_y)
+		else:
+			active_timer -= delta
+			if active_timer <= 0.0:
+				is_active = false
+				event_timer = 15.0
+				return
+
+			for b in balls:
+				if not _get_prop(b, "alive", true):
+					continue
+
+				var vx_impulse = randf_range(-300.0, 300.0) * delta
+				var vy_impulse = randf_range(-300.0, 300.0) * delta
+
+				var current_vx = _get_prop(b, "vx", 0.0)
+				var current_vy = _get_prop(b, "vy", 0.0)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["vx"] = current_vx + vx_impulse
+					b["vy"] = current_vy + vy_impulse
+				else:
+					if "vx" in b:
+						b.vx = current_vx + vx_impulse
+					else:
+						if b.has_method("set_meta"): b.set_meta("vx", current_vx + vx_impulse)
+					if "vy" in b:
+						b.vy = current_vy + vy_impulse
+					else:
+						if b.has_method("set_meta"): b.set_meta("vy", current_vy + vy_impulse)
+
 var GAME_MODES = {
+	"hazard_shift_event": HazardShiftEventMode.new(),
 	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
 	"chaotic_artifact": ChaoticArtifactMode.new(),
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),

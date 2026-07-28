@@ -1,0 +1,4 @@
+{
+  "title": "Hazard Replication Mode",
+  "description": "A mode where hazards periodically duplicate themselves nearby, gradually filling the arena if players don't strategically destroy them or use the space effectively."
+}
