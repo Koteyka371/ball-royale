@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1630] Hazard Traps — *2026-07-28 09:41:50 UTC*
+
+Players can pick up 'Hazard Jars' to store environmental hazards like acid puddles or neutralizing puddles, and deploy them strategically to create chokepoints or safe zones for their team.
+
+---
+
 ## [idea-1604] Decoy Mimic Transposition — *2026-07-28 09:11:53 UTC*
 
 A new trickster skill that allows players to instantly swap places with an active mimic clone, transferring all of the player's momentum and current status effects to the clone while leaving the player safely behind at the clone's previous position.
