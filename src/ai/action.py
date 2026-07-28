@@ -4394,10 +4394,16 @@ class Action:
                     dy = closest_target_data["y"] - self.ball.y
 
                     if closest_target_data["type"] == "ball":
-                        # If it hits an enemy/ball, only pull the enemy towards the user
+                        # Pull the enemy slightly towards the user
                         target_b = closest_target_data["target"]
-                        target_b.x -= (dx / dist) * pull_dist
-                        target_b.y -= (dy / dist) * pull_dist
+                        target_b.x -= (dx / dist) * 50.0
+                        target_b.y -= (dy / dist) * 50.0
+
+                        # Pull user towards the enemy
+                        self.ball.x += (dx / dist) * pull_dist
+                        self.ball.y += (dy / dist) * pull_dist
+                        self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                        self.ball.y = max(0.0, min(arena_height, self.ball.y))
                     else:
                         if closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") == "slingshot_node":
                             # Slingshot user away from target at extreme speed
@@ -18909,9 +18915,15 @@ class Action:
                         closest_target_old_y = closest_target.y
 
                         if closest_target_type == "ball" and getattr(closest_target, "team", -1) != getattr(self.ball, "team", -2):
-                            # Enemy ball - pull them
-                            closest_target.x -= (dx / dist) * pull_dist
-                            closest_target.y -= (dy / dist) * pull_dist
+                            # Enemy ball - pull them slightly
+                            closest_target.x -= (dx / dist) * 50.0
+                            closest_target.y -= (dy / dist) * 50.0
+
+                            # Pull user towards the enemy
+                            self.ball.x += (dx / dist) * pull_dist
+                            self.ball.y += (dy / dist) * pull_dist
+                            self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                            self.ball.y = max(0.0, min(arena_height, self.ball.y))
                         elif closest_target_type == "hazard":
                             if getattr(closest_target, "kind", "") == "slingshot_node":
                                 slingshot_boost = 3000.0

@@ -10562,8 +10562,12 @@ func execute(strategy: String, delta: float):
 						else:
 							bx = float(b.x)
 							by = float(b.y)
-						bx -= ((closest_target.x - self.ball.x) / dist) * pull_dist
-						by -= ((closest_target.y - self.ball.y) / dist) * pull_dist
+						bx -= ((closest_target.x - self.ball.x) / dist) * 50.0
+						by -= ((closest_target.y - self.ball.y) / dist) * 50.0
+						self.ball.x += ((closest_target.x - self.ball.x) / dist) * pull_dist
+						self.ball.y += ((closest_target.y - self.ball.y) / dist) * pull_dist
+						self.ball.x = max(0.0, min(arena_width, self.ball.x))
+						self.ball.y = max(0.0, min(arena_height, self.ball.y))
 						if typeof(b) == TYPE_DICTIONARY:
 							b.x = bx
 							b.y = by
@@ -36808,8 +36812,12 @@ func _use_skill():
                             my_team = self.ball.get_meta("team")
 
                         if target_team != my_team:
-                            closest_target.x -= (dx / dist) * pull_dist
-                            closest_target.y -= (dy / dist) * pull_dist
+                            closest_target.x -= (dx / dist) * 50.0
+                            closest_target.y -= (dy / dist) * 50.0
+                            self.ball.x += (dx / dist) * pull_dist
+                            self.ball.y += (dy / dist) * pull_dist
+                            self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                            self.ball.y = max(0.0, min(arena_height, self.ball.y))
                         else:
                             self.ball.x += (dx / dist) * pull_dist
                             self.ball.y += (dy / dist) * pull_dist
