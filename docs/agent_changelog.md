@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1601] Toxic Sludge Mutator — *2026-07-28 00:48:05 UTC*
+
+A new mutator for custom matches where all ground hazards (like lava and spikes) are replaced with toxic sludge. Toxic sludge applies the Radiation debuff for 10 seconds, drastically increasing damage taken from all sources, and slows movement speed. Forces players to heavily prioritize area control.
+
+---
+
 ## [idea-1614] Quantum Instability Field — *2026-07-28 00:46:07 UTC*
 
 A hazard that periodically applies randomized stat modifications to all entities inside it.
