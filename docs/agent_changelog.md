@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1575] Echolocation Only Mode — *2026-07-28 00:23:02 UTC*
+
+Players cannot see the arena except for a tiny radius. Every few seconds, players emit a sound pulse that reveals enemies and walls momentarily.
+
+---
+
 ## [idea-1561] Guild Wars Base Building — *2026-07-28 00:22:58 UTC*
 
 Allow guilds to customize their 'HQ' visually and mechanically. Add a 'Guild War' game mode where guilds build defenses (turrets, walls, traps) using their resources, and other guilds can attack their HQ asynchronously or synchronously. This gives more utility to guild resources and territories.
