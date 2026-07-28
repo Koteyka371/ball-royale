@@ -20,6 +20,8 @@ class Engineer:
     ATTACK_RANGE = 25.0
 
     def __init__(self, ball_id: int, x: float = 0.0, y: float = 0.0):
+        import random
+        self.SKILL = random.choice(['deploy_turret', 'turret_overload'])
         self.id = ball_id
         self.hp = float(self.HP)
         self.max_hp = float(self.HP)
