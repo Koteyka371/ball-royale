@@ -52233,7 +52233,14 @@ class TagTeamMode extends GameMode:
 
 								var ac_orig_traits = active.get("tag_original_traits") if typeof(active) == TYPE_DICTIONARY else (active.get_meta("tag_original_traits") if typeof(active) == TYPE_OBJECT and active.has_method("has_meta") and active.has_meta("tag_original_traits") else (active.tag_original_traits if typeof(active) == TYPE_OBJECT and "tag_original_traits" in active else null))
 								if ac_orig_traits == null:
-									ac_orig_traits = active.get("traits", []) if typeof(active) == TYPE_DICTIONARY else (active.traits if "traits" in active else [])
+									var ac_cur_traits = active.get("traits", []) if typeof(active) == TYPE_DICTIONARY else (active.traits if "traits" in active else [])
+									if typeof(active) == TYPE_DICTIONARY:
+										active["tag_original_traits"] = ac_cur_traits.duplicate()
+									elif typeof(active) == TYPE_OBJECT and active.has_method("set_meta"):
+										active.set_meta("tag_original_traits", ac_cur_traits.duplicate())
+									elif typeof(active) == TYPE_OBJECT and "tag_original_traits" in active:
+										active.tag_original_traits = ac_cur_traits.duplicate()
+									ac_orig_traits = ac_cur_traits.duplicate()
 
 								var merged = []
 								for t in in_orig_traits:
