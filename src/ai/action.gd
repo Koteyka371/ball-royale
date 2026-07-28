@@ -13087,10 +13087,10 @@ func execute(strategy: String, delta: float):
                                 b.decoy_aura_timer = 0.5
 
         var dt = 0.0
-        if "decoy_timer" in my_ball:
+        if decoy_type != "hologram" and "decoy_timer" in my_ball:
             my_ball.decoy_timer -= delta
             dt = my_ball.decoy_timer
-        elif my_ball.has_method("get_meta") and my_ball.has_meta("decoy_timer"):
+        elif decoy_type != "hologram" and my_ball.has_method("get_meta") and my_ball.has_meta("decoy_timer"):
             dt = my_ball.get_meta("decoy_timer") - delta
             my_ball.set_meta("decoy_timer", dt)
 
@@ -27436,9 +27436,18 @@ func _collect_booster(delta: float):
                     var vy = self.ball.vy if "vy" in self.ball else (self.ball.get("vy", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("vy") if self.ball.has_method("get_meta") and self.ball.has_meta("vy") else 0.0))
                     var speed = sqrt(vx*vx + vy*vy)
 
+                    if speed >= 0.001:
+                        var max_s = (self.ball.speed if "speed" in self.ball else (self.ball.get("speed", 100.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("speed") if self.ball.has_method("get_meta") and self.ball.has_meta("speed") else 100.0))) * 1.5
+                        vx = (vx / speed) * max_s
+                        vy = (vy / speed) * max_s
+                    if speed >= 0.001:
+                        var max_s = (self.ball.speed if "speed" in self.ball else (self.ball.get("speed", 100.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("speed") if self.ball.has_method("get_meta") and self.ball.has_meta("speed") else 100.0))) * 1.5
+                        vx = (vx / speed) * max_s
+                        vy = (vy / speed) * max_s
                     if speed < 0.001:
                         var angle = randf() * PI * 2.0
                         var b_speed = self.ball.speed if "speed" in self.ball else (self.ball.get("speed", 100.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("speed") if self.ball.has_method("get_meta") and self.ball.has_meta("speed") else 100.0))
+                        b_speed *= 1.5
                         vx = cos(angle) * b_speed
                         vy = sin(angle) * b_speed
 

@@ -6370,7 +6370,7 @@ class Action:
                                         b.siren_fear_source_x = self.ball.x
                                         b.siren_fear_source_y = self.ball.y
 
-        if getattr(self.ball, "is_decoy", False):
+        if getattr(self.ball, "is_decoy", False) and getattr(self.ball, "decoy_type", "") != "hologram":
             self.ball.decoy_timer -= delta
 
             # Emit aura that grants slightly increased speed and stamina regen to allies within a certain radius
@@ -13918,11 +13918,17 @@ class Action:
                     import math
                     speed = math.hypot(vx, vy)
                     if speed > 0.001:
-                        decoy.vx = vx
-                        decoy.vy = vy
+                        # scale to max speed
+                        max_s = getattr(self.ball, "speed", 200.0) * 1.5
+                        decoy.vx = (vx / speed) * max_s
+                        decoy.vy = (vy / speed) * max_s
+                        # scale to max speed
+                        max_s = getattr(self.ball, "speed", 200.0) * 1.5
+                        decoy.vx = (vx / speed) * max_s
+                        decoy.vy = (vy / speed) * max_s
                     else:
                         angle = __import__('random').uniform(0, 2 * math.pi)
-                        b_speed = getattr(self.ball, "speed", 100.0)
+                        b_speed = getattr(self.ball, "speed", 100.0) * 1.5
                         decoy.vx = math.cos(angle) * b_speed
                         decoy.vy = math.sin(angle) * b_speed
 
