@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1604] Decoy Mimic Transposition — *2026-07-28 09:11:53 UTC*
+
+A new trickster skill that allows players to instantly swap places with an active mimic clone, transferring all of the player's momentum and current status effects to the clone while leaving the player safely behind at the clone's previous position.
+
+---
+
 ## [idea-1622] Shrinking Bouncy Arena Mode — *2026-07-28 08:37:43 UTC*
 
 Combines Extreme Bounciness with a shrinking safe zone. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios.

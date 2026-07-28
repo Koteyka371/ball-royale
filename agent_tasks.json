@@ -27459,7 +27459,7 @@
     },
     {
       "id": "idea-1604",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Decoy Mimic Transposition",
@@ -41109,6 +41109,40 @@
         "src/ai/bouncing_decoys.py",
         "src/ai/bouncing_decoys.gd",
         "tests/test_bouncing_decoys.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2406",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Ghost Bumper Trails",
+      "description": "Players leave behind a temporary trail of ghost bumpers that vanish after a few seconds. If a player collides with someone else's trail, they are ricocheted rapidly, creating dynamic, player-generated maze obstacles.",
+      "allowed_paths": [
+        "src/ai/ghost_bumper_trails.py",
+        "src/ai/ghost_bumper_trails.gd",
+        "tests/test_ghost_bumper_trails.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2407",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Polarity Magnet Mode",
+      "description": "Periodically, all magnetic effects and gravitational pulls invert. Black holes push players away, and repulsors pull players in. This requires players to suddenly adjust their positioning strategies every few seconds.",
+      "allowed_paths": [
+        "src/ai/reverse_polarity_magnet.py",
+        "src/ai/reverse_polarity_magnet.gd",
+        "tests/test_reverse_polarity_magnet.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
