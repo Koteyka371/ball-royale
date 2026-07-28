@@ -47147,6 +47147,88 @@ class ChromaBossMode extends GameMode:
 					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 						world.add_event("chroma_boss_aura_change", {"color": next_color})
 
+class GuildWarMode extends GameMode:
+	var attacker_guild = null
+	var defender_guild = null
+	var hq_hp = 5000.0
+	var hq_max_hp = 5000.0
+	var attacker_balls = []
+	var defender_balls = []
+	var hq_x = 400.0
+	var hq_y = 300.0
+	var hq_radius = 50.0
+
+	func _init().():
+		name = "guild_war"
+		desc = "Attack the enemy guild's HQ and destroy their defenses."
+		excluded_hazards = ["turret", "trap", "wall"]
+
+	func setup(world, balls):
+		.setup(world, balls)
+		attacker_balls.clear()
+		defender_balls.clear()
+
+		var half = balls.size() / 2
+		for i in range(balls.size()):
+			var b_id = balls[i].id if balls[i].get("id") != null else balls[i]["id"]
+			if i < half:
+				attacker_balls.append(b_id)
+			else:
+				defender_balls.append(b_id)
+
+		if defender_guild != null and world.has("arena") and world.arena != null:
+			# In a real scenario, this would sync from the server
+			# Here we just rely on the server creating the hazards in python
+			# But to prevent missing client hazards, we add some placeholders if needed,
+			# or better yet, since the server syncs hazards to the client, we don't need to manually spawn them here IF they are just generic hazards.
+			# However, if they are spawned purely in GameMode.setup, they might not sync if the client doesn't also spawn them.
+			# Let's mock a standard layout based on common defenses for visual parity.
+			var num_defenses = 5
+			var angle_step = 2 * PI / max(1.0, num_defenses)
+			var current_angle = 0.0
+			for i in range(num_defenses):
+				var dist = 100.0 + (i * 10)
+				world.arena.hazards.append({
+					"type": "hazard",
+					"kind": "turret",
+					"x": hq_x + cos(current_angle) * dist,
+					"y": hq_y + sin(current_angle) * dist,
+					"radius": 15.0,
+					"damage": 10.0,
+					"active": true,
+					"is_defense": true,
+					"owner_guild": defender_guild
+				})
+				current_angle += angle_step
+
+	func tick(world, delta=0.016):
+		.tick(world, delta)
+
+		var attackers_in_range = []
+		for b in world.balls:
+			var b_id = b.id if b.get("id") != null else b["id"]
+			if b_id in attacker_balls:
+				var dist = sqrt(pow(b.x - hq_x, 2) + pow(b.y - hq_y, 2))
+				if dist < hq_radius + b.radius + 20.0:
+					attackers_in_range.append(b)
+
+		if attackers_in_range.size() > 0:
+			var damage = attackers_in_range.size() * 10.0 * delta
+			hq_hp -= damage
+			if hq_hp <= 0:
+				hq_hp = 0
+
+		if world.has("arena") and world.arena != null:
+			for h in world.arena.hazards:
+				if h.has("is_defense") and h.is_defense and h.get("active", false):
+					for b in world.balls:
+						var b_id = b.id if b.get("id") != null else b["id"]
+						if b_id in attacker_balls:
+							var dist = sqrt(pow(b.x - h.x, 2) + pow(b.y - h.y, 2))
+							if dist < h.radius + b.radius:
+								b.hp -= h.get("damage", 5.0) * delta
+
+
 class GuildStormMode extends GameMode:
 	var guild_name = null
 	var cost = 500
@@ -50778,6 +50860,7 @@ var GAME_MODES = {
 	"radiation_windstorm": RadiationWindstormMode.new(),
 	"biome_safe_zones": BiomeSafeZonesMode.new(),
 	"guild_storm": GuildStormMode.new(),
+	"guild_war": GuildWarMode.new(),
 	"chroma_boss": ChromaBossMode.new(),
 	"rising_lava": RisingLavaMode.new(),
 	"time_rewind_altar": TimeRewindAltarMode.new(),
