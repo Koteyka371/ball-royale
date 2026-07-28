@@ -14913,233 +14913,226 @@ class EcholocationMode extends GameMode:
 class PitchBlackMode extends GameMode:
 	func _init() -> void:
 		name = "Pitch Black"
-		description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
-
-	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
-		for b in balls:
-			var is_alive = false
-			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", false)
-			else:
-				is_alive = b.get("alive") if "alive" in b else false
-
-			if not is_alive:
-				continue
-
-			var traits = []
-			var b_type = ""
-
-			if typeof(b) == TYPE_DICTIONARY:
-				traits = b.get("traits", [])
-				b_type = str(b.get("ball_type", "")).to_lower()
-			else:
-				if "traits" in b:
-					traits = b.traits
-				if "ball_type" in b:
-					b_type = str(b.ball_type).to_lower()
-
-			var weather_cond = ""
-			if "weather" in self:
-				weather_cond = self.weather
-			if weather_cond == "" and world != null:
-				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
-					var arena = world.get("arena")
-					if typeof(arena) == TYPE_DICTIONARY:
-						weather_cond = arena.get("weather", "")
-					elif arena != null and "weather" in arena:
-						weather_cond = arena.weather
-				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
-					if typeof(world.arena) == TYPE_DICTIONARY:
-						weather_cond = world.arena.get("weather", "")
-					elif "weather" in world.arena:
-						weather_cond = world.arena.weather
-
-			var arena_name = "unknown"
-			if world != null:
-				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
-					var arena = world.get("arena")
-					if typeof(arena) == TYPE_DICTIONARY:
-						arena_name = str(arena.get("name", "")).to_lower()
-					elif arena != null and "name" in arena:
-						arena_name = str(arena.name).to_lower()
-				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
-					if typeof(world.arena) == TYPE_DICTIONARY:
-						arena_name = str(world.arena.get("name", "")).to_lower()
-					elif "name" in world.arena:
-						arena_name = str(world.arena.name).to_lower()
-
-			# Trait: Fire
-			var is_fire = b_type.find("fire") != -1 or traits.has("fire")
-			if is_fire:
-				if weather_cond == "heatwave" or weather_cond == "lava":
-					if typeof(b) == TYPE_DICTIONARY:
-						var base_s = b.get("base_speed", b.get("speed", 100.0))
-						var base_d = b.get("base_damage", b.get("damage", 10.0))
-						b["speed"] = base_s * 1.2
-						b["damage"] = base_d * 1.2
-					else:
-						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
-						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
-						if "speed" in b: b.speed = base_s * 1.2
-						if "damage" in b: b.damage = base_d * 1.2
-				elif weather_cond == "rain" or weather_cond == "blizzard":
-					if typeof(b) == TYPE_DICTIONARY:
-						var base_s = b.get("base_speed", b.get("speed", 100.0))
-						var base_d = b.get("base_damage", b.get("damage", 10.0))
-						b["speed"] = base_s * 0.8
-						b["damage"] = base_d * 0.8
-					else:
-						var base_s = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
-						var base_d = b.get("base_damage") if "base_damage" in b else b.get("damage", 10.0)
-						if "speed" in b: b.speed = base_s * 0.8
-						if "damage" in b: b.damage = base_d * 0.8
-
-			# Trait: Earth
-			var is_earth = b_type.find("earth") != -1 or b_type.find("rock") != -1 or traits.has("earth") or traits.has("rock")
-			if is_earth:
-				if weather_cond == "sandstorm":
-					if typeof(b) == TYPE_DICTIONARY:
-						b["weather_immunity_timer"] = b.get("weather_immunity_timer", 0.0) + delta * 2.0
-					else:
-						var t = b.get("weather_immunity_timer") if "weather_immunity_timer" in b else 0.0
-						if "weather_immunity_timer" in b: b.weather_immunity_timer = t + delta * 2.0
-						elif b.has_method("set_meta"): b.set_meta("weather_immunity_timer", t + delta * 2.0)
-
-				if arena_name.find("dirt") != -1 or arena_name.find("earth") != -1:
-					if typeof(b) == TYPE_DICTIONARY:
-						b["defense_multiplier"] = 0.8
-					else:
-						if "defense_multiplier" in b:
-							b.defense_multiplier = 0.8
-						elif b.has_method("set_meta"):
-							b.set_meta("defense_multiplier", 0.8)
-
-			# Trait: Wind
-			var is_wind = b_type.find("wind") != -1 or traits.has("wind")
-			if is_wind:
-				if weather_cond == "slight_breeze" or weather_cond == "storm":
-					if typeof(b) == TYPE_DICTIONARY:
-						var base_s = b.get("base_speed", b.get("speed", 100.0))
-						b["speed"] = base_s * 1.2
-					else:
-						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
-						if "speed" in b: b.speed = base_s * 1.2
-				elif weather_cond == "hurricane":
-					if typeof(b) == TYPE_DICTIONARY:
-						b["x"] = b.get("x", 0.0) + (100.0 * delta)
-						b["y"] = b.get("y", 0.0) + (100.0 * delta)
-						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 1.5
-					else:
-						var old_x = b.get("x") if "x" in b else 0.0
-						var old_y = b.get("y") if "y" in b else 0.0
-						if "x" in b: b.x = old_x + (100.0 * delta)
-						if "y" in b: b.y = old_y + (100.0 * delta)
-
-						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
-						if "defense_multiplier" in b:
-							b.defense_multiplier = dm * 1.5
-						elif b.has_method("set_meta"):
-							b.set_meta("defense_multiplier", dm * 1.5)
-
-			# Trait: Water
-			var is_water = b_type.find("water") != -1 or traits.has("water")
-			if is_water:
-				if weather_cond == "light_rain" or weather_cond == "heavy_rain" or weather_cond == "rain":
-					if typeof(b) == TYPE_DICTIONARY:
-						var base_s = b.get("base_speed", b.get("speed", 100.0))
-						b["speed"] = base_s * 1.1
-						var cur_hp = b.get("hp", 100.0)
-						var m_hp = b.get("max_hp", 100.0)
-						b["hp"] = min(m_hp, cur_hp + (5.0 * delta))
-					else:
-						var base_s = b.get("base_speed") if "base_speed" in b else (b.get("speed") if "speed" in b else 100.0)
-						if "speed" in b: b.speed = base_s * 1.1
-
-						var cur_hp = b.get("hp") if "hp" in b else 100.0
-						var m_hp = b.get("max_hp") if "max_hp" in b else 100.0
-						var new_hp = min(m_hp, cur_hp + (5.0 * delta))
-						if "hp" in b:
-							b.hp = new_hp
-						elif b.has_method("set_meta"):
-							b.set_meta("hp", new_hp)
-
-			# Trait: Elementalist
-			var is_elemental = b_type.find("elemental") != -1 or traits.has("elemental")
-			if is_elemental:
-				if weather_cond == "sandstorm":
-					if typeof(b) == TYPE_DICTIONARY:
-						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.7
-						b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.15
-					else:
-						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
-						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.7
-						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.7)
-
-						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
-						if "speed" in b: b.speed = bs * 1.15
+		description = "The arena is completely pitch black. Balls only become briefly visible when they bounce off walls, take damage, or attack. Attacks are skill shots that temporarily illuminate a small area."
 
 	func setup(world, balls: Array) -> void:
-		super.setup(world, balls)
-		if world != null and "arena" in world and world.arena != null:
-			world.arena.is_night = true
-		if not "dead_balls" in world:
-			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-		for b in balls:
-			if b.ball_type != "spectator":
-				var base_perc = 250.0
-				if "perception_radius" in b:
-					base_perc = float(b.perception_radius)
-				if b.has_method("set_meta"):
-					b.set_meta("base_perception_radius", base_perc)
-				b.perception_radius = base_perc
-				if not "team" in b:
-					b.team = b.ball_type
+		if world and typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+			world.get("arena").set("is_night", true)
+		elif world and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			world.arena["is_night"] = true
 
-	func tick(world, balls: Array, delta: float = 0.016) -> void:
-		if not "dead_balls" in world:
-			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
-		for b in balls:
-			if not b.alive:
-				if not world.get_meta("dead_balls").has(b):
-					if b.has_method("set_meta"):
-						b.set_meta("time_since_death", 0.0)
-					world.get_meta("dead_balls").append(b)
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		var arena_width = 800.0
+		var arena_height = 600.0
+		if world and typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena"):
+			var arena = world.get("arena")
+			arena_width = arena.get("width") if "width" in arena else 800.0
+			arena_height = arena.get("height") if "height" in arena else 600.0
+		elif world and typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world["arena"]
+			arena_width = arena.get("width", 800.0)
+			arena_height = arena.get("height", 600.0)
+
+		var hazards_to_remove = []
+		var hazards = []
+		if world and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena and "hazards" in world.arena:
+			hazards = world.arena.hazards
+		elif world and typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+
+		for h in hazards:
+			var hk = ""
+			if typeof(h) == TYPE_DICTIONARY:
+				hk = h.get("kind", "")
+			else:
+				hk = h.get("kind") if "kind" in h else ""
+
+			if hk == "flare_shot":
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] += h.get("vx", 0.0) * delta
+					h["y"] += h.get("vy", 0.0) * delta
+					h["duration"] -= delta
+					if h["duration"] <= 0:
+						hazards_to_remove.append(h)
+						continue
+					var hit = false
+					for target in balls:
+						var t_id = target.get("id") if typeof(target) == TYPE_DICTIONARY else (target.get("id") if "id" in target else null)
+						if t_id != h.get("owner_id") and (target.get("alive", true) if typeof(target) == TYPE_DICTIONARY else (target.get("alive") if "alive" in target else true)):
+							var tx = target.get("x", 0) if typeof(target) == TYPE_DICTIONARY else target.get("x")
+							var ty = target.get("y", 0) if typeof(target) == TYPE_DICTIONARY else target.get("y")
+							var tr = target.get("radius", 20) if typeof(target) == TYPE_DICTIONARY else target.get("radius")
+							var dist = Vector2(tx, ty).distance_to(Vector2(h["x"], h["y"]))
+							if dist < tr + h.get("radius", 10.0):
+								if typeof(target) == TYPE_DICTIONARY:
+									target["hp"] -= h.get("damage", 10.0)
+									target["visibility_timer"] = 0.5
+								else:
+									target.set("hp", target.get("hp") - h.get("damage", 10.0))
+									target.set("visibility_timer", 0.5)
+								hit = true
+								break
+					if hit:
+						hazards_to_remove.append(h)
 				else:
-					if b.has_method("get_meta") and b.has_meta("time_since_death"):
-						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+					h.set("x", h.get("x") + h.get("vx", 0.0) * delta)
+					h.set("y", h.get("y") + h.get("vy", 0.0) * delta)
+					h.set("duration", h.get("duration") - delta)
+					if h.get("duration") <= 0:
+						hazards_to_remove.append(h)
+						continue
+					var hit = false
+					for target in balls:
+						var t_id = target.get("id") if typeof(target) == TYPE_DICTIONARY else (target.get("id") if "id" in target else null)
+						if t_id != h.get("owner_id") and (target.get("alive", true) if typeof(target) == TYPE_DICTIONARY else (target.get("alive") if "alive" in target else true)):
+							var tx = target.get("x", 0) if typeof(target) == TYPE_DICTIONARY else target.get("x")
+							var ty = target.get("y", 0) if typeof(target) == TYPE_DICTIONARY else target.get("y")
+							var tr = target.get("radius", 20) if typeof(target) == TYPE_DICTIONARY else target.get("radius")
+							var dist = Vector2(tx, ty).distance_to(Vector2(h.get("x"), h.get("y")))
+							if dist < tr + h.get("radius", 10.0):
+								if typeof(target) == TYPE_DICTIONARY:
+									target["hp"] -= h.get("damage", 10.0)
+									target["visibility_timer"] = 0.5
+								else:
+									target.set("hp", target.get("hp") - h.get("damage", 10.0))
+									target.set("visibility_timer", 0.5)
+								hit = true
+								break
+					if hit:
+						hazards_to_remove.append(h)
+
+		for h in hazards_to_remove:
+			hazards.erase(h)
 
 		for b in balls:
-			if b.alive and b.ball_type != "spectator":
-				var base_perc = 250.0
-				if b.has_method("get_meta") and b.has_meta("base_perception_radius"):
-					base_perc = b.get_meta("base_perception_radius")
-				b.perception_radius = base_perc
+			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if "alive" in b else false)
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else "")
+			if not is_alive or b_type == "spectator":
+				continue
 
-	func check_winner(world, balls: Array):
-		var alive = []
-		for b in balls:
-			if b.alive and b.ball_type != "spectator":
-				alive.append(b)
+			var vx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("vx") if "vx" in b else 0.0)
+			var vy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("vy") if "vy" in b else 0.0)
 
-		if alive.size() == 0:
-			if has_method("_award_skill_points"): call("_award_skill_points")
-			return "Draw"
+			var prev_vx = b.get("pb_prev_vx", vx) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("pb_prev_vx") if b.has_meta("pb_prev_vx") else vx)
+			var prev_vy = b.get("pb_prev_vy", vy) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("pb_prev_vy") if b.has_meta("pb_prev_vy") else vy)
 
-		var teams_alive = {}
-		for b in alive:
-			var t = b.get("team")
-			if t == null: t = b.ball_type
-			teams_alive[t] = true
+			var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+			var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+			var br = b.get("radius", 20.0) if typeof(b) == TYPE_DICTIONARY else (b.get("radius") if "radius" in b else 20.0)
 
-		if teams_alive.size() == 1:
-			if has_method("_award_skill_points"): call("_award_skill_points")
-			return teams_alive.keys()[0]
+			var bounce = false
+			if (vx * prev_vx < 0) and (bx <= br * 1.5 or bx >= arena_width - br * 1.5):
+				bounce = true
+			if (vy * prev_vy < 0) and (by <= br * 1.5 or by >= arena_height - br * 1.5):
+				bounce = true
 
-		if alive.size() == 1:
-			if has_method("_award_skill_points"): call("_award_skill_points")
-			return alive[0].ball_type
+			if bounce:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["visibility_timer"] = 0.5
+				else:
+					b.set_meta("visibility_timer", 0.5)
+					b.set("visibility_timer", 0.5)
 
-		return null
+			if typeof(b) == TYPE_DICTIONARY:
+				b["pb_prev_vx"] = vx
+				b["pb_prev_vy"] = vy
+			else:
+				b.set_meta("pb_prev_vx", vx)
+				b.set_meta("pb_prev_vy", vy)
+
+			var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.get("hp") if "hp" in b else 100.0)
+			var prev_hp = b.get("pb_prev_hp", hp) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("pb_prev_hp") if b.has_meta("pb_prev_hp") else hp)
+			if hp < prev_hp:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["visibility_timer"] = 0.5
+				else:
+					b.set_meta("visibility_timer", 0.5)
+					b.set("visibility_timer", 0.5)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["pb_prev_hp"] = hp
+			else:
+				b.set_meta("pb_prev_hp", hp)
+
+			var attack_cooldown = b.get("pb_attack_cooldown", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("pb_attack_cooldown") if b.has_meta("pb_attack_cooldown") else 0.0)
+			attack_cooldown -= delta
+
+			if attack_cooldown <= 0:
+				var nearest = null
+				var min_dist = 400.0
+				for target in balls:
+					if target != b:
+						var t_alive = target.get("alive", true) if typeof(target) == TYPE_DICTIONARY else (target.get("alive") if "alive" in target else true)
+						var t_type = target.get("ball_type", "") if typeof(target) == TYPE_DICTIONARY else (target.get("ball_type") if "ball_type" in target else "")
+						if t_alive and t_type != "spectator":
+							var tx = target.get("x", 0.0) if typeof(target) == TYPE_DICTIONARY else target.get("x")
+							var ty = target.get("y", 0.0) if typeof(target) == TYPE_DICTIONARY else target.get("y")
+							var dist = Vector2(tx, ty).distance_to(Vector2(bx, by))
+							if dist < min_dist:
+								min_dist = dist
+								nearest = target
+
+				if nearest:
+					var tx = nearest.get("x", 0.0) if typeof(nearest) == TYPE_DICTIONARY else nearest.get("x")
+					var ty = nearest.get("y", 0.0) if typeof(nearest) == TYPE_DICTIONARY else nearest.get("y")
+					var d = Vector2(tx - bx, ty - by)
+					var dist = d.length()
+					if dist > 0:
+						var n = d.normalized()
+						var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else null)
+						var flare = {
+							"id": "flare_" + str(randi() % 10000),
+							"x": bx + n.x * (br + 5),
+							"y": by + n.y * (br + 5),
+							"radius": 20.0,
+							"kind": "flare_shot",
+							"damage": 15.0,
+							"vx": n.x * 400.0,
+							"vy": n.y * 400.0,
+							"duration": 1.5,
+							"owner_id": b_id
+						}
+						hazards.append(flare)
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["visibility_timer"] = 0.5
+						else:
+							b.set_meta("visibility_timer", 0.5)
+							b.set("visibility_timer", 0.5)
+						attack_cooldown = 2.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["pb_attack_cooldown"] = attack_cooldown
+			else:
+				b.set_meta("pb_attack_cooldown", attack_cooldown)
+
+			var v_timer = b.get("visibility_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("visibility_timer") if b.has_meta("visibility_timer") else (b.get("visibility_timer") if "visibility_timer" in b else 0.0))
+			v_timer = max(0.0, v_timer - delta)
+			if typeof(b) == TYPE_DICTIONARY:
+				b["visibility_timer"] = v_timer
+			else:
+				b.set_meta("visibility_timer", v_timer)
+				b.set("visibility_timer", v_timer)
+
+			var is_illuminated = false
+			for h in hazards:
+				var hk = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.get("kind") if "kind" in h else "")
+				if hk == "flare_shot":
+					var hx = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get("x") if "x" in h else 0.0)
+					var hy = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.get("y") if "y" in h else 0.0)
+					var dist = Vector2(bx, by).distance_to(Vector2(hx, hy))
+					if dist < 120.0:
+						is_illuminated = true
+						break
+
+			var is_visible = (v_timer > 0 or is_illuminated)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["invisible"] = not is_visible
+			else:
+				b.set("invisible", not is_visible)
+				if b.has_method("set_meta"):
+					b.set_meta("invisible", not is_visible)
 
 class VisionReducedMode extends GameMode:
 	var pulse_timer: float = 0.0

@@ -10260,172 +10260,177 @@ class PitchBlackMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Pitch Black"
-        self.description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
+        self.description = "The arena is completely pitch black. Balls only become briefly visible when they bounce off walls, take damage, or attack. Attacks are skill shots that temporarily illuminate a small area."
 
-    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
-        for b in balls:
-            sb_timer = getattr(b, "soul_boost_timer", 0.0)
-            if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
-                b.soul_boost_timer -= delta
-                if b.soul_boost_timer <= 0:
-                    b.soul_boost_timer = 0
-                    if hasattr(b, "base_damage"):
-                        b.damage = b.base_damage
-                    if hasattr(b, "base_speed"):
-                        b.speed = b.base_speed
-
-        if getattr(world, "weekly_mutator", "") == "gravity_reversal" or getattr(world, "mutators_active", False) and "gravity_reversal" in getattr(world, "mutators", []) or getattr(self, "name", "") == "Gravity Reversal Mutator":
-            timer = getattr(world, "gravity_reversal_timer", 0.0) + delta
-            if timer > 10.0:
-                timer = 0.0
-                current = getattr(world, "gravity_reversal_active", False)
-                world.gravity_reversal_active = not current
-                if hasattr(world, "add_event"):
-                    msg = "Gravity Reversed!" if world.gravity_reversal_active else "Gravity Restored!"
-                    world.add_event("gravity_reversal", {"message": msg, "reversed": world.gravity_reversal_active})
-            world.gravity_reversal_timer = timer
-
-        weather = getattr(self, "weather", "")
-        if not weather and hasattr(world, "arena"):
-            weather = getattr(world.arena, "weather", "")
-
-        if hasattr(world, "boosters") and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
-            for b in world.boosters:
-                if not getattr(b, "mutated_env", None):
-                    bx = b.get("x", 0) if isinstance(b, dict) else getattr(b, "x", 0)
-                    by = b.get("y", 0) if isinstance(b, dict) else getattr(b, "y", 0)
-                    for h in world.arena.hazards:
-                        hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
-                        if hk in ["mud_puddle", "quicksand", "lava", "flood_zone", "poison_cloud"]:
-                            hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
-                            hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
-                            hr = h.get("radius", 0) if isinstance(h, dict) else getattr(h, "radius", 0)
-                            dx = bx - hx
-                            dy = by - hy
-                            if dx*dx + dy*dy <= hr*hr:
-                                if isinstance(b, dict):
-                                    b["mutated_env"] = hk
-                                else:
-                                    setattr(b, "mutated_env", hk)
-                                break
-
-        arena_type = getattr(world.arena, "name", "unknown").lower() if hasattr(world, "arena") else "unknown"
-
-        for b in balls:
-            if not getattr(b, "alive", False):
-                continue
-
-            traits = getattr(b, "traits", [])
-            b_type = getattr(b, "ball_type", "").lower()
-
-            # Trait: Fire
-            is_fire = "fire" in b_type or "fire" in traits
-            if is_fire:
-                if weather in ["heatwave", "lava"]:
-                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
-                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
-                    b.speed = base_s * 1.2
-                    b.damage = base_d * 1.2
-                elif weather in ["rain", "blizzard", "heavy_rain"]:
-                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
-                    base_d = getattr(b, "base_damage", getattr(b, "damage", 10.0))
-                    b.speed = base_s * 0.8
-                    b.damage = base_d * 0.8
-
-            # Trait: Earth
-            is_earth = "earth" in b_type or "rock" in b_type or "earth" in traits or "rock" in traits
-            if is_earth:
-                if weather == "sandstorm":
-                    b.weather_immunity_timer = getattr(b, "weather_immunity_timer", 0.0) + delta * 2.0
-
-                if "dirt" in arena_type or "earth" in arena_type:
-                    b.defense_multiplier = 0.8
-
-            # Trait: Wind
-            is_wind = "wind" in b_type or "wind" in traits
-            if is_wind:
-                if weather in ["slight_breeze", "storm"]:
-                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
-                    b.speed = base_s * 1.2
-                elif weather == "hurricane":
-                    # Blown away by hurricane
-                    b.x = getattr(b, "x", 0.0) + (100.0 * delta)
-                    b.y = getattr(b, "y", 0.0) + (100.0 * delta)
-                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 1.5
-
-            # Trait: Water
-            is_water = "water" in b_type or "water" in traits
-            if is_water:
-                if weather in ["light_rain", "heavy_rain", "rain"]:
-                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
-                    b.speed = base_s * 1.1
-                    b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + (5.0 * delta))
-
-            # Trait: Elementalist
-            is_elemental = "elemental" in b_type or "elemental" in traits
-            if is_elemental:
-                if weather in ["sandstorm"]:
-                    # Elementalist in sandstorm gains a passive shield/defense boost
-                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
-                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
-
-    def setup(self, world: Any, balls: List[Any]) -> None:
+    def setup(self, world, balls):
         super().setup(world, balls)
-        if hasattr(world, "arena"):
+        if hasattr(world, "arena") and world.arena is not None:
             world.arena.is_night = True
-        if not hasattr(world, "dead_balls"):
-            world.dead_balls = []
         for b in balls:
-            w_timer = getattr(b, "weather_immunity_timer", 0.0)
-            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
-                b.weather_immunity_timer = max(0.0, w_timer - delta)
+            if getattr(b, "ball_type", "") != "spectator":
+                b.invisible = True
+                b.visibility_timer = 0.0
+                b.pb_prev_hp = b.hp
+                b.pb_prev_vx = getattr(b, "vx", 0.0)
+                b.pb_prev_vy = getattr(b, "vy", 0.0)
+                b.pb_attack_cooldown = getattr(self, "random", __import__("random")).uniform(0.0, 2.0)
+                b.damage = 0.0
+                b.base_damage = 0.0
 
-            if getattr(b, "ball_type", None) != "spectator":
-                b.base_perception_radius = getattr(b, "perception_radius", 250)
-                b.team = b.ball_type
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
 
-    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        # Determine arena bounds
+        arena_width = getattr(world.arena, "width", 800) if hasattr(world, "arena") else 800
+        arena_height = getattr(world.arena, "height", 600) if hasattr(world, "arena") else 600
 
-        if not hasattr(world, "dead_balls"):
-            world.dead_balls = []
-        self.apply_dynamic_traits(world, balls, delta)
+        hazards_to_remove = []
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if isinstance(h, dict):
+                    hk = h.get("kind", "")
+                else:
+                    hk = getattr(h, "kind", "")
+
+                if hk == "flare_shot":
+                    if isinstance(h, dict):
+                        h["x"] += h.get("vx", 0) * delta
+                        h["y"] += h.get("vy", 0) * delta
+                        h["duration"] -= delta
+                        if h["duration"] <= 0:
+                            hazards_to_remove.append(h)
+                            continue
+
+                        # Collision
+                        hit = False
+                        for target in balls:
+                            if target.id != h.get("owner_id") and getattr(target, "alive", True):
+                                dist = math.hypot(target.x - h["x"], target.y - h["y"])
+                                if dist < target.radius + h.get("radius", 10):
+                                    target.hp -= h.get("damage", 10)
+                                    target.visibility_timer = 0.5
+                                    hit = True
+                                    break
+                        if hit:
+                            hazards_to_remove.append(h)
+                    else:
+                        h.x += getattr(h, "vx", 0) * delta
+                        h.y += getattr(h, "vy", 0) * delta
+                        h.duration -= delta
+                        if h.duration <= 0:
+                            hazards_to_remove.append(h)
+                            continue
+
+                        # Collision
+                        hit = False
+                        for target in balls:
+                            if target.id != getattr(h, "owner_id", None) and getattr(target, "alive", True):
+                                dist = math.hypot(target.x - h.x, target.y - h.y)
+                                if dist < target.radius + getattr(h, "radius", 10):
+                                    target.hp -= getattr(h, "damage", 10)
+                                    target.visibility_timer = 0.5
+                                    hit = True
+                                    break
+                        if hit:
+                            hazards_to_remove.append(h)
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
         for b in balls:
-            if not getattr(b, "alive", False):
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
                 continue
 
-        for b in balls:
-            w_timer = getattr(b, "weather_immunity_timer", 0.0)
-            if isinstance(w_timer, (int, float)) and w_timer > 0.0:
-                b.weather_immunity_timer = max(0.0, w_timer - delta)
-            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
-            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
-            if not getattr(b, "alive", False):
-                if b not in world.dead_balls:
-                    b.time_since_death = 0.0
-                    world.dead_balls.append(b)
-                else:
-                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
+            # Wall bounce detection
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            prev_vx = getattr(b, "pb_prev_vx", vx)
+            prev_vy = getattr(b, "pb_prev_vy", vy)
 
-        # Ensure it matches their actual base perception radius
-        for b in balls:
-            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
-            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
-            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
-                b.perception_radius = getattr(b, "base_perception_radius", 250.0)
+            bounce = False
+            if (vx * prev_vx < 0) and (b.x <= b.radius * 1.5 or b.x >= arena_width - b.radius * 1.5):
+                bounce = True
+            if (vy * prev_vy < 0) and (b.y <= b.radius * 1.5 or b.y >= arena_height - b.radius * 1.5):
+                bounce = True
 
-    def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
-        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
-        if not alive:
-            return "Draw"
+            if bounce:
+                b.visibility_timer = 0.5
 
-        teams_alive = set(getattr(b, "team", getattr(b, "ball_type", None)) for b in alive)
-        if len(teams_alive) == 1:
-            return list(teams_alive)[0]
+            b.pb_prev_vx = vx
+            b.pb_prev_vy = vy
 
-        if len(alive) == 1:
-            return alive[0].ball_type
+            # Damage taken detection
+            if b.hp < getattr(b, "pb_prev_hp", b.hp):
+                b.visibility_timer = 0.5
+            b.pb_prev_hp = b.hp
 
-        return None
+            # Attack logic
+            b.pb_attack_cooldown = getattr(b, "pb_attack_cooldown", 0.0) - delta
+            if b.pb_attack_cooldown <= 0:
+                # Find nearest target
+                nearest = None
+                min_dist = 400.0
+                for target in balls:
+                    if target != b and getattr(target, "alive", True) and getattr(target, "ball_type", "") != "spectator":
+                        dist = math.hypot(target.x - b.x, target.y - b.y)
+                        if dist < min_dist:
+                            min_dist = dist
+                            nearest = target
+
+                if nearest:
+                    dx = nearest.x - b.x
+                    dy = nearest.y - b.y
+                    dist = math.hypot(dx, dy)
+                    if dist > 0:
+                        nx, ny = dx/dist, dy/dist
+                        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                            try:
+                                from arena.procedural_arena import Hazard
+                                hazard_class = Hazard
+                            except ImportError:
+                                class DummyHazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id
+                                        self.x = x
+                                        self.y = y
+                                        self.radius = radius
+                                        self.kind = kind
+                                        self.damage = damage
+                                hazard_class = DummyHazard
+
+                            flare_id = "flare_" + str(len(world.arena.hazards)) + str(getattr(self, "random", __import__("random")).randint(1,1000))
+                            flare = hazard_class(flare_id, b.x + nx*(b.radius+5), b.y + ny*(b.radius+5), 20.0, "flare_shot", 15.0)
+                            setattr(flare, "vx", nx * 400.0)
+                            setattr(flare, "vy", ny * 400.0)
+                            setattr(flare, "duration", 1.5)
+                            setattr(flare, "owner_id", b.id)
+                            world.arena.hazards.append(flare)
+
+                            b.visibility_timer = 0.5
+                            b.pb_attack_cooldown = 2.0
+
+            # Timer decay
+            b.visibility_timer = max(0.0, getattr(b, "visibility_timer", 0.0) - delta)
+
+            # Illumination check
+            is_illuminated = False
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    hk = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                    if hk == "flare_shot":
+                        hx = h.get("x", 0) if isinstance(h, dict) else getattr(h, "x", 0)
+                        hy = h.get("y", 0) if isinstance(h, dict) else getattr(h, "y", 0)
+                        dist = math.hypot(b.x - hx, b.y - hy)
+                        if dist < 120.0:  # Illuminate small area
+                            is_illuminated = True
+                            break
+
+            if getattr(b, "visibility_timer", 0.0) > 0 or is_illuminated:
+                b.invisible = False
+            else:
+                b.invisible = True
 
 class VisionReducedMode(GameMode):
     def __init__(self):
@@ -12834,6 +12839,8 @@ class PacifistKnockoutMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena is not None:
+            world.arena.is_night = True
         for b in balls:
             b.damage = 0.0
             if hasattr(b, 'base_damage'):
@@ -21503,6 +21510,8 @@ class ExtremeWeatherMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena is not None:
+            world.arena.is_night = True
         for b in balls:
 
             if not getattr(b, "base_speed", None):
@@ -25173,6 +25182,8 @@ class ElementalAurasMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena is not None:
+            world.arena.is_night = True
         for b in balls:
             b.elemental_auras = {"fire": 0, "water": 0, "earth": 0, "lightning": 0}
             b.silence_timer = 9999.0
