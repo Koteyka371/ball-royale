@@ -13657,6 +13657,15 @@ func execute(strategy: String, delta: float):
                                         if "blindness_timer" in other: other.blindness_timer = 3.0
                                         elif other.has_method("set_meta"): other.set_meta("blindness_timer", 3.0)
 
+                                    elif b_decoy_type == "emp_decoy" and is_enemy:
+                                        var current_silence = 0.0
+                                        if "silence_timer" in other: current_silence = float(other.silence_timer)
+                                        elif other.has_method("get_meta") and other.has_meta("silence_timer"): current_silence = float(other.get_meta("silence_timer"))
+
+                                        var new_silence = max(current_silence, 3.0)
+                                        if "silence_timer" in other: other.silence_timer = new_silence
+                                        elif other.has_method("set_meta"): other.set_meta("silence_timer", new_silence)
+
                                     elif is_enemy and b_decoy_type != "healing":
                                         var emp_combo = false
                                         if simultaneous and (b_decoy_type == "explosive" or b_decoy_type == "stun_trap"):
@@ -34294,7 +34303,7 @@ func _use_skill():
                 if "skill_timer" in self.ball: self.ball.skill_timer = cooldown
                 elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", cooldown)
 
-                var decoy_types = ["explosive", "stun_trap", "healing"]
+                var decoy_types = ["explosive", "stun_trap", "healing", "emp_decoy"]
 
                 for i in range(3):
                     var decoy = null
