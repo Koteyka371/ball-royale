@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1614] Quantum Instability Field — *2026-07-28 00:46:07 UTC*
+
+A hazard that periodically applies randomized stat modifications to all entities inside it.
+
+---
+
 ## [idea-1575] Echolocation Only Mode — *2026-07-28 00:23:02 UTC*
 
 Players cannot see the arena except for a tiny radius. Every few seconds, players emit a sound pulse that reveals enemies and walls momentarily.
