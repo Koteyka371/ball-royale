@@ -1604,6 +1604,11 @@ func _attempt_damage_internal(attacker, target) -> void:
 	elif "spotlight_damage_multiplier" in target:
 		original_damage *= float(target.spotlight_damage_multiplier)
 
+	if target.has_method("get_meta") and target.has_meta("vulnerability_multiplier"):
+		original_damage *= float(target.get_meta("vulnerability_multiplier"))
+	elif "vulnerability_multiplier" in target:
+		original_damage *= float(target.vulnerability_multiplier)
+
 	# Damage multiplier if attacker is sliding on ice patch
 	if "arena" in world and world.arena != null and "hazards" in world.arena:
 		for h in world.arena.hazards:

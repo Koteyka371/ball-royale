@@ -524,6 +524,9 @@ class Action:
         if getattr(target, "spotlight_damage_multiplier", 1.0) > 1.0:
             multiplier *= getattr(target, "spotlight_damage_multiplier", 1.0)
 
+        if getattr(target, "vulnerability_multiplier", 1.0) > 1.0:
+            multiplier *= getattr(target, "vulnerability_multiplier", 1.0)
+
         # Check if blocked by energy barrier for ranged attacks
         import math
         a_x = getattr(attacker, 'x', 0.0)
