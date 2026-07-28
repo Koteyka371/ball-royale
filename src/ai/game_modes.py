@@ -31669,7 +31669,84 @@ class HazardLinesMode(GameMode):
 
 from ai.kinetic_battery import KineticBatteryMode
 
+
+class ChaoticArtifactMode(GameMode):
+    """
+    An artifact spawns that gives a massive power boost to whoever holds it,
+    but completely randomizes their abilities and ball type every 10 seconds.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Chaotic Artifact"
+        self.description = "An artifact spawns that gives a massive power boost to whoever holds it, but completely randomizes their abilities and ball type every 10 seconds."
+        self.artifact_spawned = False
+        self.artifact_holder_id = None
+        self.artifact_x = 0.0
+        self.artifact_y = 0.0
+        self.randomize_timer = 0.0
+
+        self.ball_types = ['basic', 'sniper', 'scout', 'juggernaut', 'trickster', 'berserker']
+
+    def setup(self, world, balls):
+        self.artifact_spawned = True
+        self.artifact_holder_id = None
+        self.artifact_x = getattr(world, "width", 800) / 2
+        self.artifact_y = getattr(world, "height", 600) / 2
+        self.randomize_timer = 10.0
+
+    def apply_dynamic_traits(self, world, balls, delta):
+        if not self.artifact_spawned:
+            return
+
+        alive_balls = [b for b in balls if getattr(b, "alive", False)]
+        if not alive_balls:
+            return
+
+        # Check if holder is dead or we don't have a holder
+        holder = next((b for b in alive_balls if b.id == self.artifact_holder_id), None)
+
+        if not holder:
+            self.artifact_holder_id = None
+
+            # Someone can pick it up
+            for b in alive_balls:
+                dx = b.x - self.artifact_x
+                dy = b.y - self.artifact_y
+                dist = (dx*dx + dy*dy)**0.5
+                if dist < getattr(b, "radius", 15) + 20: # 20 is artifact radius
+                    self.artifact_holder_id = b.id
+                    holder = b
+                    self.randomize_timer = 10.0
+                    b.max_hp = getattr(b, "max_hp", 100.0) * 3.0
+                    b.hp = b.max_hp
+                    b.base_speed = getattr(b, "base_speed", 100.0) * 1.5
+                    b.base_damage = getattr(b, "base_damage", 10.0) * 2.0
+                    break
+
+        if holder:
+            self.artifact_x = holder.x
+            self.artifact_y = holder.y
+
+            self.randomize_timer -= delta
+            if self.randomize_timer <= 0:
+                self.randomize_timer = 10.0
+
+                import random
+                # Randomize ball type
+                holder.ball_type = random.choice(self.ball_types)
+
+                # We can also randomize stats within a boosted range
+                holder.base_speed = random.uniform(150.0, 300.0)
+                holder.base_damage = random.uniform(20.0, 50.0)
+                holder.max_hp = random.uniform(200.0, 500.0)
+                holder.hp = min(holder.hp, holder.max_hp)
+
+        # Draw artifact if no holder
+        if not self.artifact_holder_id:
+            if hasattr(world, "events"):
+                world.events.append(["draw_circle", {"x": self.artifact_x, "y": self.artifact_y, "radius": 20, "color": "purple"}])
 GAME_MODES = {
+    "chaotic_artifact": ChaoticArtifactMode(),
     "kinetic_battery": KineticBatteryMode(),
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),

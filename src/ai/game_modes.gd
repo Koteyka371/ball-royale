@@ -50645,7 +50645,110 @@ class HazardLinesMode extends GameMode:
 			world.arena.hazards.erase(r)
 
 
+
+class ChaoticArtifactMode extends GameMode:
+	var artifact_spawned = false
+	var artifact_holder_id = -1
+	var artifact_x = 0.0
+	var artifact_y = 0.0
+	var randomize_timer = 0.0
+	var ball_types = ["basic", "sniper", "scout", "juggernaut", "trickster", "berserker"]
+	var rng = RandomNumberGenerator.new()
+
+	func _init():
+		name = "Chaotic Artifact"
+		description = "An artifact spawns that gives a massive power boost to whoever holds it, but completely randomizes their abilities and ball type every 10 seconds."
+		rng.randomize()
+
+	func setup(world, balls):
+		artifact_spawned = true
+		artifact_holder_id = -1
+		artifact_x = world.get("width", 800) / 2.0
+		artifact_y = world.get("height", 600) / 2.0
+		randomize_timer = 10.0
+
+	func apply_dynamic_traits(world, balls, delta):
+		if not artifact_spawned:
+			return
+
+		var alive_balls = []
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("alive", false):
+					alive_balls.append(b)
+			else:
+				if b.get("alive"):
+					alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return
+
+		var holder = null
+		for b in alive_balls:
+			var bid = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+			if bid == artifact_holder_id:
+				holder = b
+				break
+
+		if holder == null:
+			artifact_holder_id = -1
+			for b in alive_balls:
+				var bx = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else b.x
+				var by = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else b.y
+				var br = b.get("radius", 15) if typeof(b) == TYPE_DICTIONARY else b.radius
+				var dx = bx - artifact_x
+				var dy = by - artifact_y
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < br + 20:
+					artifact_holder_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id
+					holder = b
+					randomize_timer = 10.0
+					if typeof(b) == TYPE_DICTIONARY:
+						b["max_hp"] = b.get("max_hp", 100.0) * 3.0
+						b["hp"] = b["max_hp"]
+						b["base_speed"] = b.get("base_speed", 100.0) * 1.5
+						b["base_damage"] = b.get("base_damage", 10.0) * 2.0
+					else:
+						b.set("max_hp", b.get("max_hp", 100.0) * 3.0)
+						b.set("hp", b.get("max_hp"))
+						b.set("base_speed", b.get("base_speed", 100.0) * 1.5)
+						b.set("base_damage", b.get("base_damage", 10.0) * 2.0)
+					break
+
+		if holder != null:
+			if typeof(holder) == TYPE_DICTIONARY:
+				artifact_x = holder.get("x", 0)
+				artifact_y = holder.get("y", 0)
+			else:
+				artifact_x = holder.x
+				artifact_y = holder.y
+
+			randomize_timer -= delta
+			if randomize_timer <= 0:
+				randomize_timer = 10.0
+				var new_type = ball_types[rng.randi() % ball_types.size()]
+
+				if typeof(holder) == TYPE_DICTIONARY:
+					holder["ball_type"] = new_type
+					holder["base_speed"] = rng.randf_range(150.0, 300.0)
+					holder["base_damage"] = rng.randf_range(20.0, 50.0)
+					holder["max_hp"] = rng.randf_range(200.0, 500.0)
+					if holder.get("hp", 100) > holder["max_hp"]:
+						holder["hp"] = holder["max_hp"]
+				else:
+					holder.set("ball_type", new_type)
+					holder.set("base_speed", rng.randf_range(150.0, 300.0))
+					holder.set("base_damage", rng.randf_range(20.0, 50.0))
+					holder.set("max_hp", rng.randf_range(200.0, 500.0))
+					if holder.get("hp", 100) > holder.get("max_hp"):
+						holder.set("hp", holder.get("max_hp"))
+
+		if artifact_holder_id == -1:
+			var events = world.get("events")
+			if events != null and typeof(events) == TYPE_ARRAY:
+				events.append(["draw_circle", {"x": artifact_x, "y": artifact_y, "radius": 20, "color": "purple"}])
 var GAME_MODES = {
+	"chaotic_artifact": ChaoticArtifactMode.new(),
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
