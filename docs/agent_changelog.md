@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1655] Sabotage Decoys — *2026-07-28 23:17:34 UTC*
+
+An ability that places fake booster items around the arena. If an enemy AI or player picks it up, instead of granting a buff, it detonates, dealing damage and temporarily disabling the victim's skills.
+
+---
+
 ## [idea-1616] Shrinking Safe Zone With Damage Multiplier — *2026-07-28 23:17:29 UTC*
 
 Like a standard safe zone, but instead of straight damage out of bounds, the further out you are, the higher the damage multiplier gets when hit by enemies.
