@@ -17735,6 +17735,13 @@ func execute(strategy: String, delta: float):
                                         if booster.has("y"): booster["y"] += b_ny * b_push_strength
                                         if booster.has("vx"): booster["vx"] *= 0.5
                                         if booster.has("vy"): booster["vy"] *= 0.5
+                elif hazard.kind == "reverse_gravity_pad":
+                    var dx = hazard.x - self.ball.x
+                    var dy = hazard.y - self.ball.y
+                    var dist_sq = dx * dx + dy * dy
+                    if dist_sq < hazard.radius * hazard.radius:
+                        if not (("intangible" in self.ball and self.ball.intangible) or (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible") and self.ball.get_meta("intangible"))):
+                            self.ball.reverse_gravity_item_timer = 3.0
                 elif hazard.kind == "reverse_gravity":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y
