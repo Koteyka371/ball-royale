@@ -43189,11 +43189,12 @@ class CascadingStunMode(GameMode):
     def setup(self, world):
         balls = getattr(world, "balls", []) if hasattr(world, "balls") else world.get("balls", []) if isinstance(world, dict) else []
         for b in balls:
-            if hasattr(b, "stun_arm_timer"):
+            if isinstance(b, dict):
+                b["stun_arm_timer"] = 0.0
+                b["stun_timer"] = 0.0
+            else:
                 b.stun_arm_timer = 0.0
-            if hasattr(b, "stun_timer"):
                 b.stun_timer = 0.0
-
     def tick(self, world, delta):
         balls = getattr(world, "balls", []) if hasattr(world, "balls") else world.get("balls", []) if isinstance(world, dict) else []
         n = len(balls)
@@ -43203,51 +43204,63 @@ class CascadingStunMode(GameMode):
             if not getattr(b, "alive", False) and not (isinstance(b, dict) and b.get("alive", False)):
                 continue
 
-            arm_timer = getattr(b, "stun_arm_timer", 0.0)
+            arm_timer = getattr(b, "stun_arm_timer", 0.0) if hasattr(b, "stun_arm_timer") else b.get("stun_arm_timer", 0.0) if isinstance(b, dict) else 0.0
             if arm_timer > 0:
                 arm_timer -= delta
                 if arm_timer <= 0:
                     # Explode!
-                    b.stun_arm_timer = 0.0
-                    b_x = getattr(b, "x", 0.0)
-                    b_y = getattr(b, "y", 0.0)
+                    if isinstance(b, dict):
+                        b["stun_arm_timer"] = 0.0
+                    else:
+                        b.stun_arm_timer = 0.0
+
+                    b_x = getattr(b, "x", 0.0) if hasattr(b, "x") else b.get("x", 0.0) if isinstance(b, dict) else 0.0
+                    b_y = getattr(b, "y", 0.0) if hasattr(b, "y") else b.get("y", 0.0) if isinstance(b, dict) else 0.0
                     explosion_radius = 150.0
 
                     if hasattr(world, "add_event"):
                         world.add_event("stun_explosion", {"x": b_x, "y": b_y, "radius": explosion_radius})
 
                     for other in balls:
-                        if other is b or not getattr(other, "alive", False):
+                        if other is b or (not getattr(other, "alive", False) and not (isinstance(other, dict) and other.get("alive", False))):
                             continue
-                        o_x = getattr(other, "x", 0.0)
-                        o_y = getattr(other, "y", 0.0)
-                        o_r = getattr(other, "radius", 20.0)
+                        o_x = getattr(other, "x", 0.0) if hasattr(other, "x") else other.get("x", 0.0) if isinstance(other, dict) else 0.0
+                        o_y = getattr(other, "y", 0.0) if hasattr(other, "y") else other.get("y", 0.0) if isinstance(other, dict) else 0.0
+                        o_r = getattr(other, "radius", 20.0) if hasattr(other, "radius") else other.get("radius", 20.0) if isinstance(other, dict) else 20.0
 
                         dx = b_x - o_x
                         dy = b_y - o_y
                         dist_sq = dx*dx + dy*dy
                         if dist_sq <= (explosion_radius + o_r)**2:
                             # Apply stun
-                            other.stun_timer = max(getattr(other, "stun_timer", 0.0), 1.5)
+                            curr_stun = getattr(other, "stun_timer", 0.0) if hasattr(other, "stun_timer") else other.get("stun_timer", 0.0) if isinstance(other, dict) else 0.0
+                            new_stun = max(curr_stun, 1.5)
+                            if isinstance(other, dict):
+                                other["stun_timer"] = new_stun
+                            else:
+                                other.stun_timer = new_stun
                 else:
-                    b.stun_arm_timer = arm_timer
+                    if isinstance(b, dict):
+                        b["stun_arm_timer"] = arm_timer
+                    else:
+                        b.stun_arm_timer = arm_timer
 
         # Check collisions to arm
         for i in range(n):
             b1 = balls[i]
-            if not getattr(b1, "alive", False): continue
+            if not getattr(b1, "alive", False) and not (isinstance(b1, dict) and b1.get("alive", False)): continue
 
-            b1_x = getattr(b1, "x", 0.0)
-            b1_y = getattr(b1, "y", 0.0)
-            b1_r = getattr(b1, "radius", 20.0)
+            b1_x = getattr(b1, "x", 0.0) if hasattr(b1, "x") else b1.get("x", 0.0) if isinstance(b1, dict) else 0.0
+            b1_y = getattr(b1, "y", 0.0) if hasattr(b1, "y") else b1.get("y", 0.0) if isinstance(b1, dict) else 0.0
+            b1_r = getattr(b1, "radius", 20.0) if hasattr(b1, "radius") else b1.get("radius", 20.0) if isinstance(b1, dict) else 20.0
 
             for j in range(i + 1, n):
                 b2 = balls[j]
-                if not getattr(b2, "alive", False): continue
+                if not getattr(b2, "alive", False) and not (isinstance(b2, dict) and b2.get("alive", False)): continue
 
-                b2_x = getattr(b2, "x", 0.0)
-                b2_y = getattr(b2, "y", 0.0)
-                b2_r = getattr(b2, "radius", 20.0)
+                b2_x = getattr(b2, "x", 0.0) if hasattr(b2, "x") else b2.get("x", 0.0) if isinstance(b2, dict) else 0.0
+                b2_y = getattr(b2, "y", 0.0) if hasattr(b2, "y") else b2.get("y", 0.0) if isinstance(b2, dict) else 0.0
+                b2_r = getattr(b2, "radius", 20.0) if hasattr(b2, "radius") else b2.get("radius", 20.0) if isinstance(b2, dict) else 20.0
 
                 dx = b1_x - b2_x
                 dy = b1_y - b2_y
@@ -43255,9 +43268,18 @@ class CascadingStunMode(GameMode):
 
                 if dist_sq <= (b1_r + b2_r)**2:
                     # They collided, arm them if not already armed
-                    if getattr(b1, "stun_arm_timer", 0.0) <= 0:
-                        b1.stun_arm_timer = 2.0
-                    if getattr(b2, "stun_arm_timer", 0.0) <= 0:
-                        b2.stun_arm_timer = 2.0
+                    b1_arm = getattr(b1, "stun_arm_timer", 0.0) if hasattr(b1, "stun_arm_timer") else b1.get("stun_arm_timer", 0.0) if isinstance(b1, dict) else 0.0
+                    b2_arm = getattr(b2, "stun_arm_timer", 0.0) if hasattr(b2, "stun_arm_timer") else b2.get("stun_arm_timer", 0.0) if isinstance(b2, dict) else 0.0
+
+                    if b1_arm <= 0:
+                        if isinstance(b1, dict):
+                            b1["stun_arm_timer"] = 2.0
+                        else:
+                            b1.stun_arm_timer = 2.0
+                    if b2_arm <= 0:
+                        if isinstance(b2, dict):
+                            b2["stun_arm_timer"] = 2.0
+                        else:
+                            b2.stun_arm_timer = 2.0
 
 GAME_MODES["cascading_stun"] = CascadingStunMode()
