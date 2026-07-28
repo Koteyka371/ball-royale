@@ -60,6 +60,61 @@ class GameMode:
                                         world.add_event("mirror_bounce", {"x": b_x, "y": b_y})
                     hazard.affected_balls = current_affected
 
+
+                is_dict = isinstance(hazard, dict)
+                h_kind = hazard.get("kind", "") if is_dict else getattr(hazard, "kind", "")
+                if h_kind == "random_stat_hazard":
+                    h_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
+                    h_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
+                    h_radius = hazard.get("radius", 80.0) if is_dict else getattr(hazard, "radius", 80.0)
+
+                    if is_dict:
+                        if "stat_tick_timer" not in hazard:
+                            hazard["stat_tick_timer"] = 0.0
+                        hazard["stat_tick_timer"] -= delta
+                        if hazard["stat_tick_timer"] <= 0:
+                            hazard["stat_tick_timer"] = hazard.get("tick_interval", 1.0)
+                            should_trigger = True
+                        else:
+                            should_trigger = False
+                    else:
+                        if not hasattr(hazard, "stat_tick_timer"):
+                            hazard.stat_tick_timer = 0.0
+                        hazard.stat_tick_timer -= delta
+                        if hazard.stat_tick_timer <= 0:
+                            hazard.stat_tick_timer = getattr(hazard, "tick_interval", 1.0)
+                            should_trigger = True
+                        else:
+                            should_trigger = False
+
+                    if should_trigger:
+                        import random
+                        for b in balls:
+                            if not getattr(b, "alive", False): continue
+                            if getattr(b, "ball_type", "") == "spectator": continue
+                            b_x = getattr(b, "x", 0.0)
+                            b_y = getattr(b, "y", 0.0)
+                            b_radius = getattr(b, "radius", 15.0)
+                            dist_sq = (b_x - h_x)**2 + (b_y - h_y)**2
+                            if dist_sq < (h_radius + b_radius)**2:
+                                # Apply random stat modifications
+                                stat_choice = random.choice(["speed", "damage", "mass", "health"])
+                                if stat_choice == "speed":
+                                    if hasattr(b, "speed"):
+                                        b.speed = max(10.0, getattr(b, "speed") * random.uniform(0.5, 1.5))
+                                elif stat_choice == "damage":
+                                    if hasattr(b, "damage"):
+                                        b.damage = max(1.0, getattr(b, "damage") * random.uniform(0.5, 2.0))
+                                elif stat_choice == "mass":
+                                    if hasattr(b, "mass"):
+                                        b.mass = max(0.5, getattr(b, "mass") * random.uniform(0.5, 2.0))
+                                elif stat_choice == "health":
+                                    if hasattr(b, "hp"):
+                                        b.hp = max(1.0, min(getattr(b, "max_hp", 100), getattr(b, "hp") + random.uniform(-15.0, 15.0)))
+
+                                if hasattr(world, "add_event"):
+                                    world.add_event("random_stat_hazard_proc", {"x": b_x, "y": b_y, "stat": stat_choice})
+
                 if getattr(hazard, "kind", "") == "high_risk_nuke_mine":
                     # --- Defusing logic ---
                     defusing_timers = getattr(hazard, "defusing_timers", {})
@@ -31852,7 +31907,50 @@ class ChaoticArtifactMode(GameMode):
         if not self.artifact_holder_id:
             if hasattr(world, "events"):
                 world.events.append(["draw_circle", {"x": self.artifact_x, "y": self.artifact_y, "radius": 20, "color": "purple"}])
+
+class ChaoticStatHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Chaotic Stat Hazards"
+        self.description = "Random stat hazards appear and modify the stats of whoever enters."
+        self.timer = 0.0
+        import random
+        self.random = random
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        for _ in range(3):
+            world.arena.hazards.append({
+                "kind": "random_stat_hazard",
+                "x": self.random.uniform(100, getattr(world.arena, "width", 800) - 100),
+                "y": self.random.uniform(100, getattr(world.arena, "height", 600) - 100),
+                "radius": 80.0,
+                "tick_interval": 1.0,
+                "stat_tick_timer": 0.0
+            })
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.timer += delta
+        if self.timer > 5.0:
+            self.timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                hazards = world.arena.hazards
+                hazards = [h for h in hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) != "random_stat_hazard"]
+                for _ in range(3):
+                    hazards.append({
+                        "kind": "random_stat_hazard",
+                        "x": self.random.uniform(100, getattr(world.arena, "width", 800) - 100),
+                        "y": self.random.uniform(100, getattr(world.arena, "height", 600) - 100),
+                        "radius": 80.0,
+                        "tick_interval": 1.0,
+                        "stat_tick_timer": 0.0
+                    })
+                world.arena.hazards = hazards
+
 GAME_MODES = {
+    'chaotic_stat_hazard': ChaoticStatHazardMode(),
     "chaotic_artifact": ChaoticArtifactMode(),
     "kinetic_battery": KineticBatteryMode(),
     "dynamic_capture_zone": DynamicCaptureZoneMode(),

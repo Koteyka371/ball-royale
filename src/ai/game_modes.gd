@@ -107,6 +107,87 @@ class GameMode:
 						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
 							hazard.set_meta("affected_balls", current_affected)
 
+					if h_kind == "random_stat_hazard":
+						var h_x = hazard.get("x") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("x")
+						if h_x == null: h_x = 0.0
+						var h_y = hazard.get("y") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("y")
+						if h_y == null: h_y = 0.0
+						var h_radius = hazard.get("radius") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("radius")
+						if h_radius == null: h_radius = 80.0
+
+						var h_tick_timer = hazard.get("stat_tick_timer") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("stat_tick_timer")
+						if h_tick_timer == null: h_tick_timer = 0.0
+
+						h_tick_timer -= delta
+						if h_tick_timer <= 0.0:
+							var h_tick_interval = hazard.get("tick_interval") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("tick_interval")
+							if h_tick_interval == null: h_tick_interval = 1.0
+							h_tick_timer = h_tick_interval
+							for b in balls:
+								var is_alive = false
+								if typeof(b) == TYPE_DICTIONARY:
+									is_alive = b.get("alive", false)
+								else:
+									is_alive = b.get("alive")
+								if not is_alive: continue
+
+								var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+								if b_type == "spectator": continue
+
+								var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get("x")
+								if b_x == null: b_x = 0.0
+								var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get("y")
+								if b_y == null: b_y = 0.0
+								var b_radius = b.get("radius") if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+								if b_radius == null: b_radius = 15.0
+
+								var dist_sq = (b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y)
+								if dist_sq < (h_radius + b_radius)*(h_radius + b_radius):
+									var stats = ["speed", "damage", "mass", "health"]
+									var stat_choice = stats[randi() % stats.size()]
+									if stat_choice == "speed":
+										var b_speed = b.get("speed") if typeof(b) == TYPE_DICTIONARY else b.get("speed")
+										if b_speed != null:
+											var new_speed = max(10.0, b_speed * randf_range(0.5, 1.5))
+											if typeof(b) == TYPE_DICTIONARY:
+												b["speed"] = new_speed
+											else:
+												b.set("speed", new_speed)
+									elif stat_choice == "damage":
+										var b_damage = b.get("damage") if typeof(b) == TYPE_DICTIONARY else b.get("damage")
+										if b_damage != null:
+											var new_damage = max(1.0, b_damage * randf_range(0.5, 2.0))
+											if typeof(b) == TYPE_DICTIONARY:
+												b["damage"] = new_damage
+											else:
+												b.set("damage", new_damage)
+									elif stat_choice == "mass":
+										var b_mass = b.get("mass") if typeof(b) == TYPE_DICTIONARY else b.get("mass")
+										if b_mass != null:
+											var new_mass = max(0.5, b_mass * randf_range(0.5, 2.0))
+											if typeof(b) == TYPE_DICTIONARY:
+												b["mass"] = new_mass
+											else:
+												b.set("mass", new_mass)
+									elif stat_choice == "health":
+										var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+										if b_hp != null:
+											var max_hp = b.get("max_hp") if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+											if max_hp == null: max_hp = 100.0
+											var new_hp = clamp(b_hp + randf_range(-15.0, 15.0), 1.0, max_hp)
+											if typeof(b) == TYPE_DICTIONARY:
+												b["hp"] = new_hp
+											else:
+												b.set("hp", new_hp)
+
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+										world.add_event("random_stat_hazard_proc", {"x": b_x, "y": b_y, "stat": stat_choice})
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["stat_tick_timer"] = h_tick_timer
+						else:
+							hazard.set("stat_tick_timer", h_tick_timer)
+
 					if h_kind == "high_risk_nuke_mine":
 						var defusing_timers = {}
 						if typeof(hazard) == TYPE_DICTIONARY and "defusing_timers" in hazard: defusing_timers = hazard.defusing_timers
@@ -50829,7 +50910,88 @@ class ChaoticArtifactMode extends GameMode:
 			var events = world.get("events")
 			if events != null and typeof(events) == TYPE_ARRAY:
 				events.append(["draw_circle", {"x": artifact_x, "y": artifact_y, "radius": 20, "color": "purple"}])
+class ChaoticStatHazardMode extends GameMode:
+	var timer: float = 0.0
+
+	func _init() -> void:
+		name = "Chaotic Stat Hazards"
+		description = "Random stat hazards appear and modify the stats of whoever enters."
+
+	func setup(world, balls: Array) -> void:
+		if world == null:
+			return
+
+		var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else world.get("arena")
+		if arena == null:
+			return
+
+		var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.get("hazards")
+		if hazards == null:
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena["hazards"] = []
+				hazards = arena["hazards"]
+			else:
+				arena.set("hazards", [])
+				hazards = arena.get("hazards")
+
+		var arena_width = arena.get("width") if typeof(arena) == TYPE_DICTIONARY else arena.get("width")
+		if arena_width == null: arena_width = 800.0
+		var arena_height = arena.get("height") if typeof(arena) == TYPE_DICTIONARY else arena.get("height")
+		if arena_height == null: arena_height = 600.0
+
+		for i in range(3):
+			hazards.append({
+				"kind": "random_stat_hazard",
+				"x": randf_range(100.0, arena_width - 100.0),
+				"y": randf_range(100.0, arena_height - 100.0),
+				"radius": 80.0,
+				"tick_interval": 1.0,
+				"stat_tick_timer": 0.0
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		timer += delta
+		if timer > 5.0:
+			timer = 0.0
+			if world == null:
+				return
+
+			var arena = world.get("arena") if typeof(world) == TYPE_DICTIONARY else world.get("arena")
+			if arena == null:
+				return
+
+			var hazards = arena.get("hazards") if typeof(arena) == TYPE_DICTIONARY else arena.get("hazards")
+			if hazards == null:
+				return
+
+			var new_hazards = []
+			for h in hazards:
+				var h_kind = h.get("kind") if typeof(h) == TYPE_DICTIONARY else h.get("kind")
+				if h_kind != "random_stat_hazard":
+					new_hazards.append(h)
+
+			var arena_width = arena.get("width") if typeof(arena) == TYPE_DICTIONARY else arena.get("width")
+			if arena_width == null: arena_width = 800.0
+			var arena_height = arena.get("height") if typeof(arena) == TYPE_DICTIONARY else arena.get("height")
+			if arena_height == null: arena_height = 600.0
+
+			for i in range(3):
+				new_hazards.append({
+					"kind": "random_stat_hazard",
+					"x": randf_range(100.0, arena_width - 100.0),
+					"y": randf_range(100.0, arena_height - 100.0),
+					"radius": 80.0,
+					"tick_interval": 1.0,
+					"stat_tick_timer": 0.0
+				})
+
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena["hazards"] = new_hazards
+			else:
+				arena.set("hazards", new_hazards)
+
 var GAME_MODES = {
+	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
 	"chaotic_artifact": ChaoticArtifactMode.new(),
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),
