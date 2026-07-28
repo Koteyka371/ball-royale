@@ -41921,3 +41921,4 @@ class BlindFragmentAuctionMode(GameMode):
 GAME_MODES["unstable_payload"] = UnstablePayloadMode()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
 GAME_MODES["mobile_platform"] = MobilePlatformMode()
+GAME_MODES["chaos_artifact"] = __import__('ai.chaos_artifact', fromlist=['']).ChaosArtifactMode()

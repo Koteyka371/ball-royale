@@ -65350,4 +65350,5 @@ class BlindFragmentAuctionMode extends GameMode:
 GAME_MODES["unstable_payload"] = UnstablePayloadMode.new()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
 GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
+GAME_MODES["chaos_artifact"] = load("res://src/ai/chaos_artifact.gd").new()
 GAME_MODES["kinetic_battery"] = load("res://src/ai/kinetic_battery.gd").new()
