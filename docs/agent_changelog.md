@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1653] Grappling Hook Buff — *2026-07-28 22:46:13 UTC*
+
+Grappling hook pulls enemies slightly upon hit.
+
+---
+
 ## [idea-1646] Weather Anomaly - Thunderstorm — *2026-07-28 22:37:47 UTC*
 
 A new hazard event where lightning strikes randomly. Balls can collect a 'Lightning Rod' item to redirect strikes toward enemies.
