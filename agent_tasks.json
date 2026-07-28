@@ -41199,6 +41199,57 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2411",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Orbital Strike Targeter",
+      "description": "An active item that allows players to paint a target area for a delayed, high-damage orbital laser blast.",
+      "allowed_paths": [
+        "src/ai/orbital_strike_targeter.py",
+        "src/ai/orbital_strike_targeter.gd",
+        "tests/test_orbital_strike_targeter.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2412",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Supply Drone Escort",
+      "description": "A slow-moving, destructible supply drone flies across the arena. Players must shoot it down to claim its loot before it leaves.",
+      "allowed_paths": [
+        "src/ai/supply_drone_escort.py",
+        "src/ai/supply_drone_escort.gd",
+        "tests/test_supply_drone_escort.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2413",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gladiator Chains",
+      "description": "A new active item that tethers two random nearby opponents together for 8 seconds. The tether applies a rubber-band physics constraint; if the tether stretches too far, it aggressively pulls the two balls back towards each other, dealing collision damage if they smash together at high speeds.",
+      "allowed_paths": [
+        "src/ai/gladiator_chains.py",
+        "src/ai/gladiator_chains.gd",
+        "tests/test_gladiator_chains.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }

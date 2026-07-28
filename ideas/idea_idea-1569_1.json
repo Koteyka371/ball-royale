@@ -1,4 +1,0 @@
-{
-  "title": "Echo Location Mode",
-  "description": "An arena mode where players cannot see each other directly. Instead, when a player moves, attacks, or takes damage, visual 'sound waves' emit from their location. Moving slowly prevents you from showing on the sonar."
-}

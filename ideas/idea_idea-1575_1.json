@@ -1,4 +1,0 @@
-{
-  "title": "Sonar Mine Hazard",
-  "description": "A hazard that triggers a sonar pulse when an enemy ball approaches, revealing the location of the enemy ball for a short duration while emitting a loud warning sound."
-}

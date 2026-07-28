@@ -1,4 +1,0 @@
-{
-  "title": "Mirage Field Hazard",
-  "description": "A deployable hazard zone that randomly renders friendly entities invisible while inside and spawns fake copies of them that run in random directions to confuse enemies."
-}

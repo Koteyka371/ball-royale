@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zone Mutator",
-  "description": "A new game mode mutator where a massive, slowly shrinking circle encompasses the arena. Any player outside the circle takes continuous percentage-based true damage over time, forcing fast-paced, close-quarters combat."
-}

@@ -1,4 +1,0 @@
-{
-  "title": "Reverse Time Grenade",
-  "description": "A throwable grenade that upon detonation captures the positions, velocities, and health of all entities within its blast radius, and rewinds them to their state 3 seconds ago."
-}

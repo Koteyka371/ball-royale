@@ -1,4 +1,0 @@
-{
-  "title": "Shrinking Safe Zone Mutator",
-  "description": "A mutator where the safe zone slowly shrinks over time, but instead of forcing players into the center, the safe zone itself slowly moves around the arena, forcing players to fight while constantly staying on the move."
-}

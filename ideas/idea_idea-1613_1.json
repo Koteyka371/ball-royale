@@ -1,4 +1,0 @@
-{
-  "title": "Quantum Swap Decoy",
-  "description": "A new decoy type that switches positions with the player whenever the player takes fatal damage, destroying the decoy instead and saving the player."
-}
