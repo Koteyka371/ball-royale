@@ -6596,6 +6596,8 @@ class Action:
                                         elif decoy_type == "flash" and is_enemy:
                                             other.is_blinded = True
                                             other.blindness_timer = 3.0
+                                        elif decoy_type == "emp_decoy" and is_enemy:
+                                            other.silence_timer = max(getattr(other, "silence_timer", 0.0), 3.0)
                                         elif is_enemy and decoy_type != "healing":
                                             # Check for EMP combo (explosive + stun)
                                             emp_combo = False
@@ -17479,7 +17481,7 @@ class Action:
                     import random
                     import math
 
-                    decoy_types = ["explosive", "stun_trap", "healing"]
+                    decoy_types = ["explosive", "stun_trap", "healing", "emp_decoy"]
 
                     for i in range(3):
                         decoy = copy.copy(self.ball)
