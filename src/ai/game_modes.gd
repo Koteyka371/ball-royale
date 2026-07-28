@@ -58576,7 +58576,7 @@ class ChainReactionMode extends GameMode:
 									self.on_ball_died(world, b, null)
 							else:
 								if b.has_method("take_damage"):
-									b.take_damage(explosion["damage"], null)
+									b.take_damage(explosion["damage"])
 								else:
 									b.hp -= explosion["damage"]
 									if b.hp <= 0.0:
@@ -58762,7 +58762,7 @@ class KillstreakExplosionMode extends GameMode:
 									self.on_ball_died(world, b, null)
 							else:
 								if b.has_method("take_damage"):
-									b.take_damage(explosion["damage"], null)
+									b.take_damage(explosion["damage"])
 								else:
 									b.hp -= explosion["damage"]
 									if b.hp <= 0.0:
