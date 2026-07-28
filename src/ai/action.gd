@@ -11011,6 +11011,129 @@ func execute(strategy: String, delta: float):
 											decoy["skill_timer"] = 9999.0
 										self.world.balls.append(decoy)
 
+			elif hazard.get("kind") == "thrown_position_swap_grenade" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_position_swap_grenade"):
+				var h_dur = 0.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
+				elif "duration" in hazard: h_dur = float(hazard.duration)
+
+				if h_dur > 0:
+					h_dur -= delta
+					if h_dur <= 0:
+						h_dur = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.duration = 0.0
+						else: hazard.duration = 0.0
+
+						if typeof(hazard) == TYPE_DICTIONARY: hazard.active = false
+						else: hazard.active = false
+
+						if "hazards" in world.arena and world.arena.hazards.has(hazard):
+							world.arena.hazards.erase(hazard)
+
+						var owner_id = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id"): owner_id = hazard.owner_id
+						elif "owner_id" in hazard: owner_id = hazard.owner_id
+
+						var h_team = null
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("team"): h_team = hazard.team
+						elif "team" in hazard: h_team = hazard.team
+
+						var hx = hazard.x if "x" in hazard else hazard["x"]
+						var hy = hazard.y if "y" in hazard else hazard["y"]
+
+						var thrower = null
+						if "balls" in world:
+							for b in world.balls:
+								var bid = null
+								if "id" in b: bid = b.id
+								if bid != null and bid == owner_id:
+									thrower = b
+									break
+
+						var hit_enemy = null
+						var closest_dist_sq = INF
+						var blast_radius = 150.0
+
+						if "balls" in world:
+							for b in world.balls:
+								var alive = true
+								if "alive" in b: alive = b.alive
+								var b_team = null
+								if "team" in b: b_team = b.team
+
+								if alive and b_team != h_team:
+									var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+									var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+
+									var dx = hx - bx
+									var dy = hy - by
+									var dist_sq = dx*dx + dy*dy
+									if dist_sq <= blast_radius * blast_radius and dist_sq < closest_dist_sq:
+										closest_dist_sq = dist_sq
+										hit_enemy = b
+
+						var thrower_alive = false
+						if thrower != null:
+							if "alive" in thrower: thrower_alive = thrower.alive
+							else: thrower_alive = true
+
+						if hit_enemy != null and thrower != null and thrower_alive:
+							var tx = thrower.x if "x" in thrower else thrower.get_meta("x")
+							var ty = thrower.y if "y" in thrower else thrower.get_meta("y")
+							var ex = hit_enemy.x if "x" in hit_enemy else hit_enemy.get_meta("x")
+							var ey = hit_enemy.y if "y" in hit_enemy else hit_enemy.get_meta("y")
+
+							if "x" in thrower: thrower.x = ex
+							else: thrower.set_meta("x", ex)
+							if "y" in thrower: thrower.y = ey
+							else: thrower.set_meta("y", ey)
+
+							if "x" in hit_enemy: hit_enemy.x = tx
+							else: hit_enemy.set_meta("x", tx)
+							if "y" in hit_enemy: hit_enemy.y = ty
+							else: hit_enemy.set_meta("y", ty)
+
+							if "events" in world:
+								world.events.append({"type": "position_swapped", "data": {"ball_a": thrower.id if "id" in thrower else null, "ball_b": hit_enemy.id if "id" in hit_enemy else null}})
+								world.events.append({"type": "visual_effect", "data": {"type": "swap_explosion", "x": hx, "y": hy, "radius": blast_radius}})
+						else:
+							if "events" in world:
+								world.events.append({"type": "visual_effect", "data": {"type": "minor_explosion", "x": hx, "y": hy, "radius": blast_radius}})
+							if "balls" in world:
+								for b in world.balls:
+									var alive = true
+									if "alive" in b: alive = b.alive
+									var b_team = null
+									if "team" in b: b_team = b.team
+
+									if alive and b_team != h_team:
+										var bx = b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0)
+										var by = b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0)
+										var dx = hx - bx
+										var dy = hy - by
+										if dx*dx + dy*dy <= blast_radius * blast_radius:
+											if "hp" in b:
+												b.hp -= 25.0
+												if b.hp <= 0:
+													b.alive = false
+													b.killer = owner_id
+					else:
+						var vx = 0.0
+						var vy = 0.0
+						if typeof(hazard) == TYPE_DICTIONARY:
+							if hazard.has("vx"): vx = float(hazard.vx)
+							if hazard.has("vy"): vy = float(hazard.vy)
+							hazard["x"] += vx * delta
+							hazard["y"] += vy * delta
+							hazard["vx"] = vx * (1.0 - 2.0 * delta)
+							hazard["vy"] = vy * (1.0 - 2.0 * delta)
+						else:
+							if "vx" in hazard: vx = float(hazard.vx)
+							if "vy" in hazard: vy = float(hazard.vy)
+							hazard.x += vx * delta
+							hazard.y += vy * delta
+							hazard.vx = vx * (1.0 - 2.0 * delta)
+							hazard.vy = vy * (1.0 - 2.0 * delta)
+
 			elif hazard.get("kind") == "thrown_disruptor_bomb" or (typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "thrown_disruptor_bomb"):
 				var h_dur = 0.0
 				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("duration"): h_dur = float(hazard.duration)
@@ -28483,7 +28606,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -38527,6 +38650,55 @@ func _use_skill():
                             arena.hazards.remove_at(idx)
 
 
+
+        elif skill_name == "throw_position_swap_grenade":
+            if "hazards" in self.world.arena:
+                var hazards = self.world.arena.hazards
+                var enemies = self._get_enemies()
+                var nx = 1.0
+                var ny = 0.0
+                if enemies.size() > 0:
+                    var closest_enemy = enemies[0]
+                    var min_dist_sq = INF
+                    for e in enemies:
+                        var dx_e = e.x - self.ball.x
+                        var dy_e = e.y - self.ball.y
+                        var dist_sq = dx_e*dx_e + dy_e*dy_e
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            closest_enemy = e
+                    var dx = closest_enemy.x - self.ball.x
+                    var dy = closest_enemy.y - self.ball.y
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > 0.0001:
+                        nx = dx/dist
+                        ny = dy/dist
+
+                var b_radius = 10.0
+                if "radius" in self.ball: b_radius = self.ball.radius
+
+                var team_val = null
+                if "team" in self.ball: team_val = self.ball.team
+
+                var thrown_bomb = {
+                    "id": hazards.size() + int(randf() * 90000) + 19000,
+                    "x": self.ball.x + nx * (b_radius + 5.0),
+                    "y": self.ball.y + ny * (b_radius + 5.0),
+                    "radius": 20.0,
+                    "kind": "thrown_position_swap_grenade",
+                    "damage": 0.0,
+                    "vx": nx * 400.0,
+                    "vy": ny * 400.0,
+                    "duration": 2.0,
+                    "team": team_val,
+                    "owner_id": self.ball.id if "id" in self.ball else null,
+                    "active": true
+                }
+                hazards.append(thrown_bomb)
+
+                var cd = 5.0
+                if "skill_cooldown" in self.ball: cd = self.ball.skill_cooldown
+                self.ball.skill_timer = cd
 
         elif skill_name == "throw_disruptor_bomb":
             if "hazards" in self.world.arena:
