@@ -65242,7 +65242,7 @@ class TelegraphedSupplyDropMode extends GameMode:
 									b_team = b.get("team") if "team" in b else (b.get("ball_type") if "ball_type" in b else "")
 
 								if b_team == team and is_alive:
-									var buff_choices = ["invulnerability", "instant_ultimate", "mega_heal", "damage_boost"]
+									var buff_choices = ["invulnerability", "instant_ultimate", "mega_heal", "damage_boost", "speed_boost"]
 									var buff_type = buff_choices[rng.randi() % buff_choices.size()]
 									if buff_type == "invulnerability":
 										if typeof(b) == TYPE_DICTIONARY: b["invulnerable_timer"] = b.get("invulnerable_timer", 0.0) + 15.0
@@ -65265,6 +65265,14 @@ class TelegraphedSupplyDropMode extends GameMode:
 											var bd = b.base_damage if "base_damage" in b else (b.damage if "damage" in b else 10.0)
 											b.damage = bd * 2.0
 											b.soul_boost_timer = (b.soul_boost_timer if "soul_boost_timer" in b else 0.0) + 20.0
+									elif buff_type == "speed_boost":
+										if typeof(b) == TYPE_DICTIONARY:
+											b["speed"] = b.get("base_speed", b.get("speed", 100.0)) * 1.5
+											b["speed_boost_timer"] = b.get("speed_boost_timer", 0.0) + 15.0
+										else:
+											var bs = b.base_speed if "base_speed" in b else (b.speed if "speed" in b else 100.0)
+											b.speed = bs * 1.5
+											b.speed_boost_timer = (b.speed_boost_timer if "speed_boost_timer" in b else 0.0) + 15.0
 
 							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 								world.add_event("high_tier_drop_captured", {"team": team})
