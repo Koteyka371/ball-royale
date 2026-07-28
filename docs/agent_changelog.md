@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1569] Blackout Ghost Mode — *2026-07-28 02:02:20 UTC*
+
+The arena is completely pitch black. Balls only become briefly visible when they bounce off walls, take damage, or attack. Attacks are skill shots that temporarily illuminate a small area.
+
+---
+
 ## [idea-1626] Chain Reaction Mayhem — *2026-07-28 01:51:07 UTC*
 
 Every player defeated unleashes a massive explosion that can trigger other players' explosions, leading to catastrophic chain reactions.

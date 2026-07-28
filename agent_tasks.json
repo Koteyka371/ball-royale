@@ -26864,7 +26864,7 @@
     },
     {
       "id": "idea-1569",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Blackout Ghost Mode",
@@ -40701,6 +40701,23 @@
         "src/ai/bouncy_breakable_walls.py",
         "src/ai/bouncy_breakable_walls.gd",
         "tests/test_bouncy_breakable_walls.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2382",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Well Grenade",
+      "description": "A new tactical weapon that explodes into a localized gravity well. It slowly pulls players and hazards towards the center, making it excellent for setting up combo attacks or trapping fleeing enemies.",
+      "allowed_paths": [
+        "src/ai/gravity_well_grenade.py",
+        "src/ai/gravity_well_grenade.gd",
+        "tests/test_gravity_well_grenade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
