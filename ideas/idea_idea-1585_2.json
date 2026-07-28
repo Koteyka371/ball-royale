@@ -1,0 +1,4 @@
+{
+  "title": "Cosmic Reverb Ability",
+  "description": "An active ability that acts like a delayed sonar ping. When activated, the ball drops a 'Reverb Anchor' at their current position. For the next 5 seconds, any damage the ball takes is logged. After 5 seconds, the anchor releases a massive shockwave that returns all accumulated damage outward as kinetic force and raw damage. If the ball dies before the 5 seconds are up, the anchor detonates prematurely for half the damage."
+}

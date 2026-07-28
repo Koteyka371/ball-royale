@@ -52211,12 +52211,15 @@ class TagTeamMode extends GameMode:
 
 							if new_chain >= 3:
 								if typeof(inactive) == TYPE_DICTIONARY:
+									active["ultra_ball_timer"] = 10.0
 									inactive["ultra_ball_timer"] = 10.0
 									inactive["tag_combo_chain"] = 0
 								elif typeof(inactive) == TYPE_OBJECT and inactive.has_method("set_meta"):
+									active.set_meta("ultra_ball_timer", 10.0)
 									inactive.set_meta("ultra_ball_timer", 10.0)
 									inactive.set_meta("tag_combo_chain", 0)
 								elif typeof(inactive) == TYPE_OBJECT and "ultra_ball_timer" in inactive:
+									active.ultra_ball_timer = 10.0
 									inactive.ultra_ball_timer = 10.0
 									inactive.tag_combo_chain = 0
 
@@ -52247,6 +52250,11 @@ class TagTeamMode extends GameMode:
 									inactive["traits"] = merged
 								elif typeof(inactive) == TYPE_OBJECT and "traits" in inactive:
 									inactive.traits = merged
+
+								if typeof(active) == TYPE_DICTIONARY:
+									active["traits"] = merged
+								elif typeof(active) == TYPE_OBJECT and "traits" in active:
+									active.traits = merged
 
 								var i_x = inactive.get("x") if typeof(inactive) == TYPE_DICTIONARY else (inactive.get("x") if "x" in inactive else 0.0)
 								var i_y = inactive.get("y") if typeof(inactive) == TYPE_DICTIONARY else (inactive.get("y") if "y" in inactive else 0.0)

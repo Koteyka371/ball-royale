@@ -33029,13 +33029,20 @@ class TagTeamMode(GameMode):
                     if getattr(active, "tag_recent_hit_timer", 0.0) > 0.0:
                         inactive.tag_combo_chain = getattr(active, "tag_combo_chain", 0) + 1
                         if inactive.tag_combo_chain >= 3:
+                            active.ultra_ball_timer = 10.0
                             inactive.ultra_ball_timer = 10.0
                             inactive.tag_combo_chain = 0
                             if not hasattr(inactive, "tag_original_traits"):
                                 inactive.tag_original_traits = list(getattr(inactive, "traits", []))
+                            if not hasattr(active, "tag_original_traits"):
+                                active.tag_original_traits = list(getattr(active, "traits", []))
+
                             active_traits = getattr(active, "tag_original_traits", getattr(active, "traits", []))
-                            merged = list(set(inactive.tag_original_traits + active_traits))
+                            inactive_traits = getattr(inactive, "tag_original_traits", getattr(inactive, "traits", []))
+                            merged = list(set(inactive_traits + active_traits))
+
                             inactive.traits = merged
+                            active.traits = merged
                             if hasattr(world, "events"):
                                 world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': inactive.x, 'y': inactive.y, 'radius': 300.0, 'color': 'gold'}})
                             if hasattr(world, "add_event"):
