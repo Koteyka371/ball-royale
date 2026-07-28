@@ -14940,6 +14940,13 @@ class Action:
                                 self.world.boosters.remove(nearest)
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("buff_collected", {"x": self.ball.x, "y": self.ball.y})
+                elif getattr(nearest, "kind", None) == "lightning_rod_item":
+                    self.ball.has_lightning_rod = True
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "nemesis_compass_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
