@@ -15448,6 +15448,7 @@ class Action:
                                 if hasattr(b, "take_damage"):
                                     b.take_damage(dmg)
                                 b.stun_timer = stun_dur
+                                b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
                                 # Apply knockback using velocities if possible
                                 if dist > 0.0001:
                                     knockback_force = 1500.0

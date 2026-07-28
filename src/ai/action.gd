@@ -30655,6 +30655,14 @@ func _collect_booster(delta: float):
                                 b.set_meta("stun_timer", stun_dur)
                             else:
                                 b.stun_timer = stun_dur
+                            if b.has_method("set_meta"):
+                                var current_silence = 0.0
+                                if b.has_meta("silence_timer"): current_silence = b.get_meta("silence_timer")
+                                b.set_meta("silence_timer", max(current_silence, 5.0))
+                            else:
+                                var current_silence = 0.0
+                                if "silence_timer" in b: current_silence = b.silence_timer
+                                b.silence_timer = max(current_silence, 5.0)
                             # Apply knockback using velocity if possible
                             if dist > 0.0001:
                                 var knockback_force = 1500.0
