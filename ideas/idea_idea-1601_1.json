@@ -1,0 +1,4 @@
+{
+    "title": "Sticky Bomb Delivery Mutator",
+    "description": "All projectiles fired are replaced with sticky bombs. Sticky bombs attach to the first player they hit and explode after 3 seconds, dealing heavy splash damage. If the attached player dashes into an enemy, the bomb transfers to them, creating a frantic game of hot potato."
+}

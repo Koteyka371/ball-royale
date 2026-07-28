@@ -31949,7 +31949,26 @@ class ChaoticStatHazardMode(GameMode):
                     })
                 world.arena.hazards = hazards
 
+
+class ToxicSludgeMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Sludge Mutator"
+        self.description = "All ground hazards are replaced with toxic sludge. Toxic sludge applies the Radiation debuff for 10 seconds, drastically increasing damage taken from all sources, and slows movement speed. Forces players to heavily prioritize area control."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                h_kind = getattr(h, "kind", "")
+                if h_kind in ["lava", "spikes", "spike_trap", "poison_cloud", "mud", "quicksand", "ice_patch", "fire_zone", "fire_trail", "acid_pool"]:
+                    h.kind = "toxic_sludge"
+
+    def tick(self, world, balls, delta: float = 0.016):
+        super().tick(world, balls, delta)
+
 GAME_MODES = {
+    'toxic_sludge_mutator': ToxicSludgeMutatorMode(),
     'chaotic_stat_hazard': ChaoticStatHazardMode(),
     "chaotic_artifact": ChaoticArtifactMode(),
     "kinetic_battery": KineticBatteryMode(),

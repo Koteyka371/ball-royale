@@ -22026,6 +22026,25 @@ func execute(strategy: String, delta: float):
                         var current_mult = 1.0
                         if self.ball.has_meta("speed_multiplier"): current_mult = self.ball.get_meta("speed_multiplier")
                         self.ball.set_meta("speed_multiplier", min(current_mult, 0.5))
+                elif hazard.kind == "toxic_sludge":
+                    if "radiation_duration" in self.ball: self.ball.radiation_duration = 10.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("radiation_duration", 10.0)
+                    if "radiation_multiplier" in self.ball: self.ball.radiation_multiplier = 2.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("radiation_multiplier", 2.0)
+
+                    var current_slow_t = 0.0
+                    if "slow_timer" in self.ball: current_slow_t = self.ball.slow_timer
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("slow_timer"): current_slow_t = self.ball.get_meta("slow_timer")
+
+                    if "slow_timer" in self.ball: self.ball.slow_timer = max(current_slow_t, 0.5)
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(current_slow_t, 0.5))
+
+                    var current_mult_t = 1.0
+                    if "speed_multiplier" in self.ball: current_mult_t = self.ball.speed_multiplier
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("speed_multiplier"): current_mult_t = self.ball.get_meta("speed_multiplier")
+
+                    if "speed_multiplier" in self.ball: self.ball.speed_multiplier = min(current_mult_t, 0.5)
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", min(current_mult_t, 0.5))
                 elif hazard.kind == "tar_puddle":
                     var current_slow = 0.0
                     if "slow_timer" in self.ball: current_slow = self.ball.slow_timer

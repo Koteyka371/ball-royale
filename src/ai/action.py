@@ -10984,6 +10984,17 @@ class Action:
                                 self.ball.slow_timer = 2.0
                             if hasattr(self.ball, "speed_multiplier"):
                                 self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.5)
+                        elif hazard.kind == "toxic_sludge":
+                            # Apply Radiation debuff
+                            self.ball.radiation_duration = 10.0
+                            self.ball.radiation_multiplier = 2.0
+                            # Apply slow
+                            if hasattr(self.ball, "slow_timer"):
+                                self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 0.5)
+                            else:
+                                self.ball.slow_timer = 0.5
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.5)
                         elif hazard.kind == "tar_puddle":
                             if hasattr(self.ball, "slow_timer"):
                                 self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)

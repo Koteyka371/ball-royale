@@ -50991,6 +50991,7 @@ class ChaoticStatHazardMode extends GameMode:
 				arena.set("hazards", new_hazards)
 
 var GAME_MODES = {
+	"toxic_sludge_mutator": ToxicSludgeMutatorMode.new(),
 	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
 	"chaotic_artifact": ChaoticArtifactMode.new(),
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
@@ -65706,3 +65707,20 @@ GAME_MODES["unstable_payload"] = UnstablePayloadMode.new()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
 GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
 GAME_MODES["kinetic_battery"] = load("res://src/ai/kinetic_battery.gd").new()
+
+class ToxicSludgeMutatorMode extends GameMode:
+	func _init():
+		name = "Toxic Sludge Mutator"
+		description = "All ground hazards are replaced with toxic sludge. Toxic sludge applies the Radiation debuff for 10 seconds, drastically increasing damage taken from all sources, and slows movement speed. Forces players to heavily prioritize area control."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if "arena" in world and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				if "kind" in h: h_kind = str(h.kind)
+				if h_kind in ["lava", "spikes", "spike_trap", "poison_cloud", "mud", "quicksand", "ice_patch", "fire_zone", "fire_trail", "acid_pool"]:
+					h.kind = "toxic_sludge"
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
