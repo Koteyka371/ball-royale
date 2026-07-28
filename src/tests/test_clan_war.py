@@ -44,8 +44,16 @@ def test_clan_war_mode_bonuses(tmp_path, monkeypatch):
 
     # b1 gets bonus
     assert getattr(b1, "speed_multiplier", 1.0) > 1.1
+    assert getattr(b1, "is_territory_owner", False) == True
+
     # b2 does not
     assert getattr(b2, "speed_multiplier", 1.0) == 1.0
+    assert getattr(b2, "is_territory_owner", True) == False
+
+    mode.tick(MockWorld(), [b1, b2], 0.1)
+
+    assert getattr(b1, "hazard_immunity_timer", 0.0) >= 0.5
+    assert getattr(b2, "hazard_immunity_timer", 0.0) == 0.0
 
     # restore
     sys.modules["system.clan"].ClanManager = ClanManager

@@ -56139,8 +56139,46 @@ class ClanWarMode extends GameMode:
 				else:
 					ball.defense_multiplier = 1.5
 
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["is_territory_owner"] = true
+				else:
+					if ball is Object:
+						ball.set_meta("is_territory_owner", true)
+			else:
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["is_territory_owner"] = false
+				else:
+					if ball is Object:
+						ball.set_meta("is_territory_owner", false)
+
 	func tick(world, balls, delta):
 		super.tick(world, balls, delta)
+
+		for b in balls:
+			var is_owner = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("is_territory_owner"):
+				is_owner = b["is_territory_owner"]
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_territory_owner"):
+				is_owner = b.get_meta("is_territory_owner")
+
+			if is_owner:
+				var hit = 0.0
+				if typeof(b) == TYPE_DICTIONARY and b.has("hazard_immunity_timer"):
+					hit = b["hazard_immunity_timer"]
+				elif typeof(b) == TYPE_OBJECT and "hazard_immunity_timer" in b:
+					hit = b.hazard_immunity_timer
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hazard_immunity_timer"):
+					hit = b.get_meta("hazard_immunity_timer")
+
+				hit = max(hit, 0.5)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hazard_immunity_timer"] = hit
+				elif typeof(b) == TYPE_OBJECT:
+					if "hazard_immunity_timer" in b:
+						b.hazard_immunity_timer = hit
+					elif b.has_method("set_meta"):
+						b.set_meta("hazard_immunity_timer", hit)
 
 		if self.territory_captured:
 			return

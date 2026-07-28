@@ -36692,9 +36692,16 @@ class ClanWarMode(GameMode):
                 # Apply territory bonus
                 ball.speed_multiplier = getattr(ball, "speed_multiplier", 1.0) * 1.2
                 ball.defense_multiplier = getattr(ball, "defense_multiplier", 1.0) * 1.5
+                ball.is_territory_owner = True
+            else:
+                ball.is_territory_owner = False
 
     def tick(self, world, balls, delta):
         super().tick(world, balls, delta)
+
+        for b in balls:
+            if getattr(b, "is_territory_owner", False):
+                b.hazard_immunity_timer = max(getattr(b, "hazard_immunity_timer", 0.0), 0.5)
 
         if self.territory_captured:
             return
