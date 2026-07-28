@@ -44281,11 +44281,17 @@ func _update_skill_timer(delta: float):
                                             elif typeof(b) == TYPE_OBJECT and b.has_method("get"): cur_vy = b.get("vy")
                                             if cur_vy == null: cur_vy = 0.0
 
-                                            if "vx" in b: b.vx = cur_vx + nx * knockback_force
-                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("vx", cur_vx + nx * knockback_force)
+                                            if "_reflection_vx" in b: b._reflection_vx = cur_vx + nx * knockback_force
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("_reflection_vx", cur_vx + nx * knockback_force)
+                                            else:
+                                                if typeof(b) == TYPE_DICTIONARY: b["_reflection_vx"] = cur_vx + nx * knockback_force
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("_reflection_vx", cur_vx + nx * knockback_force)
 
-                                            if "vy" in b: b.vy = cur_vy + ny * knockback_force
-                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("vy", cur_vy + ny * knockback_force)
+                                            if "_reflection_vy" in b: b._reflection_vy = cur_vy + ny * knockback_force
+                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("_reflection_vy", cur_vy + ny * knockback_force)
+                                            else:
+                                                if typeof(b) == TYPE_DICTIONARY: b["_reflection_vy"] = cur_vy + ny * knockback_force
+                                                elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("_reflection_vy", cur_vy + ny * knockback_force)
 
                                             if "is_frictionless" in b: b.is_frictionless = true
                                             elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("is_frictionless", true)

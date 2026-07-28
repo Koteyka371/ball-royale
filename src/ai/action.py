@@ -21894,8 +21894,10 @@ class Action:
                                             # Apply enormous outward physics knockback
                                             knockback_force = 5000.0
                                             if getattr(b, "anchor_booster_timer", 0.0) <= 0:
-                                                b.vx = getattr(b, "vx", 0.0) + nx * knockback_force
-                                                b.vy = getattr(b, "vy", 0.0) + ny * knockback_force
+                                                if not hasattr(b, "vx"): b.vx = 0.0
+                                                if not hasattr(b, "vy"): b.vy = 0.0
+                                                b._reflection_vx = getattr(b, "vx", 0.0) + nx * knockback_force
+                                                b._reflection_vy = getattr(b, "vy", 0.0) + ny * knockback_force
                                                 b.is_frictionless = True # So it ignores drag and gets violently tossed
 
                             hazard.duration = 0.0 # Destroy trap

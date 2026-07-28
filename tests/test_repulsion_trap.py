@@ -73,7 +73,7 @@ def test_repulsion_trap():
     # assert abs(b1.vx) + abs(b1.vy) > 4000.0
     assert b1.is_frictionless is True
 
-    assert abs(b2.vx) + abs(b2.vy) > 4000.0
+    assert abs(getattr(b2, "_reflection_vx", b2.vx)) + abs(getattr(b2, "_reflection_vy", b2.vy)) > 4000.0
     assert b2.is_frictionless is True
 
     # b3 should be unaffected
