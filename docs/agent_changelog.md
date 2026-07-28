@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1558] Nemesis Shield Booster — *2026-07-28 06:09:22 UTC*
+
+A booster that gives the player a shield only against damage taken from their Nemesis.
+
+---
+
 ## [idea-1634] Bumper Car Demolition — *2026-07-28 03:43:56 UTC*
 
 Every ball is equipped with high-impact bumpers. Normal attacks are disabled. Players can only damage others by ramming into them at high speeds. The arena gradually shrinks, increasing the frequency and intensity of collisions.

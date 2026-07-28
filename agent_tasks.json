@@ -26675,7 +26675,7 @@
     },
     {
       "id": "idea-1558",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Nemesis Shield Booster",
@@ -40854,6 +40854,40 @@
         "src/arena/trap_ping_pong_mutator.py",
         "src/arena/trap_ping_pong_mutator.gd",
         "tests/test_trap_ping_pong_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2391",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrink Ray Pickups",
+      "description": "Scattered power-ups that temporarily reduce a ball's size but significantly increase its speed. Colliding with a larger ball while shrunk deals less damage but launches the shrunk ball further.",
+      "allowed_paths": [
+        "src/ai/shrink_ray_pickups.py",
+        "src/ai/shrink_ray_pickups.gd",
+        "tests/test_shrink_ray_pickups.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2392",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Reversal Trap",
+      "description": "A deployed trap that absorbs damage when hit, and upon destruction, reflects the total absorbed damage in an AoE explosion.",
+      "allowed_paths": [
+        "src/arena/kinetic_reversal_trap.py",
+        "src/arena/kinetic_reversal_trap.gd",
+        "tests/test_kinetic_reversal_trap.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
