@@ -42184,7 +42184,7 @@ class TelegraphedSupplyDropMode(GameMode):
 
                                 for b in balls:
                                     if getattr(b, "team", getattr(b, "ball_type", "")) == team and getattr(b, "alive", False):
-                                        buff_type = self.random.choice(["invulnerability", "instant_ultimate", "mega_heal", "damage_boost"])
+                                        buff_type = self.random.choice(["invulnerability", "instant_ultimate", "mega_heal", "damage_boost", "speed_boost"])
                                         if buff_type == "invulnerability":
                                             b.invulnerable_timer = getattr(b, "invulnerable_timer", 0.0) + 15.0
                                         elif buff_type == "instant_ultimate":
@@ -42195,6 +42195,9 @@ class TelegraphedSupplyDropMode(GameMode):
                                         elif buff_type == "damage_boost":
                                             b.damage = getattr(b, "base_damage", getattr(b, "damage", 10.0)) * 2.0
                                             b.soul_boost_timer = getattr(b, "soul_boost_timer", 0.0) + 20.0
+                                        elif buff_type == "speed_boost":
+                                            b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.5
+                                            b.speed_boost_timer = getattr(b, "speed_boost_timer", 0.0) + 15.0
 
                                 if hasattr(world, "add_event"):
                                     world.add_event("high_tier_drop_captured", {"team": team})
