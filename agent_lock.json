@@ -123,10 +123,10 @@
     "agent-15": {
       "name": "Jules Worker 15",
       "area": "meta",
-      "status": "working",
-      "task_id": "idea-1631",
-      "started_at": "2026-07-28T12:44:59.622759+00:00",
-      "cycles_today": 9
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
+      "cycles_today": 8
     },
     "agent-16": {
       "name": "Jules Worker 16",
