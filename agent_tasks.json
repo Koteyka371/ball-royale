@@ -26830,7 +26830,7 @@
     },
     {
       "id": "idea-1567",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ricochet Mode",
@@ -41092,6 +41092,23 @@
         "src/ai/magnetic_polarity_nodes.py",
         "src/ai/magnetic_polarity_nodes.gd",
         "tests/test_magnetic_polarity_nodes.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2405",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Decoys",
+      "description": "Decoys that bounce wildly in the arena.",
+      "allowed_paths": [
+        "src/ai/bouncing_decoys.py",
+        "src/ai/bouncing_decoys.gd",
+        "tests/test_bouncing_decoys.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

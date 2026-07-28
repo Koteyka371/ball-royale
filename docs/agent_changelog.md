@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1567] Ricochet Mode — *2026-07-28 08:25:44 UTC*
+
+All projectiles bounce off walls infinitely until they hit a target or their duration expires, making positioning extremely important.
+
+---
+
 ## [idea-1633] Black Hole Decoy — *2026-07-28 07:31:38 UTC*
 
 Introduce a new decoy type called the 'Black Hole Decoy'. When it detonates, instead of dealing immediate damage or crowd control, it creates a gravitational singularity that pulls in all nearby entities (balls, projectiles, items) for 3 seconds before collapsing and dealing damage based on the total mass/entities absorbed.
