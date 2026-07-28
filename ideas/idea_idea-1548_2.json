@@ -1,4 +1,0 @@
-{
-  "title": "Chain Lightning Hazard",
-  "description": "A dynamic hazard that slowly moves across the arena. If a ball touches it, they are shocked and act as a conductor, chaining the damage to other nearby balls."
-}
