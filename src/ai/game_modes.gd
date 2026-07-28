@@ -67846,3 +67846,111 @@ class CascadingStunMode extends GameMode:
 							b2["stun_arm_timer"] = 2.0
 
 GAME_MODES["cascading_stun"] = CascadingStunMode.new()
+
+class SquadRelayMode extends GameMode:
+	var spectator_queue: Dictionary = {}
+
+	func _init() -> void:
+		name = "Squad Relay"
+		description = "Players can only control one ball at a time in a squad. When the active ball dies, the next one spawns in with inherited speed and temporary invulnerability."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		spectator_queue = {}
+
+		var teams = {}
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "player")
+			if b_type == "spectator":
+				continue
+
+			var t = b.get("team") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else "players")
+			if not teams.has(t):
+				teams[t] = []
+			teams[t].append(b)
+
+		for t in teams:
+			var team_balls = teams[t]
+			if team_balls.size() > 1:
+				var spectators = []
+				for i in range(1, team_balls.size()):
+					spectators.append(team_balls[i])
+
+				spectator_queue[t] = spectators
+
+				for sb in spectators:
+					var orig_type = sb.get("ball_type") if typeof(sb) == TYPE_DICTIONARY else (sb.ball_type if "ball_type" in sb else "player")
+					if typeof(sb) == TYPE_DICTIONARY:
+						sb["original_ball_type"] = orig_type
+						sb["ball_type"] = "spectator"
+						sb["x"] = -1000.0
+						sb["y"] = -1000.0
+						sb["vx"] = 0.0
+						sb["vy"] = 0.0
+					else:
+						if sb.has_method("set_meta"): sb.set_meta("original_ball_type", orig_type)
+						if "original_ball_type" in sb: sb.original_ball_type = orig_type
+						if "ball_type" in sb: sb.ball_type = "spectator"
+						if "x" in sb: sb.x = -1000.0
+						if "y" in sb: sb.y = -1000.0
+						if "vx" in sb: sb.vx = 0.0
+						if "vy" in sb: sb.vy = 0.0
+			else:
+				spectator_queue[t] = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		var t_keys = spectator_queue.keys()
+		for t in t_keys:
+			var queue = spectator_queue[t]
+			var active = null
+			var dead_active = null
+
+			for b in balls:
+				var t_val = b.get("team") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else "")
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+				if t_val == t and b_type != "spectator":
+					var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100.0)
+					var alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+					if hp > 0 and alive:
+						active = b
+					else:
+						dead_active = b
+
+			if active == null and dead_active != null:
+				if typeof(dead_active) == TYPE_DICTIONARY:
+					dead_active["alive"] = false
+				else:
+					if "alive" in dead_active: dead_active.alive = false
+
+				if queue.size() > 0:
+					var next_ball = queue.pop_front()
+
+					var orig_type = next_ball.get("original_ball_type", "player") if typeof(next_ball) == TYPE_DICTIONARY else (next_ball.original_ball_type if "original_ball_type" in next_ball else (next_ball.get_meta("original_ball_type") if typeof(next_ball) == TYPE_OBJECT and next_ball.has_method("has_meta") and next_ball.has_meta("original_ball_type") else "player"))
+
+					if typeof(next_ball) == TYPE_DICTIONARY:
+						next_ball["ball_type"] = orig_type
+						next_ball["x"] = dead_active.get("x", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.x if "x" in dead_active else 0.0)
+						next_ball["y"] = dead_active.get("y", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.y if "y" in dead_active else 0.0)
+						next_ball["vx"] = dead_active.get("vx", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.vx if "vx" in dead_active else 0.0)
+						next_ball["vy"] = dead_active.get("vy", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.vy if "vy" in dead_active else 0.0)
+						next_ball["intangible"] = true
+						next_ball["intangible_timer"] = 2.0
+					else:
+						if "ball_type" in next_ball: next_ball.ball_type = orig_type
+						if "x" in next_ball: next_ball.x = dead_active.get("x", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.x if "x" in dead_active else 0.0)
+						if "y" in next_ball: next_ball.y = dead_active.get("y", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.y if "y" in dead_active else 0.0)
+						if "vx" in next_ball: next_ball.vx = dead_active.get("vx", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.vx if "vx" in dead_active else 0.0)
+						if "vy" in next_ball: next_ball.vy = dead_active.get("vy", 0.0) if typeof(dead_active) == TYPE_DICTIONARY else (dead_active.vy if "vy" in dead_active else 0.0)
+
+						if "intangible" in next_ball: next_ball.intangible = true
+						if "intangible_timer" in next_ball: next_ball.intangible_timer = 2.0
+						if typeof(next_ball) == TYPE_OBJECT and next_ball.has_method("set_meta"):
+							next_ball.set_meta("intangible", true)
+							next_ball.set_meta("intangible_timer", 2.0)
+
+GAME_MODES["squad_relay"] = SquadRelayMode.new()
