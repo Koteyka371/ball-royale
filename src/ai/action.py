@@ -20016,7 +20016,7 @@ class Action:
         old_x, old_y = self.ball.x, self.ball.y
 
         gm = getattr(self.world, "game_mode", None)
-        if gm and getattr(gm, "name", "") in ["Bumper Balls", "Radiation Windstorm"]:
+        if gm and getattr(gm, "name", "") in ["Bumper Balls", "Radiation Windstorm", "Bumper Royale"]:
             # In Bumper Balls and Radiation Windstorm, balls are pushed off the arena instead of clamping
             return False
 
@@ -20126,8 +20126,22 @@ class Action:
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Pacifist Knockout":
                     knockback_multiplier = 5.0
-                elif gm and getattr(gm, "name", "") == "Bumper Balls":
+                if gm and getattr(gm, "name", "") in ["Bumper Balls", "Bumper Royale"]:
                     knockback_multiplier = 5.0
+                    if getattr(gm, "name", "") == "Bumper Royale":
+                        speed_self = math.sqrt(getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2)
+                        speed_other = math.sqrt(getattr(other, "vx", 0.0)**2 + getattr(other, "vy", 0.0)**2)
+                        total_speed = speed_self + speed_other
+                        if total_speed > 100.0:
+                            damage_amount = total_speed * 0.05
+                            if hasattr(self.ball, "hp"):
+                                self.ball.hp -= damage_amount
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = False
+                            if hasattr(other, "hp"):
+                                other.hp -= damage_amount
+                                if other.hp <= 0:
+                                    other.alive = False
                 elif gm and getattr(gm, "name", "") == "Zero Gravity":
                     knockback_multiplier = 5.0
                 elif gm and getattr(gm, "name", "") == "Magnetic Collisions":

@@ -51383,6 +51383,154 @@ class IntersectingLasersMode extends GameMode:
 		else:
 			world.arena["hazards"] = new_hazards
 
+
+class BumperRoyaleMode extends GameMode:
+	var initial_width: float = 1000.0
+	var initial_height: float = 1000.0
+	var match_time: float = 0.0
+
+	func _init() -> void:
+		name = "Bumper Royale"
+		description = "Every ball is equipped with high-impact bumpers. Normal attacks are disabled. Players can only damage others by ramming into them at high speeds. The arena gradually shrinks, increasing the frequency and intensity of collisions."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["damage"] = 0.0
+			elif typeof(b) == TYPE_OBJECT:
+				if "damage" in b:
+					b.damage = 0.0
+				elif b.has_method("set_meta"):
+					b.set_meta("damage", 0.0)
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		match_time = 0.0
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var arena = world["arena"]
+				if typeof(arena) == TYPE_DICTIONARY:
+					initial_width = arena.get("width", 1000.0)
+					initial_height = arena.get("height", 1000.0)
+				elif arena != null:
+					initial_width = arena.width if "width" in arena else 1000.0
+					initial_height = arena.height if "height" in arena else 1000.0
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var arena = world.arena
+				initial_width = arena.width if "width" in arena else 1000.0
+				initial_height = arena.height if "height" in arena else 1000.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		match_time += delta
+		var shrink_factor = max(0.2, 1.0 - (match_time / 120.0))
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var arena = world["arena"]
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena["width"] = initial_width * shrink_factor
+					arena["height"] = initial_height * shrink_factor
+					arena_w = arena["width"]
+					arena_h = arena["height"]
+				elif arena != null:
+					if "width" in arena: arena.width = initial_width * shrink_factor
+					if "height" in arena: arena.height = initial_height * shrink_factor
+					arena_w = arena.width if "width" in arena else 1000.0
+					arena_h = arena.height if "height" in arena else 1000.0
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var arena = world.arena
+				if "width" in arena: arena.width = initial_width * shrink_factor
+				if "height" in arena: arena.height = initial_height * shrink_factor
+				arena_w = arena.width if "width" in arena else 1000.0
+				arena_h = arena.height if "height" in arena else 1000.0
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", "")).to_lower()
+				b["damage"] = 0.0
+			else:
+				b_type = str(b.ball_type).to_lower() if "ball_type" in b else ""
+				if "damage" in b:
+					b.damage = 0.0
+				elif b.has_method("set_meta"):
+					b.set_meta("damage", 0.0)
+
+			if b_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			var radius = 10.0
+			if typeof(b) == TYPE_DICTIONARY:
+				bx = float(b.get("x", arena_w / 2.0))
+				by = float(b.get("y", arena_h / 2.0))
+				radius = float(b.get("radius", 10.0))
+			else:
+				bx = float(b.x) if "x" in b else (float(b.get_meta("x")) if b.has_method("has_meta") and b.has_meta("x") else arena_w / 2.0)
+				by = float(b.y) if "y" in b else (float(b.get_meta("y")) if b.has_method("has_meta") and b.has_meta("y") else arena_h / 2.0)
+				radius = float(b.radius) if "radius" in b else (float(b.get_meta("radius")) if b.has_method("has_meta") and b.has_meta("radius") else 10.0)
+
+			if bx < -radius or bx > arena_w + radius or by < -radius or by > arena_h + radius:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = 0.0
+					b["alive"] = false
+				else:
+					if "hp" in b: b.hp = 0.0
+					if "alive" in b: b.alive = false
+					if b.has_method("set_meta"):
+						b.set_meta("hp", 0.0)
+						b.set_meta("alive", false)
+
+	func check_winner(world, balls: Array):
+		var alive_balls = []
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if is_alive and str(b_type).to_lower() != "spectator" and str(b_type).to_lower() != "shadow_monster":
+				alive_balls.append(b)
+
+		if alive_balls.size() == 0:
+			return "Draw"
+		if alive_balls.size() == 1:
+			var winner = alive_balls[0]
+			if typeof(winner) == TYPE_DICTIONARY:
+				return winner.get("team", winner.get("ball_type", "Unknown"))
+			else:
+				return winner.team if "team" in winner else (winner.ball_type if "ball_type" in winner else "Unknown")
+		return null
+
 var GAME_MODES = {
 	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
 	"chaotic_artifact": ChaoticArtifactMode.new(),
@@ -51676,6 +51824,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"tournament": TournamentMode.new(),
 	"pacifist_knockout": PacifistKnockoutMode.new(),
 	"bumper_balls": BumperBallsMode.new(),
+	"bumper_royale": BumperRoyaleMode.new(),
 	"sumo_knockout": SumoKnockoutMode.new(),
 	"bouncy_terrain": BouncyTerrainMode.new(),
 	"chaotic_pinball_machine": ChaoticPinballMachineMode.new(),
