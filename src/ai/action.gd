@@ -15519,6 +15519,51 @@ func execute(strategy: String, delta: float):
                                 if "duration" in hazard: hazard.duration = 0.0
                                 if "active" in hazard: hazard.active = false
 
+                elif hazard.kind == "deployable_gravity_line":
+                    var hazard_is_active = hazard.active if "active" in hazard else true
+                    if hazard_is_active:
+                        var hazard_sx = hazard.start_x if "start_x" in hazard else hazard.x
+                        var hazard_sy = hazard.start_y if "start_y" in hazard else hazard.y
+                        var hazard_ex = hazard.end_x if "end_x" in hazard else hazard.x
+                        var hazard_ey = hazard.end_y if "end_y" in hazard else hazard.y
+                        var b_pos_x = ball.x
+                        var b_pos_y = ball.y
+
+                        var line_length_squared = (hazard_sx - hazard_ex)*(hazard_sx - hazard_ex) + (hazard_sy - hazard_ey)*(hazard_sy - hazard_ey)
+                        var distance_to_line = 0.0
+                        var projection_x = hazard_sx
+                        var projection_y = hazard_sy
+
+                        if line_length_squared == 0:
+                            distance_to_line = sqrt((b_pos_x - hazard_sx)*(b_pos_x - hazard_sx) + (b_pos_y - hazard_sy)*(b_pos_y - hazard_sy))
+                        else:
+                            var dot_product = (b_pos_x - hazard_sx) * (hazard_ex - hazard_sx) + (b_pos_y - hazard_sy) * (hazard_ey - hazard_sy)
+                            var t_parameter = max(0.0, min(1.0, dot_product / line_length_squared))
+                            projection_x = hazard_sx + t_parameter * (hazard_ex - hazard_sx)
+                            projection_y = hazard_sy + t_parameter * (hazard_ey - hazard_sy)
+                            distance_to_line = sqrt((b_pos_x - projection_x)*(b_pos_x - projection_x) + (b_pos_y - projection_y)*(b_pos_y - projection_y))
+
+                        var pull_radius = 150.0
+                        if distance_to_line < pull_radius:
+                            var pull_strength = 300.0 * (1.0 - distance_to_line / pull_radius)
+                            var pull_nx = 0.0
+                            var pull_ny = 0.0
+                            if distance_to_line > 0:
+                                pull_nx = (projection_x - b_pos_x) / distance_to_line
+                                pull_ny = (projection_y - b_pos_y) / distance_to_line
+
+                            var parallel_nx = hazard_ex - hazard_sx
+                            var parallel_ny = hazard_ey - hazard_sy
+                            var pl = sqrt(parallel_nx*parallel_nx + parallel_ny*parallel_ny)
+                            if pl > 0:
+                                parallel_nx /= pl
+                                parallel_ny /= pl
+
+                            var force_x = (pull_nx * pull_strength + parallel_nx * 200.0) * delta
+                            var force_y = (pull_ny * pull_strength + parallel_ny * 200.0) * delta
+
+                            ball.vx += force_x
+                            ball.vy += force_y
                 elif hazard.kind == "deployable_thin_hazard_line":
                     var is_active = true
                     if typeof(hazard) == TYPE_DICTIONARY:
@@ -37933,6 +37978,49 @@ func _use_skill():
                 self.ball["skill_timer"] = 15.0
             else:
                 self.ball.skill_timer = 15.0
+        elif skill_name == "deployable_gravity_line":
+            var enemies = _get_enemies()
+            var target = null
+            if enemies.size() > 0:
+                var min_dist = 999999.0
+                for e in enemies:
+                    var dist = (e.x - ball.x)*(e.x - ball.x) + (e.y - ball.y)*(e.y - ball.y)
+                    if dist < min_dist:
+                        min_dist = dist
+                        target = e
+
+            var end_x = ball.x + 300.0
+            var end_y = ball.y
+            if target != null:
+                var dx = target.x - ball.x
+                var dy = target.y - ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0:
+                    var nx = dx / dist
+                    var ny = dy / dist
+                    end_x = ball.x + nx * 300.0
+                    end_y = ball.y + ny * 300.0
+
+            if world != null and typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and "arena" in world:
+                var arena = world.arena
+                if arena != null and typeof(arena) == TYPE_OBJECT and arena.has_method("has_meta") and "hazards" in arena:
+                    var node = {
+                        "id": "gravity_line_" + str(ball.id) + "_" + str(world.tick),
+                        "kind": "deployable_gravity_line",
+                        "x": ball.x,
+                        "y": ball.y,
+                        "radius": 20.0,
+                        "damage": 0.0,
+                        "start_x": ball.x,
+                        "start_y": ball.y,
+                        "end_x": end_x,
+                        "end_y": end_y,
+                        "team": ball.team if "team" in ball else "",
+                        "duration": 15.0,
+                        "active": true
+                    }
+                    arena.hazards.append(node)
+            ball.skill_timer = 10.0
         elif skill_name == "deployable_thin_hazard_line":
             var enemies = _get_enemies()
             var end_x = self.ball.x + 300.0
@@ -37977,7 +38065,7 @@ func _use_skill():
                 "radius": 10.0,
                 "damage": 50.0,
                 "team": t_team,
-                "timer": 15.0,
+                "duration": 15.0,
                 "active": true,
                 "hit_ids": []
             }
@@ -38048,7 +38136,7 @@ func _use_skill():
                 "radius": 10.0,
                 "damage": 30.0,
                 "team": t_team,
-                "timer": 15.0,
+                "duration": 15.0,
                 "active": true,
                 "hit_ids": []
             }

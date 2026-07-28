@@ -23292,6 +23292,7 @@ class WeaponCollectionMode(GameMode):
                             "explosion",
                             "deployable_thumper",
                             "deployable_thin_hazard_line",
+                            "deployable_gravity_line",
                             "laser_tripwire",
                             "mind_control",
                             "ground_pound",
