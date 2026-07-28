@@ -41452,6 +41452,97 @@ GAME_MODES['shared_health_pool'] = SharedHealthPoolMode()
 GAME_MODES['exponential_control_point'] = ExponentialControlPointMode()
 
 
+
+class PulsingBlackHoleMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pulsing Black Hole Mutator"
+        self.description = "A pulsing black hole sits in the center of the arena, pushing balls away periodically and dealing damage."
+        self.mutators_active = True
+        self.mutators = ["pulsing_black_hole"]
+        self.bh_id = 999997
+        self.push_strength = 300.0
+        self.pulse_timer = 0.0
+        self.pulse_interval = 5.0
+        self.pulse_duration = 1.0
+        self.is_pulsing = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        cx = getattr(world.arena, "width", 1000.0) / 2.0
+        cy = getattr(world.arena, "height", 1000.0) / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "pulsing_black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+                bh = Hazard(
+                    id=self.bh_id,
+                    x=cx,
+                    y=cy,
+                    radius=30.0,
+                    kind="pulsing_black_hole",
+                    damage=25.0
+                )
+                world.arena.hazards.append(bh)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage, active=True):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = active
+                bh = DummyHazard(id=self.bh_id, x=cx, y=cy, radius=30.0, kind="pulsing_black_hole", damage=25.0, active=True)
+                world.arena.hazards.append(bh)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world.arena, "hazards"):
+            return
+
+        bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "pulsing_black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not bh:
+            return
+
+        self.pulse_timer += delta
+        if not self.is_pulsing and self.pulse_timer >= self.pulse_interval:
+            self.is_pulsing = True
+            self.pulse_timer = 0.0
+            bh.radius = 80.0
+        elif self.is_pulsing and self.pulse_timer >= self.pulse_duration:
+            self.is_pulsing = False
+            self.pulse_timer = 0.0
+            bh.radius = 30.0
+
+        if self.is_pulsing:
+            import math
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+
+                dx = b.x - bh.x
+                dy = b.y - bh.y
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if 0 < dist < 150.0:
+                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                        # Push away instead of pulling
+                        b.vx += (dx / dist) * self.push_strength * delta
+                        b.vy += (dy / dist) * self.push_strength * delta
+                    if hasattr(b, "hp"):
+                        b.hp -= getattr(bh, "damage", 25.0) * delta
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            b.killer = "pulsing_black_hole"
+
 class StationaryBlackHoleMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -41521,6 +41612,7 @@ class StationaryBlackHoleMutatorMode(GameMode):
                     b.vy += (dy / dist) * self.pull_strength * delta
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
+GAME_MODES['pulsing_black_hole_mutator'] = PulsingBlackHoleMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
 GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
 from ai.neon_lightcycles import NeonLightcyclesMode
