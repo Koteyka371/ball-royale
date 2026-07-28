@@ -41251,6 +41251,14 @@ class ExtremeBouncinessMode extends GameMode:
 
 			if bounced:
 				bounces += 1
+				if typeof(proj) == TYPE_OBJECT:
+					if proj.has_method("has_meta") and proj.has_meta("bounces_left"):
+						proj.set_meta("bounces_left", proj.get_meta("bounces_left") + 1)
+					elif "bounces_left" in proj:
+						proj.set("bounces_left", proj.get("bounces_left") + 1)
+				elif typeof(proj) == TYPE_DICTIONARY:
+					if proj.has("bounces_left"):
+						proj["bounces_left"] += 1
 				var speed = sqrt(pow(vx, 2) + pow(vy, 2))
 				if speed > 5000.0:
 					var ratio = 5000.0 / speed
@@ -61296,14 +61304,20 @@ class BouncingProjectilesMutatorMode extends GameMode:
 					proj.set("vy", vy)
 					if proj.has_method("set_meta"):
 						proj.set_meta("bounces", bounces)
+						if proj.has_meta("bounces_left"):
+							proj.set_meta("bounces_left", proj.get_meta("bounces_left") + 1)
 					elif "bounces" in proj:
 						proj.set("bounces", bounces)
+					if "bounces_left" in proj:
+						proj.set("bounces_left", proj.get("bounces_left") + 1)
 				elif typeof(proj) == TYPE_DICTIONARY:
 					proj["x"] = x
 					proj["y"] = y
 					proj["vx"] = vx
 					proj["vy"] = vy
 					proj["bounces"] = bounces
+					if proj.has("bounces_left"):
+						proj["bounces_left"] += 1
 
 class WrapAroundMode extends GameMode:
 	func _init():
