@@ -27612,7 +27612,7 @@
     },
     {
       "id": "idea-1613",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chain Reaction Decoy",
@@ -40888,6 +40888,23 @@
         "src/arena/kinetic_reversal_trap.py",
         "src/arena/kinetic_reversal_trap.gd",
         "tests/test_kinetic_reversal_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2393",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Nemesis Tracker",
+      "description": "A passive skill that keeps your Nemesis permanently visible on the mini-map and increases your damage against them by 15%.",
+      "allowed_paths": [
+        "src/ai/nemesis_tracker.py",
+        "src/ai/nemesis_tracker.gd",
+        "tests/test_nemesis_tracker.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

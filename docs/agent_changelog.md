@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1613] Chain Reaction Decoy — *2026-07-28 06:22:20 UTC*
+
+A new skill that deploys a special decoy that links to nearby enemies with tethers. When the decoy explodes or takes enough damage, it transfers a portion of the damage back to all linked enemies.
+
+---
+
 ## [idea-1558] Nemesis Shield Booster — *2026-07-28 06:09:22 UTC*
 
 A booster that gives the player a shield only against damage taken from their Nemesis.
