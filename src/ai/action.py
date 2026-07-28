@@ -35,7 +35,7 @@ class CheerEffect:
         self.active = True
 
 class HomingMissileHazard:
-    def __init__(self, id, x, y, radius, kind, damage, owner_id):
+    def __init__(self, id, x, y, radius, kind, damage, owner_id=None):
         self.id = id
         self.x = x
         self.y = y
@@ -1942,20 +1942,22 @@ class Action:
                                     if dist_sq <= r * r:
                                         # Explode
                                         class Hazard:
-                                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                                            def __init__(self, id, x, y, radius, kind, damage, owner_id=None):
                                                 self.id = id
                                                 self.x = x
                                                 self.y = y
                                                 self.radius = radius
                                                 self.kind = kind
                                                 self.damage = damage
+                                                self.owner_id = owner_id
                                         emp = Hazard(
                                             id=21000 + len(self.world.arena.hazards),
                                             x=h.x,
                                             y=h.y,
                                             radius=40.0,
                                             kind="emp_burst",
-                                            damage=20.0
+                                            damage=20.0,
+                                            owner_id=getattr(b, "id", None)
                                         )
                                         setattr(emp, "duration", 0.5)
                                         setattr(emp, "owner_id", owner_id)
@@ -2587,7 +2589,7 @@ class Action:
                     if hasattr(self.world, "next_id"):
                         self.world.next_id += 1
                     # HomingMissileHazard is in action.py
-                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 5.0)
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 5.0, owner_id=self.ball.id)
                     m.owner_id = self.ball.id
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         self.world.arena.hazards.append(m)
@@ -3355,7 +3357,7 @@ class Action:
                 if self.ball.mirage_spawn_timer >= 3.0:
                     self.ball.mirage_spawn_timer -= 3.0
                     class Hazard:
-                        def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                        def __init__(self, id, x, y, radius, kind, damage, owner_id=None):
                             self.id = id
                             self.x = x
                             self.y = y
@@ -3753,7 +3755,7 @@ class Action:
                     from arena.procedural_arena import Hazard
                 except ImportError:
                     class Hazard:
-                        def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                        def __init__(self, id, x, y, radius, kind, damage, owner_id=None):
                             self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
                 flare_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
                 flare = Hazard(flare_id, self.ball.x, self.ball.y, 10.0, "flare", 0.0)
@@ -6609,6 +6611,8 @@ class Action:
                                                     self.world.events.append({"type": "visual_effect", "data": {"type": "emp_blast", "x": other.x, "y": other.y, "radius": radius}})
                                             elif decoy_type == "stun_trap":
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 5.0
+                                            elif decoy_type == "silencer":
+                                                other.silence_timer = getattr(other, "silence_timer", 0.0) + 4.0
                                             elif decoy_type == "explosive":
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
@@ -17445,7 +17449,7 @@ class Action:
                     import random
                     import math
 
-                    decoy_types = ["explosive", "stun_trap", "healing"]
+                    decoy_types = ["explosive", "stun_trap", "healing", "silencer"]
 
                     for i in range(3):
                         decoy = copy.copy(self.ball)
@@ -20378,7 +20382,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     m_id = f"hm_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
-                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0, owner_id=getattr(self.ball, "id", None))
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
@@ -23776,7 +23780,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     m_id = f"hm_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
-                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0, owner_id=getattr(self.ball, "id", None))
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
 

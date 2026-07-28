@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Network Expansion",
+  "description": "Introduce a new 'hub' decoy type that acts as a router for other decoys. When the hub is destroyed, it triggers the destruction effects of all other allied decoys on the map simultaneously, amplifying their base effects by 2x."
+}
