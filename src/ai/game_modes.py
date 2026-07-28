@@ -25544,6 +25544,8 @@ class ExtremeBouncinessMode(GameMode):
             # Increase speed on bounce, cap at 5000
             if bounced:
                 proj.bounces = bounces + 1
+                if hasattr(proj, "bounces_left"):
+                    proj.bounces_left += 1
                 import math
                 speed = math.hypot(proj.vx, proj.vy)
                 if speed > 5000.0:
@@ -28587,10 +28589,14 @@ class BouncingProjectilesMutatorMode(GameMode):
                         if dot < 0: # moving towards each other
                             proj.vx = vx - 2 * dot * nx
                             proj.vy = vy - 2 * dot * ny
+                            vx = proj.vx
+                            vy = proj.vy
                             bounced = True
 
             if bounced:
                 proj.bounces = bounces + 1
+                if hasattr(proj, "bounces_left"):
+                    proj.bounces_left += 1
 
 class WrapAroundMode(GameMode):
     """
