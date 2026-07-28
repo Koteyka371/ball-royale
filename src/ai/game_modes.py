@@ -42106,3 +42106,89 @@ class BlindFragmentAuctionMode(GameMode):
 GAME_MODES["unstable_payload"] = UnstablePayloadMode()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode()
 GAME_MODES["mobile_platform"] = MobilePlatformMode()
+
+class AmmoDepotMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ammo Depot"
+        self.description = "Players start with extremely low attack speed and damage, and must pick up ammo packs to fight effectively."
+        self.ammo_spawn_timer = 2.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        for b in balls:
+            b.ammo_buff_timer = 0.0
+
+            # Store original values if not already present
+            if not hasattr(b, "original_base_damage"):
+                b.original_base_damage = 10.0
+            if not hasattr(b, "original_attack_speed"):
+                b.original_attack_speed = 1.0
+
+            b.base_damage = b.original_base_damage * 0.1
+            b.attack_speed = b.original_attack_speed * 0.1
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        # Spawn ammo
+        if hasattr(world, "boosters") and hasattr(world, "arena"):
+            self.ammo_spawn_timer -= delta
+            if self.ammo_spawn_timer <= 0:
+                self.ammo_spawn_timer = random.uniform(1.5, 3.5)
+                # Ensure maximum ammo packs on map to avoid clutter
+                ammo_count = sum(1 for b in world.boosters if getattr(b, "kind", "") == "ammo_pack")
+                if ammo_count < 15:
+                    b_id = 9500 + len(world.boosters) + random.randint(0, 1000)
+                    bx = random.uniform(100, world.arena.width - 100)
+                    by = random.uniform(100, world.arena.height - 100)
+
+                    class AmmoBooster:
+                        def __init__(self, bid, x, y):
+                            self.id = bid
+                            self.x = x
+                            self.y = y
+                            self.kind = "ammo_pack"
+                            self.radius = 15.0
+                            self.ball_type = "booster"
+                            self.active = True
+                    world.boosters.append(AmmoBooster(b_id, bx, by))
+
+        # Manage player stats and collisions
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            # Decrement timer
+            if hasattr(b, "ammo_buff_timer"):
+                b.ammo_buff_timer -= delta
+                if b.ammo_buff_timer <= 0:
+                    b.ammo_buff_timer = 0.0
+                    b.base_damage = getattr(b, "original_base_damage", 10.0) * 0.1
+                    b.attack_speed = getattr(b, "original_attack_speed", 1.0) * 0.1
+                else:
+                    b.base_damage = getattr(b, "original_base_damage", 10.0) * 2.0
+                    b.attack_speed = getattr(b, "original_attack_speed", 1.0) * 2.0
+
+            # Check collisions with ammo
+            if hasattr(world, "boosters"):
+                b_x = getattr(b, "x", 0.0)
+                b_y = getattr(b, "y", 0.0)
+                b_r = getattr(b, "radius", 20.0)
+
+                for booster in world.boosters:
+                    if getattr(booster, "kind", "") == "ammo_pack" and getattr(booster, "active", False):
+                        booster_x = getattr(booster, "x", 0.0)
+                        booster_y = getattr(booster, "y", 0.0)
+                        booster_r = getattr(booster, "radius", 15.0)
+
+                        dx = b_x - booster_x
+                        dy = b_y - booster_y
+                        if dx*dx + dy*dy <= (b_r + booster_r)**2:
+                            booster.active = False
+                            b.ammo_buff_timer = 4.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("ammo_pickup", {"ball_id": getattr(b, "id", 0)})
+
+GAME_MODES["ammo_depot"] = AmmoDepotMode()
