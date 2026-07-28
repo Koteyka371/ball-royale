@@ -67414,7 +67414,6 @@ class CascadingStunMode extends GameMode:
 			elif typeof(b) == TYPE_DICTIONARY:
 				b["stun_arm_timer"] = 0.0
 				b["stun_timer"] = 0.0
-
 	func tick(world, delta):
 		var balls = []
 		if typeof(world) == TYPE_OBJECT and "balls" in world:
