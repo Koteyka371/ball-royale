@@ -14831,13 +14831,15 @@ class Action:
                             if hasattr(self.world, "next_id"):
                                 self.world.next_id += 1
 
-                            clone.hp = getattr(self.ball, "max_hp", 100)
-                            clone.max_hp = clone.hp
+                            clone.max_hp = 1.0
+                            clone.hp = 1.0
                             clone.damage = 0
                             if hasattr(clone, "base_damage"): clone.base_damage = 0
                             clone.speed = getattr(self.ball, "speed", 2.0)
                             clone.owner_id = getattr(self.ball, "id", None)
                             clone.is_decoy = True
+                            clone.intangible = True
+                            clone.is_mirroring = True
                             clone.decoy_timer = 5.0
                             clone.skill_timer = 9999.0
                             clone.attack_timer = 9999.0
@@ -14845,8 +14847,8 @@ class Action:
                             clone.skill = None
                             clone.active_skill = None
 
-                            # Distribute the 3 clones around the ball
-                            angle = i * (2 * math.pi / 3)
+                            # Distribute the 2 clones around the ball
+                            angle = i * math.pi + math.pi / 2
                             clone.x += math.cos(angle) * 15
                             clone.y += math.sin(angle) * 15
 

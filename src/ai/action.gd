@@ -29472,8 +29472,8 @@ func _collect_booster(delta: float):
                         if "id" in clone:
                             clone.id = randi() % 90000 + 10000
                         if "hp" in clone and "max_hp" in clone:
-                            clone.max_hp = float(self.ball.max_hp)
-                            clone.hp = clone.max_hp
+                            clone.max_hp = 1.0
+                            clone.hp = 1.0
                         if "damage" in clone:
                             clone.damage = 0.0
                         if "base_damage" in clone:
@@ -29482,7 +29482,7 @@ func _collect_booster(delta: float):
                             clone.speed = self.ball.speed
 
                         if "x" in clone and "y" in clone:
-                            var angle = i * (2.0 * PI / 3.0)
+                            var angle = i * PI + PI / 2.0
                             clone.x += cos(angle) * 15.0
                             clone.y += sin(angle) * 15.0
 
@@ -29493,6 +29493,8 @@ func _collect_booster(delta: float):
                         if clone.has_method("set_meta"):
                             clone.set_meta("owner_id", self_id_stat)
                             clone.set_meta("is_decoy", true)
+                            clone.set_meta("intangible", true)
+                            clone.set_meta("is_mirroring", true)
                             clone.set_meta("decoy_timer", 5.0)
                             clone.set_meta("skill_timer", 9999.0)
                             clone.set_meta("attack_timer", 9999.0)
@@ -29502,6 +29504,8 @@ func _collect_booster(delta: float):
                         elif typeof(clone) == TYPE_DICTIONARY:
                             clone["owner_id"] = self_id_stat
                             clone["is_decoy"] = true
+                            clone["intangible"] = true
+                            clone["is_mirroring"] = true
                             clone["decoy_timer"] = 5.0
                             clone["skill_timer"] = 9999.0
                             clone["attack_timer"] = 9999.0
