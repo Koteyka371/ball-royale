@@ -24582,6 +24582,171 @@ class ZeroGravityMode extends GameMode:
 
 
 
+
+class ToxicSludgeMutatorMode extends GameMode:
+    var replaced = false
+
+    func _init():
+        name = "Toxic Sludge Mutator"
+        description = "Replaces all ground hazards with toxic sludge that applies the Radiation debuff for 10 seconds, increasing damage taken from all sources, and slows movement speed."
+        replaced = false
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        replaced = false
+
+    func tick(world, balls, delta):
+        super.tick(world, balls, delta)
+
+        if not ("arena" in world) or world.arena == null or not ("hazards" in world.arena):
+            return
+
+        if not replaced:
+            var ground_hazards = ["spikes", "puddle", "ice_patch", "lava", "quicksand", "mud_puddle", "molten_rock"]
+            for h in world.arena.hazards:
+                var h_kind = ""
+                if typeof(h) == TYPE_DICTIONARY:
+                    if h.has("kind"):
+                        h_kind = h["kind"]
+                else:
+                    if "kind" in h:
+                        h_kind = h.kind
+
+                if h_kind in ground_hazards:
+                    if typeof(h) == TYPE_DICTIONARY:
+                        h["kind"] = "poison_cloud"
+                        h["is_toxic_sludge"] = true
+                    else:
+                        h.kind = "poison_cloud"
+                        if h.has_method("set_meta"):
+                            h.set_meta("is_toxic_sludge", true)
+            replaced = true
+
+        for b in balls:
+            var alive = true
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("alive"):
+                    alive = b["alive"]
+            else:
+                if "alive" in b:
+                    alive = b.alive
+            if not alive:
+                continue
+
+            var b_type = ""
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("ball_type"):
+                    b_type = b["ball_type"]
+            else:
+                if "ball_type" in b:
+                    b_type = b.ball_type
+            if b_type == "spectator":
+                continue
+
+            var bx = 0.0
+            var by = 0.0
+            var bradius = 15.0
+
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("x"): bx = b["x"]
+                if b.has("y"): by = b["y"]
+                if b.has("radius"): bradius = b["radius"]
+            else:
+                if "x" in b: bx = b.x
+                if "y" in b: by = b.y
+                if "radius" in b: bradius = b.radius
+
+            var in_sludge = false
+            for h in world.arena.hazards:
+                var h_active = true
+                var h_is_sludge = false
+                var hx = 0.0
+                var hy = 0.0
+                var hradius = 30.0
+
+                if typeof(h) == TYPE_DICTIONARY:
+                    if h.has("active"): h_active = h["active"]
+                    if h.has("is_toxic_sludge"): h_is_sludge = h["is_toxic_sludge"]
+                    if h.has("x"): hx = h["x"]
+                    if h.has("y"): hy = h["y"]
+                    if h.has("radius"): hradius = h["radius"]
+                else:
+                    if "active" in h: h_active = h.active
+                    if h.has_method("has_meta") and h.has_meta("is_toxic_sludge"):
+                        h_is_sludge = h.get_meta("is_toxic_sludge")
+                    elif "is_toxic_sludge" in h:
+                        h_is_sludge = h.is_toxic_sludge
+                    if "x" in h: hx = h.x
+                    if "y" in h: hy = h.y
+                    if "radius" in h: hradius = h.radius
+
+                if h_active and h_is_sludge:
+                    var dx = bx - hx
+                    var dy = by - hy
+                    var dist = sqrt(dx * dx + dy * dy)
+                    if dist < bradius + hradius:
+                        in_sludge = true
+                        break
+
+            if in_sludge:
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["radiation_duration"] = 10.0
+                    b["radiation_multiplier"] = 1.5
+                    if b.has("speed"):
+                        if not b.has("base_speed"):
+                            b["base_speed"] = b["speed"]
+                        b["speed"] = b["base_speed"] * 0.5
+                        b["toxic_slow_applied"] = true
+                else:
+                    if "radiation_duration" in b: b.radiation_duration = 10.0
+                    elif b.has_method("set_meta"): b.set_meta("radiation_duration", 10.0)
+                    if "radiation_multiplier" in b: b.radiation_multiplier = 1.5
+                    elif b.has_method("set_meta"): b.set_meta("radiation_multiplier", 1.5)
+
+                    if "speed" in b:
+                        var b_base = null
+                        if "base_speed" in b:
+                            b_base = b.base_speed
+                        elif b.has_method("has_meta") and b.has_meta("base_speed"):
+                            b_base = b.get_meta("base_speed")
+                        else:
+                            b_base = b.speed
+                            if "base_speed" in b:
+                                b.base_speed = b_base
+                            elif b.has_method("set_meta"):
+                                b.set_meta("base_speed", b_base)
+                        b.speed = b_base * 0.5
+                        if "toxic_slow_applied" in b:
+                            b.toxic_slow_applied = true
+                        elif b.has_method("set_meta"):
+                            b.set_meta("toxic_slow_applied", true)
+            else:
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("toxic_slow_applied") and b["toxic_slow_applied"]:
+                        if b.has("base_speed"):
+                            b["speed"] = b["base_speed"]
+                        b["toxic_slow_applied"] = false
+                else:
+                    var slow_applied = false
+                    if "toxic_slow_applied" in b:
+                        slow_applied = b.toxic_slow_applied
+                    elif b.has_method("has_meta") and b.has_meta("toxic_slow_applied"):
+                        slow_applied = b.get_meta("toxic_slow_applied")
+
+                    if slow_applied:
+                        var b_base = null
+                        if "base_speed" in b:
+                            b_base = b.base_speed
+                        elif b.has_method("has_meta") and b.has_meta("base_speed"):
+                            b_base = b.get_meta("base_speed")
+                        if b_base != null and "speed" in b:
+                            b.speed = b_base
+                        if "toxic_slow_applied" in b:
+                            b.toxic_slow_applied = false
+                        elif b.has_method("set_meta"):
+                            b.set_meta("toxic_slow_applied", false)
+
+
 class ChainLightningMutatorMode extends GameMode:
 	func _init() -> void:
 		name = "Chain Lightning Mutator"
@@ -65348,6 +65513,7 @@ class BlindFragmentAuctionMode extends GameMode:
 						})
 
 GAME_MODES["unstable_payload"] = UnstablePayloadMode.new()
+GAME_MODES['toxic_sludge_mutator'] = ToxicSludgeMutatorMode.new()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
 GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
 GAME_MODES["kinetic_battery"] = load("res://src/ai/kinetic_battery.gd").new()

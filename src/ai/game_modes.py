@@ -15934,6 +15934,59 @@ class ZeroGravityMode(GameMode):
         self.description = "Friction and gravity are drastically reduced, causing balls to slide around effortlessly and collisions to produce massive knockback."
 
 
+
+class ToxicSludgeMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Sludge Mutator"
+        self.description = "Replaces all ground hazards with toxic sludge that applies the Radiation debuff for 10 seconds, increasing damage taken from all sources, and slows movement speed."
+        self.replaced = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.replaced = False
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        if not self.replaced:
+            ground_hazards = ["spikes", "puddle", "ice_patch", "lava", "quicksand", "mud_puddle", "molten_rock"]
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") in ground_hazards:
+                    h.kind = "poison_cloud"
+                    setattr(h, "is_toxic_sludge", True)
+            self.replaced = True
+
+        import math
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            in_sludge = False
+            for h in world.arena.hazards:
+                if getattr(h, "active", True) and getattr(h, "is_toxic_sludge", False):
+                    dist = math.hypot(b.x - h.x, b.y - h.y)
+                    if dist < getattr(b, "radius", 15.0) + getattr(h, "radius", 30.0):
+                        in_sludge = True
+                        break
+
+            if in_sludge:
+                b.radiation_duration = 10.0
+                b.radiation_multiplier = 1.5
+                if hasattr(b, "base_speed"):
+                    b.speed = b.base_speed * 0.5
+                elif hasattr(b, "speed") and not hasattr(b, "toxic_slow_applied"):
+                    b.base_speed = getattr(b, "base_speed", b.speed)
+                    b.speed = b.base_speed * 0.5
+                    b.toxic_slow_applied = True
+            else:
+                if hasattr(b, "toxic_slow_applied") and b.toxic_slow_applied:
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+                    b.toxic_slow_applied = False
+
 class ChainLightningMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -40340,6 +40393,7 @@ class WeatherTrapMode(GameMode):
                     elif trap["weather"] == "rain":
                         b.perception_radius = base_perception * 0.5
 
+GAME_MODES['toxic_sludge_mutator'] = ToxicSludgeMutatorMode()
 GAME_MODES['chain_lightning_mutator'] = ChainLightningMutatorMode()
 GAME_MODES['weather_traps'] = WeatherTrapMode()
 
