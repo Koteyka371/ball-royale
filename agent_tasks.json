@@ -27969,7 +27969,7 @@
     },
     {
       "id": "idea-1634",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bumper Car Demolition",
@@ -40803,6 +40803,57 @@
         "src/ai/gravity_wells_booster.py",
         "src/ai/gravity_wells_booster.gd",
         "tests/test_gravity_wells_booster.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2388",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Void Traps",
+      "description": "Hazards that teleport you to another random void trap.",
+      "allowed_paths": [
+        "src/arena/void_traps.py",
+        "src/arena/void_traps.gd",
+        "tests/test_void_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2389",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Hammer",
+      "description": "Item that pushes enemies away on impact.",
+      "allowed_paths": [
+        "src/ai/gravity_hammer.py",
+        "src/ai/gravity_hammer.gd",
+        "tests/test_gravity_hammer.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2390",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Trap Ping Pong Mutator",
+      "description": "A new mutator where all traps can be reflected by attacks instead of triggering immediately. Hitting an enemy trap changes its ownership to you and sends it sliding across the floor like a puck.",
+      "allowed_paths": [
+        "src/arena/trap_ping_pong_mutator.py",
+        "src/arena/trap_ping_pong_mutator.gd",
+        "tests/test_trap_ping_pong_mutator.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

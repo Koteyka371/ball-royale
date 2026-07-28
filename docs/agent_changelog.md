@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1634] Bumper Car Demolition — *2026-07-28 03:43:56 UTC*
+
+Every ball is equipped with high-impact bumpers. Normal attacks are disabled. Players can only damage others by ramming into them at high speeds. The arena gradually shrinks, increasing the frequency and intensity of collisions.
+
+---
+
 ## [idea-1587] Shockwave Mine — *2026-07-28 02:51:53 UTC*
 
 A new trap variant that deals zero damage but applies an enormous outward physics knockback in a massive area when detonated. Great for tossing opponents into hazards like poison clouds or spike walls.
