@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1621] False Maze Walls — *2026-07-28 01:35:52 UTC*
+
+Some maze walls look identical to regular walls but are completely breakable with a single dash attack, rewarding players who experiment and enabling sneaky ambushes.
+
+---
+
 ## [idea-1594] Quantum Tunneling Skill — *2026-07-28 01:23:08 UTC*
 
 A new skill that allows the ball to instantly teleport through a wall or hazard if they are right next to it. They become intangible for 0.5s after tunneling to ensure they don't get stuck, and the skill goes on a 15-second cooldown.

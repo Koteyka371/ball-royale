@@ -27748,7 +27748,7 @@
     },
     {
       "id": "idea-1621",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "False Maze Walls",
@@ -40582,6 +40582,40 @@
         "src/arena/elastic_overdrive_traps.py",
         "src/arena/elastic_overdrive_traps.gd",
         "tests/test_elastic_overdrive_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2375",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Storm Surge Teleportation",
+      "description": "When the safe zone teleports, the area left behind is struck by lightning, dealing burst damage to anyone remaining in the old location.",
+      "allowed_paths": [
+        "src/ai/storm_surge_teleportation.py",
+        "src/ai/storm_surge_teleportation.gd",
+        "tests/test_storm_surge_teleportation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2376",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Safe Zones",
+      "description": "Safe zones split into multiple smaller bubbles that shrink individually before converging into one final small bubble.",
+      "allowed_paths": [
+        "src/ai/quantum_safe_zones.py",
+        "src/ai/quantum_safe_zones.gd",
+        "tests/test_quantum_safe_zones.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
