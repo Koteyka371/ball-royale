@@ -636,6 +636,29 @@ class GameMode:
 						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
 						if "speed" in b: b.speed = bs * 1.15
 
+			# Trait: Weather Mastery
+			var is_weather_mastery = traits.has("weather_mastery")
+			if is_weather_mastery:
+				var extreme_weathers = ["hurricane", "blizzard", "sandstorm", "heatwave", "storm", "heavy_rain"]
+				var in_hazard = false
+				if typeof(b) == TYPE_DICTIONARY:
+					in_hazard = b.has("mutated_env") and b["mutated_env"] != null and b["mutated_env"] != ""
+				else:
+					in_hazard = ("mutated_env" in b and b.get("mutated_env") != null and b.get("mutated_env") != "") or (b.has_method("get_meta") and b.has_meta("mutated_env") and b.get_meta("mutated_env") != null and b.get_meta("mutated_env") != "")
+
+				if extreme_weathers.has(weather_cond) or in_hazard:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["defense_multiplier"] = b.get("defense_multiplier", 1.0) * 0.8
+						var base_s = b.get("base_speed", b.get("speed", 100.0))
+						b["speed"] = base_s * 1.2
+					else:
+						var dm = b.get("defense_multiplier") if "defense_multiplier" in b else 1.0
+						if "defense_multiplier" in b: b.defense_multiplier = dm * 0.8
+						elif b.has_method("set_meta"): b.set_meta("defense_multiplier", dm * 0.8)
+
+						var bs = b.get("base_speed") if "base_speed" in b else b.get("speed", 100.0)
+						if "speed" in b: b.speed = bs * 1.2
+
 		# Apply Team Synergies
 		var team_traits = {}
 		for b in balls:

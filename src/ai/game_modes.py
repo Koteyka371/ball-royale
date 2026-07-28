@@ -372,6 +372,16 @@ class GameMode:
                     b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.7
                     b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 1.15
 
+            # Trait: Weather Mastery
+            is_weather_mastery = "weather_mastery" in traits
+            if is_weather_mastery:
+                extreme_weathers = ["hurricane", "blizzard", "sandstorm", "heatwave", "storm", "heavy_rain"]
+                in_hazard = bool(getattr(b, "mutated_env", None))
+                if weather in extreme_weathers or in_hazard:
+                    b.defense_multiplier = getattr(b, "defense_multiplier", 1.0) * 0.8
+                    base_s = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                    b.speed = base_s * 1.2
+
         # Apply Team Synergies
         # First, gather team data
         team_traits = {}
