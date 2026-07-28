@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Tunnels Hazard",
+  "description": "A hazard that periodically swaps the positions of random entities inside it with other entities across the map."
+}
