@@ -388,6 +388,38 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.damage = orig_dmg
 
 func _attempt_damage_internal(attacker, target) -> void:
+	var intangible = false
+	if typeof(target) == TYPE_DICTIONARY and target.has("intangible"): intangible = target["intangible"]
+	elif typeof(target) == TYPE_OBJECT and "intangible" in target: intangible = target.intangible
+	elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible"): intangible = target.get_meta("intangible")
+
+	var intangible_timer = 0.0
+	if typeof(target) == TYPE_DICTIONARY and target.has("intangible_timer"): intangible_timer = target["intangible_timer"]
+	elif typeof(target) == TYPE_OBJECT and "intangible_timer" in target: intangible_timer = target.intangible_timer
+	elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("intangible_timer"): intangible_timer = target.get_meta("intangible_timer")
+
+	if intangible or intangible_timer > 0.0:
+		var is_decoy = false
+		if typeof(target) == TYPE_DICTIONARY and target.has("is_decoy"): is_decoy = target["is_decoy"]
+		elif typeof(target) == TYPE_OBJECT and "is_decoy" in target: is_decoy = target.is_decoy
+		elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("is_decoy"): is_decoy = target.get_meta("is_decoy")
+
+		var is_mirroring = false
+		if typeof(target) == TYPE_DICTIONARY and target.has("is_mirroring"): is_mirroring = target["is_mirroring"]
+		elif typeof(target) == TYPE_OBJECT and "is_mirroring" in target: is_mirroring = target.is_mirroring
+		elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("is_mirroring"): is_mirroring = target.get_meta("is_mirroring")
+
+		var decoy_timer = 0.0
+		if typeof(target) == TYPE_DICTIONARY and target.has("decoy_timer"): decoy_timer = target["decoy_timer"]
+		elif typeof(target) == TYPE_OBJECT and "decoy_timer" in target: decoy_timer = target.decoy_timer
+		elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("decoy_timer"): decoy_timer = target.get_meta("decoy_timer")
+
+		if is_decoy and is_mirroring and decoy_timer > 0.0:
+			if typeof(target) == TYPE_DICTIONARY: target["decoy_timer"] = 0.0
+			elif typeof(target) == TYPE_OBJECT and "decoy_timer" in target: target.decoy_timer = 0.0
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("decoy_timer", 0.0)
+			return
+
 	var target_nemesis_shield_active = false
 	if typeof(target) == TYPE_OBJECT:
 		if "nemesis_shield_active" in target: target_nemesis_shield_active = target.nemesis_shield_active
