@@ -32443,7 +32443,130 @@ class BumperFrenzyMode(GameMode):
                             world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": arena_height})
 
 
+class ShrinkingPinballMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrinking Pinball"
+        self.description = "Combines Extreme Bounciness with a shrinking safe zone. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios."
+        self.shrink_rate = 15.0
+        self.min_arena_size = 300.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.initial_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        self.initial_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+
+        new_width = max(self.min_arena_size, arena_width - self.shrink_rate * delta)
+        new_height = max(self.min_arena_size, arena_height - self.shrink_rate * delta)
+
+        if hasattr(world, "arena") and world.arena:
+            world.arena.width = new_width
+            world.arena.height = new_height
+
+        arena_width = new_width
+        arena_height = new_height
+
+        init_area = getattr(self, "initial_width", 1000.0) * getattr(self, "initial_height", 1000.0)
+        curr_area = arena_width * arena_height
+
+        progress = 1.0 - (curr_area / max(1.0, init_area))
+        current_multiplier = 1.5 + (1.5 * progress)
+
+        entities = list(balls)
+        if hasattr(world, "projectiles"):
+            entities.extend(world.projectiles)
+        if hasattr(world, "arena") and world.arena and hasattr(world.arena, "hazards"):
+            entities.extend(world.arena.hazards)
+
+        for ent in entities:
+            is_alive = True
+            if hasattr(ent, "alive"):
+                is_alive = ent.alive
+            elif isinstance(ent, dict):
+                is_alive = ent.get("alive", True)
+
+            hp = ent.get("hp", 1.0) if isinstance(ent, dict) else getattr(ent, "hp", 1.0)
+
+            if not is_alive and hp <= 0:
+                continue
+
+            if isinstance(ent, dict):
+                x = ent.get("x", 0.0)
+                y = ent.get("y", 0.0)
+                radius = ent.get("radius", 5.0)
+                vx = ent.get("vx", 0.0)
+                vy = ent.get("vy", 0.0)
+            else:
+                x = getattr(ent, "x", 0.0)
+                y = getattr(ent, "y", 0.0)
+                radius = getattr(ent, "radius", 5.0)
+                vx = getattr(ent, "vx", 0.0)
+                vy = getattr(ent, "vy", 0.0)
+
+            bounced = False
+
+            if x - radius < 0:
+                if vx <= 0:
+                    vx = -vx * current_multiplier
+                    if vx < 100.0:
+                        vx = 100.0
+                x = radius
+                bounced = True
+            elif x + radius > arena_width:
+                if vx >= 0:
+                    vx = -vx * current_multiplier
+                    if vx > -100.0:
+                        vx = -100.0
+                x = arena_width - radius
+                bounced = True
+
+            if y - radius < 0:
+                if vy <= 0:
+                    vy = -vy * current_multiplier
+                    if vy < 100.0:
+                        vy = 100.0
+                y = radius
+                bounced = True
+            elif y + radius > arena_height:
+                if vy >= 0:
+                    vy = -vy * current_multiplier
+                    if vy > -100.0:
+                        vy = -100.0
+                y = arena_height - radius
+                bounced = True
+
+            if bounced:
+                import math
+                speed = math.hypot(vx, vy)
+                if speed > 5000.0:
+                    ratio = 5000.0 / speed
+                    vx *= ratio
+                    vy *= ratio
+
+                if hasattr(ent, "x"):
+                    ent.x = x
+                    ent.y = y
+                    ent.vx = vx
+                    ent.vy = vy
+                    if hasattr(ent, "bounces"):
+                        ent.bounces += 1
+                    else:
+                        ent.bounces = 1
+                elif isinstance(ent, dict):
+                    ent["x"] = x
+                    ent["y"] = y
+                    ent["vx"] = vx
+                    ent["vy"] = vy
+                    ent["bounces"] = ent.get("bounces", 0) + 1
+
 GAME_MODES = {
+
     "bumper_frenzy": BumperFrenzyMode(),
     'hazard_shift_event': HazardShiftEventMode(),
     'chaotic_stat_hazard': ChaoticStatHazardMode(),
@@ -32613,6 +32736,7 @@ GAME_MODES = {
     "solar_flare_event": SolarFlareEventMode(),
     "lunar_eclipse_event": LunarEclipseEventMode(),
     "solar_eclipse_event": SolarEclipseEventMode(),
+    "shrinking_pinball": ShrinkingPinballMode(),
     "domination": DominationMode(),
     "black_hole": BlackHoleMode(),
     "sweeping_black_hole": SweepingBlackHoleMode(),
