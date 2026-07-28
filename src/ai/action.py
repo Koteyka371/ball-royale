@@ -6169,8 +6169,10 @@ class Action:
             base_friction = getattr(arena, "base_friction", None) if arena else None
             if base_friction is not None and not getattr(self.ball, "is_frictionless", False):
                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                    self.ball.vx *= max(0.0, 1.0 - base_friction * delta)
-                    self.ball.vy *= max(0.0, 1.0 - base_friction * delta)
+                    fm = getattr(self.ball, "friction_multiplier", 1.0)
+                    if isinstance(self.ball, dict): fm = self.ball.get("friction_multiplier", 1.0)
+                    self.ball.vx *= max(0.0, 1.0 - (base_friction * fm) * delta)
+                    self.ball.vy *= max(0.0, 1.0 - (base_friction * fm) * delta)
                     self.ball.x += self.ball.vx * delta
                     self.ball.y += self.ball.vy * delta
 

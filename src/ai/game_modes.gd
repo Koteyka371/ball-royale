@@ -40188,6 +40188,35 @@ class DynamicWeatherTransitionsMode extends GameMode:
 				weather_timer = 9999.0
 
 
+
+class SlipperyArenaMode extends GameMode:
+	func _init():
+		name = "Slippery Arena"
+		description = "An arena mode where balls experience heavily reduced friction, making it harder to change directions quickly."
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				world.arena["base_friction"] = 0.1
+			elif typeof(world.arena) == TYPE_OBJECT:
+				if "base_friction" in world.arena:
+					world.arena.base_friction = 0.1
+				else:
+					world.arena.set_meta("base_friction", 0.1)
+
+		for b in balls:
+			var is_alive = false
+			if "alive" in b: is_alive = b.alive
+			elif b.has_method("has_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+			if is_alive:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["friction_multiplier"] = 0.1
+				elif b.has_method("set_meta"):
+					b.set_meta("friction_multiplier", 0.1)
+
 class StickyArenaMode extends GameMode:
 	func _init():
 		pass
@@ -52344,6 +52373,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"elemental_auras": ElementalAurasMode.new(),
 	"heavy_rain_mutator": HeavyRainMode.new(),
 
+	"slippery_arena": SlipperyArenaMode.new(),
 	"sticky_arena": StickyArenaMode.new(),
 	"sticky_ceilings_mutator": StickyCeilingsMutatorMode.new(),
 	"falling_panels": FallingPanelsMode.new(),

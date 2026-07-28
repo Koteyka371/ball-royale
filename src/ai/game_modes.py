@@ -25119,6 +25119,26 @@ class DynamicWeatherTransitionsMode(GameMode):
                 # Keep it at the final weather
                 self.weather_timer = 9999.0
 
+
+class SlipperyArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Slippery Arena"
+        self.description = "An arena mode where balls experience heavily reduced friction, making it harder to change directions quickly."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # We modify the arena base friction
+        if hasattr(world, "arena") and world.arena:
+            world.arena.base_friction = 0.1
+
+        # We also enforce it through a frictionless-like state but more physics-based,
+        # or we can apply it through friction_multiplier
+        for b in balls:
+            if getattr(b, "alive", False):
+                b.friction_multiplier = 0.1
+
 class StickyArenaMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -32651,6 +32671,7 @@ GAME_MODES = {
     "elemental_auras": ElementalAurasMode(),
     "heavy_rain_mutator": HeavyRainMode(),
 
+    'slippery_arena': SlipperyArenaMode(),
     'sticky_arena': StickyArenaMode(),
     'sticky_ceilings_mutator': StickyCeilingsMutatorMode(),
     "falling_panels": FallingPanelsMode(),

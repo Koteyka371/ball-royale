@@ -12590,6 +12590,31 @@ func execute(strategy: String, delta: float):
             my_ball.vy *= (1.0 - 0.5 * delta)
             my_ball.x += my_ball.vx * delta
             my_ball.y += my_ball.vy * delta
+    else:
+        var arena_obj = null
+        if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena"): arena_obj = self.world.arena
+        elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world: arena_obj = self.world.arena
+
+        var base_frict = null
+        if typeof(arena_obj) == TYPE_DICTIONARY and arena_obj.has("base_friction"): base_frict = arena_obj.base_friction
+        elif typeof(arena_obj) == TYPE_OBJECT and "base_friction" in arena_obj: base_frict = arena_obj.base_friction
+
+        var is_frictionless = false
+        if "is_frictionless" in my_ball and my_ball.is_frictionless: is_frictionless = true
+        elif my_ball.has_method("has_meta") and my_ball.has_meta("is_frictionless") and my_ball.get_meta("is_frictionless"): is_frictionless = true
+        elif typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("is_frictionless") and my_ball.is_frictionless: is_frictionless = true
+
+        if base_frict != null and not is_frictionless:
+            if "vx" in my_ball and "vy" in my_ball:
+                var fm = 1.0
+                if typeof(my_ball) == TYPE_DICTIONARY and my_ball.has("friction_multiplier"): fm = my_ball.friction_multiplier
+                elif typeof(my_ball) == TYPE_OBJECT and "friction_multiplier" in my_ball: fm = my_ball.friction_multiplier
+                elif my_ball.has_method("has_meta") and my_ball.has_meta("friction_multiplier"): fm = my_ball.get_meta("friction_multiplier")
+
+                my_ball.vx *= max(0.0, 1.0 - (base_frict * fm) * delta)
+                my_ball.vy *= max(0.0, 1.0 - (base_frict * fm) * delta)
+                my_ball.x += my_ball.vx * delta
+                my_ball.y += my_ball.vy * delta
 
     if my_ball.get("BALL_TYPE") == "mimic" and my_ball.has_method("process_mimicry"):
         var enemies = self._get_enemies()
