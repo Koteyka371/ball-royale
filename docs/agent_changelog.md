@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1592] Mirror Image Decoy Booster — *2026-07-28 12:45:13 UTC*
+
+A booster that, when picked up, spawns two intangible clones of the ball that move in mirrored paths from the original ball. They don't do damage, but confuse enemies and disappear after 5 seconds or upon taking damage.
+
+---
+
 ## [idea-1638] Random Supply Drops — *2026-07-28 10:21:54 UTC*
 
 Periodically drop powerful, game-changing items from the sky. The drop location is broadcasted in advance, creating a hotspot for skirmishes.
