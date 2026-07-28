@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1633] Black Hole Decoy — *2026-07-28 07:31:38 UTC*
+
+Introduce a new decoy type called the 'Black Hole Decoy'. When it detonates, instead of dealing immediate damage or crowd control, it creates a gravitational singularity that pulls in all nearby entities (balls, projectiles, items) for 3 seconds before collapsing and dealing damage based on the total mass/entities absorbed.
+
+---
+
 ## [idea-1611] Slingshot Nodes — *2026-07-28 07:02:35 UTC*
 
 Similar to grapple nodes, slingshot nodes can be attached to but instead of pulling the player towards them, they charge up tension and then launch the player in the opposite direction at extreme speed. They break after one use and drop unique 'Elastic Cord' materials.

@@ -27952,7 +27952,7 @@
     },
     {
       "id": "idea-1633",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Decoy",
@@ -41058,6 +41058,40 @@
         "src/ai/black_hole_projectiles.py",
         "src/ai/black_hole_projectiles.gd",
         "tests/test_black_hole_projectiles.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2403",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Grapple Mod",
+      "description": "A modifier for the grapple hook that functions like a slingshot, storing tension energy while hooked onto an enemy or node, before launching the user away at high speed when released or upon reaching max tension.",
+      "allowed_paths": [
+        "src/ai/slingshot_grapple_mod.py",
+        "src/ai/slingshot_grapple_mod.gd",
+        "tests/test_slingshot_grapple_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2404",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetic Polarity Nodes",
+      "description": "New environmental hazards that emit a pulsing magnetic field. Players can change their own polarity by passing through them; matching polarity repels them at high speed, while opposite polarity slowly draws them in.",
+      "allowed_paths": [
+        "src/ai/magnetic_polarity_nodes.py",
+        "src/ai/magnetic_polarity_nodes.gd",
+        "tests/test_magnetic_polarity_nodes.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
