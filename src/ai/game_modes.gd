@@ -48840,6 +48840,73 @@ class SpawningSafeZonesMode extends GameMode:
 
 
 
+
+class CascadingStunMutatorMode extends GameMode:
+	func _init():
+		super()
+		name = "Cascading Stun Mutator"
+		description = "Colliding with any other ball automatically arms a Stun Explosion on both entities, creating an arena filled with constant bouncing and cascading stun effects."
+
+	func tick(world: Object, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		for ball in balls:
+			if ball.get("is_alive") != null and not ball.is_alive:
+				continue
+
+			for other in balls:
+				if ball == other or (other.get("is_alive") != null and not other.is_alive):
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var ox = 0.0
+				var oy = 0.0
+				var b_rad = 10.0
+				var o_rad = 10.0
+
+				if "x" in ball: bx = ball.x
+				elif ball.has_method("has_meta") and ball.has_meta("x"): bx = ball.get_meta("x")
+				if "y" in ball: by = ball.y
+				elif ball.has_method("has_meta") and ball.has_meta("y"): by = ball.get_meta("y")
+
+				if "x" in other: ox = other.x
+				elif other.has_method("has_meta") and other.has_meta("x"): ox = other.get_meta("x")
+				if "y" in other: oy = other.y
+				elif other.has_method("has_meta") and other.has_meta("y"): oy = other.get_meta("y")
+
+				if "radius" in ball: b_rad = ball.radius
+				elif ball.has_method("has_meta") and ball.has_meta("radius"): b_rad = ball.get_meta("radius")
+				if "radius" in other: o_rad = other.radius
+				elif other.has_method("has_meta") and other.has_meta("radius"): o_rad = other.get_meta("radius")
+
+				var dx = bx - ox
+				var dy = by - oy
+				var dist_sq = dx*dx + dy*dy
+				var rad_sum = b_rad + o_rad
+
+				if dist_sq < (rad_sum * rad_sum):
+					var b_armed = false
+					if "stun_explosion_armed" in ball: b_armed = ball.stun_explosion_armed
+					elif ball.has_method("has_meta") and ball.has_meta("stun_explosion_armed"): b_armed = ball.get_meta("stun_explosion_armed")
+
+					var o_armed = false
+					if "stun_explosion_armed" in other: o_armed = other.stun_explosion_armed
+					elif other.has_method("has_meta") and other.has_meta("stun_explosion_armed"): o_armed = other.get_meta("stun_explosion_armed")
+
+					if not b_armed:
+						if ball is Dictionary:
+							ball["stun_explosion_armed"] = true
+						else:
+							ball.set("stun_explosion_armed", true)
+							if ball.has_method("set_meta"): ball.set_meta("stun_explosion_armed", true)
+					if not o_armed:
+						if other is Dictionary:
+							other["stun_explosion_armed"] = true
+						else:
+							other.set("stun_explosion_armed", true)
+							if other.has_method("set_meta"): other.set_meta("stun_explosion_armed", true)
+
 class KineticMomentumMutatorMode extends GameMode:
 	var max_kinetic_time = 5.0
 	var max_bonus_multiplier = 3.0
@@ -51160,6 +51227,7 @@ var GAME_MODES = {
 	"chaotic_artifact": ChaoticArtifactMode.new(),
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),
+	"cascading_stun_mutator": CascadingStunMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),

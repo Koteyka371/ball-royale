@@ -30314,6 +30314,38 @@ class SpawningSafeZonesMode(GameMode):
 
 
 
+
+class CascadingStunMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cascading Stun Mutator"
+        self.description = "Colliding with any other ball automatically arms a Stun Explosion on both entities, creating an arena filled with constant bouncing and cascading stun effects."
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        import math
+
+        for ball in balls:
+            if not getattr(ball, "is_alive", True):
+                continue
+
+            for other in balls:
+                if ball == other or not getattr(other, "is_alive", True):
+                    continue
+
+                # Check for collision
+                dx = getattr(ball, 'x', 0) - getattr(other, 'x', 0)
+                dy = getattr(ball, 'y', 0) - getattr(other, 'y', 0)
+                dist_sq = dx*dx + dy*dy
+                rad_sum = getattr(ball, 'radius', 10.0) + getattr(other, 'radius', 10.0)
+
+                if dist_sq < (rad_sum * rad_sum):
+                    # Only arm if they aren't already armed to prevent immediate re-arming
+                    if not getattr(ball, "stun_explosion_armed", False):
+                        setattr(ball, "stun_explosion_armed", True)
+                    if not getattr(other, "stun_explosion_armed", False):
+                        setattr(other, "stun_explosion_armed", True)
+
 class KineticMomentumMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -32009,6 +32041,7 @@ GAME_MODES = {
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
     'laser_grid_survival': LaserGridSurvivalMode(),
     'vampiric_mutator': VampiricMutatorMode(),
+    'cascading_stun_mutator': CascadingStunMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),

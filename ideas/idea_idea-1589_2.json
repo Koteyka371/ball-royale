@@ -1,0 +1,4 @@
+{
+  "title": "Gravitational Tether Mine",
+  "description": "A deployable hazard that acts like a sticky mine but instead of exploding, it tethers itself to the nearest two enemies within a 300-unit radius. As the enemies move apart, the tether tension increases, applying a growing slow effect until it snaps, causing a burst of stun and damage."
+}
