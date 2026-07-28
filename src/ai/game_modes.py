@@ -29159,6 +29159,107 @@ class RandomQuantumTunnelsMode(GameMode):
                     break
 
 
+
+class GuildWarMode(GameMode):
+    def __init__(self, attacker_guild=None, defender_guild=None):
+        super().__init__()
+        self.name = "Guild War"
+        self.description = "Attack the enemy guild's HQ and destroy their defenses."
+        self.attacker_guild = attacker_guild
+        self.defender_guild = defender_guild
+        self.hq_hp = 5000
+        self.hq_max_hp = 5000
+        self.defenses_spawned = False
+        self.attacker_balls = []
+        self.defender_balls = []
+        self.hq_x = 400
+        self.hq_y = 300
+        self.hq_radius = 50
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.attacker_balls = []
+        self.defender_balls = []
+
+        # Split balls mock
+        half = len(balls) // 2
+        for i, b in enumerate(balls):
+            if i < half:
+                self.attacker_balls.append(b.id)
+            else:
+                self.defender_balls.append(b.id)
+
+        try:
+            from system.guild import GuildManager
+            gm = GuildManager()
+            if self.defender_guild and hasattr(world, 'arena'):
+                if hasattr(gm, 'get_hq_status'):
+                    hq_status = gm.get_hq_status(self.defender_guild)
+                    if hq_status:
+                        defenses = hq_status.get("defenses", {})
+                        # Add defensive hazards
+                        import math
+                        angle_step = 2 * math.pi / max(1, sum(defenses.values()))
+                        current_angle = 0
+                        for d_type, amount in defenses.items():
+                            for _ in range(amount):
+                                distance = 100 + (hash(current_angle) % 50)
+                                world.arena.hazards.append({
+                                    "type": "hazard",
+                                    "kind": d_type,
+                                    "x": self.hq_x + math.cos(current_angle) * distance,
+                                    "y": self.hq_y + math.sin(current_angle) * distance,
+                                    "radius": 15,
+                                    "damage": 10 if d_type == "turret" else 20,
+                                    "active": True,
+                                    "is_defense": True,
+                                    "owner_guild": self.defender_guild
+                                })
+                                current_angle += angle_step
+        except (ImportError, AttributeError):
+            pass
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        # Check attackers in range of HQ
+        attackers_in_range = []
+        for b in world.balls:
+            if b.id in self.attacker_balls:
+                dist = ((b.x - self.hq_x)**2 + (b.y - self.hq_y)**2)**0.5
+                if dist < self.hq_radius + b.radius + 20:
+                    attackers_in_range.append(b)
+
+        if attackers_in_range:
+            damage = len(attackers_in_range) * 10 * delta
+            self.hq_hp -= damage
+            if self.hq_hp <= 0:
+                self.hq_hp = 0
+                world.add_event('guild_war_over', {
+                    'type': 'guild_war_over',
+                    'winner': self.attacker_guild,
+                    'message': f"{self.attacker_guild} destroyed {self.defender_guild}'s HQ!"
+                })
+                # Attempt to steal resources
+                try:
+                    from system.guild import GuildManager
+                    gm = GuildManager()
+                    if self.attacker_guild and self.defender_guild and hasattr(gm, 'record_siege_defense_broken'):
+                        stolen = gm.record_siege_defense_broken(self.attacker_guild, self.defender_guild, 1000)
+                        world.add_event('siege_success', {'attacker': self.attacker_guild, 'defender': self.defender_guild, 'stolen': stolen})
+                except (ImportError, AttributeError):
+                    pass
+
+        # Defenses deal damage
+        if hasattr(world, 'arena'):
+            for h in world.arena.hazards:
+                if h.get("is_defense") and h.get("active"):
+                    for b in world.balls:
+                        if b.id in self.attacker_balls:
+                            dist = ((b.x - h["x"])**2 + (b.y - h["y"])**2)**0.5
+                            if dist < h["radius"] + b.radius:
+                                b.hp -= h.get("damage", 5) * delta
+
+
 class GuildStormMode(GameMode):
     def __init__(self, guild_name=None, cost=500):
         super().__init__()
@@ -31700,6 +31801,7 @@ GAME_MODES = {
     'elemental_chain_reactions': ElementalChainReactionMode(),
     "biome_safe_zones": BiomeSafeZonesMode(),
     'guild_storm': GuildStormMode(),
+    'guild_war': GuildWarMode(),
     'random_quantum_tunnels': RandomQuantumTunnelsMode(),
     "chroma_boss": ChromaBossMode(),
     'rising_lava': RisingLavaMode(),
