@@ -1,0 +1,4 @@
+{
+  "title": "Nemesis Tracker Compass",
+  "description": "An item that, when picked up, gives the player a directional indicator pointing towards their current Nemesis, even if the Nemesis is outside of the player's vision range, encouraging targeted revenge."
+}

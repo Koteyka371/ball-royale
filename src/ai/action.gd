@@ -389,6 +389,41 @@ func _attempt_damage(attacker, target) -> void:
 
 func _attempt_damage_internal(attacker, target) -> void:
 
+	var target_nemesis_shield = false
+	if typeof(target) == TYPE_OBJECT and "nemesis_shield_active" in target: target_nemesis_shield = target.nemesis_shield_active
+	elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("nemesis_shield_active"): target_nemesis_shield = target.get_meta("nemesis_shield_active")
+	elif typeof(target) == TYPE_DICTIONARY and target.has("nemesis_shield_active"): target_nemesis_shield = target["nemesis_shield_active"]
+
+	if target_nemesis_shield:
+		var pm = null
+		if typeof(self.world) == TYPE_OBJECT and "profile_manager" in self.world: pm = self.world.profile_manager
+		elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("profile_manager"): pm = self.world["profile_manager"]
+
+		if pm != null and typeof(pm) == TYPE_OBJECT and pm.has_method("is_nemesis"):
+			var a_btype = ""
+			if typeof(attacker) == TYPE_OBJECT and "ball_type" in attacker: a_btype = attacker.ball_type
+			elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("ball_type"): a_btype = attacker["ball_type"]
+
+			var t_btype = ""
+			if typeof(target) == TYPE_OBJECT and "ball_type" in target: t_btype = target.ball_type
+			elif typeof(target) == TYPE_DICTIONARY and target.has("ball_type"): t_btype = target["ball_type"]
+
+			if a_btype != "" and t_btype != "":
+				if pm.is_nemesis(a_btype, t_btype) or pm.is_nemesis(t_btype, a_btype):
+					if typeof(target) == TYPE_OBJECT and "nemesis_shield_active" in target: target.nemesis_shield_active = false
+					elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("nemesis_shield_active", false)
+					elif typeof(target) == TYPE_DICTIONARY: target["nemesis_shield_active"] = false
+
+					if typeof(self.world) == TYPE_OBJECT and "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+						var tx = 0.0
+						if typeof(target) == TYPE_OBJECT and "x" in target: tx = target.x
+						elif typeof(target) == TYPE_DICTIONARY and target.has("x"): tx = target["x"]
+						var ty = 0.0
+						if typeof(target) == TYPE_OBJECT and "y" in target: ty = target.y
+						elif typeof(target) == TYPE_DICTIONARY and target.has("y"): ty = target["y"]
+						self.world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": tx, "y": ty}})
+					return
+
 	var att_btype = ""
 	var att_team = ""
 	var tgt_team = ""
@@ -30697,6 +30732,20 @@ func _collect_booster(delta: float):
                         self.ball.death_defy_active = true
                     elif self.ball.has_method("set_meta"):
                         self.ball.set_meta("death_defy_active", true)
+
+                if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "nemesis_shield_booster":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["nemesis_shield_active"] = true
+                else:
+                    self.ball.set_meta("nemesis_shield_active", true)
 
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
