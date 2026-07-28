@@ -52152,7 +52152,88 @@ class ShrinkingPinballMode extends GameMode:
 					ent["vy"] = vy
 					ent["bounces"] = ent.get("bounces", 0) + 1
 
+
+class BlackHoleNetworkMode extends GameMode:
+	var black_holes = []
+	var spawn_timer = 0.0
+	var spawn_interval = 10.0
+
+	func _init():
+		super._init()
+		name = "Black Hole Network"
+		description = "Black holes periodically form a network to transport balls."
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		var arena_w = 800
+		var arena_h = 600
+		if world.get("arena") != null:
+			arena_w = world.arena.get("width", 800)
+			arena_h = world.arena.get("height", 600)
+
+		spawn_timer += delta
+		if spawn_timer >= spawn_interval:
+			spawn_timer = 0.0
+			var num_holes = randi() % 3 + 3 # 3 to 5
+			var new_bhs = []
+			for i in range(num_holes):
+				var bh = {
+					"x": randf_range(100, max(100, arena_w - 100)),
+					"y": randf_range(100, max(100, arena_h - 100)),
+					"radius": 40.0,
+					"lifetime": 8.0,
+					"cooldown": 0.0
+				}
+				new_bhs.append(bh)
+
+			for i in range(num_holes):
+				new_bhs[i]["link"] = new_bhs[(i + 1) % num_holes]
+
+			for bh in new_bhs:
+				black_holes.append(bh)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("black_hole_network_spawn", {"message": "A black hole network has formed!"})
+
+		var active_bhs = []
+		for bh in black_holes:
+			bh["lifetime"] -= delta
+			if bh["lifetime"] > 0:
+				active_bhs.append(bh)
+		black_holes = active_bhs
+
+		for bh in black_holes:
+			if bh.get("cooldown", 0) > 0:
+				bh["cooldown"] -= delta
+
+			var bh_x = bh["x"]
+			var bh_y = bh["y"]
+			var bh_r = bh["radius"]
+
+			for b in balls:
+				if b.get("alive", false) and b.get("ball_type", "") != "spectator":
+					var dx = bh_x - b.get("x", 0.0)
+					var dy = bh_y - b.get("y", 0.0)
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist > 0 and dist < bh_r * 4:
+						var pull_strength = 300.0
+						b.set("vx", b.get("vx", 0.0) + (dx / dist) * pull_strength * delta)
+						b.set("vy", b.get("vy", 0.0) + (dy / dist) * pull_strength * delta)
+
+					if dist < bh_r and bh.get("cooldown", 0) <= 0:
+						var linked = bh.get("link")
+						if linked != null and black_holes.has(linked):
+							b.set("x", linked["x"])
+							b.set("y", linked["y"])
+							bh["cooldown"] = 1.0
+							linked["cooldown"] = 1.0
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("black_hole_transport", {"message": "Transported by black hole network!", "x": b.get("x", 0.0), "y": b.get("y", 0.0)})
+
 var GAME_MODES = {
+	"black_hole_network": BlackHoleNetworkMode.new(),
 
 	"bumper_frenzy": BumperFrenzyMode.new(),
 	"hazard_shift_event": HazardShiftEventMode.new(),

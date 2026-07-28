@@ -32591,7 +32591,85 @@ class ShrinkingPinballMode(GameMode):
                     ent["vy"] = vy
                     ent["bounces"] = ent.get("bounces", 0) + 1
 
+
+class BlackHoleNetworkMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Black Hole Network"
+        self.description = "Black holes periodically form a network to transport balls."
+        self.black_holes = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 10.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") and world.arena else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") and world.arena else 600
+
+        self.spawn_timer += delta
+        if self.spawn_timer >= self.spawn_interval:
+            self.spawn_timer = 0.0
+
+            import random
+            num_holes = random.randint(3, 5)
+            new_bhs = []
+            for _ in range(num_holes):
+                new_bhs.append({
+                    "x": random.uniform(100, max(100, arena_w - 100)),
+                    "y": random.uniform(100, max(100, arena_h - 100)),
+                    "radius": 40.0,
+                    "lifetime": 8.0,
+                    "cooldown": 0.0
+                })
+
+            for i in range(num_holes):
+                new_bhs[i]["link"] = new_bhs[(i + 1) % num_holes]
+
+            self.black_holes.extend(new_bhs)
+            if hasattr(world, "add_event"):
+                world.add_event("black_hole_network_spawn", {"message": "A black hole network has formed!"})
+
+        active_bhs = []
+        for bh in self.black_holes:
+            bh["lifetime"] -= delta
+            if bh["lifetime"] > 0:
+                active_bhs.append(bh)
+        self.black_holes = active_bhs
+
+        import math
+        for bh in self.black_holes:
+            if bh.get("cooldown", 0) > 0:
+                bh["cooldown"] -= delta
+
+            bh_x = bh["x"]
+            bh_y = bh["y"]
+            bh_r = bh["radius"]
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    dx = bh_x - getattr(b, "x", 0.0)
+                    dy = bh_y - getattr(b, "y", 0.0)
+                    dist = math.sqrt(dx**2 + dy**2)
+
+                    if dist > 0 and dist < bh_r * 4:
+                        pull_strength = 300.0
+                        b.vx = getattr(b, "vx", 0.0) + (dx / dist) * pull_strength * delta
+                        b.vy = getattr(b, "vy", 0.0) + (dy / dist) * pull_strength * delta
+
+                    if dist < bh_r and bh.get("cooldown", 0) <= 0:
+                        linked = bh.get("link")
+                        if linked and linked in self.black_holes:
+                            b.x = linked["x"]
+                            b.y = linked["y"]
+                            bh["cooldown"] = 1.0
+                            linked["cooldown"] = 1.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("black_hole_transport", {"message": "Transported by black hole network!", "x": b.x, "y": b.y})
+
+
 GAME_MODES = {
+    "black_hole_network": BlackHoleNetworkMode(),
 
     "bumper_frenzy": BumperFrenzyMode(),
     'hazard_shift_event': HazardShiftEventMode(),
