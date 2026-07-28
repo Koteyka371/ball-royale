@@ -6601,6 +6601,7 @@ class Action:
                                             other.blindness_timer = 3.0
                                         elif decoy_type == "emp_decoy" and is_enemy:
                                             other.silence_timer = max(getattr(other, "silence_timer", 0.0), 3.0)
+                                            other.skill_timer = max(getattr(other, "skill_timer", 0.0), 3.0)
                                         elif is_enemy and decoy_type != "healing":
                                             # Check for EMP combo (explosive + stun)
                                             emp_combo = False
