@@ -1,0 +1,4 @@
+{
+  "title": "Danger Beacons",
+  "description": "Periodically spawn Beacons across the arena that gradually emit a damaging pulse wave if they are not destroyed within a certain time window."
+}

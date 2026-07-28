@@ -4675,16 +4675,22 @@ class BattleRoyaleMode extends GameMode:
 			if "width" in world.arena: arena_width_for_move = float(world.arena.width)
 			if "height" in world.arena: arena_height_for_move = float(world.arena.height)
 
-		var dx = self.get("zone_target_x") - self.get("zone_x")
-		var dy = self.get("zone_target_y") - self.get("zone_y")
-		var dist = sqrt(dx*dx + dy*dy)
-		if dist > 5.0:
-			self.set("zone_x", self.get("zone_x") + (dx / dist) * self.get("zone_move_speed") * delta)
-			self.set("zone_y", self.get("zone_y") + (dy / dist) * self.get("zone_move_speed") * delta)
-		else:
+		if not self.has_meta("zone_teleport_timer"):
+			self.set_meta("zone_teleport_timer", 60.0)
+
+		var zt_timer = self.get_meta("zone_teleport_timer") - delta
+		if zt_timer <= 0:
+			zt_timer = 60.0
 			var buffer = max(100.0, self.get("zone_radius") * 0.5)
-			self.set("zone_target_x", rng.randf_range(buffer, arena_width_for_move - buffer))
-			self.set("zone_target_y", rng.randf_range(buffer, arena_height_for_move - buffer))
+			var new_x = rng.randf_range(buffer, arena_width_for_move - buffer)
+			var new_y = rng.randf_range(buffer, arena_height_for_move - buffer)
+			self.set("zone_x", new_x)
+			self.set("zone_y", new_y)
+			self.set("zone_target_x", new_x)
+			self.set("zone_target_y", new_y)
+			if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("zone_teleport", {"message": "The safe zone has teleported!"})
+		self.set_meta("zone_teleport_timer", zt_timer)
 
 		var current_radius = self.get("zone_radius")
 		if current_radius > 50.0:

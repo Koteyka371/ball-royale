@@ -2757,16 +2757,19 @@ class BattleRoyaleMode(GameMode):
 
         arena_width_for_move = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height_for_move = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
-        dx = self.zone_target_x - self.zone_x
-        dy = self.zone_target_y - self.zone_y
-        dist = math.hypot(dx, dy)
-        if dist > 5.0:
-            self.zone_x += (dx / dist) * getattr(self, "zone_move_speed", 30.0) * delta
-            self.zone_y += (dy / dist) * getattr(self, "zone_move_speed", 30.0) * delta
-        else:
+        if not hasattr(self, "zone_teleport_timer"):
+            self.zone_teleport_timer = 60.0
+
+        self.zone_teleport_timer -= delta
+        if self.zone_teleport_timer <= 0:
+            self.zone_teleport_timer = 60.0
             buffer = max(100.0, self.zone_radius * 0.5)
-            self.zone_target_x = self.random.uniform(buffer, arena_width_for_move - buffer)
-            self.zone_target_y = self.random.uniform(buffer, arena_height_for_move - buffer)
+            self.zone_x = self.random.uniform(buffer, arena_width_for_move - buffer)
+            self.zone_y = self.random.uniform(buffer, arena_height_for_move - buffer)
+            self.zone_target_x = self.zone_x
+            self.zone_target_y = self.zone_y
+            if hasattr(world, "add_event"):
+                world.add_event("zone_teleport", {"message": "The safe zone has teleported!"})
 
         if self.zone_radius > 50.0:
             self.zone_radius -= self.shrink_rate * delta
