@@ -59963,8 +59963,8 @@ class KillstreakExplosionMode extends GameMode:
 class MimicCloneSwapMode extends GameMode:
 	func _init():
 		super._init()
-		name = "Mimic Clone Swap"
-		description = "Every player spawns with a clone that perfectly mimics inputs, deals half damage, and takes double damage. Dying swaps the player into their clone but with halved stats."
+		name = "Doppelganger Swap"
+		description = "Every player spawns with an AI-controlled doppelganger that mimics their attacks but moves randomly. If a player dies, they take over their doppelganger."
 
 	func tick(world, balls, delta = 0.016):
 		super.tick(world, balls, delta)
@@ -60023,10 +60023,6 @@ class MimicCloneSwapMode extends GameMode:
 						new_clone["x"] += randf_range(-50.0, 50.0)
 						new_clone["y"] += randf_range(-50.0, 50.0)
 						new_clone["is_mimic_clone"] = true
-						var prev_hp = new_clone.get("hp", 100.0)
-						new_clone["prev_hp"] = prev_hp
-						var base_dmg = new_clone.get("base_damage_multiplier", 1.0)
-						new_clone["base_damage_multiplier"] = base_dmg * 0.5
 
 						if typeof(world) == TYPE_DICTIONARY:
 							new_clone["id"] = world.get("next_id", randi() % 90000 + 10000)
@@ -60050,18 +60046,6 @@ class MimicCloneSwapMode extends GameMode:
 						elif new_clone.has_method("set_meta"):
 							new_clone.set_meta("is_mimic_clone", true)
 
-						var prev_hp = 100.0
-						if "hp" in b: prev_hp = b.hp
-						if "prev_hp" in new_clone:
-							new_clone.prev_hp = prev_hp
-						elif new_clone.has_method("set_meta"):
-							new_clone.set_meta("prev_hp", prev_hp)
-
-						var base_dmg = 1.0
-						if "base_damage_multiplier" in b: base_dmg = b.base_damage_multiplier
-						if "base_damage_multiplier" in new_clone:
-							new_clone.base_damage_multiplier = base_dmg * 0.5
-
 						if "my_mimic_clone" in b:
 							b.my_mimic_clone = new_clone
 						elif b.has_method("set_meta"):
@@ -60073,64 +60057,85 @@ class MimicCloneSwapMode extends GameMode:
 							if "balls" in world: world.balls.append(new_clone)
 			else:
 				var c = clone
-				var b_vx = 0.0
-				var b_vy = 0.0
-				var b_tx = 0.0
-				var b_ty = 0.0
 
-				if typeof(b) == TYPE_DICTIONARY:
-					b_vx = b.get("vx", 0.0)
-					b_vy = b.get("vy", 0.0)
-					b_tx = b.get("target_x", b.get("x", 0.0))
-					b_ty = b.get("target_y", b.get("y", 0.0))
+				var r_timer = 0.0
+				if typeof(c) == TYPE_DICTIONARY:
+					r_timer = c.get("random_move_timer", 0.0)
 				else:
-					if "vx" in b: b_vx = b.vx
-					if "vy" in b: b_vy = b.vy
-					if "target_x" in b: b_tx = b.target_x
-					else: b_tx = b.x
-					if "target_y" in b: b_ty = b.target_y
-					else: b_ty = b.y
+					if "random_move_timer" in c:
+						r_timer = c.random_move_timer
+					elif c.has_method("has_meta") and c.has_meta("random_move_timer"):
+						r_timer = c.get_meta("random_move_timer")
+
+				r_timer -= delta
+				if r_timer <= 0.0:
+					var angle = randf_range(0.0, 2.0 * PI)
+					var speed = 100.0
+					if typeof(c) == TYPE_DICTIONARY:
+						speed = c.get("speed", c.get("base_speed", 100.0))
+					else:
+						if "speed" in c: speed = c.speed
+						elif "base_speed" in c: speed = c.base_speed
+
+					var vx = cos(angle) * speed
+					var vy = sin(angle) * speed
+					var tx = c.get("x", 0.0) + vx if typeof(c) == TYPE_DICTIONARY else c.x + vx
+					var ty = c.get("y", 0.0) + vy if typeof(c) == TYPE_DICTIONARY else c.y + vy
+
+					r_timer = randf_range(0.5, 1.5)
+
+					if typeof(c) == TYPE_DICTIONARY:
+						c["vx"] = vx
+						c["vy"] = vy
+						c["target_x"] = tx
+						c["target_y"] = ty
+						c["random_move_timer"] = r_timer
+					else:
+						if "vx" in c: c.vx = vx
+						if "vy" in c: c.vy = vy
+						if "target_x" in c: c.target_x = tx
+						if "target_y" in c: c.target_y = ty
+
+						if "random_move_timer" in c: c.random_move_timer = r_timer
+						elif c.has_method("set_meta"): c.set_meta("random_move_timer", r_timer)
+				else:
+					if typeof(c) == TYPE_DICTIONARY:
+						c["random_move_timer"] = r_timer
+					else:
+						if "random_move_timer" in c: c.random_move_timer = r_timer
+						elif c.has_method("set_meta"): c.set_meta("random_move_timer", r_timer)
+
+				var arena_w = 2000.0
+				var arena_h = 2000.0
+				if typeof(world) == TYPE_DICTIONARY:
+					if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+						arena_w = world["arena"].get("width", 2000.0)
+						arena_h = world["arena"].get("height", 2000.0)
+				else:
+					if "arena" in world and world.arena != null:
+						if "width" in world.arena: arena_w = world.arena.width
+						if "height" in world.arena: arena_h = world.arena.height
 
 				if typeof(c) == TYPE_DICTIONARY:
-					c["vx"] = b_vx
-					c["vy"] = b_vy
-					c["target_x"] = b_tx
-					c["target_y"] = b_ty
-
-					var c_hp = c.get("hp", 100.0)
-					var c_prev = c.get("prev_hp", 100.0)
-					if c_hp < c_prev:
-						var damage_taken = c_prev - c_hp
-						c["hp"] = c_hp - damage_taken
-						if c["hp"] <= 0.0:
-							c["alive"] = false
-						c["prev_hp"] = c["hp"]
-					elif c_hp > c_prev:
-						c["prev_hp"] = c_hp
+					c["x"] = max(0.0, min(c.get("x", 0.0), arena_w))
+					c["y"] = max(0.0, min(c.get("y", 0.0), arena_h))
 				else:
-					if "vx" in c: c.vx = b_vx
-					if "vy" in c: c.vy = b_vy
-					if "target_x" in c: c.target_x = b_tx
-					if "target_y" in c: c.target_y = b_ty
+					if "x" in c: c.x = max(0.0, min(c.x, arena_w))
+					if "y" in c: c.y = max(0.0, min(c.y, arena_h))
 
-					var c_hp = 100.0
-					if "hp" in c: c_hp = c.hp
+				var b_skill = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					b_skill = b.get("active_skill", "")
+				else:
+					if "active_skill" in b: b_skill = b.active_skill
+					elif b.has_method("has_meta") and b.has_meta("active_skill"): b_skill = b.get_meta("active_skill")
 
-					var c_prev = 100.0
-					if "prev_hp" in c: c_prev = c.prev_hp
-					elif c.has_method("has_meta") and c.has_meta("prev_hp"): c_prev = c.get_meta("prev_hp")
-
-					if c_hp < c_prev:
-						var damage_taken = c_prev - c_hp
-						var new_hp = c_hp - damage_taken
-						if "hp" in c: c.hp = new_hp
-						if new_hp <= 0.0:
-							if "alive" in c: c.alive = false
-						if "prev_hp" in c: c.prev_hp = new_hp
-						elif c.has_method("set_meta"): c.set_meta("prev_hp", new_hp)
-					elif c_hp > c_prev:
-						if "prev_hp" in c: c.prev_hp = c_hp
-						elif c.has_method("set_meta"): c.set_meta("prev_hp", c_hp)
+				if b_skill != "":
+					if typeof(c) == TYPE_DICTIONARY:
+						c["active_skill"] = b_skill
+					else:
+						if "active_skill" in c: c.active_skill = b_skill
+						elif c.has_method("set_meta"): c.set_meta("active_skill", b_skill)
 
 	func on_ball_died(world, ball, killer = null):
 
@@ -60163,44 +60168,33 @@ class MimicCloneSwapMode extends GameMode:
 		if clone_alive:
 			var cx = 0.0
 			var cy = 0.0
+			var c_hp = 100.0
+			var c_max_hp = 100.0
+
 			if typeof(clone) == TYPE_DICTIONARY:
 				cx = clone.get("x", 0.0)
 				cy = clone.get("y", 0.0)
+				c_hp = clone.get("hp", 100.0)
+				c_max_hp = clone.get("max_hp", 100.0)
 			else:
 				cx = clone.x
 				cy = clone.y
+				if "hp" in clone: c_hp = clone.hp
+				if "max_hp" in clone: c_max_hp = clone.max_hp
 
 			if typeof(ball) == TYPE_DICTIONARY:
 				ball["alive"] = true
 				ball["x"] = cx
 				ball["y"] = cy
-				var max_hp = ball.get("max_hp", 100.0) / 2.0
-				ball["max_hp"] = max_hp
-				ball["hp"] = max_hp
-				var base_dmg = ball.get("base_damage_multiplier", 1.0) / 2.0
-				ball["base_damage_multiplier"] = base_dmg
-				var base_spd = ball.get("base_speed", 100.0) / 2.0
-				ball["base_speed"] = base_spd
+				ball["hp"] = c_hp
+				ball["max_hp"] = c_max_hp
 				ball["has_used_mimic_revive"] = true
 			else:
 				if "alive" in ball: ball.alive = true
 				if "x" in ball: ball.x = cx
 				if "y" in ball: ball.y = cy
-				var max_hp = 100.0
-				if "max_hp" in ball:
-					max_hp = ball.max_hp / 2.0
-					ball.max_hp = max_hp
-				if "hp" in ball: ball.hp = max_hp
-
-				var base_dmg = 1.0
-				if "base_damage_multiplier" in ball:
-					base_dmg = ball.base_damage_multiplier / 2.0
-					ball.base_damage_multiplier = base_dmg
-
-				var base_spd = 100.0
-				if "base_speed" in ball:
-					base_spd = ball.base_speed / 2.0
-					ball.base_speed = base_spd
+				if "hp" in ball: ball.hp = c_hp
+				if "max_hp" in ball: ball.max_hp = c_max_hp
 
 				if "has_used_mimic_revive" in ball: ball.has_used_mimic_revive = true
 				elif ball.has_method("set_meta"): ball.set_meta("has_used_mimic_revive", true)
