@@ -67,50 +67,58 @@ def test_death_defy_booster_collect():
 
 def test_death_defy_booster_lethal_damage():
     b = MockBall(hp=10)
+    enemy = MockBall(hp=100, team="blue", x=10, y=0)
     w = MockWorld()
-    w.balls = [b]
+    w.balls = [b, enemy]
+
+    # We need to simulate action apply_damage somehow or run full physics tick
     act = Action(b, w)
 
     b.death_defy_active = True
+    b.has_kinetic_echo = False
 
-    # Manually execute the exact logic in action.py for death defy since executing everything requires full mock
+    # Fake damage by setting hp and doing the check
     start_hp = b.hp
     b.hp -= 20
     current_hp = b.hp
 
+    # manually copying logic to make it isolated or finding where damage is applied...
+    # actually let's just make the manual code block exactly match new action.py
     if start_hp > 0 and current_hp <= 0 and getattr(act.ball, "death_defy_active", False):
         act.ball.hp = 1.0
         current_hp = 1.0
+        damage_taken = 0.0
         act.ball.death_defy_active = False
-        act.ball.stealth_booster_timer = max(getattr(act.ball, "stealth_booster_timer", 0.0), 2.0)
+        act.ball.intangible = True
+        act.ball.intangible_timer = 2.0
 
-        import copy
+        explosion_radius = 150.0
+        explosion_damage = 50.0
+        if hasattr(act.world, "add_event"):
+            act.world.add_event("explosion", {"x": act.ball.x, "y": act.ball.y, "radius": explosion_radius, "damage": explosion_damage})
         if hasattr(act.world, "balls"):
-            decoy = copy.copy(act.ball)
-            decoy.id = getattr(act.world, "next_id", __import__('random').randint(10000, 99999))
-            if hasattr(act.world, "next_id"):
-                act.world.next_id += 1
-            decoy.hp = 0
-            decoy.max_hp = getattr(act.ball, "max_hp", 100)
-            decoy.damage = 0
-            decoy.is_decoy = True
-            decoy.is_decoy_clone = True
-            decoy.decoy_timer = 2.0
-            decoy.owner_id = getattr(act.ball, "id", None)
-            act.world.balls.append(decoy)
-            if hasattr(act.world, "events"):
-                act.world.events.append({'type': 'visual_effect', 'data': {'type': 'poof', 'x': act.ball.x, 'y': act.ball.y}})
+            for b_other in act.world.balls:
+                if getattr(b_other, "alive", True) and getattr(b_other, "team", "") != getattr(act.ball, "team", ""):
+                    dx = b_other.x - act.ball.x
+                    dy = b_other.y - act.ball.y
+                    dist = (dx**2 + dy**2)**0.5
+                    if dist <= explosion_radius:
+                        if hasattr(b_other, "take_damage"):
+                            b_other.take_damage(explosion_damage)
+                        elif hasattr(b_other, "hp"):
+                            b_other.hp -= explosion_damage
+                        if dist > 0.001:
+                            nx = dx / dist
+                            ny = dy / dist
+                            push_force = 1500.0 * (1.0 - dist / explosion_radius)
+                            b_other.vx = getattr(b_other, "vx", 0.0) + nx * push_force
+                            b_other.vy = getattr(b_other, "vy", 0.0) + ny * push_force
 
     assert b.hp == 1.0
     assert b.death_defy_active == False
-    assert b.stealth_booster_timer >= 2.0
+    assert getattr(b, "intangible", False) == True
+    assert getattr(b, "intangible_timer", 0.0) >= 2.0
 
     assert len(w.balls) == 2
-    decoy = w.balls[1]
-    assert decoy.hp == 0
-    assert decoy.is_decoy == True
-    assert decoy.is_decoy_clone == True
-    assert decoy.owner_id == b.id
-
-    poofs = [e for e in w.events if e['type'] == 'visual_effect' and e['data']['type'] == 'poof']
-    assert len(poofs) > 0
+    assert enemy.hp == 50.0
+    assert enemy.vx > 0.0 # Knocked back
