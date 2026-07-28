@@ -54,11 +54,11 @@ class AgentDebateEngine:
         """
         importance = self._classify_importance(title, description)
 
-        # Discard low importance items immediately
-        if importance == "low":
-            reason = f"Discarded due to low importance rating. Trivial or underspecified idea."
-            self._log_debate(task_id, title, description, "Agent-Critic", "Trivial scope.", "Agent-Proponent", "No strong case.", "Supervisor-Judge", 3, "REJECTED (Low Importance)")
-            return False, 3, reason
+        # Discard low and medium importance items immediately (strict high bar)
+        if importance in ["low", "medium"]:
+            reason = f"Discarded due to '{importance.upper()}' importance rating. Only CRITICAL or HIGH impact ideas are permitted."
+            self._log_debate(task_id, title, description, "Agent-Critic", "Scope is not critical/high impact.", "Agent-Proponent", "No critical justification.", "Supervisor-Judge", 4, f"REJECTED ({importance.title()} Importance)")
+            return False, 4, reason
 
         # Phase 1: Proponent Arguments
         pro_args = [
@@ -80,15 +80,13 @@ class AgentDebateEngine:
 
         critic_speech = " ".join(critic_concerns)
 
-        # Phase 3: Supervisor Verdict & Consensus Scoring
-        base_score = 8 if importance == "critical" else (7 if importance == "high" else 6)
+        # Phase 3: Supervisor Verdict & Consensus Scoring (Strict Bar >= 8/10)
+        base_score = 9 if importance == "critical" else 8
         if len(critic_concerns) > 1:
             base_score -= 1
-        if len(description) > 80:
-            base_score += 1
 
         final_score = max(1, min(10, base_score))
-        approved = final_score >= 7
+        approved = final_score >= 8
         verdict_str = "APPROVED" if approved else "REJECTED"
 
         # Log transcript

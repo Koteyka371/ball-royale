@@ -185,7 +185,7 @@ def main():
             debate_engine = None
 
         tasks_to_add = []
-        for i, idea in enumerate(new_ideas[:5], 1):
+        for i, idea in enumerate(new_ideas[:2], 1):
             task = generate_task_from_idea(idea, len(manifest.get("tasks", [])) + i)
             
             approved = True
