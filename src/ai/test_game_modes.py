@@ -572,27 +572,17 @@ def test_pitch_black_mode():
             self.height = 1000
             self.hazards = []
     world.arena = MockArena()
-    # Mock arena to check if is_night gets set
-    world.arena = type('MockArena', (), {'is_night': False})()
 
     b1 = MockBall(1, "warrior")
-    b1.perception_radius = 250.0
     b2 = MockBall(2, "scout")
-    b2.perception_radius = 350.0
-
     balls = [b1, b2]
 
     mode.setup(world, balls)
 
     assert getattr(world.arena, "is_night", False) == True
-    assert b1.perception_radius == 250.0
-    assert b2.perception_radius == 350.0
-
-    # Tick should keep it at base
-    b1.perception_radius = 100.0  # Try changing it
-    mode.tick(world, balls, delta=0.016)
-    assert b1.perception_radius == 250.0
-    assert b2.perception_radius == 350.0
+    # Balls should be invisible
+    assert getattr(b1, "invisible", False) == True
+    assert getattr(b2, "invisible", False) == True
 
 
 def test_shifting_maze_setup():
