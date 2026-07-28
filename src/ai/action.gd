@@ -34342,7 +34342,7 @@ func _use_skill():
                 for e in nearby_enemies:
                     if self.has_method("_spawn_directed_particles"):
                         self._spawn_directed_particles(decoy, e, "tether_link")
-        elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
+        elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced" or skill_name == "deploy_decoy_black_hole":
             var active_decoys = []
             var has_swapped_any = false
             if "balls" in self.world:
@@ -34497,7 +34497,9 @@ func _use_skill():
 
                             var b_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_meta("ball_type") if self.ball.has_method("has_meta") and self.ball.has_meta("ball_type") else "")
                             var dtype = "explosive"
-                            if skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
+                            if skill_name == "deploy_decoy_black_hole":
+                                dtype = "black_hole"
+                            elif skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
                                 dtype = "flash"
                             elif b_type == "trickster":
                                 if randf() < 0.5:
