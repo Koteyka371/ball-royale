@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1654] Volcanic Eruption Arena Event — *2026-07-28 22:58:26 UTC*
+
+Lava pools expand across the map while fireballs rain from above.
+
+---
+
 ## [idea-1653] Grappling Hook Buff — *2026-07-28 22:46:13 UTC*
 
 Grappling hook pulls enemies slightly upon hit.
