@@ -32191,7 +32191,78 @@ class BumperRoyaleMode(GameMode):
             return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
         return None
 
+class HazardShiftEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hazard Shift Event"
+        self.description = "A random arena event that randomly shifts hazard positions and adds small random velocity impulses to all balls for a short duration."
+        self.event_timer = 15.0
+        self.is_active = False
+        self.duration = 3.0
+        self.active_timer = 0.0
+
+    def apply_dynamic_traits(self, world, balls, delta=0.016):
+        super().apply_dynamic_traits(world, balls, delta)
+
+        if not self.is_active:
+            self.event_timer -= delta
+            if self.event_timer <= 0.0:
+                self.is_active = True
+                self.active_timer = self.duration
+                if hasattr(world, "add_event"):
+                    world.add_event("hazard_shift_start", {"duration": self.duration})
+
+                # Shift hazard positions once
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    if isinstance(world.arena, dict):
+                        hazards = world.arena.get("hazards", [])
+                        arena_width = world.arena.get("width", 2000)
+                        arena_height = world.arena.get("height", 2000)
+                    else:
+                        hazards = getattr(world.arena, "hazards", [])
+                        arena_width = getattr(world.arena, "width", 2000)
+                        arena_height = getattr(world.arena, "height", 2000)
+
+                    import random
+                    for h in hazards:
+                        if isinstance(h, dict):
+                            if "x" in h and "y" in h:
+                                dx = random.uniform(-200, 200)
+                                dy = random.uniform(-200, 200)
+                                h["x"] = max(0, min(arena_width, h["x"] + dx))
+                                h["y"] = max(0, min(arena_height, h["y"] + dy))
+                        else:
+                            if hasattr(h, "x") and hasattr(h, "y"):
+                                dx = random.uniform(-200, 200)
+                                dy = random.uniform(-200, 200)
+                                h.x = max(0, min(arena_width, h.x + dx))
+                                h.y = max(0, min(arena_height, h.y + dy))
+        else:
+            self.active_timer -= delta
+            if self.active_timer <= 0.0:
+                self.is_active = False
+                self.event_timer = 15.0
+                return
+
+            import random
+            for b in balls:
+                if isinstance(b, dict):
+                    if not b.get("alive", True):
+                        continue
+                    vx_impulse = random.uniform(-300, 300) * delta
+                    vy_impulse = random.uniform(-300, 300) * delta
+                    b["vx"] = b.get("vx", 0.0) + vx_impulse
+                    b["vy"] = b.get("vy", 0.0) + vy_impulse
+                else:
+                    if not getattr(b, "alive", True):
+                        continue
+                    vx_impulse = random.uniform(-300, 300) * delta
+                    vy_impulse = random.uniform(-300, 300) * delta
+                    b.vx = getattr(b, "vx", 0.0) + vx_impulse
+                    b.vy = getattr(b, "vy", 0.0) + vy_impulse
+
 GAME_MODES = {
+    'hazard_shift_event': HazardShiftEventMode(),
     'chaotic_stat_hazard': ChaoticStatHazardMode(),
     "chaotic_artifact": ChaoticArtifactMode(),
     "kinetic_battery": KineticBatteryMode(),
