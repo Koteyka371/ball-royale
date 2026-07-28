@@ -27170,7 +27170,7 @@
     },
     {
       "id": "idea-1587",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shockwave Mine",
@@ -40769,6 +40769,40 @@
         "src/ai/synchronized_resonance.py",
         "src/ai/synchronized_resonance.gd",
         "tests/test_synchronized_resonance.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2386",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Mode",
+      "description": "Players periodically spawn harmless visual clones that mimic their previous actions. Clones disappear when attacked but confuse enemies during intense combat.",
+      "allowed_paths": [
+        "src/ai/mirage.py",
+        "src/ai/mirage.gd",
+        "tests/test_mirage.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2387",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Gravity Wells Booster",
+      "description": "A consumable item that spawns a localized gravity well, sucking in projectiles and hazards, allowing players to create temporary safe zones.",
+      "allowed_paths": [
+        "src/ai/gravity_wells_booster.py",
+        "src/ai/gravity_wells_booster.gd",
+        "tests/test_gravity_wells_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
