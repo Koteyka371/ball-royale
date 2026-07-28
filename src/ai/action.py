@@ -21900,6 +21900,25 @@ class Action:
                 if getattr(hazard, "kind", "") == "grapple_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+
+                        # Disarm check (if projectile hits it)
+                        is_projectile = getattr(self.ball, "ball_type", getattr(self.ball, "kind", "")) in ["projectile", "spell"] or getattr(self.ball, "is_projectile", False)
+                        if is_projectile and dist_sq < (getattr(hazard, "radius", 40.0) + getattr(self.ball, "radius", 10.0))**2:
+                            hazard.duration = 0.0 # Destroy trap
+                            # Drop explosive material
+                            if hasattr(self.world, "items"):
+                                self.world.items.append({
+                                    "id": getattr(self.world, "next_id", 9999) + len(self.world.items),
+                                    "x": hazard.x,
+                                    "y": hazard.y,
+                                    "kind": "explosive_material"
+                                })
+                            # Self-destruct projectile
+                            if hasattr(self.ball, "hp"):
+                                self.ball.hp = 0
+                                self.ball.alive = False
+                            continue
+
                         if dist_sq < 40000: # 200 range to trigger the grappling hook
                             import math
                             dist = math.sqrt(dist_sq)
@@ -21927,10 +21946,22 @@ class Action:
                                         }
                                     })
 
-                                # Check distance for rooting at the center
+                                # Check distance for exploding at the center
                                 if dist < (getattr(self.ball, "radius", 10.0) + getattr(hazard, "radius", 40.0) * 0.25):
-                                    # Root the victim for 2 seconds
-                                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 2.0)
+                                    # Explode!
+                                    if hasattr(self.ball, "hp"):
+                                        self.ball.hp -= 50.0
+                                        if self.ball.hp <= 0:
+                                            self.ball.alive = False
+                                            setattr(self.ball, "killer", "grapple_trap")
+                                    # Create explosion effect
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({
+                                            'type': 'explosion',
+                                            'x': hazard.x,
+                                            'y': hazard.y,
+                                            'radius': 30.0
+                                        })
                                     hazard.duration = 0.0 # Destroy trap
                 if getattr(hazard, "kind", "") == "siren_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):

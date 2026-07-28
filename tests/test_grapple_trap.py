@@ -28,6 +28,8 @@ class MockBall:
         self.y = y
         self.radius = 10.0
         self.stun_timer = 0.0
+        self.hp = 100
+        self.alive = True
         self.speed = 0.0
         self.base_speed = 0.0
         self.vx = 0.0
@@ -59,8 +61,20 @@ def test_grapple_trap():
 
     action.execute("idle", 0.1)
 
-    assert ball.stun_timer == 2.0
+    # Now drops HP
+    assert ball.hp == 50.0
     assert trap.duration == 0.0
+
+    # Hit again to check death
+    trap2 = MockHazard(2, 0, 0, "grapple_trap", radius=40.0, owner_id=1)
+    world.arena.hazards.append(trap2)
+    ball.x = 10
+    ball.y = 10
+    action.execute("idle", 0.1)
+
+    assert not ball.alive
+    assert trap2.duration == 0.0
+    assert ball.killer == "grapple_trap"
 
 if __name__ == "__main__":
     pytest.main(["-v", "tests/test_grapple_trap.py"])

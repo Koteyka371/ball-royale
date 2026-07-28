@@ -1,0 +1,4 @@
+{
+  "title": "Decoy Clone Factory",
+  "description": "A structure that spawns fragile clones of the user that run randomly to confuse enemies. The clones explode harmlessly on impact but trigger enemy traps."
+}
