@@ -29711,6 +29711,15 @@ func _collect_booster(delta: float):
                         var b_x = ball.x if "x" in ball else 0.0
                         var b_y = ball.y if "y" in ball else 0.0
                         world.add_event("buff_collected", {"x": b_x, "y": b_y})
+            elif "kind" in nearest and nearest.kind == "lightning_rod_item":
+                if "has_lightning_rod" in self.ball: self.ball.has_lightning_rod = true
+                elif self.ball.has_method("set_meta"): self.ball.set_meta("has_lightning_rod", true)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1: self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "nemesis_compass_item":
                 if not self.ball.has_meta("inventory"):
                     self.ball.set_meta("inventory", [])
