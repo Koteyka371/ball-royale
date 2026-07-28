@@ -9543,6 +9543,31 @@ class Action:
                                     speed = 1000.0
                                     self.ball.vx = math.cos(angle) * speed
                                     self.ball.vy = math.sin(angle) * speed
+                                elif trap_variant == "repulsion":
+                                    hazard.duration = 0.0 # Destroy trap
+
+                                    # Create massive outward knockback area
+                                    if hasattr(self.world, "balls"):
+                                        import math
+                                        trigger_x, trigger_y = hazard.x, hazard.y
+                                        radius = getattr(hazard, "radius", 40.0) * 3.0 # Massive area
+
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                                dist_sq = (b.x - trigger_x)**2 + (b.y - trigger_y)**2
+                                                if dist_sq < radius * radius:
+                                                    dist = math.sqrt(dist_sq)
+                                                    if dist < 0.0001:
+                                                        dist = 0.0001
+
+                                                    nx, ny = (b.x - trigger_x) / dist, (b.y - trigger_y) / dist
+                                                    knockback = 5000.0
+
+                                                    if getattr(b, "anchor_booster_timer", 0.0) <= 0:
+                                                        b.vx = getattr(b, "vx", 0.0) + nx * knockback
+                                                        b.vy = getattr(b, "vy", 0.0) + ny * knockback
+                                                        b.is_frictionless = True # So it ignores drag and gets violently tossed
+
                                 elif trap_variant == "leech_seed":
                                     self.ball.leech_seed_timer = max(getattr(self.ball, "leech_seed_timer", 0.0), 5.0)
                                     self.ball.leech_seed_attacker_id = getattr(hazard, "owner_id", None)
