@@ -7877,6 +7877,51 @@ class Action:
                                 hazard.duration = 0.0
                                 hazard.active = False
 
+                    elif hazard.kind == "deployable_gravity_line":
+                        hazard_is_active = getattr(hazard, "active", True)
+                        if hazard_is_active:
+                            # Calculate shortest distance from ball to the hazard line segment
+                            hazard_sx, hazard_sy = getattr(hazard, "start_x", hazard.x), getattr(hazard, "start_y", hazard.y)
+                            hazard_ex, hazard_ey = getattr(hazard, "end_x", hazard.x), getattr(hazard, "end_y", hazard.y)
+                            b_pos_x, b_pos_y = self.ball.x, self.ball.y
+
+                            line_length_squared = (hazard_sx - hazard_ex)**2 + (hazard_sy - hazard_ey)**2
+                            if line_length_squared == 0:
+                                distance_to_line = math.hypot(b_pos_x - hazard_sx, b_pos_y - hazard_sy)
+                                projection_x, projection_y = hazard_sx, hazard_sy
+                            else:
+                                dot_product = (b_pos_x - hazard_sx) * (hazard_ex - hazard_sx) + (b_pos_y - hazard_sy) * (hazard_ey - hazard_sy)
+                                t_parameter = max(0, min(1, dot_product / line_length_squared))
+                                projection_x = hazard_sx + t_parameter * (hazard_ex - hazard_sx)
+                                projection_y = hazard_sy + t_parameter * (hazard_ey - hazard_sy)
+                                distance_to_line = math.hypot(b_pos_x - projection_x, b_pos_y - projection_y)
+
+                            # Pull radius is wider than a thin line
+                            pull_radius = 150.0
+                            if distance_to_line < pull_radius:
+                                # Pull towards the projection point (perpendicular pull)
+                                pull_strength = 300.0 * (1.0 - distance_to_line / pull_radius)
+                                if distance_to_line > 0:
+                                    pull_nx = (projection_x - b_pos_x) / distance_to_line
+                                    pull_ny = (projection_y - b_pos_y) / distance_to_line
+                                else:
+                                    pull_nx, pull_ny = 0.0, 0.0
+
+                                # Pull along the line (parallel pull) towards end point
+                                parallel_nx = (hazard_ex - hazard_sx)
+                                parallel_ny = (hazard_ey - hazard_sy)
+                                pl = math.hypot(parallel_nx, parallel_ny)
+                                if pl > 0:
+                                    parallel_nx /= pl
+                                    parallel_ny /= pl
+
+                                # Combine forces
+                                force_x = (pull_nx * pull_strength + parallel_nx * 200.0) * dt
+                                force_y = (pull_ny * pull_strength + parallel_ny * 200.0) * dt
+
+                                self.ball.vx += force_x
+                                self.ball.vy += force_y
+
                     elif hazard.kind == "deployable_thin_hazard_line":
                         hazard_is_active = getattr(hazard, "active", True)
 
@@ -19694,6 +19739,7 @@ class Action:
                     node.x = self.ball.x
                     node.y = self.ball.y
                     node.radius = 20.0
+                    node.damage = 0.0
                     node.team = getattr(self.ball, "team", "")
                     node.active = True
                     node.duration = 10.0
@@ -19725,6 +19771,7 @@ class Action:
                     node.x = self.ball.x
                     node.y = self.ball.y
                     node.radius = 20.0
+                    node.damage = 0.0
                     node.owner_id = getattr(self.ball, "id", None)
                     node.team = getattr(self.ball, "team", "")
                     node.duration = 20.0
@@ -19742,6 +19789,7 @@ class Action:
                     node.x = self.ball.x
                     node.y = self.ball.y
                     node.radius = 20.0
+                    node.damage = 0.0
                     node.owner_id = getattr(self.ball, "id", None)
                     node.team = getattr(self.ball, "team", "")
                     node.duration = 15.0
@@ -19759,12 +19807,55 @@ class Action:
                     node.x = self.ball.x
                     node.y = self.ball.y
                     node.radius = 20.0
+                    node.damage = 0.0
                     node.owner_id = self.ball.id
                     node.team = getattr(self.ball, "team", "")
                     node.duration = 60.0
                     node.active = True
                     self.world.arena.hazards.append(node)
                 self.ball.skill_timer = 15.0
+
+            elif skill_name == "deployable_gravity_line":
+                enemies = self._get_enemies()
+                target = None
+                if enemies:
+                    target = sorted(enemies, key=lambda b: (b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)[0]
+
+                if target:
+                    # Place toward nearest enemy
+                    dx = target.x - self.ball.x
+                    dy = target.y - self.ball.y
+                    dist = math.hypot(dx, dy)
+                    if dist == 0:
+                        nx, ny = 1, 0
+                    else:
+                        nx, ny = dx / dist, dy / dist
+                    end_x = self.ball.x + nx * 300.0
+                    end_y = self.ball.y + ny * 300.0
+                else:
+                    # Just place horizontally
+                    end_x = self.ball.x + 300.0
+                    end_y = self.ball.y
+
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class GravityLineNode:
+                        pass
+                    node = GravityLineNode()
+                    node.id = f"gravity_line_{self.ball.id}_{self.world.tick}"
+                    node.kind = "deployable_gravity_line"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 20.0
+                    node.damage = 0.0
+                    node.start_x = self.ball.x
+                    node.start_y = self.ball.y
+                    node.end_x = end_x
+                    node.end_y = end_y
+                    node.team = getattr(self.ball, "team", "")
+                    node.duration = 15.0
+                    node.active = True
+                    self.world.arena.hazards.append(node)
+                self.ball.skill_timer = 10.0
 
             elif skill_name == "deployable_thin_hazard_line":
                 enemies = self._get_enemies()
@@ -19803,7 +19894,7 @@ class Action:
                     node.end_x = end_x
                     node.end_y = end_y
                     node.team = getattr(self.ball, "team", "")
-                    node.timer = 15.0
+                    node.duration = 15.0
                     node.active = True
                     node.hit_ids = []
                     self.world.arena.hazards.append(node)
@@ -19849,7 +19940,7 @@ class Action:
                     node.end_x = end_x
                     node.end_y = end_y
                     node.team = getattr(self.ball, "team", "")
-                    node.timer = 15.0
+                    node.duration = 15.0
                     node.active = True
                     node.hit_ids = []
                     self.world.arena.hazards.append(node)
