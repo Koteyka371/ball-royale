@@ -38211,9 +38211,16 @@ class ChainReactionMode(GameMode):
         if hasattr(super(), "on_ball_died"):
             super().on_ball_died(world, ball, killer)
 
+        if isinstance(ball, dict):
+            ex_x = ball.get("x", 0.0)
+            ex_y = ball.get("y", 0.0)
+        else:
+            ex_x = ball.x
+            ex_y = ball.y
+
         self.pending_explosions.append({
-            "x": ball.x,
-            "y": ball.y,
+            "x": ex_x,
+            "y": ex_y,
             "timer": 1.5,
             "radius": 150.0,
             "damage": 50.0
@@ -38233,7 +38240,7 @@ class ChainReactionMode(GameMode):
             explosion["timer"] -= delta
             if explosion["timer"] <= 0.0:
                 # Trigger explosion
-                if hasattr(world, "add_event"):
+                if not isinstance(world, dict) and hasattr(world, "add_event"):
                     world.add_event("chain_explosion", {
                         "x": explosion["x"],
                         "y": explosion["y"],
@@ -38243,16 +38250,29 @@ class ChainReactionMode(GameMode):
                 import math
                 # Apply damage
                 for b in balls:
-                    if getattr(b, "alive", True):
-                        dist = math.hypot(b.x - explosion["x"], b.y - explosion["y"])
+                    b_alive = b.get("alive", True) if isinstance(b, dict) else getattr(b, "alive", True)
+                    if b_alive:
+                        b_x = b.get("x", 0.0) if isinstance(b, dict) else b.x
+                        b_y = b.get("y", 0.0) if isinstance(b, dict) else b.y
+                        dist = math.hypot(b_x - explosion["x"], b_y - explosion["y"])
                         if dist <= explosion["radius"]:
-                            if hasattr(b, "take_damage"):
-                                b.take_damage(explosion["damage"], source=None)
-                            else:
-                                b.hp = getattr(b, "hp", 100) - explosion["damage"]
-                                if b.hp <= 0:
-                                    b.alive = False
+                            if isinstance(b, dict):
+                                b["hp"] = b.get("hp", 100.0) - explosion["damage"]
+                                if b["hp"] <= 0:
+                                    b["alive"] = False
                                     self.on_ball_died(world, b, None)
+                            else:
+                                if hasattr(b, "take_damage"):
+                                    # Fix: Don't pass `source=None` as many `take_damage` methods only accept `amount`
+                                    try:
+                                        b.take_damage(explosion["damage"], source=None)
+                                    except TypeError:
+                                        b.take_damage(explosion["damage"])
+                                else:
+                                    b.hp = getattr(b, "hp", 100) - explosion["damage"]
+                                    if b.hp <= 0:
+                                        b.alive = False
+                                        self.on_ball_died(world, b, None)
             else:
                 remaining_explosions.append(explosion)
 
@@ -38274,19 +38294,30 @@ class KillstreakExplosionMode(GameMode):
         if hasattr(super(), "on_ball_died"):
             super().on_ball_died(world, ball, killer)
 
-        killstreak = getattr(ball, "kills", 0)
+        if isinstance(ball, dict):
+            ex_x = ball.get("x", 0.0)
+            ex_y = ball.get("y", 0.0)
+            killstreak = ball.get("kills", 0)
+        else:
+            ex_x = ball.x
+            ex_y = ball.y
+            killstreak = getattr(ball, "kills", 0)
 
         # Scale explosion based on killstreak
         radius = 100.0 + (killstreak * 20.0)
         damage = 30.0 + (killstreak * 15.0)
 
+        killer_id = None
+        if killer:
+            killer_id = killer.get("id") if isinstance(killer, dict) else getattr(killer, "id", None)
+
         self.pending_explosions.append({
-            "x": ball.x,
-            "y": ball.y,
+            "x": ex_x,
+            "y": ex_y,
             "timer": 0.5,
             "radius": radius,
             "damage": damage,
-            "killer": killer.id if killer else None
+            "killer": killer_id
         })
 
     def tick(self, world, balls, delta=0.016):
@@ -38299,7 +38330,7 @@ class KillstreakExplosionMode(GameMode):
         for explosion in current_explosions:
             explosion["timer"] -= delta
             if explosion["timer"] <= 0.0:
-                if hasattr(world, "add_event"):
+                if not isinstance(world, dict) and hasattr(world, "add_event"):
                     world.add_event("killstreak_explosion", {
                         "x": explosion["x"],
                         "y": explosion["y"],
@@ -38308,16 +38339,31 @@ class KillstreakExplosionMode(GameMode):
 
                 import math
                 for b in balls:
-                    if getattr(b, "alive", True):
-                        dist = math.hypot(b.x - explosion["x"], b.y - explosion["y"])
+                    b_alive = b.get("alive", True) if isinstance(b, dict) else getattr(b, "alive", True)
+                    if b_alive:
+                        b_x = b.get("x", 0.0) if isinstance(b, dict) else b.x
+                        b_y = b.get("y", 0.0) if isinstance(b, dict) else b.y
+                        dist = math.hypot(b_x - explosion["x"], b_y - explosion["y"])
                         if dist <= explosion["radius"]:
-                            if hasattr(b, "take_damage"):
-                                b.take_damage(explosion["damage"])
-                            else:
-                                b.hp = getattr(b, "hp", 100) - explosion["damage"]
-                                if b.hp <= 0:
-                                    b.alive = False
+                            if isinstance(b, dict):
+                                b["hp"] = b.get("hp", 100.0) - explosion["damage"]
+                                if b["hp"] <= 0:
+                                    b["alive"] = False
                                     self.on_ball_died(world, b, None)
+                            else:
+                                if hasattr(b, "take_damage"):
+                                    try:
+                                        b.take_damage(explosion["damage"])
+                                    except TypeError:
+                                        try:
+                                            b.take_damage(explosion["damage"], source=None)
+                                        except Exception:
+                                            pass
+                                else:
+                                    b.hp = getattr(b, "hp", 100) - explosion["damage"]
+                                    if b.hp <= 0:
+                                        b.alive = False
+                                        self.on_ball_died(world, b, None)
             else:
                 remaining_explosions.append(explosion)
 
