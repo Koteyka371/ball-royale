@@ -41148,7 +41148,129 @@ class ChaoticPinballMachineMode extends GameMode:
 class ExtremeBouncinessMode extends GameMode:
 	func _init() -> void:
 		name = "Extreme Bounciness"
-		description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging."
+		description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging. Projectiles inherit the extreme bounciness physics, turning the arena into a chaotic bullet hell where missed shots rapidly ricochet off walls, growing in speed until they hit something."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena = world.get("arena", {})
+		var arena_width = arena.get("width", 1000.0)
+		var arena_height = arena.get("height", 1000.0)
+		var projectiles = world.get("projectiles", [])
+		var hazards = arena.get("hazards", [])
+
+		var all_entities = []
+		for p in projectiles:
+			all_entities.append(p)
+		for h in hazards:
+			all_entities.append(h)
+
+		for proj in all_entities:
+			var is_alive = true
+			if typeof(proj) == TYPE_OBJECT:
+				if proj.has_method("is_alive"):
+					is_alive = proj.is_alive()
+				else:
+					is_alive = proj.get("alive", true)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				is_alive = proj.get("alive", true)
+
+			var hp = 1.0
+			if typeof(proj) == TYPE_OBJECT:
+				hp = proj.get("hp", 1.0)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				hp = proj.get("hp", 1.0)
+
+			if not is_alive and hp <= 0:
+				continue
+
+			var b_type = ""
+			if typeof(proj) == TYPE_OBJECT:
+				b_type = proj.get("ball_type", proj.get("kind", ""))
+			elif typeof(proj) == TYPE_DICTIONARY:
+				b_type = proj.get("ball_type", proj.get("kind", ""))
+
+			var is_proj_flag = false
+			if typeof(proj) == TYPE_OBJECT:
+				is_proj_flag = proj.get("is_projectile", false) or proj.get("is_spell", false)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				is_proj_flag = proj.get("is_projectile", false) or proj.get("is_spell", false)
+
+			var is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or is_proj_flag
+
+			if not is_proj:
+				continue
+
+			var bounces = 0
+			if typeof(proj) == TYPE_OBJECT:
+				if proj.has_meta("bounces"):
+					bounces = proj.get_meta("bounces")
+				elif "bounces" in proj:
+					bounces = proj.get("bounces")
+			elif typeof(proj) == TYPE_DICTIONARY:
+				bounces = proj.get("bounces", 0)
+
+			var x = 0.0
+			var y = 0.0
+			var radius = 5.0
+			var vx = 0.0
+			var vy = 0.0
+
+			if typeof(proj) == TYPE_OBJECT:
+				x = proj.get("x", 0.0)
+				y = proj.get("y", 0.0)
+				radius = proj.get("radius", 5.0)
+				vx = proj.get("vx", 0.0)
+				vy = proj.get("vy", 0.0)
+			elif typeof(proj) == TYPE_DICTIONARY:
+				x = proj.get("x", 0.0)
+				y = proj.get("y", 0.0)
+				radius = proj.get("radius", 5.0)
+				vx = proj.get("vx", 0.0)
+				vy = proj.get("vy", 0.0)
+
+			var bounced = false
+			if x - radius < 0 and vx < 0:
+				vx = -vx * 1.5
+				x = radius
+				bounced = true
+			elif x + radius > arena_width and vx > 0:
+				vx = -vx * 1.5
+				x = arena_width - radius
+				bounced = true
+
+			if y - radius < 0 and vy < 0:
+				vy = -vy * 1.5
+				y = radius
+				bounced = true
+			elif y + radius > arena_height and vy > 0:
+				vy = -vy * 1.5
+				y = arena_height - radius
+				bounced = true
+
+			if bounced:
+				bounces += 1
+				var speed = sqrt(pow(vx, 2) + pow(vy, 2))
+				if speed > 5000.0:
+					var ratio = 5000.0 / speed
+					vx *= ratio
+					vy *= ratio
+
+				if typeof(proj) == TYPE_OBJECT:
+					proj.set("x", x)
+					proj.set("y", y)
+					proj.set("vx", vx)
+					proj.set("vy", vy)
+					if proj.has_method("set_meta"):
+						proj.set_meta("bounces", bounces)
+					elif "bounces" in proj:
+						proj.set("bounces", bounces)
+				elif typeof(proj) == TYPE_DICTIONARY:
+					proj["x"] = x
+					proj["y"] = y
+					proj["vx"] = vx
+					proj["vy"] = vy
+					proj["bounces"] = bounces
 
 class SuperBouncyArenaMode extends GameMode:
 	func _init() -> void:
