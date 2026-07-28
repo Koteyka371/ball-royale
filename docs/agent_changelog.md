@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1659] Relay Race Mode — *2026-07-28 23:56:57 UTC*
+
+Players can only control one ball at a time in a squad. When the active ball dies, the next one spawns in with inherited speed and temporary invulnerability.
+
+---
+
 ## [idea-1554] Dynamic Map Hazards Based on Territory Ownership — *2026-07-28 23:17:39 UTC*
 
 If a clan owns a specific territory, not only do they get passive bonuses, but the map itself alters to favor them. For instance, specific environmental hazards like lava geysers or poison traps could become 'friendly' to the controlling clan (not damaging their members) while remaining dangerous to rival clans or unaligned players.

@@ -28396,7 +28396,7 @@
     },
     {
       "id": "idea-1659",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Relay Race Mode",
@@ -41313,6 +41313,23 @@
         "src/ai/momentum_steal_active_item.py",
         "src/ai/momentum_steal_active_item.gd",
         "tests/test_momentum_steal_active_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2418",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Make Territory Hazards Friendly in Clan War",
+      "description": "If a clan owns a specific territory, not only do they get passive bonuses, but the map itself alters to favor them. Specific environmental hazards like lava geysers or poison traps become 'friendly' to the controlling clan (not damaging their members) while remaining dangerous to rival clans or unaligned players.",
+      "allowed_paths": [
+        "src/arena/make_territory_hazards_friendly_in_clan_war.py",
+        "src/arena/make_territory_hazards_friendly_in_clan_war.gd",
+        "tests/test_make_territory_hazards_friendly_in_clan_war.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
