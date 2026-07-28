@@ -30307,13 +30307,12 @@ class ExpandingLavaRoyaleMode(GameMode):
                     b.vx += (dx / dist) * push_strength * delta
                     b.vy += (dy / dist) * push_strength * delta
 
-        # Spawn environmental hazards on the outer edges
+        # Rain fireballs from above
         self.hazard_timer -= delta
         if self.hazard_timer <= 0.0 and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
-            self.hazard_timer = 2.0
+            self.hazard_timer = 0.5  # Spawn frequently!
             angle = self.random.uniform(0, math.pi * 2.0)
-            # Spawn hazard outside the danger radius, closer to the edge
-            dist = self.random.uniform(self.danger_radius + 50.0, max(arena_width, arena_height))
+            dist = self.random.uniform(0.0, max(arena_width, arena_height))
             hx = self.zone_x + math.cos(angle) * dist
             hy = self.zone_y + math.sin(angle) * dist
 
@@ -30324,7 +30323,7 @@ class ExpandingLavaRoyaleMode(GameMode):
 
             try:
                 from arena.procedural_arena import Hazard
-                hazard = Hazard(id=h_id, x=hx, y=hy, radius=40.0, kind="fire_zone", damage=15.0)
+                hazard = Hazard(id=h_id, x=hx, y=hy, radius=40.0, kind="lava_projectile", damage=15.0)
                 hazard.duration = 10.0
                 hazard.active = True
                 world.arena.hazards.append(hazard)
@@ -30339,7 +30338,7 @@ class ExpandingLavaRoyaleMode(GameMode):
                         self.damage = damage
                         self.duration = 10.0
                         self.active = True
-                hazard = TempHazard(h_id, hx, hy, 40.0, "fire_zone", 15.0)
+                hazard = TempHazard(h_id, hx, hy, 40.0, "lava_projectile", 15.0)
                 world.arena.hazards.append(hazard)
 
     def check_winner(self, world, balls):

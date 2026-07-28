@@ -48970,11 +48970,12 @@ class ExpandingLavaRoyaleMode extends GameMode:
 						b.vx += (dx / dist) * push_strength * delta
 						b.vy += (dy / dist) * push_strength * delta
 
+		# Rain fireballs from above
 		hazard_timer -= delta
 		if hazard_timer <= 0.0 and arena_hazards != null:
-			hazard_timer = 2.0
+			hazard_timer = 0.5 # Spawn more frequently!
 			var angle = randf_range(0, PI * 2.0)
-			var h_dist = randf_range(danger_radius + 50.0, max(arena_width, arena_height))
+			var h_dist = randf_range(0.0, max(arena_width, arena_height))
 			var hx = zone_x + cos(angle) * h_dist
 			var hy = zone_y + sin(angle) * h_dist
 
@@ -48988,7 +48989,7 @@ class ExpandingLavaRoyaleMode extends GameMode:
 				HazardObj = load("res://src/arena/procedural_arena.gd").Hazard
 
 			if HazardObj != null:
-				var hazard = HazardObj.new(h_id, hx, hy, 40.0, "fire_zone", 15.0)
+				var hazard = HazardObj.new(h_id, hx, hy, 40.0, "lava_projectile", 15.0)
 				hazard.active = true
 				if hazard.has_method("set_meta"):
 					hazard.set_meta("duration", 10.0)
@@ -48999,7 +49000,7 @@ class ExpandingLavaRoyaleMode extends GameMode:
 					"x": hx,
 					"y": hy,
 					"radius": 40.0,
-					"kind": "fire_zone",
+					"kind": "lava_projectile",
 					"damage": 15.0,
 					"duration": 10.0,
 					"active": true

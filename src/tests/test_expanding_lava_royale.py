@@ -57,4 +57,4 @@ def test_expanding_lava_royale_mode():
     # Should spawn hazard
     assert len(world.arena.hazards) >= 1
     hazard = world.arena.hazards[0]
-    assert hazard.kind == "fire_zone"
+    assert hazard.kind == "lava_projectile"
