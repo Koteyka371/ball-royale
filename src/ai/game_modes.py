@@ -36798,6 +36798,7 @@ class ClanWarMode(GameMode):
         cm = ClanManager()
 
         owner = cm.get_territory_owner("Arena_1")
+        self.arena_owner = owner
 
         for ball in balls:
             team_clan = getattr(ball, "clan", None)
@@ -36811,6 +36812,25 @@ class ClanWarMode(GameMode):
 
         if self.territory_captured:
             return
+
+        if getattr(self, "arena_owner", None) and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            owner_team = None
+            for b in balls:
+                if getattr(b, "clan", None) == self.arena_owner:
+                    owner_team = b.team
+                    break
+
+            if owner_team is not None:
+                for h in world.arena.hazards:
+                    if isinstance(h, dict):
+                        h["owner_team"] = owner_team
+                        h["team"] = owner_team
+                    else:
+                        try:
+                            h.owner_team = owner_team
+                            h.team = owner_team
+                        except Exception:
+                            pass
 
         # Update control points
         for cp in self.control_points:
