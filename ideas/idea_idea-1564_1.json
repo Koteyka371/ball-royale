@@ -1,0 +1,4 @@
+{
+  "title": "Laser Reflector Shield",
+  "description": "A new shield item that does not absorb lasers but bounces them perfectly off the player's shield, doubling their speed and damage. Creates intense laser-pong gameplay when multiple players have it active."
+}

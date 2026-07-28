@@ -385,7 +385,18 @@ class Action:
         if getattr(attacker, "in_mirror_dimension", False) != getattr(target, "in_mirror_dimension", False):
             return
 
+
         is_projectile_or_laser = getattr(attacker, "ball_type", getattr(attacker, "kind", "")) in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"] or getattr(attacker, "is_projectile", False) or getattr(attacker, "is_ricochet_laser", False) or getattr(attacker, "is_spell", False)
+
+        if getattr(target, "has_laser_absorber", False) or "laser_absorber" in getattr(target, "traits", []):
+            if is_projectile_or_laser:
+                # Absorb laser damage instead of taking damage
+                dmg = float(getattr(attacker, "damage", 10.0))
+                target.laser_energy_pool = getattr(target, "laser_energy_pool", 0.0) + dmg
+                if target.laser_energy_pool >= 100.0:
+                    target.laser_absorber_fire_ready = True
+                    target.laser_energy_pool = 0.0
+                return
 
 
         if getattr(target, "has_kinetic_absorber", False):
@@ -2135,6 +2146,70 @@ class Action:
                     self.ball.speed = getattr(self.ball, 'original_base_speed', 100.0) * 0.5
                 if not getattr(self.ball, 'is_mounted', False):
                     self.ball.damage = getattr(self.ball, 'original_base_damage', 10.0) * 0.5
+
+        if getattr(self.ball, "laser_absorber_fire_ready", False):
+            self.ball.laser_absorber_fire_ready = False
+            # Fire devastating laser
+            enemies = []
+            if hasattr(self.world, "get_nearby_entities"):
+                nearby = self.world.get_nearby_entities(self.ball, 800.0)
+                if isinstance(nearby, dict):
+                    enemies = nearby.get("enemies", [])
+            else:
+                for other in getattr(self.world, "balls", []):
+                    if getattr(other, "alive", False) and getattr(other, "id", None) != getattr(self.ball, "id", None) and getattr(other, "team", getattr(other, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                        dist = ((other.x - self.ball.x)**2 + (other.y - self.ball.y)**2)**0.5
+                        if dist <= 800.0:
+                            enemies.append(other)
+
+            if enemies:
+                import math
+                nearest_enemy = min(enemies, key=lambda e: math.hypot(e.x - self.ball.x, e.y - self.ball.y))
+                dx = nearest_enemy.x - self.ball.x
+                dy = nearest_enemy.y - self.ball.y
+                dist = math.hypot(dx, dy)
+                if dist > 0.001:
+                    nx = dx / dist
+                    ny = dy / dist
+
+                    # Spawn ricochet laser
+
+                    class GenericProjectile:
+                        def __init__(self):
+                            pass
+                        def __getitem__(self, key):
+                            return getattr(self, key)
+                        def __setitem__(self, key, value):
+                            setattr(self, key, value)
+                        def get(self, key, default=None):
+                            return getattr(self, key, default)
+                        def __contains__(self, key):
+                            return hasattr(self, key)
+
+                    laser = GenericProjectile()
+
+                    setattr(laser, "id", getattr(self.world, "next_id", 99999))
+                    setattr(laser, "ball_type", "projectile")
+                    setattr(laser, "is_ricochet_laser", True)
+                    setattr(laser, "owner_id", getattr(self.ball, "id", None))
+                    setattr(laser, "team", getattr(self.ball, "team", getattr(self.ball, "ball_type", "")))
+                    setattr(laser, "damage", 80.0)
+                    setattr(laser, "base_damage", 80.0)
+                    setattr(laser, "bounces_left", 3)
+                    setattr(laser, "last_hit_id", None)
+                    setattr(laser, "duration", 10.0)
+                    setattr(laser, "alive", True)
+                    setattr(laser, "x", self.ball.x + nx * 20.0)
+                    setattr(laser, "y", self.ball.y + ny * 20.0)
+                    setattr(laser, "vx", nx * 800.0)
+                    setattr(laser, "vy", ny * 800.0)
+                    setattr(laser, "radius", 8.0)
+
+                    if hasattr(self.world, "balls"):
+                        self.world.balls.append(laser)
+
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("visual_effect", {"type": "focused_laser_fire", "x": self.ball.x, "y": self.ball.y})
 
         if getattr(self.ball, "has_drone", False):
             drone_radius = 150.0
@@ -9486,7 +9561,18 @@ class Action:
                                         else:
                                             nx, ny = 1.0, 0.0
 
-                                        laser = type('MockBall', (), {})()
+                                        class GenericProjectile:
+                                            def __init__(self):
+                                                pass
+                                            def __getitem__(self, key):
+                                                return getattr(self, key)
+                                            def __setitem__(self, key, value):
+                                                setattr(self, key, value)
+                                            def get(self, key, default=None):
+                                                return getattr(self, key, default)
+                                            def __contains__(self, key):
+                                                return hasattr(self, key)
+                                        laser = GenericProjectile()
                                         setattr(laser, "id", getattr(self.world, "next_id", 99999))
                                         if hasattr(self.world, "next_id"):
                                             self.world.next_id += 1
