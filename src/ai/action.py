@@ -14969,7 +14969,7 @@ class Action:
                     import copy
                     import math
                     if hasattr(self.world, "balls"):
-                        for i in range(3):
+                        for i in range(1):
                             clone = copy.copy(self.ball)
                             clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
                             if hasattr(self.world, "next_id"):
@@ -14990,7 +14990,12 @@ class Action:
                             clone.skill = None
                             clone.active_skill = None
 
-                            angle = i * (2 * math.pi / 3) + __import__('random').random() * math.pi / 6
+                            vx = getattr(self.ball, 'vx', 0.0)
+                            vy = getattr(self.ball, 'vy', 0.0)
+                            if vx == 0 and vy == 0:
+                                angle = __import__('random').random() * 2 * math.pi
+                            else:
+                                angle = math.atan2(vy, vx)
                             clone.x += math.cos(angle) * 15
                             clone.y += math.sin(angle) * 15
                             clone.hologram_dir_x = math.cos(angle)
