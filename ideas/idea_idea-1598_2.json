@@ -1,0 +1,4 @@
+{
+  "title": "Chain Reaction Traps",
+  "description": "A new hazard type that links to other nearby traps. When one is triggered or destroyed, it sends an electrical pulse to all linked traps, causing them to detonate simultaneously with multiplied force, creating massive area-denial zones."
+}

@@ -20251,6 +20251,36 @@ class Action:
                     knockback_multiplier *= 0.05
                 elif cosmetic == "hover_boots":
                     knockback_multiplier *= 1.5
+                elif cosmetic == "tethered_boots":
+                    knockback_multiplier *= 0.5
+
+                    # Find nearest ally
+                    allies = self._get_allies()
+                    nearest_ally = None
+                    min_dist = float('inf')
+                    for a in allies:
+                        d_sq = (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2
+                        if d_sq < min_dist:
+                            min_dist = d_sq
+                            nearest_ally = a
+
+                    if nearest_ally:
+                        # Apply the other half of the knockback to the linked ally
+                        nearest_ally.x += nx * overlap * knockback_multiplier
+                        nearest_ally.y += ny * overlap * knockback_multiplier
+
+                        # Share positive status effects durations
+                        positive_effects = [
+                            "speed_boost_timer", "speed_buff_timer", "damage_buff_timer",
+                            "shield_timer", "hazard_immunity_timer", "stamina_booster_timer",
+                            "attack_speed_buff_timer", "invulnerable_timer"
+                        ]
+                        for effect in positive_effects:
+                            val = getattr(self.ball, effect, 0.0)
+                            if val > 0:
+                                current_ally_val = getattr(nearest_ally, effect, 0.0)
+                                setattr(nearest_ally, effect, max(current_ally_val, val))
+
                 elif (cosmetic == "kinetic_absorber" or getattr(self.ball, "has_kinetic_absorber", False)) and getattr(other, "team", None) != getattr(self.ball, "team", None):
                     if cosmetic == "kinetic_absorber":
                         knockback_multiplier = 0.0

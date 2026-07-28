@@ -39943,6 +39943,113 @@ func _resolve_collisions() -> bool:
                 knockback_multiplier *= 0.05
             elif cosmetic_val == "hover_boots":
                 knockback_multiplier *= 1.5
+            elif cosmetic_val == "tethered_boots":
+                knockback_multiplier *= 0.5
+
+                # Find nearest ally
+                var allies = []
+                if "balls" in world:
+                    for a in world.balls:
+                        var a_team = null
+                        if typeof(a) == TYPE_DICTIONARY and a.has("team"): a_team = a["team"]
+                        elif typeof(a) == TYPE_OBJECT and "team" in a: a_team = a.team
+                        elif typeof(a) == TYPE_OBJECT and a.has_method("has_meta") and a.has_meta("team"): a_team = a.get_meta("team")
+
+                        var b_team = null
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): b_team = self.ball["team"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: b_team = self.ball.team
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"): b_team = self.ball.get_meta("team")
+
+                        var is_spectator = false
+                        if typeof(a) == TYPE_DICTIONARY and a.has("ball_type") and a["ball_type"] == "spectator": is_spectator = true
+                        elif typeof(a) == TYPE_OBJECT and "ball_type" in a and a.ball_type == "spectator": is_spectator = true
+
+                        var a_id = -1
+                        if typeof(a) == TYPE_DICTIONARY and a.has("id"): a_id = a["id"]
+                        elif typeof(a) == TYPE_OBJECT and "id" in a: a_id = a.id
+                        var b_id = -1
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: b_id = self.ball.id
+
+                        var a_alive = true
+                        if typeof(a) == TYPE_DICTIONARY and a.has("alive"): a_alive = a["alive"]
+                        elif typeof(a) == TYPE_OBJECT and "alive" in a: a_alive = a.alive
+
+                        var a_dim = false
+                        if typeof(a) == TYPE_DICTIONARY and a.has("in_mirror_dimension"): a_dim = a["in_mirror_dimension"]
+                        elif typeof(a) == TYPE_OBJECT and "in_mirror_dimension" in a: a_dim = a.in_mirror_dimension
+
+                        var b_dim = false
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("in_mirror_dimension"): b_dim = self.ball["in_mirror_dimension"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "in_mirror_dimension" in self.ball: b_dim = self.ball.in_mirror_dimension
+
+                        if a_team == b_team and not is_spectator and a_id != b_id and a_alive and a_dim == b_dim:
+                            allies.append(a)
+
+                var nearest_ally = null
+                var min_dist = 9999999.0
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("x"): bx = self.ball["x"]
+                    if self.ball.has("y"): by = self.ball["y"]
+                else:
+                    if "x" in self.ball: bx = self.ball.x
+                    if "y" in self.ball: by = self.ball.y
+
+                for a in allies:
+                    var ax = 0.0
+                    var ay = 0.0
+                    if typeof(a) == TYPE_DICTIONARY:
+                        if a.has("x"): ax = a["x"]
+                        if a.has("y"): ay = a["y"]
+                    else:
+                        if "x" in a: ax = a.x
+                        if "y" in a: ay = a.y
+
+                    var d_sq = (ax - bx)*(ax - bx) + (ay - by)*(ay - by)
+                    if d_sq < min_dist:
+                        min_dist = d_sq
+                        nearest_ally = a
+
+                if nearest_ally != null:
+                    if typeof(nearest_ally) == TYPE_DICTIONARY:
+                        if nearest_ally.has("x"): nearest_ally["x"] += nx * overlap * knockback_multiplier
+                        if nearest_ally.has("y"): nearest_ally["y"] += ny * overlap * knockback_multiplier
+                    elif typeof(nearest_ally) == TYPE_OBJECT:
+                        if "x" in nearest_ally: nearest_ally.x += nx * overlap * knockback_multiplier
+                        if "y" in nearest_ally: nearest_ally.y += ny * overlap * knockback_multiplier
+
+                    var positive_effects = [
+                        "speed_boost_timer", "speed_buff_timer", "damage_buff_timer",
+                        "shield_timer", "hazard_immunity_timer", "stamina_booster_timer",
+                        "attack_speed_buff_timer", "invulnerable_timer"
+                    ]
+                    for effect in positive_effects:
+                        var val = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has(effect):
+                            val = float(self.ball[effect])
+                        elif typeof(self.ball) == TYPE_OBJECT and effect in self.ball:
+                            val = float(self.ball.get(effect))
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta(effect):
+                            val = float(self.ball.get_meta(effect))
+
+                        if val > 0:
+                            var current_ally_val = 0.0
+                            if typeof(nearest_ally) == TYPE_DICTIONARY and nearest_ally.has(effect):
+                                current_ally_val = float(nearest_ally[effect])
+                            elif typeof(nearest_ally) == TYPE_OBJECT and effect in nearest_ally:
+                                current_ally_val = float(nearest_ally.get(effect))
+                            elif typeof(nearest_ally) == TYPE_OBJECT and nearest_ally.has_method("has_meta") and nearest_ally.has_meta(effect):
+                                current_ally_val = float(nearest_ally.get_meta(effect))
+
+                            var new_val = max(current_ally_val, val)
+                            if typeof(nearest_ally) == TYPE_DICTIONARY:
+                                nearest_ally[effect] = new_val
+                            elif typeof(nearest_ally) == TYPE_OBJECT and effect in nearest_ally:
+                                nearest_ally.set(effect, new_val)
+                            elif typeof(nearest_ally) == TYPE_OBJECT and nearest_ally.has_method("set_meta"):
+                                nearest_ally.set_meta(effect, new_val)
             elif cosmetic_val == "kinetic_absorber" or has_kin_abs_skill:
                 var o_team = null
                 if typeof(other) == TYPE_DICTIONARY and other.has("team"):
