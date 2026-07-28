@@ -11272,10 +11272,30 @@ class Action:
         current_silence = getattr(self.ball, "silence_timer", 0.0)
 
         damage_taken = start_hp - current_hp
+
+        if getattr(self.ball, "is_decoy", False) and getattr(self.ball, "decoy_type", "") == "tether" and current_hp <= 0 and start_hp > 0:
+            tether_links = getattr(self.ball, "tether_links", [])
+            accumulated = getattr(self.ball, "tether_accumulated_damage", 0.0)
+            reflected_damage = accumulated * 0.5 + 20.0
+            if hasattr(self.world, "balls"):
+                for b in self.world.balls:
+                    if getattr(b, "id", None) in tether_links and getattr(b, "alive", True):
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(reflected_damage)
+                        elif hasattr(b, "hp"):
+                            b.hp -= reflected_damage
+                            if b.hp <= 0:
+                                b.alive = False
+                        if hasattr(self, "_spawn_directed_particles"):
+                            self._spawn_directed_particles(self.ball, b, "tether_snap")
+
         stun_taken = current_stun - start_stun
         silence_taken = current_silence - start_silence
 
 
+
+        if damage_taken > 0 and getattr(self.ball, "is_decoy", False) and getattr(self.ball, "decoy_type", "") == "tether":
+            self.ball.tether_accumulated_damage = getattr(self.ball, "tether_accumulated_damage", 0.0) + damage_taken
         if damage_taken > 0 and getattr(self.ball, "is_hologram", False):
             self.ball.hp = 0
             if hasattr(self.ball, "alive"):
@@ -17274,6 +17294,49 @@ class Action:
                         decoy.decoy_type = "basic"
                         self.world.balls.append(decoy)
 
+            elif skill_name == "deploy_tether_decoy":
+                import copy
+                import random
+
+                # Find nearby enemies
+                enemies = self._get_enemies()
+                nearby_enemies = []
+                for e in enemies:
+                    dist_sq = (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2
+                    if dist_sq < 250000:  # 500 range
+                        nearby_enemies.append(e)
+
+                decoy = copy.copy(self.ball)
+                decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                if hasattr(self.world, "next_id"):
+                    self.world.next_id += 1
+
+                decoy.owner_id = getattr(self.ball, "id", None)
+                decoy.is_decoy = True
+                decoy.decoy_type = "tether"
+                decoy.decoy_timer = 6.0
+                decoy.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                decoy.max_hp = decoy.hp
+                decoy.damage = 0
+                decoy.skill_timer = 9999.0
+                decoy.skill = None
+                decoy.active_skill = None
+
+                # Offset slightly so it's not exactly on the player
+                import math
+                angle = random.uniform(0, 2 * math.pi)
+                decoy.x += math.cos(angle) * 30.0
+                decoy.y += math.sin(angle) * 30.0
+
+                decoy.tether_links = [getattr(e, "id", None) for e in nearby_enemies]
+                decoy.tether_accumulated_damage = 0.0
+
+                if hasattr(self.world, "balls"):
+                    self.world.balls.append(decoy)
+
+                for e in nearby_enemies:
+                    if hasattr(self, "_spawn_directed_particles"):
+                        self._spawn_directed_particles(decoy, e, "tether_link")
             elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced"]:
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
