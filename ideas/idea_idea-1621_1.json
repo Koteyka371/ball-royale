@@ -1,0 +1,4 @@
+{
+    "title": "Bouncy Breakable Walls",
+    "description": "Some breakable maze walls don't just break when dashed into, but rather act as super-bouncy surfaces for non-dashing balls before they are shattered, creating dynamic ricochet strategies until a player decides to break them open."
+}

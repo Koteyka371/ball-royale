@@ -14435,7 +14435,9 @@ class ShiftingMazeMode(GameMode):
                         "dx": rng.uniform(-10, 10),
                         "dy": rng.uniform(-10, 10),
                         "is_ghostly": False,
-                        "ghost_timer": rng.uniform(5.0, 15.0)
+                        "ghost_timer": rng.uniform(5.0, 15.0),
+                        "breakable": rng.random() < 0.2,
+                        "broken": False
                     })
                 else:
                     self.walls.append({
@@ -14446,7 +14448,9 @@ class ShiftingMazeMode(GameMode):
                         "dx": rng.uniform(-10, 10),
                         "dy": rng.uniform(-10, 10),
                         "is_ghostly": False,
-                        "ghost_timer": rng.uniform(5.0, 15.0)
+                        "ghost_timer": rng.uniform(5.0, 15.0),
+                        "breakable": rng.random() < 0.2,
+                        "broken": False
                     })
 
     def tick(self, world, balls, delta=0.016):
@@ -14475,7 +14479,10 @@ class ShiftingMazeMode(GameMode):
             br = getattr(b, "radius", 20.0)
 
             touching_wall = False
+            touched_wall_ref = None
             for w in self.walls:
+                if w.get("broken", False):
+                    continue
                 wx = center_x + (w["x"] - center_x) * self.maze_scale
                 wy = center_y + (w["y"] - center_y) * self.maze_scale
                 ww = max(5, w["width"] * self.maze_scale)
@@ -14487,16 +14494,23 @@ class ShiftingMazeMode(GameMode):
                 dist_sq = (bx - nearest_x)**2 + (by - nearest_y)**2
                 if dist_sq < br**2:
                     touching_wall = True
+                    touched_wall_ref = w
                     break
 
-            if touching_wall:
-                dmg = self.wall_damage_per_second * delta
-                if hasattr(b, "take_damage"):
-                    b.take_damage(dmg, "maze_wall")
+            if touching_wall and touched_wall_ref is not None:
+                is_dashing = getattr(b, "is_dashing", False)
+                if is_dashing and touched_wall_ref.get("breakable", False):
+                    touched_wall_ref["broken"] = True
+                    if hasattr(world, "add_event"):
+                        world.add_event("wall_break", {"type": "wall_break", "x": bx, "y": by})
                 else:
-                    b.hp = getattr(b, "hp", 100) - dmg
-                if getattr(b, "hp", 100) <= 0:
-                    b.alive = False
+                    dmg = self.wall_damage_per_second * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(dmg, "maze_wall")
+                    else:
+                        b.hp = getattr(b, "hp", 100) - dmg
+                    if getattr(b, "hp", 100) <= 0:
+                        b.alive = False
 
     def check_winner(self, world, balls):
         alive = [b for b in balls if getattr(b, "alive", False)]
@@ -21123,7 +21137,9 @@ class MazeSafeZoneMode(GameMode):
                         "dx": rng.uniform(-10, 10),
                         "dy": rng.uniform(-10, 10),
                         "is_ghostly": False,
-                        "ghost_timer": rng.uniform(5.0, 15.0)
+                        "ghost_timer": rng.uniform(5.0, 15.0),
+                        "breakable": rng.random() < 0.2,
+                        "broken": False
                     })
                 else:
                     self.walls.append({
@@ -21134,7 +21150,9 @@ class MazeSafeZoneMode(GameMode):
                         "dx": rng.uniform(-10, 10),
                         "dy": rng.uniform(-10, 10),
                         "is_ghostly": False,
-                        "ghost_timer": rng.uniform(5.0, 15.0)
+                        "ghost_timer": rng.uniform(5.0, 15.0),
+                        "breakable": rng.random() < 0.2,
+                        "broken": False
                     })
 
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -21252,8 +21270,9 @@ class MazeSafeZoneMode(GameMode):
                     br = getattr(b, "radius", 20.0)
 
                     touching_wall = False
+                    touched_wall_ref = None
                     for w in self.walls:
-                        if w.get("is_ghostly", False):
+                        if w.get("is_ghostly", False) or w.get("broken", False):
                             continue
                         nearest_x = max(w["x"], min(bx, w["x"] + w["width"]))
                         nearest_y = max(w["y"], min(by, w["y"] + w["height"]))
@@ -21261,19 +21280,26 @@ class MazeSafeZoneMode(GameMode):
                         dist_sq = (bx - nearest_x)**2 + (by - nearest_y)**2
                         if dist_sq < br**2:
                             touching_wall = True
+                            touched_wall_ref = w
                             break
 
-                    if touching_wall:
-                        dmg = self.wall_damage_per_second * delta
-                        if hasattr(b, "take_damage"):
-                            b.take_damage(dmg, "maze_wall")
+                    if touching_wall and touched_wall_ref is not None:
+                        is_dashing = getattr(b, "is_dashing", False)
+                        if is_dashing and touched_wall_ref.get("breakable", False):
+                            touched_wall_ref["broken"] = True
+                            if hasattr(world, "add_event"):
+                                world.add_event("wall_break", {"type": "wall_break", "x": bx, "y": by})
                         else:
-                            b.hp = getattr(b, "hp", 100) - dmg
-                        if getattr(b, "hp", 100) <= 0:
-                            b.alive = False
+                            dmg = self.wall_damage_per_second * delta
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(dmg, "maze_wall")
+                            else:
+                                b.hp = getattr(b, "hp", 100) - dmg
+                            if getattr(b, "hp", 100) <= 0:
+                                b.alive = False
 
                         # Push the ball out of the wall and apply crush mechanics
-                        if getattr(b, "alive", False):
+                        if getattr(b, "alive", False) and not (is_dashing and touched_wall_ref.get("breakable", False)):
                             push_force = 100.0 * delta
                             if bx < nearest_x + 0.1:
                                 if hasattr(b, "x"): b.x -= push_force
