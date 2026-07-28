@@ -1955,7 +1955,8 @@ class Action:
                                             y=h.y,
                                             radius=40.0,
                                             kind="emp_burst",
-                                            damage=20.0
+                                            damage=20.0,
+                                            owner_id=owner_id
                                         )
                                         setattr(emp, "duration", 0.5)
                                         setattr(emp, "owner_id", owner_id)
@@ -3369,7 +3370,8 @@ class Action:
                             y=self.ball.y,
                             radius=getattr(self.ball, "radius", 10.0),
                             kind="mirage_decoy",
-                            damage=0.0
+                            damage=0.0,
+                            owner_id=getattr(self.ball, "id", None)
                         )
                         setattr(mirage, "duration", 5.0)
                         setattr(mirage, "owner_id", getattr(self.ball, "id", None))
@@ -10824,8 +10826,11 @@ class Action:
                                 bounce_strength = 2000.0 * delta
                                 if getattr(self.ball, "kinetic_shield_active", False):
                                     bounce_strength *= 0.5
-                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
-                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                    if getattr(self.ball, "bumper_synergy_active", False):
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05 * 5.0)
+                                    else:
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
+                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
 
@@ -10896,8 +10901,11 @@ class Action:
                                 bounce_strength = 2000.0 * delta
                                 if getattr(self.ball, "kinetic_shield_active", False):
                                     bounce_strength *= 0.5
-                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
-                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                    if getattr(self.ball, "bumper_synergy_active", False):
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05 * 5.0)
+                                    else:
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
+                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 self.ball.vx = nx * 4000.0
@@ -10938,8 +10946,11 @@ class Action:
                                     bounce_strength = 1200.0 * delta
                                     if getattr(self.ball, "kinetic_shield_active", False):
                                         bounce_strength *= 0.5
-                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
-                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                        if getattr(self.ball, "bumper_synergy_active", False):
+                                            self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05 * 5.0)  # Convert energy to bonus shield
+                                        else:
+                                            self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
+                                            self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                     self.ball.x += nx * bounce_strength
                                     self.ball.y += ny * bounce_strength
 
@@ -11020,8 +11031,11 @@ class Action:
                                 bounce_strength = 1200.0 * delta
                                 if getattr(self.ball, "kinetic_shield_active", False):
                                     bounce_strength *= 0.5
-                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
-                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                    if getattr(self.ball, "bumper_synergy_active", False):
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05 * 5.0)
+                                    else:
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
+                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 # Accelerate ball significantly to create chaotic pinball-like movement
@@ -11031,11 +11045,13 @@ class Action:
                                     self.ball.vx *= 0.5
                                     self.ball.vy *= 0.5
                                 # Grant a temporary movement speed boost upon bouncing
-                                self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+                                if not (getattr(self.ball, "kinetic_shield_active", False) and getattr(self.ball, "bumper_synergy_active", False)):
+                                    self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
                                 if getattr(self.ball, "bumper_synergy_active", False):
                                     self.ball.attack_speed_buff_timer = getattr(self.ball, "attack_speed_buff_timer", 0.0) + 3.0
-                                    self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+                                    if not getattr(self.ball, "kinetic_shield_active", False):
+                                        self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
                                 # Chain Reaction Logic
                                 if hazard.kind == "chain_reaction_bumper":
@@ -20366,7 +20382,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     m_id = f"hm_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
-                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0, owner_id=getattr(self.ball, "id", None))
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
@@ -23764,7 +23780,7 @@ class Action:
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     import random
                     m_id = f"hm_{getattr(self.ball, 'id', 'x')}_{random.randint(0,99999)}"
-                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0)
+                    m = HomingMissileHazard(m_id, self.ball.x, self.ball.y, 10.0, "homing_missile", 20.0, owner_id=getattr(self.ball, "id", None))
                     m.owner_id = getattr(self.ball, "id", None)
                     self.world.arena.hazards.append(m)
 

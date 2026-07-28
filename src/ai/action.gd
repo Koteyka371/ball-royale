@@ -21196,29 +21196,41 @@ func execute(strategy: String, delta: float):
                                 ks_active = self.ball.kinetic_shield_active
                             if ks_active:
                                 bounce_strength *= 0.5
+                                var has_bumper_syn = false
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bumper_synergy_active"): has_bumper_syn = self.ball["bumper_synergy_active"]
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bumper_synergy_active"): has_bumper_syn = self.ball.get_meta("bumper_synergy_active")
+                                elif "bumper_synergy_active" in self.ball: has_bumper_syn = self.ball.bumper_synergy_active
+
                                 var cur_sh = 0.0
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shielding"): cur_sh = self.ball.get_meta("shielding")
                                 elif "shielding" in self.ball: cur_sh = self.ball.shielding
                                 elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("shielding"): cur_sh = self.ball["shielding"]
+
+                                var add_sh = bounce_strength * 0.05
+                                if has_bumper_syn:
+                                    add_sh *= 5.0
+
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                    if "shielding" in self.ball: self.ball.shielding = cur_sh + (2000.0 * delta * 0.5 * 0.05)
-                                    else: self.ball.set_meta("shielding", cur_sh + (2000.0 * delta * 0.5 * 0.05))
+                                    if "shielding" in self.ball: self.ball.shielding = cur_sh + add_sh
+                                    else: self.ball.set_meta("shielding", cur_sh + add_sh)
                                 elif "shielding" in self.ball:
-                                    self.ball.shielding = cur_sh + (2000.0 * delta * 0.5 * 0.05)
+                                    self.ball.shielding = cur_sh + add_sh
                                 elif typeof(self.ball) == TYPE_DICTIONARY:
-                                    self.ball["shielding"] = cur_sh + (2000.0 * delta * 0.5 * 0.05)
-                                var cur_sp = 0.0
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
-                                elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
-                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
-                                var new_sp = max(cur_sp, 3.0)
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                    if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
-                                    else: self.ball.set_meta("speed_boost_timer", new_sp)
-                                elif "speed_boost_timer" in self.ball:
-                                    self.ball.speed_boost_timer = new_sp
-                                elif typeof(self.ball) == TYPE_DICTIONARY:
-                                    self.ball["speed_boost_timer"] = new_sp
+                                    self.ball["shielding"] = cur_sh + add_sh
+
+                                if not has_bumper_syn:
+                                    var cur_sp = 0.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
+                                    elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
+                                    var new_sp = max(cur_sp, 3.0)
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
+                                        else: self.ball.set_meta("speed_boost_timer", new_sp)
+                                    elif "speed_boost_timer" in self.ball:
+                                        self.ball.speed_boost_timer = new_sp
+                                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball["speed_boost_timer"] = new_sp
                             self.ball.x += nx * bounce_strength
                             self.ball.y += ny * bounce_strength
 
@@ -21408,29 +21420,41 @@ func execute(strategy: String, delta: float):
                                     ks_active = self.ball.kinetic_shield_active
                                 if ks_active:
                                     bounce_strength *= 0.5
+                                    var has_bumper_syn = false
+                                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bumper_synergy_active"): has_bumper_syn = self.ball["bumper_synergy_active"]
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bumper_synergy_active"): has_bumper_syn = self.ball.get_meta("bumper_synergy_active")
+                                    elif "bumper_synergy_active" in self.ball: has_bumper_syn = self.ball.bumper_synergy_active
+
                                     var cur_sh = 0.0
                                     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shielding"): cur_sh = self.ball.get_meta("shielding")
                                     elif "shielding" in self.ball: cur_sh = self.ball.shielding
                                     elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("shielding"): cur_sh = self.ball["shielding"]
+
+                                    var add_sh = bounce_strength * 0.05
+                                    if has_bumper_syn:
+                                        add_sh *= 5.0
+
                                     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                        if "shielding" in self.ball: self.ball.shielding = cur_sh + (1200.0 * delta * 0.5 * 0.05)
-                                        else: self.ball.set_meta("shielding", cur_sh + (1200.0 * delta * 0.5 * 0.05))
+                                        if "shielding" in self.ball: self.ball.shielding = cur_sh + add_sh
+                                        else: self.ball.set_meta("shielding", cur_sh + add_sh)
                                     elif "shielding" in self.ball:
-                                        self.ball.shielding = cur_sh + (1200.0 * delta * 0.5 * 0.05)
+                                        self.ball.shielding = cur_sh + add_sh
                                     elif typeof(self.ball) == TYPE_DICTIONARY:
-                                        self.ball["shielding"] = cur_sh + (1200.0 * delta * 0.5 * 0.05)
-                                    var cur_sp = 0.0
-                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
-                                    elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
-                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
-                                    var new_sp = max(cur_sp, 3.0)
-                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                        if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
-                                        else: self.ball.set_meta("speed_boost_timer", new_sp)
-                                    elif "speed_boost_timer" in self.ball:
-                                        self.ball.speed_boost_timer = new_sp
-                                    elif typeof(self.ball) == TYPE_DICTIONARY:
-                                        self.ball["speed_boost_timer"] = new_sp
+                                        self.ball["shielding"] = cur_sh + add_sh
+
+                                    if not has_bumper_syn:
+                                        var cur_sp = 0.0
+                                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
+                                        elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
+                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
+                                        var new_sp = max(cur_sp, 3.0)
+                                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                            if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
+                                            else: self.ball.set_meta("speed_boost_timer", new_sp)
+                                        elif "speed_boost_timer" in self.ball:
+                                            self.ball.speed_boost_timer = new_sp
+                                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                                            self.ball["speed_boost_timer"] = new_sp
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
 
@@ -21555,29 +21579,41 @@ func execute(strategy: String, delta: float):
                                 ks_active = self.ball.kinetic_shield_active
                             if ks_active:
                                 bounce_strength *= 0.5
+                                var has_bumper_syn = false
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bumper_synergy_active"): has_bumper_syn = self.ball["bumper_synergy_active"]
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bumper_synergy_active"): has_bumper_syn = self.ball.get_meta("bumper_synergy_active")
+                                elif "bumper_synergy_active" in self.ball: has_bumper_syn = self.ball.bumper_synergy_active
+
                                 var cur_sh = 0.0
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shielding"): cur_sh = self.ball.get_meta("shielding")
                                 elif "shielding" in self.ball: cur_sh = self.ball.shielding
                                 elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("shielding"): cur_sh = self.ball["shielding"]
+
+                                var add_sh = bounce_strength * 0.05
+                                if has_bumper_syn:
+                                    add_sh *= 5.0
+
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                    if "shielding" in self.ball: self.ball.shielding = cur_sh + (1200.0 * delta * 0.5 * 0.05)
-                                    else: self.ball.set_meta("shielding", cur_sh + (1200.0 * delta * 0.5 * 0.05))
+                                    if "shielding" in self.ball: self.ball.shielding = cur_sh + add_sh
+                                    else: self.ball.set_meta("shielding", cur_sh + add_sh)
                                 elif "shielding" in self.ball:
-                                    self.ball.shielding = cur_sh + (1200.0 * delta * 0.5 * 0.05)
+                                    self.ball.shielding = cur_sh + add_sh
                                 elif typeof(self.ball) == TYPE_DICTIONARY:
-                                    self.ball["shielding"] = cur_sh + (1200.0 * delta * 0.5 * 0.05)
-                                var cur_sp = 0.0
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
-                                elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
-                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
-                                var new_sp = max(cur_sp, 3.0)
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                    if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
-                                    else: self.ball.set_meta("speed_boost_timer", new_sp)
-                                elif "speed_boost_timer" in self.ball:
-                                    self.ball.speed_boost_timer = new_sp
-                                elif typeof(self.ball) == TYPE_DICTIONARY:
-                                    self.ball["speed_boost_timer"] = new_sp
+                                    self.ball["shielding"] = cur_sh + add_sh
+
+                                if not has_bumper_syn:
+                                    var cur_sp = 0.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
+                                    elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
+                                    var new_sp = max(cur_sp, 3.0)
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
+                                        else: self.ball.set_meta("speed_boost_timer", new_sp)
+                                    elif "speed_boost_timer" in self.ball:
+                                        self.ball.speed_boost_timer = new_sp
+                                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball["speed_boost_timer"] = new_sp
                             self.ball.x += nx * bounce_strength
                             self.ball.y += ny * bounce_strength
 
@@ -21639,14 +21675,24 @@ func execute(strategy: String, delta: float):
                             elif "speed_boost_timer" in self.ball:
                                 cur_speed = self.ball.speed_boost_timer
 
-                            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                self.ball.set_meta("speed_boost_timer", cur_speed + 3.0)
-                            if "speed_boost_timer" in self.ball:
-                                self.ball.speed_boost_timer = cur_speed + 3.0
+                            var ks_active_syn = false
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                ks_active_syn = self.ball.get("kinetic_shield_active", false)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("kinetic_shield_active"):
+                                ks_active_syn = self.ball.get_meta("kinetic_shield_active")
+                            elif "kinetic_shield_active" in self.ball:
+                                ks_active_syn = self.ball.kinetic_shield_active
 
                             var has_synergy = false
                             if "bumper_synergy_active" in self.ball: has_synergy = self.ball.bumper_synergy_active
                             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("bumper_synergy_active"): has_synergy = self.ball.get_meta("bumper_synergy_active")
+
+                            if not (ks_active_syn and has_synergy):
+                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                    self.ball.set_meta("speed_boost_timer", cur_speed + 3.0)
+                                if "speed_boost_timer" in self.ball:
+                                    self.ball.speed_boost_timer = cur_speed + 3.0
+
                             if has_synergy:
                                 var cur_atk_spd = 0.0
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("attack_speed_buff_timer"):
@@ -21658,15 +21704,16 @@ func execute(strategy: String, delta: float):
                                 if "attack_speed_buff_timer" in self.ball:
                                     self.ball.attack_speed_buff_timer = cur_atk_spd + 3.0
 
-                                var cur_spd_bst = 0.0
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
-                                    cur_spd_bst = self.ball.get_meta("speed_boost_timer")
-                                elif "speed_boost_timer" in self.ball:
-                                    cur_spd_bst = self.ball.speed_boost_timer
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                    self.ball.set_meta("speed_boost_timer", cur_spd_bst + 3.0)
-                                if "speed_boost_timer" in self.ball:
-                                    self.ball.speed_boost_timer = cur_spd_bst + 3.0
+                                if not ks_active_syn:
+                                    var cur_spd_bst = 0.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                                        cur_spd_bst = self.ball.get_meta("speed_boost_timer")
+                                    elif "speed_boost_timer" in self.ball:
+                                        cur_spd_bst = self.ball.speed_boost_timer
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("speed_boost_timer", cur_spd_bst + 3.0)
+                                    if "speed_boost_timer" in self.ball:
+                                        self.ball.speed_boost_timer = cur_spd_bst + 3.0
 
                             var bumper_combo = 0
                             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bumper_combo"):
@@ -22035,29 +22082,41 @@ func execute(strategy: String, delta: float):
                                 ks_active = self.ball.kinetic_shield_active
                             if ks_active:
                                 bounce_strength *= 0.5
+                                var has_bumper_syn = false
+                                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("bumper_synergy_active"): has_bumper_syn = self.ball["bumper_synergy_active"]
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("bumper_synergy_active"): has_bumper_syn = self.ball.get_meta("bumper_synergy_active")
+                                elif "bumper_synergy_active" in self.ball: has_bumper_syn = self.ball.bumper_synergy_active
+
                                 var cur_sh = 0.0
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("shielding"): cur_sh = self.ball.get_meta("shielding")
                                 elif "shielding" in self.ball: cur_sh = self.ball.shielding
                                 elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("shielding"): cur_sh = self.ball["shielding"]
+
+                                var add_sh = bounce_strength * 0.05
+                                if has_bumper_syn:
+                                    add_sh *= 5.0
+
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                    if "shielding" in self.ball: self.ball.shielding = cur_sh + (2000.0 * delta * 0.5 * 0.05)
-                                    else: self.ball.set_meta("shielding", cur_sh + (2000.0 * delta * 0.5 * 0.05))
+                                    if "shielding" in self.ball: self.ball.shielding = cur_sh + add_sh
+                                    else: self.ball.set_meta("shielding", cur_sh + add_sh)
                                 elif "shielding" in self.ball:
-                                    self.ball.shielding = cur_sh + (2000.0 * delta * 0.5 * 0.05)
+                                    self.ball.shielding = cur_sh + add_sh
                                 elif typeof(self.ball) == TYPE_DICTIONARY:
-                                    self.ball["shielding"] = cur_sh + (2000.0 * delta * 0.5 * 0.05)
-                                var cur_sp = 0.0
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
-                                elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
-                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
-                                var new_sp = max(cur_sp, 3.0)
-                                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                                    if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
-                                    else: self.ball.set_meta("speed_boost_timer", new_sp)
-                                elif "speed_boost_timer" in self.ball:
-                                    self.ball.speed_boost_timer = new_sp
-                                elif typeof(self.ball) == TYPE_DICTIONARY:
-                                    self.ball["speed_boost_timer"] = new_sp
+                                    self.ball["shielding"] = cur_sh + add_sh
+
+                                if not has_bumper_syn:
+                                    var cur_sp = 0.0
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"): cur_sp = self.ball.get_meta("speed_boost_timer")
+                                    elif "speed_boost_timer" in self.ball: cur_sp = self.ball.speed_boost_timer
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_boost_timer"): cur_sp = self.ball["speed_boost_timer"]
+                                    var new_sp = max(cur_sp, 3.0)
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        if "speed_boost_timer" in self.ball: self.ball.speed_boost_timer = new_sp
+                                        else: self.ball.set_meta("speed_boost_timer", new_sp)
+                                    elif "speed_boost_timer" in self.ball:
+                                        self.ball.speed_boost_timer = new_sp
+                                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball["speed_boost_timer"] = new_sp
                             self.ball.x += nx * bounce_strength
                             self.ball.y += ny * bounce_strength
 
