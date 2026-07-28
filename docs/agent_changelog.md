@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1622] Shrinking Bouncy Arena Mode — *2026-07-28 08:37:43 UTC*
+
+Combines Extreme Bounciness with a shrinking safe zone. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios.
+
+---
+
 ## [idea-1567] Ricochet Mode — *2026-07-28 08:25:44 UTC*
 
 All projectiles bounce off walls infinitely until they hit a target or their duration expires, making positioning extremely important.
