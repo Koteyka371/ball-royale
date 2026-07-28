@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1611] Slingshot Nodes — *2026-07-28 07:02:35 UTC*
+
+Similar to grapple nodes, slingshot nodes can be attached to but instead of pulling the player towards them, they charge up tension and then launch the player in the opposite direction at extreme speed. They break after one use and drop unique 'Elastic Cord' materials.
+
+---
+
 ## [idea-1623] Bouncy Bullet Hell Mode — *2026-07-28 06:51:18 UTC*
 
 Projectiles inherit the extreme bounciness physics, turning the arena into a chaotic bullet hell where missed shots rapidly ricochet off walls, growing in speed until they hit something.
