@@ -10342,7 +10342,7 @@ func execute(strategy: String, delta: float):
 					var r = 0.0
 					if typeof(h) == TYPE_DICTIONARY and h.has("radius"): r = float(h.radius)
 					elif typeof(h) != TYPE_DICTIONARY and "radius" in h: r = float(h.radius)
-					if r >= 30.0:
+					if r >= 30.0 or h.get("kind", "") == "slingshot_node":
 						var hx = 0.0
 						var hy = 0.0
 						if typeof(h) == TYPE_DICTIONARY:
@@ -35823,49 +35823,91 @@ func _use_skill():
                             self.ball.x = max(0.0, min(arena_width, self.ball.x))
                             self.ball.y = max(0.0, min(arena_height, self.ball.y))
                     elif closest_target_type == "hazard":
-                        # Tangential swing around hazard
-                        var speed_boost = 100.0
-                        var b_vx = 0.0
-                        var b_vy = 0.0
-                        if typeof(self.ball) == TYPE_DICTIONARY:
-                            if self.ball.has("vx"): b_vx = float(self.ball.vx)
-                            if self.ball.has("vy"): b_vy = float(self.ball.vy)
-                        elif typeof(self.ball) != TYPE_DICTIONARY:
-                            if "vx" in self.ball: b_vx = float(self.ball.vx)
-                            if "vy" in self.ball: b_vy = float(self.ball.vy)
+                        var is_slingshot = false
+                        if typeof(closest_target) == TYPE_DICTIONARY and closest_target.get("kind", "") == "slingshot_node": is_slingshot = true
+                        elif typeof(closest_target) != TYPE_DICTIONARY and "kind" in closest_target and closest_target.kind == "slingshot_node": is_slingshot = true
+                        if is_slingshot:
+                            var slingshot_boost = 3000.0
+                            var b_vx = 0.0
+                            var b_vy = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                if self.ball.has("vx"): b_vx = self.ball.vx
+                                if self.ball.has("vy"): b_vy = self.ball.vy
+                                self.ball.vx = b_vx - (dx / dist) * slingshot_boost
+                                self.ball.vy = b_vy - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = true
+                            elif typeof(self.ball) != TYPE_DICTIONARY:
+                                if "vx" in self.ball: b_vx = self.ball.vx
+                                if "vy" in self.ball: b_vy = self.ball.vy
+                                self.ball.vx = b_vx - (dx / dist) * slingshot_boost
+                                self.ball.vy = b_vy - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = true
+                        else:
+                            # Tangential swing around hazard
+                            var speed_boost = 100.0
+                            var b_vx = 0.0
+                            var b_vy = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                if self.ball.has("vx"): b_vx = float(self.ball.vx)
+                                if self.ball.has("vy"): b_vy = float(self.ball.vy)
+                            elif typeof(self.ball) != TYPE_DICTIONARY:
+                                if "vx" in self.ball: b_vx = float(self.ball.vx)
+                                if "vy" in self.ball: b_vy = float(self.ball.vy)
 
-                        var current_speed = sqrt(b_vx * b_vx + b_vy * b_vy)
-                        if current_speed > 0.0:
-                            var t1_x = -dy
-                            var t1_y = dx
-                            var t2_x = dy
-                            var t2_y = -dx
-                            var dot1 = b_vx * t1_x + b_vy * t1_y
-                            var dot2 = b_vx * t2_x + b_vy * t2_y
-                            var t_x = 0.0
-                            var t_y = 0.0
-                            if dot1 > dot2:
-                                t_x = t1_x
-                                t_y = t1_y
-                            else:
-                                t_x = t2_x
-                                t_y = t2_y
-                            var t_len = sqrt(t_x * t_x + t_y * t_y)
-                            if t_len > 0.0:
-                                b_vx += (t_x / t_len) * speed_boost
-                                b_vy += (t_y / t_len) * speed_boost
+                            var current_speed = sqrt(b_vx * b_vx + b_vy * b_vy)
+                            if current_speed > 0.0:
+                                var t1_x = -dy
+                                var t1_y = dx
+                                var t2_x = dy
+                                var t2_y = -dx
+                                var dot1 = b_vx * t1_x + b_vy * t1_y
+                                var dot2 = b_vx * t2_x + b_vy * t2_y
+                                var t_x = 0.0
+                                var t_y = 0.0
+                                if dot1 > dot2:
+                                    t_x = t1_x
+                                    t_y = t1_y
+                                else:
+                                    t_x = t2_x
+                                    t_y = t2_y
+                                var t_len = sqrt(t_x * t_x + t_y * t_y)
+                                if t_len > 0.0:
+                                    b_vx += (t_x / t_len) * speed_boost
+                                    b_vy += (t_y / t_len) * speed_boost
 
-                                if typeof(self.ball) == TYPE_DICTIONARY:
-                                    self.ball.vx = b_vx
-                                    self.ball.vy = b_vy
-                                elif typeof(self.ball) != TYPE_DICTIONARY:
-                                    if "vx" in self.ball: self.ball.vx = b_vx
-                                    if "vy" in self.ball: self.ball.vy = b_vy
+                                    if typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball.vx = b_vx
+                                        self.ball.vy = b_vy
+                                    elif typeof(self.ball) != TYPE_DICTIONARY:
+                                        if "vx" in self.ball: self.ball.vx = b_vx
+                                        if "vy" in self.ball: self.ball.vy = b_vy
                     else:
-                        self.ball.x += (dx / dist) * pull_dist
-                        self.ball.y += (dy / dist) * pull_dist
-                        self.ball.x = max(0.0, min(arena_width, self.ball.x))
-                        self.ball.y = max(0.0, min(arena_height, self.ball.y))
+                        var is_slingshot = false
+                        if closest_target_type == "hazard":
+                            if typeof(closest_target) == TYPE_DICTIONARY and closest_target.get("kind", "") == "slingshot_node": is_slingshot = true
+                            elif typeof(closest_target) != TYPE_DICTIONARY and "kind" in closest_target and closest_target.kind == "slingshot_node": is_slingshot = true
+
+                        if is_slingshot:
+                            var slingshot_boost = 3000.0
+                            var b_vx = 0.0
+                            var b_vy = 0.0
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                if self.ball.has("vx"): b_vx = self.ball.vx
+                                if self.ball.has("vy"): b_vy = self.ball.vy
+                                self.ball.vx = b_vx - (dx / dist) * slingshot_boost
+                                self.ball.vy = b_vy - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = true
+                            elif typeof(self.ball) != TYPE_DICTIONARY:
+                                if "vx" in self.ball: b_vx = self.ball.vx
+                                if "vy" in self.ball: b_vy = self.ball.vy
+                                self.ball.vx = b_vx - (dx / dist) * slingshot_boost
+                                self.ball.vy = b_vy - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = true
+                        else:
+                            self.ball.x += (dx / dist) * pull_dist
+                            self.ball.y += (dy / dist) * pull_dist
+                            self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                            self.ball.y = max(0.0, min(arena_height, self.ball.y))
 
                     # CHAINING LOGIC
                     var chain_dist = 250.0
@@ -35948,6 +35990,26 @@ func _use_skill():
                             else:
                                 secondary_target.x -= (sec_dx / sec_dist) * pull_dist
                                 secondary_target.y -= (sec_dy / sec_dist) * pull_dist
+
+                    var is_node = false
+                    var is_slingshot = false
+                    if closest_target_type == "hazard":
+                        if typeof(closest_target) == TYPE_DICTIONARY:
+                            if closest_target.get("kind", "") == "grapple_node": is_node = true
+                            elif closest_target.get("kind", "") == "slingshot_node": is_slingshot = true
+                        elif typeof(closest_target) != TYPE_DICTIONARY and "kind" in closest_target:
+                            if closest_target.kind == "grapple_node": is_node = true
+                            elif closest_target.kind == "slingshot_node": is_slingshot = true
+                    if is_node or is_slingshot:
+                        if "arena" in world and world.arena != null and "hazards" in world.arena:
+                            var h_idx = world.arena.hazards.find(closest_target)
+                            if h_idx >= 0:
+                                world.arena.hazards.remove_at(h_idx)
+                                var new_id = randi() % 1000 + 9999
+                                var mat_type = "Elastic Cord" if is_slingshot else ["Scrap Metal", "Energy Core", "Nanotubes", "Iron Ore"][randi() % 4]
+                                var mat = {"id": "mat_" + str(new_id), "x": closest_target.get("x", 0.0) if typeof(closest_target) == TYPE_DICTIONARY else closest_target.x, "y": closest_target.get("y", 0.0) if typeof(closest_target) == TYPE_DICTIONARY else closest_target.y, "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": true}
+                                if "items" in world:
+                                    world.items.append(mat)
             else:
                 var ball_radius = 15.0
                 if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"):

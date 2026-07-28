@@ -38,3 +38,16 @@ def test_sweeping_lasers_mode():
 
     # Check if b1 takes damage because the laser should hit it
     assert b1.take_damage.call_count > 0 or b1.hp < 100
+
+def test_slingshot_node_mode():
+    from ai.game_modes import GAME_MODES
+    from arena.arena_types import ProceduralArena as Arena
+    class MockWorld:
+        def __init__(self):
+            self.arena = Arena(1000, 1000)
+    world = MockWorld()
+    mode = GAME_MODES["slingshot_node"]
+    mode.setup(world, [])
+    # fast forward to spawn
+    mode.tick(world, [], 6.0)
+    assert any(h.kind == "slingshot_node" for h in world.arena.hazards)

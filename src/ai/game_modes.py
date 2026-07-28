@@ -33993,7 +33993,7 @@ class SolarFlareMode(GameMode):
         self.flare_interval = 20.0
         self.flare_duration = 5.0
         self.is_flaring = False
-        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "aura_amplifier_trap_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "pet_item"]
+        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "aura_amplifier_trap_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "slingshot_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "pet_item"]
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -36729,6 +36729,39 @@ class GrappleNodeMode(GameMode):
                     world.arena.hazards.append(GrappleNode(n_id, nx, ny))
 
 GAME_MODES["grapple_node"] = GrappleNodeMode()
+class SlingshotNodeMode(GameMode):
+    """Spawns slingshot nodes periodically."""
+    def __init__(self):
+        super().__init__()
+        self.name = "Slingshot Nodes"
+        self.description = "Specific slingshot nodes floating in the arena that players can hook onto to launch themselves in the opposite direction at extreme speed. They break after one use, dropping Elastic Cords."
+        self.spawn_timer = 5.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 5.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 15.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                arena_width = getattr(world.arena, "width", 1000)
+                arena_height = getattr(world.arena, "height", 1000)
+
+                from arena.procedural_arena import Hazard
+                for _ in range(3):
+                    nx = 50.0 + self.random.random() * (arena_width - 100.0)
+                    ny = 50.0 + self.random.random() * (arena_height - 100.0)
+                    n_id = self.random.randint(10000, 15000) + len(world.arena.hazards)
+                    new_node = Hazard(id=n_id, x=nx, y=ny, radius=15.0, kind="slingshot_node", damage=0.0)
+                    world.arena.hazards.append(new_node)
+
+GAME_MODES["slingshot_node"] = SlingshotNodeMode()
+
 
 class OrbitalMinesMode(GameMode):
     def __init__(self):
