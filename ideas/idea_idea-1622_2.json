@@ -1,0 +1,4 @@
+{
+    "title": "Ghost Bumper Trails",
+    "description": "Players leave behind a temporary trail of ghost bumpers that vanish after a few seconds. If a player collides with someone else's trail, they are ricocheted rapidly, creating dynamic, player-generated maze obstacles."
+}

@@ -51970,7 +51970,161 @@ class BumperFrenzyMode extends GameMode:
 							world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": arena_h})
 
 
+class ShrinkingPinballMode extends GameMode:
+	var shrink_rate = 15.0
+	var min_arena_size = 300.0
+	var initial_width = 1000.0
+	var initial_height = 1000.0
+
+	func _init() -> void:
+		name = "Shrinking Pinball"
+		description = "Combines Extreme Bounciness with a shrinking safe zone. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena = world.get("arena", {})
+		initial_width = arena.get("width", 1000.0)
+		initial_height = arena.get("height", 1000.0)
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena = world.get("arena", {})
+		if arena.is_empty():
+			return
+
+		var arena_width = arena.get("width", 1000.0)
+		var arena_height = arena.get("height", 1000.0)
+
+		var new_width = max(min_arena_size, arena_width - shrink_rate * delta)
+		var new_height = max(min_arena_size, arena_height - shrink_rate * delta)
+
+		arena["width"] = new_width
+		arena["height"] = new_height
+		world["arena"] = arena
+
+		arena_width = new_width
+		arena_height = new_height
+
+		var init_area = initial_width * initial_height
+		var curr_area = arena_width * arena_height
+
+		var progress = 1.0 - (curr_area / max(1.0, init_area))
+		var current_multiplier = 1.5 + (1.5 * progress)
+
+		var projectiles = world.get("projectiles", [])
+		var hazards = arena.get("hazards", [])
+
+		var all_entities = []
+		for b in balls:
+			all_entities.append(b)
+		for p in projectiles:
+			all_entities.append(p)
+		for h in hazards:
+			all_entities.append(h)
+
+		for ent in all_entities:
+			var is_alive = true
+			if typeof(ent) == TYPE_OBJECT:
+				if ent.has_method("is_alive"):
+					is_alive = ent.is_alive()
+				else:
+					is_alive = ent.get("alive", true)
+			elif typeof(ent) == TYPE_DICTIONARY:
+				is_alive = ent.get("alive", true)
+
+			var hp = 1.0
+			if typeof(ent) == TYPE_OBJECT:
+				hp = ent.get("hp") if ent.get("hp") != null else 1.0
+			elif typeof(ent) == TYPE_DICTIONARY:
+				hp = ent.get("hp", 1.0)
+
+			if not is_alive and hp <= 0:
+				continue
+
+			var x = 0.0
+			var y = 0.0
+			var radius = 5.0
+			var vx = 0.0
+			var vy = 0.0
+
+			if typeof(ent) == TYPE_OBJECT:
+				x = ent.get("x") if ent.get("x") != null else 0.0
+				y = ent.get("y") if ent.get("y") != null else 0.0
+				radius = ent.get("radius") if ent.get("radius") != null else 5.0
+				vx = ent.get("vx") if ent.get("vx") != null else 0.0
+				vy = ent.get("vy") if ent.get("vy") != null else 0.0
+			elif typeof(ent) == TYPE_DICTIONARY:
+				x = ent.get("x", 0.0)
+				y = ent.get("y", 0.0)
+				radius = ent.get("radius", 5.0)
+				vx = ent.get("vx", 0.0)
+				vy = ent.get("vy", 0.0)
+
+			var bounced = false
+
+			if x - radius < 0:
+				if vx <= 0:
+					vx = -vx * current_multiplier
+					if vx < 100.0:
+						vx = 100.0
+				x = radius
+				bounced = true
+			elif x + radius > arena_width:
+				if vx >= 0:
+					vx = -vx * current_multiplier
+					if vx > -100.0:
+						vx = -100.0
+				x = arena_width - radius
+				bounced = true
+
+			if y - radius < 0:
+				if vy <= 0:
+					vy = -vy * current_multiplier
+					if vy < 100.0:
+						vy = 100.0
+				y = radius
+				bounced = true
+			elif y + radius > arena_height:
+				if vy >= 0:
+					vy = -vy * current_multiplier
+					if vy > -100.0:
+						vy = -100.0
+				y = arena_height - radius
+				bounced = true
+
+			if bounced:
+				var speed = sqrt(vx * vx + vy * vy)
+				if speed > 5000.0:
+					var ratio = 5000.0 / speed
+					vx *= ratio
+					vy *= ratio
+
+				if typeof(ent) == TYPE_OBJECT:
+					if "x" in ent:
+						ent.x = x
+					if "y" in ent:
+						ent.y = y
+					if "vx" in ent:
+						ent.vx = vx
+					if "vy" in ent:
+						ent.vy = vy
+					if "bounces" in ent:
+						ent.bounces += 1
+					elif ent.has_method("set_meta"):
+						var b_count = 1
+						if ent.has_meta("bounces"):
+							b_count = ent.get_meta("bounces") + 1
+						ent.set_meta("bounces", b_count)
+				elif typeof(ent) == TYPE_DICTIONARY:
+					ent["x"] = x
+					ent["y"] = y
+					ent["vx"] = vx
+					ent["vy"] = vy
+					ent["bounces"] = ent.get("bounces", 0) + 1
+
 var GAME_MODES = {
+
 	"bumper_frenzy": BumperFrenzyMode.new(),
 	"hazard_shift_event": HazardShiftEventMode.new(),
 	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
@@ -52292,6 +52446,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"solar_flare_event": SolarFlareEventMode.new(),
 	"lunar_eclipse_event": LunarEclipseEventMode.new(),
 	"solar_eclipse_event": SolarEclipseEventMode.new(),
+	"shrinking_pinball": ShrinkingPinballMode.new(),
 	"domination": DominationMode.new(),
 	"black_hole": BlackHoleMode.new(),
 	"black_hole_safe_zone": BlackHoleSafeZoneMode.new(),
