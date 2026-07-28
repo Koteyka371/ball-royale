@@ -32591,7 +32591,68 @@ class ShrinkingPinballMode(GameMode):
                     ent["vy"] = vy
                     ent["bounces"] = ent.get("bounces", 0) + 1
 
+
+class NetworkedBlackHolesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Networked Black Holes"
+        self.description = "Black holes periodically form a network to transport balls."
+        self.network_active = False
+        self.timer = 0.0
+        self.cooldown = 10.0
+        self.duration = 5.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        self.timer += delta
+
+        if self.network_active:
+            if self.timer >= self.duration:
+                self.network_active = False
+                self.timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("network_deactivated", {"message": "Black hole network collapsed."})
+        else:
+            if self.timer >= self.cooldown:
+                self.network_active = True
+                self.timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("network_activated", {"message": "Black hole network formed! Enter to teleport."})
+
+        if self.network_active and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            black_holes = [h for h in world.arena.hazards if "black_hole" in getattr(h, "kind", "")]
+            if len(black_holes) >= 2:
+                for b in balls:
+                    if not getattr(b, "alive", False): continue
+
+                    # Need cooldown to avoid instant teleport back
+                    if getattr(b, "teleport_cooldown", 0.0) > 0:
+                        b.teleport_cooldown -= delta
+                        continue
+
+                    for i, bh in enumerate(black_holes):
+                        bh_x = getattr(bh, "x", 0.0)
+                        bh_y = getattr(bh, "y", 0.0)
+                        bh_r = getattr(bh, "radius", 50.0)
+                        dist = math.hypot(b.x - bh_x, b.y - bh_y)
+
+                        if dist < bh_r:
+                            # Teleport to next black hole
+                            next_bh = black_holes[(i + 1) % len(black_holes)]
+                            b.x = getattr(next_bh, "x", 0.0)
+                            b.y = getattr(next_bh, "y", 0.0)
+                            b.vx = 0.0
+                            b.vy = 0.0
+                            b.teleport_cooldown = 2.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("black_hole_teleport", {"ball_id": getattr(b, "id", None), "from_x": bh_x, "from_y": bh_y, "to_x": b.x, "to_y": b.y})
+                                world.add_event("visual_effect", {"type": "teleport", "x": b.x, "y": b.y})
+                            break
+
 GAME_MODES = {
+    'networked_black_holes': NetworkedBlackHolesMode(),
 
     "bumper_frenzy": BumperFrenzyMode(),
     'hazard_shift_event': HazardShiftEventMode(),

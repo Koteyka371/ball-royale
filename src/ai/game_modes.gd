@@ -52152,7 +52152,130 @@ class ShrinkingPinballMode extends GameMode:
 					ent["vy"] = vy
 					ent["bounces"] = ent.get("bounces", 0) + 1
 
+
+class NetworkedBlackHolesMode extends GameMode:
+	var network_active = false
+	var timer = 0.0
+	var cooldown = 10.0
+	var duration = 5.0
+
+	func _init():
+		name = "Networked Black Holes"
+		description = "Black holes periodically form a network to transport balls."
+
+	func tick(world, balls, delta = 0.016):
+		.tick(world, balls, delta)
+
+		timer += delta
+
+		if network_active:
+			if timer >= duration:
+				network_active = false
+				timer = 0.0
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("network_deactivated", {"message": "Black hole network collapsed."})
+		else:
+			if timer >= cooldown:
+				network_active = true
+				timer = 0.0
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("network_activated", {"message": "Black hole network formed! Enter to teleport."})
+
+		if network_active:
+			var arena_hazards = []
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+				arena_hazards = world.arena.hazards
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				arena_hazards = world.arena.hazards
+
+			var black_holes = []
+			for h in arena_hazards:
+				var kind = ""
+				if typeof(h) == TYPE_DICTIONARY and "kind" in h: kind = h.kind
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+				elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+
+				if "black_hole" in kind:
+					black_holes.append(h)
+
+			if black_holes.size() >= 2:
+				for b in balls:
+					var alive = true
+					if typeof(b) == TYPE_DICTIONARY and "alive" in b: alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+					if not alive: continue
+
+					var tp_cooldown = 0.0
+					if typeof(b) == TYPE_DICTIONARY and "teleport_cooldown" in b: tp_cooldown = b.teleport_cooldown
+					elif typeof(b) == TYPE_OBJECT:
+						if "teleport_cooldown" in b: tp_cooldown = b.teleport_cooldown
+						elif b.has_method("has_meta") and b.has_meta("teleport_cooldown"): tp_cooldown = b.get_meta("teleport_cooldown")
+
+					if tp_cooldown > 0:
+						if typeof(b) == TYPE_DICTIONARY:
+							b.teleport_cooldown = tp_cooldown - delta
+						else:
+							if "teleport_cooldown" in b: b.teleport_cooldown = tp_cooldown - delta
+							elif b.has_method("set_meta"): b.set_meta("teleport_cooldown", tp_cooldown - delta)
+						continue
+
+					var b_x = 0.0
+					var b_y = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						b_x = b.x
+						b_y = b.y
+					else:
+						b_x = b.x
+						b_y = b.y
+
+					for i in range(black_holes.size()):
+						var bh = black_holes[i]
+						var bh_x = 0.0
+						var bh_y = 0.0
+						var bh_r = 50.0
+						if typeof(bh) == TYPE_DICTIONARY:
+							bh_x = bh.get("x", 0.0)
+							bh_y = bh.get("y", 0.0)
+							bh_r = bh.get("radius", 50.0)
+						else:
+							bh_x = bh.get("x") if bh.get("x") != null else 0.0
+							bh_y = bh.get("y") if bh.get("y") != null else 0.0
+							bh_r = bh.get("radius") if bh.get("radius") != null else 50.0
+
+						var dist = sqrt(pow(b_x - bh_x, 2) + pow(b_y - bh_y, 2))
+						if dist < bh_r:
+							var next_bh = black_holes[(i + 1) % black_holes.size()]
+							var next_x = 0.0
+							var next_y = 0.0
+							if typeof(next_bh) == TYPE_DICTIONARY:
+								next_x = next_bh.get("x", 0.0)
+								next_y = next_bh.get("y", 0.0)
+							else:
+								next_x = next_bh.get("x") if next_bh.get("x") != null else 0.0
+								next_y = next_bh.get("y") if next_bh.get("y") != null else 0.0
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b.x = next_x
+								b.y = next_y
+								b.vx = 0.0
+								b.vy = 0.0
+								b.teleport_cooldown = 2.0
+							else:
+								b.x = next_x
+								b.y = next_y
+								if "vx" in b: b.vx = 0.0
+								if "vy" in b: b.vy = 0.0
+								if "teleport_cooldown" in b: b.teleport_cooldown = 2.0
+								elif b.has_method("set_meta"): b.set_meta("teleport_cooldown", 2.0)
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								var bid = b.get("id", null) if typeof(b) == TYPE_DICTIONARY else (b.get("id") if b.get("id") != null else null)
+								world.add_event("black_hole_teleport", {"ball_id": bid, "from_x": bh_x, "from_y": bh_y, "to_x": next_x, "to_y": next_y})
+								world.add_event("visual_effect", {"type": "teleport", "x": next_x, "y": next_y})
+							break
+
 var GAME_MODES = {
+	"networked_black_holes": NetworkedBlackHolesMode.new(),
 
 	"bumper_frenzy": BumperFrenzyMode.new(),
 	"hazard_shift_event": HazardShiftEventMode.new(),
