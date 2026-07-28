@@ -1,0 +1,4 @@
+{
+  "title": "Gladiator Chains",
+  "description": "A new active item that tethers two random nearby opponents together for 8 seconds. The tether applies a rubber-band physics constraint; if the tether stretches too far, it aggressively pulls the two balls back towards each other, dealing collision damage if they smash together at high speeds."
+}
