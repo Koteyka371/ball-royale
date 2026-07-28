@@ -55973,6 +55973,7 @@ class StatsDecayMode extends GameMode:
 
 class ClanWarMode extends GameMode:
 	var territory_captured = false
+	var arena_owner = null
 	var control_points = []
 	var score = {}
 	var target_score = 1000
@@ -55993,6 +55994,7 @@ class ClanWarMode extends GameMode:
 
 		var cm = load("res://src/system/clan.gd").new()
 		var owner = cm.get_territory_owner("Arena_1")
+		self.arena_owner = owner
 
 		for ball in balls:
 			var team_clan = null
@@ -56017,6 +56019,36 @@ class ClanWarMode extends GameMode:
 
 		if self.territory_captured:
 			return
+
+		if self.arena_owner != null and typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			var owner_team = null
+			for b in balls:
+				var team_clan = null
+				if "clan" in b:
+					team_clan = b.clan
+				elif b.has_method("get_clan"):
+					team_clan = b.get_clan()
+
+				if team_clan == self.arena_owner:
+					owner_team = b.get("team", null)
+					break
+
+			if owner_team != null:
+				for i in range(world.arena.hazards.size()):
+					var h = world.arena.hazards[i]
+					if typeof(h) == TYPE_DICTIONARY:
+						h["owner_team"] = owner_team
+						h["team"] = owner_team
+					elif typeof(h) == TYPE_OBJECT:
+						if "owner_team" in h:
+							h.owner_team = owner_team
+						elif h.has_method("set_meta"):
+							h.set_meta("owner_team", owner_team)
+
+						if "team" in h:
+							h.team = owner_team
+						elif h.has_method("set_meta"):
+							h.set_meta("team", owner_team)
 
 		for cp in self.control_points:
 			var balls_in_cp = []
