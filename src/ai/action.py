@@ -10875,8 +10875,11 @@ class Action:
                                     bounce_strength = 1200.0 * delta
                                     if getattr(self.ball, "kinetic_shield_active", False):
                                         bounce_strength *= 0.5
-                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
-                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                        if getattr(self.ball, "bumper_synergy_active", False):
+                                            self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.15)
+                                        else:
+                                            self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
+                                            self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                     self.ball.x += nx * bounce_strength
                                     self.ball.y += ny * bounce_strength
 
@@ -10955,24 +10958,33 @@ class Action:
                                 ny = math.sin(angle)
 
                                 bounce_strength = 1200.0 * delta
-                                if getattr(self.ball, "kinetic_shield_active", False):
+                                ks_active = getattr(self.ball, "kinetic_shield_active", False)
+                                syn_active = getattr(self.ball, "bumper_synergy_active", False)
+
+                                if ks_active:
                                     bounce_strength *= 0.5
-                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
-                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                    if syn_active:
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.15)
+                                    else:
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
+                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 # Accelerate ball significantly to create chaotic pinball-like movement
                                 self.ball.vx = nx * 4000.0
                                 self.ball.vy = ny * 4000.0
-                                if getattr(self.ball, "kinetic_shield_active", False):
+                                if ks_active:
                                     self.ball.vx *= 0.5
                                     self.ball.vy *= 0.5
-                                # Grant a temporary movement speed boost upon bouncing
-                                self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
-                                if getattr(self.ball, "bumper_synergy_active", False):
-                                    self.ball.attack_speed_buff_timer = getattr(self.ball, "attack_speed_buff_timer", 0.0) + 3.0
+                                # Grant a temporary movement speed boost upon bouncing if we don't have the ks+syn juggernaut synergy
+                                if not (ks_active and syn_active):
                                     self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+
+                                if syn_active:
+                                    self.ball.attack_speed_buff_timer = getattr(self.ball, "attack_speed_buff_timer", 0.0) + 3.0
+                                    if not ks_active:
+                                        self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
 
                                 # Chain Reaction Logic
                                 if hazard.kind == "chain_reaction_bumper":
