@@ -6471,7 +6471,24 @@ class Action:
                                 explosion_damage *= 1.5
 
                             b_decoy_type_pre = getattr(b, "decoy_type", "")
+
+                            if b_decoy_type_pre == "black_hole":
+                                # Spawn singularity instead of exploding
+                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                    from arena.arena_types import Hazard
+                                    import random
+                                    h_id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                    if hasattr(self.world, "next_id"):
+                                        self.world.next_id += 1
+                                    bh = Hazard(h_id, b.x, b.y, 250.0, "decoy_singularity", 0.0)
+                                    bh.duration = 3.0
+                                    bh.absorbed_mass = 0.0
+                                    bh.owner_id = getattr(b, "owner_id", None)
+                                    self.world.arena.hazards.append(bh)
+                                continue
+
                             if b_decoy_type_pre == "flash":
+
                                 radius = 300.0
 
                             decoy_element = getattr(b, "element", None)
@@ -21565,6 +21582,77 @@ class Action:
                             if hasattr(self.world, "events"):
                                 self.world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": hazard.x, "y": hazard.y, "radius": r}})
 
+
+                if getattr(hazard, "kind", "") == "decoy_singularity":
+                    # Pull entities
+                    pull_radius = getattr(hazard, "radius", 250.0)
+                    pull_strength = 300.0
+
+                    # Pull balls
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if not getattr(b, "alive", True) or b.id == getattr(hazard, "owner_id", None):
+                                continue
+                            import math
+                            dx = hazard.x - b.x
+                            dy = hazard.y - b.y
+                            dist_sq = dx**2 + dy**2
+                            if 0 < dist_sq <= pull_radius**2:
+                                dist = math.sqrt(dist_sq)
+                                # Stronger pull closer to center
+                                force = (1.0 - dist / pull_radius) * pull_strength * delta
+                                b.x += (dx / dist) * force
+                                b.y += (dy / dist) * force
+
+                                # Add continuous mass accumulation
+                                hazard.absorbed_mass = getattr(hazard, "absorbed_mass", 0.0) + (10.0 * delta)
+
+                    # Pull and absorb projectiles/items
+                    for collection_name in ["projectiles", "items", "hazards"]:
+                        if hasattr(self.world.arena, collection_name):
+                            collection = getattr(self.world.arena, collection_name)
+                            for entity in collection:
+                                if not getattr(entity, "active", True) or entity == hazard:
+                                    continue
+                                # Check if it has coordinates
+                                if hasattr(entity, "x") and hasattr(entity, "y"):
+                                    import math
+                                    dx = hazard.x - entity.x
+                                    dy = hazard.y - entity.y
+                                    dist_sq = dx**2 + dy**2
+                                    if 0 < dist_sq <= pull_radius**2:
+                                        dist = math.sqrt(dist_sq)
+                                        # Pull
+                                        force = (1.0 - dist / pull_radius) * (pull_strength * 2.0) * delta
+                                        entity.x += (dx / dist) * force
+                                        entity.y += (dy / dist) * force
+
+                                        # Absorb if very close (except certain hazards)
+                                        if dist < 30.0 and getattr(entity, "kind", "") not in ["decoy_singularity", "black_hole", "wall"]:
+                                            entity.active = False
+                                            if hasattr(entity, "duration"):
+                                                entity.duration = 0.0
+                                            hazard.absorbed_mass = getattr(hazard, "absorbed_mass", 0.0) + 1.0
+
+                    hazard.duration -= delta
+                    if hazard.duration <= 0:
+                        hazard.active = False
+                        # Detonate based on mass
+                        r = 200.0
+                        base_dmg = 40.0
+                        mass_dmg = getattr(hazard, "absorbed_mass", 0.0) * 5.0
+                        total_dmg = base_dmg + mass_dmg
+
+                        if hasattr(self.world, "balls"):
+                            for b in self.world.balls:
+                                if not getattr(b, "alive", True): continue
+                                dist_sq = (hazard.x - b.x)**2 + (hazard.y - b.y)**2
+                                if dist_sq <= r**2:
+                                    b.hp -= total_dmg
+                                    b.stutter_timer = getattr(b, "stutter_timer", 0.0) + 2.0
+
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({"type": "visual_effect", "data": {"type": "black_hole_collapse", "x": hazard.x, "y": hazard.y, "radius": r, "damage": total_dmg}})
 
                 if getattr(hazard, "kind", "") == "recall_beacon":
                     # Only owner ticks the timer to avoid multiple ticks per frame
