@@ -1,0 +1,4 @@
+{
+  "title": "Shrink Ray Pickups",
+  "description": "Scattered power-ups that temporarily reduce a ball's size but significantly increase its speed. Colliding with a larger ball while shrunk deals less damage but launches the shrunk ball further."
+}

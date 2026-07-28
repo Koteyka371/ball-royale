@@ -32137,6 +32137,60 @@ class IntersectingLasersMode(GameMode):
             new_hazards.append(h)
         world.arena.hazards = new_hazards
 
+
+class BumperRoyaleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bumper Royale"
+        self.description = "Every ball is equipped with high-impact bumpers. Normal attacks are disabled. Players can only damage others by ramming into them at high speeds. The arena gradually shrinks, increasing the frequency and intensity of collisions."
+        self.match_time = 0.0
+        self.initial_width = 1000.0
+        self.initial_height = 1000.0
+
+    def apply_dynamic_traits(self, world, balls, delta: float) -> None:
+        for b in balls:
+            if getattr(b, "alive", False):
+                b.damage = 0.0
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            self.initial_width = getattr(world.arena, "width", 1000.0)
+            self.initial_height = getattr(world.arena, "height", 1000.0)
+        self.match_time = 0.0
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        self.match_time += delta
+
+        if hasattr(world, "arena"):
+            shrink_factor = max(0.2, 1.0 - (self.match_time / 120.0))  # Shrinks to 20% over 2 minutes
+            world.arena.width = self.initial_width * shrink_factor
+            world.arena.height = self.initial_height * shrink_factor
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            b.damage = 0.0
+
+            # Boundary damage / kill if outside shrinking arena
+            radius = getattr(b, "radius", 10.0)
+            arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+            arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+
+            bx = getattr(b, "x", arena_width / 2)
+            by = getattr(b, "y", arena_height / 2)
+            if bx < -radius or bx > arena_width + radius or by < -radius or by > arena_height + radius:
+                b.hp = 0.0
+                b.alive = False
+
+    def check_winner(self, world, balls) -> 'Optional[str]':
+        alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) not in ["spectator", "shadow_monster"]]
+        if not alive:
+            return "Draw"
+        if len(alive) == 1:
+            return getattr(alive[0], "team", getattr(alive[0], "ball_type", "Unknown"))
+        return None
+
 GAME_MODES = {
     'chaotic_stat_hazard': ChaoticStatHazardMode(),
     "chaotic_artifact": ChaoticArtifactMode(),
@@ -32278,6 +32332,7 @@ GAME_MODES = {
     "tournament": TournamentMode(),
     "pacifist_knockout": PacifistKnockoutMode(),
     "bumper_balls": BumperBallsMode(),
+    "bumper_royale": BumperRoyaleMode(),
     "sumo_knockout": SumoKnockoutMode(),
     "bouncy_terrain": BouncyTerrainMode(),
     "chaotic_pinball_machine": ChaoticPinballMachineMode(),
