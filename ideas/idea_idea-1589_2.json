@@ -1,0 +1,4 @@
+{
+  "title": "Shrinking Safe Zones within Hazards",
+  "description": "Instead of a single shrinking arena, there are multiple safe zones scattered around that act as islands in a lethal sea of poison or lava. Over time, smaller safe zones vanish entirely until only one tiny circle remains."
+}

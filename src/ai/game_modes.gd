@@ -66709,3 +66709,180 @@ class AmmoDepotMode extends GameMode:
 									world.add_event("ammo_pickup", {"ball_id": bid})
 
 GAME_MODES["ammo_depot"] = AmmoDepotMode.new()
+
+
+class CascadingStunMode extends GameMode:
+	func _init():
+		name = "Cascading Stun"
+		description = "Colliding with any other ball automatically arms a Stun Explosion on both entities, creating an arena filled with constant bouncing and cascading stun effects."
+		status_effects = ["stun_timer", "stun_arm_timer"]
+
+	func setup(world):
+		var balls = []
+		if typeof(world) == TYPE_OBJECT and "balls" in world:
+			balls = world.balls
+		elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			balls = world["balls"]
+
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+				b.set_meta("stun_arm_timer", 0.0)
+				b.set_meta("stun_timer", 0.0)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["stun_arm_timer"] = 0.0
+				b["stun_timer"] = 0.0
+
+	func tick(world, delta):
+		var balls = []
+		if typeof(world) == TYPE_OBJECT and "balls" in world:
+			balls = world.balls
+		elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			balls = world["balls"]
+
+		var n = balls.size()
+
+		# Process explosions
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+			if not is_alive:
+				continue
+
+			var arm_timer = 0.0
+			if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("stun_arm_timer"):
+				arm_timer = b.get_meta("stun_arm_timer")
+			elif typeof(b) == TYPE_DICTIONARY and b.has("stun_arm_timer"):
+				arm_timer = b["stun_arm_timer"]
+
+			if arm_timer > 0:
+				arm_timer -= delta
+				if arm_timer <= 0:
+					# Explode
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("stun_arm_timer", 0.0)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["stun_arm_timer"] = 0.0
+
+					var b_x = 0.0
+					var b_y = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						if "x" in b: b_x = b.x
+						if "y" in b: b_y = b.y
+					elif typeof(b) == TYPE_DICTIONARY:
+						b_x = b.get("x", 0.0)
+						b_y = b.get("y", 0.0)
+
+					var explosion_radius = 150.0
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("stun_explosion", {"x": b_x, "y": b_y, "radius": explosion_radius})
+
+					for other in balls:
+						var other_alive = false
+						if typeof(other) == TYPE_OBJECT and "alive" in other: other_alive = other.alive
+						elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): other_alive = other["alive"]
+						if other == b or not other_alive:
+							continue
+
+						var o_x = 0.0
+						var o_y = 0.0
+						var o_r = 20.0
+						if typeof(other) == TYPE_OBJECT:
+							if "x" in other: o_x = other.x
+							if "y" in other: o_y = other.y
+							if "radius" in other: o_r = other.radius
+						elif typeof(other) == TYPE_DICTIONARY:
+							o_x = other.get("x", 0.0)
+							o_y = other.get("y", 0.0)
+							o_r = other.get("radius", 20.0)
+
+						var dx = b_x - o_x
+						var dy = b_y - o_y
+						if dx*dx + dy*dy <= (explosion_radius + o_r) * (explosion_radius + o_r):
+							var cur_stun = 0.0
+							if typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("stun_timer"):
+								cur_stun = other.get_meta("stun_timer")
+							elif typeof(other) == TYPE_DICTIONARY and other.has("stun_timer"):
+								cur_stun = other["stun_timer"]
+
+							var new_stun = cur_stun
+							if 1.5 > new_stun: new_stun = 1.5
+
+							if typeof(other) == TYPE_OBJECT and other.has_method("set_meta"):
+								other.set_meta("stun_timer", new_stun)
+							elif typeof(other) == TYPE_DICTIONARY:
+								other["stun_timer"] = new_stun
+				else:
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("stun_arm_timer", arm_timer)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["stun_arm_timer"] = arm_timer
+
+		# Check collisions
+		for i in range(n):
+			var b1 = balls[i]
+			var b1_alive = false
+			if typeof(b1) == TYPE_OBJECT and "alive" in b1: b1_alive = b1.alive
+			elif typeof(b1) == TYPE_DICTIONARY and b1.has("alive"): b1_alive = b1["alive"]
+			if not b1_alive: continue
+
+			var b1_x = 0.0
+			var b1_y = 0.0
+			var b1_r = 20.0
+			if typeof(b1) == TYPE_OBJECT:
+				if "x" in b1: b1_x = b1.x
+				if "y" in b1: b1_y = b1.y
+				if "radius" in b1: b1_r = b1.radius
+			elif typeof(b1) == TYPE_DICTIONARY:
+				b1_x = b1.get("x", 0.0)
+				b1_y = b1.get("y", 0.0)
+				b1_r = b1.get("radius", 20.0)
+
+			for j in range(i + 1, n):
+				var b2 = balls[j]
+				var b2_alive = false
+				if typeof(b2) == TYPE_OBJECT and "alive" in b2: b2_alive = b2.alive
+				elif typeof(b2) == TYPE_DICTIONARY and b2.has("alive"): b2_alive = b2["alive"]
+				if not b2_alive: continue
+
+				var b2_x = 0.0
+				var b2_y = 0.0
+				var b2_r = 20.0
+				if typeof(b2) == TYPE_OBJECT:
+					if "x" in b2: b2_x = b2.x
+					if "y" in b2: b2_y = b2.y
+					if "radius" in b2: b2_r = b2.radius
+				elif typeof(b2) == TYPE_DICTIONARY:
+					b2_x = b2.get("x", 0.0)
+					b2_y = b2.get("y", 0.0)
+					b2_r = b2.get("radius", 20.0)
+
+				var dx = b1_x - b2_x
+				var dy = b1_y - b2_y
+				if dx*dx + dy*dy <= (b1_r + b2_r) * (b1_r + b2_r):
+					var arm1 = 0.0
+					if typeof(b1) == TYPE_OBJECT and b1.has_method("get_meta") and b1.has_meta("stun_arm_timer"):
+						arm1 = b1.get_meta("stun_arm_timer")
+					elif typeof(b1) == TYPE_DICTIONARY and b1.has("stun_arm_timer"):
+						arm1 = b1["stun_arm_timer"]
+
+					var arm2 = 0.0
+					if typeof(b2) == TYPE_OBJECT and b2.has_method("get_meta") and b2.has_meta("stun_arm_timer"):
+						arm2 = b2.get_meta("stun_arm_timer")
+					elif typeof(b2) == TYPE_DICTIONARY and b2.has("stun_arm_timer"):
+						arm2 = b2["stun_arm_timer"]
+
+					if arm1 <= 0:
+						if typeof(b1) == TYPE_OBJECT and b1.has_method("set_meta"):
+							b1.set_meta("stun_arm_timer", 2.0)
+						elif typeof(b1) == TYPE_DICTIONARY:
+							b1["stun_arm_timer"] = 2.0
+
+					if arm2 <= 0:
+						if typeof(b2) == TYPE_OBJECT and b2.has_method("set_meta"):
+							b2.set_meta("stun_arm_timer", 2.0)
+						elif typeof(b2) == TYPE_DICTIONARY:
+							b2["stun_arm_timer"] = 2.0
+
+GAME_MODES["cascading_stun"] = CascadingStunMode.new()
