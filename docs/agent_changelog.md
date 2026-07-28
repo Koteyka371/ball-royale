@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1623] Bouncy Bullet Hell Mode — *2026-07-28 06:51:18 UTC*
+
+Projectiles inherit the extreme bounciness physics, turning the arena into a chaotic bullet hell where missed shots rapidly ricochet off walls, growing in speed until they hit something.
+
+---
+
 ## [idea-1629] Earthquake Event — *2026-07-28 06:30:26 UTC*
 
 A random arena event that randomly shifts hazard positions and adds small random velocity impulses to all balls for a short duration.

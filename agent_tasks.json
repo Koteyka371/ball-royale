@@ -27782,7 +27782,7 @@
     },
     {
       "id": "idea-1623",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Bouncy Bullet Hell Mode",
@@ -40922,6 +40922,74 @@
         "src/arena/mirage_field.py",
         "src/arena/mirage_field.gd",
         "tests/test_mirage_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2395",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Rift Mutator",
+      "description": "A new mutator where random quantum rifts appear across the arena. Entering one teleports the ball to a random location but grants them a brief period of invulnerability and increased damage.",
+      "allowed_paths": [
+        "src/ai/quantum_rift_mutator.py",
+        "src/ai/quantum_rift_mutator.gd",
+        "tests/test_quantum_rift_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2396",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Shrinking Safe Zones within Hazards",
+      "description": "Instead of a single shrinking arena, there are multiple safe zones scattered around that act as islands in a lethal sea of poison or lava. Over time, smaller safe zones vanish entirely until only one tiny circle remains.",
+      "allowed_paths": [
+        "src/arena/shrinking_safe_zones_within_hazards.py",
+        "src/arena/shrinking_safe_zones_within_hazards.gd",
+        "tests/test_shrinking_safe_zones_within_hazards.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2397",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Random Teleportation Event",
+      "description": "An event that randomly swaps the positions of two or more players periodically during its duration, confusing enemies and opening up new strategic opportunities.",
+      "allowed_paths": [
+        "src/ai/random_teleportation.py",
+        "src/ai/random_teleportation.gd",
+        "tests/test_random_teleportation.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2398",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Hazard Replication Mode",
+      "description": "A mode where hazards periodically duplicate themselves nearby, gradually filling the arena if players don't strategically destroy them or use the space effectively.",
+      "allowed_paths": [
+        "src/arena/replication.py",
+        "src/arena/replication.gd",
+        "tests/test_replication.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
