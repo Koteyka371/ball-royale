@@ -79,3 +79,44 @@ def test_maze_safe_zone_mode_tick_maze_collision():
 
     # Should take damage from touching the wall
     assert ball.hp < initial_hp
+
+
+def test_maze_safe_zone_mode_tick_breakable_wall():
+    mode = MazeSafeZoneMode()
+    world = MockWorld()
+    ball = MockBall(1)
+
+    # We need to simulate a dash
+    ball.is_dashing = True
+
+    mode.setup(world, [ball])
+
+    assert len(mode.walls) > 0
+    wall = mode.walls[0]
+    wall["breakable"] = True
+    wall["broken"] = False
+
+    ball.x = wall["x"] + wall["width"] / 2.0
+    ball.y = wall["y"] + wall["height"] / 2.0
+
+    mode.zone_x = ball.x
+    mode.zone_y = ball.y
+    mode.zone_radius = 500.0
+
+    initial_hp = ball.hp
+    mode.tick(world, [ball], 1.0)
+
+    # Should not take damage and wall should be broken
+    assert ball.hp == initial_hp
+    assert wall["broken"] == True
+
+    # Now simulate a second ball hitting the broken wall
+    ball2 = MockBall(2)
+    ball2.is_dashing = False
+    ball2.x = wall["x"] + wall["width"] / 2.0
+    ball2.y = wall["y"] + wall["height"] / 2.0
+
+    mode.tick(world, [ball2], 1.0)
+
+    # Should not take damage because wall is broken
+    assert ball2.hp == initial_hp

@@ -22425,7 +22425,9 @@ class ShiftingMazeMode extends GameMode:
 						"dx": randf_range(-10.0, 10.0),
 						"dy": randf_range(-10.0, 10.0),
 						"is_ghostly": false,
-						"ghost_timer": randf_range(5.0, 15.0)
+						"ghost_timer": randf_range(5.0, 15.0),
+						"breakable": randf() < 0.2,
+						"broken": false
 					})
 				else:
 					walls.append({
@@ -22436,7 +22438,9 @@ class ShiftingMazeMode extends GameMode:
 						"dx": randf_range(-10.0, 10.0),
 						"dy": randf_range(-10.0, 10.0),
 						"is_ghostly": false,
-						"ghost_timer": randf_range(5.0, 15.0)
+						"ghost_timer": randf_range(5.0, 15.0),
+						"breakable": randf() < 0.2,
+						"broken": false
 					})
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -22470,7 +22474,9 @@ class ShiftingMazeMode extends GameMode:
 			if "radius" in b: br = float(b.radius)
 
 			var touching_wall = false
+			var touched_wall_ref = null
 			for w in walls:
+				if "broken" in w and w["broken"]: continue
 				var wx = center_x + (w["x"] - center_x) * maze_scale
 				var wy = center_y + (w["y"] - center_y) * maze_scale
 				var ww = max(5.0, w["width"] * maze_scale)
@@ -22482,18 +22488,28 @@ class ShiftingMazeMode extends GameMode:
 				var dist_sq = (bx - nearest_x) * (bx - nearest_x) + (by - nearest_y) * (by - nearest_y)
 				if dist_sq < br * br:
 					touching_wall = true
+					touched_wall_ref = w
 					break
 
-			if touching_wall:
-				var dmg = wall_damage_per_second * delta
-				if b.has_method("take_damage"):
-					b.take_damage(dmg, "maze_wall")
-				else:
-					if "hp" in b:
-						b.hp -= dmg
+			if touching_wall and touched_wall_ref != null:
+				var is_dashing = false
+				if "is_dashing" in b: is_dashing = b.get("is_dashing")
+				elif b.has_method("get_meta") and b.has_meta("is_dashing"): is_dashing = b.get_meta("is_dashing")
 
-				if "hp" in b and b.hp <= 0:
-					b.alive = false
+				if is_dashing and "breakable" in touched_wall_ref and touched_wall_ref["breakable"]:
+					touched_wall_ref["broken"] = true
+					if world.has_method("add_event"):
+						world.add_event("wall_break", {"type": "wall_break", "x": bx, "y": by})
+				else:
+					var dmg = wall_damage_per_second * delta
+					if b.has_method("take_damage"):
+						b.take_damage(dmg, "maze_wall")
+					else:
+						if "hp" in b:
+							b.hp -= dmg
+
+					if "hp" in b and b.hp <= 0:
+						b.alive = false
 
 	func check_winner(world, balls: Array):
 		var alive_count = 0
@@ -33558,7 +33574,9 @@ class MazeSafeZoneMode extends GameMode:
 						"dx": randf_range(-10.0, 10.0),
 						"dy": randf_range(-10.0, 10.0),
 						"is_ghostly": false,
-						"ghost_timer": randf_range(5.0, 15.0)
+						"ghost_timer": randf_range(5.0, 15.0),
+						"breakable": randf() < 0.2,
+						"broken": false
 					})
 				else:
 					walls.append({
@@ -33569,7 +33587,9 @@ class MazeSafeZoneMode extends GameMode:
 						"dx": randf_range(-10.0, 10.0),
 						"dy": randf_range(-10.0, 10.0),
 						"is_ghostly": false,
-						"ghost_timer": randf_range(5.0, 15.0)
+						"ghost_timer": randf_range(5.0, 15.0),
+						"breakable": randf() < 0.2,
+						"broken": false
 					})
 
 		var valid_balls = []
@@ -33699,40 +33719,53 @@ class MazeSafeZoneMode extends GameMode:
 
 				if b.alive:
 					var touching_wall = false
+					var touched_wall_ref = null
+					var nearest_x = 0.0
+					var nearest_y = 0.0
 					for w in walls:
-						if "is_ghostly" in w and w["is_ghostly"]:
+						if ("is_ghostly" in w and w["is_ghostly"]) or ("broken" in w and w["broken"]):
 							continue
-						var nearest_x = clamp(bx, w["x"], w["x"] + w["width"])
-						var nearest_y = clamp(by, w["y"], w["y"] + w["height"])
+						nearest_x = clamp(bx, w["x"], w["x"] + w["width"])
+						nearest_y = clamp(by, w["y"], w["y"] + w["height"])
 						var dist_sq = (bx - nearest_x)*(bx - nearest_x) + (by - nearest_y)*(by - nearest_y)
 						if dist_sq < br * br:
 							touching_wall = true
+							touched_wall_ref = w
 							break
 
-					if touching_wall:
-						var dmg = wall_damage_per_second * delta
-						if b.has_method("take_damage"):
-							b.take_damage(dmg, "maze_wall")
-						else:
-							if "hp" in b:
-								b.hp -= dmg
-						if "hp" in b and b.hp <= 0:
-							b.alive = false
+					var is_dashing = false
+					if touching_wall and touched_wall_ref != null:
+						if "is_dashing" in b: is_dashing = b.get("is_dashing")
+						elif b.has_method("get_meta") and b.has_meta("is_dashing"): is_dashing = b.get_meta("is_dashing")
 
-						if b.alive:
-							var push_force = 100.0 * delta
-							if bx < nearest_x + 0.1:
-								if "x" in b: b.x -= push_force
-								if "position" in b and b.position != null: b.position.x -= push_force
+						if is_dashing and "breakable" in touched_wall_ref and touched_wall_ref["breakable"]:
+							touched_wall_ref["broken"] = true
+							if world.has_method("add_event"):
+								world.add_event("wall_break", {"type": "wall_break", "x": bx, "y": by})
+						else:
+							var dmg = wall_damage_per_second * delta
+							if b.has_method("take_damage"):
+								b.take_damage(dmg, "maze_wall")
 							else:
-								if "x" in b: b.x += push_force
-								if "position" in b and b.position != null: b.position.x += push_force
-							if by < nearest_y + 0.1:
-								if "y" in b: b.y -= push_force
-								if "position" in b and b.position != null: b.position.y -= push_force
-							else:
-								if "y" in b: b.y += push_force
-								if "position" in b and b.position != null: b.position.y += push_force
+								if "hp" in b:
+									b.hp -= dmg
+							if "hp" in b and b.hp <= 0:
+								b.alive = false
+
+							if b.alive:
+								var push_force = 100.0 * delta
+								if bx < nearest_x + 0.1:
+									if "x" in b: b.x -= push_force
+									if "position" in b and b.position != null: b.position.x -= push_force
+								else:
+									if "x" in b: b.x += push_force
+									if "position" in b and b.position != null: b.position.x += push_force
+								if by < nearest_y + 0.1:
+									if "y" in b: b.y -= push_force
+									if "position" in b and b.position != null: b.position.y -= push_force
+								else:
+									if "y" in b: b.y += push_force
+									if "position" in b and b.position != null: b.position.y += push_force
 
 	func check_winner(world, balls: Array):
 		var alive_count = 0
