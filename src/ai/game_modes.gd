@@ -52163,6 +52163,51 @@ class NetworkedBlackHolesMode extends GameMode:
 		name = "Networked Black Holes"
 		description = "Black holes periodically form a network to transport balls."
 
+	func setup(world, balls):
+		.setup(world, balls)
+		var arena_hazards = []
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			if not "hazards" in world.arena:
+				world.arena["hazards"] = []
+			arena_hazards = world.arena.hazards
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+			arena_hazards = world.arena.hazards
+
+		var black_holes = 0
+		for h in arena_hazards:
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY and "kind" in h: kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and h.has_method("get_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
+			elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
+			if kind == "black_hole":
+				black_holes += 1
+
+		if black_holes < 2:
+			var aw = 1000.0
+			var ah = 1000.0
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+				if "width" in world.arena: aw = world.arena.width
+				if "height" in world.arena: ah = world.arena.height
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+				if "width" in world.arena: aw = world.arena.width
+				if "height" in world.arena: ah = world.arena.height
+
+			for i in range(2 - black_holes):
+				var h = {}
+				h.id = "network_bh_" + str(i)
+				h.x = 200.0 + randf() * (aw - 400.0)
+				h.y = 200.0 + randf() * (ah - 400.0)
+				h.radius = 50.0
+				h.kind = "black_hole"
+				h.damage = 10.0
+				h.active = true
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena.hazards.append(h)
+				elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+					world.arena.hazards.append(h)
+
 	func tick(world, balls, delta = 0.016):
 		.tick(world, balls, delta)
 

@@ -32602,6 +32602,37 @@ class NetworkedBlackHolesMode(GameMode):
         self.cooldown = 10.0
         self.duration = 5.0
 
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        black_holes = [h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" or (isinstance(h, dict) and h.get("kind") == "black_hole")]
+
+        if len(black_holes) < 2:
+            import random
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage, active=True):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = active
+
+            for i in range(2 - len(black_holes)):
+                hx = random.uniform(200.0, aw - 200.0)
+                hy = random.uniform(200.0, ah - 200.0)
+                h = Hazard(id=f"network_bh_{i}", x=hx, y=hy, radius=50.0, kind="black_hole", damage=10.0)
+                world.arena.hazards.append(h)
+
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
         import math
