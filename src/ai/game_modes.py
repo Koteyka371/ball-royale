@@ -2138,6 +2138,7 @@ class BattleRoyaleMode(GameMode):
 
         self.high_tier_supply_drop_timer = 0.0
         self.high_tier_drops = []
+        self.active_telegraphs = []
         self.zone_initialized = False
         self.zone_x = 500.0
         self.capture_points = []
@@ -3336,6 +3337,9 @@ class BattleRoyaleMode(GameMode):
                     pass
 
         # High Tier Supply Drop Logic
+        if not hasattr(self, "active_telegraphs"):
+            self.active_telegraphs = []
+
         self.high_tier_supply_drop_timer = getattr(self, "high_tier_supply_drop_timer", 0.0) + delta
         if self.high_tier_supply_drop_timer >= 30.0:
             self.high_tier_supply_drop_timer = 0.0
@@ -3346,11 +3350,36 @@ class BattleRoyaleMode(GameMode):
                 x = rnd.uniform(200, arena_width - 200)
                 y = rnd.uniform(200, arena_height - 200)
 
+                t_id = f"telegraph_{rnd.randint(1000, 9999)}"
                 try:
                     from arena.procedural_arena import Hazard
-                    drop = Hazard(id=f"ht_drop_{rnd.randint(1000, 9999)}", x=x, y=y, radius=100.0, kind="high_tier_drop", damage=0.0)
+                    h = Hazard(id=t_id, x=x, y=y, radius=100.0, kind="supply_drop_telegraph", damage=0.0)
                 except ImportError:
-                    drop = type("Hazard", (), {"id": f"ht_drop_{rnd.randint(1000, 9999)}", "x": x, "y": y, "radius": 100.0, "kind": "high_tier_drop", "damage": 0.0, "active": True})
+                    h = type("Hazard", (), {"id": t_id, "x": x, "y": y, "radius": 100.0, "kind": "supply_drop_telegraph", "damage": 0.0, "active": True})
+
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(h)
+
+                self.active_telegraphs.append({"id": t_id, "x": x, "y": y, "timer": 5.0, "hazard": h})
+
+                if hasattr(world, "add_event"):
+                    world.add_event("high_tier_drop_telegraph", {"message": "A high-tier supply drop is incoming!"})
+
+        telegraphs_to_remove = []
+        for t in self.active_telegraphs:
+            t["timer"] -= delta
+            if t["timer"] <= 0:
+                telegraphs_to_remove.append(t)
+                if hasattr(world.arena, "hazards") and t["hazard"] in world.arena.hazards:
+                    world.arena.hazards.remove(t["hazard"])
+
+                rnd = getattr(self, "random", __import__("random"))
+                try:
+                    from arena.procedural_arena import Hazard
+                    drop = Hazard(id=f"ht_drop_{rnd.randint(1000, 9999)}", x=t["x"], y=t["y"], radius=100.0, kind="high_tier_drop", damage=0.0)
+                except ImportError:
+                    drop = type("Hazard", (), {"id": f"ht_drop_{rnd.randint(1000, 9999)}", "x": t["x"], "y": t["y"], "radius": 100.0, "kind": "high_tier_drop", "damage": 0.0, "active": True})
 
                 drop.capture_progress = 0.0
                 drop.capturing_team = None
@@ -3363,9 +3392,11 @@ class BattleRoyaleMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("high_tier_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
 
+        for t in telegraphs_to_remove:
+            self.active_telegraphs.remove(t)
+
         if hasattr(self, "high_tier_drops"):
             drops_to_remove = []
-            import math
             for drop in self.high_tier_drops:
                 if not getattr(drop, "active", True):
                     drops_to_remove.append(drop)
@@ -42026,7 +42057,6 @@ class TelegraphedSupplyDropMode(GameMode):
         # Process drops
         if hasattr(self, "high_tier_drops"):
             drops_to_remove = []
-            import math
             for drop in self.high_tier_drops:
                 if not getattr(drop, "active", True):
                     drops_to_remove.append(drop)

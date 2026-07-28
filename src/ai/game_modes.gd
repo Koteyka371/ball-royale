@@ -3867,6 +3867,7 @@ class BattleRoyaleMode extends GameMode:
 
 	var high_tier_supply_drop_timer: float = 0.0
 	var high_tier_drops: Array = []
+	var active_telegraphs: Array = []
 	var zone_initialized: bool = false
 	var zone_x: float = 500.0
 	var capture_points: Array = []
@@ -5515,6 +5516,7 @@ class BattleRoyaleMode extends GameMode:
 		if not "high_tier_supply_drop_timer" in self:
 			self.high_tier_supply_drop_timer = 0.0
 			self.high_tier_drops = []
+			self.active_telegraphs = []
 
 		self.high_tier_supply_drop_timer += delta
 		if self.high_tier_supply_drop_timer >= 30.0:
@@ -5531,29 +5533,66 @@ class BattleRoyaleMode extends GameMode:
 			rng.randomize()
 			var cx = rng.randf_range(200, arena_width - 200)
 			var cy = rng.randf_range(200, arena_height - 200)
-			var drop_id = "ht_drop_" + str(rng.randi_range(1000, 9999))
+			var t_id = "telegraph_" + str(rng.randi_range(1000, 9999))
 
-			var drop = {
-				"id": drop_id,
+			var telegraph = {
+				"id": t_id,
 				"x": cx,
 				"y": cy,
 				"radius": 100.0,
-				"kind": "high_tier_drop",
+				"kind": "supply_drop_telegraph",
 				"damage": 0.0,
-				"active": true,
-				"capture_progress": 0.0,
-				"capturing_team": ""
+				"active": true
 			}
-			self.high_tier_drops.append(drop)
 
 			if world != null:
 				if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
-					world.arena.hazards.append(drop)
+					world.arena.hazards.append(telegraph)
 				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
-					world.arena.hazards.append(drop)
+					world.arena.hazards.append(telegraph)
+
+			self.active_telegraphs.append({"id": t_id, "x": cx, "y": cy, "timer": 5.0, "hazard": telegraph})
 
 			if world != null and world.has_method("add_event"):
-				world.add_event("high_tier_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
+				world.add_event("high_tier_drop_telegraph", {"message": "A high-tier supply drop is incoming!"})
+
+		var telegraphs_to_remove = []
+		for t in self.active_telegraphs:
+			t["timer"] -= delta
+			if t["timer"] <= 0:
+				telegraphs_to_remove.append(t)
+				if world != null:
+					if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena and world.arena.hazards.has(t["hazard"]):
+						world.arena.hazards.erase(t["hazard"])
+					elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena and world.arena.hazards.has(t["hazard"]):
+						world.arena.hazards.erase(t["hazard"])
+
+				rng.randomize()
+				var drop_id = "ht_drop_" + str(rng.randi_range(1000, 9999))
+				var drop = {
+					"id": drop_id,
+					"x": t["x"],
+					"y": t["y"],
+					"radius": 100.0,
+					"kind": "high_tier_drop",
+					"damage": 0.0,
+					"active": true,
+					"capture_progress": 0.0,
+					"capturing_team": ""
+				}
+				self.high_tier_drops.append(drop)
+
+				if world != null:
+					if typeof(world) == TYPE_DICTIONARY and "arena" in world and "hazards" in world.arena:
+						world.arena.hazards.append(drop)
+					elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null and "hazards" in world.arena:
+						world.arena.hazards.append(drop)
+
+				if world != null and world.has_method("add_event"):
+					world.add_event("high_tier_drop_spawn", {"message": "A high-tier supply drop has appeared! Capture it!"})
+
+		for t in telegraphs_to_remove:
+			self.active_telegraphs.erase(t)
 
 		var drops_to_remove = []
 		for drop in self.high_tier_drops:
