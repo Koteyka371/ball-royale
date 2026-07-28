@@ -27850,7 +27850,7 @@
     },
     {
       "id": "idea-1627",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Laser Grid Arena",
@@ -40718,6 +40718,57 @@
         "src/ai/gravity_well_grenade.py",
         "src/ai/gravity_well_grenade.gd",
         "tests/test_gravity_well_grenade.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2383",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Echo Location Mode",
+      "description": "An arena mode where players cannot see each other directly. Instead, when a player moves, attacks, or takes damage, visual 'sound waves' emit from their location. Moving slowly prevents you from showing on the sonar.",
+      "allowed_paths": [
+        "src/ai/echo_location.py",
+        "src/ai/echo_location.gd",
+        "tests/test_echo_location.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2384",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Mirage Illusions",
+      "description": "The arena randomly creates fake clone versions of all living players. The clones wander aimlessly and take zero damage, acting as a visual distraction. Hitting a mirage causes it to shatter into particles.",
+      "allowed_paths": [
+        "src/ai/mirage_illusions.py",
+        "src/ai/mirage_illusions.gd",
+        "tests/test_mirage_illusions.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2385",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Synchronized Resonance",
+      "description": "If both players in a tag team successfully complete three sequential hit combos before a swap, their next swap unleashes a resonance shockwave that slows down time for enemies caught in the blast radius for 3 seconds.",
+      "allowed_paths": [
+        "src/ai/synchronized_resonance.py",
+        "src/ai/synchronized_resonance.gd",
+        "tests/test_synchronized_resonance.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
