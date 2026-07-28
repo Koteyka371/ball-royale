@@ -32848,6 +32848,8 @@ class TagTeamMode(GameMode):
                             inactive.tag_combo_chain = 0
                             if not hasattr(inactive, "tag_original_traits"):
                                 inactive.tag_original_traits = list(getattr(inactive, "traits", []))
+                            if not hasattr(active, "tag_original_traits"):
+                                active.tag_original_traits = list(getattr(active, "traits", []))
                             active_traits = getattr(active, "tag_original_traits", getattr(active, "traits", []))
                             merged = list(set(inactive.tag_original_traits + active_traits))
                             inactive.traits = merged
