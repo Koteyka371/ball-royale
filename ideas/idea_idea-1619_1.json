@@ -1,4 +1,4 @@
 {
-  "title": "Sniper Nest Hazard",
-  "description": "A hazard zone that drastically increases perception range and projectile speed for any entity standing inside it, but completely roots them in place while they are in the zone. Great for creating high-risk, high-reward camping spots."
+  "title": "Laser Tag Mode",
+  "description": "Players can shoot bouncy lasers that reflect off walls. Direct hits cause low damage but slow the target."
 }
