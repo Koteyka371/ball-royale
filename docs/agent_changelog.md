@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1561] Guild Wars Base Building — *2026-07-28 00:22:58 UTC*
+
+Allow guilds to customize their 'HQ' visually and mechanically. Add a 'Guild War' game mode where guilds build defenses (turrets, walls, traps) using their resources, and other guilds can attack their HQ asynchronously or synchronously. This gives more utility to guild resources and territories.
+
+---
+
 ## [idea-1609] Unstable Artifact Event — *2026-07-28 00:22:53 UTC*
 
 An artifact spawns that gives a massive power boost to whoever holds it, but completely randomizes their abilities and ball type every 10 seconds.
