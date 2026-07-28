@@ -1,0 +1,104 @@
+{
+    "guilds": {
+        "Attacker": {
+            "members": [
+                "p1"
+            ],
+            "level": 1,
+            "resources": 0,
+            "prestige_pool": 0,
+            "titles": [],
+            "cosmetic_auras": [],
+            "buffs": {
+                "bonus_hp": 0,
+                "bonus_speed": 0,
+                "bonus_damage": 0
+            },
+            "gvg_points": 0,
+            "guild_xp": 0,
+            "perks": [],
+            "active_abilities": [],
+            "active_bounties": {},
+            "chat_history": [],
+            "vault": [],
+            "boss_progress": {},
+            "hq": {
+                "statues": [],
+                "banners": [],
+                "cosmetics": [],
+                "mini_games": {},
+                "training_arena_unlocked": false,
+                "pets": []
+            },
+            "emblem": {
+                "shape": "circle",
+                "color": "white",
+                "symbol": "none"
+            },
+            "unlocked_emblem_parts": {
+                "shapes": [
+                    "circle"
+                ],
+                "colors": [
+                    "white"
+                ],
+                "symbols": [
+                    "none"
+                ]
+            },
+            "allies": []
+        },
+        "Defender": {
+            "members": [
+                "p2"
+            ],
+            "level": 1,
+            "resources": 900,
+            "prestige_pool": 0,
+            "titles": [],
+            "cosmetic_auras": [],
+            "buffs": {
+                "bonus_hp": 0,
+                "bonus_speed": 0,
+                "bonus_damage": 0
+            },
+            "gvg_points": 0,
+            "guild_xp": 0,
+            "perks": [],
+            "active_abilities": [],
+            "active_bounties": {},
+            "chat_history": [],
+            "vault": [],
+            "boss_progress": {},
+            "hq": {
+                "statues": [],
+                "banners": [],
+                "cosmetics": [],
+                "mini_games": {},
+                "training_arena_unlocked": false,
+                "pets": [],
+                "defenses": {
+                    "turret": 3
+                }
+            },
+            "emblem": {
+                "shape": "circle",
+                "color": "white",
+                "symbol": "none"
+            },
+            "unlocked_emblem_parts": {
+                "shapes": [
+                    "circle"
+                ],
+                "colors": [
+                    "white"
+                ],
+                "symbols": [
+                    "none"
+                ]
+            },
+            "allies": []
+        }
+    },
+    "territories": {}
+}
