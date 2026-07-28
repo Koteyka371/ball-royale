@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1605] Turret Overdrive Protocol — *2026-07-28 01:35:57 UTC*
+
+An alternate engineer skill that temporarily boosts the fire rate and damage of all deployed turrets by 50% for 10 seconds, but causes them to explode at the end of the duration.
+
+---
+
 ## [idea-1621] False Maze Walls — *2026-07-28 01:35:52 UTC*
 
 Some maze walls look identical to regular walls but are completely breakable with a single dash attack, rewarding players who experiment and enabling sneaky ambushes.
