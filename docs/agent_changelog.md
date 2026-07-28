@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1646] Weather Anomaly - Thunderstorm — *2026-07-28 22:37:47 UTC*
+
+A new hazard event where lightning strikes randomly. Balls can collect a 'Lightning Rod' item to redirect strikes toward enemies.
+
+---
+
 ## [idea-1631] Weather Mastery Trait — *2026-07-28 22:22:37 UTC*
 
 A new trait 'Weather Mastery' that grants a 20% speed and defense bonus when standing in extreme weather events or specific hazards, converting environmental danger into an advantage.
