@@ -4283,7 +4283,7 @@ class Action:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for h in self.world.arena.hazards:
                     # Large environmental hazard or grapple_node
-                    if getattr(h, "radius", 0) >= 30.0 or getattr(h, "kind", "") == "grapple_node":
+                    if getattr(h, "radius", 0) >= 30.0 or getattr(h, "kind", "") in ["grapple_node", "slingshot_node"]:
                         dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
                         grapple_targets.append({"target": h, "type": "hazard", "dist_sq": dist_sq, "x": h.x, "y": h.y})
 
@@ -4319,16 +4319,23 @@ class Action:
                         target_b.x -= (dx / dist) * pull_dist
                         target_b.y -= (dy / dist) * pull_dist
                     else:
-                        # Pull user towards geometry (hazard/grapple_node)
-                        self.ball.x += (dx / dist) * pull_dist
-                        self.ball.y += (dy / dist) * pull_dist
+                        if closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") == "slingshot_node":
+                            # Slingshot user away from target at extreme speed
+                            slingshot_boost = 3000.0
+                            self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
+                            self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
+                            self.ball.is_frictionless = True # To allow extreme launch without immediate drag stop
+                        else:
+                            # Pull user towards geometry (hazard/grapple_node)
+                            self.ball.x += (dx / dist) * pull_dist
+                            self.ball.y += (dy / dist) * pull_dist
 
-                    if closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") == "grapple_node":
+                    if closest_target_data["type"] == "hazard" and getattr(closest_target_data["target"], "kind", "") in ["grapple_node", "slingshot_node"]:
                         target_h = closest_target_data["target"]
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and target_h in self.world.arena.hazards:
                             self.world.arena.hazards.remove(target_h)
                             new_id = getattr(self.world, "next_id", 9999) + getattr(self, "random", __import__("random")).randint(1, 1000)
-                            mat_type = getattr(self, "random", __import__("random")).choice(["Scrap Metal", "Energy Core", "Nanotubes", "Iron Ore"])
+                            mat_type = "Elastic Cord" if getattr(target_h, "kind", "") == "slingshot_node" else getattr(self, "random", __import__("random")).choice(["Scrap Metal", "Energy Core", "Nanotubes", "Iron Ore"])
                             mat = {"id": f"mat_{new_id}", "x": getattr(target_h, "x", 0), "y": getattr(target_h, "y", 0), "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": True}
                             if hasattr(self.world, "items"):
                                 self.world.items.append(mat)
@@ -18324,34 +18331,46 @@ class Action:
                             closest_target.x -= (dx / dist) * pull_dist
                             closest_target.y -= (dy / dist) * pull_dist
                         elif closest_target_type == "hazard":
-                            # Tangential swing around hazard
-                            # Instead of pulling towards the target, we swing around it tangentially.
-                            speed_boost = 100.0
-                            if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
-                                current_speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
-                                if current_speed > 0:
-                                    # Cross product with Z axis gives perpendicular tangent vector to the dx, dy vector from us to target
-                                    # Vector from ball to target is (dx, dy)
-                                    # A tangent vector is (-dy, dx) or (dy, -dx). We pick the one closer to our current velocity to conserve momentum.
-                                    t1_x, t1_y = -dy, dx
-                                    t2_x, t2_y = dy, -dx
-                                    dot1 = self.ball.vx * t1_x + self.ball.vy * t1_y
-                                    dot2 = self.ball.vx * t2_x + self.ball.vy * t2_y
-                                    if dot1 > dot2:
-                                        t_x, t_y = t1_x, t1_y
-                                    else:
-                                        t_x, t_y = t2_x, t2_y
+                            if getattr(closest_target, "kind", "") == "slingshot_node":
+                                slingshot_boost = 3000.0
+                                self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
+                                self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = True
+                            else:
+                                # Tangential swing around hazard
+                                # Instead of pulling towards the target, we swing around it tangentially.
+                                speed_boost = 100.0
+                                if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                    current_speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
+                                    if current_speed > 0:
+                                        # Cross product with Z axis gives perpendicular tangent vector to the dx, dy vector from us to target
+                                        # Vector from ball to target is (dx, dy)
+                                        # A tangent vector is (-dy, dx) or (dy, -dx). We pick the one closer to our current velocity to conserve momentum.
+                                        t1_x, t1_y = -dy, dx
+                                        t2_x, t2_y = dy, -dx
+                                        dot1 = self.ball.vx * t1_x + self.ball.vy * t1_y
+                                        dot2 = self.ball.vx * t2_x + self.ball.vy * t2_y
+                                        if dot1 > dot2:
+                                            t_x, t_y = t1_x, t1_y
+                                        else:
+                                            t_x, t_y = t2_x, t2_y
 
-                                    t_len = math.sqrt(t_x**2 + t_y**2)
-                                    if t_len > 0:
-                                        self.ball.vx += (t_x / t_len) * speed_boost
-                                        self.ball.vy += (t_y / t_len) * speed_boost
+                                        t_len = math.sqrt(t_x**2 + t_y**2)
+                                        if t_len > 0:
+                                            self.ball.vx += (t_x / t_len) * speed_boost
+                                            self.ball.vy += (t_y / t_len) * speed_boost
                         else:
-                            # Ally ball or item - pull user towards target normally
-                            self.ball.x += (dx / dist) * pull_dist
-                            self.ball.y += (dy / dist) * pull_dist
-                            self.ball.x = max(0.0, min(arena_width, self.ball.x))
-                            self.ball.y = max(0.0, min(arena_height, self.ball.y))
+                            if closest_target_type == "hazard" and getattr(closest_target, "kind", "") == "slingshot_node":
+                                slingshot_boost = 3000.0
+                                self.ball.vx = getattr(self.ball, "vx", 0.0) - (dx / dist) * slingshot_boost
+                                self.ball.vy = getattr(self.ball, "vy", 0.0) - (dy / dist) * slingshot_boost
+                                self.ball.is_frictionless = True
+                            else:
+                                # Ally ball or item - pull user towards target normally
+                                self.ball.x += (dx / dist) * pull_dist
+                                self.ball.y += (dy / dist) * pull_dist
+                                self.ball.x = max(0.0, min(arena_width, self.ball.x))
+                                self.ball.y = max(0.0, min(arena_height, self.ball.y))
 
 
                         # CHAINING LOGIC: If we hit a target (not a wall), check for a secondary target
@@ -18384,11 +18403,11 @@ class Action:
                                     # Ally ball or item
                                     secondary_target.x -= (sec_dx / sec_dist) * pull_dist
                                     secondary_target.y -= (sec_dy / sec_dist) * pull_dist
-                        if getattr(closest_target, "kind", "") == "grapple_node":
+                        if getattr(closest_target, "kind", "") in ["grapple_node", "slingshot_node"]:
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and closest_target in self.world.arena.hazards:
                                 self.world.arena.hazards.remove(closest_target)
                                 new_id = getattr(self.world, "next_id", 9999) + getattr(self, "random", __import__("random")).randint(1, 1000)
-                                mat_type = getattr(self, "random", __import__("random")).choice(["Scrap Metal", "Energy Core", "Nanotubes", "Iron Ore"])
+                                mat_type = "Elastic Cord" if getattr(closest_target, "kind", "") == "slingshot_node" else getattr(self, "random", __import__("random")).choice(["Scrap Metal", "Energy Core", "Nanotubes", "Iron Ore"])
                                 mat = {"id": f"mat_{new_id}", "x": getattr(closest_target, "x", 0), "y": getattr(closest_target, "y", 0), "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": True}
                                 if hasattr(self.world, "items"):
                                     self.world.items.append(mat)
