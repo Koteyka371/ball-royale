@@ -1,4 +1,3 @@
-
 from ai.action import Action
 
 class MockEntity:
@@ -19,7 +18,8 @@ class MockEntity:
         self.damage = 10.0
 
 class MockProfileManager:
-    def is_nemesis(self, victim_type, killer_type):
+    # In real code: is_nemesis(killer, victim)
+    def is_nemesis(self, killer_type, victim_type):
         return killer_type == "nemesis" and victim_type == "player"
     def get_enforcer_pledge(self, ball_type):
         return None
@@ -42,7 +42,7 @@ def test_nemesis_shield():
 
     action = Action(nemesis, world)
 
-    # Nemesis attacks player, shield blocks it
+    # Nemesis attacks player, shield blocks it (killer=nemesis, victim=player -> True)
     action._attempt_damage(nemesis, player)
     assert player.hp == 100.0
     assert getattr(player, "nemesis_shield_active", False) == False
@@ -52,13 +52,29 @@ def test_nemesis_shield():
 
     # Other attacks player, shield ignores it
     action = Action(other, world)
-    print("HP before:", player.hp)
     action._attempt_damage(other, player)
-    print("HP after:", player.hp)
-    # We need to test taking damage specifically, maybe _attempt_damage is returning early for mock reasons
-    # Actually _attempt_damage reduces HP if nothing blocks it.
     assert player.hp < 100.0
     assert getattr(player, "nemesis_shield_active", False) == True
 
+def test_nemesis_shield_reverse_not_blocked():
+    world = MockWorld()
+    player = MockEntity(1, 0, 0, ball_type="player")
+    nemesis = MockEntity(2, 0, 0, ball_type="nemesis")
+    world.balls = [player, nemesis]
+
+    # Shield active on nemesis
+    nemesis.nemesis_shield_active = True
+
+    action = Action(player, world)
+    # Player attacks nemesis
+    # is_nemesis(killer=player, victim=nemesis) -> False
+    # is_nemesis(killer=nemesis, victim=player) -> True
+    # The shield should NOT block the damage, because the shield is on `nemesis`, and `player` is not the nemesis of `nemesis`.
+
+    action._attempt_damage(player, nemesis)
+    assert nemesis.hp < 100.0
+    assert getattr(nemesis, "nemesis_shield_active", False) == True
+
 if __name__ == "__main__":
     test_nemesis_shield()
+    test_nemesis_shield_reverse_not_blocked()

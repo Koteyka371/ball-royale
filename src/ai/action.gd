@@ -411,12 +411,12 @@ func _attempt_damage_internal(attacker, target) -> void:
 
 			if att_btype2 != "" and tgt_btype2 != "":
 				if typeof(pm) == TYPE_OBJECT and pm.has_method("is_nemesis"):
-					is_nemesis = pm.is_nemesis(att_btype2, tgt_btype2) or pm.is_nemesis(tgt_btype2, att_btype2)
+					is_nemesis = pm.is_nemesis(att_btype2, tgt_btype2)
 				elif typeof(pm) == TYPE_DICTIONARY and pm.has("nemeses"):
 					var nemeses = pm["nemeses"]
 					if typeof(nemeses) == TYPE_DICTIONARY:
 						if nemeses.has(att_btype2) and typeof(nemeses[att_btype2]) == TYPE_DICTIONARY and nemeses[att_btype2].has(tgt_btype2): is_nemesis = true
-						if nemeses.has(tgt_btype2) and typeof(nemeses[tgt_btype2]) == TYPE_DICTIONARY and nemeses[tgt_btype2].has(att_btype2): is_nemesis = true
+
 
 		if is_nemesis:
 			if typeof(target) == TYPE_OBJECT:

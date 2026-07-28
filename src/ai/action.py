@@ -259,7 +259,7 @@ class Action:
         if getattr(target, "nemesis_shield_active", False):
             pm = getattr(self.world, "profile_manager", None)
             if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
-                if pm.is_nemesis(attacker.ball_type, target.ball_type) or pm.is_nemesis(target.ball_type, attacker.ball_type):
+                if pm.is_nemesis(attacker.ball_type, target.ball_type):
                     target.nemesis_shield_active = False
                     if hasattr(self.world, "events"):
                         self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
