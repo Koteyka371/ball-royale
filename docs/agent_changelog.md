@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1626] Chain Reaction Mayhem — *2026-07-28 01:51:07 UTC*
+
+Every player defeated unleashes a massive explosion that can trigger other players' explosions, leading to catastrophic chain reactions.
+
+---
+
 ## [idea-1619] Ammunition Scavenge Mode — *2026-07-28 01:44:12 UTC*
 
 A game mode where default attack speed and damage are vastly reduced. Players must rely on picking up temporary 'ammunition' items spawned randomly to unleash high-damage combos.
