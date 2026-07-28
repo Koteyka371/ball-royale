@@ -17631,6 +17631,22 @@ class Action:
                             self.ball.x, self.ball.y = clone_x, clone_y
                             active_clone.x, active_clone.y = my_x, my_y
                             active_clone.has_swapped = True
+                            # Transfer ALL momentum to clone
+                            active_clone.vx = getattr(self.ball, "vx", 0.0)
+                            active_clone.vy = getattr(self.ball, "vy", 0.0)
+                            self.ball.vx = 0.0
+                            self.ball.vy = 0.0
+
+                            # Transfer ALL status effects
+                            all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
+                            for effect in all_status:
+                                ball_effect = getattr(self.ball, effect, 0.0)
+                                if ball_effect > 0.0:
+                                    setattr(active_clone, effect, max(getattr(active_clone, effect, 0.0), ball_effect))
+                                    setattr(self.ball, effect, 0.0)
+                                    if effect == "stun_timer":
+                                        active_clone.is_stunned = True
+                                        self.ball.is_stunned = False
                             self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
 
                             if hasattr(self.world, "events"):

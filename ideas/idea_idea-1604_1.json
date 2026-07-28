@@ -1,4 +1,4 @@
 {
-  "title": "Decoy Detonation",
-  "description": "A new trickster skill evolution where swapping places with a decoy causes it to immediately violently detonate, dealing area-of-effect damage and inflicting a temporary slow on all nearby enemies caught in the blast."
+  "title": "Quantum Entanglement Skill",
+  "description": "A new skill that allows a player to link their state with another ball. Any damage taken by the player is split between them and the entangled target, and any healing received is also shared. The link breaks if they move too far apart."
 }
