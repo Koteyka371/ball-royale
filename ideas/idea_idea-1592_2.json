@@ -1,4 +1,0 @@
-{
-  "title": "Kinetic Feedback Shield",
-  "description": "An active aura that absorbs all incoming kinetic energy (push force from projectiles and impacts) for 3 seconds. Instead of dealing damage, hits increase the ball's size and mass up to 300%. When the duration ends, the ball releases a shockwave whose radius and knockback scale with the absorbed mass."
-}

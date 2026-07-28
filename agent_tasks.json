@@ -41301,6 +41301,23 @@
         "Feature implemented successfully",
         "Tests pass"
       ]
+    },
+    {
+      "id": "idea-2417",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Momentum Steal Active Item",
+      "description": "An active item that, when triggered on collision, steals 50% of the target's current velocity and adds it to the user's velocity.",
+      "allowed_paths": [
+        "src/ai/momentum_steal_active_item.py",
+        "src/ai/momentum_steal_active_item.gd",
+        "tests/test_momentum_steal_active_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
     }
   ]
 }
