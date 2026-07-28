@@ -8896,6 +8896,13 @@ class Action:
                                         booster.y += b_ny * b_push_strength
                                         if hasattr(booster, "vx"): booster.vx *= 0.5
                                         if hasattr(booster, "vy"): booster.vy *= 0.5
+                    elif hazard.kind == "reverse_gravity_pad":
+                        dx = hazard.x - self.ball.x
+                        dy = hazard.y - self.ball.y
+                        dist_sq = dx * dx + dy * dy
+                        if dist_sq < hazard.radius * hazard.radius:
+                            if not getattr(self.ball, "intangible", False):
+                                self.ball.reverse_gravity_item_timer = 3.0
                     elif hazard.kind == "reverse_gravity":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
