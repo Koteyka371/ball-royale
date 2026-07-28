@@ -1,4 +1,4 @@
 {
-  "title": "Elastic Overdrive Traps",
-  "description": "Players can use Elastic Cords dropped by Slingshot nodes to craft Elastic Overdrive Traps. These traps capture the kinetic energy of any incoming projectile or player and violently reflect it back with a 2x damage multiplier."
+    "title": "Magnetic Polarity Nodes",
+    "description": "New environmental hazards that emit a pulsing magnetic field. Players can change their own polarity by passing through them; matching polarity repels them at high speed, while opposite polarity slowly draws them in."
 }

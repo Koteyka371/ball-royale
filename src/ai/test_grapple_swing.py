@@ -79,3 +79,20 @@ def test_grapple_swing_hazard_speed_boost():
     # We add this * 100 to the current velocity.
     assert ball.vx > 10.0
     assert ball.vy < 0.0
+
+def test_slingshot_node_speed_boost():
+    world = MockWorld()
+    # Traveling right
+    ball = MockBall(500, 500, vx=10, vy=0)
+    world.balls.append(ball)
+
+    # Hazard is down and right
+    node = MockHazard(600, 600, "slingshot_node")
+    world.arena.hazards.append(node)
+
+    action = Action(ball, world)
+    action._use_skill()
+
+    # Should not be tangentially moving around hazard, it should launch directly away!
+    assert ball.vx < 10.0
+    assert ball.vy < 0.0

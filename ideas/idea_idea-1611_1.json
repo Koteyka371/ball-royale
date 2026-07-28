@@ -1,4 +1,4 @@
 {
-  "title": "Quantum Slingshot Chains",
-  "description": "Players can string together multiple slingshot nodes to accelerate to ungodly speeds across the arena. Combining this with a phase booster allows them to instantly shatter any shield they impact while moving above a certain speed threshold."
+    "title": "Slingshot Grapple Mod",
+    "description": "A modifier for the grapple hook that functions like a slingshot, storing tension energy while hooked onto an enemy or node, before launching the user away at high speed when released or upon reaching max tension."
 }
