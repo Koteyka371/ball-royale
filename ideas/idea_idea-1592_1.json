@@ -1,0 +1,4 @@
+{
+  "title": "Quantum Swap Powerup",
+  "description": "A consumable item that, upon pickup, stores the exact positional coordinates of the ball. Pressing the active skill button within the next 8 seconds instantly teleports the ball back to those coordinates, leaving behind a brief slowing field. Good for clutch escapes."
+}

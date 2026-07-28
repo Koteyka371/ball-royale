@@ -457,6 +457,9 @@ class Action:
                     attacker.blindness_timer = 3.0
 
         if getattr(target, "intangible", False) or getattr(target, "intangible_timer", 0.0) > 0.0:
+            if getattr(target, "is_decoy", False) and getattr(target, "is_mirroring", False) and getattr(target, "decoy_timer", 0.0) > 0.0:
+                target.decoy_timer = 0.0
+                return 0.0
             if getattr(target, "ghost_mode_active", False):
                 is_proj = getattr(attacker, "ball_type", getattr(attacker, "kind", "")) in ["projectile", "spell"] or getattr(attacker, "is_projectile", False) or getattr(attacker, "is_spell", False)
                 is_energy = getattr(attacker, "is_energy", False) or getattr(attacker, "damage_type", "") == "energy"
@@ -15021,7 +15024,10 @@ class Action:
                     import math
                     if hasattr(self.world, "balls"):
                         for i in range(2):
-                            clone = copy.copy(self.ball)
+                            try:
+                                clone = copy.deepcopy(self.ball)
+                            except TypeError:
+                                clone = copy.copy(self.ball)
                             clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
                             if hasattr(self.world, "next_id"):
                                 self.world.next_id += 1
