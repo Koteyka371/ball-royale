@@ -51610,7 +51610,237 @@ class HazardShiftEventMode extends GameMode:
 					else:
 						if b.has_method("set_meta"): b.set_meta("vy", current_vy + vy_impulse)
 
+
+class BumperFrenzyMode extends GameMode:
+	func _init() -> void:
+		name = "Bumper Frenzy"
+		description = "A new mode where bumpers spawn randomly all over the arena. Balls that bounce off them gain an additive speed multiplier, creating chaotic ultra-fast matches. Touching a wall while moving at max speed shatters the wall."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY:
+				if not arena.has("hazards"):
+					arena["hazards"] = []
+				var arena_width = arena.get("width", 1000.0)
+				var arena_height = arena.get("height", 1000.0)
+				for i in range(20):
+					var hx = randf_range(50.0, arena_width - 50.0)
+					var hy = randf_range(50.0, arena_height - 50.0)
+					var hr = randf_range(20.0, 50.0)
+					arena["hazards"].append({
+						"id": 13000 + i,
+						"x": hx,
+						"y": hy,
+						"radius": hr,
+						"kind": "bumper_frenzy_bumper",
+						"damage": 0.0,
+						"bounced_balls": []
+					})
+				if not arena.has("boundary_states"):
+					arena["boundary_states"] = {"top": "wall", "bottom": "wall", "left": "wall", "right": "wall"}
+			else:
+				if not ("hazards" in arena):
+					arena.hazards = []
+				var arena_width = arena.width if "width" in arena else 1000.0
+				var arena_height = arena.height if "height" in arena else 1000.0
+				for i in range(20):
+					var hx = randf_range(50.0, arena_width - 50.0)
+					var hy = randf_range(50.0, arena_height - 50.0)
+					var hr = randf_range(20.0, 50.0)
+					arena.hazards.append({
+						"id": 13000 + i,
+						"x": hx,
+						"y": hy,
+						"radius": hr,
+						"kind": "bumper_frenzy_bumper",
+						"damage": 0.0,
+						"bounced_balls": []
+					})
+				if not ("boundary_states" in arena):
+					arena.boundary_states = {"top": "wall", "bottom": "wall", "left": "wall", "right": "wall"}
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world == null or not ("arena" in world) or world.arena == null:
+			return
+
+		var arena = world.arena
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+		var hazards = []
+		var boundary_states = {}
+
+		if typeof(arena) == TYPE_DICTIONARY:
+			arena_w = float(arena.get("width", 1000.0))
+			arena_h = float(arena.get("height", 1000.0))
+			hazards = arena.get("hazards", [])
+			boundary_states = arena.get("boundary_states", {})
+		else:
+			arena_w = float(arena.width) if "width" in arena else 1000.0
+			arena_h = float(arena.height) if "height" in arena else 1000.0
+			hazards = arena.hazards if "hazards" in arena else []
+			boundary_states = arena.boundary_states if "boundary_states" in arena else {}
+
+		for h in hazards:
+			var h_kind = ""
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+			else:
+				h_kind = h.kind if "kind" in h else ""
+
+			if h_kind == "bumper_frenzy_bumper":
+				for b in balls:
+					var is_alive = false
+					var bx = 0.0
+					var by = 0.0
+					var br = 10.0
+					var bid = -1
+
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+						if not is_alive: continue
+						bx = float(b.get("x", 0.0))
+						by = float(b.get("y", 0.0))
+						br = float(b.get("radius", 10.0))
+						bid = b.get("id", -1)
+					else:
+						is_alive = b.alive if "alive" in b else false
+						if not is_alive: continue
+						bx = float(b.x) if "x" in b else 0.0
+						by = float(b.y) if "y" in b else 0.0
+						br = float(b.radius) if "radius" in b else 10.0
+						bid = b.id if "id" in b else -1
+
+					var hx = 0.0
+					var hy = 0.0
+					var hr = 30.0
+					var bounced_balls = []
+
+					if typeof(h) == TYPE_DICTIONARY:
+						hx = float(h.get("x", 0.0))
+						hy = float(h.get("y", 0.0))
+						hr = float(h.get("radius", 30.0))
+						bounced_balls = h.get("bounced_balls", [])
+					else:
+						hx = float(h.x) if "x" in h else 0.0
+						hy = float(h.y) if "y" in h else 0.0
+						hr = float(h.radius) if "radius" in h else 30.0
+						bounced_balls = h.bounced_balls if "bounced_balls" in h else []
+
+					var dx = bx - hx
+					var dy = by - hy
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist < br + hr:
+						var frenzy = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							frenzy = float(b.get("bumper_frenzy_multiplier", 0.0))
+						else:
+							frenzy = float(b.bumper_frenzy_multiplier) if "bumper_frenzy_multiplier" in b else 0.0
+
+						if not (bid in bounced_balls):
+							frenzy = min(3.0, frenzy + 0.5)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["bumper_frenzy_multiplier"] = frenzy
+							else:
+								if "bumper_frenzy_multiplier" in b:
+									b.bumper_frenzy_multiplier = frenzy
+								elif b.has_method("set_meta"):
+									b.set_meta("bumper_frenzy_multiplier", frenzy)
+
+							if typeof(h) == TYPE_DICTIONARY:
+								if not h.has("bounced_balls"): h["bounced_balls"] = []
+								h["bounced_balls"].append(bid)
+							else:
+								if not ("bounced_balls" in h): h.bounced_balls = []
+								h.bounced_balls.append(bid)
+					else:
+						if bid in bounced_balls:
+							bounced_balls.erase(bid)
+
+		for b in balls:
+			var is_alive = false
+			var bx = 0.0
+			var by = 0.0
+			var br = 10.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				if not is_alive: continue
+				bx = float(b.get("x", 0.0))
+				by = float(b.get("y", 0.0))
+				br = float(b.get("radius", 10.0))
+			else:
+				is_alive = b.alive if "alive" in b else false
+				if not is_alive: continue
+				bx = float(b.x) if "x" in b else 0.0
+				by = float(b.y) if "y" in b else 0.0
+				br = float(b.radius) if "radius" in b else 10.0
+
+			var frenzy = 0.0
+			var base_sm = 1.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				frenzy = float(b.get("bumper_frenzy_multiplier", 0.0))
+				base_sm = float(b.get("base_speed_multiplier", 1.0))
+				if frenzy > 0:
+					frenzy = max(0.0, frenzy - 0.1 * delta)
+					b["bumper_frenzy_multiplier"] = frenzy
+				b["speed_multiplier"] = base_sm + frenzy
+			else:
+				frenzy = float(b.bumper_frenzy_multiplier) if "bumper_frenzy_multiplier" in b else 0.0
+				base_sm = float(b.base_speed_multiplier) if "base_speed_multiplier" in b else 1.0
+				if frenzy > 0:
+					frenzy = max(0.0, frenzy - 0.1 * delta)
+					if "bumper_frenzy_multiplier" in b:
+						b.bumper_frenzy_multiplier = frenzy
+					elif b.has_method("set_meta"):
+						b.set_meta("bumper_frenzy_multiplier", frenzy)
+				if "speed_multiplier" in b:
+					b.speed_multiplier = base_sm + frenzy
+				elif b.has_method("set_meta"):
+					b.set_meta("speed_multiplier", base_sm + frenzy)
+
+			var cur_speed = base_sm + frenzy
+
+			if cur_speed >= 2.5:
+				if bx - br <= 0:
+					if boundary_states.get("left", "") != "abyss":
+						if typeof(arena) == TYPE_DICTIONARY:
+							if arena.has("boundary_states"): arena["boundary_states"]["left"] = "abyss"
+						else:
+							if "boundary_states" in arena: arena.boundary_states["left"] = "abyss"
+						if world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "glass_shatter", "x": 0.0, "y": by})
+				if bx + br >= arena_w:
+					if boundary_states.get("right", "") != "abyss":
+						if typeof(arena) == TYPE_DICTIONARY:
+							if arena.has("boundary_states"): arena["boundary_states"]["right"] = "abyss"
+						else:
+							if "boundary_states" in arena: arena.boundary_states["right"] = "abyss"
+						if world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "glass_shatter", "x": arena_w, "y": by})
+				if by - br <= 0:
+					if boundary_states.get("top", "") != "abyss":
+						if typeof(arena) == TYPE_DICTIONARY:
+							if arena.has("boundary_states"): arena["boundary_states"]["top"] = "abyss"
+						else:
+							if "boundary_states" in arena: arena.boundary_states["top"] = "abyss"
+						if world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": 0.0})
+				if by + br >= arena_h:
+					if boundary_states.get("bottom", "") != "abyss":
+						if typeof(arena) == TYPE_DICTIONARY:
+							if arena.has("boundary_states"): arena["boundary_states"]["bottom"] = "abyss"
+						else:
+							if "boundary_states" in arena: arena.boundary_states["bottom"] = "abyss"
+						if world.has_method("add_event"):
+							world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": arena_h})
+
+
 var GAME_MODES = {
+	"bumper_frenzy": BumperFrenzyMode.new(),
 	"hazard_shift_event": HazardShiftEventMode.new(),
 	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
 	"chaotic_artifact": ChaoticArtifactMode.new(),

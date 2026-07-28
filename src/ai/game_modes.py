@@ -32261,7 +32261,136 @@ class HazardShiftEventMode(GameMode):
                     b.vx = getattr(b, "vx", 0.0) + vx_impulse
                     b.vy = getattr(b, "vy", 0.0) + vy_impulse
 
+
+class BumperFrenzyMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Bumper Frenzy"
+        self.description = "A new mode where bumpers spawn randomly all over the arena. Balls that bounce off them gain an additive speed multiplier, creating chaotic ultra-fast matches. Touching a wall while moving at max speed shatters the wall."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            # Spawn 20 random bumpers
+            for i in range(20):
+                x = random.uniform(50, arena_width - 50)
+                y = random.uniform(50, arena_height - 50)
+                r = random.uniform(20, 50)
+                world.arena.hazards.append({
+                    "id": 13000 + i,
+                    "x": x,
+                    "y": y,
+                    "radius": r,
+                    "kind": "bumper_frenzy_bumper",
+                    "damage": 0.0,
+                    "bounced_balls": []
+                })
+
+            # Initialize boundary states for shattering
+            if not hasattr(world.arena, "boundary_states"):
+                world.arena.boundary_states = {"top": "wall", "bottom": "wall", "left": "wall", "right": "wall"}
+
+    def tick(self, world, balls, delta: float = 0.016):
+        import math
+
+        # Check hazard collisions
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if isinstance(h, dict):
+                    kind = h.get("kind")
+                else:
+                    kind = getattr(h, "kind", None)
+
+                if kind == "bumper_frenzy_bumper":
+                    for b in balls:
+                        if not getattr(b, "alive", False):
+                            continue
+
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        br = getattr(b, "radius", 10.0)
+
+                        if isinstance(h, dict):
+                            hx = h.get("x", 0.0)
+                            hy = h.get("y", 0.0)
+                            hr = h.get("radius", 30.0)
+                            bounced = h.get("bounced_balls", [])
+                        else:
+                            hx = getattr(h, "x", 0.0)
+                            hy = getattr(h, "y", 0.0)
+                            hr = getattr(h, "radius", 30.0)
+                            bounced = getattr(h, "bounced_balls", [])
+
+                        dist = math.hypot(bx - hx, by - hy)
+                        if dist < br + hr:
+                            # Additive speed multiplier logic (max maybe 3.0)
+                            if not hasattr(b, "bumper_frenzy_multiplier"):
+                                b.bumper_frenzy_multiplier = 0.0
+
+                            if b.id not in bounced:
+                                b.bumper_frenzy_multiplier = min(3.0, b.bumper_frenzy_multiplier + 0.5)
+                                if isinstance(h, dict):
+                                    if "bounced_balls" not in h:
+                                        h["bounced_balls"] = []
+                                    h["bounced_balls"].append(b.id)
+                                else:
+                                    if not hasattr(h, "bounced_balls"):
+                                        h.bounced_balls = []
+                                    h.bounced_balls.append(b.id)
+                        else:
+                            # If moved away, clear from bounced_balls
+                            if b.id in bounced:
+                                bounced.remove(b.id)
+
+        # Check wall collisions and apply multiplier
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            b.speed_multiplier = getattr(b, "base_speed_multiplier", 1.0) + getattr(b, "bumper_frenzy_multiplier", 0.0)
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 10.0)
+
+            # Decay the frenzy multiplier slowly
+            if hasattr(b, "bumper_frenzy_multiplier") and b.bumper_frenzy_multiplier > 0:
+                b.bumper_frenzy_multiplier = max(0.0, b.bumper_frenzy_multiplier - 0.1 * delta)
+
+            if b.speed_multiplier >= 2.5: # Consider this "max speed"
+                if bx - br <= 0:
+                    if hasattr(world, "arena") and hasattr(world.arena, "boundary_states") and world.arena.boundary_states.get("left") != "abyss":
+                        world.arena.boundary_states["left"] = "abyss"
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "glass_shatter", "x": 0, "y": by})
+                if bx + br >= arena_width:
+                    if hasattr(world, "arena") and hasattr(world.arena, "boundary_states") and world.arena.boundary_states.get("right") != "abyss":
+                        world.arena.boundary_states["right"] = "abyss"
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "glass_shatter", "x": arena_width, "y": by})
+                if by - br <= 0:
+                    if hasattr(world, "arena") and hasattr(world.arena, "boundary_states") and world.arena.boundary_states.get("top") != "abyss":
+                        world.arena.boundary_states["top"] = "abyss"
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": 0})
+                if by + br >= arena_height:
+                    if hasattr(world, "arena") and hasattr(world.arena, "boundary_states") and world.arena.boundary_states.get("bottom") != "abyss":
+                        world.arena.boundary_states["bottom"] = "abyss"
+                        if hasattr(world, "add_event"):
+                            world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": arena_height})
+
+
 GAME_MODES = {
+    "bumper_frenzy": BumperFrenzyMode(),
     'hazard_shift_event': HazardShiftEventMode(),
     'chaotic_stat_hazard': ChaoticStatHazardMode(),
     "chaotic_artifact": ChaoticArtifactMode(),
