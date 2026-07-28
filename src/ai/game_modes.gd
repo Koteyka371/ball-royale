@@ -6704,7 +6704,7 @@ class BattleRoyaleMode extends GameMode:
 						boosters_array = world.boosters
 
 					if boosters_array != null:
-						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
+						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
 						for i in range(3):
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
@@ -22746,7 +22746,7 @@ class SupernovaMode extends GameMode:
 					boosters_array = world.boosters
 
 				if boosters_array != null:
-					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
+					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
 					var rng = RandomNumberGenerator.new()
 					rng.randomize()
 					for i in range(10):
@@ -42670,7 +42670,7 @@ class WatchtowerMode extends GameMode:
 class TickingBombMode extends GameMode:
 	var spawn_timer: float = 0.0
 	var bomb_interval: float = 10.0
-	var booster_kinds: Array = ["hazard_immunity_booster"]
+	var booster_kinds: Array = ["hazard_immunity_booster", "hologram_booster"]
 
 	func _init() -> void:
 		name = "Ticking Bomb Mode"
@@ -43827,7 +43827,7 @@ class MassivePinballArenaMode extends GameMode:
 			var arena_height = arena.get("height") if "height" in arena else 1000
 
 			var hazard_kinds = ["massive_bumper"]
-			var booster_kinds = ["overclock_booster", "mega_booster", "health_pack", "shield_booster", "speed_booster"]
+			var booster_kinds = ["overclock_booster", "mega_booster", "health_pack", "shield_booster", "speed_booster", "hologram_booster"]
 
 			for i in range(8):
 				var x = randf_range(200, arena_width - 200)

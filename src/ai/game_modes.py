@@ -4260,7 +4260,7 @@ class BattleRoyaleMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
                     if hasattr(world, "boosters"):
-                        booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
+                        booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
                         for i in range(3):
                             class DroppedBooster:
                                 def __init__(self, id, x, y, kind):
@@ -14779,7 +14779,7 @@ class SupernovaMode(GameMode):
 
                 # Scatter rare boosters upon explosion
                 if hasattr(world, "boosters"):
-                    booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
+                    booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
                     import random
                     class DroppedBooster:
                         def __init__(self, id, x, y, kind):
@@ -26573,7 +26573,7 @@ class MassivePinballArenaMode(GameMode):
                     self.radius = 20.0
 
             hazard_kinds = ["massive_bumper"]
-            booster_kinds = ["overclock_booster", "mega_booster", "health_pack", "shield_booster", "speed_booster"]
+            booster_kinds = ["overclock_booster", "mega_booster", "health_pack", "shield_booster", "speed_booster", "hologram_booster"]
 
             for i in range(8):
                 x = random.uniform(200, arena_width - 200)
@@ -36376,7 +36376,7 @@ class TickingBombMode(GameMode):
         self.description = "Bombs periodically spawn around the map, ticking down until they explode in a massive radius."
         self.spawn_timer = 0.0
         self.bomb_interval = 10.0
-        self.booster_kinds = ["hazard_immunity_booster"]
+        self.booster_kinds = ["hazard_immunity_booster", "hologram_booster"]
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         import random

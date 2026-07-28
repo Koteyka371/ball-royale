@@ -60,17 +60,17 @@ class MockWorld:
 
 def test_hologram_booster_spawns_holograms_and_they_move_fast():
     world = MockWorld()
-    b = MockBooster("hologram_booster", 500, 500)
+    b = MockBooster("hologram_booster", 2500, 2500)
     world.boosters.append(b)
 
-    ball = MockBall(1, 500, 500)
+    ball = MockBall(1, 2500, 2500)
     world.balls.append(ball)
 
     action = Action(ball, world)
     action._get_boosters = lambda: [b]; action._collect_booster(1.0)
 
     holograms = [other for other in world.balls if getattr(other, "is_hologram", False)]
-    assert len(holograms) == 3, "Should spawn 3 holograms"
+    assert len(holograms) == 1, "Should spawn 1 hologram"
     assert b not in world.boosters, "Booster should be collected"
 
     holo = holograms[0]

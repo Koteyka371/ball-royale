@@ -29747,7 +29747,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "hologram_booster":
-                for i in range(3):
+                for i in range(1):
                     var clone = null
                     if self.ball.has_method("duplicate"):
                         clone = self.ball.duplicate()
@@ -29764,7 +29764,19 @@ func _collect_booster(delta: float):
                         if "base_damage" in clone: clone.base_damage = 0.0
                         if "speed" in clone and "speed" in self.ball: clone.speed = self.ball.speed
 
-                        var angle = i * (2.0 * PI / 3.0) + (randf() * PI / 6.0)
+                        var bx = 0.0
+                        var by = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            bx = self.ball.get("vx", 0.0)
+                            by = self.ball.get("vy", 0.0)
+                        elif "vx" in self.ball:
+                            bx = self.ball.vx
+                            by = self.ball.vy
+                        var angle = 0.0
+                        if bx == 0.0 and by == 0.0:
+                            angle = randf() * 2.0 * PI
+                        else:
+                            angle = atan2(by, bx)
                         if "x" in clone and "y" in clone:
                             clone.x += cos(angle) * 15.0
                             clone.y += sin(angle) * 15.0
