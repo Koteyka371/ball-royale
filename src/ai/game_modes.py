@@ -43469,3 +43469,74 @@ class CascadingStunMode(GameMode):
                             b2.stun_arm_timer = 2.0
 
 GAME_MODES["cascading_stun"] = CascadingStunMode()
+
+class SquadRelayMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Squad Relay"
+        self.description = "Players can only control one ball at a time in a squad. When the active ball dies, the next one spawns in with inherited speed and temporary invulnerability."
+        self.spectator_queue = {}
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        pass
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.spectator_queue = {}
+
+        teams = {}
+        for b in balls:
+            if getattr(b, "ball_type", "") == "spectator":
+                continue
+            t = getattr(b, "team", "players")
+            if t not in teams:
+                teams[t] = []
+            teams[t].append(b)
+
+        for t, team_balls in teams.items():
+            if len(team_balls) > 1:
+                active_ball = team_balls[0]
+                spectators = team_balls[1:]
+                self.spectator_queue[t] = spectators
+
+                for sb in spectators:
+                    sb.original_ball_type = getattr(sb, "ball_type", "player")
+                    sb.ball_type = "spectator"
+                    sb.x = -1000.0
+                    sb.y = -1000.0
+                    sb.vx = 0.0
+                    sb.vy = 0.0
+            else:
+                self.spectator_queue[t] = []
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        for t, queue in list(self.spectator_queue.items()):
+            active = None
+            dead_active = None
+            for b in balls:
+                if getattr(b, "team", "") == t and getattr(b, "ball_type", "") != "spectator":
+                    if getattr(b, "hp", 100) > 0 and getattr(b, "alive", True):
+                        active = b
+                    else:
+                        dead_active = b
+
+            if active is None and dead_active is not None:
+                dead_active.alive = False
+
+                if queue:
+                    next_ball = queue.pop(0)
+                    next_ball.ball_type = getattr(next_ball, "original_ball_type", "player")
+                    next_ball.x = dead_active.x
+                    next_ball.y = dead_active.y
+                    next_ball.vx = getattr(dead_active, "vx", 0.0)
+                    next_ball.vy = getattr(dead_active, "vy", 0.0)
+
+                    next_ball.intangible = True
+                    next_ball.intangible_timer = 2.0
+
+                    if hasattr(world, "add_event"):
+                        world.add_event("squad_relay_spawn", {"message": f"Team {t} relay spawned!"})
+
+GAME_MODES["squad_relay"] = SquadRelayMode()
