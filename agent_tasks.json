@@ -28037,7 +28037,7 @@
     },
     {
       "id": "idea-1638",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Random Supply Drops",
@@ -41177,6 +41177,23 @@
         "src/ai/slingshot_item.py",
         "src/ai/slingshot_item.gd",
         "tests/test_slingshot_item.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2410",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Reverse Time Grenade",
+      "description": "A throwable grenade that upon detonation captures the positions, velocities, and health of all entities within its blast radius, and rewinds them to their state 3 seconds ago.",
+      "allowed_paths": [
+        "src/ai/reverse_time_grenade.py",
+        "src/ai/reverse_time_grenade.gd",
+        "tests/test_reverse_time_grenade.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
