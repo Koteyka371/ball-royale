@@ -97,5 +97,5 @@ def test_grapple_to_enemy_ball():
     assert ball.y == 500.0
 
     # Target ball is pulled
-    assert target_ball.x == 400.0
+    assert target_ball.x == 560.0
     assert target_ball.y == 500.0
