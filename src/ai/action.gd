@@ -34729,6 +34729,78 @@ func _use_skill():
                     elif active_clone.has_method("set_meta"): active_clone.set_meta("x", my_x)
                     if "y" in active_clone: active_clone.y = my_y
                     elif active_clone.has_method("set_meta"): active_clone.set_meta("y", my_y)
+                    # Transfer ALL momentum to active_clone
+                    var p_vx = 0.0
+                    if "vx" in self.ball: p_vx = self.ball.vx
+                    elif self.ball is Dictionary: p_vx = self.ball.get("vx", 0.0)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): p_vx = self.ball.get_meta("vx")
+
+                    var p_vy = 0.0
+                    if "vy" in self.ball: p_vy = self.ball.vy
+                    elif self.ball is Dictionary: p_vy = self.ball.get("vy", 0.0)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vy"): p_vy = self.ball.get_meta("vy")
+
+                    if "vx" in active_clone: active_clone.vx = p_vx
+                    elif active_clone is Dictionary: active_clone["vx"] = p_vx
+                    elif typeof(active_clone) == TYPE_OBJECT and active_clone.has_method("set_meta"): active_clone.set_meta("vx", p_vx)
+
+                    if "vy" in active_clone: active_clone.vy = p_vy
+                    elif active_clone is Dictionary: active_clone["vy"] = p_vy
+                    elif typeof(active_clone) == TYPE_OBJECT and active_clone.has_method("set_meta"): active_clone.set_meta("vy", p_vy)
+
+                    if "vx" in self.ball: self.ball.vx = 0.0
+                    elif self.ball is Dictionary: self.ball["vx"] = 0.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vx", 0.0)
+
+                    if "vy" in self.ball: self.ball.vy = 0.0
+                    elif self.ball is Dictionary: self.ball["vy"] = 0.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", 0.0)
+
+                    # Transfer ALL status effects
+                    var all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
+                    for effect in all_status:
+                        var ball_effect = 0.0
+                        if effect in self.ball: ball_effect = self.ball.get(effect)
+                        elif self.ball is Dictionary: ball_effect = self.ball.get(effect, 0.0)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta(effect): ball_effect = self.ball.get_meta(effect)
+
+                        if ball_effect > 0.0:
+                            var clone_effect = 0.0
+                            if effect in active_clone: clone_effect = active_clone.get(effect)
+                            elif active_clone is Dictionary: clone_effect = active_clone.get(effect, 0.0)
+                            elif typeof(active_clone) == TYPE_OBJECT and active_clone.has_method("has_meta") and active_clone.has_meta(effect): clone_effect = active_clone.get_meta(effect)
+
+                            var max_effect = max(clone_effect, ball_effect)
+                            if effect in active_clone: active_clone.set(effect, max_effect)
+                            elif active_clone is Dictionary: active_clone[effect] = max_effect
+                            elif typeof(active_clone) == TYPE_OBJECT and active_clone.has_method("set_meta"): active_clone.set_meta(effect, max_effect)
+
+                            if effect in self.ball: self.ball.set(effect, 0.0)
+                            elif self.ball is Dictionary: self.ball[effect] = 0.0
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta(effect, 0.0)
+
+                            if effect == "stun_timer":
+                                if "is_stunned" in active_clone: active_clone.is_stunned = true
+                                elif active_clone is Dictionary: active_clone["is_stunned"] = true
+                                elif typeof(active_clone) == TYPE_OBJECT and active_clone.has_method("set_meta"): active_clone.set_meta("is_stunned", true)
+
+                                if "is_stunned" in self.ball: self.ball.is_stunned = false
+                                elif self.ball is Dictionary: self.ball["is_stunned"] = false
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
+
+                    if "has_swapped" in active_clone: active_clone.has_swapped = true
+                    elif active_clone is Dictionary: active_clone["has_swapped"] = true
+                    elif typeof(active_clone) == TYPE_OBJECT and active_clone.has_method("set_meta"): active_clone.set_meta("has_swapped", true)
+
+                    var skill_cooldown = 5.0
+                    if "SKILL_COOLDOWN" in self.ball: skill_cooldown = self.ball.SKILL_COOLDOWN
+                    elif self.ball is Dictionary: skill_cooldown = self.ball.get("SKILL_COOLDOWN", 5.0)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): skill_cooldown = self.ball.get_meta("SKILL_COOLDOWN")
+
+                    if "skill_timer" in self.ball: self.ball.skill_timer = skill_cooldown
+                    elif self.ball is Dictionary: self.ball["skill_timer"] = skill_cooldown
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", skill_cooldown)
+
 
                     if "events" in self.world:
                         self.world.events.append({'type': 'visual_effect', 'data': {'type': 'line', 'x': my_x, 'y': my_y, 'tx': clone_x, 'ty': clone_y, 'color': 'purple'}})
