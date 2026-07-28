@@ -51217,6 +51217,172 @@ class ChaoticStatHazardMode extends GameMode:
 			else:
 				arena.set("hazards", new_hazards)
 
+
+class IntersectingLasersMode extends GameMode:
+	var spawn_timer = 2.0
+
+	func _init():
+		name = "Intersecting Lasers"
+		description = "Random intersecting lasers continuously activate across the arena, forcing players to perfectly time their movements."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		spawn_timer = 2.0
+		if not ("arena" in world) or world.arena == null:
+			return
+		if typeof(world.arena) == TYPE_DICTIONARY and not world.arena.has("hazards"):
+			world.arena.hazards = []
+		elif typeof(world.arena) == TYPE_OBJECT and not ("hazards" in world.arena):
+			return
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not ("arena" in world) or world.arena == null:
+			return
+		if typeof(world.arena) == TYPE_DICTIONARY and not world.arena.has("hazards"):
+			return
+		elif typeof(world.arena) == TYPE_OBJECT and not ("hazards" in world.arena):
+			return
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 1.5 + randf() * 1.5
+			var aw = 1000.0
+			var ah = 1000.0
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				aw = world.arena.get("width", 1000.0)
+				ah = world.arena.get("height", 1000.0)
+			else:
+				aw = world.arena.width if "width" in world.arena else 1000.0
+				ah = world.arena.height if "height" in world.arena else 1000.0
+
+			var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+
+			var y_pos = randf_range(50.0, ah - 50.0)
+			var h_id = "inter_hz_" + str(randi() % 9999)
+			var hz = null
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				hz = {
+					"id": h_id,
+					"x": aw / 2.0,
+					"y": y_pos,
+					"radius": 10.0,
+					"kind": "laser_beam",
+					"damage": 100.0,
+					"active": false,
+					"start_x": 0.0,
+					"start_y": y_pos,
+					"end_x": aw,
+					"end_y": y_pos,
+					"warning_timer": 1.5,
+					"active_timer": 0.5,
+					"duration": 9999.0
+				}
+				world.arena.hazards.append(hz)
+			else:
+				hz = ProceduralArenaScript.Hazard.new(h_id, aw / 2.0, y_pos, 10.0, "laser_beam", 100.0)
+				hz.active = false
+				hz.set_meta("start_x", 0.0)
+				hz.set_meta("start_y", y_pos)
+				hz.set_meta("end_x", aw)
+				hz.set_meta("end_y", y_pos)
+				hz.set_meta("warning_timer", 1.5)
+				hz.set_meta("active_timer", 0.5)
+				hz.duration = 9999.0
+				world.arena.hazards.append(hz)
+
+			var x_pos = randf_range(50.0, aw - 50.0)
+			var v_id = "inter_vt_" + str(randi() % 9999)
+			var vt = null
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				vt = {
+					"id": v_id,
+					"x": x_pos,
+					"y": ah / 2.0,
+					"radius": 10.0,
+					"kind": "laser_beam",
+					"damage": 100.0,
+					"active": false,
+					"start_x": x_pos,
+					"start_y": 0.0,
+					"end_x": x_pos,
+					"end_y": ah,
+					"warning_timer": 1.5,
+					"active_timer": 0.5,
+					"duration": 9999.0
+				}
+				world.arena.hazards.append(vt)
+			else:
+				vt = ProceduralArenaScript.Hazard.new(v_id, x_pos, ah / 2.0, 10.0, "laser_beam", 100.0)
+				vt.active = false
+				vt.set_meta("start_x", x_pos)
+				vt.set_meta("start_y", 0.0)
+				vt.set_meta("end_x", x_pos)
+				vt.set_meta("end_y", ah)
+				vt.set_meta("warning_timer", 1.5)
+				vt.set_meta("active_timer", 0.5)
+				vt.duration = 9999.0
+				world.arena.hazards.append(vt)
+
+		var new_hazards = []
+		var hazards_list = world.arena.hazards if typeof(world.arena) == TYPE_OBJECT else world.arena.get("hazards", [])
+		for h in hazards_list:
+			var keep = true
+			var k = ""
+			var hid = ""
+			if typeof(h) == TYPE_DICTIONARY:
+				k = h.get("kind", "")
+				hid = str(h.get("id", ""))
+			elif typeof(h) == TYPE_OBJECT:
+				k = h.kind if "kind" in h else ""
+				hid = str(h.id) if "id" in h else ""
+
+			if k == "laser_beam" and hid.begins_with("inter_"):
+				var wt = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					wt = h.get("warning_timer", 0.0)
+				elif typeof(h) == TYPE_OBJECT:
+					if h.has_meta("warning_timer"): wt = h.get_meta("warning_timer")
+					elif "warning_timer" in h: wt = h.warning_timer
+
+				if wt > 0:
+					wt -= delta
+					if typeof(h) == TYPE_DICTIONARY:
+						h["warning_timer"] = wt
+						if wt <= 0:
+							h["active"] = true
+					elif typeof(h) == TYPE_OBJECT:
+						if "warning_timer" in h: h.warning_timer = wt
+						else: h.set_meta("warning_timer", wt)
+						if wt <= 0:
+							if "active" in h: h.active = true
+							else: h.set_meta("active", true)
+				else:
+					var at = 0.0
+					if typeof(h) == TYPE_DICTIONARY:
+						at = h.get("active_timer", 0.0)
+					elif typeof(h) == TYPE_OBJECT:
+						if h.has_meta("active_timer"): at = h.get_meta("active_timer")
+						elif "active_timer" in h: at = h.active_timer
+
+					at -= delta
+					if typeof(h) == TYPE_DICTIONARY:
+						h["active_timer"] = at
+					elif typeof(h) == TYPE_OBJECT:
+						if "active_timer" in h: h.active_timer = at
+						else: h.set_meta("active_timer", at)
+
+					if at <= 0:
+						keep = false
+
+			if keep:
+				new_hazards.append(h)
+
+		if typeof(world.arena) == TYPE_OBJECT:
+			world.arena.hazards = new_hazards
+		else:
+			world.arena["hazards"] = new_hazards
+
 var GAME_MODES = {
 	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
 	"chaotic_artifact": ChaoticArtifactMode.new(),
@@ -55399,6 +55565,7 @@ GAME_MODES['capture_the_flag_elements_in_battle_royale'] = load("res://src/ai/ca
 GAME_MODES['decoy_trail'] = DecoyTrailMode.new()
 GAME_MODES['ghost_companion'] = load("res://src/ai/ghost_companion.gd").new()
 
+GAME_MODES['intersecting_lasers'] = IntersectingLasersMode.new()
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode.new()
 GAME_MODES['clan_war'] = ClanWarMode.new()
 GAME_MODES['paint_splatter'] = PaintSplatterMode.new()

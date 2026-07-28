@@ -32038,6 +32038,105 @@ class ChaoticStatHazardMode(GameMode):
                     })
                 world.arena.hazards = hazards
 
+
+class IntersectingLasersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Intersecting Lasers"
+        self.description = "Random intersecting lasers continuously activate across the arena, forcing players to perfectly time their movements."
+        self.spawn_timer = 2.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 2.0
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        import random
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 1.5 + random.random() * 1.5
+
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+
+            # Spawn horizontal laser
+            y_pos = random.uniform(50.0, ah - 50.0)
+            h_id = f"inter_hz_{self.spawn_timer}_{random.randint(0, 9999)}"
+
+            try:
+                from arena.procedural_arena import Hazard
+                hz = Hazard(id=h_id, x=aw/2, y=y_pos, radius=10.0, kind="laser_beam", damage=0.0)
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = False
+                hz = FallbackHazard(id=h_id, x=aw/2, y=y_pos, radius=10.0, kind="laser_beam", damage=0.0)
+
+            hz.start_x = 0.0
+            hz.start_y = y_pos
+            hz.end_x = aw
+            hz.end_y = y_pos
+            hz.active = False
+            hz.warning_timer = 1.5
+            hz.active_timer = 0.5
+            hz.damage = 100.0
+            hz.duration = 9999.0
+
+            world.arena.hazards.append(hz)
+
+            # Spawn vertical laser
+            x_pos = random.uniform(50.0, aw - 50.0)
+            v_id = f"inter_vt_{self.spawn_timer}_{random.randint(0, 9999)}"
+            try:
+                from arena.procedural_arena import Hazard
+                vt = Hazard(id=v_id, x=x_pos, y=ah/2, radius=10.0, kind="laser_beam", damage=0.0)
+            except ImportError:
+                vt = FallbackHazard(id=v_id, x=x_pos, y=ah/2, radius=10.0, kind="laser_beam", damage=0.0)
+
+            vt.start_x = x_pos
+            vt.start_y = 0.0
+            vt.end_x = x_pos
+            vt.end_y = ah
+            vt.active = False
+            vt.warning_timer = 1.5
+            vt.active_timer = 0.5
+            vt.damage = 100.0
+            vt.duration = 9999.0
+
+            world.arena.hazards.append(vt)
+
+        new_hazards = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "laser_beam" and str(getattr(h, "id", "")).startswith("inter_"):
+                wt = getattr(h, "warning_timer", 0.0)
+                if wt > 0:
+                    h.warning_timer = wt - delta
+                    if h.warning_timer <= 0:
+                        h.active = True
+                        # No need to set h.damage here as it is handled by 'damage' attribute
+                else:
+                    at = getattr(h, "active_timer", 0.0)
+                    h.active_timer = at - delta
+                    if h.active_timer <= 0:
+                        continue
+            new_hazards.append(h)
+        world.arena.hazards = new_hazards
+
 GAME_MODES = {
     'chaotic_stat_hazard': ChaoticStatHazardMode(),
     "chaotic_artifact": ChaoticArtifactMode(),
@@ -36169,6 +36268,7 @@ class TimeStutterHazardMode(GameMode):
                         "hp": hp
                     }
 
+GAME_MODES['intersecting_lasers'] = IntersectingLasersMode()
 GAME_MODES['time_stutter_hazard'] = TimeStutterHazardMode()
 GAME_MODES['clan_war'] = ClanWarMode()
 
