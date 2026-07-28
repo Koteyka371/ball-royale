@@ -16312,19 +16312,37 @@ class Action:
                     self.ball.x, self.ball.y = target.x, target.y
                     target.x, target.y = temp_x, temp_y
 
-                    # Apply confusion
-                    target.confusion_timer = max(getattr(target, "confusion_timer", 0.0), 3.0)
+                    if getattr(target, "is_decoy", False):
+                        # Transfer ALL momentum to decoy, player keeps 0
+                        target.vx = getattr(self.ball, "vx", 0.0)
+                        target.vy = getattr(self.ball, "vy", 0.0)
+                        self.ball.vx = 0.0
+                        self.ball.vy = 0.0
 
-                    # Transfer negative status effects
-                    status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer"]
-                    for effect in status_effects:
-                        ball_effect = getattr(self.ball, effect, 0.0)
-                        if ball_effect > 0.0:
-                            setattr(target, effect, max(getattr(target, effect, 0.0), ball_effect))
-                            setattr(self.ball, effect, 0.0)
-                            if effect == "stun_timer":
-                                target.is_stunned = True
-                                self.ball.is_stunned = False
+                        # Transfer ALL status effects to decoy
+                        all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
+                        for effect in all_status:
+                            ball_effect = getattr(self.ball, effect, 0.0)
+                            if ball_effect > 0.0:
+                                setattr(target, effect, max(getattr(target, effect, 0.0), ball_effect))
+                                setattr(self.ball, effect, 0.0)
+                                if effect == "stun_timer":
+                                    target.is_stunned = True
+                                    self.ball.is_stunned = False
+                    else:
+                        # Swap with enemy, confusion and negative effects only
+                        target.confusion_timer = max(getattr(target, "confusion_timer", 0.0), 3.0)
+
+                        # Transfer negative status effects
+                        status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer"]
+                        for effect in status_effects:
+                            ball_effect = getattr(self.ball, effect, 0.0)
+                            if ball_effect > 0.0:
+                                setattr(target, effect, max(getattr(target, effect, 0.0), ball_effect))
+                                setattr(self.ball, effect, 0.0)
+                                if effect == "stun_timer":
+                                    target.is_stunned = True
+                                    self.ball.is_stunned = False
 
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
             elif skill_name == "command":
