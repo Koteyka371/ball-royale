@@ -25495,7 +25495,60 @@ class ExtremeBouncinessMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Extreme Bounciness"
-        self.description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging."
+        self.description = "The arena boundaries are lined with extreme bounciness instead of standard walls, causing balls to reflect at high velocity when touching the edges, making positioning significantly more challenging. Projectiles inherit the extreme bounciness physics, turning the arena into a chaotic bullet hell where missed shots rapidly ricochet off walls, growing in speed until they hit something."
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(getattr(world, "arena", None), "width", 1000)
+        arena_height = getattr(getattr(world, "arena", None), "height", 1000)
+
+        for proj in getattr(world, "projectiles", []) + getattr(getattr(world, "arena", None), "hazards", []):
+            if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                continue
+
+            b_type = getattr(proj, "ball_type", getattr(proj, "kind", ""))
+            is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(proj, "is_projectile", False) or getattr(proj, "is_spell", False)
+
+            if not is_proj:
+                continue
+
+            bounces = getattr(proj, "bounces", 0)
+
+            x = getattr(proj, "x", 0)
+            y = getattr(proj, "y", 0)
+            radius = getattr(proj, "radius", 5.0)
+            vx = getattr(proj, "vx", 0)
+            vy = getattr(proj, "vy", 0)
+
+            bounced = False
+            if x - radius < 0 and vx < 0:
+                proj.vx = -vx * 1.5
+                proj.x = radius
+                bounced = True
+            elif x + radius > arena_width and vx > 0:
+                proj.vx = -vx * 1.5
+                proj.x = arena_width - radius
+                bounced = True
+
+            if y - radius < 0 and vy < 0:
+                proj.vy = -vy * 1.5
+                proj.y = radius
+                bounced = True
+            elif y + radius > arena_height and vy > 0:
+                proj.vy = -vy * 1.5
+                proj.y = arena_height - radius
+                bounced = True
+
+            # Increase speed on bounce, cap at 5000
+            if bounced:
+                proj.bounces = bounces + 1
+                import math
+                speed = math.hypot(proj.vx, proj.vy)
+                if speed > 5000.0:
+                    ratio = 5000.0 / speed
+                    proj.vx *= ratio
+                    proj.vy *= ratio
 
 class SuperBouncyArenaMode(GameMode):
     def __init__(self):
