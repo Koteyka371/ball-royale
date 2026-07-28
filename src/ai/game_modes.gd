@@ -64436,6 +64436,167 @@ GAME_MODES['shared_health_pool'] = SharedHealthPoolModeClass.new()
 GAME_MODES['exponential_control_point'] = ExponentialControlPointMode.new()
 
 
+
+class PulsingBlackHoleMutatorMode extends GameMode:
+	var bh_id = 999997
+	var push_strength = 300.0
+	var pulse_timer = 0.0
+	var pulse_interval = 5.0
+	var pulse_duration = 1.0
+	var is_pulsing = false
+
+	func _init():
+		super()
+		name = "Pulsing Black Hole Mutator"
+		description = "A pulsing black hole sits in the center of the arena, pushing balls away periodically and dealing damage."
+		mutators_active = true
+		mutators = ["pulsing_black_hole"]
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var cx = 500.0
+		var cy = 500.0
+
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			cx = world.arena.get("width", 1000.0) / 2.0
+			cy = world.arena.get("height", 1000.0) / 2.0
+		elif world.arena is Object:
+			if "width" in world.arena:
+				cx = world.arena.width / 2.0
+			if "height" in world.arena:
+				cy = world.arena.height / 2.0
+
+		var existing = null
+		for h in world.arena.hazards:
+			var h_kind = ""
+			var h_id = null
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+				h_id = h.get("id", null)
+			elif h is Object:
+				if "kind" in h:
+					h_kind = h.kind
+				if "id" in h:
+					h_id = h.id
+			if h_kind == "pulsing_black_hole" and h_id == bh_id:
+				existing = h
+				break
+
+		if existing == null:
+			var bh = {
+				"id": bh_id,
+				"x": cx,
+				"y": cy,
+				"radius": 30.0,
+				"kind": "pulsing_black_hole",
+				"damage": 25.0,
+				"active": true
+			}
+			world.arena.hazards.append(bh)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		if not "hazards" in world.arena:
+			return
+
+		var bh = null
+		for h in world.arena.hazards:
+			var h_kind = ""
+			var h_id = null
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+				h_id = h.get("id", null)
+			elif h is Object:
+				if "kind" in h:
+					h_kind = h.kind
+				if "id" in h:
+					h_id = h.id
+			if h_kind == "pulsing_black_hole" and h_id == bh_id:
+				bh = h
+				break
+
+		if bh == null:
+			return
+
+		pulse_timer += delta
+		if not is_pulsing and pulse_timer >= pulse_interval:
+			is_pulsing = true
+			pulse_timer = 0.0
+			if typeof(bh) == TYPE_DICTIONARY:
+				bh["radius"] = 80.0
+			elif bh is Object and "radius" in bh:
+				bh.radius = 80.0
+		elif is_pulsing and pulse_timer >= pulse_duration:
+			is_pulsing = false
+			pulse_timer = 0.0
+			if typeof(bh) == TYPE_DICTIONARY:
+				bh["radius"] = 30.0
+			elif bh is Object and "radius" in bh:
+				bh.radius = 30.0
+
+		if is_pulsing:
+			var bh_x = 0.0
+			var bh_y = 0.0
+			var bh_damage = 25.0
+			if typeof(bh) == TYPE_DICTIONARY:
+				bh_x = bh.get("x", 0.0)
+				bh_y = bh.get("y", 0.0)
+				bh_damage = bh.get("damage", 25.0)
+			elif bh is Object:
+				if "x" in bh: bh_x = bh.x
+				if "y" in bh: bh_y = bh.y
+				if "damage" in bh: bh_damage = bh.damage
+
+			for b in balls:
+				var alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", true)
+				elif b is Object and "alive" in b:
+					alive = b.alive
+
+				if not alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				elif b is Object:
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+
+				var dx = bx - bh_x
+				var dy = by - bh_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0 and dist < 150.0:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("vx") and b.has("vy"):
+							b["vx"] += (dx / dist) * push_strength * delta
+							b["vy"] += (dy / dist) * push_strength * delta
+						if b.has("hp"):
+							b["hp"] -= bh_damage * delta
+							if b["hp"] <= 0:
+								b["hp"] = 0
+								b["alive"] = false
+								b["killer"] = "pulsing_black_hole"
+					elif b is Object:
+						if "vx" in b and "vy" in b:
+							b.vx += (dx / dist) * push_strength * delta
+							b.vy += (dy / dist) * push_strength * delta
+						if "hp" in b:
+							b.hp -= bh_damage * delta
+							if b.hp <= 0:
+								b.hp = 0
+								b.alive = false
+								b.killer = "pulsing_black_hole"
+
+
 class StationaryBlackHoleMutatorMode extends GameMode:
 	var bh_id = 999998
 	var pull_strength = 200.0
@@ -64538,6 +64699,7 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 						b.set("vy", b.get("vy") + pull_y)
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode.new()
+GAME_MODES['pulsing_black_hole_mutator'] = PulsingBlackHoleMutatorMode.new()
 const DoubleJuggernautMode = preload("res://src/ai/double_juggernaut.gd")
 const DecayingJuggernautMode = preload("res://src/ai/decaying_juggernaut.gd")
 class LaserGridSurvivalMode extends GameMode:
