@@ -29169,6 +29169,19 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "orbital_mine_immunity_booster":
+                if "orbital_mine_immunity_timer" in self.ball:
+                    self.ball.orbital_mine_immunity_timer = 15.0
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("orbital_mine_immunity_timer", 15.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "emp_immunity_booster":
                 if "emp_immunity_timer" in self.ball:
                     self.ball.emp_immunity_timer = 15.0

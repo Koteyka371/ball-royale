@@ -10171,17 +10171,22 @@ class Action:
                                     hazard.active = False
                                     hazard.duration = 0.0
 
-                                    # Damage
-                                    if hasattr(self.ball, "take_damage"):
-                                        self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                    elif hasattr(self.ball, "hp"):
-                                        self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
-                                        if self.ball.hp <= 0:
-                                            self.ball.alive = False
+                                    if getattr(self.ball, "orbital_mine_immunity_timer", 0.0) > 0.0:
+                                        self.ball.ammo = getattr(self.ball, "ammo", 0) + 5
+                                        if hasattr(self.ball, "hp"):
+                                            self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), getattr(self.ball, "hp", 100.0) + 10.0)
+                                    else:
+                                        # Damage
+                                        if hasattr(self.ball, "take_damage"):
+                                            self.ball.take_damage(hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                        elif hasattr(self.ball, "hp"):
+                                            self.ball.hp -= (hazard.damage * 2.0 if getattr(self.ball, "is_in_quicksand", False) else hazard.damage)
+                                            if self.ball.hp <= 0:
+                                                self.ball.alive = False
 
-                                    # Slow
-                                    self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
-                                    self.ball.slow_timer = max(getattr(self.ball, 'slow_timer', 0.0), 2.0)
+                                        # Slow
+                                        self.ball.speed = getattr(self.ball, 'base_speed', 100.0) * 0.5
+                                        self.ball.slow_timer = max(getattr(self.ball, 'slow_timer', 0.0), 2.0)
 
                                     # Visual event
                                     if hasattr(self.world, "add_event"):
@@ -14661,6 +14666,13 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "phase_booster":
                     self.ball.phase_booster_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "orbital_mine_immunity_booster":
+                    self.ball.orbital_mine_immunity_timer = 15.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -21355,6 +21367,11 @@ class Action:
             self.ball.emp_immunity_timer -= delta
             if self.ball.emp_immunity_timer < 0:
                 self.ball.emp_immunity_timer = 0.0
+
+        if getattr(self.ball, "orbital_mine_immunity_timer", 0.0) > 0:
+            self.ball.orbital_mine_immunity_timer -= delta
+            if self.ball.orbital_mine_immunity_timer < 0:
+                self.ball.orbital_mine_immunity_timer = 0.0
         if getattr(self.ball, "immunity_timer", 0.0) > 0:
             self.ball.immunity_timer -= delta
             if self.ball.immunity_timer < 0:
