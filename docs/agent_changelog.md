@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1585] Tag Team Ultimate Synergy Mode — *2026-07-28 02:02:24 UTC*
+
+If tag team partners swap continuously without breaking their combo chains, they unlock a shared ultimate ability that merges their traits for 10 seconds, creating an ultra-ball.
+
+---
+
 ## [idea-1569] Blackout Ghost Mode — *2026-07-28 02:02:20 UTC*
 
 The arena is completely pitch black. Balls only become briefly visible when they bounce off walls, take damage, or attack. Attacks are skill shots that temporarily illuminate a small area.
