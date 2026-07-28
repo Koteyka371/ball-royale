@@ -1,0 +1,4 @@
+{
+  "title": "Blindness Dart",
+  "description": "A projectile that momentarily disables an enemy ball's perception radius completely (making it 0), simulating temporary blindness."
+}
