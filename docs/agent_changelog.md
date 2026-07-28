@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1609] Unstable Artifact Event — *2026-07-28 00:22:53 UTC*
+
+An artifact spawns that gives a massive power boost to whoever holds it, but completely randomizes their abilities and ball type every 10 seconds.
+
+---
+
 ## [idea-1602] Unstable Payload Event — *2026-07-27 23:27:02 UTC*
 
 Periodically, an 'unstable payload' hazard spawns in the center of the arena. It slowly expands and deals increasing radiation damage. Players must attack it to push it towards enemy teams before it reaches critical mass and detonates, instantly eliminating anyone caught in its massive blast radius.
