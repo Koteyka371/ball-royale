@@ -22536,6 +22536,52 @@ func execute(strategy: String, delta: float):
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_hologram"):
         is_hologram_stat = self.ball.get_meta("is_hologram")
 
+
+    var is_tether_decoy = false
+    if "is_decoy" in self.ball and self.ball.is_decoy:
+        if "decoy_type" in self.ball and self.ball.decoy_type == "tether": is_tether_decoy = true
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("decoy_type") and self.ball.get_meta("decoy_type") == "tether": is_tether_decoy = true
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("is_decoy") and self.ball.get_meta("is_decoy"):
+        if self.ball.has_meta("decoy_type") and self.ball.get_meta("decoy_type") == "tether": is_tether_decoy = true
+        elif "decoy_type" in self.ball and self.ball.decoy_type == "tether": is_tether_decoy = true
+
+    if damage_taken > 0 and is_tether_decoy:
+        var acc = 0.0
+        if "tether_accumulated_damage" in self.ball: acc = self.ball.tether_accumulated_damage
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("tether_accumulated_damage"): acc = self.ball.get_meta("tether_accumulated_damage")
+        acc += damage_taken
+        if "tether_accumulated_damage" in self.ball: self.ball.tether_accumulated_damage = acc
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("tether_accumulated_damage", acc)
+
+    if is_tether_decoy and current_hp <= 0 and start_hp > 0:
+        var t_links = []
+        if "tether_links" in self.ball: t_links = self.ball.tether_links
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("tether_links"): t_links = self.ball.get_meta("tether_links")
+        var acc = 0.0
+        if "tether_accumulated_damage" in self.ball: acc = self.ball.tether_accumulated_damage
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("tether_accumulated_damage"): acc = self.ball.get_meta("tether_accumulated_damage")
+        var reflected_damage = acc * 0.5 + 20.0
+
+        if "balls" in self.world:
+            for b in self.world.balls:
+                var bid = -1
+                if "id" in b: bid = b.id
+                elif b.has_method("get_meta") and b.has_meta("id"): bid = b.get_meta("id")
+
+                if t_links.has(bid) or t_links.has(str(bid)):
+                    var is_alive = true
+                    if "alive" in b: is_alive = b.alive
+                    elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+                    if is_alive:
+                        if b.has_method("take_damage"): b.take_damage(reflected_damage)
+                        elif "hp" in b:
+                            b.hp -= reflected_damage
+                            if b.hp <= 0:
+                                b.alive = false
+
+                        if self.has_method("_spawn_directed_particles"):
+                            self._spawn_directed_particles(self.ball, b, "tether_snap")
     if damage_taken > 0 and is_hologram_stat:
         if typeof(self.ball) == TYPE_DICTIONARY:
             self.ball["hp"] = 0.0
@@ -34075,6 +34121,111 @@ func _use_skill():
                     if self.ball.has("skill_timer"): self.ball["skill_timer"] = cd
 
 
+        elif skill_name == "deploy_tether_decoy":
+            var nearby_enemies = []
+            var enemies = self._get_enemies()
+            for e in enemies:
+                var ex = e.x if "x" in e else e.get_meta("x")
+                var ey = e.y if "y" in e else e.get_meta("y")
+                var sx = self.ball.x if "x" in self.ball else self.ball.get_meta("x")
+                var sy = self.ball.y if "y" in self.ball else self.ball.get_meta("y")
+                var dist_sq = (ex - sx) * (ex - sx) + (ey - sy) * (ey - sy)
+                if dist_sq < 250000.0:
+                    nearby_enemies.append(e)
+
+            var decoy = null
+            if self.ball.has_method("duplicate"): decoy = self.ball.duplicate()
+            elif typeof(self.ball) == TYPE_DICTIONARY: decoy = self.ball.duplicate()
+
+            if decoy != null:
+                var d_id = randi() % 90000 + 10000
+                if self.world.has_method("get") and self.world.get("next_id") != null:
+                    d_id = self.world.next_id
+                    self.world.next_id += 1
+
+                var owner_id = -1
+                if "id" in self.ball: owner_id = self.ball.id
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+
+                var max_hp = 100.0
+                if "max_hp" in self.ball: max_hp = float(self.ball.max_hp)
+                elif self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): max_hp = float(self.ball.get_meta("max_hp"))
+
+                var t_links = []
+                for e in nearby_enemies:
+                    if "id" in e: t_links.append(e.id)
+                    elif e.has_method("get_meta") and e.has_meta("id"): t_links.append(e.get_meta("id"))
+
+                if typeof(decoy) == TYPE_DICTIONARY:
+                    decoy["id"] = d_id
+                    decoy["owner_id"] = owner_id
+                    decoy["is_decoy"] = true
+                    decoy["decoy_type"] = "tether"
+                    decoy["decoy_timer"] = 6.0
+                    decoy["hp"] = max_hp * 0.5
+                    decoy["max_hp"] = decoy["hp"]
+                    decoy["damage"] = 0.0
+                    decoy["skill_timer"] = 9999.0
+                    decoy["skill"] = null
+                    decoy["active_skill"] = null
+                    decoy["tether_links"] = t_links
+                    decoy["tether_accumulated_damage"] = 0.0
+
+                    var angle = randf() * 2.0 * PI
+                    decoy["x"] += cos(angle) * 30.0
+                    decoy["y"] += sin(angle) * 30.0
+                else:
+                    if "id" in decoy: decoy.id = d_id
+                    else: decoy.set_meta("id", d_id)
+
+                    if "owner_id" in decoy: decoy.owner_id = owner_id
+                    else: decoy.set_meta("owner_id", owner_id)
+
+                    if "is_decoy" in decoy: decoy.is_decoy = true
+                    else: decoy.set_meta("is_decoy", true)
+
+                    if "decoy_type" in decoy: decoy.decoy_type = "tether"
+                    else: decoy.set_meta("decoy_type", "tether")
+
+                    if "decoy_timer" in decoy: decoy.decoy_timer = 6.0
+                    else: decoy.set_meta("decoy_timer", 6.0)
+
+                    if "hp" in decoy: decoy.hp = max_hp * 0.5
+                    else: decoy.set_meta("hp", max_hp * 0.5)
+
+                    if "max_hp" in decoy: decoy.max_hp = max_hp * 0.5
+                    else: decoy.set_meta("max_hp", max_hp * 0.5)
+
+                    if "damage" in decoy: decoy.damage = 0.0
+                    else: decoy.set_meta("damage", 0.0)
+
+                    if "skill_timer" in decoy: decoy.skill_timer = 9999.0
+                    else: decoy.set_meta("skill_timer", 9999.0)
+
+                    if "skill" in decoy: decoy.skill = null
+                    else: decoy.set_meta("skill", null)
+
+                    if "active_skill" in decoy: decoy.active_skill = null
+                    else: decoy.set_meta("active_skill", null)
+
+                    if "tether_links" in decoy: decoy.tether_links = t_links
+                    else: decoy.set_meta("tether_links", t_links)
+
+                    if "tether_accumulated_damage" in decoy: decoy.tether_accumulated_damage = 0.0
+                    else: decoy.set_meta("tether_accumulated_damage", 0.0)
+
+                    var angle = randf() * 2.0 * PI
+                    if "x" in decoy: decoy.x += cos(angle) * 30.0
+                    else: decoy.set_meta("x", decoy.get_meta("x") + cos(angle) * 30.0)
+                    if "y" in decoy: decoy.y += sin(angle) * 30.0
+                    else: decoy.set_meta("y", decoy.get_meta("y") + sin(angle) * 30.0)
+
+                if "balls" in self.world:
+                    self.world.balls.append(decoy)
+
+                for e in nearby_enemies:
+                    if self.has_method("_spawn_directed_particles"):
+                        self._spawn_directed_particles(decoy, e, "tether_link")
         elif skill_name == "deploy_decoy" or skill_name == "deploy_decoy_flash" or skill_name == "deploy_decoy_advanced":
             var active_decoys = []
             var has_swapped_any = false
