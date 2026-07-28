@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1595] Reverse Time Zone — *2026-07-28 14:38:35 UTC*
+
+A battle royale where being outside the safe zone doesn't deal damage, but instead continuously reverses the player's position back in time, trapping them in the storm forever.
+
+---
+
 ## [idea-1648] Slippery Ice Arena Mode — *2026-07-28 13:24:10 UTC*
 
 An arena mode where balls experience heavily reduced friction, making it harder to change directions quickly.
