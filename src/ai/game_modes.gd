@@ -66034,3 +66034,220 @@ GAME_MODES['toxic_sludge_mutator'] = ToxicSludgeMutatorMode.new()
 GAME_MODES["blind_fragment_auction"] = BlindFragmentAuctionMode.new()
 GAME_MODES["mobile_platform"] = MobilePlatformMode.new()
 GAME_MODES["kinetic_battery"] = load("res://src/ai/kinetic_battery.gd").new()
+
+class AmmoDepotMode extends GameMode:
+	var ammo_spawn_timer: float = 2.0
+
+	func _init() -> void:
+		name = "Ammo Depot"
+		description = "Players start with extremely low attack speed and damage, and must pick up ammo packs to fight effectively."
+
+	func setup(world, balls: Array) -> void:
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+				b.set_meta("ammo_buff_timer", 0.0)
+
+				var orig_dmg = 10.0
+				var orig_as = 1.0
+
+				if not b.has_meta("original_base_damage"):
+					orig_dmg = 10.0
+					b.set_meta("original_base_damage", orig_dmg)
+				else:
+					orig_dmg = b.get_meta("original_base_damage")
+
+				if not b.has_meta("original_attack_speed"):
+					orig_as = 1.0
+					b.set_meta("original_attack_speed", orig_as)
+				else:
+					orig_as = b.get_meta("original_attack_speed")
+
+				if "base_damage" in b: b.base_damage = orig_dmg * 0.1
+				elif b.has_method("set"): b.set("base_damage", orig_dmg * 0.1)
+
+				if "attack_speed" in b: b.attack_speed = orig_as * 0.1
+				elif b.has_method("set"): b.set("attack_speed", orig_as * 0.1)
+
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["ammo_buff_timer"] = 0.0
+
+				if not b.has("original_base_damage"):
+					b["original_base_damage"] = 10.0
+				if not b.has("original_attack_speed"):
+					b["original_attack_speed"] = 1.0
+
+				b["base_damage"] = b["original_base_damage"] * 0.1
+				b["attack_speed"] = b["original_attack_speed"] * 0.1
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("boosters") and world.has("arena"):
+				ammo_spawn_timer -= delta
+				if ammo_spawn_timer <= 0:
+					ammo_spawn_timer = randf_range(1.5, 3.5)
+					var ammo_count = 0
+					for booster in world.boosters:
+						if typeof(booster) == TYPE_DICTIONARY and booster.get("kind", "") == "ammo_pack":
+							ammo_count += 1
+						elif typeof(booster) == TYPE_OBJECT and "kind" in booster and booster.kind == "ammo_pack":
+							ammo_count += 1
+
+					if ammo_count < 15:
+						var bx = randf_range(100, world.arena.get("width", 2000) - 100)
+						var by = randf_range(100, world.arena.get("height", 2000) - 100)
+						world.boosters.append({
+							"id": 9500 + world.boosters.size() + (randi() % 1000),
+							"x": bx,
+							"y": by,
+							"kind": "ammo_pack",
+							"radius": 15.0,
+							"ball_type": "booster",
+							"active": true
+						})
+			elif typeof(world) == TYPE_OBJECT and "boosters" in world and "arena" in world:
+				ammo_spawn_timer -= delta
+				if ammo_spawn_timer <= 0:
+					ammo_spawn_timer = randf_range(1.5, 3.5)
+					var ammo_count = 0
+					for booster in world.boosters:
+						if typeof(booster) == TYPE_DICTIONARY and booster.get("kind", "") == "ammo_pack":
+							ammo_count += 1
+						elif typeof(booster) == TYPE_OBJECT and "kind" in booster and booster.kind == "ammo_pack":
+							ammo_count += 1
+
+					if ammo_count < 15:
+						var w_width = 2000
+						var w_height = 2000
+						if typeof(world.arena) == TYPE_OBJECT:
+							if "width" in world.arena: w_width = world.arena.width
+							if "height" in world.arena: w_height = world.arena.height
+						elif typeof(world.arena) == TYPE_DICTIONARY:
+							w_width = world.arena.get("width", 2000)
+							w_height = world.arena.get("height", 2000)
+
+						var bx = randf_range(100, w_width - 100)
+						var by = randf_range(100, w_height - 100)
+						var new_ammo = {
+							"id": 9500 + world.boosters.size() + (randi() % 1000),
+							"x": bx,
+							"y": by,
+							"kind": "ammo_pack",
+							"radius": 15.0,
+							"ball_type": "booster",
+							"active": true
+						}
+						world.boosters.append(new_ammo)
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+			if not b_alive: continue
+
+			var buff_timer = 0.0
+			var has_timer = false
+			var orig_dmg = 10.0
+			var orig_as = 1.0
+
+			if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ammo_buff_timer"):
+				has_timer = true
+				buff_timer = b.get_meta("ammo_buff_timer")
+				orig_dmg = b.get_meta("original_base_damage") if b.has_meta("original_base_damage") else 10.0
+				orig_as = b.get_meta("original_attack_speed") if b.has_meta("original_attack_speed") else 1.0
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ammo_buff_timer"):
+				has_timer = true
+				buff_timer = b["ammo_buff_timer"]
+				orig_dmg = b.get("original_base_damage", 10.0)
+				orig_as = b.get("original_attack_speed", 1.0)
+
+			if has_timer:
+				buff_timer -= delta
+				if buff_timer <= 0:
+					buff_timer = 0.0
+					if typeof(b) == TYPE_OBJECT:
+						if "base_damage" in b: b.base_damage = orig_dmg * 0.1
+						elif b.has_method("set"): b.set("base_damage", orig_dmg * 0.1)
+						if "attack_speed" in b: b.attack_speed = orig_as * 0.1
+						elif b.has_method("set"): b.set("attack_speed", orig_as * 0.1)
+						b.set_meta("ammo_buff_timer", buff_timer)
+					else:
+						b["base_damage"] = orig_dmg * 0.1
+						b["attack_speed"] = orig_as * 0.1
+						b["ammo_buff_timer"] = buff_timer
+				else:
+					if typeof(b) == TYPE_OBJECT:
+						if "base_damage" in b: b.base_damage = orig_dmg * 2.0
+						elif b.has_method("set"): b.set("base_damage", orig_dmg * 2.0)
+						if "attack_speed" in b: b.attack_speed = orig_as * 2.0
+						elif b.has_method("set"): b.set("attack_speed", orig_as * 2.0)
+						b.set_meta("ammo_buff_timer", buff_timer)
+					else:
+						b["base_damage"] = orig_dmg * 2.0
+						b["attack_speed"] = orig_as * 2.0
+						b["ammo_buff_timer"] = buff_timer
+
+			if world != null:
+				var boosters_list = []
+				if typeof(world) == TYPE_DICTIONARY and world.has("boosters"): boosters_list = world.boosters
+				elif typeof(world) == TYPE_OBJECT and "boosters" in world: boosters_list = world.boosters
+
+				if boosters_list.size() > 0:
+					var b_x = 0.0
+					var b_y = 0.0
+					var b_r = 20.0
+					if typeof(b) == TYPE_OBJECT:
+						if "x" in b: b_x = b.x
+						elif b.has_method("get"):
+							var get_x = b.get("x")
+							if get_x != null: b_x = get_x
+						if "y" in b: b_y = b.y
+						elif b.has_method("get"):
+							var get_y = b.get("y")
+							if get_y != null: b_y = get_y
+						if "radius" in b: b_r = b.radius
+						elif b.has_method("get"):
+							var get_r = b.get("radius")
+							if get_r != null: b_r = get_r
+					elif typeof(b) == TYPE_DICTIONARY:
+						b_x = b.get("x", 0.0)
+						b_y = b.get("y", 0.0)
+						b_r = b.get("radius", 20.0)
+
+					for booster in boosters_list:
+						var k = ""
+						var active = false
+						var bx = 0.0
+						var by = 0.0
+						var br = 15.0
+						if typeof(booster) == TYPE_DICTIONARY:
+							k = booster.get("kind", "")
+							active = booster.get("active", false)
+							bx = booster.get("x", 0.0)
+							by = booster.get("y", 0.0)
+							br = booster.get("radius", 15.0)
+						elif typeof(booster) == TYPE_OBJECT:
+							if "kind" in booster: k = booster.kind
+							if "active" in booster: active = booster.active
+							if "x" in booster: bx = booster.x
+							if "y" in booster: by = booster.y
+							if "radius" in booster: br = booster.radius
+
+						if k == "ammo_pack" and active:
+							var dx = b_x - bx
+							var dy = b_y - by
+							if dx*dx + dy*dy <= (b_r + br) * (b_r + br):
+								if typeof(booster) == TYPE_DICTIONARY: booster["active"] = false
+								elif typeof(booster) == TYPE_OBJECT and "active" in booster: booster.active = false
+
+								if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+									b.set_meta("ammo_buff_timer", 4.0)
+								elif typeof(b) == TYPE_DICTIONARY:
+									b["ammo_buff_timer"] = 4.0
+
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									var bid = 0
+									if typeof(b) == TYPE_OBJECT and "id" in b: bid = b.id
+									elif typeof(b) == TYPE_DICTIONARY: bid = b.get("id", 0)
+									world.add_event("ammo_pickup", {"ball_id": bid})
+
+GAME_MODES["ammo_depot"] = AmmoDepotMode.new()
