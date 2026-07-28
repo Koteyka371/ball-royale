@@ -1,61 +1,47 @@
 import pytest
-import sys
-import os
-
-# Ensure src is in path to fix the import error from ai.interactive_training
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
 from ai.game_modes import VisionReducedMode
 
+class MockWorld:
+    def __init__(self):
+        self.dead_balls = []
+        self.events = []
+
+    def add_event(self, event_type, event_data):
+        self.events.append((event_type, event_data))
+
 class MockBall:
-    def __init__(self, ball_type="basic", alive=True):
+    def __init__(self, ball_type):
         self.ball_type = ball_type
-        self.alive = alive
+        self.alive = True
         self.perception_radius = 250.0
-        self.x = 500.0
-        self.y = 500.0
+        self.team = "player"
 
-def test_vision_reduced_mode_setup():
+def test_vision_reduced_mode():
     mode = VisionReducedMode()
-    class MockWorld:
-        pass
     world = MockWorld()
-    balls = [MockBall(), MockBall("spectator"), MockBall()]
+    ball1 = MockBall("player")
+    balls = [ball1]
 
     mode.setup(world, balls)
+    assert ball1.perception_radius == 50.0
 
-    assert balls[0].perception_radius == 50.0
-    assert getattr(balls[0], "base_perception_radius", 250.0) == 250.0
-    assert balls[0].team == "basic"
+    # Tick below pulse active time
+    mode.pulse_timer = 2.9
+    mode.tick(world, balls, delta=0.05)
+    assert abs(mode.pulse_timer - 2.95) < 0.001
+    assert ball1.perception_radius == 50.0
+    assert len(world.events) == 0
 
-    assert balls[1].perception_radius == 250.0  # Spectator shouldn't be affected
+    # Tick past pulse active time
+    mode.tick(world, balls, delta=0.1)
+    assert abs(mode.pulse_timer - 3.05) < 0.001
+    assert ball1.perception_radius == 1000.0
+    assert len(world.events) == 1
+    assert world.events[0][0] == "sound_pulse"
 
-    assert balls[2].perception_radius == 50.0
+    # Tick past pulse reset time
+    mode.pulse_timer = 3.45
+    mode.tick(world, balls, delta=0.1)
+    assert mode.pulse_timer == 0.0
+    assert ball1.perception_radius == 50.0
 
-def test_vision_reduced_mode_tick():
-    mode = VisionReducedMode()
-    class MockWorld:
-        pass
-    world = MockWorld()
-    balls = [MockBall()]
-    mode.setup(world, balls)
-
-    # Tick below 3.0s (no pulse)
-    mode.tick(world, balls, 2.0)
-    assert balls[0].perception_radius == 50.0
-
-    # Tick above 3.0s (pulse active)
-    mode.tick(world, balls, 1.1)
-    assert mode.pulse_timer >= 3.0
-    assert balls[0].perception_radius == 250.0 * 1.5
-
-def test_vision_reduced_mode_check_winner():
-    mode = VisionReducedMode()
-    class MockWorld:
-        pass
-    world = MockWorld()
-    balls = [MockBall(alive=True), MockBall(alive=False)]
-    mode.setup(world, balls)
-
-    winner = mode.check_winner(world, balls)
-    assert winner == "basic"

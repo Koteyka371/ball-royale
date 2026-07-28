@@ -10530,13 +10530,19 @@ class VisionReducedMode(GameMode):
             else:
                 is_pulse_active = True
 
+        # Emit a sound pulse when the pulse becomes active
+        if is_pulse_active and self.pulse_timer - delta < 3.0:
+            if hasattr(world, "add_event"):
+                world.add_event("sound_pulse", {"type": "sound_pulse", "message": "Sonar pulse reveals the arena!"})
+
         for b in balls:
             w_timer = getattr(b, 'weather_immunity_timer', 0.0)
             is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
             if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
                 # Sonar-like pulses temporarily restore or enhance perception
                 if is_pulse_active:
-                    b.perception_radius = getattr(b, "base_perception_radius", 250.0) * 1.5
+                    # pulse reveals enemies and walls momentarily. We can just set it to a very large number
+                    b.perception_radius = 1000.0
                 else:
                     b.perception_radius = 50.0
 
