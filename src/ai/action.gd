@@ -13671,6 +13671,14 @@ func execute(strategy: String, delta: float):
                                         if "silence_timer" in other: other.silence_timer = new_silence
                                         elif other.has_method("set_meta"): other.set_meta("silence_timer", new_silence)
 
+                                        var current_skill = 0.0
+                                        if "skill_timer" in other: current_skill = float(other.skill_timer)
+                                        elif other.has_method("get_meta") and other.has_meta("skill_timer"): current_skill = float(other.get_meta("skill_timer"))
+
+                                        var new_skill = max(current_skill, 3.0)
+                                        if "skill_timer" in other: other.skill_timer = new_skill
+                                        elif other.has_method("set_meta"): other.set_meta("skill_timer", new_skill)
+
                                     elif is_enemy and b_decoy_type != "healing":
                                         var emp_combo = false
                                         if simultaneous and (b_decoy_type == "explosive" or b_decoy_type == "stun_trap"):
