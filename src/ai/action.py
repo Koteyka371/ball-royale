@@ -10829,8 +10829,13 @@ class Action:
                                 bounce_strength = 2000.0 * delta
                                 if getattr(self.ball, "kinetic_shield_active", False):
                                     bounce_strength *= 0.5
-                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
-                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                    if getattr(self.ball, "bumper_synergy_active", False):
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.15)
+                                        self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
+                                        self.ball.mass = min(getattr(self.ball, "mass", 1.0) + 0.1, self.ball.base_mass * 5.0)
+                                    else:
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
+                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
 
@@ -10901,8 +10906,13 @@ class Action:
                                 bounce_strength = 2000.0 * delta
                                 if getattr(self.ball, "kinetic_shield_active", False):
                                     bounce_strength *= 0.5
-                                    self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
-                                    self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
+                                    if getattr(self.ball, "bumper_synergy_active", False):
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.15)
+                                        self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
+                                        self.ball.mass = min(getattr(self.ball, "mass", 1.0) + 0.1, self.ball.base_mass * 5.0)
+                                    else:
+                                        self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
+                                        self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
                                 self.ball.x += nx * bounce_strength
                                 self.ball.y += ny * bounce_strength
                                 self.ball.vx = nx * 4000.0
@@ -10945,6 +10955,9 @@ class Action:
                                         bounce_strength *= 0.5
                                         if getattr(self.ball, "bumper_synergy_active", False):
                                             self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.15)
+
+                                            self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
+                                            self.ball.mass = min(getattr(self.ball, "mass", 1.0) + 0.1, self.ball.base_mass * 5.0)
                                         else:
                                             self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
                                             self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
@@ -11033,6 +11046,9 @@ class Action:
                                     bounce_strength *= 0.5
                                     if syn_active:
                                         self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.15)
+
+                                        self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
+                                        self.ball.mass = min(getattr(self.ball, "mass", 1.0) + 0.1, self.ball.base_mass * 5.0)
                                     else:
                                         self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
                                         self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
