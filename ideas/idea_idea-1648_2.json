@@ -1,0 +1,4 @@
+{
+  "title": "Momentum Steal Active Item",
+  "description": "An active item that, when triggered on collision, steals 50% of the target's current velocity and adds it to the user's velocity."
+}
