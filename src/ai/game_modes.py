@@ -31319,6 +31319,118 @@ class RandomGravityShiftMode(GameMode):
                 if hasattr(h, 'vy'):
                     h.vy += self.gravity_strength * self.gravity_dir_y * mass * delta
 
+class VulnerabilitySafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vulnerability Safe Zone"
+        self.description = "The safe zone shrinks as usual, but instead of straight damage, balls outside the zone take increasing damage multipliers from all sources based on how far out they are."
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if not getattr(b, "alive", False):
+                if b not in world.dead_balls:
+                    b.time_since_death = 0.0
+                    world.dead_balls.append(b)
+                else:
+                    b.time_since_death = getattr(b, "time_since_death", 0.0) + delta
+
+        # Move the safe zone
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            move_speed = 15.0 # pixels per second
+            self.zone_x += (dx / dist) * move_speed * delta
+            self.zone_y += (dy / dist) * move_speed * delta
+        else:
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+
+        paused_this_tick = self.shrink_pause_timer > 0
+        if self.shrink_pause_timer > 0:
+            self.shrink_pause_timer -= delta
+            if self.shrink_pause_timer < 0:
+                self.shrink_pause_timer = 0.0
+
+        players_in_zone = 0
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx_b = b.x - self.zone_x
+                dy_b = b.y - self.zone_y
+                dist_b = math.sqrt(dx_b*dx_b + dy_b*dy_b)
+                if dist_b <= self.zone_radius:
+                    players_in_zone += 1
+
+        shrink_multiplier = max(1.0, float(players_in_zone))
+
+        # Shrink the safe zone
+        if not paused_this_tick and self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
+            if self.zone_radius <= self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+                if not self.collapse_triggered:
+                    self.collapse_triggered = True
+                    if hasattr(world, "add_event"):
+                        world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+        elif getattr(self, "collapse_triggered", False):
+            if not paused_this_tick and self.zone_radius > 0:
+                self.zone_radius -= self.shrink_rate * shrink_multiplier * delta
+                if self.zone_radius < 0:
+                    self.zone_radius = 0.0
+
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dx = self.zone_x - b.x
+                    dy = self.zone_y - b.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        pull_strength = 2000.0
+                        if not hasattr(b, "vx"): b.vx = 0.0
+                        if not hasattr(b, "vy"): b.vy = 0.0
+                        b.vx += (dx / dist) * pull_strength * delta
+                        b.vy += (dy / dist) * pull_strength * delta
+
+        # Apply vulnerability multiplier instead of flat damage
+        for b in balls:
+            w_timer = getattr(b, 'weather_immunity_timer', 0.0)
+            is_immune = (w_timer > 0.0) if isinstance(w_timer, (int, float)) else False
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = b.x - self.zone_x
+                dy = b.y - self.zone_y
+                distance_to_center = math.sqrt(dx*dx + dy*dy)
+
+                if distance_to_center > self.zone_radius:
+                    # Calculate multiplier based on how far outside they are
+                    extra_dist = distance_to_center - self.zone_radius
+                    multiplier = 1.0 + (extra_dist / 100.0)
+                    if getattr(self, 'collapse_triggered', False):
+                        multiplier *= 2.0
+                    b.vulnerability_multiplier = multiplier
+
+                    ping_timer = getattr(b, "minimap_ping_timer", 0.0)
+                    if ping_timer <= 0:
+                        if hasattr(world, "add_event"):
+                            world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "orange", "duration": 0.5})
+                        b.minimap_ping_timer = 1.0
+                    else:
+                        b.minimap_ping_timer = ping_timer - delta
+                else:
+                    b.vulnerability_multiplier = 1.0
+
+
 class ContinuousShrinkSafeZoneMode(SafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -32664,6 +32776,7 @@ GAME_MODES = {
     'vampiric_mutator': VampiricMutatorMode(),
     'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
+    'vulnerability_safe_zone': VulnerabilitySafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     "singularity_bomb_event": SingularityBombEventMode(),

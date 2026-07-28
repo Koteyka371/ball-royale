@@ -50464,6 +50464,124 @@ class RandomGravityShiftMode extends GameMode:
 				if h.has("vy"):
 					h["vy"] += gravity_strength * gravity_dir_y * mass * delta
 
+class VulnerabilitySafeZoneMode extends SafeZoneMode:
+	func _init():
+		super._init()
+		name = "Vulnerability Safe Zone"
+		description = "The safe zone shrinks as usual, but instead of straight damage, balls outside the zone take increasing damage multipliers from all sources based on how far out they are."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		if world != null and world.has_method("get_node") and world.has_node("CrowdSystem"):
+			var crowd = world.get_node("CrowdSystem")
+			var kill_log = []
+			if "kill_log" in world: kill_log = world.kill_log
+			var current_tick = 0
+			if "tick" in world: current_tick = world.tick
+			crowd.tick(balls, kill_log, current_tick)
+
+		if not "dead_balls" in world:
+			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
+
+		for b in balls:
+			if not b.alive:
+				if not world.get_meta("dead_balls").has(b):
+					if b.has_method("set_meta"):
+						b.set_meta("time_since_death", 0.0)
+					world.get_meta("dead_balls").append(b)
+				else:
+					if b.has_method("get_meta") and b.has_meta("time_since_death"):
+						b.set_meta("time_since_death", b.get_meta("time_since_death") + delta)
+
+		var dx = zone_target_x - zone_x
+		var dy = zone_target_y - zone_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 5.0:
+			var move_speed = 15.0
+			zone_x += (dx / dist) * move_speed * delta
+			zone_y += (dy / dist) * move_speed * delta
+		else:
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world != null and "arena" in world and world.arena:
+				if "width" in world.arena: arena_width = float(world.arena.width)
+				if "height" in world.arena: arena_height = float(world.arena.height)
+			var buffer = max(100.0, zone_radius * 0.5)
+			zone_target_x = randf_range(buffer, arena_width - buffer)
+			zone_target_y = randf_range(buffer, arena_height - buffer)
+
+		var paused_this_tick = shrink_pause_timer > 0
+		if shrink_pause_timer > 0:
+			shrink_pause_timer -= delta
+			if shrink_pause_timer < 0:
+				shrink_pause_timer = 0.0
+
+		var players_in_zone = 0
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+				var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+				var dx_b = b_x - zone_x
+				var dy_b = b_y - zone_y
+				var dist_b = sqrt(dx_b*dx_b + dy_b*dy_b)
+				if dist_b <= zone_radius:
+					players_in_zone += 1
+
+		var shrink_multiplier = max(1.0, float(players_in_zone))
+
+		if not paused_this_tick and zone_radius > min_zone_radius:
+			zone_radius -= shrink_rate * shrink_multiplier * delta
+			if zone_radius <= min_zone_radius:
+				zone_radius = min_zone_radius
+				if not collapse_triggered:
+					collapse_triggered = true
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("collapse_event", {"type": "collapse_event", "message": "COLLAPSE EVENT! The zone collapses!"})
+		elif collapse_triggered:
+			if not paused_this_tick and zone_radius > 0:
+				zone_radius -= shrink_rate * shrink_multiplier * delta
+				if zone_radius < 0:
+					zone_radius = 0.0
+
+			for b in balls:
+				if b.alive and b.ball_type != "spectator":
+					var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+					var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+					var dist_b = sqrt((zone_x - b_x)*(zone_x - b_x) + (zone_y - b_y)*(zone_y - b_y))
+					if dist_b > 0:
+						var pull_strength = 2000.0
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += ((zone_x - b_x) / dist_b) * pull_strength * delta
+						b.vy += ((zone_y - b_y) / dist_b) * pull_strength * delta
+
+		for b in balls:
+			if b.alive and b.ball_type != "spectator":
+				var b_x = b.get("position").x if b.get("position") != null else b.get("x")
+				var b_y = b.get("position").y if b.get("position") != null else b.get("y")
+				var distance_to_center = sqrt((b_x - zone_x)*(b_x - zone_x) + (b_y - zone_y)*(b_y - zone_y))
+
+				if distance_to_center > zone_radius:
+					var extra_dist = distance_to_center - zone_radius
+					var multiplier = 1.0 + (extra_dist / 100.0)
+					if collapse_triggered:
+						multiplier *= 2.0
+
+					if b.has_method("set_meta"):
+						b.set_meta("vulnerability_multiplier", multiplier)
+					b.vulnerability_multiplier = multiplier
+
+					if "minimap_ping_timer" not in b or b.minimap_ping_timer <= 0:
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("minimap_ping", {"x": b_x, "y": b_y, "color": "orange", "duration": 0.5})
+						b.minimap_ping_timer = 1.0
+					else:
+						b.minimap_ping_timer -= delta
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("vulnerability_multiplier", 1.0)
+					b.vulnerability_multiplier = 1.0
+
+
 class ContinuousShrinkSafeZoneMode extends SafeZoneMode:
 	func _init() -> void:
 		super()
@@ -52285,6 +52403,7 @@ var GAME_MODES = {
 	"vampiric_mutator": VampiricMutatorMode.new(),
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
+	"vulnerability_safe_zone": VulnerabilitySafeZoneMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"singularity_bomb_event": SingularityBombEventMode.new(),
 	"expanding_hazard_bubbles": ExpandingHazardBubblesMode.new(),
