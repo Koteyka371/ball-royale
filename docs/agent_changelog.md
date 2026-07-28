@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1648] Slippery Ice Arena Mode — *2026-07-28 13:24:10 UTC*
+
+An arena mode where balls experience heavily reduced friction, making it harder to change directions quickly.
+
+---
+
 ## [idea-1592] Mirror Image Decoy Booster — *2026-07-28 12:45:13 UTC*
 
 A booster that, when picked up, spawns two intangible clones of the ball that move in mirrored paths from the original ball. They don't do damage, but confuse enemies and disappear after 5 seconds or upon taking damage.

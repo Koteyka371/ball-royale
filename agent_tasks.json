@@ -28207,7 +28207,7 @@
     },
     {
       "id": "idea-1648",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Slippery Ice Arena Mode",
@@ -41245,6 +41245,57 @@
         "src/ai/gladiator_chains.py",
         "src/ai/gladiator_chains.gd",
         "tests/test_gladiator_chains.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2414",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cosmic Conveyor Belts",
+      "description": "A mode featuring massive invisible conveyor belts that continuously shift players across the arena. Kinetic shields can interact with the belts to temporarily halt them or reverse their direction.",
+      "allowed_paths": [
+        "src/ai/cosmic_conveyor_belts.py",
+        "src/ai/cosmic_conveyor_belts.gd",
+        "tests/test_cosmic_conveyor_belts.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2415",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Magnetized Asteroid Field",
+      "description": "Players navigate an asteroid field with magnetized rocks that selectively pull or repel depending on the charge a player has accumulated. Striking differently colored rocks reverses the player's polarity.",
+      "allowed_paths": [
+        "src/ai/magnetized_asteroid_field.py",
+        "src/ai/magnetized_asteroid_field.gd",
+        "tests/test_magnetized_asteroid_field.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2416",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Kinetic Feedback Shield",
+      "description": "An active aura that absorbs all incoming kinetic energy (push force from projectiles and impacts) for 3 seconds. Instead of dealing damage, hits increase the ball's size and mass up to 300%. When the duration ends, the ball releases a shockwave whose radius and knockback scale with the absorbed mass.",
+      "allowed_paths": [
+        "src/ai/kinetic_feedback_shield.py",
+        "src/ai/kinetic_feedback_shield.gd",
+        "tests/test_kinetic_feedback_shield.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
