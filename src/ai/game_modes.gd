@@ -50304,6 +50304,31 @@ class RandomGravityShiftMode extends GameMode:
 				if h.has("vy"):
 					h["vy"] += gravity_strength * gravity_dir_y * mass * delta
 
+class ExtremeBouncingSafeZoneMode extends SafeZoneMode:
+	var bounce_multiplier: float = 4.0
+	var _original_radius_set: bool = false
+	var original_radius: float = 500.0
+
+	func _init() -> void:
+		name = "Extreme Bouncing Safe Zone"
+		description = "Combines Extreme Bounciness with a shrinking safe zone. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios."
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var max_radius = 500.0
+		if not _original_radius_set:
+			original_radius = zone_radius
+			_original_radius_set = true
+		max_radius = original_radius
+
+		var current_radius = max(min_zone_radius, zone_radius)
+		var range_val = max(1.0, max_radius - min_zone_radius)
+		var ratio = max(0.0, min(1.0, (current_radius - min_zone_radius) / range_val))
+
+		bounce_multiplier = 4.0 + (1.0 - ratio) * 6.0
+
+
 class ContinuousShrinkSafeZoneMode extends SafeZoneMode:
 	func _init() -> void:
 		super()
@@ -51909,6 +51934,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"bouncy_terrain": BouncyTerrainMode.new(),
 	"chaotic_pinball_machine": ChaoticPinballMachineMode.new(),
 	"extreme_bounciness": ExtremeBouncinessMode.new(),
+	"extreme_bouncing_safe_zone": ExtremeBouncingSafeZoneMode.new(),
 	"super_bouncy_arena": SuperBouncyArenaMode.new(),
 	"jump_pad_boundaries": JumpPadBoundariesMode.new(),
 	"pinball": PinballMode.new(),

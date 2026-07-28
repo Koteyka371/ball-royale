@@ -11965,7 +11965,7 @@ class Action:
                     new_speed = min(speed * 2.5, 3500.0)
                 elif gm and getattr(gm, "name", "") == "Chaotic Pinball Machine":
                     new_speed = min(speed * 2.0, 10000.0)
-                elif gm and getattr(gm, "name", "") in ["Extreme Bounciness", "Super Bouncy Arena"]:
+                elif gm and getattr(gm, "name", "") in ["Extreme Bounciness", "Super Bouncy Arena", "Extreme Bouncing Safe Zone"]:
                     new_speed = min(speed * 4.0, 5000.0)
                 elif gm and getattr(gm, "name", "") == "Jump Pad Boundaries":
                     new_speed = min(speed * 4.0, 5000.0)
@@ -11991,7 +11991,7 @@ class Action:
                 elif gm and getattr(gm, "name", "") == "Chaotic Pinball Machine":
                     is_bouncy_terrain = True
                     is_mirror_walls = True
-                elif gm and getattr(gm, "name", "") in ["Extreme Bounciness", "Super Bouncy Arena"]:
+                elif gm and getattr(gm, "name", "") in ["Extreme Bounciness", "Super Bouncy Arena", "Extreme Bouncing Safe Zone"]:
                     is_bouncy_terrain = True
                     is_mirror_walls = True
                 elif gm and getattr(gm, "name", "") == "Jump Pad Boundaries":
@@ -20117,11 +20117,13 @@ class Action:
                 bounced = True
 
         gm = getattr(self.world, "game_mode", None)
-        if bounced and gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]:
+        if bounced and gm and getattr(gm, "name", "") in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Extreme Bouncing Safe Zone", "Chaotic Pinball Machine", "Jump Pad Boundaries"]:
             if getattr(gm, "name", "") == "Ricochet Arena":
                 mult = getattr(gm, "velocity_multiplier", 3.0)
             elif getattr(gm, "name", "") == "Jump Pad Boundaries":
                 mult = 3.0
+            elif getattr(gm, "name", "") == "Extreme Bouncing Safe Zone":
+                mult = getattr(gm, "bounce_multiplier", 4.0)
             else:
                 mult = 2.0
 

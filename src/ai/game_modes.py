@@ -31250,6 +31250,35 @@ class ContinuousShrinkSafeZoneMode(SafeZoneMode):
         self.shrink_pause_timer = 0.0
         super().tick(world, balls, delta)
 
+
+class ExtremeBouncingSafeZoneMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Extreme Bouncing Safe Zone"
+        self.description = "Combines Extreme Bounciness with a shrinking safe zone. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios."
+        self.bounce_multiplier = 4.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        # Calculate dynamic bounce multiplier
+        if hasattr(self, "zone_radius") and hasattr(self, "min_zone_radius"):
+            # Assume max initial radius is around 500
+            max_radius = 500.0
+            if hasattr(self, "original_radius"):
+                max_radius = self.original_radius
+            elif not hasattr(self, "_original_radius_set"):
+                self.original_radius = self.zone_radius
+                self._original_radius_set = True
+                max_radius = self.original_radius
+
+            current_radius = max(self.min_zone_radius, self.zone_radius)
+            range_val = max(1.0, max_radius - self.min_zone_radius)
+            ratio = max(0.0, min(1.0, (current_radius - self.min_zone_radius) / range_val))
+
+            # Base bounce multiplier is 4.0, max is 10.0
+            self.bounce_multiplier = 4.0 + (1.0 - ratio) * 6.0
+
 class ReverseTimePenaltyMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -32408,6 +32437,7 @@ GAME_MODES = {
     "bouncy_terrain": BouncyTerrainMode(),
     "chaotic_pinball_machine": ChaoticPinballMachineMode(),
     "extreme_bounciness": ExtremeBouncinessMode(),
+    "extreme_bouncing_safe_zone": ExtremeBouncingSafeZoneMode(),
     "super_bouncy_arena": SuperBouncyArenaMode(),
     "jump_pad_boundaries": JumpPadBoundariesMode(),
     "pinball": PinballMode(),

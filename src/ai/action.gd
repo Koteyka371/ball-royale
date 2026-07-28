@@ -24077,7 +24077,7 @@ func execute(strategy: String, delta: float):
                     is_bouncy_terrain = true
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Chaotic Pinball Machine":
                     is_bouncy_terrain = true
-                elif "name" in self.world.game_mode and self.world.game_mode.name in ["Extreme Bounciness", "Super Bouncy Arena"]:
+                elif "name" in self.world.game_mode and self.world.game_mode.name in ["Extreme Bounciness", "Super Bouncy Arena", "Extreme Bouncing Safe Zone"]:
                     is_bouncy_terrain = true
                 elif "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
                     is_bouncy_terrain = true
@@ -24146,7 +24146,7 @@ func execute(strategy: String, delta: float):
                 new_speed = min(speed * 0.5, 3000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Chaotic Pinball Machine":
                 new_speed = min(speed * 2.0, 10000.0)
-            elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Extreme Bounciness", "Super Bouncy Arena"]:
+            elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Extreme Bounciness", "Super Bouncy Arena", "Extreme Bouncing Safe Zone"]:
                 new_speed = min(speed * 4.0, 5000.0)
             elif "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name == "Jump Pad Boundaries":
                 new_speed = min(speed * 4.0, 5000.0)
@@ -39677,7 +39677,7 @@ func _clamp_position() -> bool:
             if old_x != self.ball.x or old_y != self.ball.y:
                 bounced = true
 
-        if bounced and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries"]:
+        if bounced and "game_mode" in self.world and self.world.game_mode != null and "name" in self.world.game_mode and self.world.game_mode.name in ["Ricochet Arena", "Extreme Bounciness", "Super Bouncy Arena", "Chaotic Pinball Machine", "Jump Pad Boundaries", "Extreme Bouncing Safe Zone"]:
             var mult = 2.0
             if self.world.game_mode.name == "Ricochet Arena":
                 mult = 3.0
@@ -39685,6 +39685,11 @@ func _clamp_position() -> bool:
                     mult = self.world.game_mode.velocity_multiplier
             elif self.world.game_mode.name == "Jump Pad Boundaries":
                 mult = 3.0
+            elif self.world.game_mode.name == "Extreme Bouncing Safe Zone":
+                if "bounce_multiplier" in self.world.game_mode:
+                    mult = self.world.game_mode.bounce_multiplier
+                else:
+                    mult = 4.0
 
             var bounced_x = old_x != self.ball.x
             var bounced_y = old_y != self.ball.y
