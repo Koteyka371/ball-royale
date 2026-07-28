@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1643] Quantum Swap Grenade — *2026-07-28 10:08:12 UTC*
+
+A throwable grenade that upon detonation instantly swaps the positions of the thrower and the closest enemy caught in its blast radius. If no enemy is hit, it just deals minor area damage.
+
+---
+
 ## [idea-1630] Hazard Traps — *2026-07-28 09:41:50 UTC*
 
 Players can pick up 'Hazard Jars' to store environmental hazards like acid puddles or neutralizing puddles, and deploy them strategically to create chokepoints or safe zones for their team.

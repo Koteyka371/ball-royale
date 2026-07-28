@@ -28122,7 +28122,7 @@
     },
     {
       "id": "idea-1643",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Quantum Swap Grenade",
@@ -41143,6 +41143,40 @@
         "src/ai/reverse_polarity_magnet.py",
         "src/ai/reverse_polarity_magnet.gd",
         "tests/test_reverse_polarity_magnet.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2408",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Cursed Shrine",
+      "description": "A hazard that periodically pulses out a curse effect that reverses controls for 5 seconds.",
+      "allowed_paths": [
+        "src/ai/cursed_shrine.py",
+        "src/ai/cursed_shrine.gd",
+        "tests/test_cursed_shrine.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2409",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Slingshot Item",
+      "description": "An active item that allows balls to tether themselves to a wall and launch themselves at high speeds across the arena.",
+      "allowed_paths": [
+        "src/ai/slingshot_item.py",
+        "src/ai/slingshot_item.gd",
+        "tests/test_slingshot_item.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
