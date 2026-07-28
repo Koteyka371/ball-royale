@@ -27697,7 +27697,7 @@
     },
     {
       "id": "idea-1618",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Black Hole Overload",
@@ -40463,6 +40463,23 @@
         "src/arena/nemesis_tracker_trap.py",
         "src/arena/nemesis_tracker_trap.gd",
         "tests/test_nemesis_tracker_trap.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2368",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Radioactive Core Mod",
+      "description": "A new mutator where a massive radioactive core is placed in the center of the arena. It constantly pulls players inwards and applies the Radiation debuff when they get too close.",
+      "allowed_paths": [
+        "src/ai/radioactive_core_mod.py",
+        "src/ai/radioactive_core_mod.gd",
+        "tests/test_radioactive_core_mod.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

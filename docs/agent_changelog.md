@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1618] Black Hole Overload — *2026-07-28 00:50:59 UTC*
+
+A new mutator where Black Holes periodically pulse, dealing damage and pushing balls away instead of pulling.
+
+---
+
 ## [idea-1601] Toxic Sludge Mutator — *2026-07-28 00:48:05 UTC*
 
 A new mutator for custom matches where all ground hazards (like lava and spikes) are replaced with toxic sludge. Toxic sludge applies the Radiation debuff for 10 seconds, drastically increasing damage taken from all sources, and slows movement speed. Forces players to heavily prioritize area control.
