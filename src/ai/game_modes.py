@@ -33,6 +33,17 @@ class GameMode:
         self.description = "Base game mode"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards[:]:
                 if getattr(hazard, "kind", "") == "momentum_mirror":
@@ -1801,6 +1812,17 @@ class DraftRoyaleMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -2105,6 +2127,17 @@ class BattleRoyaleMode(GameMode):
         self.behemoth_active = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -3387,7 +3420,7 @@ class BattleRoyaleMode(GameMode):
                         self.ball_type = "booster"
                         self.active = True
 
-                booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+                booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
                 b_x = rnd.uniform(100, arena_width - 100)
@@ -4195,7 +4228,7 @@ class BattleRoyaleMode(GameMode):
                 if b.hp <= 0:
                     b.alive = False
                     if hasattr(world, "boosters"):
-                        booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+                        booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
                         for i in range(3):
                             class DroppedBooster:
                                 def __init__(self, id, x, y, kind):
@@ -4608,6 +4641,17 @@ class TeamDeathmatchMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -4744,6 +4788,17 @@ class ZombieInfectionMode(GameMode):
         self.bounty_base_reward = 5
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -4927,6 +4982,17 @@ class GuildBossFightMode(GameMode):
         self.minion_timer = 5.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -5165,6 +5231,17 @@ class BossFightMode(GameMode):
         self.description = "One giant boss ball faces off against a team of weaker hunters."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -5519,6 +5596,17 @@ class DualPayloadMode(GameMode):
         self.anti_payload_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -6023,6 +6111,17 @@ class EscortMode(GameMode):
         self.anti_payload_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -6653,6 +6752,17 @@ class VIPDefenseMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -6796,6 +6906,17 @@ class SurvivalMode(GameMode):
         self.description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -7010,6 +7131,17 @@ class CaptureTheFlagMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -7168,6 +7300,17 @@ class EvolutionarySimulationMode(GameMode):
         self.description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -7360,6 +7503,17 @@ class PulsingGravityWellMode(GameMode):
         self.game_time = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         pass
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
@@ -7446,6 +7600,17 @@ class MassiveGravityWellMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -7763,6 +7928,17 @@ class KingOfTheHillMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -7961,6 +8137,17 @@ class SweepingBlackHoleMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -8337,6 +8524,17 @@ class WeatherChaosMode(GameMode):
         self.random = random
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -9230,6 +9428,17 @@ class DominationMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -9554,6 +9763,17 @@ class MemoryTrapsMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -9737,6 +9957,17 @@ class CustomMatchMode(GameMode):
         self._rewards_given = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -10022,6 +10253,17 @@ class EcholocationMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -10209,6 +10451,17 @@ class PitchBlackMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -10380,6 +10633,17 @@ class VisionReducedMode(GameMode):
         self.pulse_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -10569,6 +10833,17 @@ class EMPBurstMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -10721,6 +10996,17 @@ class DynamicHazardsMode(GameMode):
         self.spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -12145,6 +12431,17 @@ class MirrorMatchMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -12291,6 +12588,17 @@ class VolatileClonesMode(GameMode):
         self.clone_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -12548,6 +12856,17 @@ class CloneChaosMode(GameMode):
         self.clone_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -12880,6 +13199,17 @@ class BumperBallsMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -13192,6 +13522,17 @@ class ModifierZonesMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -13427,6 +13768,17 @@ class WindstormMode(GameMode):
         self.tornado_timer = 5.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -13882,6 +14234,17 @@ class BountyHuntMode(GameMode):
         self.bounty_swap_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -14460,6 +14823,17 @@ class GravityWellMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -14693,7 +15067,7 @@ class SupernovaMode(GameMode):
 
                 # Scatter rare boosters upon explosion
                 if hasattr(world, "boosters"):
-                    booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+                    booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
                     import random
                     class DroppedBooster:
                         def __init__(self, id, x, y, kind):
@@ -15347,6 +15721,17 @@ class DayNightMode(GameMode):
                                 world.add_event("visual_effect", {"type": "solar_flare_supercharge", "ball_id": getattr(b, "id", 0)})
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         super().apply_dynamic_traits(world, balls, delta)
         if not hasattr(world, "arena"):
             return
@@ -15585,6 +15970,17 @@ class MagneticCollisionsMode(GameMode):
         self.polarity_flip_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -16033,6 +16429,17 @@ class PinballMode(GameMode):
         self.description = "Lots of bouncy bumpers and physics-based knockback logic to push balls around the arena."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -17485,6 +17892,17 @@ class StaminaSpeedMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -17666,6 +18084,17 @@ class HazardBilliardsMode(GameMode):
         self.description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -18460,6 +18889,17 @@ class DailyMutatorMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -18633,6 +19073,17 @@ class BlackMarketMode(GameMode):
         self.currency_spawn_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -19106,6 +19557,17 @@ class BlizzardMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -19326,6 +19788,17 @@ class MeteorShowerMode(GameMode):
         self.craters = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -19568,6 +20041,17 @@ class CursedBuffZoneMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -19756,6 +20240,17 @@ class RhythmPanelsMode(GameMode):
         self.beat_interval = 2.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -20380,6 +20875,17 @@ class ArtifactUpgraderMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -20625,6 +21131,17 @@ class SweepingPaddlesMode(GameMode):
         self.sweep_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -20877,6 +21394,17 @@ class SweepingLasersMode(GameMode):
         self.laser_damage_per_second = 100.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         pass
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
@@ -21234,6 +21762,17 @@ class InvisibleDecoysMode(GameMode):
         self.description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -21962,6 +22501,17 @@ class JuggernautMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -22445,6 +22995,17 @@ class TickingPayloadMode(GameMode):
         self.winner = None
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -22966,6 +23527,17 @@ class WeaponCollectionMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -23463,6 +24035,17 @@ class CenterBlackHoleMode(GameMode):
         self.damage = 10.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -24896,6 +25479,17 @@ class DynamicWeatherTransitionsMode(GameMode):
             world.arena.weather = self.weather
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         super().apply_dynamic_traits(world, balls, delta)
         weather = getattr(self, "weather", "")
         if not weather and hasattr(world, "arena"):
@@ -25256,6 +25850,17 @@ class HeavyRainMode(GameMode):
         self.obstacle_destroy_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         super().apply_dynamic_traits(world, balls, delta)
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
@@ -26140,6 +26745,17 @@ class ElementalWandererMode(GameMode):
                             b.elemental_buff = self.npc.current_element
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         super().apply_dynamic_traits(world, balls, delta)
         for b in balls:
             if not getattr(b, "alive", False):
@@ -26297,6 +26913,17 @@ class MassivePinballArenaMode(GameMode):
         self.description = "Arena is filled with multiple massive pinball bumpers. Touching a bumper reflects the ball with high speed. Boosters spawn near the bumpers."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         pass
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
@@ -26413,6 +27040,17 @@ class MagneticBumpersMode(GameMode):
         self.description = "Bumpers exert a magnetic pull, making it tricky to navigate around them without getting caught in a pinball frenzy."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         pass
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
@@ -27005,6 +27643,17 @@ class PlatformerMode(GameMode):
         self.mutators = ["zero_gravity"]
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         super().apply_dynamic_traits(world, balls, delta)
         for b in balls:
             if getattr(b, "alive", False):
@@ -27374,6 +28023,17 @@ class PositionSwapMode(GameMode):
         self.telegraph_duration = 1.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         import random
         # Initialize timers
         timer = getattr(world, "position_swap_timer", random.uniform(3.0, 8.0)) - delta
@@ -27760,6 +28420,17 @@ class ZeroGravityMeteorShowerMode(GameMode):
             world.arena.hazards = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         super().apply_dynamic_traits(world, balls, delta)
         import random
 
@@ -29011,6 +29682,17 @@ class RisingLavaMode(GameMode):
         self.initialized = False
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         super().apply_dynamic_traits(world, balls, delta)
         if not self.initialized:
             if hasattr(world, 'arena') and hasattr(world.arena, 'height'):
@@ -29641,6 +30323,17 @@ class TiltingPlatformMode(GameMode):
         self.drift_speed = 100.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         pass
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
@@ -31519,6 +32212,17 @@ class DynamicCaptureZoneMode(GameMode):
                 b.score = 0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         pass
 
     def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
@@ -32090,6 +32794,17 @@ class RollingBouldersMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -32392,6 +33107,17 @@ class SoulLinkMode(GameMode):
         self.prev_state[b.id] = state
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -32722,6 +33448,17 @@ class TagTeamMode(GameMode):
         self.team_counter = 1
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -33084,6 +33821,17 @@ class CrossfireMode(GameMode):
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
+        for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
                 b.soul_boost_timer -= delta
@@ -33250,6 +33998,17 @@ class TeleporterHubMode(GameMode):
         self.peripheral_zones = []
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:
@@ -33680,7 +34439,7 @@ class ItemMorphMode(GameMode):
         super().__init__()
         self.morph_timer = 0.0
         self.morph_interval = 10.0
-        self.booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+        self.booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
         import random
         self.random = random
 
@@ -33895,7 +34654,7 @@ class SolarFlareMode(GameMode):
         self.flare_interval = 20.0
         self.flare_duration = 5.0
         self.is_flaring = False
-        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "aura_amplifier_trap_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "pet_item"]
+        self.excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "aura_amplifier_trap_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "pet_item"]
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -34055,6 +34814,17 @@ class FreezeTagMode(GameMode):
         self.description = "Players can freeze enemies upon collision. Frozen enemies cannot move or attack until an ally collides with them to unfreeze them. The game ends when one team is completely frozen."
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        for b in balls:
+            if getattr(b, "is_clone", False):
+                if hasattr(b, "clone_timer"):
+                    try:
+                        b.clone_timer -= delta
+                        if b.clone_timer <= 0 or (hasattr(b, "hp") and type(b.hp) != type(b) and b.hp <= 0):
+                            b.alive = False
+                            b.hp = 0
+                    except TypeError:
+                        pass
+
         for b in balls:
             sb_timer = getattr(b, "soul_boost_timer", 0.0)
             if getattr(b, "alive", True) and isinstance(sb_timer, (int, float)) and sb_timer > 0:

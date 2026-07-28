@@ -10,6 +10,28 @@ class GameMode:
 		pass
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		if world != null:
 			var hazards = []
 			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
@@ -3444,6 +3466,28 @@ class DraftRoyaleMode extends GameMode:
 		description = "Before the match, teams take turns picking and banning ball types to create synergies and counter opponents."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -3812,6 +3856,28 @@ class BattleRoyaleMode extends GameMode:
 			set_meta("shadow_monsters", [])
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -5590,7 +5656,7 @@ class BattleRoyaleMode extends GameMode:
 					if "height" in world.arena: arena_height = world.arena.height
 
 				rng.randomize()
-				var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+				var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -6600,7 +6666,7 @@ class BattleRoyaleMode extends GameMode:
 						boosters_array = world.boosters
 
 					if boosters_array != null:
-						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
 						for i in range(3):
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
@@ -7223,6 +7289,28 @@ class TeamDeathmatchMode extends GameMode:
 		description = "Two teams fight until one is eliminated."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -7431,6 +7519,28 @@ class ZombieInfectionMode extends GameMode:
 		description = "One zombie infects others. Survivors win if time runs out."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -7694,6 +7804,28 @@ class GuildBossFightMode extends GameMode:
 		guild_manager = p_guild_manager
 		week_id = p_week_id
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -8038,6 +8170,28 @@ class BossFightMode extends GameMode:
 		description = "One giant boss ball faces off against a team of weaker hunters."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -8297,6 +8451,28 @@ class VIPDefenseMode extends GameMode:
 		description = "Protect the VIP. If the VIP dies, the attackers win."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -8511,6 +8687,28 @@ class SurvivalMode extends GameMode:
 		description = "Players must navigate an increasingly difficult obstacle course filled with moving lasers, rotating bumpers, and collapsing floors."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -9072,6 +9270,28 @@ class DualPayloadMode extends GameMode:
 		description = "Two payloads move towards the center, the team that destroys the enemy payload first wins."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -9692,6 +9912,28 @@ class EscortMode extends GameMode:
 		]
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -10541,6 +10783,28 @@ class CaptureTheFlagMode extends GameMode:
 		description = "Teams try to steal the enemy's flag and return it to their base."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -10760,6 +11024,28 @@ class EvolutionarySimulationMode extends GameMode:
 		description = "Only Neural Balls compete. After the match, a genetic algorithm breeds top performers."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -11028,6 +11314,28 @@ class PulsingGravityWellMode extends GameMode:
 		description = "Balls must stay near a central point to earn points. A gravity well pulses every 10 seconds, pushing everyone away."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		pass
 
 	func setup(world, balls: Array) -> void:
@@ -11172,6 +11480,28 @@ class MassiveGravityWellMode extends GameMode:
 		description = "An extremely large, slow-moving hazard that acts similarly to the gravity well but actively sucks in surrounding small hazards (like traps or spikes) and grows larger. It tests players' abilities to use boosts or specific game modes to escape its ever-increasing event horizon."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -11628,6 +11958,28 @@ class KingOfTheHillMode extends GameMode:
 		description = "Control a central shrinking zone. First to 100 points wins."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -11890,6 +12242,28 @@ class SweepingBlackHoleMode extends GameMode:
 		description = "A massive black hole sweeps across the arena, sucking in everything in its path."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -12383,6 +12757,28 @@ class WeatherChaosMode extends GameMode:
 		description = "Weather conditions change throughout the match, affecting stats."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -13381,6 +13777,28 @@ class DominationMode extends GameMode:
 			pt.owner = null
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -13673,6 +14091,28 @@ class MovingZoneMode extends GameMode:
 		description = "Maintain position in the moving zone to score points for your team."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -13973,6 +14413,28 @@ class MemoryTrapsMode extends GameMode:
 		description = "The arena is littered with invisible traps. Memorize their locations!"
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -14223,6 +14685,28 @@ class CustomMatchMode extends GameMode:
 		description = "Custom match with mutator options if Prestige Level >= 5."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -14576,6 +15060,28 @@ class EcholocationMode extends GameMode:
 		description = "The arena is completely dark except for a small ring of light around each ball. Echolocation cues and occasional lightning flashes reveal the map."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -14835,6 +15341,28 @@ class PitchBlackMode extends GameMode:
 		description = "The screen is completely dark. AI relies entirely on a narrow cone of light matching its perception radius."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -15068,6 +15596,28 @@ class VisionReducedMode extends GameMode:
 		description = "Visibility is severely reduced. AI relies on narrow cones of light or sonar-like pulses."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -15523,6 +16073,28 @@ class PortalNodeMode extends GameMode:
 		description = "Capture and hold the moving portal node."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -15769,6 +16341,28 @@ class MovingSafeZoneMode extends GameMode:
 		description = "A dynamic battle royale where the safe zone not only shrinks but also moves around the map, forcing intense combat."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -16168,6 +16762,28 @@ class ShrinkingDangerZoneMode extends GameMode:
 		description = "A shrinking danger zone mode where the safe area slowly decreases, forcing players into close-quarters combat."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -16531,6 +17147,28 @@ class ModifierSafeZoneMode extends GameMode:
 		description = "The safe zone shrinks and periodically applies random buffs or debuffs to everyone inside, forcing players to adapt dynamically."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -16912,6 +17550,28 @@ class ModifierZonesSafeZoneMode extends GameMode:
 		description = "The safe zone shrinks, and modifier zones spawn near its center, forcing players to fight for buffs."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -17330,6 +17990,28 @@ class CrowdedSafeZoneMode extends SafeZoneMode:
 		description = "The safe zone shrinks faster when more players are outside of it, forcing combat."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		super.apply_dynamic_traits(world, balls, delta)
 
 		var players_outside = 0
@@ -17556,6 +18238,28 @@ class SafeZoneMode extends GameMode:
 		description = "A battle royale mode where the safe zone gradually shrinks, and balls take continuous damage outside of it."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -17934,6 +18638,28 @@ class InverseMirrorArenaMode extends GameMode:
 		description = "Players spawn with permanent mirror clones that track their movement inversely on the opposite side of the map."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -18376,6 +19102,28 @@ class MirrorMatchMode extends GameMode:
 		description = "Every player spawns with an exact AI clone of themselves on the opposite side of the map. Clones mimic their creator's stats and skills."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -18582,6 +19330,28 @@ class VolatileClonesMode extends GameMode:
 		description = "Similar to Clone Chaos, but when a clone's HP drops to 0, it explodes dealing small area-of-effect damage."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -18961,6 +19731,28 @@ class CloneChaosMode extends GameMode:
 		description = "Every ball starts with the 'clone' skill with very low cooldown. The arena is quickly filled with static copies, causing mass confusion."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -19187,6 +19979,28 @@ class SumoKnockoutMode extends GameMode:
 		description = "A physics-based mutator where collisions between balls deal minimal damage but apply massive knockback. The arena gradually shrinks towards a central spike pit."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -19432,6 +20246,28 @@ class PacifistKnockoutMode extends GameMode:
 		description = "Balls deal zero direct damage. Instead, balls bounce off each other with massively increased knockback, and the only way to eliminate opponents is to push them into outer hazard zones."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -19742,6 +20578,28 @@ class BumperBallsMode extends GameMode:
 		description = "Balls deal zero damage but bounce each other with much higher knockback. Try to push opponents off the arena!"
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -20061,6 +20919,28 @@ class ToxicEnvironmentMode extends GameMode:
 		description = "Balls take constant damage over time. Collect temporary immune boosters to survive."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -20354,6 +21234,28 @@ class ModifierZonesMode extends GameMode:
 		description = "Fight over zones that provide different temporary buffs."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -20645,6 +21547,28 @@ class WindstormMode extends GameMode:
 		description = "Periodically pushes all balls in a random direction, forcing them to constantly adjust movement to stay on target."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -21129,6 +22053,28 @@ class BlackoutMode extends GameMode:
 		description = "Periodically, the arena goes completely dark, reducing vision drastically for all balls."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -21441,6 +22387,28 @@ class BountyHuntMode extends GameMode:
 		description = "One ball on each team is the Bounty. Destroying the enemy Bounty grants a massive buff and extra skill points."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -22156,6 +23124,28 @@ class ShiftingMazeMode extends GameMode:
 		description = "The arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -22633,7 +23623,7 @@ class SupernovaMode extends GameMode:
 					boosters_array = world.boosters
 
 				if boosters_array != null:
-					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
 					var rng = RandomNumberGenerator.new()
 					rng.randomize()
 					for i in range(10):
@@ -22840,6 +23830,28 @@ class DayNightMode extends GameMode:
 		description = "Periodically toggles day and night, affecting ball behavior and visibility. During the day, rare but highly damaging sunlight beams appear."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -24074,6 +25086,28 @@ class MagneticCollisionsMode extends GameMode:
 		description = "Invisible magnetic fields pull or push balls depending on their assigned polarities. Every 10 seconds, polarities randomly flip, causing sudden tactical shifts and chaotic collisions."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -24753,6 +25787,28 @@ class PinballMode extends GameMode:
 		description = "Lots of bouncy bumpers and physics-based knockback logic to push balls around the arena."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -25226,6 +26282,28 @@ class InvisibleWallsMode extends GameMode:
 		description = "The arena contains several invisible walls that only become temporarily visible when a player or attack collides with them."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -25813,6 +26891,28 @@ class BodySwapMode extends GameMode:
 		description = "Periodically swaps player controls/positions to add confusion."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -26051,6 +27151,28 @@ class TugOfWarMode extends GameMode:
 		description = "A single payload is centered. Both teams fight to push/pull the payload to the opposing team's goal."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -27268,6 +28390,28 @@ class StaminaSpeedMode extends GameMode:
 		description = "Max stamina dictates base speed. Everyone starts with 200 max stamina but taking damage permanently reduces maximum stamina for the rest of the round."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -27536,6 +28680,28 @@ class HazardBilliardsMode extends GameMode:
 		description = "Every ball starts with a reflect shield and no standard attacks work. Players must push map hazards into each other to deal damage!"
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -28062,6 +29228,28 @@ class InverseSafeZoneMode extends GameMode:
 		description = "A battle royale mode where the center expands and becomes dangerous, forcing players to the edges."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -28456,6 +29644,28 @@ class DynamicSafeZoneMode extends GameMode:
 		description = "Dynamic safe zones that not only protect from environmental damage but also apply randomized buffs for a short duration, encouraging players to fight for the optimal spot inside the zone."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -28802,6 +30012,28 @@ class PrestigeWeatherMutatorMode extends GameMode:
 		description = "Alters arena weather dynamically based on the lobby's average prestige level."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -29018,6 +30250,28 @@ class DailyMutatorMode extends GameMode:
 		description = "Randomly applies extreme global mutators daily. Surviving grants exclusive rewards."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -29283,6 +30537,28 @@ class BlackMarketMode extends GameMode:
 		self.description = "Collect currency to buy upgrades from wandering Black Markets."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -30203,6 +31479,28 @@ class SoulLinkMode extends GameMode:
 			prev_state[b.id] = state
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -30530,6 +31828,28 @@ class CursedBuffZoneMode extends GameMode:
 		description = "Zones grant massive speed (+200%) and damage (+150%) buffs, but rapidly drain HP or invert steering. High risk, high reward."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -30820,6 +32140,28 @@ class RhythmPanelsMode extends GameMode:
 		description = "Floor panels light up to the beat. Stay on lit panels for buffs; unlit panels will debuff and damage you."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -31193,6 +32535,28 @@ class PolarityShiftMode extends GameMode:
 		description = "The arena periodically reverses the polarity of the center, pushing balls out and pulling hazards in, then reversing."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -32102,6 +33466,28 @@ class ArtifactUpgraderMode extends GameMode:
 		description = "Protect the wandering crafter NPC from hazards for 30 seconds to upgrade your artifacts!"
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -32571,6 +33957,28 @@ class SweepingPaddlesMode extends GameMode:
 		description = "Indestructible paddles sweep across the arena, bouncing all players at high speeds."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -32883,6 +34291,28 @@ class SweepingLasersMode extends GameMode:
 		description = "Lasers sweep the arena. Any ball hit permanently shrinks by 10%, loses max HP, and gains speed. Multiple hits turn you into a tiny fragile speedster."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		pass
 
 	func setup(world, balls: Array) -> void:
@@ -33118,6 +34548,28 @@ class MazeSafeZoneMode extends GameMode:
 		description = "Navigate a shifting maze while the safe area gets smaller."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -33570,6 +35022,28 @@ class InvisibleDecoysMode extends GameMode:
 		description = "The arena is seeded with invisible explosive decoys. Be careful not to trigger a chain reaction!"
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -34377,6 +35851,28 @@ class JuggernautMode extends GameMode:
 		description = "Similar to Boss Fight, but when the Juggernaut is killed, the player who dealt the final blow becomes the new Juggernaut."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -34727,7 +36223,7 @@ class SolarFlareMode extends GameMode:
 	var flare_interval: float = 20.0
 	var flare_duration: float = 5.0
 	var is_flaring: bool = false
-	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "pet_item"]
+	var excluded_hazards = ["damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "pet_item"]
 
 	func _init():
 		super()
@@ -34824,6 +36320,28 @@ class ReverseTugOfWarMode extends GameMode:
 		description = "Like Tug of War, but the payload moves AWAY from the enemy goal if you get too close. Teams must zone out enemies and avoid getting too close to push it."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -35232,6 +36750,28 @@ class HexGridRoyaleMode extends GameMode:
 		description = "The arena is made of hexagonal tiles that independently glow red and fall away, reducing the safe map area into fragmented islands."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -35528,6 +37068,28 @@ class TickingPayloadMode extends GameMode:
 		description = "A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -35967,6 +37529,28 @@ class BlackoutEventMode extends GameMode:
 		description = "A sudden blackout event where the arena goes pitch black, and balls must rely purely on short-range vision."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -36333,6 +37917,28 @@ class WeaponCollectionMode extends GameMode:
 		description = "Players start with basic attacks and must scavenge weapon crates around the arena to unlock random powerful abilities for their balls. Crates are heavily contested."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -37503,6 +39109,28 @@ class ShrinkingBoundaryMode extends GameMode:
 		description = "The boundaries of the arena slowly shrink over time, dealing continuous damage to anyone caught outside the safe area."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -37741,6 +39369,28 @@ class EntangledArenaMode extends GameMode:
 			prev_state[b.id] = state
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -38212,6 +39862,28 @@ class EntanglementMutatorMode extends GameMode:
 			prev_state[b.id] = state
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -39264,6 +40936,28 @@ class LavaRoyaleMode extends GameMode:
 		description = "A battle royale mode where the safe zone shrinks constantly, and any area outside the safe zone turns into damaging lava rather than just applying storm damage, punishing displacement heavily."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -42997,6 +44691,28 @@ class ElementalWandererMode extends GameMode:
 								b.elemental_buff = npc.current_element
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		super.apply_dynamic_traits(world, balls, delta)
 		for b in balls:
 			var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else false)
@@ -43300,6 +45016,28 @@ class MassivePinballArenaMode extends GameMode:
 		description = "Arena is filled with multiple massive pinball bumpers. Touching a bumper reflects the ball with high speed. Boosters spawn near the bumpers."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		pass
 
 	func setup(world, balls: Array) -> void:
@@ -43443,6 +45181,28 @@ class MagneticBumpersMode extends GameMode:
 		description = "Bumpers exert a magnetic pull, making it tricky to navigate around them without getting caught in a pinball frenzy."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		pass
 
 	func setup(world, balls: Array) -> void:
@@ -44673,6 +46433,28 @@ class PositionSwapMode extends GameMode:
 		description = "Players swap positions with an enemy at random intervals"
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		var timer = world.get("position_swap_timer")
 		if typeof(timer) != TYPE_FLOAT and typeof(timer) != TYPE_INT:
 			timer = randf_range(3.0, 8.0)
@@ -46981,6 +48763,28 @@ class RisingLavaMode extends GameMode:
 		description = "Lava rises from the bottom of the screen, destroying low platforms and damaging balls."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		super.apply_dynamic_traits(world, balls, delta)
 		if not initialized:
 			if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
@@ -49358,6 +51162,28 @@ class CaptureZonesMode extends GameMode:
 		description = "Players capture sections of the map by remaining inside them. Captured sections periodically drop boosters or spawn defensive hazards against enemies."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		# Initialize zones if none exist
 		if zones.size() == 0:
 			var seed_val = 0
@@ -49605,6 +51431,28 @@ class HighSpeedReflectiveBarriersMode extends GameMode:
 					arena_ref.hazards.append(hazard)
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		var entities = []
 		for b in balls:
 			entities.append(b)
@@ -50104,6 +51952,28 @@ class ExponentialControlPointMode extends GameMode:
 		description = "A single control point grants increasing global buffs to the controlling player's faction, but they take exponentially more damage the longer they hold it."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		var occupants = []
 		for b in balls:
 			var is_alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else (b.get("alive") if b.get("alive") != null else false)
@@ -50372,6 +52242,28 @@ class DynamicCaptureZoneMode extends GameMode:
 		description = "A shrinking capture zone moves around the arena. Earn points by controlling it. First to 100 points wins."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		pass
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
@@ -51324,6 +53216,28 @@ class CrossfireMode extends GameMode:
 		description = "Balls are divided into two teams on opposite sides of a center line. Players cannot cross the line but can throw hazards and boosters."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -51593,6 +53507,28 @@ class TagTeamMode extends GameMode:
 		description = "Players queue as a team of two balls but only one is active at a time. The active ball swaps with their teammate on a cooldown."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -52330,6 +54266,28 @@ class TeleporterHubMode extends GameMode:
 		description = "A central teleporter hub that randomly connects to various peripheral zones, shifting its destinations every few seconds."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -52855,7 +54813,7 @@ class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
 	var morph_interval: float = 10.0
 	var rng = RandomNumberGenerator.new()
-	var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
+	var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "gravity_boots", "overclock_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "mirage_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "pet_item"]
 
 	func _init() -> void:
 		name = "Item Morph"
@@ -52954,6 +54912,28 @@ class IllusionWallMode extends GameMode:
 		description = "Hazard objects that look like solid walls but are actually reflective illusions. Passing through them creates a temporary fake decoy of the ball that moves in the opposite direction."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -53355,6 +55335,28 @@ class UndergroundTunnelMode extends GameMode:
 		description = "Procedural arenas can spawn underground tunnels, allowing balls to temporarily travel underneath obstacles. While underground, balls are invisible and cannot be targeted, but can only emerge at specific tunnel exits."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		for b in balls:
 			var is_alive = false
 			if typeof(b) == TYPE_DICTIONARY:
@@ -57137,6 +59139,28 @@ class PlatformerMode extends GameMode:
 		self.set_meta("mutators", ["zero_gravity"])
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		super.apply_dynamic_traits(world, balls, delta)
 		for b in balls:
 			var is_alive = false
@@ -63365,6 +65389,28 @@ class BountyExtractionMode extends GameMode:
 			world.add_event("tag_spawned", {"x": tag["x"], "y": tag["y"], "value": tag["value"]})
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		# Move extraction zone occasionally
 		extraction_timer -= delta
 		if extraction_timer <= 0:
@@ -64608,6 +66654,28 @@ class PulsatingCoreMode extends GameMode:
 		super.tick(world, balls, delta)
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		for ball in balls:
+			var b_clone = false
+			if typeof(ball) == TYPE_DICTIONARY and ball.has("is_clone"): b_clone = ball["is_clone"]
+			elif typeof(ball) == TYPE_OBJECT and "is_clone" in ball: b_clone = ball.is_clone
+			if b_clone:
+				var c_timer = 0.0
+				var b_hp = 100.0
+				if typeof(ball) == TYPE_DICTIONARY:
+					if ball.has("clone_timer"): c_timer = ball["clone_timer"]
+					if ball.has("hp"): b_hp = ball["hp"]
+					ball["clone_timer"] = c_timer - delta
+					if ball["clone_timer"] <= 0 or b_hp <= 0:
+						ball["alive"] = false
+						ball["hp"] = 0
+				elif typeof(ball) == TYPE_OBJECT:
+					if "clone_timer" in ball: c_timer = ball.clone_timer
+					if "hp" in ball: b_hp = ball.hp
+					if "clone_timer" in ball: ball.clone_timer = c_timer - delta
+					if ("clone_timer" in ball and ball.clone_timer <= 0) or b_hp <= 0:
+						if "alive" in ball: ball.alive = false
+						if "hp" in ball: ball.hp = 0
+
 		if world != null:
 			var hazards = []
 			if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena:

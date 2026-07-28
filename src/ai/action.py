@@ -13766,6 +13766,53 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "mirage_booster":
+                    self.ball.mirage_booster_timer = 15.0
+                    self.ball.mirage_spawn_timer = 3.0
+                    import copy
+                    import math
+                    import random
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
+                    for i in range(2):
+                        clone = copy.copy(self.ball)
+                        clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                        if hasattr(self.world, "next_id"):
+                            self.world.next_id += 1
+
+                        clone.is_clone = True
+                        clone.clone_owner = getattr(self.ball, "id", None)
+                        clone.intangible = True
+                        clone.damage = 0.0
+                        clone.base_damage = 0.0
+                        clone.hp = 1
+                        clone.clone_timer = 5.0
+
+                        # Mirrored paths
+                        vx = getattr(self.ball, "vx", 0.0)
+                        vy = getattr(self.ball, "vy", 0.0)
+                        speed = math.hypot(vx, vy)
+                        b_speed = getattr(self.ball, "speed", 100.0)
+                        if speed < 0.001:
+                            angle = random.uniform(0, 2 * math.pi)
+                            vx = math.cos(angle) * b_speed
+                            vy = math.sin(angle) * b_speed
+
+                        # Mirrored directions
+                        if i == 0:
+                            clone.vx = vx
+                            clone.vy = -vy
+                        else:
+                            clone.vx = -vx
+                            clone.vy = vy
+
+                        if hasattr(self.world, "balls"):
+                            self.world.balls.append(clone)
                 elif getattr(nearest, "kind", None) == "holo_decoy_booster":
                     import copy
                     decoy = copy.copy(self.ball)

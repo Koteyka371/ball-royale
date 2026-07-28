@@ -28590,6 +28590,91 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest.kind == "mirage_booster":
+                if self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                elif self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("boosters"):
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+                elif self.world != null and typeof(self.world) == TYPE_OBJECT and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
+                for i in range(2):
+                    var clone = {}
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        for k in self.ball.keys():
+                            clone[k] = self.ball[k]
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        var p_list = self.ball.get_property_list()
+                        for p in p_list:
+                            clone[p.name] = self.ball.get(p.name)
+
+                    clone["id"] = randi() % 90000 + 10000
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("next_id"):
+                        clone["id"] = self.world["next_id"]
+                        self.world["next_id"] += 1
+                    elif typeof(self.world) == TYPE_OBJECT and "next_id" in self.world:
+                        clone["id"] = self.world.next_id
+                        self.world.next_id += 1
+
+                    clone["is_clone"] = true
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): clone["clone_owner"] = self.ball["id"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: clone["clone_owner"] = self.ball.id
+
+                    clone["intangible"] = true
+                    clone["damage"] = 0.0
+                    clone["base_damage"] = 0.0
+                    clone["hp"] = 1
+                    clone["clone_timer"] = 5.0
+
+                    var b_x = 0.0
+                    var b_y = 0.0
+                    var b_vx = 0.0
+                    var b_vy = 0.0
+                    var b_speed = 100.0
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        if self.ball.has("x"): b_x = self.ball["x"]
+                        if self.ball.has("y"): b_y = self.ball["y"]
+                        if self.ball.has("vx"): b_vx = self.ball["vx"]
+                        if self.ball.has("vy"): b_vy = self.ball["vy"]
+                        if self.ball.has("speed"): b_speed = self.ball["speed"]
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "x" in self.ball: b_x = self.ball.x
+                        if "y" in self.ball: b_y = self.ball.y
+                        if "vx" in self.ball: b_vx = self.ball.vx
+                        if "vy" in self.ball: b_vy = self.ball.vy
+                        if "speed" in self.ball: b_speed = self.ball.speed
+
+                    var speed = sqrt(b_vx*b_vx + b_vy*b_vy)
+                    if speed < 0.001:
+                        var angle = randf() * 2.0 * PI
+                        b_vx = cos(angle) * b_speed
+                        b_vy = sin(angle) * b_speed
+
+                    if i == 0:
+                        clone["vx"] = b_vx
+                        clone["vy"] = -b_vy
+                    else:
+                        clone["vx"] = -b_vx
+                        clone["vy"] = b_vy
+
+                    if self.world != null:
+                        if typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                            self.world.balls.append(clone)
+                        elif typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                            self.world.balls.append(clone)
+
             elif "kind" in nearest and nearest.kind == "tether_booster":
                 var enemies = _get_enemies()
                 var allies = _get_allies_internal()
