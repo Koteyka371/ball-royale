@@ -44142,6 +44142,44 @@ func _update_skill_timer(delta: float):
 
                     if owner_id != b_id:
                         var dist_sq = (h_x - self.ball.x)*(h_x - self.ball.x) + (h_y - self.ball.y)*(h_y - self.ball.y)
+
+                        var b_type = ""
+                        if "ball_type" in self.ball: b_type = str(self.ball.ball_type)
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): b_type = str(self.ball.get_meta("ball_type"))
+                        var b_kind = ""
+                        if "kind" in self.ball: b_kind = str(self.ball.kind)
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("kind"): b_kind = str(self.ball.get_meta("kind"))
+                        var is_proj = b_type in ["projectile", "spell"] or b_kind in ["projectile", "spell"]
+                        if not is_proj and "is_projectile" in self.ball and self.ball.is_projectile: is_proj = true
+                        elif not is_proj and self.ball.has_method("get_meta") and self.ball.has_meta("is_projectile") and self.ball.get_meta("is_projectile"): is_proj = true
+
+                        var h_rad_check = 40.0
+                        if "radius" in hazard: h_rad_check = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad_check = hazard.get_meta("radius")
+                        var b_rad_check = 10.0
+                        if "radius" in self.ball: b_rad_check = self.ball.radius
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): b_rad_check = self.ball.get_meta("radius")
+
+                        if is_proj and dist_sq < (h_rad_check + b_rad_check) * (h_rad_check + b_rad_check):
+                            if "duration" in hazard: hazard.duration = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
+                            if world != null and "items" in world:
+                                var next_item_id = 9999
+                                if "next_id" in world: next_item_id = world.next_id + world.items.size()
+                                world.items.append({
+                                    "id": next_item_id,
+                                    "x": h_x,
+                                    "y": h_y,
+                                    "kind": "explosive_material"
+                                })
+
+                            if "hp" in self.ball: self.ball.hp = 0
+                            if "alive" in self.ball: self.ball.alive = false
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+                            continue
+
                         if dist_sq < 40000.0:
                             var dist = sqrt(dist_sq)
                             if dist > 0.0001:
@@ -44179,13 +44217,21 @@ func _update_skill_timer(delta: float):
                                 if "radius" in self.ball: b_rad = self.ball.radius
 
                                 if dist < (b_rad + h_rad * 0.25):
-                                    var current_stun = 0.0
-                                    if "stun_timer" in self.ball: current_stun = self.ball.stun_timer
-                                    elif self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer"): current_stun = self.ball.get_meta("stun_timer")
+                                    if "hp" in self.ball:
+                                        self.ball.hp -= 50.0
+                                        if self.ball.hp <= 0:
+                                            if "alive" in self.ball: self.ball.alive = false
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("alive", false)
+                                            if "killer" in self.ball: self.ball.killer = "grapple_trap"
+                                            elif self.ball.has_method("set_meta"): self.ball.set_meta("killer", "grapple_trap")
 
-                                    if current_stun < 2.0:
-                                        if "stun_timer" in self.ball: self.ball.stun_timer = 2.0
-                                        elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", 2.0)
+                                    if "events" in world:
+                                        world.events.append({
+                                            "type": "explosion",
+                                            "x": h_x,
+                                            "y": h_y,
+                                            "radius": 30.0
+                                        })
 
                                     if "duration" in hazard: hazard.duration = 0.0
                                     elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
