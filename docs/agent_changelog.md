@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1564] Mirror Laser Shield Trait — *2026-07-28 01:36:03 UTC*
+
+A new ball trait that absorbs damage from laser hazards and uses it to charge up a devastating focused laser beam attack of its own.
+
+---
+
 ## [idea-1605] Turret Overdrive Protocol — *2026-07-28 01:35:57 UTC*
 
 An alternate engineer skill that temporarily boosts the fire rate and damage of all deployed turrets by 50% for 10 seconds, but causes them to explode at the end of the duration.
