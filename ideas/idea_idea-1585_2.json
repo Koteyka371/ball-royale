@@ -1,1 +1,4 @@
-{"title": "Tag Team Ultimate Synergies", "description": "Special combinations of traits between tag partners result in unique ultimate effects when merging, such as fire+water causing a steam explosion that blinds enemies, or earth+wind creating a sandstorm."}
+{
+  "title": "Synchronized Resonance",
+  "description": "If both players in a tag team successfully complete three sequential hit combos before a swap, their next swap unleashes a resonance shockwave that slows down time for enemies caught in the blast radius for 3 seconds."
+}
