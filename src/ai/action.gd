@@ -721,6 +721,63 @@ func _attempt_damage_internal(attacker, target) -> void:
 
         return
 
+	# Laser Absorber check
+	var is_laser_proj = false
+	var attacker_type_laser = ""
+	if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta"):
+		attacker_type_laser = attacker.get_meta("ball_type") if attacker.has_meta("ball_type") else ""
+		if attacker_type_laser == "":
+			attacker_type_laser = attacker.get_meta("kind") if attacker.has_meta("kind") else ""
+	elif typeof(attacker) == TYPE_DICTIONARY:
+		attacker_type_laser = attacker.get("ball_type", attacker.get("kind", ""))
+	else:
+		attacker_type_laser = attacker.ball_type if "ball_type" in attacker else (attacker.kind if "kind" in attacker else "")
+
+	is_laser_proj = attacker_type_laser in ["projectile", "spell", "laser_beam", "spinning_laser", "laser_wall", "bounce_laser", "laser_tripwire"]
+	if typeof(attacker) == TYPE_OBJECT and attacker.has_method("get_meta"):
+		is_laser_proj = is_laser_proj or attacker.get_meta("is_projectile", false) or attacker.get_meta("is_spell", false) or attacker.get_meta("is_ricochet_laser", false)
+	elif typeof(attacker) == TYPE_DICTIONARY:
+		is_laser_proj = is_laser_proj or attacker.get("is_projectile", false) or attacker.get("is_spell", false) or attacker.get("is_ricochet_laser", false)
+	else:
+		is_laser_proj = is_laser_proj or (attacker.is_projectile if "is_projectile" in attacker else false) or (attacker.is_spell if "is_spell" in attacker else false) or (attacker.is_ricochet_laser if "is_ricochet_laser" in attacker else false)
+
+	var has_laser_absorber = false
+	if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("has_laser_absorber"):
+		has_laser_absorber = target.get_meta("has_laser_absorber")
+	elif typeof(target) == TYPE_DICTIONARY and target.has("has_laser_absorber"):
+		has_laser_absorber = target.get("has_laser_absorber")
+	elif typeof(target) == TYPE_OBJECT and "has_laser_absorber" in target:
+		has_laser_absorber = target.has_laser_absorber
+
+	var target_traits_laser = []
+	if typeof(target) == TYPE_OBJECT and "traits" in target: target_traits_laser = target.traits
+	elif typeof(target) == TYPE_DICTIONARY and target.has("traits"): target_traits_laser = target.traits
+	if not has_laser_absorber and target_traits_laser.has("laser_absorber"): has_laser_absorber = true
+
+	if has_laser_absorber and is_laser_proj:
+		var dmg = 10.0
+		if typeof(attacker) == TYPE_OBJECT and "damage" in attacker: dmg = attacker.damage
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): dmg = attacker.damage
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("damage"): dmg = attacker.get_meta("damage")
+
+		var pool = 0.0
+		if typeof(target) == TYPE_OBJECT and "laser_energy_pool" in target: pool = target.laser_energy_pool
+		elif typeof(target) == TYPE_DICTIONARY and target.has("laser_energy_pool"): pool = target.laser_energy_pool
+		elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("laser_energy_pool"): pool = target.get_meta("laser_energy_pool")
+
+		pool += dmg
+
+		if pool >= 100.0:
+			if typeof(target) == TYPE_OBJECT and "laser_absorber_fire_ready" in target: target.laser_absorber_fire_ready = true
+			elif typeof(target) == TYPE_DICTIONARY: target["laser_absorber_fire_ready"] = true
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("laser_absorber_fire_ready", true)
+			pool = 0.0
+
+		if typeof(target) == TYPE_OBJECT and "laser_energy_pool" in target: target.laser_energy_pool = pool
+		elif typeof(target) == TYPE_DICTIONARY: target["laser_energy_pool"] = pool
+		elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("laser_energy_pool", pool)
+		return
+
 	# Reflect projectiles and lasers
 	var is_reflective = target.is_reflective if "is_reflective" in target else false
 	if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("is_reflective"):
@@ -3412,6 +3469,92 @@ func execute(strategy: String, delta: float):
             self.ball.set_meta("hermes_boots_cooldown", self.ball.get_meta("hermes_boots_cooldown") - delta)
         if self.ball.has_meta("hermes_boots_active_timer") and self.ball.get_meta("hermes_boots_active_timer") > 0:
             self.ball.set_meta("hermes_boots_active_timer", self.ball.get_meta("hermes_boots_active_timer") - delta)
+
+	var laser_absorber_fire_ready = false
+	if typeof(self.ball) == TYPE_OBJECT and "laser_absorber_fire_ready" in self.ball: laser_absorber_fire_ready = self.ball.laser_absorber_fire_ready
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("laser_absorber_fire_ready"): laser_absorber_fire_ready = self.ball.laser_absorber_fire_ready
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("laser_absorber_fire_ready"): laser_absorber_fire_ready = self.ball.get_meta("laser_absorber_fire_ready")
+
+	if laser_absorber_fire_ready:
+		if typeof(self.ball) == TYPE_OBJECT and "laser_absorber_fire_ready" in self.ball: self.ball.laser_absorber_fire_ready = false
+		elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["laser_absorber_fire_ready"] = false
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("laser_absorber_fire_ready", false)
+
+		var enemies = []
+		if world != null and world.has_method("get_nearby_entities"):
+			var nearby = world.get_nearby_entities(self.ball, 800.0)
+			if typeof(nearby) == TYPE_DICTIONARY and nearby.has("enemies"):
+				enemies = nearby["enemies"]
+		else:
+			var world_balls = []
+			if world != null and "balls" in world: world_balls = world.balls
+			var self_id = self.ball.get_meta("id") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") else (self.ball.id if "id" in self.ball else -1)
+			var self_team = self.ball.get_meta("team") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team") else (self.ball.get_meta("ball_type") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("ball_type") else (self.ball.team if "team" in self.ball else (self.ball.ball_type if "ball_type" in self.ball else "")))
+			for other in world_balls:
+				var o_alive = other.get_meta("alive") if typeof(other) == TYPE_OBJECT and other.has_method("get_meta") else (other.alive if "alive" in other else false)
+				var o_id = other.get_meta("id") if typeof(other) == TYPE_OBJECT and other.has_method("get_meta") else (other.id if "id" in other else -1)
+				if o_alive and o_id != self_id:
+					var o_team = other.get_meta("team") if typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("team") else (other.get_meta("ball_type") if typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("ball_type") else (other.team if "team" in other else (other.ball_type if "ball_type" in other else "")))
+					if o_team != self_team:
+						var ox = other.get_meta("x") if typeof(other) == TYPE_OBJECT and other.has_method("get_meta") else (other.x if "x" in other else 0.0)
+						var oy = other.get_meta("y") if typeof(other) == TYPE_OBJECT and other.has_method("get_meta") else (other.y if "y" in other else 0.0)
+						var bx = self.ball.get_meta("x") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") else (self.ball.x if "x" in self.ball else 0.0)
+						var by = self.ball.get_meta("y") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") else (self.ball.y if "y" in self.ball else 0.0)
+						var dist = sqrt((ox - bx)*(ox - bx) + (oy - by)*(oy - by))
+						if dist <= 800.0:
+							enemies.append(other)
+
+		if enemies.size() > 0:
+			var bx = self.ball.get_meta("x") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") else (self.ball.x if "x" in self.ball else 0.0)
+			var by = self.ball.get_meta("y") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") else (self.ball.y if "y" in self.ball else 0.0)
+			var nearest_enemy = enemies[0]
+			var nx = nearest_enemy.get_meta("x") if typeof(nearest_enemy) == TYPE_OBJECT and nearest_enemy.has_method("get_meta") else (nearest_enemy.x if "x" in nearest_enemy else 0.0)
+			var ny = nearest_enemy.get_meta("y") if typeof(nearest_enemy) == TYPE_OBJECT and nearest_enemy.has_method("get_meta") else (nearest_enemy.y if "y" in nearest_enemy else 0.0)
+			var min_dist = sqrt((nx - bx)*(nx - bx) + (ny - by)*(ny - by))
+
+			for i in range(1, enemies.size()):
+				var e = enemies[i]
+				var ex = e.get_meta("x") if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") else (e.x if "x" in e else 0.0)
+				var ey = e.get_meta("y") if typeof(e) == TYPE_OBJECT and e.has_method("get_meta") else (e.y if "y" in e else 0.0)
+				var d = sqrt((ex - bx)*(ex - bx) + (ey - by)*(ey - by))
+				if d < min_dist:
+					min_dist = d
+					nearest_enemy = e
+					nx = ex
+					ny = ey
+
+			var dx = nx - bx
+			var dy = ny - by
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0.001:
+				var dir_x = dx / dist
+				var dir_y = dy / dist
+
+				var laser = {}
+				laser["id"] = 99999 + randi() % 1000
+				if world != null and world.has_method("get_next_id"):
+					laser["id"] = world.get_next_id()
+				laser["ball_type"] = "projectile"
+				laser["is_ricochet_laser"] = true
+				laser["owner_id"] = self.ball.get_meta("id") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") else (self.ball.id if "id" in self.ball else -1)
+				laser["team"] = self.ball.get_meta("team") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("team") else (self.ball.get_meta("ball_type") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("ball_type") else (self.ball.team if "team" in self.ball else (self.ball.ball_type if "ball_type" in self.ball else "")))
+				laser["damage"] = 80.0
+				laser["base_damage"] = 80.0
+				laser["bounces_left"] = 3
+				laser["last_hit_id"] = null
+				laser["duration"] = 10.0
+				laser["alive"] = true
+				laser["x"] = bx + dir_x * 20.0
+				laser["y"] = by + dir_y * 20.0
+				laser["vx"] = dir_x * 800.0
+				laser["vy"] = dir_y * 800.0
+				laser["radius"] = 8.0
+
+				if world != null and "balls" in world:
+					world.balls.append(laser)
+
+				if world != null and "events" in world:
+					world.events.append({"type": "visual_effect", "data": {"type": "focused_laser_fire", "x": bx, "y": by}})
 
 	if "burning_trail_timer" in self.ball and self.ball.burning_trail_timer > 0.0:
 		self.ball.burning_trail_timer -= delta
