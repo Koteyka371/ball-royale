@@ -27512,6 +27512,44 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+
+            elif (typeof(nearest) == TYPE_DICTIONARY and nearest.get("kind") == "hazard_jar_item") or (typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "hazard_jar_item"):
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if not self.ball.has("inventory"): self.ball["inventory"] = []
+                    self.ball["inventory"].append("hazard_jar_item")
+                else:
+                    if not "inventory" in self.ball: self.ball.set("inventory", [])
+                    self.ball.inventory.append("hazard_jar_item")
+
+                if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null:
+                    if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                        self.world.arena.hazards.erase(nearest)
+                    elif typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and typeof(self.world) == TYPE_OBJECT and "boosters" in self.world:
+                    self.world.boosters.erase(nearest)
+                elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("boosters"):
+                    self.world.boosters.erase(nearest)
+
+
+            elif (typeof(nearest) == TYPE_DICTIONARY and nearest.get("kind") == "hazard_jar_item") or (typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "hazard_jar_item"):
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if not self.ball.has("inventory"): self.ball["inventory"] = []
+                    self.ball["inventory"].append({"item": "hazard_jar_item", "stored_hazard": null})
+                else:
+                    if not "inventory" in self.ball: self.ball.set("inventory", [])
+                    self.ball.inventory.append({"item": "hazard_jar_item", "stored_hazard": null})
+
+                if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null:
+                    if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                        self.world.arena.hazards.erase(nearest)
+                    elif typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and typeof(self.world) == TYPE_OBJECT and "boosters" in self.world:
+                    self.world.boosters.erase(nearest)
+                elif self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("boosters"):
+                    self.world.boosters.erase(nearest)
+
             elif "kind" in nearest and nearest.kind == "holo_decoy_booster":
                 var decoy = null
                 if typeof(self.ball) == TYPE_DICTIONARY:
@@ -31769,6 +31807,134 @@ func _use_skill():
     if "silence_timer" in self.ball: _silence_timer = self.ball.silence_timer
     elif self.ball.has_method("has_meta") and self.ball.has_meta("silence_timer"): _silence_timer = self.ball.get_meta("silence_timer")
     if _silence_timer > 0.0: return
+
+    var has_jar = false
+    var jar_idx = -1
+    var inventory = []
+
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"):
+        inventory = self.ball.inventory
+    elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball:
+        inventory = self.ball.inventory
+
+    for i in range(inventory.size()):
+        var item = inventory[i]
+        if typeof(item) == TYPE_DICTIONARY and item.get("item") == "hazard_jar_item":
+            has_jar = true
+            jar_idx = i
+            break
+        elif typeof(item) == TYPE_STRING and item == "hazard_jar_item":
+            has_jar = true
+            jar_idx = i
+            break
+
+    if has_jar:
+        var jar = inventory[jar_idx]
+        if typeof(jar) == TYPE_STRING:
+            jar = {"item": "hazard_jar_item", "stored_hazard": null}
+            inventory[jar_idx] = jar
+
+        if jar.get("stored_hazard") == null:
+            var stored = false
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null:
+                var hazards = []
+                if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                    hazards = self.world.arena.hazards
+                elif typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                    hazards = self.world.arena.hazards
+
+                for h in hazards:
+                    var h_kind = ""
+                    var h_x = 0.0
+                    var h_y = 0.0
+                    if typeof(h) == TYPE_DICTIONARY:
+                        h_kind = h.get("kind", "")
+                        h_x = h.get("x", 0.0)
+                        h_y = h.get("y", 0.0)
+                    else:
+                        h_kind = h.kind if "kind" in h else ""
+                        h_x = h.x if "x" in h else 0.0
+                        h_y = h.y if "y" in h else 0.0
+
+                    if h_kind in ["acid_puddle", "neutralizing_puddle", "fire_zone", "poison_cloud", "quicksand", "mud_puddle", "ice_patch", "lava"]:
+                        var b_x = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball.get("x", 0.0)
+                        var b_y = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball.get("y", 0.0)
+                        var dist = pow(h_x - b_x, 2) + pow(h_y - b_y, 2)
+                        if dist < 10000:
+                            jar["stored_hazard"] = h_kind
+                            hazards.erase(h)
+                            stored = true
+                            break
+            if stored:
+                return
+        else:
+            var stored_kind = jar["stored_hazard"]
+            inventory.remove_at(jar_idx)
+
+            if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null:
+                var owner = null
+                if typeof(self.ball) == TYPE_DICTIONARY: owner = self.ball.get("id")
+                else: owner = self.ball.id if "id" in self.ball else null
+                var b_x = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball.get("x", 0.0)
+                var b_y = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball.get("y", 0.0)
+
+                var new_hazard = {
+                    "id": randi() % 90000 + 10000,
+                    "x": b_x,
+                    "y": b_y,
+                    "radius": 100.0,
+                    "kind": stored_kind,
+                    "damage": 10.0,
+                    "duration": 10.0,
+                    "active": true,
+                    "owner_id": owner
+                }
+                if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                    self.world.arena.hazards.append(new_hazard)
+                elif typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                    self.world.arena.hazards.append(new_hazard)
+            return
+
+
+    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory") and "hazard_jar_item" in self.ball.inventory:
+        self.ball.inventory.erase("hazard_jar_item")
+        if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null:
+            var new_hazard = {
+                "id": randi() % 90000 + 10000,
+                "x": self.ball.x,
+                "y": self.ball.y,
+                "radius": 100.0,
+                "kind": "neutralizing_puddle",
+                "damage": 10.0,
+                "duration": 5.0,
+                "active": true,
+                "owner_id": self.ball.id if self.ball.has("id") else null
+            }
+            if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                self.world.arena.hazards.append(new_hazard)
+            elif typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                self.world.arena.hazards.append(new_hazard)
+        return
+    elif typeof(self.ball) == TYPE_OBJECT and "inventory" in self.ball and "hazard_jar_item" in self.ball.inventory:
+        self.ball.inventory.erase("hazard_jar_item")
+        if self.world != null and typeof(self.world) == TYPE_OBJECT and "arena" in self.world and self.world.arena != null:
+            var new_hazard = {
+                "id": randi() % 90000 + 10000,
+                "x": self.ball.x,
+                "y": self.ball.y,
+                "radius": 100.0,
+                "kind": "neutralizing_puddle",
+                "damage": 10.0,
+                "duration": 5.0,
+                "active": true,
+                "owner_id": self.ball.id if "id" in self.ball else null
+            }
+            if typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
+                self.world.arena.hazards.append(new_hazard)
+            elif typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                self.world.arena.hazards.append(new_hazard)
+        return
+
 
     var has_aegis = false
     if "has_aegis_shield" in self.ball:

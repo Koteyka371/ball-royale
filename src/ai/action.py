@@ -35,7 +35,7 @@ class CheerEffect:
         self.active = True
 
 class HomingMissileHazard:
-    def __init__(self, id, x, y, radius, kind, damage):
+    def __init__(self, id, x, y, radius, kind, damage, owner_id):
         self.id = id
         self.x = x
         self.y = y
@@ -1567,7 +1567,7 @@ class Action:
                         if getattr(next_entity, "kind", "") == "mirage_decoy" and getattr(next_entity, "team", None) != getattr(attacker, "team", None):
                             # Explode if attacked by enemy
                             class Hazard:
-                                def __init__(self, id, x, y, radius, kind, damage):
+                                def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                     self.id = id
                                     self.x = x
                                     self.y = y
@@ -1794,7 +1794,7 @@ class Action:
                 self.ball.burning_trail_spawn_timer = 0.1  # spawn every 0.1s
                 trail_id = len(self.world.arena.hazards) + 9000
                 class MockTrail:
-                    def __init__(self, id, x, y, radius, kind, damage):
+                    def __init__(self, id, x, y, radius, kind, damage, owner_id):
                         self.id = id
                         self.x = x
                         self.y = y
@@ -1824,7 +1824,7 @@ class Action:
                 self.ball.decoy_trail_spawn_timer = 0.5  # spawn every 0.5s
                 trail_id = len(self.world.arena.hazards) + 9000
                 class MockTrail:
-                    def __init__(self, id, x, y, radius, kind, damage):
+                    def __init__(self, id, x, y, radius, kind, damage, owner_id):
                         self.id = id
                         self.x = x
                         self.y = y
@@ -1942,7 +1942,7 @@ class Action:
                                     if dist_sq <= r * r:
                                         # Explode
                                         class Hazard:
-                                            def __init__(self, id, x, y, radius, kind, damage):
+                                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                                 self.id = id
                                                 self.x = x
                                                 self.y = y
@@ -3355,7 +3355,7 @@ class Action:
                 if self.ball.mirage_spawn_timer >= 3.0:
                     self.ball.mirage_spawn_timer -= 3.0
                     class Hazard:
-                        def __init__(self, id, x, y, radius, kind, damage):
+                        def __init__(self, id, x, y, radius, kind, damage, owner_id):
                             self.id = id
                             self.x = x
                             self.y = y
@@ -3753,7 +3753,7 @@ class Action:
                     from arena.procedural_arena import Hazard
                 except ImportError:
                     class Hazard:
-                        def __init__(self, id, x, y, radius, kind, damage):
+                        def __init__(self, id, x, y, radius, kind, damage, owner_id):
                             self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
                 flare_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
                 flare = Hazard(flare_id, self.ball.x, self.ball.y, 10.0, "flare", 0.0)
@@ -3997,7 +3997,7 @@ class Action:
                             from arena.procedural_arena import Hazard
                         except ImportError:
                             class Hazard:
-                                def __init__(self, id, x, y, radius, kind, damage):
+                                def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                     self.id = id
                                     self.x = x
                                     self.y = y
@@ -4621,7 +4621,7 @@ class Action:
                                 from arena.procedural_arena import Hazard
                             except ImportError:
                                 class Hazard:
-                                    def __init__(self, id, x, y, radius, kind, damage):
+                                    def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                         self.id = id
                                         self.x = x
                                         self.y = y
@@ -5015,7 +5015,7 @@ class Action:
                                 setattr(exp, "duration", 0.5)
                             except ImportError:
                                 class FallbackHazard:
-                                    def __init__(self, id, x, y, radius, kind, damage):
+                                    def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                         self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
                                 exp = FallbackHazard(exp_id, hazard.x, hazard.y, 150.0, "explosion", 150.0)
                                 setattr(exp, "duration", 0.5)
@@ -5726,7 +5726,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
 
                     bh_id = len(self.world.arena.hazards) + 60000
@@ -11551,7 +11551,7 @@ class Action:
                     self.world.arena.hazards.append(phylactery)
                 except ImportError:
                     class FallbackHazard:
-                        def __init__(self, id, x, y, radius, kind, damage):
+                        def __init__(self, id, x, y, radius, kind, damage, owner_id):
                             self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
                     p_id = getattr(self.world, "next_id", __import__("random").randint(10000, 99999))
                     phylactery = FallbackHazard(id=p_id, x=self.ball.x, y=self.ball.y, radius=20.0, kind="phylactery_hazard", damage=0.0)
@@ -14046,6 +14046,39 @@ class Action:
                         self.world.boosters.remove(nearest)
 
 
+
+                elif getattr(nearest, "kind", None) == "hazard_jar_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+
+                    self.ball.inventory.append({"item": "hazard_jar_item", "stored_hazard": None})
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
+
+                elif getattr(nearest, "kind", None) == "hazard_jar_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+
+                    # Store existing hazard jar type?
+                    # "Hazard Jars to store environmental hazards like acid puddles or neutralizing puddles, and deploy them strategically to create chokepoints or safe zones for their team."
+                    # The jar itself is picked up.
+
+                    # Actually, if we pick up a hazard jar, it's an empty jar? Or is the jar an item that, when used on a hazard, stores it, and then when used again, drops it?
+                    # Or is the hazard jar pre-filled? The prompt says "pick up 'Hazard Jars' to store environmental hazards ... and deploy them".
+                    # Let's say we pick up "hazard_jar_item", we store it.
+                    self.ball.inventory.append({"item": "hazard_jar_item", "stored_hazard": None})
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "geyser_boots":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -14107,7 +14140,7 @@ class Action:
                             bomb = Hazard(len(self.world.arena.hazards) + 50000, self.ball.x, self.ball.y, 20.0, "sticky_bomb", 0.0)
                         except ImportError:
                             class TempHazard:
-                                def __init__(self, id, x, y, radius, kind, damage):
+                                def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                     self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
                             bomb = TempHazard(len(self.world.arena.hazards) + 50000, self.ball.x, self.ball.y, 20.0, "sticky_bomb", 0.0)
                         setattr(bomb, "duration", 0.0)
@@ -14133,7 +14166,7 @@ class Action:
                             mine = Hazard(len(self.world.arena.hazards) + 50000, self.ball.x, self.ball.y, 20.0, "sticky_mine", 0.0)
                         except ImportError:
                             class TempHazard:
-                                def __init__(self, id, x, y, radius, kind, damage):
+                                def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                     self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
                             mine = TempHazard(len(self.world.arena.hazards) + 50000, self.ball.x, self.ball.y, 20.0, "sticky_mine", 0.0)
                         setattr(mine, "duration", 10.0)
@@ -16230,6 +16263,116 @@ class Action:
                             break
 
         if skill_timer <= 0 or can_recast:
+
+            if "hazard_jar_item" in getattr(self.ball, "inventory", []):
+                self.ball.inventory.remove("hazard_jar_item")
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class HazardJarField:
+                        def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                            self.duration = 5.0
+                            self.active = True
+                            self.owner_id = owner_id
+
+                        def __getitem__(self, key):
+                            return getattr(self, key)
+                        def __setitem__(self, key, value):
+                            setattr(self, key, value)
+                        def get(self, key, default=None):
+                            return getattr(self, key, default)
+                        def __contains__(self, key):
+                            return hasattr(self, key)
+
+                    new_hazard = HazardJarField(
+                        getattr(self.world, "next_id", __import__('random').randint(10000, 99999)),
+                        self.ball.x,
+                        self.ball.y,
+                        100.0,
+                        "neutralizing_puddle",
+                        10.0,
+                        getattr(self.ball, "id", None)
+                    )
+                    self.world.arena.hazards.append(new_hazard)
+                return
+
+
+            has_jar = False
+            jar_idx = -1
+            if hasattr(self.ball, "inventory"):
+                for i, item in enumerate(self.ball.inventory):
+                    if isinstance(item, dict) and item.get("item") == "hazard_jar_item":
+                        has_jar = True
+                        jar_idx = i
+                        break
+                    elif item == "hazard_jar_item":
+                        has_jar = True
+                        jar_idx = i
+                        break
+
+            if has_jar:
+                jar = self.ball.inventory[jar_idx]
+                if isinstance(jar, str):
+                    jar = {"item": "hazard_jar_item", "stored_hazard": None}
+                    self.ball.inventory[jar_idx] = jar
+
+                if jar.get("stored_hazard") is None:
+                    # Try to store a nearby hazard
+                    stored = False
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        for h in self.world.arena.hazards[:]:
+                            if getattr(h, "kind", "") in ["acid_puddle", "neutralizing_puddle", "fire_zone", "poison_cloud", "quicksand", "mud_puddle", "ice_patch", "lava"]:
+                                dist = (getattr(h, "x", 0) - self.ball.x)**2 + (getattr(h, "y", 0) - self.ball.y)**2
+                                if dist < 10000: # Within 100 units
+                                    jar["stored_hazard"] = h.kind
+                                    self.world.arena.hazards.remove(h)
+                                    stored = True
+                                    break
+                    if stored:
+                        return # Used action to store
+                else:
+                    # Deploy the stored hazard
+                    stored_kind = jar["stored_hazard"]
+                    self.ball.inventory.pop(jar_idx)
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        class HazardJarField:
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
+                                self.id = id
+                                self.x = x
+                                self.y = y
+                                self.radius = radius
+                                self.kind = kind
+                                self.damage = damage
+                                self.duration = 10.0
+                                self.active = True
+                                self.owner_id = owner_id
+
+                            def __getitem__(self, key):
+                                return getattr(self, key)
+                            def __setitem__(self, key, value):
+                                setattr(self, key, value)
+                            def get(self, key, default=None):
+                                return getattr(self, key, default)
+                            def __contains__(self, key):
+                                return hasattr(self, key)
+
+                        new_hazard = HazardJarField(
+                            getattr(self.world, "next_id", __import__('random').randint(10000, 99999)),
+                            self.ball.x,
+                            self.ball.y,
+                            100.0,
+                            stored_kind,
+                            10.0,
+                            getattr(self.ball, "id", None)
+                        )
+                        self.world.arena.hazards.append(new_hazard)
+                    return
+
             if hasattr(self.ball, "use_skill") and skill_timer <= 0:
                 self.ball.use_skill()
 
@@ -16412,7 +16555,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -16436,7 +16579,7 @@ class Action:
                     except ImportError:
                         # Fallback for tests if needed, but normally ProceduralArena is there
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -16944,7 +17087,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -17977,7 +18120,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -18155,7 +18298,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -18195,7 +18338,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -18237,7 +18380,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -18279,7 +18422,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -19526,7 +19669,7 @@ class Action:
                             from arena.procedural_arena import Hazard
                         except ImportError:
                             class Hazard:
-                                def __init__(self, id, x, y, radius, kind, damage):
+                                def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                     self.id = id
                                     self.x = x
                                     self.y = y
@@ -19587,7 +19730,7 @@ class Action:
                             from arena.procedural_arena import Hazard
                         except ImportError:
                             class Hazard:
-                                def __init__(self, id, x, y, radius, kind, damage):
+                                def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                     self.id = id
                                     self.x = x
                                     self.y = y
@@ -19696,7 +19839,7 @@ class Action:
                         from arena.procedural_arena import Hazard
                     except ImportError:
                         class Hazard:
-                            def __init__(self, id, x, y, radius, kind, damage):
+                            def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                 self.id = id
                                 self.x = x
                                 self.y = y
@@ -20589,7 +20732,7 @@ class Action:
                                     from arena.procedural_arena import Hazard
                                 except ImportError:
                                     class Hazard:
-                                        def __init__(self, id, x, y, radius, kind, damage):
+                                        def __init__(self, id, x, y, radius, kind, damage, owner_id):
                                             self.id = id
                                             self.x = x
                                             self.y = y
