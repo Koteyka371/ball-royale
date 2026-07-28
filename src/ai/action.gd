@@ -38406,6 +38406,112 @@ func _use_skill():
                     self.ball.set_meta("skill_timer", cd)
                 else:
                     self.ball.skill_timer = cd
+
+        elif skill_name == "tunnel":
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if "arena" in self.world and self.world.arena:
+                if "width" in self.world.arena:
+                    arena_width = self.world.arena.width
+                if "height" in self.world.arena:
+                    arena_height = self.world.arena.height
+            elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("width"):
+                arena_width = self.world["width"]
+                arena_height = self.world["height"]
+
+            var b_rad = 10.0
+            if "radius" in self.ball: b_rad = float(self.ball.radius)
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): b_rad = float(self.ball["radius"])
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("radius"): b_rad = float(self.ball.get_meta("radius"))
+
+            var dist_threshold = b_rad + 15.0
+            var teleport_dist = 60.0
+            var tunneled = false
+
+            var bx = 0.0
+            var by = 0.0
+            if "x" in self.ball: bx = float(self.ball.x)
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = float(self.ball["x"])
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("x"): bx = float(self.ball.get_meta("x"))
+
+            if "y" in self.ball: by = float(self.ball.y)
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = float(self.ball["y"])
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("y"): by = float(self.ball.get_meta("y"))
+
+            if bx <= dist_threshold:
+                bx += teleport_dist
+                tunneled = true
+            elif arena_width - bx <= dist_threshold:
+                bx -= teleport_dist
+                tunneled = true
+            elif by <= dist_threshold:
+                by += teleport_dist
+                tunneled = true
+            elif arena_height - by <= dist_threshold:
+                by -= teleport_dist
+                tunneled = true
+
+            if not tunneled and "arena" in self.world and self.world.arena and "hazards" in self.world.arena:
+                for h in self.world.arena.hazards:
+                    var is_disabled = false
+                    if "is_disabled_by_flare" in h: is_disabled = h.is_disabled_by_flare
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("is_disabled_by_flare"): is_disabled = h["is_disabled_by_flare"]
+                    elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("is_disabled_by_flare"): is_disabled = h.get_meta("is_disabled_by_flare")
+
+                    if is_disabled: continue
+
+                    var h_x = 0.0
+                    var h_y = 0.0
+                    var h_rad = 0.0
+                    if "x" in h: h_x = float(h.x)
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("x"): h_x = float(h["x"])
+                    elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("x"): h_x = float(h.get_meta("x"))
+
+                    if "y" in h: h_y = float(h.y)
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("y"): h_y = float(h["y"])
+                    elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("y"): h_y = float(h.get_meta("y"))
+
+                    if "radius" in h: h_rad = float(h.radius)
+                    elif typeof(h) == TYPE_DICTIONARY and h.has("radius"): h_rad = float(h["radius"])
+                    elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("radius"): h_rad = float(h.get_meta("radius"))
+
+                    var dist_sq = pow(h_x - bx, 2) + pow(h_y - by, 2)
+                    if dist_sq <= pow(dist_threshold + h_rad, 2):
+                        var dist = sqrt(dist_sq)
+                        if dist > 0:
+                            var dx = h_x - bx
+                            var dy = h_y - by
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            bx = h_x + nx * (h_rad + b_rad + 5.0)
+                            by = h_y + ny * (h_rad + b_rad + 5.0)
+                            tunneled = true
+                            break
+
+            if tunneled:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["x"] = bx
+                    self.ball["y"] = by
+                    self.ball["intangible"] = true
+                    self.ball["intangible_timer"] = 0.5
+                    self.ball["skill_timer"] = 15.0
+                else:
+                    if "x" in self.ball: self.ball.x = bx
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("x", bx)
+
+                    if "y" in self.ball: self.ball.y = by
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("y", by)
+
+                    if "intangible" in self.ball: self.ball.intangible = true
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", true)
+
+                    if "intangible_timer" in self.ball: self.ball.intangible_timer = 0.5
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 0.5)
+
+                    if "skill_timer" in self.ball: self.ball.skill_timer = 15.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", 15.0)
+                self._spawn_skill_particles("tunnel")
+
         elif skill_name == "phase_through":
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                 self.ball.set_meta("intangible_timer", 3.0)
