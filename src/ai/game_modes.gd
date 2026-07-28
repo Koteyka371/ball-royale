@@ -3875,7 +3875,7 @@ class BattleRoyaleMode extends GameMode:
 	var shrink_rate: float = 10.0
 	var zone_target_x: float = 500.0
 	var zone_target_y: float = 500.0
-	var zone_move_speed: float = 30.0
+	var zone_teleport_timer: float = 60.0
 	var rng = RandomNumberGenerator.new()
 	var match_time: float = 0.0
 	var sudden_death_black_hole_spawned: bool = false
@@ -4675,16 +4675,16 @@ class BattleRoyaleMode extends GameMode:
 			if "width" in world.arena: arena_width_for_move = float(world.arena.width)
 			if "height" in world.arena: arena_height_for_move = float(world.arena.height)
 
-		var dx = self.get("zone_target_x") - self.get("zone_x")
-		var dy = self.get("zone_target_y") - self.get("zone_y")
-		var dist = sqrt(dx*dx + dy*dy)
-		if dist > 5.0:
-			self.set("zone_x", self.get("zone_x") + (dx / dist) * self.get("zone_move_speed") * delta)
-			self.set("zone_y", self.get("zone_y") + (dy / dist) * self.get("zone_move_speed") * delta)
-		else:
-			var buffer = max(100.0, self.get("zone_radius") * 0.5)
-			self.set("zone_target_x", rng.randf_range(buffer, arena_width_for_move - buffer))
-			self.set("zone_target_y", rng.randf_range(buffer, arena_height_for_move - buffer))
+		var timer = self.get("zone_teleport_timer")
+		if timer != null:
+			self.set("zone_teleport_timer", timer - delta)
+			if self.get("zone_teleport_timer") <= 0.0:
+				self.set("zone_teleport_timer", 60.0)
+				var buffer = max(100.0, self.get("zone_radius") * 0.5)
+				self.set("zone_x", rng.randf_range(buffer, arena_width_for_move - buffer))
+				self.set("zone_y", rng.randf_range(buffer, arena_height_for_move - buffer))
+				if world.has_method("add_event"):
+					world.add_event("zone_teleport", {"message": "The safe zone has teleported!"})
 
 		var current_radius = self.get("zone_radius")
 		if current_radius > 50.0:
@@ -39335,7 +39335,7 @@ class LavaRoyaleMode extends GameMode:
 	var shrink_rate: float = 15.0
 	var zone_target_x: float = 500.0
 	var zone_target_y: float = 500.0
-	var zone_move_speed: float = 30.0
+	var zone_teleport_timer: float = 60.0
 	var receding: bool = false
 	var max_zone_radius: float = 1000.0
 	var rng = RandomNumberGenerator.new()
@@ -39550,16 +39550,14 @@ class LavaRoyaleMode extends GameMode:
 			if "width" in world.arena: arena_width_for_move = float(world.arena.width)
 			if "height" in world.arena: arena_height_for_move = float(world.arena.height)
 
-		var dx = zone_target_x - zone_x
-		var dy = zone_target_y - zone_y
-		var dist = sqrt(dx*dx + dy*dy)
-		if dist > 5.0:
-			zone_x += (dx / dist) * zone_move_speed * delta
-			zone_y += (dy / dist) * zone_move_speed * delta
-		else:
+		zone_teleport_timer -= delta
+		if zone_teleport_timer <= 0.0:
+			zone_teleport_timer = 60.0
 			var buffer = max(100.0, zone_radius * 0.5)
-			zone_target_x = rng.randf_range(buffer, arena_width_for_move - buffer)
-			zone_target_y = rng.randf_range(buffer, arena_height_for_move - buffer)
+			zone_x = rng.randf_range(buffer, arena_width_for_move - buffer)
+			zone_y = rng.randf_range(buffer, arena_height_for_move - buffer)
+			if world.has_method("add_event"):
+				world.add_event("zone_teleport", {"message": "The safe zone has teleported!"})
 
 		if not receding:
 			if zone_radius > 50.0:
