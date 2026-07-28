@@ -27731,7 +27731,7 @@
     },
     {
       "id": "idea-1620",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Teleporting Safe Zone Mode",
@@ -40531,6 +40531,57 @@
         "src/arena/sniper_nest.py",
         "src/arena/sniper_nest.gd",
         "tests/test_sniper_nest.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2372",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Quantum Slingshot Chains",
+      "description": "Players can string together multiple slingshot nodes to accelerate to ungodly speeds across the arena. Combining this with a phase booster allows them to instantly shatter any shield they impact while moving above a certain speed threshold.",
+      "allowed_paths": [
+        "src/ai/quantum_slingshot_chains.py",
+        "src/ai/quantum_slingshot_chains.gd",
+        "tests/test_quantum_slingshot_chains.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2373",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Clone Factory",
+      "description": "A structure that spawns fragile clones of the user that run randomly to confuse enemies. The clones explode harmlessly on impact but trigger enemy traps.",
+      "allowed_paths": [
+        "src/ai/decoy_clone_factory.py",
+        "src/ai/decoy_clone_factory.gd",
+        "tests/test_decoy_clone_factory.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2374",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Elastic Overdrive Traps",
+      "description": "Players can use Elastic Cords dropped by Slingshot nodes to craft Elastic Overdrive Traps. These traps capture the kinetic energy of any incoming projectile or player and violently reflect it back with a 2x damage multiplier.",
+      "allowed_paths": [
+        "src/arena/elastic_overdrive_traps.py",
+        "src/arena/elastic_overdrive_traps.gd",
+        "tests/test_elastic_overdrive_traps.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1620] Teleporting Safe Zone Mode — *2026-07-28 01:23:03 UTC*
+
+The safe zone does not slowly move; instead, it instantly teleports to a random location every minute, forcing players to scramble across the dangerous zone quickly to find it.
+
+---
+
 ## [idea-1612] Grapple Mines — *2026-07-28 01:09:09 UTC*
 
 Traps that look like grapple nodes but pull players in and explode on contact. They can be disarmed by hitting them with a projectile from afar, which makes them drop explosive materials instead.
