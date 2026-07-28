@@ -6849,15 +6849,7 @@ class Action:
                                                 other.is_confused = True
                                             other.confusion_timer = 3.0
 
-        if getattr(self.ball, "is_hologram", False):
-            # Erratic movement
-            if 0.0 < 0.1:
-                self.ball.vx = 0.0
-                self.ball.vy = 0.0
-            self.ball.x += getattr(self.ball, "vx", 0) * delta
-            self.ball.y += getattr(self.ball, "vy", 0) * delta
-            self._clamp_position()
-            return
+
 
         if strategy == "target_weak":
             self._target_weak(delta)
@@ -11793,7 +11785,7 @@ class Action:
             import random
             hx = getattr(self.ball, "hologram_dir_x", 1.0)
             hy = getattr(self.ball, "hologram_dir_y", 0.0)
-            spd = getattr(self.ball, "speed", 2.0)
+            spd = 1000.0
             self.ball.x += hx * spd * delta * 60
             self.ball.y += hy * spd * delta * 60
 

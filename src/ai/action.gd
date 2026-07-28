@@ -23760,15 +23760,13 @@ func execute(strategy: String, delta: float):
     if is_hologram_stat:
         var hx = 1.0
         var hy = 0.0
-        var bspeed = 2.0
+        var bspeed = 1000.0
         if typeof(self.ball) == TYPE_DICTIONARY:
             hx = self.ball.get("hologram_dir_x", 1.0)
             hy = self.ball.get("hologram_dir_y", 0.0)
-            bspeed = self.ball.get("speed", 2.0)
         else:
             if self.ball.has_method("has_meta") and self.ball.has_meta("hologram_dir_x"): hx = self.ball.get_meta("hologram_dir_x")
             if self.ball.has_method("has_meta") and self.ball.has_meta("hologram_dir_y"): hy = self.ball.get_meta("hologram_dir_y")
-            if "speed" in self.ball: bspeed = self.ball.speed
 
         var bx = 0.0
         var by = 0.0
