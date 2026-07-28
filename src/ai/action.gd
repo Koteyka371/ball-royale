@@ -13437,9 +13437,27 @@ func execute(strategy: String, delta: float):
                                         elif other.has_method("set_meta"):
                                             other.set_meta("amplified_explosion", true)
 
-                                    var b_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
+                                        var b_decoy_type = b.decoy_type if "decoy_type" in b else (b.get_meta("decoy_type") if b.has_method("has_meta") and b.has_meta("decoy_type") else "")
 
-                                    if b_decoy_type == "swap_trap":
+                                        if b_decoy_type == "black_hole":
+                                            if world != null and "arena" in world and "hazards" in world.arena:
+                                                var h_id = randi() % 90000 + 10000
+                                                var bh = {
+                                                    "id": h_id,
+                                                    "x": b.x,
+                                                    "y": b.y,
+                                                    "radius": 250.0,
+                                                    "kind": "decoy_singularity",
+                                                    "duration": 3.0,
+                                                    "absorbed_mass": 0.0,
+                                                    "owner_id": b_id,
+                                                    "active": true
+                                                }
+                                                world.arena.hazards.append(bh)
+                                            continue
+
+                                        if b_decoy_type == "swap_trap":
+
                                         swap_targets.append(other)
                                     elif b_decoy_type == "healing" and is_ally:
                                         var max_hp = 100.0
@@ -43075,7 +43093,113 @@ func _update_skill_timer(delta: float):
 
 
 
+                if h_kind == "decoy_singularity":
+                    var pull_radius = 250.0
+                    if "radius" in hazard: pull_radius = float(hazard.radius)
+                    elif hazard.has_method("get_meta") and hazard.has_meta("radius"): pull_radius = float(hazard.get_meta("radius"))
+
+                    var pull_strength = 300.0
+                    var h_x = hazard.x if "x" in hazard else (hazard.get_meta("x") if hazard.has_method("get_meta") and hazard.has_meta("x") else 0.0)
+                    var h_y = hazard.y if "y" in hazard else (hazard.get_meta("y") if hazard.has_method("get_meta") and hazard.has_meta("y") else 0.0)
+                    var h_owner = hazard.owner_id if "owner_id" in hazard else (hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else null)
+
+                    var current_mass = 0.0
+                    if "absorbed_mass" in hazard: current_mass = float(hazard.absorbed_mass)
+                    elif hazard.has_method("get_meta") and hazard.has_meta("absorbed_mass"): current_mass = float(hazard.get_meta("absorbed_mass"))
+
+                    if world != null and "balls" in world:
+                        for b in world.balls:
+                            var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                            var b_id = b.id if "id" in b else (b.get_meta("id") if b.has_method("get_meta") and b.has_meta("id") else null)
+                            if not b_alive or b_id == h_owner: continue
+
+                            var dx = h_x - b.x
+                            var dy = h_y - b.y
+                            var dist_sq = dx*dx + dy*dy
+                            if dist_sq > 0 and dist_sq <= pull_radius * pull_radius:
+                                var dist = sqrt(dist_sq)
+                                var force = (1.0 - dist / pull_radius) * pull_strength * delta
+                                if "x" in b: b.x += (dx / dist) * force
+                                elif b.has_method("set_meta"): b.set_meta("x", b.get_meta("x") + (dx / dist) * force)
+                                if "y" in b: b.y += (dy / dist) * force
+                                elif b.has_method("set_meta"): b.set_meta("y", b.get_meta("y") + (dy / dist) * force)
+
+                                current_mass += (10.0 * delta)
+
+                    var collections = ["projectiles", "items", "hazards"]
+                    for coll_name in collections:
+                        if "arena" in world and coll_name in world.arena:
+                            for entity in world.arena[coll_name]:
+                                if typeof(entity) == TYPE_OBJECT and entity == hazard: continue
+                                elif typeof(entity) == TYPE_DICTIONARY and entity.hash() == hazard.hash(): continue
+
+                                var ent_active = true
+                                if "active" in entity: ent_active = entity.active
+                                elif entity.has_method("get_meta") and entity.has_meta("active"): ent_active = entity.get_meta("active")
+                                if not ent_active: continue
+
+                                var ent_x = null
+                                var ent_y = null
+                                if "x" in entity: ent_x = entity.x
+                                elif entity.has_method("get_meta") and entity.has_meta("x"): ent_x = entity.get_meta("x")
+                                if "y" in entity: ent_y = entity.y
+                                elif entity.has_method("get_meta") and entity.has_meta("y"): ent_y = entity.get_meta("y")
+
+                                if ent_x != null and ent_y != null:
+                                    var dx = h_x - ent_x
+                                    var dy = h_y - ent_y
+                                    var dist_sq = dx*dx + dy*dy
+                                    if dist_sq > 0 and dist_sq <= pull_radius * pull_radius:
+                                        var dist = sqrt(dist_sq)
+                                        var force = (1.0 - dist / pull_radius) * (pull_strength * 2.0) * delta
+
+                                        if "x" in entity: entity.x += (dx / dist) * force
+                                        elif entity.has_method("set_meta"): entity.set_meta("x", ent_x + (dx / dist) * force)
+                                        if "y" in entity: entity.y += (dy / dist) * force
+                                        elif entity.has_method("set_meta"): entity.set_meta("y", ent_y + (dy / dist) * force)
+
+                                        var ent_kind = entity.kind if "kind" in entity else (entity.get_meta("kind") if entity.has_method("get_meta") and entity.has_meta("kind") else "")
+                                        if dist < 30.0 and ent_kind != "decoy_singularity" and ent_kind != "black_hole" and ent_kind != "wall":
+                                            if "active" in entity: entity.active = false
+                                            elif entity.has_method("set_meta"): entity.set_meta("active", false)
+                                            if "duration" in entity: entity.duration = 0.0
+                                            elif entity.has_method("set_meta"): entity.set_meta("duration", 0.0)
+                                            current_mass += 1.0
+
+                    if "absorbed_mass" in hazard: hazard.absorbed_mass = current_mass
+                    elif hazard.has_method("set_meta"): hazard.set_meta("absorbed_mass", current_mass)
+
+                    var h_dur = hazard.duration if "duration" in hazard else (hazard.get_meta("duration") if hazard.has_method("get_meta") and hazard.has_meta("duration") else 0.0)
+                    h_dur -= delta
+                    if "duration" in hazard: hazard.duration = h_dur
+                    elif hazard.has_method("set_meta"): hazard.set_meta("duration", h_dur)
+
+                    if h_dur <= 0:
+                        if "active" in hazard: hazard.active = false
+                        elif hazard.has_method("set_meta"): hazard.set_meta("active", false)
+
+                        var r = 200.0
+                        var total_dmg = 40.0 + (current_mass * 5.0)
+
+                        if world != null and "balls" in world:
+                            for b in world.balls:
+                                var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if b.has_method("get_meta") and b.has_meta("alive") else false)
+                                if not b_alive: continue
+                                var dx = h_x - b.x
+                                var dy = h_y - b.y
+                                if dx*dx + dy*dy <= r*r:
+                                    if "hp" in b: b.hp -= total_dmg
+                                    elif b.has_method("set_meta"): b.set_meta("hp", b.get_meta("hp") - total_dmg)
+
+                                    var cur_stut = b.stutter_timer if "stutter_timer" in b else (b.get_meta("stutter_timer") if b.has_method("get_meta") and b.has_meta("stutter_timer") else 0.0)
+                                    if "stutter_timer" in b: b.stutter_timer = cur_stut + 2.0
+                                    elif b.has_method("set_meta"): b.set_meta("stutter_timer", cur_stut + 2.0)
+
+                        if world != null and "events" in world:
+                            world.events.append({"type": "visual_effect", "data": {"type": "black_hole_collapse", "x": h_x, "y": h_y, "radius": r, "damage": total_dmg}})
+
                 if h_kind == "recall_beacon":
+
                     var h_owner = hazard["owner_id"] if typeof(hazard) == TYPE_DICTIONARY and hazard.has("owner_id") else (hazard.owner_id if "owner_id" in hazard else null)
                     var ball_id = self.ball.id if "id" in self.ball else (self.ball.get_meta("id") if self.ball.has_method("get_meta") and self.ball.has_meta("id") else null)
 
