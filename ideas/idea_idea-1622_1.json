@@ -1,0 +1,4 @@
+{
+    "title": "Quantum Leap Padding",
+    "description": "Arena bounds are padded with quantum energy. Hitting them randomly teleports the entity to a completely different location along the edge while preserving their velocity."
+}

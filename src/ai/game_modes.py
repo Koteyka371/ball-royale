@@ -32443,7 +32443,98 @@ class BumperFrenzyMode(GameMode):
                             world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": arena_height})
 
 
+
+class ShrinkingPinballMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shrinking Pinball"
+        self.description = "Combines Extreme Bounciness with a shrinking arena. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        arena = getattr(world, "arena", None)
+        if not arena:
+            return
+
+        old_w = getattr(arena, "width", 1000.0)
+        old_h = getattr(arena, "height", 1000.0)
+
+        shrink_rate = 10.0
+        new_w = max(300.0, old_w - shrink_rate * delta)
+        new_h = max(300.0, old_h - shrink_rate * delta)
+
+        arena.width = new_w
+        arena.height = new_h
+
+        shrink_factor = max(0.0, min(1.0, (1000.0 - new_w) / 700.0))
+        bounce_multiplier = 1.2 + (shrink_factor * 1.8)
+
+        projectiles = getattr(world, "projectiles", [])
+        hazards = getattr(arena, "hazards", [])
+
+        all_entities = list(balls) + list(projectiles) + list(hazards)
+
+        import math
+        for ent in all_entities:
+            is_dict = isinstance(ent, dict)
+            def get_val(key, default):
+                return ent.get(key, default) if is_dict else getattr(ent, key, default)
+            def set_val(key, val):
+                if is_dict:
+                    ent[key] = val
+                else:
+                    setattr(ent, key, val)
+
+            is_alive = get_val("alive", True)
+            hp = get_val("hp", 1.0)
+
+            if not is_alive and hp <= 0:
+                continue
+
+            x = get_val("x", 0.0)
+            y = get_val("y", 0.0)
+            radius = get_val("radius", 15.0 if ent in balls else 5.0)
+            vx = get_val("vx", 0.0)
+            vy = get_val("vy", 0.0)
+
+            bounced = False
+
+            if x - radius < 0 and vx < 0:
+                set_val("vx", -vx * bounce_multiplier)
+                set_val("x", radius)
+                bounced = True
+            elif x + radius > new_w and vx > 0:
+                set_val("vx", -vx * bounce_multiplier)
+                set_val("x", new_w - radius)
+                bounced = True
+            elif x + radius > new_w:
+                set_val("x", new_w - radius)
+
+            if y - radius < 0 and vy < 0:
+                set_val("vy", -vy * bounce_multiplier)
+                set_val("y", radius)
+                bounced = True
+            elif y + radius > new_h and vy > 0:
+                set_val("vy", -vy * bounce_multiplier)
+                set_val("y", new_h - radius)
+                bounced = True
+            elif y + radius > new_h:
+                set_val("y", new_h - radius)
+
+            if bounced:
+                bounces = get_val("bounces", 0)
+                set_val("bounces", bounces + 1)
+                new_vx = get_val("vx", 0.0)
+                new_vy = get_val("vy", 0.0)
+                speed = math.hypot(new_vx, new_vy)
+                if speed > 5000.0:
+                    ratio = 5000.0 / max(speed, 1.0)
+                    set_val("vx", new_vx * ratio)
+                    set_val("vy", new_vy * ratio)
+
 GAME_MODES = {
+    "shrinking_pinball": ShrinkingPinballMode(),
     "bumper_frenzy": BumperFrenzyMode(),
     'hazard_shift_event': HazardShiftEventMode(),
     'chaotic_stat_hazard': ChaoticStatHazardMode(),

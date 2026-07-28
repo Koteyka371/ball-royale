@@ -51962,7 +51962,139 @@ class BumperFrenzyMode extends GameMode:
 							world.add_event("visual_effect", {"type": "glass_shatter", "x": bx, "y": arena_h})
 
 
+
+class ShrinkingPinballMode extends GameMode:
+	func _init() -> void:
+		name = "Shrinking Pinball"
+		description = "Combines Extreme Bounciness with a shrinking arena. As the walls close in, the bouncing intensity increases, forcing players into frantic, close-quarters pinball scenarios."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var arena = world.get("arena", {})
+		if arena.is_empty():
+			return
+
+		var old_w = arena.get("width", 1000.0)
+		var old_h = arena.get("height", 1000.0)
+
+		var shrink_rate = 10.0
+		var new_w = max(300.0, old_w - shrink_rate * delta)
+		var new_h = max(300.0, old_h - shrink_rate * delta)
+
+		arena["width"] = new_w
+		arena["height"] = new_h
+
+		var shrink_factor = max(0.0, min(1.0, (1000.0 - new_w) / 700.0))
+		var bounce_multiplier = 1.2 + (shrink_factor * 1.8)
+
+		var projectiles = world.get("projectiles", [])
+		var hazards = arena.get("hazards", [])
+
+		var all_entities = []
+		for b in balls:
+			all_entities.append(b)
+		for p in projectiles:
+			all_entities.append(p)
+		for h in hazards:
+			all_entities.append(h)
+
+		for ent in all_entities:
+			var is_alive = true
+			if typeof(ent) == TYPE_OBJECT:
+				if ent.has_method("is_alive"):
+					is_alive = ent.is_alive()
+				else:
+					is_alive = ent.get("alive", true)
+			elif typeof(ent) == TYPE_DICTIONARY:
+				is_alive = ent.get("alive", true)
+
+			var hp = 1.0
+			if typeof(ent) == TYPE_OBJECT:
+				hp = ent.get("hp", 1.0)
+			elif typeof(ent) == TYPE_DICTIONARY:
+				hp = ent.get("hp", 1.0)
+
+			if not is_alive and hp <= 0:
+				continue
+
+			var x = 0.0
+			var y = 0.0
+			var radius = 5.0
+			var vx = 0.0
+			var vy = 0.0
+
+			if typeof(ent) == TYPE_OBJECT:
+				x = ent.get("x", 0.0)
+				y = ent.get("y", 0.0)
+				radius = ent.get("radius", 15.0 if balls.has(ent) else 5.0)
+				vx = ent.get("vx", 0.0)
+				vy = ent.get("vy", 0.0)
+			elif typeof(ent) == TYPE_DICTIONARY:
+				x = ent.get("x", 0.0)
+				y = ent.get("y", 0.0)
+				radius = ent.get("radius", 15.0 if balls.has(ent) else 5.0)
+				vx = ent.get("vx", 0.0)
+				vy = ent.get("vy", 0.0)
+
+			var bounced = false
+
+			if x - radius < 0 and vx < 0:
+				vx = -vx * bounce_multiplier
+				x = radius
+				bounced = true
+			elif x + radius > new_w and vx > 0:
+				vx = -vx * bounce_multiplier
+				x = new_w - radius
+				bounced = true
+			elif x + radius > new_w:
+				x = new_w - radius
+
+			if y - radius < 0 and vy < 0:
+				vy = -vy * bounce_multiplier
+				y = radius
+				bounced = true
+			elif y + radius > new_h and vy > 0:
+				vy = -vy * bounce_multiplier
+				y = new_h - radius
+				bounced = true
+			elif y + radius > new_h:
+				y = new_h - radius
+
+			if typeof(ent) == TYPE_OBJECT:
+				ent.set("x", x)
+				ent.set("y", y)
+				if bounced:
+					ent.set("vx", vx)
+					ent.set("vy", vy)
+			elif typeof(ent) == TYPE_DICTIONARY:
+				ent["x"] = x
+				ent["y"] = y
+				if bounced:
+					ent["vx"] = vx
+					ent["vy"] = vy
+
+			if bounced:
+				var bounces = 0
+				if typeof(ent) == TYPE_OBJECT:
+					bounces = ent.get("bounces", 0)
+					ent.set("bounces", bounces + 1)
+				elif typeof(ent) == TYPE_DICTIONARY:
+					bounces = ent.get("bounces", 0)
+					ent["bounces"] = bounces + 1
+
+				var speed = sqrt(vx * vx + vy * vy)
+				if speed > 5000.0:
+					var ratio = 5000.0 / max(speed, 1.0)
+					if typeof(ent) == TYPE_OBJECT:
+						ent.set("vx", vx * ratio)
+						ent.set("vy", vy * ratio)
+					elif typeof(ent) == TYPE_DICTIONARY:
+						ent["vx"] = vx * ratio
+						ent["vy"] = vy * ratio
+
 var GAME_MODES = {
+	"shrinking_pinball": ShrinkingPinballMode.new(),
 	"bumper_frenzy": BumperFrenzyMode.new(),
 	"hazard_shift_event": HazardShiftEventMode.new(),
 	"chaotic_stat_hazard": ChaoticStatHazardMode.new(),
