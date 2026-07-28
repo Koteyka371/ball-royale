@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1636] Wormhole network — *2026-07-28 22:21:39 UTC*
+
+Black holes periodically form a network to transport balls.
+
+---
+
 ## [idea-1589] Pinball Bumper Mutator — *2026-07-28 22:21:34 UTC*
 
 A game mode mutator where colliding with any other ball automatically arms a Stun Explosion on both entities, creating an arena filled with constant bouncing and cascading stun effects.
