@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1629] Earthquake Event — *2026-07-28 06:30:26 UTC*
+
+A random arena event that randomly shifts hazard positions and adds small random velocity impulses to all balls for a short duration.
+
+---
+
 ## [idea-1617] Orbital Mine Sweeper Power-up — *2026-07-28 06:30:21 UTC*
 
 A new temporary power-up that makes the collecting ball immune to orbital mine damage and allows them to collect orbital mines as ammo or buffs instead.
