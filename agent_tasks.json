@@ -27714,7 +27714,7 @@
     },
     {
       "id": "idea-1619",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Ammunition Scavenge Mode",
@@ -40616,6 +40616,91 @@
         "src/ai/quantum_safe_zones.py",
         "src/ai/quantum_safe_zones.gd",
         "tests/test_quantum_safe_zones.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2377",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Prism Traps",
+      "description": "A new deployable hazard that, when hit by a laser, splits the single laser beam into three weaker but faster lasers firing in different directions, acting as a tactical area-denial tool.",
+      "allowed_paths": [
+        "src/arena/prism_traps.py",
+        "src/arena/prism_traps.gd",
+        "tests/test_prism_traps.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2378",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Wall Debris Shrapnel",
+      "description": "When a breakable wall is shattered by a dash, it explodes into small, temporary debris fragments that act as minor projectiles or hazards for a few seconds, damaging trailing enemies and adding a risk/reward element to breaking walls.",
+      "allowed_paths": [
+        "src/ai/wall_debris_shrapnel.py",
+        "src/ai/wall_debris_shrapnel.gd",
+        "tests/test_wall_debris_shrapnel.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2379",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Chain Lightning Turrets",
+      "description": "An alternate engineer skill or upgrade where deployed turrets fire chain lightning instead of single-target shots. The lightning bounces to up to 3 nearby enemies, dealing reduced damage on each jump, making it highly effective against clustered groups but weaker against single targets.",
+      "allowed_paths": [
+        "src/ai/chain_lightning_turrets.py",
+        "src/ai/chain_lightning_turrets.gd",
+        "tests/test_chain_lightning_turrets.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2380",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Laser Reflector Shield",
+      "description": "A new shield item that does not absorb lasers but bounces them perfectly off the player's shield, doubling their speed and damage. Creates intense laser-pong gameplay when multiple players have it active.",
+      "allowed_paths": [
+        "src/ai/laser_reflector_shield.py",
+        "src/ai/laser_reflector_shield.gd",
+        "tests/test_laser_reflector_shield.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2381",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncy Breakable Walls",
+      "description": "Some breakable maze walls don't just break when dashed into, but rather act as super-bouncy surfaces for non-dashing balls before they are shattered, creating dynamic ricochet strategies until a player decides to break them open.",
+      "allowed_paths": [
+        "src/ai/bouncy_breakable_walls.py",
+        "src/ai/bouncy_breakable_walls.gd",
+        "tests/test_bouncy_breakable_walls.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

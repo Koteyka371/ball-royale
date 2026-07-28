@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1619] Ammunition Scavenge Mode — *2026-07-28 01:44:12 UTC*
+
+A game mode where default attack speed and damage are vastly reduced. Players must rely on picking up temporary 'ammunition' items spawned randomly to unleash high-damage combos.
+
+---
+
 ## [idea-1564] Mirror Laser Shield Trait — *2026-07-28 01:36:03 UTC*
 
 A new ball trait that absorbs damage from laser hazards and uses it to charge up a devastating focused laser beam attack of its own.
