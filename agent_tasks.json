@@ -27595,7 +27595,7 @@
     },
     {
       "id": "idea-1612",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Grapple Mines",
@@ -40480,6 +40480,57 @@
         "src/ai/radioactive_core_mod.py",
         "src/ai/radioactive_core_mod.gd",
         "tests/test_radioactive_core_mod.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2369",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Bouncing Laser Mutator",
+      "description": "A mutator where all laser-based hazards and projectiles reflect off the arena walls instead of fading out, filling the arena with dangerous crossfire over time.",
+      "allowed_paths": [
+        "src/ai/bouncing_laser_mutator.py",
+        "src/ai/bouncing_laser_mutator.gd",
+        "tests/test_bouncing_laser_mutator.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2370",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Decoy Ammo Packs",
+      "description": "A variant of the Ammo Depot mode where some ammo packs are actually volatile traps. Players must look closely at visual cues (like a slight red tint) to differentiate between real ammo and explosive decoys.",
+      "allowed_paths": [
+        "src/ai/decoy_ammo_packs.py",
+        "src/ai/decoy_ammo_packs.gd",
+        "tests/test_decoy_ammo_packs.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2371",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Sniper Nest Hazard",
+      "description": "A hazard zone that drastically increases perception range and projectile speed for any entity standing inside it, but completely roots them in place while they are in the zone. Great for creating high-risk, high-reward camping spots.",
+      "allowed_paths": [
+        "src/arena/sniper_nest.py",
+        "src/arena/sniper_nest.gd",
+        "tests/test_sniper_nest.py"
       ],
       "acceptance": [
         "Feature implemented successfully",

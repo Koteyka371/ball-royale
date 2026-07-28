@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1612] Grapple Mines — *2026-07-28 01:09:09 UTC*
+
+Traps that look like grapple nodes but pull players in and explode on contact. They can be disarmed by hitting them with a projectile from afar, which makes them drop explosive materials instead.
+
+---
+
 ## [idea-1618] Black Hole Overload — *2026-07-28 00:50:59 UTC*
 
 A new mutator where Black Holes periodically pulse, dealing damage and pushing balls away instead of pulling.
