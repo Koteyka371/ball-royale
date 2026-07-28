@@ -50829,7 +50829,165 @@ class ChaoticArtifactMode extends GameMode:
 			var events = world.get("events")
 			if events != null and typeof(events) == TYPE_ARRAY:
 				events.append(["draw_circle", {"x": artifact_x, "y": artifact_y, "radius": 20, "color": "purple"}])
+
+class TimeLoopSafeZoneMode extends GameMode:
+    var zone_x = 500.0
+    var zone_y = 500.0
+    var zone_radius = 500.0
+    var min_zone_radius = 50.0
+    var shrink_rate = 10.0
+    var zone_target_x = 500.0
+    var zone_target_y = 500.0
+    var shrink_pause_timer = 0.0
+
+    func _init():
+        name = "Time Loop Safe Zone"
+        description = "A battle royale where being outside the safe zone doesn't deal damage, but instead continuously reverses the player's position back in time, trapping them in the storm forever."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        var arena_width = 1000
+        var arena_height = 1000
+        if world.has_method("get_arena"):
+            var arena = world.get_arena()
+            if arena:
+                arena_width = arena.get("width") if arena.get("width") != null else 1000
+                arena_height = arena.get("height") if arena.get("height") != null else 1000
+
+        zone_x = arena_width / 2.0
+        zone_y = arena_height / 2.0
+        zone_target_x = zone_x
+        zone_target_y = zone_y
+        zone_radius = min(arena_width, arena_height) / 2.0
+        min_zone_radius = 50.0
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT:
+                if b.get("ball_type") != "spectator":
+                    b.set_meta("time_loop_history", [])
+                    b.set_meta("is_rewinding", false)
+            elif typeof(b) == TYPE_DICTIONARY:
+                if b.get("ball_type") != "spectator":
+                    b["time_loop_history"] = []
+                    b["is_rewinding"] = false
+
+    func tick(world, balls, delta=0.016):
+        var dx = zone_target_x - zone_x
+        var dy = zone_target_y - zone_y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            var move_speed = 15.0
+            zone_x += (dx / dist) * move_speed * delta
+            zone_y += (dy / dist) * move_speed * delta
+        else:
+            var arena_width = 1000
+            var arena_height = 1000
+            if world.has_method("get_arena"):
+                var arena = world.get_arena()
+                if arena:
+                    arena_width = arena.get("width") if arena.get("width") != null else 1000
+                    arena_height = arena.get("height") if arena.get("height") != null else 1000
+            var buffer = max(100.0, zone_radius * 0.5)
+            zone_target_x = randf_range(buffer, arena_width - buffer)
+            zone_target_y = randf_range(buffer, arena_height - buffer)
+
+        if zone_radius > min_zone_radius:
+            zone_radius -= shrink_rate * delta
+            if zone_radius < min_zone_radius:
+                zone_radius = min_zone_radius
+
+        for b in balls:
+            var is_alive = false
+            var ball_type = null
+            if typeof(b) == TYPE_OBJECT:
+                is_alive = b.get("alive") if b.get("alive") != null else false
+                ball_type = b.get("ball_type")
+            elif typeof(b) == TYPE_DICTIONARY:
+                is_alive = b.get("alive", false)
+                ball_type = b.get("ball_type")
+
+            if is_alive and ball_type != "spectator":
+                var bx = 0.0
+                var by = 0.0
+                var history = []
+
+                if typeof(b) == TYPE_OBJECT:
+                    bx = b.get("x")
+                    by = b.get("y")
+                    if not b.has_meta("time_loop_history"):
+                        b.set_meta("time_loop_history", [])
+                    history = b.get_meta("time_loop_history")
+                elif typeof(b) == TYPE_DICTIONARY:
+                    bx = b.get("x", 0.0)
+                    by = b.get("y", 0.0)
+                    if not b.has("time_loop_history"):
+                        b["time_loop_history"] = []
+                    history = b["time_loop_history"]
+
+                var dx_b = bx - zone_x
+                var dy_b = by - zone_y
+                var distance_to_center = sqrt(dx_b*dx_b + dy_b*dy_b)
+
+                if distance_to_center > zone_radius:
+                    if typeof(b) == TYPE_OBJECT:
+                        b.set_meta("is_rewinding", true)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["is_rewinding"] = true
+
+                    if history.size() > 0:
+                        var prev_pos = history.pop_back()
+                        if typeof(b) == TYPE_OBJECT:
+                            b.set("x", prev_pos[0])
+                            b.set("y", prev_pos[1])
+                            b.set("vx", 0.0)
+                            b.set("vy", 0.0)
+                            b.set_meta("time_loop_history", history)
+
+                            var ping_timer = b.get_meta("minimap_ping_timer") if b.has_meta("minimap_ping_timer") else 0.0
+                            if ping_timer <= 0:
+                                if world.has_method("add_event"):
+                                    world.add_event("minimap_ping", {"x": prev_pos[0], "y": prev_pos[1], "color": "purple", "duration": 0.5})
+                                b.set_meta("minimap_ping_timer", 1.0)
+                            else:
+                                b.set_meta("minimap_ping_timer", ping_timer - delta)
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            b["x"] = prev_pos[0]
+                            b["y"] = prev_pos[1]
+                            b["vx"] = 0.0
+                            b["vy"] = 0.0
+                            b["time_loop_history"] = history
+
+                            var ping_timer = b.get("minimap_ping_timer", 0.0)
+                            if ping_timer <= 0:
+                                if world.has_method("add_event"):
+                                    world.add_event("minimap_ping", {"x": prev_pos[0], "y": prev_pos[1], "color": "purple", "duration": 0.5})
+                                b["minimap_ping_timer"] = 1.0
+                            else:
+                                b["minimap_ping_timer"] = ping_timer - delta
+                    else:
+                        if typeof(b) == TYPE_OBJECT:
+                            b.set("vx", 0.0)
+                            b.set("vy", 0.0)
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            b["vx"] = 0.0
+                            b["vy"] = 0.0
+                else:
+                    if typeof(b) == TYPE_OBJECT:
+                        b.set_meta("is_rewinding", false)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["is_rewinding"] = false
+
+                    history.push_back([bx, by])
+                    if history.size() > 600:
+                        history.pop_front()
+
+                    if typeof(b) == TYPE_OBJECT:
+                        b.set_meta("time_loop_history", history)
+                    elif typeof(b) == TYPE_DICTIONARY:
+                        b["time_loop_history"] = history
+
 var GAME_MODES = {
+    "time_loop_safe_zone": TimeLoopSafeZoneMode.new(),
 	"chaotic_artifact": ChaoticArtifactMode.new(),
 	"dynamic_capture_zone": DynamicCaptureZoneMode.new(),
 	"vampiric_mutator": VampiricMutatorMode.new(),

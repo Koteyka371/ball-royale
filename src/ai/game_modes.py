@@ -31852,7 +31852,100 @@ class ChaoticArtifactMode(GameMode):
         if not self.artifact_holder_id:
             if hasattr(world, "events"):
                 world.events.append(["draw_circle", {"x": self.artifact_x, "y": self.artifact_y, "radius": 20, "color": "purple"}])
+
+class TimeLoopSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Loop Safe Zone"
+        self.description = "A battle royale where being outside the safe zone doesn't deal damage, but instead continuously reverses the player's position back in time, trapping them in the storm forever."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 500.0
+        self.min_zone_radius = 50.0
+        self.shrink_rate = 10.0
+        self.zone_target_x = 500.0
+        self.zone_target_y = 500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+        self.zone_radius = min(arena_width, arena_height) / 2.0
+        self.min_zone_radius = 50.0
+
+        for b in balls:
+            if getattr(b, "ball_type", None) != "spectator":
+                b.time_loop_history = []
+                b.is_rewinding = False
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        # Move the safe zone
+        dx = self.zone_target_x - self.zone_x
+        dy = self.zone_target_y - self.zone_y
+        dist = math.sqrt(dx*dx + dy*dy)
+        if dist > 5.0:
+            move_speed = 15.0 # pixels per second
+            self.zone_x += (dx / dist) * move_speed * delta
+            self.zone_y += (dy / dist) * move_speed * delta
+        else:
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            buffer = max(100.0, self.zone_radius * 0.5)
+            self.zone_target_x = random.uniform(buffer, arena_width - buffer)
+            self.zone_target_y = random.uniform(buffer, arena_height - buffer)
+
+        # Shrink the safe zone
+        if self.zone_radius > self.min_zone_radius:
+            self.zone_radius -= self.shrink_rate * delta
+            if self.zone_radius < self.min_zone_radius:
+                self.zone_radius = self.min_zone_radius
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                if not hasattr(b, "time_loop_history"):
+                    b.time_loop_history = []
+
+                dx_b = b.x - self.zone_x
+                dy_b = b.y - self.zone_y
+                distance_to_center = math.sqrt(dx_b*dx_b + dy_b*dy_b)
+
+                if distance_to_center > self.zone_radius:
+                    b.is_rewinding = True
+                    if b.time_loop_history:
+                        prev_pos = b.time_loop_history.pop()
+                        b.x = prev_pos[0]
+                        b.y = prev_pos[1]
+
+                        if hasattr(b, "vx"): b.vx = 0.0
+                        if hasattr(b, "vy"): b.vy = 0.0
+
+                        ping_timer = getattr(b, "minimap_ping_timer", 0.0)
+                        if ping_timer <= 0:
+                            if hasattr(world, "add_event"):
+                                world.add_event("minimap_ping", {"x": b.x, "y": b.y, "color": "purple", "duration": 0.5})
+                            b.minimap_ping_timer = 1.0
+                        else:
+                            b.minimap_ping_timer = ping_timer - delta
+                    else:
+                        if hasattr(b, "vx"): b.vx = 0.0
+                        if hasattr(b, "vy"): b.vy = 0.0
+                else:
+                    b.is_rewinding = False
+                    b.time_loop_history.append((b.x, b.y))
+                    if len(b.time_loop_history) > 600:
+                        b.time_loop_history.pop(0)
+
+
 GAME_MODES = {
+    "time_loop_safe_zone": TimeLoopSafeZoneMode(),
     "chaotic_artifact": ChaoticArtifactMode(),
     "kinetic_battery": KineticBatteryMode(),
     "dynamic_capture_zone": DynamicCaptureZoneMode(),
