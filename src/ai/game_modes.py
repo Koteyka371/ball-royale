@@ -43094,6 +43094,9 @@ import ai.hovercraft
 GAME_MODES['hovercraft'] = ai.hovercraft.HovercraftMode()
 GAME_MODES['bouncy_portals'] = BouncyPortalsMode()
 
+from ai.curling import CurlingMode
+GAME_MODES["curling"] = CurlingMode()
+
 from ai.shared_health_pool import SharedHealthPoolMode
 GAME_MODES['shared_health_pool'] = SharedHealthPoolMode()
 

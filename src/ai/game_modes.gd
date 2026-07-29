@@ -66826,6 +66826,9 @@ GAME_MODES['gravity_inversion'] = GravityInversionMode.new()
 GAME_MODES['telegraphed_supply_drop'] = TelegraphedSupplyDropMode.new()
 GAME_MODES['dynamic_capture_zones'] = DynamicCaptureZonesMode.new()
 
+const CurlingModeClass = preload("res://src/ai/curling.gd")
+GAME_MODES['curling'] = CurlingModeClass.new()
+
 const HovercraftModeClass = preload("res://src/ai/hovercraft.gd")
 GAME_MODES['hovercraft'] = HovercraftModeClass.new()
 const BouncyPortalsModeClass = preload("res://src/ai/bouncy_portals.gd")
