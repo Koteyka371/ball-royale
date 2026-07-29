@@ -44703,6 +44703,58 @@ class InfiltrationMode extends GameMode:
 			world["alarm_triggered"] = false
 		else:
 			world.set("alarm_triggered", false)
+
+		var arena_exists = false
+		var hazards_list = []
+		var aw = 1000.0
+		var ah = 1000.0
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+			arena_exists = true
+			if not world["arena"].has("hazards") or world["arena"]["hazards"] == null:
+				world["arena"]["hazards"] = []
+			hazards_list = world["arena"]["hazards"]
+			aw = world["arena"].get("width", 1000.0)
+			ah = world["arena"].get("height", 1000.0)
+		elif typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			arena_exists = true
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				if not arena.has("hazards") or arena["hazards"] == null:
+					arena["hazards"] = []
+				hazards_list = arena["hazards"]
+				aw = arena.get("width", 1000.0)
+				ah = arena.get("height", 1000.0)
+			else:
+				if arena.get("hazards") == null:
+					arena.set("hazards", [])
+				hazards_list = arena.get("hazards")
+				aw = arena.get("width") if arena.get("width") != null else 1000.0
+				ah = arena.get("height") if arena.get("height") != null else 1000.0
+
+		if arena_exists:
+			var vault_positions = [
+				Vector2(aw * 0.25, ah * 0.25),
+				Vector2(aw * 0.75, ah * 0.25),
+				Vector2(aw * 0.5, ah * 0.75)
+			]
+
+			for i in range(3):
+				var hx = vault_positions[i].x
+				var hy = vault_positions[i].y
+				var vault = {
+					"id": hazards_list.size() + 9000 + i,
+					"x": hx,
+					"y": hy,
+					"radius": 30.0,
+					"kind": "vault",
+					"damage": 0.0,
+					"active": true,
+					"health": 300.0,
+					"max_health": 300.0
+				}
+				hazards_list.append(vault)
+
 		for b in balls:
 			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
 			if b_type != "spectator":
@@ -44784,6 +44836,67 @@ class InfiltrationMode extends GameMode:
 				else:
 					if "stealth_booster_timer" in b: b.stealth_booster_timer = 9999.0
 					elif b.has_method("set_meta"): b.set_meta("stealth_booster_timer", 9999.0)
+
+		# Vault destruction and loot dropping
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY:
+			if ("arena" in world) and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+				hazards = world["arena"]["hazards"]
+		else:
+			var a = world.get("arena")
+			if a != null and typeof(a) == TYPE_DICTIONARY and a.has("hazards"):
+				hazards = a["hazards"]
+			elif a != null and "hazards" in a:
+				hazards = a.hazards
+
+		var hazards_to_remove = []
+		var new_loot = []
+
+		for h in hazards:
+			var hk = h.get("kind") if typeof(h) == TYPE_DICTIONARY else h.get("kind")
+			if hk == "vault":
+				var h_health = 300.0
+				if typeof(h) == TYPE_DICTIONARY:
+					h_health = h.get("health", 300.0)
+				else:
+					h_health = h.get_meta("health") if h.has_method("get_meta") and h.has_meta("health") else (h.get("health") if "health" in h else 300.0)
+
+				if h_health <= 0:
+					hazards_to_remove.append(h)
+					var hx = h.get("x") if typeof(h) == TYPE_DICTIONARY else h.get("x")
+					var hy = h.get("y") if typeof(h) == TYPE_DICTIONARY else h.get("y")
+
+					var loot = {
+						"id": hazards.size() + new_loot.size() + 9500,
+						"x": hx,
+						"y": hy,
+						"radius": 20.0,
+						"kind": "legendary_loot",
+						"damage": 0.0,
+						"active": true
+					}
+					new_loot.append(loot)
+
+					if typeof(world) == TYPE_DICTIONARY:
+						if not world.has("events"): world["events"] = []
+						world["events"].append({"type": "vault_opened", "data": {"x": hx, "y": hy, "message": "A vault was opened! Loot dropped!"}})
+					else:
+						if world.has_method("add_event"):
+							world.add_event("vault_opened", {"x": hx, "y": hy, "message": "A vault was opened! Loot dropped!"})
+						elif "events" in world:
+							world.events.append({"type": "vault_opened", "data": {"x": hx, "y": hy, "message": "A vault was opened! Loot dropped!"}})
+
+		for h in hazards_to_remove:
+			hazards.erase(h)
+
+		for loot in new_loot:
+			hazards.append(loot)
+			if typeof(world) == TYPE_DICTIONARY:
+				if not world.has("boosters"): world["boosters"] = []
+				world["boosters"].append(loot)
+			else:
+				if "boosters" in world:
+					world.boosters.append(loot)
 
 
 

@@ -27109,6 +27109,42 @@ class InfiltrationMode(GameMode):
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
         setattr(world, "alarm_triggered", False)
+
+        if getattr(world, "arena", None) is not None:
+            if getattr(world.arena, "hazards", None) is None:
+                world.arena.hazards = []
+
+            # Spawn 3 vaults pseudo-randomly based on deterministic values
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class DummyHazardInfiltration:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                Hazard = DummyHazardInfiltration
+
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+            # Use fixed deterministic positions proportional to arena size
+            vault_positions = [
+                (aw * 0.25, ah * 0.25),
+                (aw * 0.75, ah * 0.25),
+                (aw * 0.5, ah * 0.75)
+            ]
+
+            for i, (hx, hy) in enumerate(vault_positions):
+                vault = Hazard(id=len(world.arena.hazards) + 9000 + i, x=hx, y=hy, radius=30.0, kind="vault", damage=0.0)
+                setattr(vault, "health", 300.0)
+                setattr(vault, "max_health", 300.0)
+                setattr(vault, "active", True)
+                world.arena.hazards.append(vault)
+
         for b in balls:
             if getattr(b, "ball_type", "") != "spectator":
                 b.stealth_booster_timer = 9999.0
@@ -27158,6 +27194,43 @@ class InfiltrationMode(GameMode):
                 b.stealth_booster_timer = 0.0
             else:
                 b.stealth_booster_timer = 9999.0
+
+        # Handle vault destruction and loot dropping
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            hazards_to_remove = []
+            new_loot = []
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "vault":
+                    if getattr(h, "health", 300.0) <= 0:
+                        hazards_to_remove.append(h)
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            class DummyHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id
+                                    self.x = x
+                                    self.y = y
+                                    self.radius = radius
+                                    self.kind = kind
+                                    self.damage = damage
+                                    self.active = True
+                            Hazard = DummyHazard
+                        loot = Hazard(id=len(world.arena.hazards) + len(new_loot) + 9500, x=h.x, y=h.y, radius=20.0, kind="legendary_loot", damage=0.0)
+                        loot.active = True
+                        new_loot.append(loot)
+                        if hasattr(world, "add_event"):
+                            world.add_event("vault_opened", {"x": h.x, "y": h.y, "message": "A vault was opened! Loot dropped!"})
+
+            for h in hazards_to_remove:
+                if h in world.arena.hazards:
+                    world.arena.hazards.remove(h)
+
+            for loot in new_loot:
+                world.arena.hazards.append(loot)
+                if hasattr(world, "boosters"):
+                    world.boosters.append(loot)
+
 
 class MeteorBombardmentMode(GameMode):
     def __init__(self):
