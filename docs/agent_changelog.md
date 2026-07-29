@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1642] Thermal Jetpack Booster — *2026-07-29 00:32:54 UTC*
+
+A new booster that grants temporary flight, ignoring ground friction, ground traps, and knockback effects for a short duration while significantly boosting movement speed.
+
+---
+
 ## [idea-1658] Doppelganger Mode — *2026-07-29 00:19:40 UTC*
 
 Every player spawns with an AI-controlled doppelganger that mimics their attacks but moves randomly. If a player dies, they take over their doppelganger.
