@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1528] Battering Ram Booster — *2026-07-29 07:51:27 UTC*
+
+A booster that temporarily gives any ball the ability to instantly break walls if traveling fast enough.
+
+---
+
 ## [idea-1615] Decoy Bodyguard — *2026-07-29 05:23:46 UTC*
 
 An active ability that summons a beefy decoy that doesn't just sit there, but actively orbits the player. Any incoming projectiles hitting the decoy are absorbed, but if it takes too much damage it detonates, stunning nearby enemies.
