@@ -52519,7 +52519,267 @@ class NetworkedBlackHolesMode extends GameMode:
 								world.add_event("visual_effect", {"type": "teleport", "x": next_x, "y": next_y})
 							break
 
+
+class WallLeapersMode extends GameMode:
+	var spawn_timer: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Wall Leapers"
+		description = "New hazard type that attaches to walls. If a ball gets too close, it leaps onto the ball and slows it down before exploding."
+
+	func tick(world: Object, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if not ('hazards' in world.arena):
+			world.arena.hazards = []
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = 6.0
+
+			var wall_types = ["top", "bottom", "left", "right"]
+			var wall = wall_types[randi() % wall_types.size()]
+
+			var hx = 0.0
+			var hy = 0.0
+
+			if wall == "top":
+				hx = randf_range(world.arena.min_x, world.arena.max_x)
+				hy = world.arena.min_y + 10.0
+			elif wall == "bottom":
+				hx = randf_range(world.arena.min_x, world.arena.max_x)
+				hy = world.arena.max_y - 10.0
+			elif wall == "left":
+				hx = world.arena.min_x + 10.0
+				hy = randf_range(world.arena.min_y, world.arena.max_y)
+			else:
+				hx = world.arena.max_x - 10.0
+				hy = randf_range(world.arena.min_y, world.arena.max_y)
+
+			var h_id = 99999 + world.arena.hazards.size() + (randi() % 1000)
+
+			var leaper = {
+				"id": h_id,
+				"x": hx,
+				"y": hy,
+				"radius": 15.0,
+				"kind": "wall_leaper",
+				"damage": 30.0,
+				"state": "wall",
+				"fuse_timer": 3.0,
+				"target_id": -1,
+				"leap_timer": 0.0,
+				"start_x": 0.0,
+				"start_y": 0.0
+			}
+			world.arena.hazards.append(leaper)
+
+		var kept_hazards = []
+		for h in world.arena.hazards:
+			var kind = ""
+			if typeof(h) == TYPE_OBJECT:
+				if "kind" in h:
+					kind = h.kind
+			elif typeof(h) == TYPE_DICTIONARY:
+				if h.has("kind"):
+					kind = h["kind"]
+
+			if kind == "wall_leaper":
+				var state = "wall"
+				var hx = 0.0
+				var hy = 0.0
+				var target_id = -1
+				var leap_timer = 0.0
+				var start_x = 0.0
+				var start_y = 0.0
+				var fuse_timer = 0.0
+				var damage = 30.0
+
+				if typeof(h) == TYPE_OBJECT:
+					state = h.get("state") if "state" in h else "wall"
+					hx = h.x if "x" in h else 0.0
+					hy = h.y if "y" in h else 0.0
+					target_id = h.get("target_id") if "target_id" in h else -1
+					leap_timer = h.get("leap_timer") if "leap_timer" in h else 0.0
+					start_x = h.get("start_x") if "start_x" in h else 0.0
+					start_y = h.get("start_y") if "start_y" in h else 0.0
+					fuse_timer = h.get("fuse_timer") if "fuse_timer" in h else 0.0
+					damage = h.damage if "damage" in h else 30.0
+				else:
+					state = h.get("state", "wall")
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+					target_id = h.get("target_id", -1)
+					leap_timer = h.get("leap_timer", 0.0)
+					start_x = h.get("start_x", 0.0)
+					start_y = h.get("start_y", 0.0)
+					fuse_timer = h.get("fuse_timer", 0.0)
+					damage = h.get("damage", 30.0)
+
+				if state == "wall":
+					var closest_dist = 150.0
+					var target = null
+
+					for b in balls:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_OBJECT:
+							bx = b.x if "x" in b else 0.0
+							by = b.y if "y" in b else 0.0
+						else:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+
+						var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+						if dist < closest_dist:
+							closest_dist = dist
+							target = b
+
+					if target != null:
+						var t_id = -1
+						if typeof(target) == TYPE_OBJECT:
+							t_id = target.id if "id" in target else -1
+						else:
+							t_id = target.get("id", -1)
+
+						if typeof(h) == TYPE_OBJECT:
+							h.set("state", "leaping")
+							h.set("target_id", t_id)
+							h.set("leap_timer", 0.5)
+							h.set("start_x", hx)
+							h.set("start_y", hy)
+						else:
+							h["state"] = "leaping"
+							h["target_id"] = t_id
+							h["leap_timer"] = 0.5
+							h["start_x"] = hx
+							h["start_y"] = hy
+						kept_hazards.append(h)
+					else:
+						kept_hazards.append(h)
+
+				elif state == "leaping":
+					var target = null
+					for b in balls:
+						var b_id = -1
+						if typeof(b) == TYPE_OBJECT:
+							b_id = b.id if "id" in b else -1
+						else:
+							b_id = b.get("id", -1)
+
+						if b_id == target_id:
+							target = b
+							break
+
+					if target != null:
+						leap_timer -= delta
+
+						var bx = 0.0
+						var by = 0.0
+						if typeof(target) == TYPE_OBJECT:
+							bx = target.x if "x" in target else 0.0
+							by = target.y if "y" in target else 0.0
+						else:
+							bx = target.get("x", 0.0)
+							by = target.get("y", 0.0)
+
+						if leap_timer <= 0:
+							if typeof(h) == TYPE_OBJECT:
+								h.set("state", "attached")
+								h.x = bx
+								h.y = by
+							else:
+								h["state"] = "attached"
+								h["x"] = bx
+								h["y"] = by
+						else:
+							var progress = 1.0 - (leap_timer / 0.5)
+							var new_x = start_x + (bx - start_x) * progress
+							var new_y = start_y + (by - start_y) * progress
+							if typeof(h) == TYPE_OBJECT:
+								h.x = new_x
+								h.y = new_y
+								h.set("leap_timer", leap_timer)
+							else:
+								h["x"] = new_x
+								h["y"] = new_y
+								h["leap_timer"] = leap_timer
+						kept_hazards.append(h)
+
+				elif state == "attached":
+					var target = null
+					for b in balls:
+						var b_id = -1
+						if typeof(b) == TYPE_OBJECT:
+							b_id = b.id if "id" in b else -1
+						else:
+							b_id = b.get("id", -1)
+
+						if b_id == target_id:
+							target = b
+							break
+
+					if target != null:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(target) == TYPE_OBJECT:
+							bx = target.x if "x" in target else 0.0
+							by = target.y if "y" in target else 0.0
+
+							if "base_speed" in target:
+								target.speed = target.base_speed * 0.5
+							else:
+								target.speed = 50.0
+						else:
+							bx = target.get("x", 0.0)
+							by = target.get("y", 0.0)
+
+							if target.has("base_speed"):
+								target["speed"] = target["base_speed"] * 0.5
+							else:
+								target["speed"] = 50.0
+
+						if typeof(h) == TYPE_OBJECT:
+							h.x = bx
+							h.y = by
+						else:
+							h["x"] = bx
+							h["y"] = by
+
+						fuse_timer -= delta
+						if fuse_timer <= 0:
+							if typeof(target) == TYPE_OBJECT:
+								if target.has_method("take_damage"):
+									target.take_damage(damage)
+								elif "hp" in target:
+									target.hp -= damage
+
+								if "base_speed" in target:
+									target.speed = target.base_speed
+								else:
+									target.speed = 100.0
+							else:
+								if target.has("hp"):
+									target["hp"] -= damage
+
+								if target.has("base_speed"):
+									target["speed"] = target["base_speed"]
+								else:
+									target["speed"] = 100.0
+						else:
+							if typeof(h) == TYPE_OBJECT:
+								h.set("fuse_timer", fuse_timer)
+							else:
+								h["fuse_timer"] = fuse_timer
+							kept_hazards.append(h)
+			else:
+				kept_hazards.append(h)
+
+		world.arena.hazards = kept_hazards
+
 var GAME_MODES = {
+	"wall_leapers": WallLeapersMode.new(),
 	"networked_black_holes": NetworkedBlackHolesMode.new(),
 
 	"bumper_frenzy": BumperFrenzyMode.new(),

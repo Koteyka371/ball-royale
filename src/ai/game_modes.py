@@ -32927,7 +32927,133 @@ class NetworkedBlackHolesMode(GameMode):
                                 world.add_event("visual_effect", {"type": "teleport", "x": b.x, "y": b.y})
                             break
 
+
+class WallLeapersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Wall Leapers"
+        self.description = "New hazard type that attaches to walls. If a ball gets too close, it leaps onto the ball and slows it down before exploding."
+        self.spawn_timer = 0.0
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import random
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = 6.0
+
+            # Spawn a wall leaper on a random wall
+            wall = random.choice(["top", "bottom", "left", "right"])
+
+            if wall == "top":
+                x = random.uniform(world.arena.min_x, world.arena.max_x)
+                y = world.arena.min_y + 10.0
+            elif wall == "bottom":
+                x = random.uniform(world.arena.min_x, world.arena.max_x)
+                y = world.arena.max_y - 10.0
+            elif wall == "left":
+                x = world.arena.min_x + 10.0
+                y = random.uniform(world.arena.min_y, world.arena.max_y)
+            else:
+                x = world.arena.max_x - 10.0
+                y = random.uniform(world.arena.min_y, world.arena.max_y)
+
+            hazard_id = 99999 + len(world.arena.hazards) + random.randint(0, 1000)
+            from arena.procedural_arena import Hazard
+            leaper = Hazard(id=hazard_id, x=x, y=y, radius=15.0, kind="wall_leaper", damage=30.0)
+            setattr(leaper, "state", "wall")
+            setattr(leaper, "fuse_timer", 3.0)
+            setattr(leaper, "target_id", None)
+            world.arena.hazards.append(leaper)
+
+        kept_hazards = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "wall_leaper":
+                state = getattr(h, "state", "wall")
+
+                if state == "wall":
+                    # Look for targets to leap on
+                    closest_dist = 150.0
+                    target = None
+                    for b in balls:
+                        dist = ((b.x - h.x)**2 + (b.y - h.y)**2)**0.5
+                        if dist < closest_dist:
+                            closest_dist = dist
+                            target = b
+
+                    if target:
+                        h.state = "leaping"
+                        h.target_id = target.id
+                        h.leap_timer = 0.5 # time it takes to leap
+                        h.start_x = h.x
+                        h.start_y = h.y
+                        kept_hazards.append(h)
+                    else:
+                        kept_hazards.append(h)
+
+                elif state == "leaping":
+                    # Interpolate towards target
+                    target = None
+                    for b in balls:
+                        if b.id == h.target_id:
+                            target = b
+                            break
+
+                    if target:
+                        h.leap_timer -= delta
+                        if h.leap_timer <= 0:
+                            h.state = "attached"
+                            h.x = target.x
+                            h.y = target.y
+                        else:
+                            # Move towards target
+                            progress = 1.0 - (h.leap_timer / 0.5)
+                            h.x = h.start_x + (target.x - h.start_x) * progress
+                            h.y = h.start_y + (target.y - h.start_y) * progress
+                        kept_hazards.append(h)
+                    else:
+                        # Target gone, return to being a normal hazard? Or just explode? Let's just destroy it.
+                        pass
+
+                elif state == "attached":
+                    target = None
+                    for b in balls:
+                        if b.id == h.target_id:
+                            target = b
+                            break
+
+                    if target:
+                        # Update position to follow target
+                        h.x = target.x
+                        h.y = target.y
+
+                        # Slow target down
+                        target.speed = getattr(target, "base_speed", 100.0) * 0.5
+
+                        # Tick down fuse
+                        h.fuse_timer -= delta
+                        if h.fuse_timer <= 0:
+                            # Explode
+                            if hasattr(target, "take_damage"):
+                                target.take_damage(h.damage)
+                            else:
+                                target.hp -= h.damage
+
+                            # Restore speed
+                            target.speed = getattr(target, "base_speed", 100.0)
+                        else:
+                            kept_hazards.append(h)
+            else:
+                kept_hazards.append(h)
+
+        world.arena.hazards = kept_hazards
+
 GAME_MODES = {
+    'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),
 
     "bumper_frenzy": BumperFrenzyMode(),
