@@ -21768,10 +21768,48 @@ func execute(strategy: String, delta: float):
                                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                                     if "shielding" in self.ball: self.ball.shielding = cur_sh + sh_gain
                                     else: self.ball.set_meta("shielding", cur_sh + sh_gain)
+                                    if syn_active:
+                                        var base_m = 1.0
+                                        if "base_mass" in self.ball: base_m = self.ball.base_mass
+                                        elif self.ball.has_meta("base_mass"): base_m = self.ball.get_meta("base_mass")
+                                        elif "mass" in self.ball: base_m = self.ball.mass
+                                        elif self.ball.has_meta("mass"): base_m = self.ball.get_meta("mass")
+
+                                        var cur_m = 1.0
+                                        if "mass" in self.ball: cur_m = self.ball.mass
+                                        elif self.ball.has_meta("mass"): cur_m = self.ball.get_meta("mass")
+
+                                        if "base_mass" in self.ball: self.ball.base_mass = base_m
+                                        else: self.ball.set_meta("base_mass", base_m)
+
+                                        if "mass" in self.ball: self.ball.mass = min(cur_m + 0.1, base_m * 5.0)
+                                        else: self.ball.set_meta("mass", min(cur_m + 0.1, base_m * 5.0))
+                                        if self.world != null and "events" in self.world:
+                                            if typeof(self.world) == TYPE_DICTIONARY:
+                                                self.world["events"].append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x if "x" in self.ball else 0.0, "y": self.ball.y if "y" in self.ball else 0.0}})
+                                            else:
+                                                self.world.events.append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x if "x" in self.ball else 0.0, "y": self.ball.y if "y" in self.ball else 0.0}})
                                 elif "shielding" in self.ball:
                                     self.ball.shielding = cur_sh + sh_gain
+                                    if syn_active:
+                                        var base_m = self.ball.base_mass if "base_mass" in self.ball else (self.ball.mass if "mass" in self.ball else 1.0)
+                                        self.ball.base_mass = base_m
+                                        var cur_m = self.ball.mass if "mass" in self.ball else 1.0
+                                        self.ball.mass = min(cur_m + 0.1, base_m * 5.0)
+                                        if self.world != null and "events" in self.world:
+                                            if typeof(self.world) == TYPE_DICTIONARY:
+                                                self.world["events"].append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x if "x" in self.ball else 0.0, "y": self.ball.y if "y" in self.ball else 0.0}})
+                                            else:
+                                                self.world.events.append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x if "x" in self.ball else 0.0, "y": self.ball.y if "y" in self.ball else 0.0}})
                                 elif typeof(self.ball) == TYPE_DICTIONARY:
                                     self.ball["shielding"] = cur_sh + sh_gain
+                                    if syn_active:
+                                        var base_m = self.ball.get("base_mass", self.ball.get("mass", 1.0))
+                                        self.ball["base_mass"] = base_m
+                                        var cur_m = self.ball.get("mass", 1.0)
+                                        self.ball["mass"] = min(cur_m + 0.1, base_m * 5.0)
+                                        if self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                                            self.world["events"].append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.get("x", 0.0), "y": self.ball.get("y", 0.0)}})
 
                                 if not syn_active:
                                     var cur_sp = 0.0
