@@ -1306,6 +1306,44 @@ func _attempt_damage_internal(attacker, target) -> void:
 				world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
 			return
 
+		var has_deflector_shield = false
+		if "deflector_shield_active" in target and target.deflector_shield_active:
+			has_deflector_shield = true
+		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("deflector_shield_active") and target.get_meta("deflector_shield_active"):
+			has_deflector_shield = true
+
+		if has_deflector_shield and is_ranged_attack:
+			var base_dmg_refl = 10.0
+			if "damage" in attacker: base_dmg_refl = float(attacker.damage)
+
+			var sus_proj = []
+			if typeof(target) == TYPE_DICTIONARY and target.has("suspended_projectiles"):
+				sus_proj = target["suspended_projectiles"]
+			elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("suspended_projectiles"):
+				sus_proj = target.get_meta("suspended_projectiles")
+			elif typeof(target) == TYPE_OBJECT and "suspended_projectiles" in target:
+				sus_proj = target.suspended_projectiles
+
+			sus_proj.append({
+				"x": t_x2,
+				"y": t_y2,
+				"target": attacker,
+				"damage": base_dmg_refl,
+				"speed": 600.0,
+				"type": "reflected_projectile"
+			})
+
+			if typeof(target) == TYPE_DICTIONARY:
+				target["suspended_projectiles"] = sus_proj
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+				target.set_meta("suspended_projectiles", sus_proj)
+			elif typeof(target) == TYPE_OBJECT and "suspended_projectiles" in target:
+				target.suspended_projectiles = sus_proj
+
+			if world != null and "events" in world:
+				world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
+			return
+
 		var has_bounce_shield = false
 		if "bounce_shield_active" in target and target.bounce_shield_active:
 			has_bounce_shield = true
@@ -30796,6 +30834,22 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "deflector_shield_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("deflector_shield_active", true)
+                    self.ball.set_meta("deflector_shield_timer", 5.0)
+                else:
+                    self.ball.deflector_shield_active = true
+                    self.ball.deflector_shield_timer = 5.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
 
             elif "kind" in nearest and nearest.kind == "rebound_booster":
                 if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
@@ -43284,6 +43338,26 @@ func _update_skill_timer(delta: float):
                 self.ball.set_meta("projectile_reflect_timer", projectile_reflect_timer)
             else:
                 self.ball.projectile_reflect_timer = projectile_reflect_timer
+    var deflector_shield_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("deflector_shield_timer"):
+        deflector_shield_timer = float(self.ball.get_meta("deflector_shield_timer"))
+    elif "deflector_shield_timer" in self.ball:
+        deflector_shield_timer = float(self.ball.deflector_shield_timer)
+
+    if deflector_shield_timer > 0:
+        deflector_shield_timer -= delta
+        if deflector_shield_timer <= 0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("deflector_shield_timer", 0.0)
+                self.ball.set_meta("deflector_shield_active", false)
+            else:
+                self.ball.deflector_shield_timer = 0.0
+                self.ball.deflector_shield_active = false
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("deflector_shield_timer", deflector_shield_timer)
+            else:
+                self.ball.deflector_shield_timer = deflector_shield_timer
 
 
     var rb_timer = 0.0
