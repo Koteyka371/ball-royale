@@ -270,6 +270,17 @@ class Action:
                 return # Take no damage
 
 
+        if not getattr(attacker, "is_hologram", False):
+            if not hasattr(attacker, "delayed_clones"):
+                attacker.delayed_clones = []
+            attacker.delayed_clones.append({
+                "timer": 2.0,
+                "target_id": getattr(target, "id", None),
+                "target": target,
+                "x": getattr(attacker, "x", 0.0),
+                "y": getattr(attacker, "y", 0.0)
+            })
+
         # Chameleon logic
         if getattr(attacker, "ball_type", "") == "chameleon" and getattr(attacker, "team", "") != getattr(target, "team", ""):
             target_traits = getattr(target, "traits", [])
@@ -1728,6 +1739,40 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if hasattr(self.ball, "delayed_clones"):
+            new_clones = []
+            for clone_data in getattr(self.ball, "delayed_clones", []):
+                clone_data["timer"] -= delta
+                if clone_data["timer"] <= 0:
+                    if hasattr(self.world, "balls"):
+                        import copy
+                        try:
+                            clone = copy.copy(self.ball)
+                        except:
+                            class _DummyFallback: pass
+                            clone = _DummyFallback()
+                            for attr in dir(self.ball):
+                                if not attr.startswith('_') and attr != "delayed_clones":
+                                    try:
+                                        setattr(clone, attr, getattr(self.ball, attr))
+                                    except:
+                                        pass
+                        clone.x = clone_data["x"]
+                        clone.y = clone_data["y"]
+                        clone.is_hologram = True
+                        clone.hologram_timer = 0.5 # disappears quickly
+
+                        # Add to world to show up visually
+                        self.world.balls.append(clone)
+
+                        # Execute damage
+                        target = clone_data["target"]
+                        if getattr(target, "alive", True) and getattr(target, "hp", 0) > 0:
+                            if hasattr(self.world, "_deal_damage"):
+                                self._attempt_damage(clone, target)
+                else:
+                    new_clones.append(clone_data)
+            self.ball.delayed_clones = new_clones
 
         if getattr(self.ball, "decoy_type", "") == "orbiting_beefy":
             import math
