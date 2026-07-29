@@ -9096,9 +9096,12 @@ class Action:
                                     # Also push them upwards and outwards gently
                                     nx = -dx / dist
                                     ny = -1.0
-                                    push_strength = 100.0 * delta
-                                    self.ball.x += nx * push_strength
-                                    self.ball.y += ny * push_strength
+                                    push_force = 1500.0
+
+                                    if hasattr(self.ball, "vx"):
+                                        self.ball.vx += nx * push_force * delta
+                                    if hasattr(self.ball, "vy"):
+                                        self.ball.vy += ny * push_force * delta
 
                                     # Scatter items
                                     if hasattr(self.ball, "inventory") and len(self.ball.inventory) > 0:
