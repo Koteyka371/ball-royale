@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1671] Slippery Slope Arena Mode — *2026-07-29 02:24:14 UTC*
+
+An arena modifier where the entire floor is covered in ice, forcing all balls to slide continuously with low friction. Movement speed is uncapped, and players rely purely on bouncing off walls and recoil from skills to change direction.
+
+---
+
 ## [idea-1666] Wall Jump Booster — *2026-07-29 02:18:12 UTC*
 
 A booster item that grants increased speed and a brief shield for 2 seconds immediately after a ball bounces off a wall.
