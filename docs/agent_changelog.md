@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1660] Echo Strike Booster — *2026-07-29 09:56:52 UTC*
+
+After attacking, a holographic clone briefly appears in the same spot 2 seconds later to repeat the exact same attack before disappearing.
+
+---
+
 ## [idea-1681] Curling Mode — *2026-07-29 09:34:37 UTC*
 
 A mode where balls have to land as close to a target as possible with ultra-low friction.
