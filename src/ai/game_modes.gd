@@ -52561,7 +52561,192 @@ var GAME_MODES = {
 	"rising_lava": RisingLavaMode.new(),
 	"time_rewind_altar": TimeRewindAltarMode.new(),
 	"random_teleport_dash": RandomTeleportDashMode.new(),
+	"personal_doppelganger": PersonalDoppelgangerMode.new(),
+}
+
+class PersonalDoppelgangerMode extends GameMode:
+	var doppelgangers = {}
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Personal Doppelganger"
+		description = "Every player spawns with an AI-controlled doppelganger that mimics their attacks but moves randomly. If a player dies, they take over their doppelganger."
+		rng.randomize()
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		doppelgangers.clear()
+
+		var new_balls = []
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.get("alive", false)
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type", "")
+
+			if alive and b_type != "spectator":
+				var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id", 0)
+				var d_id = 1000000 + b_id
+
+				var dop = {}
+				dop["id"] = d_id
+				dop["owner_id"] = b_id
+				dop["is_personal_doppelganger"] = true
+				dop["x"] = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get("x", 0.0)
+				dop["y"] = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get("y", 0.0)
+				dop["vx"] = 0.0
+				dop["vy"] = 0.0
+				dop["radius"] = b.get("radius") if typeof(b) == TYPE_DICTIONARY else b.get("radius", 20.0)
+				dop["hp"] = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.get("hp", 100.0)
+				dop["max_hp"] = b.get("max_hp") if typeof(b) == TYPE_DICTIONARY else b.get("max_hp", 100.0)
+				dop["alive"] = true
+				dop["ball_type"] = b_type
+				dop["team"] = b.get("team") if typeof(b) == TYPE_DICTIONARY else b.get("team", "neutral")
+				dop["speed"] = b.get("speed") if typeof(b) == TYPE_DICTIONARY else b.get("speed", 100.0)
+				dop["base_speed"] = b.get("base_speed") if typeof(b) == TYPE_DICTIONARY else b.get("base_speed", 100.0)
+				dop["damage"] = b.get("damage") if typeof(b) == TYPE_DICTIONARY else b.get("damage", 25.0)
+				dop["base_damage"] = b.get("base_damage") if typeof(b) == TYPE_DICTIONARY else b.get("base_damage", 25.0)
+
+				dop["skills"] = []
+				var b_skills = b.get("skills") if typeof(b) == TYPE_DICTIONARY else b.get("skills", [])
+				for s in b_skills:
+					dop["skills"].append(s)
+
+				dop["inventory"] = []
+				var b_inv = b.get("inventory") if typeof(b) == TYPE_DICTIONARY else b.get("inventory", [])
+				for i in b_inv:
+					dop["inventory"].append(i)
+
+				dop["active_skill"] = null
+				dop["skill_timer"] = 0.0
+				dop["move_timer"] = 0.0
+				dop["target_angle"] = 0.0
+
+				new_balls.append(dop)
+				doppelgangers[b_id] = d_id
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["_prev_active_skill"] = b.get("active_skill")
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("set_meta"):
+						b.set_meta("_prev_active_skill", b.get("active_skill", null))
+					elif "_prev_active_skill" in b:
+						b._prev_active_skill = b.get("active_skill")
+
+		if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			for nb in new_balls:
+				world.balls.append(nb)
+		elif typeof(world) == TYPE_OBJECT and "balls" in world:
+			for nb in new_balls:
+				world.balls.append(nb)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		var balls_by_id = {}
+		for b in balls:
+			var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id", 0)
+			balls_by_id[b_id] = b
+
+		var to_remove = []
+
+		for owner_id in doppelgangers.keys():
+			var dop_id = doppelgangers[owner_id]
+			if not balls_by_id.has(owner_id) or not balls_by_id.has(dop_id):
+				continue
+
+			var owner = balls_by_id[owner_id]
+			var dop = balls_by_id[dop_id]
+
+			var owner_alive = owner.get("alive") if typeof(owner) == TYPE_DICTIONARY else owner.get("alive", false)
+			var dop_alive = dop.get("alive") if typeof(dop) == TYPE_DICTIONARY else dop.get("alive", false)
+
+			if not owner_alive and dop_alive:
+				if typeof(owner) == TYPE_DICTIONARY:
+					owner["alive"] = true
+					owner["x"] = dop.get("x", 0.0)
+					owner["y"] = dop.get("y", 0.0)
+					owner["hp"] = dop.get("hp", 100.0)
+					owner["vx"] = dop.get("vx", 0.0)
+					owner["vy"] = dop.get("vy", 0.0)
+				else:
+					owner.set("alive", true)
+					owner.set("x", dop.get("x", 0.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("x", 0.0))
+					owner.set("y", dop.get("y", 0.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("y", 0.0))
+					owner.set("hp", dop.get("hp", 100.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("hp", 100.0))
+					owner.set("vx", dop.get("vx", 0.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("vx", 0.0))
+					owner.set("vy", dop.get("vy", 0.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("vy", 0.0))
+
+				if typeof(dop) == TYPE_DICTIONARY:
+					dop["alive"] = false
+				else:
+					dop.set("alive", false)
+
+				to_remove.append(owner_id)
+				continue
+
+			if not dop_alive:
+				to_remove.append(owner_id)
+				continue
+
+			if owner_alive and dop_alive:
+				var dop_move_timer = dop.get("move_timer", 0.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("move_timer", 0.0)
+				dop_move_timer -= delta
+				var dop_target_angle = dop.get("target_angle", 0.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("target_angle", 0.0)
+
+				if dop_move_timer <= 0:
+					dop_move_timer = rng.randf_range(0.5, 2.0)
+					dop_target_angle = rng.randf_range(0.0, PI * 2)
+
+				var dop_speed = dop.get("speed", 100.0) if typeof(dop) == TYPE_DICTIONARY else dop.get("speed", 100.0)
+				var dop_vx = cos(dop_target_angle) * dop_speed
+				var dop_vy = sin(dop_target_angle) * dop_speed
+
+				if typeof(dop) == TYPE_DICTIONARY:
+					dop["move_timer"] = dop_move_timer
+					dop["target_angle"] = dop_target_angle
+					dop["vx"] = dop_vx
+					dop["vy"] = dop_vy
+				else:
+					if dop.has_method("set_meta"):
+						dop.set_meta("move_timer", dop_move_timer)
+						dop.set_meta("target_angle", dop_target_angle)
+					elif "move_timer" in dop:
+						dop.move_timer = dop_move_timer
+						dop.target_angle = dop_target_angle
+					dop.set("vx", dop_vx)
+					dop.set("vy", dop_vy)
+
+				var cur_skill = owner.get("active_skill") if typeof(owner) == TYPE_DICTIONARY else owner.get("active_skill", null)
+				var prev_skill = null
+				if typeof(owner) == TYPE_DICTIONARY:
+					prev_skill = owner.get("_prev_active_skill")
+				elif typeof(owner) == TYPE_OBJECT:
+					if owner.has_method("get_meta") and owner.has_meta("_prev_active_skill"):
+						prev_skill = owner.get_meta("_prev_active_skill")
+					elif "_prev_active_skill" in owner:
+						prev_skill = owner._prev_active_skill
+
+				if cur_skill != null and cur_skill != prev_skill:
+					var skill_timer = owner.get("skill_timer", 0.0) if typeof(owner) == TYPE_DICTIONARY else owner.get("skill_timer", 0.0)
+					if typeof(dop) == TYPE_DICTIONARY:
+						dop["active_skill"] = cur_skill
+						dop["skill_timer"] = skill_timer
+					else:
+						dop.set("active_skill", cur_skill)
+						dop.set("skill_timer", skill_timer)
+
+				if typeof(owner) == TYPE_DICTIONARY:
+					owner["_prev_active_skill"] = cur_skill
+				elif typeof(owner) == TYPE_OBJECT:
+					if owner.has_method("set_meta"):
+						owner.set_meta("_prev_active_skill", cur_skill)
+					elif "_prev_active_skill" in owner:
+						owner._prev_active_skill = cur_skill
+
+		for id in to_remove:
+			doppelgangers.erase(id)
+
 	"roaming_doppelganger": RoamingDoppelgangerMode.new(),
+
 class ThermalFreezeTagMode extends FreezeTagMode:
 	# A variant where the arena has dynamic heat zones. Instead of relying purely on allies to unfreeze them, frozen players slowly thaw when pushed into a heat zone. However, if they are pushed into a frost zone, they become permanently shattered if they take any damage.
 	var zone_timer = 0.0
