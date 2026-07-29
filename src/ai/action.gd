@@ -13555,9 +13555,47 @@ func execute(strategy: String, delta: float):
                             exploding_decoys_by_owner[owner_id] = []
                         exploding_decoys_by_owner[owner_id].append(b)
 
+        var processed_decoys = []
+
+        # Find resonance chains first
+        var all_exploding = []
         for owner_id in exploding_decoys_by_owner.keys():
-            var decoys = exploding_decoys_by_owner[owner_id]
-            var simultaneous = (decoys.size() >= 2)
+            for b in exploding_decoys_by_owner[owner_id]:
+                all_exploding.append(b)
+
+        var resonance_groups = []
+        for b in all_exploding:
+            if processed_decoys.has(b): continue
+
+            var nearby = []
+            for sib in all_exploding:
+                if processed_decoys.has(sib): continue
+                var dist = sqrt(pow(sib.x - b.x, 2) + pow(sib.y - b.y, 2))
+                if dist <= 200.0:
+                    nearby.append(sib)
+
+            if nearby.size() >= 3:
+                resonance_groups.append(nearby)
+                for sib in nearby:
+                    processed_decoys.append(sib)
+
+        # Now form groups
+        var final_groups = []
+        for grp in resonance_groups:
+            final_groups.append({"decoys": grp, "resonance": true, "simultaneous": false})
+
+        for owner_id in exploding_decoys_by_owner.keys():
+            var owner_grp = []
+            for b in exploding_decoys_by_owner[owner_id]:
+                if not processed_decoys.has(b):
+                    owner_grp.append(b)
+            if owner_grp.size() > 0:
+                final_groups.append({"decoys": owner_grp, "resonance": false, "simultaneous": (owner_grp.size() >= 2)})
+
+        for grp_data in final_groups:
+            var decoys = grp_data["decoys"]
+            var resonance = grp_data["resonance"]
+            var simultaneous = grp_data["simultaneous"]
 
             for b in decoys:
                 if "_decoy_exploded" in b: b._decoy_exploded = true
@@ -13612,7 +13650,10 @@ func execute(strategy: String, delta: float):
                 if this_decoy_type == "flash":
                     radius = 300.0
 
-                if simultaneous:
+                if resonance:
+                    radius = 400.0
+                    explosion_damage = 250.0
+                elif simultaneous:
                     radius *= 2.0
                     explosion_damage *= 2.0
 
