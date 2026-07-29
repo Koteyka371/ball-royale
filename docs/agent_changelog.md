@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1644] Black Hole Collapser — *2026-07-29 01:49:29 UTC*
+
+A hazard that slowly pulls entities toward its center. When it expires, it violently explodes, pushing everyone away.
+
+---
+
 ## [idea-1664] Quantum Entanglement Chain Mode — *2026-07-29 01:49:25 UTC*
 
 Players are paired randomly using an invisible quantum thread. If one player in the pair takes damage or collects a booster, a percentage of that effect (positive or negative) is transferred to the other player. If the thread breaks by them moving too far apart, both suffer a temporary stun and debuff.
