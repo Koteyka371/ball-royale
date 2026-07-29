@@ -31243,6 +31243,117 @@ class HighSpeedReflectiveBarriersMode(GameMode):
 
 
 
+class ImplosionBombEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Implosion Bomb Event"
+        self.description = "A hazard that slowly pulls entities toward its center. When it expires, it violently explodes, pushing everyone away."
+        self.event_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.event_timer += delta
+
+        if not hasattr(world, "arena"):
+            return
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        if self.event_timer >= 20.0:
+            self.event_timer = 0.0
+            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            cx = random.uniform(200, arena_width - 200)
+            cy = random.uniform(200, arena_height - 200)
+
+            try:
+                from arena.procedural_arena import Hazard
+                h = Hazard(id=len(world.arena.hazards) + 91000 + random.randint(0, 1000), x=cx, y=cy, radius=80.0, kind="implosion_bomb", damage=0.0)
+            except ImportError:
+                class DummyHazardIB:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                h = DummyHazardIB(len(world.arena.hazards) + 91000 + random.randint(0, 1000), cx, cy, 80.0, "implosion_bomb", 0.0)
+
+            setattr(h, "duration", 10.0)
+            setattr(h, "pull_radius", 500.0)
+            setattr(h, "pull_strength", 150.0)
+
+            world.arena.hazards.append(h)
+
+            if hasattr(world, "add_event"):
+                world.add_event("implosion_bomb_spawned", {"x": cx, "y": cy})
+
+        hazards_to_remove = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "implosion_bomb":
+                hx = getattr(h, "x", 0.0)
+                hy = getattr(h, "y", 0.0)
+                pull_radius = getattr(h, "pull_radius", 500.0)
+                pull_strength = getattr(h, "pull_strength", 150.0)
+
+                # Decrease duration
+                h.duration = getattr(h, "duration", 10.0) - delta
+
+                import math
+                # Pull balls
+                for b in balls:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                        dx = hx - b.x
+                        dy = hy - b.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+
+                        if dist < pull_radius and dist > 0.0001:
+                            nx = dx / dist
+                            ny = dy / dist
+                            b.x += nx * pull_strength * delta
+                            b.y += ny * pull_strength * delta
+
+                            if hasattr(b, "vx"):
+                                b.vx = getattr(b, "vx", 0.0) + nx * pull_strength * delta * 0.5
+                            if hasattr(b, "vy"):
+                                b.vy = getattr(b, "vy", 0.0) + ny * pull_strength * delta * 0.5
+
+                if getattr(h, "duration", 0.0) <= 0.0:
+                    hazards_to_remove.append(h)
+
+        for h in hazards_to_remove:
+            if h in world.arena.hazards:
+                world.arena.hazards.remove(h)
+
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "implosion_bomb_explosion", "x": h.x, "y": h.y, "radius": 400.0})
+
+            # Explode and push everyone away
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    import math
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= 400.0:
+                        damage = 50.0 * (1.0 - dist / 400.0)
+                        b.hp = getattr(b, "hp", 100.0) - damage
+                        if b.hp <= 0:
+                            b.hp = 0
+                            b.alive = False
+                            b.killer = "implosion_bomb"
+
+                        if dist > 0.0001:
+                            nx = dx / dist
+                            ny = dy / dist
+                            knockback = 800.0 * (1.0 - dist / 400.0)
+                            b.vx = getattr(b, "vx", 0.0) + nx * knockback
+                            b.vy = getattr(b, "vy", 0.0) + ny * knockback
+
+
+
 class SingularityBombEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -33194,6 +33305,7 @@ GAME_MODES = {
     'vulnerability_safe_zone': VulnerabilitySafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
+    "implosion_bomb_event": ImplosionBombEventMode(),
     "singularity_bomb_event": SingularityBombEventMode(),
     'expanding_hazard_bubbles': ExpandingHazardBubblesMode(),
     'capture_zones': CaptureZonesMode(),
