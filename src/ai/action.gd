@@ -30504,6 +30504,20 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "rebound_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("rebound_booster_timer", 10.0)
+                else:
+                    self.ball.rebound_booster_timer = 10.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "bounce_shield_booster":
                 if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
                     self.ball.set_meta("bounce_shield_active", true)
@@ -40538,6 +40552,42 @@ func _clamp_position() -> bool:
                 if bounced_y:
                     self.ball.velocity_y = self.ball.velocity_y * mult
 
+
+    if bounced:
+        var rb_timer = 0.0
+        if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("rebound_booster_timer"):
+            rb_timer = float(self.ball.get_meta("rebound_booster_timer"))
+        elif "rebound_booster_timer" in self.ball:
+            rb_timer = float(self.ball.rebound_booster_timer)
+
+        if rb_timer > 0.0:
+            var current_speed = 0.0
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
+                current_speed = float(self.ball.get_meta("speed_boost_timer"))
+            elif "speed_boost_timer" in self.ball:
+                current_speed = float(self.ball.speed_boost_timer)
+
+            var current_shield = 0.0
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("energy_shield_timer"):
+                current_shield = float(self.ball.get_meta("energy_shield_timer"))
+            elif "energy_shield_timer" in self.ball:
+                current_shield = float(self.ball.energy_shield_timer)
+
+            var new_speed = max(current_speed, 2.0)
+            var new_shield = max(current_shield, 2.0)
+
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("speed_boost_timer", new_speed)
+                self.ball.set_meta("energy_shield_timer", new_shield)
+            else:
+                self.ball.speed_boost_timer = new_speed
+                self.ball.energy_shield_timer = new_shield
+
+            if self.world != null and self.world.has_method("add_event"):
+                var id_val = null
+                if "id" in self.ball: id_val = self.ball.id
+                self.world.add_event("rebound_boost_activate", {"id": id_val})
+
     return bounced
 
 func _resolve_collisions() -> bool:
@@ -42795,6 +42845,26 @@ func _update_skill_timer(delta: float):
                 self.ball.set_meta("projectile_reflect_timer", projectile_reflect_timer)
             else:
                 self.ball.projectile_reflect_timer = projectile_reflect_timer
+
+
+    var rb_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("rebound_booster_timer"):
+        rb_timer = float(self.ball.get_meta("rebound_booster_timer"))
+    elif "rebound_booster_timer" in self.ball:
+        rb_timer = float(self.ball.rebound_booster_timer)
+
+    if rb_timer > 0:
+        rb_timer -= delta
+        if rb_timer <= 0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("rebound_booster_timer", 0.0)
+            else:
+                self.ball.rebound_booster_timer = 0.0
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("rebound_booster_timer", rb_timer)
+            else:
+                self.ball.rebound_booster_timer = rb_timer
 
     var bounce_shield_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("bounce_shield_timer"):
