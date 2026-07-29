@@ -691,6 +691,22 @@ class Action:
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
 
+        if getattr(target, "deflector_shield_active", False) and is_ranged:
+            if not hasattr(target, "suspended_projectiles"):
+                target.suspended_projectiles = []
+
+            target.suspended_projectiles.append({
+                "x": target.x,
+                "y": target.y,
+                "target": attacker,
+                "damage": getattr(attacker, "damage", 10.0),
+                "speed": 600.0,
+                "type": "reflected_projectile"
+            })
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
+            return
+
         if getattr(target, "bounce_shield_active", False):
             if is_ranged:
                 if not hasattr(target, "suspended_projectiles"):
@@ -15547,6 +15563,14 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "deflector_shield_booster":
+                    self.ball.deflector_shield_active = True
+                    self.ball.deflector_shield_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "damage_reflection_booster":
                     self.ball.damage_reflection_active = True
                     self.ball.damage_reflection_timer = 5.0
@@ -21933,6 +21957,11 @@ class Action:
             self.ball.projectile_reflect_timer -= delta
             if self.ball.projectile_reflect_timer <= 0:
                 self.ball.projectile_reflect_active = False
+
+        if hasattr(self.ball, "deflector_shield_timer") and self.ball.deflector_shield_timer > 0:
+            self.ball.deflector_shield_timer -= delta
+            if self.ball.deflector_shield_timer <= 0:
+                self.ball.deflector_shield_active = False
 
 
         if hasattr(self.ball, "rebound_booster_timer") and self.ball.rebound_booster_timer > 0:
