@@ -1713,6 +1713,19 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+
+        if getattr(self.ball, "flight_booster_timer", 0.0) > 0.0:
+            self.ball.flight_booster_timer -= delta
+            if self.ball.flight_booster_timer <= 0.0:
+                self.ball.flight_booster_timer = 0.0
+                if getattr(self.ball, "is_flying", False):
+                    self.ball.is_flying = False
+                if getattr(self.ball, "is_frictionless", False):
+                    self.ball.is_frictionless = False
+                if getattr(self.ball, "knockback_immune", False):
+                    self.ball.knockback_immune = False
+                if hasattr(self.ball, "speed"):
+                    self.ball.speed = getattr(self.ball, "base_speed", 2.0)
         if getattr(self.ball, "is_time_rewinding", False):
             if hasattr(self.ball, "time_rewind_timer"):
                 self.ball.time_rewind_timer -= delta
@@ -15924,6 +15937,17 @@ class Action:
                 elif getattr(nearest, "kind", None) == "anchor_booster":
                     self.ball.anchor_booster_timer = 10.0
                     self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 0.5
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "flight_booster":
+                    self.ball.flight_booster_timer = 5.0
+                    self.ball.is_flying = True
+                    self.ball.is_frictionless = True
+                    self.ball.knockback_immune = True
+                    self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 3.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

@@ -3271,6 +3271,51 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+
+	var fbt = 0.0
+	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("flight_booster_timer"):
+		fbt = float(self.ball.get_meta("flight_booster_timer"))
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("flight_booster_timer"):
+		fbt = float(self.ball["flight_booster_timer"])
+	elif "flight_booster_timer" in self.ball:
+		fbt = float(self.ball.flight_booster_timer)
+
+	if fbt > 0.0:
+		fbt -= delta
+		if fbt <= 0.0:
+			fbt = 0.0
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("flight_booster_timer", 0.0)
+				self.ball.set_meta("is_flying", false)
+				self.ball.set_meta("is_frictionless", false)
+				self.ball.set_meta("knockback_immune", false)
+				var bs = 2.0
+				if self.ball.has_meta("base_speed"): bs = self.ball.get_meta("base_speed")
+				self.ball.set_meta("speed", bs)
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["flight_booster_timer"] = 0.0
+				self.ball["is_flying"] = false
+				self.ball["is_frictionless"] = false
+				self.ball["knockback_immune"] = false
+				var bs = 2.0
+				if self.ball.has("base_speed"): bs = self.ball["base_speed"]
+				self.ball["speed"] = bs
+			else:
+				self.ball.flight_booster_timer = 0.0
+				if "is_flying" in self.ball: self.ball.is_flying = false
+				if "is_frictionless" in self.ball: self.ball.is_frictionless = false
+				if "knockback_immune" in self.ball: self.ball.knockback_immune = false
+				var bs = 2.0
+				if "base_speed" in self.ball: bs = self.ball.base_speed
+				if "speed" in self.ball: self.ball.speed = bs
+		else:
+			if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("flight_booster_timer", fbt)
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["flight_booster_timer"] = fbt
+			else:
+				self.ball.flight_booster_timer = fbt
+
 	var is_time_rewinding = false
 	if typeof(self.ball) == TYPE_OBJECT:
 		if "is_time_rewinding" in self.ball: is_time_rewinding = bool(self.ball.is_time_rewinding)
@@ -30164,6 +30209,40 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "flight_booster":
+                if "flight_booster_timer" in self.ball: self.ball.flight_booster_timer = 5.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("flight_booster_timer", 5.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["flight_booster_timer"] = 5.0
+
+                if "is_flying" in self.ball: self.ball.is_flying = true
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_flying", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_flying"] = true
+
+                if "is_frictionless" in self.ball: self.ball.is_frictionless = true
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_frictionless", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_frictionless"] = true
+
+                if "knockback_immune" in self.ball: self.ball.knockback_immune = true
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("knockback_immune", true)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["knockback_immune"] = true
+
+                var bs = 2.0
+                if "base_speed" in self.ball: bs = self.ball.base_speed
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("base_speed"): bs = self.ball.get_meta("base_speed")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): bs = self.ball["base_speed"]
+
+                if "speed" in self.ball: self.ball.speed = bs * 3.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed", bs * 3.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed"] = bs * 3.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "speed_booster_item":
                 var existing_speed = 0.0
                 if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_boost_timer"):
