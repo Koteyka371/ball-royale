@@ -1742,6 +1742,47 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "ball_type", "") == "chameleon":
+            vx = getattr(self.ball, "vx", 0.0)
+            vy = getattr(self.ball, "vy", 0.0)
+            speed_sq = vx*vx + vy*vy
+            blend = getattr(self.ball, "blend_amount", 0.0)
+            if speed_sq < 0.1:
+                blend = min(1.0, blend + delta * 0.5) # takes 2 seconds to fully blend
+            else:
+                blend = max(0.0, blend - delta * 2.0) # unblends quickly
+            self.ball.blend_amount = blend
+
+            if blend > 0.5:
+                self.ball.invisible_to_minimap = True
+            else:
+                self.ball.invisible_to_minimap = False
+
+            # Visual blending
+            if not hasattr(self.ball, "original_color"):
+                self.ball.original_color = getattr(self.ball, "color", "black")
+
+            orig_color = self.ball.original_color
+            if isinstance(orig_color, str) and orig_color.startswith("#"):
+                # Blend hex towards #808080
+                try:
+                    r1 = int(orig_color[1:3], 16)
+                    g1 = int(orig_color[3:5], 16)
+                    b1 = int(orig_color[5:7], 16)
+                    r2, g2, b2 = 128, 128, 128
+                    r = int(r1 + (r2 - r1) * blend)
+                    g = int(g1 + (g2 - g1) * blend)
+                    b_col = int(b1 + (b2 - b1) * blend)
+                    self.ball.color = f"#{r:02x}{g:02x}{b_col:02x}"
+                except:
+                    pass
+            elif orig_color == "black":
+                # Assuming black is #000000
+                r = int(128 * blend)
+                self.ball.color = f"#{r:02x}{r:02x}{r:02x}"
+
+
         if hasattr(self.ball, "delayed_clones"):
             new_clones = []
             for clone_data in getattr(self.ball, "delayed_clones", []):
@@ -12847,6 +12888,18 @@ class Action:
                         my_stealth_zones.append(h)
 
         def is_visible(enemy) -> bool:
+
+            if getattr(enemy, "ball_type", "") == "chameleon":
+                blend = getattr(enemy, "blend_amount", 0.0)
+                if blend > 0.1: # if blending started
+                    dx = getattr(enemy, "x", 0) - self.ball.x
+                    dy = getattr(enemy, "y", 0) - self.ball.y
+                    # Normal perception radius scaled down by blend amount (e.g., at 1.0 blend, it's 10% of normal, or a fixed small radius like 50)
+                    dist_sq = dx*dx + dy*dy
+                    reduced_perception = max(50.0, perception_radius * (1.0 - blend * 0.9))
+                    if dist_sq > reduced_perception * reduced_perception:
+                        return False
+
             if getattr(enemy, "in_healing_zone", False):
                 return True
             if getattr(enemy, "is_flying", False):
