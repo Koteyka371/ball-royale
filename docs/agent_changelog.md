@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1650] Quantum Safe Zone — *2026-07-29 02:18:07 UTC*
+
+A safe zone that randomly teleports around the map every 10 seconds, forcing players to constantly adapt their positioning to stay alive.
+
+---
+
 ## [idea-1647] Weather-Dependent Traps — *2026-07-29 02:00:34 UTC*
 
 Certain traps malfunction or behave differently depending on the current weather condition (e.g. electrical traps short circuit during rain, or spikes get buried and deal less damage during snow).
