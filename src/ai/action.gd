@@ -27853,6 +27853,146 @@ func _collect_booster(delta: float):
                     self.world.boosters.erase(b)
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
+            elif b_kind == "chameleon_item":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                else:
+                    if "x" in b: bx = b.x
+                    if "y" in b: by = b.y
+
+                var self_x = 0.0
+                var self_y = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self_x = self.ball.x if self.ball.has("x") else 0.0
+                    self_y = self.ball.y if self.ball.has("y") else 0.0
+                else:
+                    self_x = self.ball.x if "x" in self.ball else 0.0
+                    self_y = self.ball.y if "y" in self.ball else 0.0
+
+                var dist = sqrt(pow(bx - self_x, 2) + pow(by - self_y, 2))
+                var self_radius = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): self_radius = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: self_radius = self.ball.radius
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+
+                if dist <= self_radius + b_radius + 5.0:
+                    var candidates = []
+                    if self.world != null and "arena" in self.world and self.world.arena != null:
+                        var ar = self.world.arena
+                        var haz = []
+                        if typeof(ar) == TYPE_DICTIONARY and ar.has("hazards"): haz = ar.hazards
+                        elif typeof(ar) == TYPE_OBJECT and "hazards" in ar: haz = ar.hazards
+                        for h in haz:
+                            var h_active = true
+                            if typeof(h) == TYPE_DICTIONARY and h.has("active"): h_active = h.active
+                            elif typeof(h) == TYPE_OBJECT and "active" in h: h_active = h.active
+                            if h_active: candidates.append(h)
+                    var ens = _get_enemies()
+                    for e in ens:
+                        candidates.append(e)
+
+                    if candidates.size() > 0:
+                        var closest = null
+                        var min_dist_sq = 999999999.0
+                        for c in candidates:
+                            var cx = 0.0
+                            var cy = 0.0
+                            if typeof(c) == TYPE_DICTIONARY:
+                                if c.has("x"): cx = c.x
+                                if c.has("y"): cy = c.y
+                            else:
+                                if "x" in c: cx = c.x
+                                if "y" in c: cy = c.y
+                            var dsq = pow(cx - self_x, 2) + pow(cy - self_y, 2)
+                            if dsq < min_dist_sq:
+                                min_dist_sq = dsq
+                                closest = c
+
+                        var current_team = ""
+                        var current_color = ""
+                        var current_name = "Impostor"
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            if self.ball.has("team"): current_team = self.ball.team
+                            if self.ball.has("color"): current_color = self.ball.color
+                            if self.ball.has("name"): current_name = self.ball.name
+                            elif self.ball.has("label"): current_name = self.ball.label
+                        else:
+                            if "team" in self.ball: current_team = self.ball.team
+                            if "color" in self.ball: current_color = self.ball.color
+                            if "name" in self.ball: current_name = self.ball.name
+                            elif "label" in self.ball: current_name = self.ball.label
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["original_team"] = current_team
+                            self.ball["original_color"] = current_color
+                            self.ball["original_name"] = current_name
+                        else:
+                            if self.ball.has_method("set_meta"):
+                                self.ball.set_meta("original_team", current_team)
+                                self.ball.set_meta("original_color", current_color)
+                                self.ball.set_meta("original_name", current_name)
+
+                        var target_team = ""
+                        var target_color = "gray"
+                        var target_name = "Hazard"
+
+                        if typeof(closest) == TYPE_DICTIONARY:
+                            if closest.has("team"): target_team = closest.team
+                            elif closest.has("ball_type"): target_team = closest.ball_type
+                            elif closest.has("kind"): target_team = closest.kind
+                            elif closest.has("BALL_TYPE"): target_team = closest.BALL_TYPE
+
+                            if closest.has("color"): target_color = closest.color
+                            elif closest.has("color_hex"): target_color = closest.color_hex
+
+                            if closest.has("name"): target_name = closest.name
+                            elif closest.has("label"): target_name = closest.label
+                            elif closest.has("kind"): target_name = closest.kind
+                        else:
+                            if "team" in closest: target_team = closest.team
+                            elif "ball_type" in closest: target_team = closest.ball_type
+                            elif "kind" in closest: target_team = closest.kind
+                            elif "BALL_TYPE" in closest: target_team = closest.BALL_TYPE
+
+                            if "color" in closest: target_color = closest.color
+                            elif "color_hex" in closest: target_color = closest.color_hex
+
+                            if "name" in closest: target_name = closest.name
+                            elif "label" in closest: target_name = closest.label
+                            elif "kind" in closest: target_name = closest.kind
+
+                        if typeof(self.ball) == TYPE_DICTIONARY:
+                            self.ball["team"] = target_team
+                            self.ball["color"] = target_color
+                            self.ball["label"] = target_name
+                            self.ball["is_disguised"] = true
+                            self.ball["disguise_explode"] = false
+                            self.ball["disguise_timer"] = 10.0
+                        else:
+                            if "team" in self.ball: self.ball.team = target_team
+                            if "color" in self.ball: self.ball.color = target_color
+                            if "label" in self.ball: self.ball.label = target_name
+                            if "is_disguised" in self.ball: self.ball.is_disguised = true
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("is_disguised", true)
+                            if "disguise_explode" in self.ball: self.ball.disguise_explode = false
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("disguise_explode", false)
+                            if "disguise_timer" in self.ball: self.ball.disguise_timer = 10.0
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("disguise_timer", 10.0)
+
+                        if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                        else:
+                            if "active" in b: b.active = false
+                            elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                        if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                            self.world.boosters.erase(b)
+                        if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                            self.world.arena.hazards.erase(b)
         # Check for phylactery
         var b_id = null
         if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball.id
