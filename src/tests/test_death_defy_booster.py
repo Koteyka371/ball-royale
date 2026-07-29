@@ -91,9 +91,10 @@ def test_death_defy_booster_lethal_damage():
         act.ball.death_defy_active = False
         act.ball.intangible = True
         act.ball.intangible_timer = 2.0
+        act.ball.speed_boost_timer = max(getattr(act.ball, 'speed_boost_timer', 0.0), 3.0)
 
-        explosion_radius = 150.0
-        explosion_damage = 50.0
+        explosion_radius = 200.0
+        explosion_damage = 75.0
         if hasattr(act.world, "add_event"):
             act.world.add_event("explosion", {"x": act.ball.x, "y": act.ball.y, "radius": explosion_radius, "damage": explosion_damage})
         if hasattr(act.world, "balls"):
@@ -110,7 +111,7 @@ def test_death_defy_booster_lethal_damage():
                         if dist > 0.001:
                             nx = dx / dist
                             ny = dy / dist
-                            push_force = 1500.0 * (1.0 - dist / explosion_radius)
+                            push_force = 2000.0 * (1.0 - dist / explosion_radius)
                             b_other.vx = getattr(b_other, "vx", 0.0) + nx * push_force
                             b_other.vy = getattr(b_other, "vy", 0.0) + ny * push_force
 
@@ -118,7 +119,8 @@ def test_death_defy_booster_lethal_damage():
     assert b.death_defy_active == False
     assert getattr(b, "intangible", False) == True
     assert getattr(b, "intangible_timer", 0.0) >= 2.0
+    assert getattr(b, "speed_boost_timer", 0.0) >= 3.0
 
     assert len(w.balls) == 2
-    assert enemy.hp == 50.0
+    assert enemy.hp == 25.0
     assert enemy.vx > 0.0 # Knocked back

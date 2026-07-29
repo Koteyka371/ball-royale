@@ -11625,10 +11625,11 @@ class Action:
             self.ball.death_defy_active = False
             self.ball.intangible = True
             self.ball.intangible_timer = 2.0
+            self.ball.speed_boost_timer = max(getattr(self.ball, 'speed_boost_timer', 0.0), 3.0)
 
             # The explosion damages and knocks back all nearby balls
-            explosion_radius = 150.0
-            explosion_damage = 50.0
+            explosion_radius = 200.0
+            explosion_damage = 75.0
             if hasattr(self.world, "add_event"):
                 self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": explosion_radius, "damage": explosion_damage})
             if hasattr(self.world, "balls"):
@@ -11645,7 +11646,7 @@ class Action:
                             if dist > 0.001:
                                 nx = dx / dist
                                 ny = dy / dist
-                                push_force = 1500.0 * (1.0 - dist / explosion_radius)
+                                push_force = 2000.0 * (1.0 - dist / explosion_radius)
                                 b.vx = getattr(b, "vx", 0.0) + nx * push_force
                                 b.vy = getattr(b, "vy", 0.0) + ny * push_force
 

@@ -23427,6 +23427,7 @@ func execute(strategy: String, delta: float):
             self.ball["death_defy_active"] = false
             self.ball["intangible"] = true
             self.ball["intangible_timer"] = 2.0
+            self.ball["speed_boost_timer"] = max(self.ball.get("speed_boost_timer", 0.0), 3.0)
         else:
             self.ball.hp = 1.0
             if "death_defy_active" in self.ball:
@@ -23439,11 +23440,15 @@ func execute(strategy: String, delta: float):
             elif self.ball.has_method("set_meta"):
                 self.ball.set_meta("intangible", true)
                 self.ball.set_meta("intangible_timer", 2.0)
+            if "speed_boost_timer" in self.ball:
+                self.ball.speed_boost_timer = max(self.ball.speed_boost_timer, 3.0)
+            elif self.ball.has_method("set_meta"):
+                self.ball.set_meta("speed_boost_timer", max(self.ball.get_meta("speed_boost_timer") if self.ball.has_meta("speed_boost_timer") else 0.0, 3.0))
         current_hp = 1.0
         damage_taken = 0.0
 
-        var explosion_radius = 150.0
-        var explosion_damage = 50.0
+        var explosion_radius = 200.0
+        var explosion_damage = 75.0
 
         var bx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball.get("x", 0.0)
         var by = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball.get("y", 0.0)
@@ -23473,7 +23478,7 @@ func execute(strategy: String, delta: float):
                             if dist > 0.001:
                                 var nx = dx / dist
                                 var ny = dy / dist
-                                var push_force = 1500.0 * (1.0 - dist / explosion_radius)
+                                var push_force = 2000.0 * (1.0 - dist / explosion_radius)
                                 if typeof(b) == TYPE_OBJECT:
                                     if "vx" in b: b.vx += nx * push_force
                                     if "vy" in b: b.vy += ny * push_force
