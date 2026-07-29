@@ -6636,8 +6636,24 @@ class Action:
                                 self.ball.mirror_center_x = (owner.x + self.ball.x) / 2.0
                                 self.ball.mirror_center_y = (owner.y + self.ball.y) / 2.0
 
-                            self.ball.x = self.ball.mirror_center_x - (owner.x - self.ball.mirror_center_x)
-                            self.ball.y = self.ball.mirror_center_y - (owner.y - self.ball.mirror_center_y)
+                            target_x = self.ball.mirror_center_x - (owner.x - self.ball.mirror_center_x)
+                            target_y = self.ball.mirror_center_y - (owner.y - self.ball.mirror_center_y)
+
+                            dx = target_x - self.ball.x
+                            dy = target_y - self.ball.y
+                            dist = math.hypot(dx, dy)
+
+                            self.ball.x = target_x
+                            self.ball.y = target_y
+                            if dist > 0.01:
+                                nx = dx / dist
+                                ny = dy / dist
+                                speed = dist / delta if delta > 0 else 0
+                                self.ball.vx = nx * speed
+                                self.ball.vy = ny * speed
+                            else:
+                                self.ball.vx = getattr(owner, "vx", 0) * -1
+                                self.ball.vy = getattr(owner, "vy", 0) * -1
 
         # Global decoy explosion check
         if hasattr(self.world, "balls"):
@@ -13178,6 +13194,12 @@ class Action:
         if getattr(self.ball, "is_scrambled", False) and enemies:
             import random as _rnd
             return _rnd.choice(enemies)
+
+        # Check for taunting decoys first
+        taunt_decoys = [e for e in enemies if getattr(e, "is_decoy", False) and getattr(e, "decoy_type", "") == "taunt"]
+        if taunt_decoys:
+            return min(taunt_decoys, key=lambda e: (e.x - self.ball.x) ** 2 + (e.y - self.ball.y) ** 2)
+
         # Check for illusions first (they taunt AI)
         illusions = [e for e in enemies if getattr(e, "is_illusion", False) or getattr(e, "is_decoy", False)]
         if illusions:
@@ -14697,7 +14719,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -18163,6 +18185,36 @@ class Action:
                     setattr(smoke, "owner_id", getattr(self.ball, "id", None))
                     self.world.arena.hazards.append(smoke)
 
+
+            elif skill_name == "reversed_trickster_clone":
+                import copy
+                if hasattr(self.world, "balls"):
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    clone.hp = getattr(self.ball, "max_hp", 100) * 0.5
+                    clone.max_hp = clone.hp
+                    clone.damage = 0.0
+                    clone.is_decoy_clone = True
+                    clone.is_illusion = True
+                    clone.mimic_owner = getattr(self.ball, "id", None)
+                    clone.mimic_timer = 15.0
+
+                    clone.is_mirroring = True
+
+                    clone.skill = None
+                    clone.SKILL = None
+                    if hasattr(clone, "active_skill"):
+                        clone.active_skill = None
+                    clone.skill_timer = 9999.0
+
+                    clone.is_decoy = True
+                    clone.decoy_type = "taunt"
+                    clone.decoy_timer = 15.0
+
+                    self.world.balls.append(clone)
             elif skill_name == "trickster_clone":
                 import copy
                 import math
