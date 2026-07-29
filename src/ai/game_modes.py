@@ -32694,6 +32694,55 @@ class HazardShiftEventMode(GameMode):
                     b.vy = getattr(b, "vy", 0.0) + vy_impulse
 
 
+class SnowballMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Snowball Fight"
+        self.description = "Balls turn into snowballs that grow as they move across ice patches and deal damage based on size."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            # Check if moving
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            speed = math.hypot(vx, vy)
+            is_moving = speed > 10.0  # Needs to be moving a bit to roll
+
+            # Check if on ice
+            on_ice = False
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for hazard in world.arena.hazards:
+                    if getattr(hazard, "kind", "") == "ice_patch" and getattr(hazard, "active", True):
+                        dist = math.hypot(b.x - getattr(hazard, "x", 0.0), b.y - getattr(hazard, "y", 0.0))
+                        # Only grow if actually touching the ice patch
+                        if dist < getattr(hazard, "radius", 0.0) + getattr(b, "radius", 20.0):
+                            on_ice = True
+                            break
+
+            # We also turn them into snowballs (visual + stat changes)
+            # Maybe cosmetic or just stats? We'll rely on stats for mechanics.
+            # "turn into snowballs that grow as they move across ice patches"
+
+            if on_ice and is_moving:
+                # Grow based on speed and time
+                growth_rate = (speed / 100.0) * 10.0 * delta
+                current_radius = getattr(b, "radius", 20.0)
+                new_radius = min(current_radius + growth_rate, 80.0)
+                b.radius = new_radius
+
+                # Scale mass and damage linearly with radius compared to base 20.0
+                scale = new_radius / 20.0
+                b.mass = 1.0 * scale
+                b.damage = 10.0 * scale
+            elif not on_ice:
+                # Optional: shrink slowly when not on ice? Or just keep size? The prompt says "grow as they move across ice patches".
+                pass
+
 class BumperFrenzyMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -33308,6 +33357,7 @@ class IceFloorMode(GameMode):
 
 
 GAME_MODES = {
+    'snowball_fight': SnowballMode(),
     'ice_floor': IceFloorMode(),
     'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),

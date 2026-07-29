@@ -52142,6 +52142,109 @@ class HazardShiftEventMode extends GameMode:
 						if b.has_method("set_meta"): b.set_meta("vy", current_vy + vy_impulse)
 
 
+class SnowballMode extends GameMode:
+	func _init():
+		self.name = "Snowball Fight"
+		self.description = "Balls turn into snowballs that grow as they move across ice patches and deal damage based on size."
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		var w_is_dict = typeof(world) == TYPE_DICTIONARY
+
+		var arena_hazards = []
+		var has_hazards = false
+		if w_is_dict:
+			if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+				arena_hazards = world["arena"]["hazards"]
+				has_hazards = true
+		else:
+			if "arena" in world and "hazards" in world.arena:
+				arena_hazards = world.arena.hazards
+				has_hazards = true
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false) and b.get("ball_type", "") != "spectator"
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				if is_alive and "ball_type" in b and b.get("ball_type") == "spectator":
+					is_alive = false
+
+			if not is_alive:
+				continue
+
+			var vx = 0.0
+			var vy = 0.0
+			var b_x = 0.0
+			var b_y = 0.0
+			var current_radius = 20.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				vx = b.get("vx", 0.0)
+				vy = b.get("vy", 0.0)
+				b_x = b.get("x", 0.0)
+				b_y = b.get("y", 0.0)
+				current_radius = b.get("radius", 20.0)
+			else:
+				vx = b.get("vx") if "vx" in b else 0.0
+				vy = b.get("vy") if "vy" in b else 0.0
+				b_x = b.get("x") if "x" in b else 0.0
+				b_y = b.get("y") if "y" in b else 0.0
+				current_radius = b.get("radius") if "radius" in b else 20.0
+
+			var speed = sqrt(vx * vx + vy * vy)
+			var is_moving = speed > 10.0
+
+			var on_ice = false
+			if has_hazards:
+				for hazard in arena_hazards:
+					var h_kind = ""
+					var h_active = true
+					var h_x = 0.0
+					var h_y = 0.0
+					var h_radius = 0.0
+
+					if typeof(hazard) == TYPE_DICTIONARY:
+						h_kind = hazard.get("kind", "")
+						h_active = hazard.get("active", true)
+						h_x = hazard.get("x", 0.0)
+						h_y = hazard.get("y", 0.0)
+						h_radius = hazard.get("radius", 0.0)
+					else:
+						h_kind = hazard.get("kind") if "kind" in hazard else ""
+						h_active = hazard.get("active") if "active" in hazard else true
+						h_x = hazard.get("x") if "x" in hazard else 0.0
+						h_y = hazard.get("y") if "y" in hazard else 0.0
+						h_radius = hazard.get("radius") if "radius" in hazard else 0.0
+
+					if h_kind == "ice_patch" and h_active:
+						var dx = b_x - h_x
+						var dy = b_y - h_y
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist < h_radius + current_radius:
+							on_ice = true
+							break
+
+			if on_ice and is_moving:
+				var growth_rate = (speed / 100.0) * 10.0 * delta
+				var new_radius = min(current_radius + growth_rate, 80.0)
+				var scale = new_radius / 20.0
+				var new_mass = 1.0 * scale
+				var new_damage = 10.0 * scale
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["radius"] = new_radius
+					b["mass"] = new_mass
+					b["damage"] = new_damage
+				else:
+					if "radius" in b:
+						b.set("radius", new_radius)
+					if "mass" in b:
+						b.set("mass", new_mass)
+					if "damage" in b:
+						b.set("damage", new_damage)
+
 class BumperFrenzyMode extends GameMode:
 	func _init() -> void:
 		name = "Bumper Frenzy"
@@ -57762,6 +57865,7 @@ class VIPProtectionMode extends GameMode:
 				else:
 					if "hp" in b: b.hp = n_hp
 
+GAME_MODES["snowball_fight"] = SnowballMode.new()
 GAME_MODES["rotating_lasers"] = RotatingLasersMode.new()
 GAME_MODES["elemental_wanderer"] = ElementalWandererMode.new()
 
