@@ -33406,7 +33406,102 @@ class VisionReductionEventMode(GameMode):
                 b.perception_radius = getattr(b, "base_perception_radius", 500)
                 b.vision_reduction_applied = False
 
+
+class SupercellStormMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Supercell Storm"
+        self.description = "A rare hybrid weather hazard that spawns when a thunderstorm and wind event overlap. It pulls balls like a tornado but also periodically strikes them with chain lightning while they are caught in the outer vortex."
+        self.weather = "thunderstorm"
+        self.wind_timer = 20.0
+        self.lightning_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena is not None:
+            world.arena.weather = self.weather
+            world.arena.is_night = True
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        self.wind_timer -= delta
+        if self.wind_timer <= 0.0:
+            self.wind_timer = random.uniform(15.0, 30.0)
+            arena_w = getattr(world.arena, "width", 800)
+            arena_h = getattr(world.arena, "height", 600)
+            x = random.uniform(200, arena_w - 200)
+            y = random.uniform(200, arena_h - 200)
+
+            try:
+                from arena.procedural_arena import Hazard
+            except ImportError:
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.target_radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+
+            tornado = Hazard(id=random.randint(100000, 999999), x=x, y=y, radius=100.0, kind="supercell_tornado", damage=0.0)
+            setattr(tornado, "vx", random.uniform(-150.0, 150.0))
+            setattr(tornado, "vy", random.uniform(-150.0, 150.0))
+            setattr(tornado, "duration", random.uniform(5.0, 10.0))
+
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            world.arena.hazards.append(tornado)
+
+            if hasattr(world, "add_event"):
+                world.add_event("supercell_tornado_spawn", {"message": "A Supercell Tornado has formed!"})
+
+        self.lightning_timer -= delta
+        if self.lightning_timer <= 0.0:
+            self.lightning_timer = 1.0 # strike every 1 sec
+            if hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "supercell_tornado" and getattr(h, "active", True):
+                        hx = getattr(h, "x", 0.0)
+                        hy = getattr(h, "y", 0.0)
+                        hradius = getattr(h, "radius", 100.0)
+                        inner_radius = hradius * 0.3
+                        for b in balls:
+                            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                                bx = getattr(b, "x", 0.0)
+                                by = getattr(b, "y", 0.0)
+                                dist_sq = (bx - hx)**2 + (by - hy)**2
+                                if inner_radius**2 < dist_sq <= hradius**2:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(20.0)
+                                    else:
+                                        b.hp -= 20.0
+
+                                    if hasattr(world, "add_event"):
+                                        world.add_event("chain_lightning_strike", {"target": getattr(b, "id", None), "x": bx, "y": by, "damage": 20.0})
+
+                                    # apply chain lightning to nearby
+                                    for other in balls:
+                                        if other != b and getattr(other, "alive", False) and getattr(other, "ball_type", None) != "spectator":
+                                            ox = getattr(other, "x", 0.0)
+                                            oy = getattr(other, "y", 0.0)
+                                            dist_to_other = (ox - bx)**2 + (oy - by)**2
+                                            if dist_to_other <= 2500.0: # 50 radius
+                                                if hasattr(other, "take_damage"):
+                                                    other.take_damage(10.0)
+                                                else:
+                                                    other.hp -= 10.0
+
+                                                if hasattr(world, "add_event"):
+                                                    world.add_event("chain_lightning_arc", {"from_target": getattr(b, "id", None), "to_target": getattr(other, "id", None), "x": ox, "y": oy, "damage": 10.0})
+
+
 GAME_MODES = {
+    'supercell_storm': SupercellStormMode(),
     'ice_floor': IceFloorMode(),
     'vision_reduction_event': VisionReductionEventMode(),
     'wall_leapers': WallLeapersMode(),
