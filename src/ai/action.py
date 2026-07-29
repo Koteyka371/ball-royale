@@ -1728,6 +1728,64 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        arena = getattr(self.world, 'arena', None)
+        is_snowing = getattr(arena, 'is_snowing', False) if arena else False
+
+        on_ice = False
+        if arena and hasattr(arena, 'hazards'):
+            for h in arena.hazards:
+                if getattr(h, 'kind', '') in ['ice_patch', 'ice_patches'] and getattr(h, 'active', True):
+                    dx = h.x - getattr(self.ball, 'x', 0.0)
+                    dy = h.y - getattr(self.ball, 'y', 0.0)
+                    if dx*dx + dy*dy < getattr(h, 'radius', 0.0)**2:
+                        on_ice = True
+                        break
+
+        cosmetic = getattr(self.ball, "cosmetic", "").lower()
+
+        # Turn into snowball on ice/snow if moving
+        speed = (getattr(self.ball, 'vx', 0.0)**2 + getattr(self.ball, 'vy', 0.0)**2)**0.5
+        if speed > 10.0 and (is_snowing or on_ice) and cosmetic != "snowball":
+            if not hasattr(self.ball, "_original_cosmetic_before_snowball"):
+                self.ball._original_cosmetic_before_snowball = cosmetic
+            self.ball.cosmetic = "snowball"
+            cosmetic = "snowball"
+
+        if cosmetic == "snowball":
+            if not hasattr(self.ball, "snowball_size_multiplier"):
+                self.ball.snowball_size_multiplier = 1.0
+
+            if is_snowing or on_ice:
+                if speed > 10.0:
+                    self.ball.snowball_size_multiplier = min(3.0, self.ball.snowball_size_multiplier + delta * 0.1 * (speed / 100.0))
+            else:
+                self.ball.snowball_size_multiplier = max(1.0, self.ball.snowball_size_multiplier - delta * 0.2)
+                if self.ball.snowball_size_multiplier <= 1.0:
+                    # Revert from snowball if it melted completely (and we were previously something else, though we'll just go back to default for now or stay snowball but shrink)
+                    if getattr(self.ball, "_original_cosmetic_before_snowball", None):
+                        self.ball.cosmetic = self.ball._original_cosmetic_before_snowball
+                        cosmetic = self.ball.cosmetic
+
+            if not hasattr(self.ball, "_original_base_radius_snowball"):
+                self.ball._original_base_radius_snowball = getattr(self.ball, "radius", 15.0)
+            if not hasattr(self.ball, "_original_base_mass_snowball"):
+                self.ball._original_base_mass_snowball = getattr(self.ball, "mass", 1.0)
+
+            self.ball.radius = self.ball._original_base_radius_snowball * self.ball.snowball_size_multiplier
+            self.ball.mass = self.ball._original_base_mass_snowball * self.ball.snowball_size_multiplier
+
+            if not hasattr(self.ball, "_original_base_damage_snowball"):
+                self.ball._original_base_damage_snowball = getattr(self.ball, "damage", 10.0)
+            self.ball.damage = self.ball._original_base_damage_snowball * (self.ball.snowball_size_multiplier ** 2)
+
+            if self.ball.snowball_size_multiplier <= 1.0 and getattr(self.ball, "cosmetic", "").lower() != "snowball":
+                self.ball.radius = self.ball._original_base_radius_snowball
+                self.ball.mass = self.ball._original_base_mass_snowball
+                self.ball.damage = self.ball._original_base_damage_snowball
+        else:
+            if not hasattr(self.ball, "_original_cosmetic_before_snowball"):
+                self.ball._original_cosmetic_before_snowball = getattr(self.ball, "cosmetic", "default")
+
 
         if getattr(self.ball, "decoy_type", "") == "orbiting_beefy":
             import math
