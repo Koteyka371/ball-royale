@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1670] Trickster's Mirage Clone — *2026-07-29 15:36:43 UTC*
+
+A new skill for the Trickster that creates a clone with reversed controls from the player. When the player moves left, the clone moves right. The clone deals no damage but taunts AI enemies globally, drawing them away from the true player.
+
+---
+
 ## [idea-1683] Turret Overload — *2026-07-29 15:03:38 UTC*
 
 Turrets explode when destroyed.
