@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1658] Doppelganger Mode — *2026-07-29 00:19:40 UTC*
+
+Every player spawns with an AI-controlled doppelganger that mimics their attacks but moves randomly. If a player dies, they take over their doppelganger.
+
+---
+
 ## [idea-1637] Cosmic string — *2026-07-29 00:05:54 UTC*
 
 A line of intense gravity pulls balls along a specific path.
