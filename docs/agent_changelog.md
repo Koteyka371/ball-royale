@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1663] Sticky Mine Traps — *2026-07-29 01:11:01 UTC*
+
+New hazard type that attaches to walls. If a ball gets too close, it leaps onto the ball and slows it down before exploding.
+
+---
+
 ## [idea-1642] Thermal Jetpack Booster — *2026-07-29 00:32:54 UTC*
 
 A new booster that grants temporary flight, ignoring ground friction, ground traps, and knockback effects for a short duration while significantly boosting movement speed.
