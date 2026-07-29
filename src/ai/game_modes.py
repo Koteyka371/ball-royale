@@ -43778,3 +43778,63 @@ class SquadRelayMode(GameMode):
                         world.add_event("squad_relay_spawn", {"message": f"Team {t} relay spawned!"})
 
 GAME_MODES["squad_relay"] = SquadRelayMode()
+
+class TeleportingSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Teleporting Safe Zone"
+        self.description = "A safe zone that randomly teleports around the map every 10 seconds, forcing players to constantly adapt their positioning to stay alive."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 200.0
+        self.teleport_timer = 0.0
+        self.teleport_interval = 10.0
+        self.outside_damage_per_second = 15.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.teleport_timer = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        self.teleport_timer += delta
+        if self.teleport_timer >= self.teleport_interval:
+            self.teleport_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+            arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+            margin = self.zone_radius
+
+            # Ensure margin isn't larger than half the arena
+            safe_margin_x = min(margin, arena_width / 2.0)
+            safe_margin_y = min(margin, arena_height / 2.0)
+
+            self.zone_x = random.uniform(safe_margin_x, arena_width - safe_margin_x)
+            self.zone_y = random.uniform(safe_margin_y, arena_height - safe_margin_y)
+
+            if hasattr(world, "add_event"):
+                world.add_event("zone_teleport", {"message": "The safe zone has teleported!"})
+
+        damage = self.outside_damage_per_second * delta
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = b.x - self.zone_x
+            dy = b.y - self.zone_y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > self.zone_radius:
+                b.hp -= damage
+                if b.hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+                    if hasattr(world, "add_event"):
+                        world.add_event("kill", {"killer": "safe_zone", "victim": getattr(b, "id", "Unknown")})
+
+GAME_MODES["teleporting_safe_zone"] = TeleportingSafeZoneMode()
