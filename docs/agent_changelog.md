@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1652] Windstorm Mutator — *2026-07-29 03:10:11 UTC*
+
+A mutator where wind constantly pushes all balls to a random side of the arena.
+
+---
+
 ## [idea-1671] Slippery Slope Arena Mode — *2026-07-29 02:24:14 UTC*
 
 An arena modifier where the entire floor is covered in ice, forcing all balls to slide continuously with low friction. Movement speed is uncapped, and players rely purely on bouncing off walls and recoil from skills to change direction.
