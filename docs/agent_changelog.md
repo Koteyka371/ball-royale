@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1635] Decoy Resonance Chain — *2026-07-29 21:16:07 UTC*
+
+If three or more decoys (of any type) detonate simultaneously near each other, they create a massive 'Resonance Chain' explosion. This explosion deals true damage ignoring armor, pulls all enemies within a massive radius toward the center, and permanently leaves a small scorched earth zone that deals minor damage over time to anyone walking on it.
+
+---
+
 ## [idea-1670] Trickster's Mirage Clone — *2026-07-29 15:36:43 UTC*
 
 A new skill for the Trickster that creates a clone with reversed controls from the player. When the player moves left, the clone moves right. The clone deals no damage but taunts AI enemies globally, drawing them away from the true player.
