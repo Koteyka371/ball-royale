@@ -68689,6 +68689,38 @@ class CascadingStunMode extends GameMode:
 
 GAME_MODES["cascading_stun"] = CascadingStunMode.new()
 
+
+class IceFloorMode extends GameMode:
+	func _init() -> void:
+		name = "Ice Floor"
+		description = "An arena modifier where the entire floor is covered in ice, forcing all balls to slide continuously with low friction. Movement speed is uncapped, and players rely purely on bouncing off walls and recoil from skills to change direction."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+
+			var b_type = ""
+			if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+
+			if is_alive and b_type != "spectator":
+				if typeof(b) == TYPE_OBJECT:
+					if "is_frictionless" in b: b.is_frictionless = true
+					elif b.has_method("set_meta"): b.set_meta("is_frictionless", true)
+					if "friction_multiplier" in b: b.friction_multiplier = 0.0
+					elif b.has_method("set_meta"): b.set_meta("friction_multiplier", 0.0)
+					if "max_speed" in b: b.max_speed = 99999.0
+					elif b.has_method("set_meta"): b.set_meta("max_speed", 99999.0)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["is_frictionless"] = true
+					b["friction_multiplier"] = 0.0
+					b["max_speed"] = 99999.0
+
+GAME_MODES["ice_floor"] = IceFloorMode.new()
+
 class SquadRelayMode extends GameMode:
 	var spectator_queue: Dictionary = {}
 

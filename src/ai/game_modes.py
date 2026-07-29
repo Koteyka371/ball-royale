@@ -33288,7 +33288,27 @@ class QuantumThreadMode(GameMode):
 
 
 
+
+class IceFloorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Ice Floor"
+        self.description = "An arena modifier where the entire floor is covered in ice, forcing all balls to slide continuously with low friction. Movement speed is uncapped, and players rely purely on bouncing off walls and recoil from skills to change direction."
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                # Ensure the ball slides continuously
+                b.is_frictionless = True
+                b.friction_multiplier = 0.0
+
+                # Uncap movement speed
+                b.max_speed = 99999.0
+
+
 GAME_MODES = {
+    'ice_floor': IceFloorMode(),
     'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),
 
