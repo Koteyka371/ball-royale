@@ -9795,7 +9795,15 @@ func execute(strategy: String, delta: float):
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("reverse_gravity_item") and self.ball.get("use_item", false):
-			self.ball.reverse_gravity_item_timer = 5.0
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var rg_id = arena.hazards.size() + randi() % 10000
+				var rg = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					rg = load("res://src/arena/procedural_arena.gd").Hazard.new(rg_id, self.ball.x, self.ball.y, 250.0, "reverse_gravity_field", 0.0)
+					rg.set_meta("duration", 5.0)
+					if "id" in self.ball: rg.set_meta("owner_id", self.ball.id)
+					arena.hazards.append(rg)
 			inv.erase("reverse_gravity_item")
 			if typeof(self.ball) == TYPE_DICTIONARY:
 				self.ball["inventory"] = inv
@@ -17867,20 +17875,49 @@ func execute(strategy: String, delta: float):
                         if is_enemy:
                             if dist_sq > 0.0001:
                                 var dist = sqrt(dist_sq)
+
+                                var rg_timer = 0.0
+                                if typeof(self.ball) == TYPE_OBJECT and "reverse_gravity_timer" in self.ball:
+                                    rg_timer = self.ball.reverse_gravity_timer
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("reverse_gravity_timer"):
+                                    rg_timer = self.ball.get_meta("reverse_gravity_timer")
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("reverse_gravity_timer"):
+                                    rg_timer = self.ball["reverse_gravity_timer"]
+
+                                if rg_timer < 0.5:
+                                    if typeof(self.ball) == TYPE_OBJECT and "reverse_gravity_timer" in self.ball:
+                                        self.ball.reverse_gravity_timer = 0.5
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                        self.ball.set_meta("reverse_gravity_timer", 0.5)
+                                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                                        self.ball["reverse_gravity_timer"] = 0.5
+
+                                    var gm_timer = 0.0
+                                    if typeof(self.ball) == TYPE_OBJECT and "gravity_multiplier_timer" in self.ball:
+                                        gm_timer = self.ball.gravity_multiplier_timer
+                                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("gravity_multiplier_timer"):
+                                        gm_timer = self.ball.get_meta("gravity_multiplier_timer")
+                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("gravity_multiplier_timer"):
+                                        gm_timer = self.ball["gravity_multiplier_timer"]
+
+                                    if gm_timer < 0.5:
+                                        if typeof(self.ball) == TYPE_OBJECT and "gravity_multiplier_timer" in self.ball:
+                                            self.ball.gravity_multiplier_timer = 0.5
+                                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                            self.ball.set_meta("gravity_multiplier_timer", 0.5)
+                                        elif typeof(self.ball) == TYPE_DICTIONARY:
+                                            self.ball["gravity_multiplier_timer"] = 0.5
+
                                 var nx = -dx / dist
                                 var ny = -1.0
-                                var push_strength = 200.0 * delta
+                                var push_strength = 100.0 * delta
 
                                 if typeof(self.ball) == TYPE_OBJECT:
                                     if "x" in self.ball: self.ball.x += nx * push_strength
                                     if "y" in self.ball: self.ball.y += ny * push_strength
-                                    if "vx" in self.ball: self.ball.vx *= 0.5
-                                    if "vy" in self.ball: self.ball.vy *= 0.5
                                 elif typeof(self.ball) == TYPE_DICTIONARY:
                                     if self.ball.has("x"): self.ball["x"] += nx * push_strength
                                     if self.ball.has("y"): self.ball["y"] += ny * push_strength
-                                    if self.ball.has("vx"): self.ball["vx"] *= 0.5
-                                    if self.ball.has("vy"): self.ball["vy"] *= 0.5
 
                                 # Scatter items
                                 var ball_inv = []
