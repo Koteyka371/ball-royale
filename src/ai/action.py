@@ -15353,6 +15353,14 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "rebound_booster":
+                    self.ball.rebound_booster_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "bounce_shield_booster":
                     self.ball.bounce_shield_active = True
                     self.ball.bounce_shield_timer = 5.0
@@ -20626,6 +20634,14 @@ class Action:
                 if bounced_y:
                     self.ball.velocity_y = self.ball.velocity_y * mult
 
+
+        if bounced:
+            if getattr(self.ball, "rebound_booster_timer", 0.0) > 0:
+                self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 2.0)
+                self.ball.energy_shield_timer = max(getattr(self.ball, "energy_shield_timer", 0.0), 2.0)
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("rebound_boost_activate", {"id": getattr(self.ball, "id", None)})
+
         return bounced
 
     def _resolve_collisions(self) -> bool:
@@ -21673,6 +21689,12 @@ class Action:
             self.ball.projectile_reflect_timer -= delta
             if self.ball.projectile_reflect_timer <= 0:
                 self.ball.projectile_reflect_active = False
+
+
+        if hasattr(self.ball, "rebound_booster_timer") and self.ball.rebound_booster_timer > 0:
+            self.ball.rebound_booster_timer -= delta
+            if self.ball.rebound_booster_timer <= 0:
+                self.ball.rebound_booster_timer = 0.0
 
         if hasattr(self.ball, "bounce_shield_timer") and self.ball.bounce_shield_timer > 0:
             self.ball.bounce_shield_timer -= delta
