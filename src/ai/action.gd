@@ -333,6 +333,54 @@ func _attempt_damage(attacker, target) -> void:
 	var has_orig = false
 	var orig_dmg = 0.0
 
+	var is_holo = false
+	if typeof(attacker) == TYPE_DICTIONARY and attacker.has("is_hologram"):
+		is_holo = attacker.is_hologram
+	elif typeof(attacker) == TYPE_OBJECT and "is_hologram" in attacker:
+		is_holo = attacker.is_hologram
+
+	if not is_holo:
+		var has_pending = false
+		if typeof(attacker) == TYPE_DICTIONARY and attacker.has("pending_holographic_attacks"):
+			has_pending = true
+		elif typeof(attacker) == TYPE_OBJECT and "pending_holographic_attacks" in attacker:
+			has_pending = true
+		elif typeof(attacker) == TYPE_OBJECT:
+			if not attacker.has_meta("pending_holographic_attacks"):
+				attacker.set_meta("pending_holographic_attacks", [])
+			has_pending = true
+
+		if has_pending:
+			var pending = []
+			if typeof(attacker) == TYPE_DICTIONARY:
+				if not attacker.has("pending_holographic_attacks"): attacker["pending_holographic_attacks"] = []
+				pending = attacker["pending_holographic_attacks"]
+			elif typeof(attacker) == TYPE_OBJECT and "pending_holographic_attacks" in attacker:
+				if attacker.pending_holographic_attacks == null: attacker.pending_holographic_attacks = []
+				pending = attacker.pending_holographic_attacks
+			elif typeof(attacker) == TYPE_OBJECT:
+				pending = attacker.get_meta("pending_holographic_attacks")
+
+			var dmg = 10.0
+			if typeof(attacker) == TYPE_DICTIONARY and attacker.has("damage"): dmg = attacker.damage
+			elif typeof(attacker) == TYPE_OBJECT and "damage" in attacker: dmg = attacker.damage
+
+			var x = 0.0
+			var y = 0.0
+			if typeof(attacker) == TYPE_DICTIONARY and attacker.has("x"): x = attacker.x
+			elif typeof(attacker) == TYPE_OBJECT and "x" in attacker: x = attacker.x
+			if typeof(attacker) == TYPE_DICTIONARY and attacker.has("y"): y = attacker.y
+			elif typeof(attacker) == TYPE_OBJECT and "y" in attacker: y = attacker.y
+
+			pending.append({
+				"target": target,
+				"timer": 2.0,
+				"damage": dmg,
+				"x": x,
+				"y": y
+			})
+
+
 	var overflow = false
 	if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("overflow_active"):
 		overflow = target.get_meta("overflow_active")
@@ -3308,6 +3356,66 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var pending = null
+	if typeof(ball) == TYPE_DICTIONARY and ball.has("pending_holographic_attacks"):
+		pending = ball["pending_holographic_attacks"]
+	elif typeof(ball) == TYPE_OBJECT and "pending_holographic_attacks" in ball:
+		pending = ball.pending_holographic_attacks
+	elif typeof(ball) == TYPE_OBJECT and ball.has_meta("pending_holographic_attacks"):
+		pending = ball.get_meta("pending_holographic_attacks")
+
+	if pending != null:
+		var to_remove = []
+		for p in pending:
+			p["timer"] -= delta
+			if p["timer"] <= 0:
+				to_remove.append(p)
+				var was_holo = false
+				if typeof(ball) == TYPE_DICTIONARY and ball.has("is_hologram"): was_holo = ball.is_hologram
+				elif typeof(ball) == TYPE_OBJECT and "is_hologram" in ball: was_holo = ball.is_hologram
+
+				if typeof(ball) == TYPE_DICTIONARY: ball["is_hologram"] = true
+				elif typeof(ball) == TYPE_OBJECT and "is_hologram" in ball: ball.is_hologram = true
+				elif typeof(ball) == TYPE_OBJECT: ball.set_meta("is_hologram", true)
+
+				var old_dmg = 10.0
+				if typeof(ball) == TYPE_DICTIONARY and ball.has("damage"): old_dmg = ball.damage
+				elif typeof(ball) == TYPE_OBJECT and "damage" in ball: old_dmg = ball.damage
+
+				if typeof(ball) == TYPE_DICTIONARY: ball["damage"] = p["damage"]
+				elif typeof(ball) == TYPE_OBJECT and "damage" in ball: ball.damage = p["damage"]
+
+				if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world["events"].append({
+						"type": "visual_effect",
+						"data": {
+							"type": "holographic_attack_clone",
+							"x": p["x"],
+							"y": p["y"]
+						}
+					})
+				elif typeof(world) == TYPE_OBJECT and "events" in world:
+					world.events.append({
+						"type": "visual_effect",
+						"data": {
+							"type": "holographic_attack_clone",
+							"x": p["x"],
+							"y": p["y"]
+						}
+					})
+
+				_attempt_damage(ball, p["target"])
+
+				if typeof(ball) == TYPE_DICTIONARY: ball["damage"] = old_dmg
+				elif typeof(ball) == TYPE_OBJECT and "damage" in ball: ball.damage = old_dmg
+
+				if typeof(ball) == TYPE_DICTIONARY: ball["is_hologram"] = was_holo
+				elif typeof(ball) == TYPE_OBJECT and "is_hologram" in ball: ball.is_hologram = was_holo
+				elif typeof(ball) == TYPE_OBJECT: ball.set_meta("is_hologram", was_holo)
+
+		for r in to_remove:
+			pending.erase(r)
+
 
     var d_type = ""
     if typeof(ball) == TYPE_DICTIONARY and ball.has("decoy_type"): d_type = str(ball.decoy_type)

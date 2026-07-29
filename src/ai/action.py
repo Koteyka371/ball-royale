@@ -217,6 +217,18 @@ class Action:
     def _attempt_damage(self, attacker, target) -> None:
         has_orig = False
         orig_dmg = 0.0
+
+        if not getattr(attacker, "is_hologram", False):
+            if not hasattr(attacker, "pending_holographic_attacks"):
+                attacker.pending_holographic_attacks = []
+            attacker.pending_holographic_attacks.append({
+                "target": target,
+                "timer": 2.0,
+                "damage": getattr(attacker, "damage", 10.0),
+                "x": attacker.x,
+                "y": attacker.y
+            })
+
         if getattr(target, "overflow_active", False) and hasattr(attacker, "damage"):
             has_orig = True
             orig_dmg = attacker.damage
@@ -1728,6 +1740,33 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if hasattr(self.ball, "pending_holographic_attacks"):
+            for p in self.ball.pending_holographic_attacks[:]:
+                p["timer"] -= delta
+                if p["timer"] <= 0:
+                    self.ball.pending_holographic_attacks.remove(p)
+                    # perform attack
+                    # To not cause infinite loop, we must temporarily set is_hologram = True
+                    was_holo = getattr(self.ball, "is_hologram", False)
+                    self.ball.is_hologram = True
+                    old_dmg = getattr(self.ball, "damage", 10.0)
+                    self.ball.damage = p["damage"]
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({
+                            "type": "visual_effect",
+                            "data": {
+                                "type": "holographic_attack_clone",
+                                "x": p["x"],
+                                "y": p["y"]
+                            }
+                        })
+
+                    self._attempt_damage(self.ball, p["target"])
+
+                    self.ball.damage = old_dmg
+                    self.ball.is_hologram = was_holo
+
 
         if getattr(self.ball, "decoy_type", "") == "orbiting_beefy":
             import math
