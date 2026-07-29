@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1665] Gravity Inversion Traps — *2026-07-29 13:14:08 UTC*
+
+A new trap type that, when triggered, creates a localized zone of reverse gravity. Projectiles and balls entering the zone are heavily deflected upwards or away, fundamentally changing map traversal and providing defensive utility to hold choke points.
+
+---
+
 ## [idea-1660] Echo Strike Booster — *2026-07-29 09:56:52 UTC*
 
 After attacking, a holographic clone briefly appears in the same spot 2 seconds later to repeat the exact same attack before disappearing.
