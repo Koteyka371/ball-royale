@@ -20754,6 +20754,10 @@ class Action:
         radius = getattr(self.ball, "radius", 10.0)
         old_x, old_y = self.ball.x, self.ball.y
 
+        import math
+        breaching = getattr(self.ball, "breaching_booster_timer", 0.0) > 0.0
+        v_sq = getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2
+
         gm = getattr(self.world, "game_mode", None)
         if gm and getattr(gm, "name", "") in ["Bumper Balls", "Radiation Windstorm", "Bumper Royale"]:
             # In Bumper Balls and Radiation Windstorm, balls are pushed off the arena instead of clamping
@@ -20768,9 +20772,25 @@ class Action:
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
             old_x, old_y = self.ball.x, self.ball.y
-            self.ball.x, self.ball.y, bounced_arena = self.world.arena.clamp_position(self.ball.x, self.ball.y, radius)
-            if bounced_arena:
-                bounced = True
+            new_x, new_y, bounced_arena = self.world.arena.clamp_position(self.ball.x, self.ball.y, radius)
+
+            if bounced_arena and breaching and v_sq > 40000.0: # speed > 200
+                bounced = False
+                if hasattr(self.world.arena, "rooms"):
+                    try:
+                        from arena.procedural_arena import Room # type: ignore
+                        crater_size = 100.0
+                        new_room = Room(self.ball.x - crater_size/2, self.ball.y - crater_size/2, crater_size, crater_size)
+                        self.world.arena.rooms.append(new_room)
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 50.0, "damage": 0.0, "color": "orange"})
+                    except ImportError:
+                        pass
+            else:
+                self.ball.x = new_x
+                self.ball.y = new_y
+                if bounced_arena:
+                    bounced = True
         elif hasattr(self.world, "width") and hasattr(self.world, "height"):
             old_x, old_y = self.ball.x, self.ball.y
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
@@ -23923,6 +23943,11 @@ class Action:
             self.ball.invisibility_timer -= delta
             if self.ball.invisibility_timer < 0:
                 self.ball.invisibility_timer = 0.0
+
+        if hasattr(self.ball, "breaching_booster_timer") and self.ball.breaching_booster_timer > 0:
+            self.ball.breaching_booster_timer -= delta
+            if self.ball.breaching_booster_timer < 0:
+                self.ball.breaching_booster_timer = 0.0
 
         if hasattr(self.ball, "stealth_booster_timer") and self.ball.stealth_booster_timer > 0:
             self.ball.stealth_booster_timer -= delta

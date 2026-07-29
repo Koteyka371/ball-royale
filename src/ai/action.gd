@@ -39812,7 +39812,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel"]:
 
                         var hx = 0.0
                         var hy = 0.0
@@ -40751,6 +40751,21 @@ func _clamp_position() -> bool:
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phase_booster_timer"): p_timer = self.ball.get_meta("phase_booster_timer")
     if intangible or timer > 0.0 or p_timer > 0.0:
         return false
+
+    var breaching = false
+    if "breaching_booster_timer" in self.ball and self.ball.breaching_booster_timer > 0.0:
+        breaching = true
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("breaching_booster_timer") and self.ball.get_meta("breaching_booster_timer") > 0.0:
+        breaching = true
+
+    var v_sq = 0.0
+    var vx = 0.0
+    var vy = 0.0
+    if "vx" in self.ball: vx = float(self.ball.vx)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vx"): vx = float(self.ball.get_meta("vx"))
+    if "vy" in self.ball: vy = float(self.ball.vy)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("vy"): vy = float(self.ball.get_meta("vy"))
+    v_sq = (vx * vx) + (vy * vy)
     var bounced = false
     if self.world != null:
         var radius = 10.0
@@ -40776,11 +40791,26 @@ func _clamp_position() -> bool:
             bounced = true
 
         if "arena" in self.world and self.world.arena != null and self.world.arena.has_method("clamp_position"):
+            var old_x = self.ball.x
+            var old_y = self.ball.y
             var res = self.world.arena.clamp_position(self.ball.x, self.ball.y, radius)
-            self.ball.x = res[0]
-            self.ball.y = res[1]
-            if res[2]:
-                bounced = true
+            var bounced_arena = res[2]
+
+            if bounced_arena and breaching and v_sq > 40000.0:
+                bounced = false
+                if typeof(self.world.arena) == TYPE_OBJECT and "rooms" in self.world.arena:
+                    var crater_size = 100.0
+
+                    var new_room = load("res://src/arena/procedural_arena.gd").Room.new(self.ball.x - crater_size/2, self.ball.y - crater_size/2, crater_size, crater_size)
+                    self.world.arena.rooms.append(new_room)
+
+                    if "events" in self.world:
+                        self.world.events.append({"type": "explosion", "data": {"x": self.ball.x, "y": self.ball.y, "radius": 50.0, "damage": 0.0, "color": "orange"}})
+            else:
+                self.ball.x = res[0]
+                self.ball.y = res[1]
+                if bounced_arena:
+                    bounced = true
         elif "width" in self.world and "height" in self.world:
             self.ball.x = max(radius, min(self.world.width - radius, self.ball.x))
             self.ball.y = max(radius, min(self.world.height - radius, self.ball.y))
@@ -47435,6 +47465,22 @@ func _update_skill_timer(delta: float):
             self.ball.invisibility_timer = invisibility_timer
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("invisibility_timer", invisibility_timer)
+
+    var breaching_booster_timer = 0.0
+    if "breaching_booster_timer" in self.ball:
+        breaching_booster_timer = float(self.ball.breaching_booster_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("breaching_booster_timer"):
+        breaching_booster_timer = self.ball.get_meta("breaching_booster_timer")
+
+    if breaching_booster_timer > 0:
+        breaching_booster_timer -= delta
+        if breaching_booster_timer < 0:
+            breaching_booster_timer = 0.0
+
+        if "breaching_booster_timer" in self.ball:
+            self.ball.breaching_booster_timer = breaching_booster_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("breaching_booster_timer", breaching_booster_timer)
 
     var stealth_booster_timer = 0.0
     if "stealth_booster_timer" in self.ball:
