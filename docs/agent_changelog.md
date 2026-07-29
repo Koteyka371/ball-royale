@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1641] Cryogenic Ammo — *2026-07-29 23:52:34 UTC*
+
+A booster that imbues a ball's attacks with cryogenic properties for a limited time, causing any target hit to leave behind temporary small ice patches where they walk.
+
+---
+
 ## [idea-1672] Thunderstorm Tornado Combo — *2026-07-29 23:52:29 UTC*
 
 A rare hybrid weather hazard that spawns when a thunderstorm and wind event overlap. It would pull balls like a tornado but also periodically strike them with chain lightning while they are caught in the outer vortex.
