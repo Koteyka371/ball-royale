@@ -53703,7 +53703,191 @@ class SupercellStormMode extends GameMode:
 													world.add_event("chain_lightning_arc", {"from_target": b_id, "to_target": other_id, "x": ox, "y": oy, "damage": 10.0})
 
 
+
+class MiniBlackHolesMode extends GameMode:
+	var spawn_timer = 5.0
+	var spawn_interval = 8.0
+	var pull_strength = 200.0
+
+	func _init():
+		super()
+		name = "Mini Black Holes"
+		description = "Periodically spawns mini black holes that pull in players and hazards."
+
+	func tick(world, balls, current_tick_or_delta = 0.016, optional_delta = null):
+		var delta = 0.016
+		if optional_delta != null:
+			delta = optional_delta
+			super.tick(world, balls, current_tick_or_delta, optional_delta)
+		else:
+			delta = current_tick_or_delta
+			if typeof(current_tick_or_delta) == TYPE_FLOAT:
+				super.tick(world, balls, delta)
+			else:
+				super.tick(world, balls, current_tick_or_delta, 0.016)
+
+		var arena_hazards = []
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			if not "hazards" in world.arena:
+				world.arena["hazards"] = []
+			arena_hazards = world.arena.hazards
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+			if not "hazards" in world.arena:
+				world.arena.hazards = []
+			arena_hazards = world.arena.hazards
+		else:
+			return
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+			var aw = 1000.0
+			var ah = 1000.0
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if "width" in world.arena: aw = world.arena.width
+				if "height" in world.arena: ah = world.arena.height
+			else:
+				if "width" in world.arena: aw = world.arena.get("width")
+				if "height" in world.arena: ah = world.arena.get("height")
+
+			var h = {
+				"id": "mini_bh_" + str(randi() % 100000),
+				"x": rand_range(200.0, aw - 200.0),
+				"y": rand_range(200.0, ah - 200.0),
+				"radius": 30.0,
+				"kind": "black_hole",
+				"damage": 5.0,
+				"active": true,
+				"is_mini_bh": true,
+				"duration": 5.0
+			}
+			arena_hazards.append(h)
+
+		var new_hazards = []
+		for h in arena_hazards:
+			var is_mini = false
+			if typeof(h) == TYPE_DICTIONARY and "is_mini_bh" in h:
+				is_mini = h.is_mini_bh
+			elif typeof(h) == TYPE_OBJECT and h.get("is_mini_bh") != null:
+				is_mini = h.get("is_mini_bh")
+
+			if is_mini:
+				var duration = 0.0
+				if typeof(h) == TYPE_DICTIONARY:
+					h.duration -= delta
+					duration = h.duration
+				else:
+					var old_d = h.get("duration")
+					if old_d != null:
+						h.set("duration", old_d - delta)
+						duration = h.get("duration")
+					else:
+						duration = 0.0
+
+				if duration <= 0:
+					continue
+
+				var hx = 0.0
+				var hy = 0.0
+				var h_id = null
+				if typeof(h) == TYPE_DICTIONARY:
+					hx = h.get("x", 0.0)
+					hy = h.get("y", 0.0)
+					if "id" in h: h_id = h.id
+				else:
+					hx = h.get("x")
+					hy = h.get("y")
+					if h.get("id") != null: h_id = h.get("id")
+
+				for b in balls:
+					var alive = true
+					if typeof(b) == TYPE_DICTIONARY and "alive" in b: alive = b.alive
+					elif typeof(b) == TYPE_OBJECT and b.get("alive") != null: alive = b.get("alive")
+					if not alive: continue
+
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						bx = b.get("x")
+						by = b.get("y")
+
+					var dx = hx - bx
+					var dy = hy - by
+					var dist_sq = dx*dx + dy*dy
+					if dist_sq > 0.0001:
+						var dist = sqrt(dist_sq)
+						var nx = dx / dist
+						var ny = dy / dist
+						var pull_x = nx * pull_strength * delta
+						var pull_y = ny * pull_strength * delta
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b.vx = b.get("vx", 0.0) + pull_x
+							b.vy = b.get("vy", 0.0) + pull_y
+						else:
+							if b.get("vx") != null: b.set("vx", b.get("vx") + pull_x)
+							if b.get("vy") != null: b.set("vy", b.get("vy") + pull_y)
+
+				for other_h in arena_hazards:
+					var other_id = null
+					var other_kind = ""
+					if typeof(other_h) == TYPE_DICTIONARY:
+						if "id" in other_h: other_id = other_h.id
+						if "kind" in other_h: other_kind = other_h.kind
+					elif typeof(other_h) == TYPE_OBJECT:
+						if other_h.get("id") != null: other_id = other_h.get("id")
+						if other_h.get("kind") != null: other_kind = other_h.get("kind")
+
+					if other_id != h_id and other_kind != "black_hole":
+						var ox = 0.0
+						var oy = 0.0
+						if typeof(other_h) == TYPE_DICTIONARY:
+							ox = other_h.get("x", 0.0)
+							oy = other_h.get("y", 0.0)
+						else:
+							if other_h.get("x") != null: ox = other_h.get("x")
+							if other_h.get("y") != null: oy = other_h.get("y")
+
+						var dx2 = hx - ox
+						var dy2 = hy - oy
+						var dist_sq2 = dx2*dx2 + dy2*dy2
+						if dist_sq2 > 0.0001:
+							var dist2 = sqrt(dist_sq2)
+							var nx2 = dx2 / dist2
+							var ny2 = dy2 / dist2
+							var pull_x2 = nx2 * pull_strength * delta
+							var pull_y2 = ny2 * pull_strength * delta
+
+							if typeof(other_h) == TYPE_DICTIONARY:
+								if "vx" in other_h and "vy" in other_h:
+									other_h.vx += pull_x2
+									other_h.vy += pull_y2
+								else:
+									other_h.x += pull_x2
+									other_h.y += pull_y2
+							else:
+								if other_h.get("vx") != null and other_h.get("vy") != null:
+									other_h.set("vx", other_h.get("vx") + pull_x2)
+									other_h.set("vy", other_h.get("vy") + pull_y2)
+								else:
+									if other_h.get("x") != null: other_h.set("x", other_h.get("x") + pull_x2)
+									if other_h.get("y") != null: other_h.set("y", other_h.get("y") + pull_y2)
+
+				new_hazards.append(h)
+			else:
+				new_hazards.append(h)
+
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			world.arena["hazards"] = new_hazards
+		else:
+			world.arena.set("hazards", new_hazards)
+
+
 var GAME_MODES = {
+	"mini_black_holes": MiniBlackHolesMode.new(),
 	"supercell_storm": SupercellStormMode.new(),
 	"wall_leapers": WallLeapersMode.new(),
 	"vision_reduction_event": VisionReductionEventMode.new(),

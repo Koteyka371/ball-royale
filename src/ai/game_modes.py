@@ -33573,7 +33573,119 @@ class SupercellStormMode(GameMode):
                                                     world.add_event("chain_lightning_arc", {"from_target": getattr(b, "id", None), "to_target": getattr(other, "id", None), "x": ox, "y": oy, "damage": 10.0})
 
 
+
+class MiniBlackHolesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mini Black Holes"
+        self.description = "Periodically spawns mini black holes that pull in players and hazards."
+        self.spawn_timer = 5.0
+        self.spawn_interval = 8.0
+        self.pull_strength = 200.0
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import random
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+
+            aw = getattr(world.arena, "width", 1000.0)
+            ah = getattr(world.arena, "height", 1000.0)
+            hx = random.uniform(200.0, aw - 200.0)
+            hy = random.uniform(200.0, ah - 200.0)
+
+            try:
+                from arena.procedural_arena import Hazard
+                h = Hazard(
+                    id=f"mini_bh_{random.randint(10000, 99999)}",
+                    x=hx, y=hy,
+                    radius=30.0,
+                    kind="black_hole",
+                    damage=5.0
+                )
+                h.is_mini_bh = True
+                h.duration = 5.0
+                world.arena.hazards.append(h)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self):
+                        pass
+                h = DummyHazard()
+                h.id = f"mini_bh_{random.randint(10000, 99999)}"
+                h.x = hx
+                h.y = hy
+                h.radius = 30.0
+                h.kind = "black_hole"
+                h.damage = 5.0
+                h.active = True
+                h.is_mini_bh = True
+                h.duration = 5.0
+                world.arena.hazards.append(h)
+
+        new_hazards = []
+        for h in world.arena.hazards:
+            if getattr(h, "is_mini_bh", False):
+                h.duration -= delta
+                if h.duration <= 0:
+                    continue
+
+                # Pull balls
+                for b in balls:
+                    if not getattr(b, "alive", True):
+                        continue
+                    dx = h.x - b.x
+                    dy = h.y - b.y
+                    dist_sq = dx*dx + dy*dy
+                    if dist_sq > 0.0001:
+                        dist = math.sqrt(dist_sq)
+                        nx = dx / dist
+                        ny = dy / dist
+                        pull_x = nx * self.pull_strength * delta
+                        pull_y = ny * self.pull_strength * delta
+                        if hasattr(b, "vx") and hasattr(b, "vy"):
+                            b.vx += pull_x
+                            b.vy += pull_y
+                        else:
+                            b.x += pull_x
+                            b.y += pull_y
+
+                # Pull hazards
+                for other_h in world.arena.hazards:
+                    if getattr(other_h, "id", None) != getattr(h, "id", None) and getattr(other_h, "kind", "") != "black_hole":
+                        hx_other = getattr(other_h, "x", 0.0)
+                        hy_other = getattr(other_h, "y", 0.0)
+                        dx_h = h.x - hx_other
+                        dy_h = h.y - hy_other
+                        dist_sq_h = dx_h*dx_h + dy_h*dy_h
+                        if dist_sq_h > 0.0001:
+                            dist_h = math.sqrt(dist_sq_h)
+                            nx_h = dx_h / dist_h
+                            ny_h = dy_h / dist_h
+                            pull_x_h = nx_h * self.pull_strength * delta
+                            pull_y_h = ny_h * self.pull_strength * delta
+
+                            if hasattr(other_h, "vx") and hasattr(other_h, "vy"):
+                                other_h.vx += pull_x_h
+                                other_h.vy += pull_y_h
+                            else:
+                                other_h.x = hx_other + pull_x_h
+                                other_h.y = hy_other + pull_y_h
+
+                new_hazards.append(h)
+            else:
+                new_hazards.append(h)
+
+        world.arena.hazards = new_hazards
+
+
 GAME_MODES = {
+    'mini_black_holes': MiniBlackHolesMode(),
     'supercell_storm': SupercellStormMode(),
     'ice_floor': IceFloorMode(),
     'vision_reduction_event': VisionReductionEventMode(),
