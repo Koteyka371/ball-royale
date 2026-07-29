@@ -17706,7 +17706,7 @@ class Action:
                 for e in nearby_enemies:
                     if hasattr(self, "_spawn_directed_particles"):
                         self._spawn_directed_particles(decoy, e, "tether_link")
-            elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced", "deploy_decoy_black_hole"]:
+            elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced", "deploy_decoy_black_hole", "deploy_decoy_emp"]:
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                 if active_decoys:
@@ -17788,6 +17788,8 @@ class Action:
 
                         if skill_name == "deploy_decoy_black_hole":
                             decoy.decoy_type = "black_hole"
+                        elif skill_name == "deploy_decoy_emp":
+                            decoy.decoy_type = "emp_decoy"
                         elif skill_name in ["deploy_decoy_flash", "deploy_decoy_advanced"]:
                             decoy.decoy_type = "flash"
                         elif getattr(self.ball, "ball_type", "") == "trickster":
