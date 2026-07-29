@@ -8086,7 +8086,7 @@ class Action:
                                     for other_hazard in self.world.arena.hazards:
                                         if other_hazard == hazard:
                                             continue
-                                        if getattr(other_hazard, "kind", "") in ["tornado", "local_tornado", "firenado", "poison_tornado"]:
+                                        if getattr(other_hazard, "kind", "") in ["tornado", "supercell_tornado", "local_tornado", "firenado", "poison_tornado"]:
                                             dx = hazard.x - other_hazard.x
                                             dy = hazard.y - other_hazard.y
                                             dist_sq = dx*dx + dy*dy
@@ -9330,15 +9330,15 @@ class Action:
                                 pull_strength = min(pull_strength, dist * 0.5) # Prevent overshooting
                                 self.ball.x += nx * pull_strength
                                 self.ball.y += ny * pull_strength
-                    elif hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal"):
+                    elif hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "supercell_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal"):
                         # Only update global state once per frame using the tick counter
                         current_tick = getattr(self.world, "tick", 0)
                         if not hasattr(hazard, "last_updated_tick") or hazard.last_updated_tick != current_tick:
                             hazard.last_updated_tick = current_tick
                             if not hasattr(hazard, "vx"):
 
-                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
-                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
+                                import random; hazard.vx = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
+                                hazard.vy = random.uniform(-100.0, 100.0) if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado", "portal", "teleporter", "one_way_teleporter", "swap_portal", "lightning_storm", "chaos_portal") else random.uniform(-10.0, 10.0)
                             if not hasattr(hazard, "lifetime"):
                                 hazard.lifetime = 0.0
                             hazard.lifetime += delta
@@ -9363,7 +9363,7 @@ class Action:
                                                 other.duration = 0.0
                                                 other.radius = 0.0
 
-                            if hazard.kind in ("tornado", "local_tornado"):
+                            if hazard.kind in ("tornado", "supercell_tornado", "local_tornado"):
                                 for other in getattr(self.world.arena, "hazards", []):
                                     if other is not hazard and getattr(other, "active", True):
                                         other_kind = getattr(other, "kind", "")
@@ -9412,7 +9412,7 @@ class Action:
                                                 b.y -= bny * push_strength * delta
 
                             # Pull balls once per frame
-                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                 for b in getattr(self.world, "balls", []):
                                     if getattr(b, "alive", False):
                                         bdx = hazard.x - b.x
@@ -9463,7 +9463,7 @@ class Action:
                                                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                                                     b.vx += effect_nx * slingshot_strength * delta * mod
                                                                     b.vy += effect_ny * slingshot_strength * delta * mod
-                                                if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                                                if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                                     # Wind physics: tangential orbital pull
                                                     tx, ty = -bny, bnx
                                                     orbital_strength = pull_strength * 1.5
@@ -9494,7 +9494,7 @@ class Action:
 
 
                             # Pull boosters once per frame
-                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado") and hasattr(self.world, "boosters"):
+                            if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado") and hasattr(self.world, "boosters"):
                                 for b in self.world.boosters:
                                     bdx = hazard.x - b.x
                                     bdy = hazard.y - b.y
@@ -9511,7 +9511,7 @@ class Action:
                                             bpull_strength *= 10.0
                                         b.x += bnx * bpull_strength
                                         b.y += bny * bpull_strength
-                                        if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                                        if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                             # Wind physics: tangential orbital pull
                                             tx, ty = -bny, bnx
                                             orbital_strength = bpull_strength * 1.5
@@ -9519,7 +9519,7 @@ class Action:
                                             b.y += ty * orbital_strength
 
                         # Ball specific logic
-                        if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                        if getattr(hazard, "duration", 1.0) > 0 and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                             dx = hazard.x - self.ball.x
                             dy = hazard.y - self.ball.y
                             dist_sq = dx * dx + dy * dy
@@ -9572,7 +9572,7 @@ class Action:
                                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                                     self.ball.vx += effect_nx * slingshot_strength * delta * mod
                                                     self.ball.vy += effect_ny * slingshot_strength * delta * mod
-                                if hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                                if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                                     # Wind physics: tangential orbital pull
                                     tx, ty = -ny, nx
                                     orbital_strength = pull_strength * 1.5
@@ -10665,7 +10665,7 @@ class Action:
                             if hasattr(self.ball, "skill_timer") and self.ball.skill_timer > 0:
                                 self.ball.skill_timer += delta * (1.0 - speed_mult)
                             continue
-                        elif hazard.kind in ("tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                        elif hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
                             if getattr(self.ball, "hazard_push_pull_immunity", False):
                                 continue
                             # If glider active, immunity to tornado pull/damage

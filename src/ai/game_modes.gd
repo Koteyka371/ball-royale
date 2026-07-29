@@ -53359,7 +53359,239 @@ class VisionReductionEventMode extends GameMode:
                     elif b.has_method("set_meta"):
                         b.set_meta("vision_reduction_applied", false)
 
+
+class SupercellStormMode extends GameMode:
+	var wind_timer: float = 20.0
+	var lightning_timer: float = 0.0
+
+	func _init():
+		super._init()
+		name = "Supercell Storm"
+		description = "A rare hybrid weather hazard that spawns when a thunderstorm and wind event overlap. It pulls balls like a tornado but also periodically strikes them with chain lightning while they are caught in the outer vortex."
+		weather = "thunderstorm"
+
+	func start(world, balls):
+		super.start(world, balls)
+		if world != null:
+			if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena["weather"] = weather
+					arena["is_night"] = true
+				elif arena != null:
+					arena.set("weather", weather)
+					arena.set("is_night", true)
+			elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["weather"] = weather
+					world.arena["is_night"] = true
+				else:
+					world.arena.set("weather", weather)
+					world.arena.set("is_night", true)
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		wind_timer -= delta
+		if wind_timer <= 0.0:
+			wind_timer = randf_range(15.0, 30.0)
+
+			var arena_w = 800.0
+			var arena_h = 600.0
+			if world != null:
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_DICTIONARY:
+						arena_w = arena.get("width", 800.0)
+						arena_h = arena.get("height", 600.0)
+					elif arena != null:
+						if "width" in arena: arena_w = arena.width
+						if "height" in arena: arena_h = arena.height
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						arena_w = world.arena.get("width", 800.0)
+						arena_h = world.arena.get("height", 600.0)
+					else:
+						if "width" in world.arena: arena_w = world.arena.width
+						if "height" in world.arena: arena_h = world.arena.height
+
+			var x = randf_range(200.0, arena_w - 200.0)
+			var y = randf_range(200.0, arena_h - 200.0)
+			var tornado_id = randi() % 900000 + 100000
+
+			var Hazard = load("res://src/arena/procedural_arena.gd").Hazard
+			var tornado = Hazard.new(tornado_id, x, y, 100.0, "supercell_tornado", 0.0)
+			tornado.set_meta("vx", randf_range(-150.0, 150.0))
+			tornado.set_meta("vy", randf_range(-150.0, 150.0))
+			tornado.set_meta("duration", randf_range(5.0, 10.0))
+
+			if world != null:
+				var target_arena = null
+				if typeof(world) == TYPE_DICTIONARY:
+					target_arena = world.get("arena")
+				else:
+					target_arena = world.arena
+
+				if target_arena != null:
+					if typeof(target_arena) == TYPE_DICTIONARY:
+						if not target_arena.has("hazards"):
+							target_arena["hazards"] = []
+						target_arena["hazards"].append(tornado)
+					else:
+						if "hazards" in target_arena:
+							target_arena.hazards.append(tornado)
+
+				if typeof(world) == TYPE_DICTIONARY and "add_event" in world:
+					world.add_event.call("supercell_tornado_spawn", {"message": "A Supercell Tornado has formed!"})
+				elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+					world.add_event("supercell_tornado_spawn", {"message": "A Supercell Tornado has formed!"})
+
+		lightning_timer -= delta
+		if lightning_timer <= 0.0:
+			lightning_timer = 1.0
+
+			var hazards_list = []
+			if world != null:
+				var target_arena = null
+				if typeof(world) == TYPE_DICTIONARY:
+					target_arena = world.get("arena")
+				else:
+					target_arena = world.arena
+
+				if target_arena != null:
+					if typeof(target_arena) == TYPE_DICTIONARY:
+						hazards_list = target_arena.get("hazards", [])
+					else:
+						if "hazards" in target_arena:
+							hazards_list = target_arena.hazards
+
+			for h in hazards_list:
+				var is_active = true
+				if typeof(h) == TYPE_DICTIONARY:
+					is_active = h.get("active", true)
+				else:
+					is_active = h.get("active") if h.get("active") != null else (h.get_meta("active") if h.has_meta("active") else true)
+
+				var h_kind = ""
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+				else:
+					h_kind = h.get("kind") if h.get("kind") != null else (h.get_meta("kind") if h.has_meta("kind") else "")
+
+				if h_kind == "supercell_tornado" and is_active:
+					var hx = 0.0
+					var hy = 0.0
+					var hradius = 100.0
+					if typeof(h) == TYPE_DICTIONARY:
+						hx = h.get("x", 0.0)
+						hy = h.get("y", 0.0)
+						hradius = h.get("radius", 100.0)
+					else:
+						hx = h.get("x") if h.get("x") != null else (h.get_meta("x") if h.has_meta("x") else 0.0)
+						hy = h.get("y") if h.get("y") != null else (h.get_meta("y") if h.has_meta("y") else 0.0)
+						hradius = h.get("radius") if h.get("radius") != null else (h.get_meta("radius") if h.has_meta("radius") else 100.0)
+
+					var inner_radius = hradius * 0.3
+
+					for b in balls:
+						var b_alive = false
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+						else:
+							b_alive = b.get("alive") if b.get("alive") != null else false
+
+						var b_type = null
+						if typeof(b) == TYPE_DICTIONARY:
+							b_type = b.get("ball_type")
+						else:
+							b_type = b.get("ball_type") if b.get("ball_type") != null else null
+
+						if b_alive and b_type != "spectator":
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.get("x") if b.get("x") != null else 0.0
+								by = b.get("y") if b.get("y") != null else 0.0
+
+							var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+							if dist_sq > inner_radius * inner_radius and dist_sq <= hradius * hradius:
+								if typeof(b) == TYPE_DICTIONARY:
+									if "hp" in b:
+										b["hp"] -= 20.0
+								else:
+									if b.has_method("take_damage"):
+										b.take_damage(20.0)
+									else:
+										b.hp -= 20.0
+
+								var b_id = null
+								if typeof(b) == TYPE_DICTIONARY:
+									b_id = b.get("id")
+								else:
+									b_id = b.get("id") if b.get("id") != null else null
+
+								if world != null:
+									if typeof(world) == TYPE_DICTIONARY and "add_event" in world:
+										world.add_event.call("chain_lightning_strike", {"target": b_id, "x": bx, "y": by, "damage": 20.0})
+									elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+										world.add_event("chain_lightning_strike", {"target": b_id, "x": bx, "y": by, "damage": 20.0})
+
+								# apply chain lightning to nearby
+								for other in balls:
+									if other == b:
+										continue
+
+									var other_alive = false
+									if typeof(other) == TYPE_DICTIONARY:
+										other_alive = other.get("alive", false)
+									else:
+										other_alive = other.get("alive") if other.get("alive") != null else false
+
+									var other_type = null
+									if typeof(other) == TYPE_DICTIONARY:
+										other_type = other.get("ball_type")
+									else:
+										other_type = other.get("ball_type") if other.get("ball_type") != null else null
+
+									if other_alive and other_type != "spectator":
+										var ox = 0.0
+										var oy = 0.0
+										if typeof(other) == TYPE_DICTIONARY:
+											ox = other.get("x", 0.0)
+											oy = other.get("y", 0.0)
+										else:
+											ox = other.get("x") if other.get("x") != null else 0.0
+											oy = other.get("y") if other.get("y") != null else 0.0
+
+										var dist_to_other = (ox - bx) * (ox - bx) + (oy - by) * (oy - by)
+										if dist_to_other <= 2500.0:
+											if typeof(other) == TYPE_DICTIONARY:
+												if "hp" in other:
+													other["hp"] -= 10.0
+											else:
+												if other.has_method("take_damage"):
+													other.take_damage(10.0)
+												else:
+													other.hp -= 10.0
+
+											var other_id = null
+											if typeof(other) == TYPE_DICTIONARY:
+												other_id = other.get("id")
+											else:
+												other_id = other.get("id") if other.get("id") != null else null
+
+											if world != null:
+												if typeof(world) == TYPE_DICTIONARY and "add_event" in world:
+													world.add_event.call("chain_lightning_arc", {"from_target": b_id, "to_target": other_id, "x": ox, "y": oy, "damage": 10.0})
+												elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
+													world.add_event("chain_lightning_arc", {"from_target": b_id, "to_target": other_id, "x": ox, "y": oy, "damage": 10.0})
+
+
 var GAME_MODES = {
+	"supercell_storm": SupercellStormMode.new(),
 	"wall_leapers": WallLeapersMode.new(),
 	"vision_reduction_event": VisionReductionEventMode.new(),
 	"networked_black_holes": NetworkedBlackHolesMode.new(),
