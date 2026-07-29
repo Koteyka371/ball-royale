@@ -33533,6 +33533,27 @@ class SupercellStormMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("supercell_tornado_spawn", {"message": "A Supercell Tornado has formed!"})
 
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "supercell_tornado" and getattr(h, "active", True):
+                    hx = getattr(h, "x", 0.0)
+                    hy = getattr(h, "y", 0.0)
+                    hradius = getattr(h, "radius", 100.0)
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            bx = getattr(b, "x", 0.0)
+                            by = getattr(b, "y", 0.0)
+                            dist_sq = (bx - hx)**2 + (by - hy)**2
+                            if dist_sq < hradius**2 and dist_sq > 0.0001:
+                                dist = math.sqrt(dist_sq)
+                                dx = hx - bx
+                                dy = hy - by
+                                pull_strength = 150.0 * delta
+                                if hasattr(b, "vx"):
+                                    b.vx += (dx / dist) * pull_strength
+                                if hasattr(b, "vy"):
+                                    b.vy += (dy / dist) * pull_strength
         self.lightning_timer -= delta
         if self.lightning_timer <= 0.0:
             self.lightning_timer = 1.0 # strike every 1 sec

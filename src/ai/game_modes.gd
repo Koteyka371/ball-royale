@@ -53559,6 +53559,68 @@ class SupercellStormMode extends GameMode:
 				elif typeof(world) != TYPE_DICTIONARY and world.has_method("add_event"):
 					world.add_event("supercell_tornado_spawn", {"message": "A Supercell Tornado has formed!"})
 
+		if world != null:
+			var target_arena = null
+			if typeof(world) == TYPE_DICTIONARY:
+				target_arena = world.get("arena")
+			else:
+				target_arena = world.arena
+			if target_arena != null:
+				var hazards_list = []
+				if typeof(target_arena) == TYPE_DICTIONARY:
+					hazards_list = target_arena.get("hazards", [])
+				else:
+					if "hazards" in target_arena:
+						hazards_list = target_arena.hazards
+				for h in hazards_list:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY: h_kind = h.get("kind", "")
+					else: h_kind = h.get("kind") if h.get("kind") != null else (h.get_meta("kind") if h.has_meta("kind") else "")
+					var h_active = true
+					if typeof(h) == TYPE_DICTIONARY: h_active = h.get("active", true)
+					else: h_active = h.get("active") if h.get("active") != null else (h.get_meta("active") if h.has_meta("active") else true)
+					if h_kind == "supercell_tornado" and h_active:
+						var hx = 0.0
+						var hy = 0.0
+						var hradius = 100.0
+						if typeof(h) == TYPE_DICTIONARY:
+							hx = h.get("x", 0.0)
+							hy = h.get("y", 0.0)
+							hradius = h.get("radius", 100.0)
+						else:
+							hx = h.get("x") if h.get("x") != null else (h.get_meta("x") if h.has_meta("x") else 0.0)
+							hy = h.get("y") if h.get("y") != null else (h.get_meta("y") if h.has_meta("y") else 0.0)
+							hradius = h.get("radius") if h.get("radius") != null else (h.get_meta("radius") if h.has_meta("radius") else 100.0)
+						for b in balls:
+							var b_alive = false
+							if typeof(b) == TYPE_DICTIONARY: b_alive = b.get("alive", false)
+							else: b_alive = b.get("alive") if b.get("alive") != null else (b.get_meta("alive") if b.has_meta("alive") else false)
+							var b_type = null
+							if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type")
+							else: b_type = b.get("ball_type") if b.get("ball_type") != null else (b.get_meta("ball_type") if b.has_meta("ball_type") else null)
+							if b_alive and b_type != "spectator":
+								var bx = 0.0
+								var by = 0.0
+								if typeof(b) == TYPE_DICTIONARY:
+									bx = b.get("x", 0.0)
+									by = b.get("y", 0.0)
+								else:
+									bx = b.get("x") if b.get("x") != null else (b.get_meta("x") if b.has_meta("x") else 0.0)
+									by = b.get("y") if b.get("y") != null else (b.get_meta("y") if b.has_meta("y") else 0.0)
+								var dx = hx - bx
+								var dy = hy - by
+								var dist_sq = dx*dx + dy*dy
+								if dist_sq < hradius*hradius and dist_sq > 0.0001:
+									var dist = sqrt(dist_sq)
+									var pull_strength = 150.0 * delta
+									if typeof(b) == TYPE_DICTIONARY:
+										if b.has("vx"): b["vx"] += (dx / dist) * pull_strength
+										if b.has("vy"): b["vy"] += (dy / dist) * pull_strength
+									else:
+										if "vx" in b: b.vx += (dx / dist) * pull_strength
+										elif b.has_meta("vx"): b.set_meta("vx", b.get_meta("vx") + (dx / dist) * pull_strength)
+										if "vy" in b: b.vy += (dy / dist) * pull_strength
+										elif b.has_meta("vy"): b.set_meta("vy", b.get_meta("vy") + (dy / dist) * pull_strength)
 		lightning_timer -= delta
 		if lightning_timer <= 0.0:
 			lightning_timer = 1.0
