@@ -19157,6 +19157,23 @@ func execute(strategy: String, delta: float):
                                                 elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("stamina_booster_timer", 0.0)
                                 if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard: hazard.duration = 0.0
+                            elif trap_variant == "emp_trap":
+                                var weather_emp = ""
+                                if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].has("weather"): weather_emp = str(self.world["arena"]["weather"])
+                                elif typeof(self.world) == TYPE_OBJECT and self.world.get("arena") != null and "weather" in self.world.get("arena"): weather_emp = str(self.world.get("arena").weather)
+
+                                if weather_emp in ["rain", "heavy_rain", "monsoon", "thunderstorm"]:
+                                    if typeof(hazard) == TYPE_DICTIONARY:
+                                        hazard["duration"] = 0.0
+                                    elif typeof(hazard) == TYPE_OBJECT:
+                                        if "duration" in hazard: hazard.duration = 0.0
+
+                                    if "events" in self.world:
+                                        self.world.events.append({"type": "trap_short_circuit", "data": {"id": hazard.get("id") if typeof(hazard) == TYPE_DICTIONARY else (hazard.id if "id" in hazard else null), "x": hazard.x, "y": hazard.y}})
+                                    elif self.world.has_method("add_event"):
+                                        self.world.add_event("trap_short_circuit", {"id": hazard.get("id") if typeof(hazard) == TYPE_DICTIONARY else (hazard.id if "id" in hazard else null), "x": hazard.x, "y": hazard.y})
+                                else:
+                                    pass # Absorb damage logic handled elsewhere
                             elif trap_variant == "emp":
                                 var is_emped = false
                                 if "is_emped" in self.ball:
@@ -24584,6 +24601,12 @@ func execute(strategy: String, delta: float):
                 elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic_wall = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                 if cosmetic_wall != "hover_boots":
                     var dmg = 250.0
+                    var weather_val = ""
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].has("weather"): weather_val = str(self.world["arena"]["weather"])
+                    elif typeof(self.world) == TYPE_OBJECT and self.world.get("arena") != null and "weather" in self.world.get("arena"): weather_val = str(self.world.get("arena").weather)
+
+                    if weather_val in ["snow", "blizzard"]:
+                        dmg *= 0.5
                     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                         self.ball.set_meta("is_bleeding", true)
                     elif typeof(self.ball) == TYPE_DICTIONARY:

@@ -7896,6 +7896,12 @@ class Action:
                                             pass
                     elif hazard.kind == "electric_beam_trap":
                         hazard_is_active = getattr(hazard, "active", True)
+                        if getattr(self.world.arena, "weather", "") in ["rain", "heavy_rain", "monsoon", "thunderstorm"]:
+                            hazard.duration = 0.0
+                            hazard_is_active = False
+                            if hasattr(self.world, "add_event"):
+                                self.world.add_event("trap_short_circuit", {"id": getattr(hazard, "id", None), "x": hazard.x, "y": hazard.y})
+
                         hazard_team = getattr(hazard, "team", "")
                         my_team = getattr(self.ball, "team", "")
 
@@ -9507,10 +9513,15 @@ class Action:
                                         if hasattr(self.ball, "damage_multiplier") and self.ball.damage_multiplier > 1.0:
                                             self.ball.damage_multiplier = 1.0
                                 elif trap_variant == "emp_trap":
-                                    # Absorbs electrical damage, then explodes
-                                    # Handled in chain lightning logic; but when stepped on normally, just slow slightly or do nothing until charged
-                                    self.ball.x = old_x
-                                    self.ball.y = old_y
+                                    if getattr(self.world.arena, "weather", "") in ["rain", "heavy_rain", "monsoon", "thunderstorm"]:
+                                        hazard.duration = 0.0
+                                        if hasattr(self.world, "add_event"):
+                                            self.world.add_event("trap_short_circuit", {"id": getattr(hazard, "id", None), "x": hazard.x, "y": hazard.y})
+                                    else:
+                                        # Absorbs electrical damage, then explodes
+                                        # Handled in chain lightning logic; but when stepped on normally, just slow slightly or do nothing until charged
+                                        self.ball.x = old_x
+                                        self.ball.y = old_y
                                 elif trap_variant == "nullifier":
                                     # Nullifier Trap: disables all shields and buffs of all players in a huge radius
                                     if hasattr(self.world, "balls"):
@@ -12178,6 +12189,8 @@ class Action:
                 elif wall_state == "spikes":
                     if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
                         damage = 250.0
+                        if getattr(self.world.arena, "weather", "") in ["snow", "blizzard"]:
+                            damage *= 0.5
                         setattr(self.ball, "is_bleeding", True)
 
                         if hasattr(self.ball, "take_damage"):
