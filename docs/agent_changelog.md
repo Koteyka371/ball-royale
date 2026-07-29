@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1637] Cosmic string — *2026-07-29 00:05:54 UTC*
+
+A line of intense gravity pulls balls along a specific path.
+
+---
+
 ## [idea-1659] Relay Race Mode — *2026-07-28 23:56:57 UTC*
 
 Players can only control one ball at a time in a squad. When the active ball dies, the next one spawns in with inherited speed and temporary invulnerability.
