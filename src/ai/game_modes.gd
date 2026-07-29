@@ -68796,3 +68796,84 @@ class SquadRelayMode extends GameMode:
 							next_ball.set_meta("intangible_timer", 2.0)
 
 GAME_MODES["squad_relay"] = SquadRelayMode.new()
+
+class TeleportingSafeZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 200.0
+	var teleport_timer: float = 0.0
+	var teleport_interval: float = 10.0
+	var outside_damage_per_second: float = 15.0
+
+	func _init():
+		pass
+		name = "Teleporting Safe Zone"
+		description = "A safe zone that randomly teleports around the map every 10 seconds, forcing players to constantly adapt their positioning to stay alive."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		teleport_timer = 0.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		teleport_timer += delta
+
+		if teleport_timer >= teleport_interval:
+			teleport_timer = 0.0
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+			if world.get("arena") != null:
+				arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+				arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+			var margin = zone_radius
+			var safe_margin_x = min(margin, arena_width / 2.0)
+			var safe_margin_y = min(margin, arena_height / 2.0)
+			zone_x = randf_range(safe_margin_x, arena_width - safe_margin_x)
+			zone_y = randf_range(safe_margin_y, arena_height - safe_margin_y)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("zone_teleport", {"message": "The safe zone has teleported!"})
+
+		var damage = outside_damage_per_second * delta
+
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				if not b.get("alive") or b.get("ball_type") == "spectator":
+					continue
+
+				var dx = b.x - zone_x
+				var dy = b.y - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > zone_radius:
+					b.hp -= damage
+					if b.hp <= 0:
+						b.hp = 0
+						b.alive = false
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("kill", {"killer": "safe_zone", "victim": b.get("id")})
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", false) or b.get("ball_type") == "spectator":
+					continue
+
+				var dx = b.get("x", 0.0) - zone_x
+				var dy = b.get("y", 0.0) - zone_y
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > zone_radius:
+					b["hp"] = b.get("hp", 100) - damage
+					if b["hp"] <= 0:
+						b["hp"] = 0
+						b["alive"] = false
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("kill", {"killer": "safe_zone", "victim": b.get("id")})
+
+GAME_MODES["teleporting_safe_zone"] = TeleportingSafeZoneMode.new()
