@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1639] Supernova Powerup — *2026-07-29 01:49:20 UTC*
+
+A rare drop that causes the collecting ball to explode upon receiving fatal damage instead of dying immediately. The explosion damages and knocks back all nearby balls, and the player is resurrected with 1 HP and brief invulnerability.
+
+---
+
 ## [idea-1663] Sticky Mine Traps — *2026-07-29 01:11:01 UTC*
 
 New hazard type that attaches to walls. If a ball gets too close, it leaps onto the ball and slows it down before exploding.
