@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1681] Curling Mode — *2026-07-29 09:34:37 UTC*
+
+A mode where balls have to land as close to a target as possible with ultra-low friction.
+
+---
+
 ## [idea-1661] Weather Event: Eclipse — *2026-07-29 08:59:01 UTC*
 
 A new procedural arena event that reduces the vision range of all entities by 50% for 30 seconds. Players must rely on proximity and sound cues, while stealth items become exceptionally powerful. Torches or flares could counter this effect.
