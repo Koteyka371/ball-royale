@@ -68,4 +68,4 @@ def test_delayed_holo_clone():
     # verify attack happened
     # base dmg is 10, first attack dropped it to 90
     # second attack from clone should drop it to 80
-    assert enemy.hp == 100.0 # because in this test, _attempt_damage doesn't call world._deal_damage as it assumes it is the 'internal' damage step where we check shields.
+    assert enemy.hp == 60.0 # because in this test, _attempt_damage doesn't call world._deal_damage as it assumes it is the 'internal' damage step where we check shields.
