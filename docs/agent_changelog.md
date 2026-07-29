@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1664] Quantum Entanglement Chain Mode — *2026-07-29 01:49:25 UTC*
+
+Players are paired randomly using an invisible quantum thread. If one player in the pair takes damage or collects a booster, a percentage of that effect (positive or negative) is transferred to the other player. If the thread breaks by them moving too far apart, both suffer a temporary stun and debuff.
+
+---
+
 ## [idea-1639] Supernova Powerup — *2026-07-29 01:49:20 UTC*
 
 A rare drop that causes the collecting ball to explode upon receiving fatal damage instead of dying immediately. The explosion damages and knocks back all nearby balls, and the player is resurrected with 1 HP and brief invulnerability.
