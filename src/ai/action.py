@@ -5665,32 +5665,34 @@ class Action:
                 self.ball.color = getattr(self.ball, "original_color", getattr(self.ball, "color", "gray"))
                 self.ball.label = getattr(self.ball, 'original_name', getattr(self.ball, 'label', 'Impostor'))
 
-                # Deal explosion damage to enemies (using original team)
-                if hasattr(self, "_spawn_skill_particles"):
-                    self._spawn_skill_particles("impostor_explosion")
-                if hasattr(self.world, "events"):
-                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0, 'color': 'gray'}})
+                # Explosion damage only if they were an impostor using skill (for chameleon_item they shouldn't explode, but we can reuse it or skip it. Let's add a flag `disguise_explode`)
+                if getattr(self.ball, "disguise_explode", True):
+                    # Deal explosion damage to enemies (using original team)
+                    if hasattr(self, "_spawn_skill_particles"):
+                        self._spawn_skill_particles("impostor_explosion")
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': self.ball.x, 'y': self.ball.y, 'radius': 60.0, 'color': 'gray'}})
 
-                if hasattr(self.world, "balls"):
-                    for b in getattr(self.world, "balls", []):
-                        if getattr(b, "alive", True) and getattr(b, "team", "") != self.ball.team and b.id != self.ball.id:
-                            dx = b.x - self.ball.x
-                            dy = b.y - self.ball.y
-                            dist = __import__('math').sqrt(dx*dx + dy*dy)
-                            if dist <= 60.0:
-                                if hasattr(b, "take_damage"):
-                                    b.take_damage(30.0)
-                                else:
-                                    b.hp -= 30.0
-                                    if b.hp <= 0:
-                                        b.alive = False
-                                # knockback
-                                if dist > 0 and hasattr(b, "vx") and hasattr(b, "vy"):
-                                    nx = dx / dist
-                                    ny = dy / dist
-                                    force = 500.0
-                                    b.vx += nx * force * delta
-                                    b.vy += ny * force * delta
+                    if hasattr(self.world, "balls"):
+                        for b in getattr(self.world, "balls", []):
+                            if getattr(b, "alive", True) and getattr(b, "team", "") != self.ball.team and getattr(b, "id", None) != getattr(self.ball, "id", None):
+                                dx = b.x - self.ball.x
+                                dy = b.y - self.ball.y
+                                dist = __import__('math').sqrt(dx*dx + dy*dy)
+                                if dist <= 60.0:
+                                    if hasattr(b, "take_damage"):
+                                        b.take_damage(30.0)
+                                    else:
+                                        b.hp -= 30.0
+                                        if b.hp <= 0:
+                                            b.alive = False
+                                    # knockback
+                                    if dist > 0 and hasattr(b, "vx") and hasattr(b, "vy"):
+                                        nx = dx / dist
+                                        ny = dy / dist
+                                        force = 500.0
+                                        b.vx += nx * force * delta
+                                        b.vy += ny * force * delta
 
         if getattr(self.ball, "is_mimic_clone", False) and getattr(self.ball, "alive", True):
             owner_id = getattr(self.ball, "mimic_owner", None)
@@ -14126,7 +14128,12 @@ class Action:
         import random
         boosters = self._get_boosters()
         if boosters:
-            # Check for phylactery_item
+            def get_bx(b_obj):
+                return b_obj.get("x", 0) if isinstance(b_obj, dict) else getattr(b_obj, "x", 0)
+            def get_by(b_obj):
+                return b_obj.get("y", 0) if isinstance(b_obj, dict) else getattr(b_obj, "y", 0)
+
+            # Check for phylactery_item and chameleon_item
             for b in boosters:
                 if getattr(b, "kind", "") == "phylactery_item" and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
                     self.ball.phylactery_active = True
@@ -14135,6 +14142,38 @@ class Action:
                         self.world.boosters.remove(b)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                         self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "chameleon_item":
+                    dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        # Find nearest hazard or enemy
+                        candidates = []
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                            for h in self.world.arena.hazards:
+                                if getattr(h, "active", True):
+                                    candidates.append(h)
+                        for e in self._get_enemies():
+                            candidates.append(e)
+
+                        if candidates:
+                            closest = min(candidates, key=lambda c: (get_bx(c) - self.ball.x)**2 + (get_by(c) - self.ball.y)**2)
+
+                            self.ball.original_team = getattr(self.ball, "team", "")
+                            self.ball.original_color = getattr(self.ball, "color", "gray")
+                            self.ball.original_name = getattr(self.ball, 'name', getattr(self.ball, 'label', 'Impostor'))
+
+                            self.ball.team = getattr(closest, "team", getattr(closest, "ball_type", getattr(closest, "kind", getattr(closest, "BALL_TYPE", ""))))
+                            self.ball.color = getattr(closest, "color", getattr(closest, "color_hex", "gray"))
+                            self.ball.label = getattr(closest, 'name', getattr(closest, 'label', getattr(closest, 'kind', 'Hazard')))
+                            self.ball.is_disguised = True
+                            self.ball.disguise_explode = False
+                            self.ball.disguise_timer = 10.0
+
+                            b.active = False
+                            if hasattr(self.world, "boosters") and b in self.world.boosters:
+                                self.world.boosters.remove(b)
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(b)
+
             # Check for nearby enemies to interrupt collection
             enemies = self._get_enemies()
             ball_radius = getattr(self.ball, "radius", 10.0)
@@ -14152,10 +14191,8 @@ class Action:
 
 
 
-            def get_bx(b_obj):
-                return b_obj.get("x", 0) if isinstance(b_obj, dict) else getattr(b_obj, "x", 0)
-            def get_by(b_obj):
-                return b_obj.get("y", 0) if isinstance(b_obj, dict) else getattr(b_obj, "y", 0)
+            if not boosters:
+                return
 
             nearest = min(boosters, key=lambda b: (get_bx(b) - self.ball.x) ** 2 + (get_by(b) - self.ball.y) ** 2)
             nx_target = get_bx(nearest)
