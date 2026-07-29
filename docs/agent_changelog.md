@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1625] Bumper Shield Integration — *2026-07-29 03:28:16 UTC*
+
+If a player collects a bumper synergy booster while also having an active kinetic shield, the shield converts bumper impact energy into bonus shield capacity instead of speed boosts, turning them into a heavily armored juggernaut.
+
+---
+
 ## [idea-1652] Windstorm Mutator — *2026-07-29 03:10:11 UTC*
 
 A mutator where wind constantly pushes all balls to a random side of the arena.
