@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1651] Chameleon Skin Item — *2026-07-29 08:06:21 UTC*
+
+An item that changes your appearance to match the nearest hazard or enemy, tricking opponents or making it harder to track you visually.
+
+---
+
 ## [idea-1528] Battering Ram Booster — *2026-07-29 07:51:27 UTC*
 
 A booster that temporarily gives any ball the ability to instantly break walls if traveling fast enough.

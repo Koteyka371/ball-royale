@@ -28258,7 +28258,7 @@
     },
     {
       "id": "idea-1651",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Chameleon Skin Item",
@@ -41330,6 +41330,23 @@
         "src/arena/make_territory_hazards_friendly_in_clan_war.py",
         "src/arena/make_territory_hazards_friendly_in_clan_war.gd",
         "tests/test_make_territory_hazards_friendly_in_clan_war.py"
+      ],
+      "acceptance": [
+        "Feature implemented successfully",
+        "Tests pass"
+      ]
+    },
+    {
+      "id": "idea-2419",
+      "status": "todo",
+      "area": "innovation",
+      "risk": "medium",
+      "title": "Breaching Booster",
+      "description": "A booster that allows a ball traveling very fast to instantly break through procedural arena walls and rooms upon impact, creating a new crater room.",
+      "allowed_paths": [
+        "src/ai/breaching_booster.py",
+        "src/ai/breaching_booster.gd",
+        "tests/test_breaching_booster.py"
       ],
       "acceptance": [
         "Feature implemented successfully",
