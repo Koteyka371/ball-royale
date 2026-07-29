@@ -25934,6 +25934,7 @@ class StationaryTurretsMode(GameMode):
             self.attack_range = 300.0
             self.damage = 15.0
             self.kind = "capture_turret"
+            self.hp = 100.0
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -25952,7 +25953,28 @@ class StationaryTurretsMode(GameMode):
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                 world.arena.hazards.append(new_turret)
 
+
+        alive_turrets = []
         for t in self.turrets:
+            if getattr(t, "hp", 100.0) <= 0:
+                if hasattr(world, "events"):
+                    world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": t.x, "y": t.y, "radius": 100.0}})
+                    # Deal damage to nearby balls
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            bx, by = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                            dist = ((bx - t.x)**2 + (by - t.y)**2)**0.5
+                            if dist <= 100.0:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(50.0)
+                                else:
+                                    b.hp = getattr(b, "hp", 100.0) - 50.0
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    if t in world.arena.hazards:
+                        world.arena.hazards.remove(t)
+                continue
+            alive_turrets.append(t)
+
             teams_in_radius = set()
             for b in balls:
                 if not getattr(b, "alive", False): continue
@@ -25998,6 +26020,8 @@ class StationaryTurretsMode(GameMode):
                             nearest_enemy.hp = getattr(nearest_enemy, "hp", 100) - t.damage
                         if hasattr(world, "events"):
                             world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": getattr(nearest_enemy, "x", 0.0), "target_y": getattr(nearest_enemy, "y", 0.0)})
+
+        self.turrets = alive_turrets
 
 class SacrificeAltarMode(GameMode):
     def __init__(self):
