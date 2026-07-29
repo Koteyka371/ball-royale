@@ -13914,6 +13914,13 @@ func execute(strategy: String, delta: float):
                     radius = 300.0
 
                 if resonance:
+                    if world != null and "events" in world:
+                        world.events.append({"type": "visual_effect", "data": {"type": "resonance_chain_explosion", "x": b.x, "y": b.y, "radius": 400.0}})
+                else:
+                    if world != null and "events" in world:
+                        world.events.append({"type": "visual_effect", "data": {"type": "decoy_explosion", "x": b.x, "y": b.y, "radius": radius}})
+
+                if resonance:
                     radius = 400.0
                     explosion_damage = 250.0
                 elif simultaneous:
@@ -14094,8 +14101,24 @@ func execute(strategy: String, delta: float):
                                             if has_rearm_boost:
                                                 actual_damage *= 1.25
 
-                                            if "hp" in other:
-                                                other.hp -= actual_damage
+                                            if resonance:
+                                                if "hp" in other:
+                                                    other.hp -= actual_damage
+                                                elif other.has_method("set_meta") and other.has_meta("hp"):
+                                                    other.set_meta("hp", other.get_meta("hp") - actual_damage)
+
+                                                var pull_dist = dist
+                                                if pull_dist > 0.1:
+                                                    var pull_force = 200.0 * (1.0 - pull_dist / radius)
+                                                    var nx = (b.x - other.x) / pull_dist
+                                                    var ny = (b.y - other.y) / pull_dist
+                                                    if "x" in other: other.x += nx * pull_force
+                                                    elif other.has_method("set_meta"): other.set_meta("x", other.get_meta("x") + nx * pull_force)
+                                                    if "y" in other: other.y += ny * pull_force
+                                                    elif other.has_method("set_meta"): other.set_meta("y", other.get_meta("y") + ny * pull_force)
+                                            else:
+                                                if "hp" in other:
+                                                    other.hp -= actual_damage
 
                                             var b_prox = false
                                             if "proximity_detonated" in b and b.proximity_detonated: b_prox = true
@@ -14120,8 +14143,24 @@ func execute(strategy: String, delta: float):
                                             if has_rearm_boost2:
                                                 actual_damage2 *= 1.25
 
-                                            if "hp" in other:
-                                                other.hp -= actual_damage2
+                                            if resonance:
+                                                if "hp" in other:
+                                                    other.hp -= actual_damage2
+                                                elif other.has_method("set_meta") and other.has_meta("hp"):
+                                                    other.set_meta("hp", other.get_meta("hp") - actual_damage2)
+
+                                                var pull_dist2 = dist
+                                                if pull_dist2 > 0.1:
+                                                    var pull_force2 = 200.0 * (1.0 - pull_dist2 / radius)
+                                                    var nx2 = (b.x - other.x) / pull_dist2
+                                                    var ny2 = (b.y - other.y) / pull_dist2
+                                                    if "x" in other: other.x += nx2 * pull_force2
+                                                    elif other.has_method("set_meta"): other.set_meta("x", other.get_meta("x") + nx2 * pull_force2)
+                                                    if "y" in other: other.y += ny2 * pull_force2
+                                                    elif other.has_method("set_meta"): other.set_meta("y", other.get_meta("y") + ny2 * pull_force2)
+                                            else:
+                                                if "hp" in other:
+                                                    other.hp -= actual_damage2
 
                                             var b_prox2 = false
                                             if "proximity_detonated" in b and b.proximity_detonated: b_prox2 = true
@@ -14309,16 +14348,29 @@ func execute(strategy: String, delta: float):
                                         other.y -= (dy_other/dist_other) * pull_strength
 
                         if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
-                            if world.arena.has_method("get"):
+                            if resonance:
                                 var ScriptType = load("res://src/arena/procedural_arena.gd")
                                 if ScriptType != null and ScriptType.has_method("new"):
-                                    pass # Fallback since we might need nested class
-                                var CloudHazard = load("res://src/arena/procedural_arena.gd").Hazard
-                                if CloudHazard != null:
-                                    var h_id = 9000 + world.arena.hazards.size() + int(b.x) + int(b.y)
-                                    var cloud = CloudHazard.new(h_id, b.x, b.y, 100.0, "poison_cloud", 10.0)
-                                    cloud.set_meta("duration", 5.0)
-                                    world.arena.hazards.append(cloud)
+                                    var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+                                    if HazardClass != null:
+                                        var h_id = 10000 + (randi() % 90000)
+                                        var hz = HazardClass.new(h_id, b.x, b.y, 80.0, "scorched_earth", 0.0)
+                                        if "duration" in hz: hz.duration = 9999.0
+                                        elif hz.has_method("set_meta"): hz.set_meta("duration", 9999.0)
+                                        if "damage" in hz: hz.damage = 15.0
+                                        elif hz.has_method("set_meta"): hz.set_meta("damage", 15.0)
+                                        world.arena.hazards.append(hz)
+                            else:
+                                if world.arena.has_method("get"):
+                                    var ScriptType = load("res://src/arena/procedural_arena.gd")
+                                    if ScriptType != null and ScriptType.has_method("new"):
+                                        pass # Fallback since we might need nested class
+                                    var CloudHazard = load("res://src/arena/procedural_arena.gd").Hazard
+                                    if CloudHazard != null:
+                                        var h_id = 9000 + world.arena.hazards.size() + int(b.x) + int(b.y)
+                                        var cloud = CloudHazard.new(h_id, b.x, b.y, 100.0, "poison_cloud", 10.0)
+                                        cloud.set_meta("duration", 5.0)
+                                        world.arena.hazards.append(cloud)
 
     var is_illusion = false
     if "is_illusion" in my_ball:
