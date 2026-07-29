@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1683] Turret Overload — *2026-07-29 15:03:38 UTC*
+
+Turrets explode when destroyed.
+
+---
+
 ## [idea-1665] Gravity Inversion Traps — *2026-07-29 13:14:08 UTC*
 
 A new trap type that, when triggered, creates a localized zone of reverse gravity. Projectiles and balls entering the zone are heavily deflected upwards or away, fundamentally changing map traversal and providing defensive utility to hold choke points.
