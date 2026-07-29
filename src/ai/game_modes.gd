@@ -66858,6 +66858,47 @@ class PulsingBlackHoleMutatorMode extends GameMode:
 								b.killer = "pulsing_black_hole"
 
 
+
+class DirectionalWindMutatorMode extends GameMode:
+	var mutators = ["directional_wind"]
+	var wind_dir_x = 0.0
+	var wind_dir_y = 0.0
+	var wind_strength = 300.0
+
+	func _init() -> void:
+		name = "Directional Wind Mutator"
+		description = "A mutator where wind constantly pushes all balls to a random side of the arena."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var angle = randf_range(0.0, PI * 2)
+		wind_dir_x = cos(angle)
+		wind_dir_y = sin(angle)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+			if is_alive and b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					if not "vx" in b: b["vx"] = 0.0
+					if not "vy" in b: b["vy"] = 0.0
+					b["vx"] += wind_dir_x * wind_strength * delta
+					b["vy"] += wind_dir_y * wind_strength * delta
+				elif typeof(b) == TYPE_OBJECT:
+					if "vx" in b: b.vx += wind_dir_x * wind_strength * delta
+					if "vy" in b: b.vy += wind_dir_y * wind_strength * delta
+
+
 class StationaryBlackHoleMutatorMode extends GameMode:
 	var bh_id = 999998
 	var pull_strength = 200.0
@@ -66960,6 +67001,7 @@ class StationaryBlackHoleMutatorMode extends GameMode:
 						b.set("vy", b.get("vy") + pull_y)
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode.new()
+GAME_MODES['directional_wind_mutator'] = DirectionalWindMutatorMode.new()
 GAME_MODES['pulsing_black_hole_mutator'] = PulsingBlackHoleMutatorMode.new()
 const DoubleJuggernautMode = preload("res://src/ai/double_juggernaut.gd")
 const DecayingJuggernautMode = preload("res://src/ai/decaying_juggernaut.gd")
