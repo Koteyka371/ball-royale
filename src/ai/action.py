@@ -7984,8 +7984,8 @@ class Action:
                                     parallel_ny /= pl
 
                                 # Combine forces
-                                force_x = (pull_nx * pull_strength + parallel_nx * 200.0) * dt
-                                force_y = (pull_ny * pull_strength + parallel_ny * 200.0) * dt
+                                force_x = (pull_nx * pull_strength + parallel_nx * 200.0) * delta
+                                force_y = (pull_ny * pull_strength + parallel_ny * 200.0) * delta
 
                                 self.ball.vx += force_x
                                 self.ball.vy += force_y
