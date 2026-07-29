@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1647] Weather-Dependent Traps — *2026-07-29 02:00:34 UTC*
+
+Certain traps malfunction or behave differently depending on the current weather condition (e.g. electrical traps short circuit during rain, or spikes get buried and deal less damage during snow).
+
+---
+
 ## [idea-1640] EMP Decoy — *2026-07-29 01:49:34 UTC*
 
 When destroyed, this decoy disables all skills of nearby enemies for a few seconds.
