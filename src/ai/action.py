@@ -21220,6 +21220,42 @@ class Action:
                     if getattr(self.ball, "has_kinetic_absorber", False):
                         self.ball.supercharge_timer = min(5.0, getattr(self.ball, "supercharge_timer", 0.0) + (overlap * 0.1))
 
+                if cosmetic == "buddy_link":
+                    closest_ally = None
+                    min_dist = float('inf')
+                    my_team = getattr(self.ball, "team", None)
+                    for b in self.world.arena.balls:
+                        if b != self.ball and getattr(b, "alive", True) and my_team is not None and getattr(b, "team", None) == my_team:
+                            dist = ((b.x - self.ball.x)**2 + (b.y - self.ball.y)**2)**0.5
+                            if dist < min_dist:
+                                min_dist = dist
+                                closest_ally = b
+
+                    if closest_ally:
+                        # Heavy gravity check on the player
+                        if getattr(self.ball, "heavy_gravity_timer", 0.0) > 0.0:
+                            # Player is immune, so ally should not receive knockback from this collision either
+                            pass
+                        else:
+                            knockback_multiplier *= 0.5
+                            if getattr(closest_ally, "heavy_gravity_timer", 0.0) <= 0.0:
+                                closest_ally.x += nx * overlap * knockback_multiplier
+                                closest_ally.y += ny * overlap * knockback_multiplier
+
+                        # Share positive status effects bidirectionally
+                        positive_effects = [
+                            "speed_boost_timer", "energy_shield_timer", "supercharge_timer",
+                            "rebound_booster_timer", "phase_booster_timer", "intangible_timer",
+                            "hazard_immunity_timer"
+                        ]
+                        for eff in positive_effects:
+                            my_val = getattr(self.ball, eff, 0.0)
+                            ally_val = getattr(closest_ally, eff, 0.0)
+                            max_val = max(my_val, ally_val)
+                            if max_val > 0.0:
+                                setattr(self.ball, eff, max_val)
+                                setattr(closest_ally, eff, max_val)
+
                 if getattr(self.ball, "heavy_gravity_timer", 0.0) > 0.0:
                     knockback_multiplier = 0.0
 

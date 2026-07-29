@@ -41676,6 +41676,75 @@ func _resolve_collisions() -> bool:
                         self.ball.kinetic_absorbed_energy = new_ka
                         self.ball.speed_boost_timer = new_sbt
 
+            if cosmetic == "buddy_link":
+                var closest_ally = null
+                var min_dist = 999999.0
+                var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team") else null)
+                var my_x = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("x") else 0.0)
+                var my_y = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("y") else 0.0)
+
+                var arena_balls = []
+                if typeof(world) == TYPE_OBJECT and "arena" in world and "balls" in world.arena:
+                    arena_balls = world.arena.balls
+                elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("balls"):
+                    arena_balls = world.arena.balls
+
+                for b in arena_balls:
+                    if _get_id(b) != _get_id(self.ball):
+                        var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive") else true)
+                        if b_alive:
+                            var b_team = b.team if "team" in b else (b.get_meta("team") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team") else null)
+                            if b_team == my_team and my_team != null:
+                                var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x") else 0.0)
+                                var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y") else 0.0)
+                                var dist = sqrt((bx - my_x)*(bx - my_x) + (by - my_y)*(by - my_y))
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    closest_ally = b
+
+                if closest_ally != null:
+                    var my_hgt = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("heavy_gravity_timer"):
+                        my_hgt = float(self.ball["heavy_gravity_timer"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "heavy_gravity_timer" in self.ball:
+                        my_hgt = float(self.ball.heavy_gravity_timer)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("heavy_gravity_timer"):
+                        my_hgt = float(self.ball.get_meta("heavy_gravity_timer"))
+
+                    if my_hgt <= 0.0:
+                        knockback_multiplier *= 0.5
+                        var ally_hgt = 0.0
+                        if "heavy_gravity_timer" in closest_ally: ally_hgt = float(closest_ally.heavy_gravity_timer)
+                        elif typeof(closest_ally) == TYPE_OBJECT and closest_ally.has_method("has_meta") and closest_ally.has_meta("heavy_gravity_timer"): ally_hgt = float(closest_ally.get_meta("heavy_gravity_timer"))
+
+                        if ally_hgt <= 0.0:
+                            var ax = closest_ally.x if "x" in closest_ally else (closest_ally.get_meta("x") if typeof(closest_ally) == TYPE_OBJECT and closest_ally.has_method("has_meta") and closest_ally.has_meta("x") else 0.0)
+                            var ay = closest_ally.y if "y" in closest_ally else (closest_ally.get_meta("y") if typeof(closest_ally) == TYPE_OBJECT and closest_ally.has_method("has_meta") and closest_ally.has_meta("y") else 0.0)
+                            ax += nx * overlap * knockback_multiplier
+                            ay += ny * overlap * knockback_multiplier
+                            if "x" in closest_ally: closest_ally.x = ax
+                            elif typeof(closest_ally) == TYPE_OBJECT and closest_ally.has_method("set_meta"): closest_ally.set_meta("x", ax)
+                            if "y" in closest_ally: closest_ally.y = ay
+                            elif typeof(closest_ally) == TYPE_OBJECT and closest_ally.has_method("set_meta"): closest_ally.set_meta("y", ay)
+
+                    var positive_effects = ["speed_boost_timer", "energy_shield_timer", "supercharge_timer", "rebound_booster_timer", "phase_booster_timer", "intangible_timer", "hazard_immunity_timer"]
+                    for eff in positive_effects:
+                        var my_val = 0.0
+                        if eff in self.ball: my_val = float(self.ball[eff])
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta(eff): my_val = float(self.ball.get_meta(eff))
+
+                        var ally_val = 0.0
+                        if eff in closest_ally: ally_val = float(closest_ally[eff])
+                        elif typeof(closest_ally) == TYPE_OBJECT and closest_ally.has_method("has_meta") and closest_ally.has_meta(eff): ally_val = float(closest_ally.get_meta(eff))
+
+                        var max_val = max(ally_val, my_val)
+                        if max_val > 0.0:
+                            if eff in closest_ally: closest_ally[eff] = max_val
+                            elif typeof(closest_ally) == TYPE_OBJECT and closest_ally.has_method("set_meta"): closest_ally.set_meta(eff, max_val)
+
+                            if eff in self.ball: self.ball[eff] = max_val
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta(eff, max_val)
+
             var hgt = 0.0
             if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("heavy_gravity_timer"):
                 hgt = float(self.ball["heavy_gravity_timer"])
