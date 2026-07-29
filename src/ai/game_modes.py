@@ -1,3 +1,5 @@
+
+
 import math
 
 class WeekendBoss:
@@ -28922,6 +28924,115 @@ class ElasticTetherMode(GameMode):
                             target.hp = getattr(target, "hp", 100.0) - self.collision_damage
 
 
+class PersonalDoppelgangerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Personal Doppelganger"
+        self.description = "Every player spawns with an AI-controlled doppelganger that mimics their attacks but moves randomly. If a player dies, they take over their doppelganger."
+        self.doppelgangers = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import copy
+        self.doppelgangers.clear()
+
+        class Doppelganger:
+            def __init__(self, owner, new_id):
+                self.id = new_id
+                self.owner_id = getattr(owner, "id", 0)
+                self.is_personal_doppelganger = True
+                self.x = getattr(owner, "x", 0.0)
+                self.y = getattr(owner, "y", 0.0)
+                self.vx = 0.0
+                self.vy = 0.0
+                self.radius = getattr(owner, "radius", 20.0)
+                self.hp = getattr(owner, "hp", 100.0)
+                self.max_hp = getattr(owner, "max_hp", 100.0)
+                self.alive = True
+                self.ball_type = getattr(owner, "ball_type", "basic")
+                self.team = getattr(owner, "team", "neutral")
+                self.speed = getattr(owner, "speed", 100.0)
+                self.base_speed = getattr(owner, "base_speed", 100.0)
+                self.damage = getattr(owner, "damage", 25.0)
+                self.base_damage = getattr(owner, "base_damage", 25.0)
+                self.skills = copy.deepcopy(getattr(owner, "skills", []))
+                self.inventory = copy.deepcopy(getattr(owner, "inventory", []))
+
+                self.active_skill = None
+                self.skill_timer = 0.0
+
+                self.move_timer = 0.0
+                self.target_angle = 0.0
+
+        new_balls = []
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                b_id = getattr(b, "id", 0)
+                d_id = 1000000 + b_id
+                d = Doppelganger(b, d_id)
+                new_balls.append(d)
+                self.doppelgangers[b_id] = d_id
+
+                b._prev_active_skill = getattr(b, "active_skill", None)
+
+        if hasattr(world, "balls"):
+            world.balls.extend(new_balls)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+
+        balls_by_id = {getattr(b, "id", None): b for b in balls}
+
+        to_remove = []
+
+        for owner_id, dop_id in self.doppelgangers.items():
+            owner = balls_by_id.get(owner_id)
+            dop = balls_by_id.get(dop_id)
+
+            if not owner or not dop:
+                continue
+
+            if not getattr(owner, "alive", False) and getattr(dop, "alive", True):
+                owner.alive = True
+                owner.x = getattr(dop, "x", 0.0)
+                owner.y = getattr(dop, "y", 0.0)
+                owner.hp = getattr(dop, "hp", 100.0)
+                owner.vx = getattr(dop, "vx", 0.0)
+                owner.vy = getattr(dop, "vy", 0.0)
+
+                dop.alive = False
+                to_remove.append(owner_id)
+                continue
+
+            if not getattr(dop, "alive", False):
+                to_remove.append(owner_id)
+                continue
+
+            if getattr(owner, "alive", False) and getattr(dop, "alive", True):
+                dop.move_timer -= delta
+                if dop.move_timer <= 0:
+                    dop.move_timer = random.uniform(0.5, 2.0)
+                    dop.target_angle = random.uniform(0, math.pi * 2)
+
+                dop.vx = math.cos(dop.target_angle) * dop.speed
+                dop.vy = math.sin(dop.target_angle) * dop.speed
+
+                cur_skill = getattr(owner, "active_skill", None)
+                prev_skill = getattr(owner, "_prev_active_skill", None)
+
+                if cur_skill and cur_skill != prev_skill:
+                    dop.active_skill = cur_skill
+                    if hasattr(owner, "skill_timer"):
+                        dop.skill_timer = getattr(owner, "skill_timer", 0.0)
+
+                owner._prev_active_skill = cur_skill
+
+        for id in to_remove:
+            if id in self.doppelgangers:
+                del self.doppelgangers[id]
+
 class RoamingDoppelgangerMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -32863,6 +32974,7 @@ GAME_MODES = {
     'teleport_dash_mutator': TeleportDashMutatorMode(),
     'random_teleport_dash': RandomTeleportDashMode(),
     'roaming_doppelganger': RoamingDoppelgangerMode(),
+    'personal_doppelganger': PersonalDoppelgangerMode(),
     'entangled_hazards_mode': EntangledHazardsMode(),
 
 
