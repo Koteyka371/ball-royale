@@ -3271,6 +3271,83 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+    var d_type = ""
+    if typeof(ball) == TYPE_DICTIONARY and ball.has("decoy_type"): d_type = str(ball.decoy_type)
+    elif "decoy_type" in ball: d_type = str(ball.decoy_type)
+    elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("decoy_type"): d_type = str(ball.get_meta("decoy_type"))
+
+    if d_type == "orbiting_beefy":
+        var b_hp = 0.0
+        if typeof(ball) == TYPE_DICTIONARY and ball.has("hp"): b_hp = float(ball.hp)
+        elif typeof(ball) == TYPE_OBJECT and "hp" in ball: b_hp = float(ball.hp)
+        elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("hp"): b_hp = float(ball.get_meta("hp"))
+
+        var b_mhp = 200.0
+        if typeof(ball) == TYPE_DICTIONARY and ball.has("max_hp"): b_mhp = float(ball.max_hp)
+        elif typeof(ball) == TYPE_OBJECT and "max_hp" in ball: b_mhp = float(ball.max_hp)
+        elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("max_hp"): b_mhp = float(ball.get_meta("max_hp"))
+
+        if b_hp <= b_mhp * 0.1 or b_hp <= 0.0:
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                self.world.events.append({"type": "explosion", "data": {"x": float(ball.x), "y": float(ball.y), "radius": 150.0, "damage": 50.0}})
+            elif typeof(self.world) == TYPE_OBJECT and "events" in self.world:
+                self.world.events.append({"type": "explosion", "data": {"x": float(ball.x), "y": float(ball.y), "radius": 150.0, "damage": 50.0}})
+
+            var w_balls = []
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"): w_balls = self.world.balls
+            elif typeof(self.world) == TYPE_OBJECT and "balls" in self.world: w_balls = self.world.balls
+
+            var my_team = null
+            if typeof(ball) == TYPE_DICTIONARY and ball.has("team"): my_team = ball.team
+            elif typeof(ball) == TYPE_OBJECT and "team" in ball: my_team = ball.team
+            elif typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("team"): my_team = ball.get_meta("team")
+
+            for b in w_balls:
+                var b_team = null
+                if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+                elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+
+                var b_alive = true
+                if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+                elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                if b != ball and b_alive and b_team != my_team:
+                    var bx = float(b.x) if typeof(b) == TYPE_DICTIONARY or "x" in b else 0.0
+                    var by = float(b.y) if typeof(b) == TYPE_DICTIONARY or "y" in b else 0.0
+                    var dist_b = sqrt(pow(bx - float(ball.x), 2) + pow(by - float(ball.y), 2))
+                    if dist_b <= 150.0:
+                        if typeof(b) == TYPE_DICTIONARY:
+                            if b.has("take_damage"): b.take_damage(50.0)
+                            else: b.hp -= 50.0
+                            var st = 0.0
+                            if b.has("stun_timer"): st = float(b.stun_timer)
+                            b["stun_timer"] = max(st, 2.0)
+                        elif typeof(b) == TYPE_OBJECT:
+                            if b.has_method("take_damage"): b.take_damage(50.0)
+                            elif "hp" in b: b.hp -= 50.0
+
+                            var st = 0.0
+                            if "stun_timer" in b: st = float(b.stun_timer)
+                            elif b.has_method("get_meta") and b.has_meta("stun_timer"): st = float(b.get_meta("stun_timer"))
+
+                            if "stun_timer" in b: b.stun_timer = max(st, 2.0)
+                            elif b.has_method("set_meta"): b.set_meta("stun_timer", max(st, 2.0))
+
+            if typeof(ball) == TYPE_DICTIONARY:
+                ball["hp"] = 0.0
+                ball["alive"] = false
+                if ball.has("duration"): ball["duration"] = 0.0
+            elif typeof(ball) == TYPE_OBJECT:
+                if "hp" in ball: ball.hp = 0.0
+                elif ball.has_method("set_meta"): ball.set_meta("hp", 0.0)
+                if "alive" in ball: ball.alive = false
+                elif ball.has_method("set_meta"): ball.set_meta("alive", false)
+                if "duration" in ball: ball.duration = 0.0
+                elif ball.has_method("set_meta") and ball.has_meta("duration"): ball.set_meta("duration", 0.0)
+
+
 
 	var fbt = 0.0
 	if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("flight_booster_timer"):
@@ -28854,7 +28931,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -32842,6 +32919,113 @@ func _use_skill():
             else:
                 self.ball.velocity_shield_active = true
                 self.ball.velocity_shield_timer = 5.0
+
+
+        elif skill_name == "orbiting_beefy_decoy":
+            var decoy = null
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("duplicate"): decoy = self.ball.duplicate()
+            elif typeof(self.ball) == TYPE_DICTIONARY: decoy = self.ball.duplicate()
+            else: decoy = {}
+
+            var decoy_id = randi() % 90000 + 10000
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("next_id"):
+                decoy_id = self.world.next_id
+                self.world.next_id += 1
+            elif typeof(self.world) == TYPE_OBJECT and "next_id" in self.world:
+                decoy_id = self.world.next_id
+                self.world.next_id += 1
+
+            var my_id = null
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball.id
+            elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+
+            var my_hp = 100.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("max_hp"): my_hp = float(self.ball.max_hp)
+            elif typeof(self.ball) == TYPE_OBJECT and "max_hp" in self.ball: my_hp = float(self.ball.max_hp)
+
+            var my_speed = 5.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed"): my_speed = float(self.ball.speed)
+            elif typeof(self.ball) == TYPE_OBJECT and "speed" in self.ball: my_speed = float(self.ball.speed)
+
+            if typeof(decoy) == TYPE_DICTIONARY:
+                decoy["id"] = decoy_id
+                decoy["owner_id"] = my_id
+                decoy["is_decoy"] = true
+                decoy["decoy_type"] = "orbiting_beefy"
+                decoy["decoy_timer"] = 10.0
+                decoy["hp"] = my_hp * 2.0
+                decoy["max_hp"] = decoy["hp"]
+                decoy["damage"] = 0.0
+                decoy["speed"] = my_speed
+                decoy["skill_timer"] = 9999.0
+                decoy["attack_timer"] = 9999.0
+                decoy["SKILL"] = null
+                decoy["skill"] = null
+                decoy["active_skill"] = null
+                decoy["is_orbiting"] = true
+                decoy["orbit_angle"] = 0.0
+                decoy["orbit_speed"] = 3.0
+                decoy["orbit_radius"] = 50.0
+                var offset_x = cos(decoy["orbit_angle"]) * decoy["orbit_radius"]
+                var offset_y = sin(decoy["orbit_angle"]) * decoy["orbit_radius"]
+                decoy["x"] = float(decoy["x"]) + offset_x
+                decoy["y"] = float(decoy["y"]) + offset_y
+            else:
+                if "id" in decoy: decoy.id = decoy_id
+                else: decoy.set_meta("id", decoy_id)
+                if "owner_id" in decoy: decoy.owner_id = my_id
+                else: decoy.set_meta("owner_id", my_id)
+                if "is_decoy" in decoy: decoy.is_decoy = true
+                else: decoy.set_meta("is_decoy", true)
+                if "decoy_type" in decoy: decoy.decoy_type = "orbiting_beefy"
+                else: decoy.set_meta("decoy_type", "orbiting_beefy")
+                if "decoy_timer" in decoy: decoy.decoy_timer = 10.0
+                else: decoy.set_meta("decoy_timer", 10.0)
+                if "hp" in decoy: decoy.hp = my_hp * 2.0
+                else: decoy.set_meta("hp", my_hp * 2.0)
+                if "max_hp" in decoy: decoy.max_hp = my_hp * 2.0
+                else: decoy.set_meta("max_hp", my_hp * 2.0)
+                if "damage" in decoy: decoy.damage = 0.0
+                else: decoy.set_meta("damage", 0.0)
+                if "speed" in decoy: decoy.speed = my_speed
+                else: decoy.set_meta("speed", my_speed)
+                if "skill_timer" in decoy: decoy.skill_timer = 9999.0
+                else: decoy.set_meta("skill_timer", 9999.0)
+                if "attack_timer" in decoy: decoy.attack_timer = 9999.0
+                else: decoy.set_meta("attack_timer", 9999.0)
+                if "SKILL" in decoy: decoy.SKILL = null
+                else: decoy.set_meta("SKILL", null)
+                if "skill" in decoy: decoy.skill = null
+                else: decoy.set_meta("skill", null)
+                if "active_skill" in decoy: decoy.active_skill = null
+                else: decoy.set_meta("active_skill", null)
+                if "is_orbiting" in decoy: decoy.is_orbiting = true
+                else: decoy.set_meta("is_orbiting", true)
+                if "orbit_angle" in decoy: decoy.orbit_angle = 0.0
+                else: decoy.set_meta("orbit_angle", 0.0)
+                if "orbit_speed" in decoy: decoy.orbit_speed = 3.0
+                else: decoy.set_meta("orbit_speed", 3.0)
+                if "orbit_radius" in decoy: decoy.orbit_radius = 50.0
+                else: decoy.set_meta("orbit_radius", 50.0)
+                var offset_x = cos(0.0) * 50.0
+                var offset_y = sin(0.0) * 50.0
+                if "x" in decoy: decoy.x = float(decoy.x) + offset_x
+                if "y" in decoy: decoy.y = float(decoy.y) + offset_y
+
+            if typeof(self.world) == TYPE_DICTIONARY and self.world.has("balls"):
+                self.world.balls.append(decoy)
+            elif typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                self.world.balls.append(decoy)
+
+            var cd = 12.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cd = float(self.ball.SKILL_COOLDOWN)
+            elif typeof(self.ball) == TYPE_OBJECT and "SKILL_COOLDOWN" in self.ball: cd = float(self.ball.SKILL_COOLDOWN)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = float(self.ball.get_meta("SKILL_COOLDOWN"))
+
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["skill_timer"] = cd
+            else:
+                if "skill_timer" in self.ball: self.ball.skill_timer = cd
+                else: self.ball.set_meta("skill_timer", cd)
 
         elif skill_name == "trickster_swap":
             var all_entities = []

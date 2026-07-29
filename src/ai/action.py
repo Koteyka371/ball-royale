@@ -1713,6 +1713,30 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "decoy_type", "") == "orbiting_beefy":
+            import math
+            if self.ball.hp <= getattr(self.ball, "max_hp", 200.0) * 0.1 or self.ball.hp <= 0:
+                if hasattr(self.world, "events"):
+                    self.world.events.append({"type": "explosion", "data": {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": 50.0}})
+                elif hasattr(self.world, "add_event"):
+                    self.world.add_event("explosion", {"x": self.ball.x, "y": self.ball.y, "radius": 150.0, "damage": 50.0})
+
+                if hasattr(self.world, "balls"):
+                    for b in getattr(self.world, "balls", []):
+                        if b != self.ball and getattr(b, "alive", True) and getattr(b, "team", None) != getattr(self.ball, "team", None):
+                            dist_to_b = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
+                            if dist_to_b <= 150.0:
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(50.0)
+                                else:
+                                    b.hp -= 50.0
+                                b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+                self.ball.hp = 0
+                self.ball.alive = False
+                if hasattr(self.ball, "duration"):
+                    self.ball.duration = 0
+
+
 
         if getattr(self.ball, "flight_booster_timer", 0.0) > 0.0:
             self.ball.flight_booster_timer -= delta
@@ -6494,11 +6518,29 @@ class Action:
                         if getattr(self.ball, "is_orbiting", False):
                             import math
                             # Orbit speed
-                            orbit_speed = getattr(self.ball, "speed", 4.0) * 0.5
-                            self.ball.orbit_angle = getattr(self.ball, "orbit_angle", 0.0) + orbit_speed * delta
-                            radius = 30.0
-                            self.ball.x = owner.x + math.cos(self.ball.orbit_angle) * radius
-                            self.ball.y = owner.y + math.sin(self.ball.orbit_angle) * radius
+                            orbit_speed = getattr(self.ball, "orbit_speed", getattr(self.ball, "speed", 4.0) * 0.5)
+                            orbit_dir = getattr(self.ball, "orbit_dir", 1.0)
+                            self.ball.orbit_angle = getattr(self.ball, "orbit_angle", 0.0) + orbit_speed * orbit_dir * delta
+                            radius = getattr(self.ball, "orbit_radius", 30.0)
+
+                            target_x = owner.x + math.cos(self.ball.orbit_angle) * radius
+                            target_y = owner.y + math.sin(self.ball.orbit_angle) * radius
+
+                            dx = target_x - self.ball.x
+                            dy = target_y - self.ball.y
+                            dist = math.hypot(dx, dy)
+
+                            if dist > 0.1:
+                                speed = getattr(self.ball, "speed", 150.0)
+                                move_dist = min(speed * delta, dist)
+                                nx = dx / dist
+                                ny = dy / dist
+                                self.ball.x += nx * move_dist
+                                self.ball.y += ny * move_dist
+                                self.ball.vx = nx * speed
+                                self.ball.vy = ny * speed
+
+                            # Detonation logic handled in _tick_hazard_interactions
                         elif getattr(self.ball, "is_mirroring", False):
                             if not hasattr(self.ball, "mirror_center_x"):
                                 self.ball.mirror_center_x = (owner.x + self.ball.x) / 2.0
@@ -14443,7 +14485,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -16637,6 +16679,47 @@ class Action:
             elif skill_name == "velocity_shield":
                 self.ball.velocity_shield_active = True
                 self.ball.velocity_shield_timer = 5.0
+
+
+            elif skill_name == "orbiting_beefy_decoy":
+                import copy
+                import math
+                import random
+
+                decoy = copy.copy(self.ball)
+                decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                if hasattr(self.world, "next_id"):
+                    self.world.next_id += 1
+
+                decoy.owner_id = getattr(self.ball, "id", None)
+                decoy.is_decoy = True
+                decoy.decoy_type = "orbiting_beefy"
+                decoy.decoy_timer = 10.0
+
+                decoy.hp = getattr(self.ball, "max_hp", 100) * 2.0
+                decoy.max_hp = decoy.hp
+                decoy.damage = 0
+                decoy.speed = getattr(self.ball, "speed", 5.0)
+                decoy.skill_timer = 9999.0
+                decoy.attack_timer = 9999.0
+                decoy.SKILL = None
+                decoy.skill = None
+                decoy.active_skill = None
+
+                decoy.is_orbiting = True
+                decoy.orbit_angle = 0.0
+                decoy.orbit_speed = 3.0
+                decoy.orbit_radius = 50.0
+
+                offset_x = math.cos(decoy.orbit_angle) * decoy.orbit_radius
+                offset_y = math.sin(decoy.orbit_angle) * decoy.orbit_radius
+                decoy.x += offset_x
+                decoy.y += offset_y
+
+                if hasattr(self.world, "balls"):
+                    self.world.balls.append(decoy)
+
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 12.0)
 
             elif skill_name == "trickster_swap":
                 all_entities = getattr(self.world, "balls", [])
