@@ -15646,6 +15646,16 @@ func execute(strategy: String, delta: float):
 
                 elif hazard.kind == "electric_beam_trap":
                     var hazard_is_active = hazard.get("active", true)
+
+                    var cur_weather = ""
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].has("weather"):
+                        cur_weather = self.world["arena"]["weather"]
+                    elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "weather" in self.world.arena:
+                        cur_weather = self.world.arena.weather
+
+                    if cur_weather == "rain" or cur_weather == "acid_rain":
+                        hazard_is_active = false
+
                     var hazard_team = hazard.get("team", "")
                     var my_team = self.ball.get("team", "")
 
@@ -21379,6 +21389,15 @@ func execute(strategy: String, delta: float):
                                     self.ball.vx *= 0.5
                                     self.ball.vy *= 0.5
                     elif hazard.kind == "electric_bumper":
+                        var cur_weather = ""
+                        if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].has("weather"):
+                            cur_weather = self.world["arena"]["weather"]
+                        elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "weather" in self.world.arena:
+                            cur_weather = self.world.arena.weather
+
+                        if cur_weather == "rain" or cur_weather == "acid_rain":
+                            continue
+
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
                         var d = sqrt(dx*dx + dy*dy)
@@ -24584,6 +24603,15 @@ func execute(strategy: String, delta: float):
                 elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cosmetic_wall = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
                 if cosmetic_wall != "hover_boots":
                     var dmg = 250.0
+                    var weather_wall = ""
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world["arena"]) == TYPE_DICTIONARY and self.world["arena"].has("weather"):
+                        weather_wall = self.world["arena"]["weather"]
+                    elif typeof(self.world) == TYPE_OBJECT and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "weather" in self.world.arena:
+                        weather_wall = self.world.arena.weather
+
+                    if weather_wall == "snow" or weather_wall == "blizzard":
+                        dmg = 100.0
+
                     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                         self.ball.set_meta("is_bleeding", true)
                     elif typeof(self.ball) == TYPE_DICTIONARY:

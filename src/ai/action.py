@@ -7896,6 +7896,16 @@ class Action:
                                             pass
                     elif hazard.kind == "electric_beam_trap":
                         hazard_is_active = getattr(hazard, "active", True)
+
+                        weather = ""
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "weather"):
+                            weather = self.world.arena.weather
+                        elif hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "weather"):
+                            weather = self.world.game_mode.weather
+
+                        if weather == "rain" or weather == "acid_rain":
+                            hazard_is_active = False # Short circuit
+
                         hazard_team = getattr(hazard, "team", "")
                         my_team = getattr(self.ball, "team", "")
 
@@ -10865,6 +10875,15 @@ class Action:
                                     self.ball.vx *= 0.5
                                     self.ball.vy *= 0.5
                         elif hazard.kind == "electric_bumper":
+                            weather = ""
+                            if hasattr(self.world, "arena") and hasattr(self.world.arena, "weather"):
+                                weather = self.world.arena.weather
+                            elif hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "weather"):
+                                weather = self.world.game_mode.weather
+
+                            if weather == "rain" or weather == "acid_rain":
+                                continue # Short circuit, acts like dead bumper
+
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
                             dist2 = dx*dx + dy*dy
@@ -12178,6 +12197,15 @@ class Action:
                 elif wall_state == "spikes":
                     if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":
                         damage = 250.0
+                        weather = ""
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "weather"):
+                            weather = self.world.arena.weather
+                        elif hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "weather"):
+                            weather = self.world.game_mode.weather
+
+                        if weather == "snow" or weather == "blizzard":
+                            damage = 100.0 # Spikes are buried in snow, deal less damage
+
                         setattr(self.ball, "is_bleeding", True)
 
                         if hasattr(self.ball, "take_damage"):
