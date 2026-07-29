@@ -52778,6 +52778,230 @@ class WallLeapersMode extends GameMode:
 
 		world.arena.hazards = kept_hazards
 
+class QuantumThreadMode extends GameMode:
+	func _init():
+		name = "Quantum Thread"
+		description = "Players are paired randomly using an invisible quantum thread. If one player in the pair takes damage or collects a booster, a percentage of that effect (positive or negative) is transferred to the other player. If the thread breaks by them moving too far apart, both suffer a temporary stun and debuff."
+
+	var prev_state = {}
+	var booster_timers = [
+		"speed_booster_timer", "shield_booster_timer", "damage_booster_timer",
+		"stamina_booster_timer", "vision_booster_timer", "stealth_booster_timer"
+	]
+
+	func _init_prev_state(b):
+		var state = {"hp": 100.0}
+		if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+			state["hp"] = b["hp"]
+		elif typeof(b) == TYPE_OBJECT and "hp" in b:
+			state["hp"] = b.hp
+
+		for eff in booster_timers:
+			var val = 0.0
+			if typeof(b) == TYPE_DICTIONARY and b.has(eff): val = b[eff]
+			elif typeof(b) == TYPE_OBJECT and eff in b: val = b.get(eff)
+			state[eff] = val
+
+		var bid = -1
+		if typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = b["id"]
+		elif typeof(b) == TYPE_OBJECT and "id" in b: bid = b.id
+
+		if bid != -1:
+			prev_state[bid] = state
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var alive_balls = []
+		for b in balls:
+			var btype = null
+			if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): btype = b["ball_type"]
+			elif typeof(b) == TYPE_OBJECT and "ball_type" in b: btype = b.ball_type
+			if btype != "spectator":
+				alive_balls.append(b)
+
+		alive_balls.shuffle()
+
+		var i = 0
+		while i < alive_balls.size() - 1:
+			var b1 = alive_balls[i]
+			var b2 = alive_balls[i+1]
+
+			if typeof(b1) == TYPE_DICTIONARY: b1["quantum_paired_with"] = b2
+			elif typeof(b1) == TYPE_OBJECT and b1.has_method("set_meta"): b1.set_meta("quantum_paired_with", b2)
+
+			if typeof(b2) == TYPE_DICTIONARY: b2["quantum_paired_with"] = b1
+			elif typeof(b2) == TYPE_OBJECT and b2.has_method("set_meta"): b2.set_meta("quantum_paired_with", b1)
+
+			_init_prev_state(b1)
+			_init_prev_state(b2)
+			i += 2
+
+		if alive_balls.size() % 2 != 0:
+			var last_ball = alive_balls[alive_balls.size() - 1]
+			if typeof(last_ball) == TYPE_DICTIONARY: last_ball["quantum_paired_with"] = null
+			elif typeof(last_ball) == TYPE_OBJECT and last_ball.has_method("set_meta"): last_ball.set_meta("quantum_paired_with", null)
+			_init_prev_state(last_ball)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			if not is_alive: continue
+
+			var bid = -1
+			if typeof(b) == TYPE_DICTIONARY and b.has("id"): bid = b["id"]
+			elif typeof(b) == TYPE_OBJECT and "id" in b: bid = b.id
+			if bid == -1: continue
+
+			if not prev_state.has(bid):
+				_init_prev_state(b)
+
+			var state = prev_state[bid]
+
+			var target = null
+			if typeof(b) == TYPE_DICTIONARY and b.has("quantum_paired_with"): target = b["quantum_paired_with"]
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("quantum_paired_with"): target = b.get_meta("quantum_paired_with")
+
+			if target != null:
+				var target_alive = false
+				if typeof(target) == TYPE_DICTIONARY and target.has("alive"): target_alive = target["alive"]
+				elif typeof(target) == TYPE_OBJECT and "alive" in target: target_alive = target.alive
+
+				if target_alive:
+					var tid = -1
+					if typeof(target) == TYPE_DICTIONARY and target.has("id"): tid = target["id"]
+					elif typeof(target) == TYPE_OBJECT and "id" in target: tid = target.id
+
+					if tid != -1 and not prev_state.has(tid):
+						_init_prev_state(target)
+
+					var target_state = prev_state.get(tid, {})
+
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY: bx = b.get("x", 0.0); by = b.get("y", 0.0)
+					elif typeof(b) == TYPE_OBJECT: bx = b.x; by = b.y
+
+					var tx = 0.0
+					var ty = 0.0
+					if typeof(target) == TYPE_DICTIONARY: tx = target.get("x", 0.0); ty = target.get("y", 0.0)
+					elif typeof(target) == TYPE_OBJECT: tx = target.x; ty = target.y
+
+					var dx = bx - tx
+					var dy = by - ty
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist > 600.0:
+						if typeof(b) == TYPE_DICTIONARY: b["quantum_paired_with"] = null
+						elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("quantum_paired_with", null)
+						if typeof(target) == TYPE_DICTIONARY: target["quantum_paired_with"] = null
+						elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("quantum_paired_with", null)
+
+						var b_stun = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("stun_timer"): b_stun = b["stun_timer"]
+						elif typeof(b) == TYPE_OBJECT and "stun_timer" in b: b_stun = b.stun_timer
+						var t_stun = 0.0
+						if typeof(target) == TYPE_DICTIONARY and target.has("stun_timer"): t_stun = target["stun_timer"]
+						elif typeof(target) == TYPE_OBJECT and "stun_timer" in target: t_stun = target.stun_timer
+
+						if typeof(b) == TYPE_DICTIONARY: b["stun_timer"] = max(b_stun, 2.0)
+						elif typeof(b) == TYPE_OBJECT: b.stun_timer = max(b_stun, 2.0)
+						if typeof(target) == TYPE_DICTIONARY: target["stun_timer"] = max(t_stun, 2.0)
+						elif typeof(target) == TYPE_OBJECT: target.stun_timer = max(t_stun, 2.0)
+
+						var b_def = 1.0
+						if typeof(b) == TYPE_DICTIONARY and b.has("defense_multiplier"): b_def = b["defense_multiplier"]
+						elif typeof(b) == TYPE_OBJECT and "defense_multiplier" in b: b_def = b.defense_multiplier
+						var t_def = 1.0
+						if typeof(target) == TYPE_DICTIONARY and target.has("defense_multiplier"): t_def = target["defense_multiplier"]
+						elif typeof(target) == TYPE_OBJECT and "defense_multiplier" in target: t_def = target.defense_multiplier
+
+						if typeof(b) == TYPE_DICTIONARY: b["defense_multiplier"] = max(0.1, b_def - 0.3)
+						elif typeof(b) == TYPE_OBJECT: b.defense_multiplier = max(0.1, b_def - 0.3)
+						if typeof(target) == TYPE_DICTIONARY: target["defense_multiplier"] = max(0.1, t_def - 0.3)
+						elif typeof(target) == TYPE_OBJECT: target.defense_multiplier = max(0.1, t_def - 0.3)
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event({"type": "visual_effect", "data": {"type": "quantum_thread_break", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+							world["events"].append({"type": "visual_effect", "data": {"type": "quantum_thread_break", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+						continue
+
+					var curr_hp = 100.0
+					if typeof(b) == TYPE_DICTIONARY and b.has("hp"): curr_hp = b["hp"]
+					elif typeof(b) == TYPE_OBJECT and "hp" in b: curr_hp = b.hp
+
+					var t_hp = 100.0
+					if typeof(target) == TYPE_DICTIONARY and target.has("hp"): t_hp = target["hp"]
+					elif typeof(target) == TYPE_OBJECT and "hp" in target: t_hp = target.hp
+
+					if curr_hp < state["hp"]:
+						var dmg = (state["hp"] - curr_hp) * 0.5
+						if t_hp > 0:
+							if typeof(target) == TYPE_OBJECT and target.has_method("take_damage"):
+								target.take_damage(dmg)
+							else:
+								var new_thp = max(0.0, t_hp - dmg)
+								if typeof(target) == TYPE_DICTIONARY:
+									target["hp"] = new_thp
+									if new_thp <= 0: target["alive"] = false
+								elif typeof(target) == TYPE_OBJECT:
+									target.hp = new_thp
+									if new_thp <= 0: target.alive = false
+
+							if typeof(target) == TYPE_DICTIONARY and target.has("hp"): target_state["hp"] = target["hp"]
+							elif typeof(target) == TYPE_OBJECT and "hp" in target: target_state["hp"] = target.hp
+							else: target_state["hp"] = 0.0
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event({"type": "visual_effect", "data": {"type": "entangle_damage", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+							elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world["events"].append({"type": "visual_effect", "data": {"type": "entangle_damage", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+					elif curr_hp > state["hp"]:
+						var heal = (curr_hp - state["hp"]) * 0.5
+						if t_hp > 0:
+							var t_max = 100.0
+							if typeof(target) == TYPE_DICTIONARY and target.has("max_hp"): t_max = target["max_hp"]
+							elif typeof(target) == TYPE_OBJECT and "max_hp" in target: t_max = target.max_hp
+							var new_thp = min(t_max, t_hp + heal)
+							if typeof(target) == TYPE_DICTIONARY: target["hp"] = new_thp
+							elif typeof(target) == TYPE_OBJECT: target.hp = new_thp
+
+							if typeof(target) == TYPE_DICTIONARY and target.has("hp"): target_state["hp"] = target["hp"]
+							elif typeof(target) == TYPE_OBJECT and "hp" in target: target_state["hp"] = target.hp
+							else: target_state["hp"] = 100.0
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event({"type": "visual_effect", "data": {"type": "entangle_heal", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+							elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world["events"].append({"type": "visual_effect", "data": {"type": "entangle_heal", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+
+					for eff in booster_timers:
+						var curr_val = 0.0
+						if typeof(b) == TYPE_DICTIONARY and b.has(eff): curr_val = b[eff]
+						elif typeof(b) == TYPE_OBJECT and eff in b: curr_val = b.get(eff)
+						var state_val = state[eff]
+						if curr_val > state_val:
+							var diff = (curr_val - state_val) * 0.5
+							var t_val = 0.0
+							if typeof(target) == TYPE_DICTIONARY and target.has(eff): t_val = target[eff]
+							elif typeof(target) == TYPE_OBJECT and eff in target: t_val = target.get(eff)
+							if typeof(target) == TYPE_DICTIONARY: target[eff] = t_val + diff
+							elif typeof(target) == TYPE_OBJECT: target.set(eff, t_val + diff)
+							target_state[eff] += diff
+
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event({"type": "visual_effect", "data": {"type": "booster_transfer", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+							elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world["events"].append({"type": "visual_effect", "data": {"type": "booster_transfer", "x1": bx, "y1": by, "x2": tx, "y2": ty}})
+						state[eff] = curr_val
+
+					state["hp"] = curr_hp
+
+
 var GAME_MODES = {
 	"wall_leapers": WallLeapersMode.new(),
 	"networked_black_holes": NetworkedBlackHolesMode.new(),
@@ -53196,6 +53420,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"collapsing_bubbles": CollapsingBubblesMode.new(),
 	"ghost_tether": GhostTetherMode.new(),
 	"entangled_arena": EntangledArenaMode.new(),
+	"quantum_thread_mode": QuantumThreadMode.new(),
 	"entangled_swap_hazard": EntangledSwapHazardMode.new(),
 	"entanglement_mutator": EntanglementMutatorMode.new(),
 	"spreading_entanglement_mutator": SpreadingEntanglementMutatorMode.new(),

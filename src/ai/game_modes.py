@@ -23989,9 +23989,7 @@ class EntangledArenaMode(GameMode):
                                 if hasattr(b, "killer"):
                                     target.killer = getattr(b, "killer", None)
 
-                        target_state.hp -= damage
-                        if target_state.hp < 0:
-                            target_state.hp = 0
+                        target_state.hp = getattr(target, "hp", 0.0)
 
                         if hasattr(world, "events"):
                             world.events.append({
@@ -24218,9 +24216,7 @@ class EntanglementMutatorMode(GameMode):
                                 if hasattr(b, "killer"):
                                     target.killer = getattr(b, "killer", None)
 
-                        target_state.hp -= damage
-                        if target_state.hp < 0:
-                            target_state.hp = 0
+                        target_state.hp = getattr(target, "hp", 0.0)
 
                         if hasattr(world, "events"):
                             world.events.append({
@@ -33052,6 +33048,135 @@ class WallLeapersMode(GameMode):
 
         world.arena.hazards = kept_hazards
 
+class QuantumThreadMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Thread"
+        self.description = "Players are paired randomly using an invisible quantum thread. If one player in the pair takes damage or collects a booster, a percentage of that effect (positive or negative) is transferred to the other player. If the thread breaks by them moving too far apart, both suffer a temporary stun and debuff."
+        self.prev_state = {}
+        self.booster_timers = [
+            "speed_booster_timer", "shield_booster_timer", "damage_booster_timer",
+            "stamina_booster_timer", "vision_booster_timer", "stealth_booster_timer"
+        ]
+
+    class BallState:
+        def __init__(self, hp):
+            self.hp = hp
+
+    def _init_prev_state(self, b):
+        state = self.BallState(getattr(b, "hp", 100.0))
+        for eff in self.booster_timers:
+            setattr(state, eff, getattr(b, eff, 0.0))
+        self.prev_state[b.id] = state
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        random.shuffle(alive_balls)
+
+        for i in range(0, len(alive_balls) - 1, 2):
+            b1 = alive_balls[i]
+            b2 = alive_balls[i+1]
+            b1.quantum_paired_with = b2
+            b2.quantum_paired_with = b1
+            self._init_prev_state(b1)
+            self._init_prev_state(b2)
+
+        if len(alive_balls) % 2 != 0:
+            last_ball = alive_balls[-1]
+            last_ball.quantum_paired_with = None
+            self._init_prev_state(last_ball)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+            target = getattr(b, "quantum_paired_with", None)
+
+            if target and getattr(target, "alive", False):
+                if getattr(target, "id", None) not in self.prev_state:
+                    self._init_prev_state(target)
+                target_state = self.prev_state[target.id]
+
+                # Check thread break
+                dist = math.hypot(b.x - target.x, b.y - target.y)
+                if dist > 600.0:
+                    # Break thread
+                    b.quantum_paired_with = None
+                    target.quantum_paired_with = None
+
+                    b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
+                    target.stun_timer = max(getattr(target, "stun_timer", 0.0), 2.0)
+
+                    # debuff: reduce defense if it exists, or just lower speed temporarily
+                    b.defense_multiplier = max(0.1, getattr(b, "defense_multiplier", 1.0) - 0.3)
+                    target.defense_multiplier = max(0.1, getattr(target, "defense_multiplier", 1.0) - 0.3)
+
+                    if hasattr(world, "events"):
+                        world.events.append({
+                            'type': 'visual_effect',
+                            'data': {
+                                'type': 'quantum_thread_break',
+                                'x1': b.x, 'y1': b.y, 'x2': target.x, 'y2': target.y
+                            }
+                        })
+                    continue
+
+                # Transfer effects
+                curr_hp = getattr(b, "hp", 100.0)
+                if curr_hp < state.hp:
+                    # took damage
+                    damage = (state.hp - curr_hp) * 0.5
+                    target_curr_hp = getattr(target, "hp", 100.0)
+                    if target_curr_hp > 0:
+                        if hasattr(target, "take_damage"):
+                            target.take_damage(damage)
+                        else:
+                            target.hp = target_curr_hp - damage
+                            if target.hp <= 0:
+                                target.hp = 0
+                                target.alive = False
+
+                        target_state.hp = getattr(target, "hp", 0.0)
+
+                        if hasattr(world, "events"):
+                            world.events.append({'type': 'visual_effect', 'data': {'type': 'entangle_damage', 'x1': b.x, 'y1': b.y, 'x2': target.x, 'y2': target.y}})
+                elif curr_hp > state.hp:
+                    # got healed
+                    heal = (curr_hp - state.hp) * 0.5
+                    target_curr_hp = getattr(target, "hp", 100.0)
+                    if target_curr_hp > 0:
+                        target.hp = min(getattr(target, "max_hp", 100.0), target_curr_hp + heal)
+                        target_state.hp = getattr(target, "hp", 100.0)
+                        if hasattr(world, "events"):
+                            world.events.append({'type': 'visual_effect', 'data': {'type': 'entangle_heal', 'x1': b.x, 'y1': b.y, 'x2': target.x, 'y2': target.y}})
+
+                # Booster transfer
+                for eff in self.booster_timers:
+                    curr_val = getattr(b, eff, 0.0)
+                    state_val = getattr(state, eff, 0.0)
+                    if curr_val > state_val:
+                        # collected booster
+                        diff = (curr_val - state_val) * 0.5
+                        setattr(target, eff, getattr(target, eff, 0.0) + diff)
+                        setattr(target_state, eff, getattr(target_state, eff, 0.0) + diff)
+                        if hasattr(world, "events"):
+                            world.events.append({'type': 'visual_effect', 'data': {'type': 'booster_transfer', 'x1': b.x, 'y1': b.y, 'x2': target.x, 'y2': target.y}})
+                    setattr(state, eff, curr_val)
+
+                state.hp = curr_hp
+
+
+
 GAME_MODES = {
     'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),
@@ -33143,6 +33268,7 @@ GAME_MODES = {
     "decreasing_safe_zones": DecreasingSafeZonesMode(),
     "multiple_safe_zones": MultipleSafeZonesMode(),
     "entangled_arena": EntangledArenaMode(),
+    "quantum_thread_mode": QuantumThreadMode(),
     "entangled_swap_hazard": EntangledSwapHazardMode(),
     "entanglement_mutator": EntanglementMutatorMode(),
     "spreading_entanglement_mutator": SpreadingEntanglementMutatorMode(),
