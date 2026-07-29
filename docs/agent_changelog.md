@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1672] Thunderstorm Tornado Combo — *2026-07-29 23:52:29 UTC*
+
+A rare hybrid weather hazard that spawns when a thunderstorm and wind event overlap. It would pull balls like a tornado but also periodically strike them with chain lightning while they are caught in the outer vortex.
+
+---
+
 ## [idea-1668] Heist Vaults — *2026-07-29 21:32:29 UTC*
 
 Add vaults with loot to infiltration mode.
