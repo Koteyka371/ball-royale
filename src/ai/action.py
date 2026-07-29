@@ -14566,7 +14566,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -18168,6 +18168,20 @@ class Action:
 
                         self.world.balls.append(clone)
 
+            elif skill_name == "deploy_distract_drone":
+                import random
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    from arena.procedural_arena import Hazard
+                    drone = Hazard(id=999000 + len(self.world.arena.hazards) + random.randint(0,10000), x=self.ball.x, y=self.ball.y, radius=10.0, kind="distract_drone", damage=0.0)
+                    setattr(drone, "owner_id", getattr(self.ball, "id", -1))
+                    setattr(drone, "duration", 30.0)
+                    setattr(drone, "hp", 120.0)
+                    setattr(drone, "is_illusion", True) # Treat as illusion so it taunts AI
+                    self.world.arena.hazards.append(drone)
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 20.0)
+                elif type(self.world).__name__ == "dict" and "arena" in self.world and type(self.world["arena"]).__name__ == "dict" and "hazards" in self.world["arena"]:
+                    self.world["arena"]["hazards"].append({"id":999000 + len(self.world["arena"]["hazards"]) + random.randint(0,10000), "x":self.ball.x, "y":self.ball.y, "radius":10.0, "kind":"distract_drone", "damage":0.0, "owner_id":getattr(self.ball, "id", -1), "duration":30.0, "hp":120.0, "is_illusion": True})
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 20.0)
             elif skill_name == "deploy_tracker_drone":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     try:
