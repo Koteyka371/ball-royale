@@ -21597,6 +21597,11 @@ func execute(strategy: String, delta: float):
                                             self.ball.base_mass = base_m
                                             var cur_m = self.ball.mass if "mass" in self.ball else 1.0
                                             self.ball.mass = min(cur_m + 0.1, base_m * 5.0)
+                                            if self.world != null and "events" in self.world:
+                                                if typeof(self.world) == TYPE_DICTIONARY:
+                                                    self.world["events"].append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x if "x" in self.ball else 0.0, "y": self.ball.y if "y" in self.ball else 0.0}})
+                                                else:
+                                                    self.world.events.append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x if "x" in self.ball else 0.0, "y": self.ball.y if "y" in self.ball else 0.0}})
                                     elif typeof(self.ball) == TYPE_DICTIONARY:
                                         self.ball["shielding"] = cur_sh + sh_gain
                                         if syn_active:
@@ -21604,6 +21609,8 @@ func execute(strategy: String, delta: float):
                                             self.ball["base_mass"] = base_m
                                             var cur_m = self.ball.get("mass", 1.0)
                                             self.ball["mass"] = min(cur_m + 0.1, base_m * 5.0)
+                                            if self.world != null and typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                                                self.world["events"].append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.get("x", 0.0), "y": self.ball.get("y", 0.0)}})
 
                                     if not syn_active:
                                         var cur_sp = 0.0

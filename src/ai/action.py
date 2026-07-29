@@ -10864,6 +10864,9 @@ class Action:
                                         self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.15)
                                         self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
                                         self.ball.mass = min(getattr(self.ball, "mass", 1.0) + 0.1, self.ball.base_mass * 5.0)
+                                        # Visual effect for juggernaut conversion
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x, "y": self.ball.y}})
                                     else:
                                         self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
                                         self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
@@ -10941,6 +10944,9 @@ class Action:
                                         self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.15)
                                         self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
                                         self.ball.mass = min(getattr(self.ball, "mass", 1.0) + 0.1, self.ball.base_mass * 5.0)
+                                        # Visual effect for juggernaut conversion
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x, "y": self.ball.y}})
                                     else:
                                         self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (2000.0 * delta * 0.5 * 0.05)
                                         self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
@@ -11080,6 +11086,9 @@ class Action:
 
                                         self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
                                         self.ball.mass = min(getattr(self.ball, "mass", 1.0) + 0.1, self.ball.base_mass * 5.0)
+                                        # Visual effect for juggernaut conversion
+                                        if hasattr(self.world, "events"):
+                                            self.world.events.append({"type": "visual_effect", "data": {"type": "bumper_juggernaut_charge", "x": self.ball.x, "y": self.ball.y}})
                                     else:
                                         self.ball.shielding = getattr(self.ball, "shielding", 0.0) + (1200.0 * delta * 0.5 * 0.05)
                                         self.ball.speed_boost_timer = max(getattr(self.ball, "speed_boost_timer", 0.0), 3.0)
