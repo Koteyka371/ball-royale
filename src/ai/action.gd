@@ -381,6 +381,37 @@ func _attempt_damage(attacker, target) -> void:
 
 	_attempt_damage_internal(attacker, target)
 
+	var is_holo = false
+	if typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("is_hologram"): is_holo = attacker.get_meta("is_hologram")
+	elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("is_hologram"): is_holo = attacker.is_hologram
+	elif typeof(attacker) == TYPE_OBJECT and "is_hologram" in attacker: is_holo = attacker.is_hologram
+
+	if not is_holo:
+		var delayed = []
+		if typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("delayed_clones"): delayed = attacker.get_meta("delayed_clones")
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("delayed_clones"): delayed = attacker.delayed_clones
+		elif typeof(attacker) == TYPE_OBJECT and "delayed_clones" in attacker: delayed = attacker.delayed_clones
+
+		var a_x = 0.0
+		var a_y = 0.0
+		if typeof(attacker) == TYPE_OBJECT and "x" in attacker: a_x = attacker.x
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("x"): a_x = attacker.x
+		if typeof(attacker) == TYPE_OBJECT and "y" in attacker: a_y = attacker.y
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("y"): a_y = attacker.y
+
+		var clone_data = {
+			"timer": 2.0,
+			"target": target,
+			"x": a_x,
+			"y": a_y
+		}
+		delayed.append(clone_data)
+
+		if typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"): attacker.set_meta("delayed_clones", delayed)
+		elif typeof(attacker) == TYPE_DICTIONARY: attacker.delayed_clones = delayed
+		elif typeof(attacker) == TYPE_OBJECT and "delayed_clones" in attacker: attacker.delayed_clones = delayed
+
+
 	if has_orig:
 		if typeof(attacker) == TYPE_OBJECT and "damage" in attacker:
 			attacker.damage = orig_dmg
@@ -3308,6 +3339,55 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+	var delayed = []
+	if typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("delayed_clones"): delayed = ball.get_meta("delayed_clones")
+	elif typeof(ball) == TYPE_DICTIONARY and ball.has("delayed_clones"): delayed = ball.delayed_clones
+	elif typeof(ball) == TYPE_OBJECT and "delayed_clones" in ball: delayed = ball.delayed_clones
+
+	if delayed.size() > 0:
+		var new_delayed = []
+		for cd in delayed:
+			cd["timer"] -= delta
+			if cd["timer"] <= 0:
+				if typeof(world) == TYPE_OBJECT and "balls" in world:
+					var clone_obj = {}
+					if typeof(ball) == TYPE_DICTIONARY: clone_obj = ball.duplicate()
+					elif typeof(ball) == TYPE_OBJECT and ball.has_method("duplicate"): clone_obj = ball.duplicate()
+					else: clone_obj = {"is_hologram": true} # fallback
+
+					if typeof(clone_obj) == TYPE_DICTIONARY:
+						clone_obj["x"] = cd["x"]
+						clone_obj["y"] = cd["y"]
+						clone_obj["is_hologram"] = true
+						clone_obj["hologram_timer"] = 0.5
+					elif typeof(clone_obj) == TYPE_OBJECT:
+						if "x" in clone_obj: clone_obj.x = cd["x"]
+						if "y" in clone_obj: clone_obj.y = cd["y"]
+						if clone_obj.has_method("set_meta"):
+							clone_obj.set_meta("is_hologram", true)
+							clone_obj.set_meta("hologram_timer", 0.5)
+						elif "is_hologram" in clone_obj:
+							clone_obj.is_hologram = true
+							clone_obj.hologram_timer = 0.5
+
+					world.balls.append(clone_obj)
+					var tgt = cd["target"]
+					var tgt_alive = true
+					if typeof(tgt) == TYPE_DICTIONARY and tgt.has("alive"): tgt_alive = tgt["alive"]
+					elif typeof(tgt) == TYPE_OBJECT and "alive" in tgt: tgt_alive = tgt.alive
+
+					var tgt_hp = 1.0
+					if typeof(tgt) == TYPE_DICTIONARY and tgt.has("hp"): tgt_hp = tgt["hp"]
+					elif typeof(tgt) == TYPE_OBJECT and "hp" in tgt: tgt_hp = tgt.hp
+
+					if tgt_alive and tgt_hp > 0:
+						_attempt_damage(clone_obj, tgt)
+			else:
+				new_delayed.append(cd)
+
+		if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"): ball.set_meta("delayed_clones", new_delayed)
+		elif typeof(ball) == TYPE_DICTIONARY: ball.delayed_clones = new_delayed
+		elif typeof(ball) == TYPE_OBJECT and "delayed_clones" in ball: ball.delayed_clones = new_delayed
 
     var d_type = ""
     if typeof(ball) == TYPE_DICTIONARY and ball.has("decoy_type"): d_type = str(ball.decoy_type)
