@@ -256,6 +256,10 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+
+        if getattr(attacker, "cryo_booster_timer", 0.0) > 0.0:
+            target.cryo_affliction_timer = max(getattr(target, "cryo_affliction_timer", 0.0), 3.0)
+            target.cryo_affliction_spawn_timer = 0.0
         if getattr(target, "nemesis_shield_active", False):
             pm = getattr(self.world, "profile_manager", None)
             if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
@@ -1729,6 +1733,27 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "cryo_affliction_timer", 0.0) > 0.0:
+            self.ball.cryo_affliction_timer -= delta
+            if getattr(self.ball, "cryo_affliction_spawn_timer", 0.0) > 0.0:
+                self.ball.cryo_affliction_spawn_timer -= delta
+
+            if getattr(self.ball, "cryo_affliction_spawn_timer", 0.0) <= 0.0 and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and (abs(self.ball.vx) > 0.1 or abs(self.ball.vy) > 0.1):
+                self.ball.cryo_affliction_spawn_timer = 0.2  # Spawn rate
+                class IcePatchHazard:
+                    def __init__(self, x, y):
+                        self.kind = "ice_patch"
+                        self.x = x
+                        self.y = y
+                        self.radius = 15.0
+                        self.duration = 2.0
+                        self.active = True
+                self.world.arena.hazards.append(IcePatchHazard(self.ball.x, self.ball.y))
+
+        if getattr(self.ball, "cryo_booster_timer", 0.0) > 0.0:
+            self.ball.cryo_booster_timer -= delta
+            if getattr(self.ball, "cryo_booster_timer", 0.0) < 0.0:
+                self.ball.cryo_booster_timer = 0.0
         if getattr(self.ball, "decoy_type", "") == "orbiting_beefy":
             import math
             if self.ball.hp <= getattr(self.ball, "max_hp", 200.0) * 0.1 or self.ball.hp <= 0:
@@ -14151,7 +14176,15 @@ class Action:
 
             # Check for phylactery_item and chameleon_item
             for b in boosters:
-                if getattr(b, "kind", "") == "phylactery_item" and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
+                if getattr(b, "kind", "") == "cryo_booster":
+                    self.ball.cryo_booster_timer = max(getattr(self.ball, "cryo_booster_timer", 0.0), 10.0)
+                    b.active = False
+                    if hasattr(self.world, "boosters") and b in self.world.boosters:
+                        self.world.boosters.remove(b)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(b)
+                    return
+                elif getattr(b, "kind", "") == "phylactery_item" and getattr(b, "owner_id", None) == getattr(self.ball, "id", None):
                     self.ball.phylactery_active = True
                     b.active = False
                     if hasattr(self.world, "boosters") and b in self.world.boosters:

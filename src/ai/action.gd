@@ -388,6 +388,26 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.damage = orig_dmg
 
 func _attempt_damage_internal(attacker, target) -> void:
+
+	var cryo_timer = 0.0
+	if typeof(attacker) == TYPE_OBJECT and "cryo_booster_timer" in attacker: cryo_timer = attacker.cryo_booster_timer
+	elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("cryo_booster_timer"): cryo_timer = attacker.get_meta("cryo_booster_timer")
+	elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("cryo_booster_timer"): cryo_timer = attacker.cryo_booster_timer
+
+	if cryo_timer > 0.0:
+		if typeof(target) == TYPE_OBJECT:
+			if "cryo_affliction_timer" in target:
+				target.cryo_affliction_timer = max(target.cryo_affliction_timer, 3.0)
+			else:
+				if target.has_method("set_meta"): target.set_meta("cryo_affliction_timer", max(target.get_meta("cryo_affliction_timer") if target.has_meta("cryo_affliction_timer") else 0.0, 3.0))
+			if "cryo_affliction_spawn_timer" in target:
+				target.cryo_affliction_spawn_timer = 0.0
+			else:
+				if target.has_method("set_meta"): target.set_meta("cryo_affliction_spawn_timer", 0.0)
+		elif typeof(target) == TYPE_DICTIONARY:
+			target.cryo_affliction_timer = max(target.get("cryo_affliction_timer", 0.0), 3.0)
+			target.cryo_affliction_spawn_timer = 0.0
+
 	var intangible = false
 	if typeof(target) == TYPE_DICTIONARY and target.has("intangible"): intangible = target["intangible"]
 	elif typeof(target) == TYPE_OBJECT and "intangible" in target: intangible = target.intangible
@@ -2944,6 +2964,20 @@ func _attempt_damage_internal(attacker, target) -> void:
 									else:
 										nearby.append({"dist": dist_sq, "entity": h, "type": "hazard"})
 					for b in boosters:
+
+						if (typeof(b) == TYPE_DICTIONARY and b.has("kind") and b.kind == "cryo_booster") or (typeof(b) == TYPE_OBJECT and "kind" in b and b.kind == "cryo_booster"):
+							if typeof(ball) == TYPE_OBJECT and "cryo_booster_timer" in ball: ball.cryo_booster_timer = max(ball.cryo_booster_timer, 10.0)
+							elif typeof(ball) == TYPE_OBJECT: ball.cryo_booster_timer = 10.0
+							elif typeof(ball) == TYPE_DICTIONARY: ball.cryo_booster_timer = max(ball.get("cryo_booster_timer", 0.0), 10.0)
+
+							if typeof(b) == TYPE_OBJECT: b.active = false
+							elif typeof(b) == TYPE_DICTIONARY: b["active"] = false
+
+							if typeof(world) == TYPE_OBJECT and "boosters" in world and typeof(world.boosters) == TYPE_ARRAY:
+								world.boosters.erase(b)
+							if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY:
+								world.arena.hazards.erase(b)
+							return
 						if not hit_entities.has(b):
 							var dist_sq = pow(b.x - current_target.x, 2) + pow(b.y - current_target.y, 2)
 							if dist_sq < chain_range_sq:
