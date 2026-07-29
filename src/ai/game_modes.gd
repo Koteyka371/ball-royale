@@ -53173,8 +53173,148 @@ class QuantumThreadMode extends GameMode:
 					state["hp"] = curr_hp
 
 
+
+class VisionReductionEventMode extends GameMode:
+    var duration = 30.0
+    var timer = 0.0
+    var active = true
+
+    func _init():
+        name = "Vision Reduction Event"
+        description = "A dense fog reduces vision range by 50% for 30 seconds. Stealth items become powerful!"
+
+    func setup(world, balls):
+        timer = duration
+        for i in range(balls.size()):
+            var b = balls[i]
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("base_perception_radius") and b.get("vision_reduction_timer", 0) <= 0:
+                    b["vision_reduction_timer"] = duration
+                    if not b.get("vision_reduction_applied", false):
+                        b["perception_radius"] = b["base_perception_radius"] * 0.5
+                        b["vision_reduction_applied"] = true
+            else:
+                if "base_perception_radius" in b:
+                    var v_timer = b.get_meta("vision_reduction_timer") if b.has_method("get_meta") and b.has_meta("vision_reduction_timer") else (b.vision_reduction_timer if "vision_reduction_timer" in b else 0.0)
+                    if v_timer <= 0:
+                        if "vision_reduction_timer" in b:
+                            b.vision_reduction_timer = duration
+                        elif b.has_method("set_meta"):
+                            b.set_meta("vision_reduction_timer", duration)
+
+                        var v_applied = b.get_meta("vision_reduction_applied") if b.has_method("get_meta") and b.has_meta("vision_reduction_applied") else (b.vision_reduction_applied if "vision_reduction_applied" in b else false)
+                        if not v_applied:
+                            if "perception_radius" in b:
+                                b.perception_radius = b.base_perception_radius * 0.5
+                            if "vision_reduction_applied" in b:
+                                b.vision_reduction_applied = true
+                            elif b.has_method("set_meta"):
+                                b.set_meta("vision_reduction_applied", true)
+
+        if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+            world["events"].append({
+                "type": "visual_effect",
+                "data": {"type": "thick_fog_start", "x": 0, "y": 0}
+            })
+
+    func tick(world, balls, delta):
+        if not active:
+            return
+
+        timer -= delta
+        if timer <= 0:
+            active = false
+            for i in range(balls.size()):
+                var b = balls[i]
+                if typeof(b) == TYPE_DICTIONARY:
+                    b["vision_reduction_timer"] = 0.0
+                    if b.get("vision_reduction_applied", false):
+                        b["perception_radius"] = b.get("base_perception_radius", 500.0)
+                        b["vision_reduction_applied"] = false
+                else:
+                    if "vision_reduction_timer" in b:
+                        b.vision_reduction_timer = 0.0
+                    elif b.has_method("set_meta"):
+                        b.set_meta("vision_reduction_timer", 0.0)
+
+                    var v_applied = b.get_meta("vision_reduction_applied") if b.has_method("get_meta") and b.has_meta("vision_reduction_applied") else (b.vision_reduction_applied if "vision_reduction_applied" in b else false)
+                    if v_applied:
+                        if "perception_radius" in b and "base_perception_radius" in b:
+                            b.perception_radius = b.base_perception_radius
+                        if "vision_reduction_applied" in b:
+                            b.vision_reduction_applied = false
+                        elif b.has_method("set_meta"):
+                            b.set_meta("vision_reduction_applied", false)
+
+            if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+                world["events"].append({
+                    "type": "visual_effect",
+                    "data": {"type": "thick_fog_end", "x": 0, "y": 0}
+                })
+            return
+
+        for i in range(balls.size()):
+            var b = balls[i]
+            var has_counter = false
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.get("vision_reduction_timer", 0) <= 0:
+                    b["vision_reduction_timer"] = timer
+                    if not b.get("vision_reduction_applied", false) and b.has("base_perception_radius"):
+                        b["perception_radius"] = b["base_perception_radius"] * 0.5
+                        b["vision_reduction_applied"] = true
+
+                if b.get("inventory", "") in ["decoy_flare_item", "decoy_volatile_barrel_item"]:
+                    has_counter = true
+                if b.get("mutated_env", "") == "vision_booster":
+                    has_counter = true
+
+                if has_counter and b.get("vision_reduction_applied", false):
+                    b["vision_reduction_timer"] = 0.0
+                    b["perception_radius"] = b.get("base_perception_radius", 500.0)
+                    b["vision_reduction_applied"] = false
+            else:
+                var v_timer = b.get_meta("vision_reduction_timer") if b.has_method("get_meta") and b.has_meta("vision_reduction_timer") else (b.vision_reduction_timer if "vision_reduction_timer" in b else 0.0)
+                var v_applied = b.get_meta("vision_reduction_applied") if b.has_method("get_meta") and b.has_meta("vision_reduction_applied") else (b.vision_reduction_applied if "vision_reduction_applied" in b else false)
+
+                if v_timer <= 0:
+                    if "vision_reduction_timer" in b:
+                        b.vision_reduction_timer = timer
+                    elif b.has_method("set_meta"):
+                        b.set_meta("vision_reduction_timer", timer)
+
+                    if not v_applied and "base_perception_radius" in b:
+                        if "perception_radius" in b:
+                            b.perception_radius = b.base_perception_radius * 0.5
+                        if "vision_reduction_applied" in b:
+                            b.vision_reduction_applied = true
+                        elif b.has_method("set_meta"):
+                            b.set_meta("vision_reduction_applied", true)
+
+                var inv = b.inventory if "inventory" in b else ""
+                if inv in ["decoy_flare_item", "decoy_volatile_barrel_item"]:
+                    has_counter = true
+                var env = b.mutated_env if "mutated_env" in b else ""
+                if env == "vision_booster":
+                    has_counter = true
+
+                v_applied = b.get_meta("vision_reduction_applied") if b.has_method("get_meta") and b.has_meta("vision_reduction_applied") else (b.vision_reduction_applied if "vision_reduction_applied" in b else false)
+                if has_counter and v_applied:
+                    if "vision_reduction_timer" in b:
+                        b.vision_reduction_timer = 0.0
+                    elif b.has_method("set_meta"):
+                        b.set_meta("vision_reduction_timer", 0.0)
+
+                    if "perception_radius" in b and "base_perception_radius" in b:
+                        b.perception_radius = b.base_perception_radius
+
+                    if "vision_reduction_applied" in b:
+                        b.vision_reduction_applied = false
+                    elif b.has_method("set_meta"):
+                        b.set_meta("vision_reduction_applied", false)
+
 var GAME_MODES = {
 	"wall_leapers": WallLeapersMode.new(),
+	"vision_reduction_event": VisionReductionEventMode.new(),
 	"networked_black_holes": NetworkedBlackHolesMode.new(),
 
 	"bumper_frenzy": BumperFrenzyMode.new(),

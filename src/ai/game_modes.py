@@ -33307,8 +33307,81 @@ class IceFloorMode(GameMode):
                 b.max_speed = 99999.0
 
 
+
+class VisionReductionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vision Reduction Event"
+        self.description = "A dense fog reduces vision range by 50% for 30 seconds. Stealth items become powerful!"
+        self.duration = 30.0
+        self.timer = 0.0
+        self.active = True
+
+    def setup(self, world, balls):
+        self.timer = self.duration
+        for b in balls:
+            if isinstance(b, dict):
+                pass
+            elif hasattr(b, "base_perception_radius") and getattr(b, "vision_reduction_timer", 0) <= 0:
+                b.vision_reduction_timer = self.duration
+                if not getattr(b, "vision_reduction_applied", False):
+                    b.perception_radius = b.base_perception_radius * 0.5
+                    b.vision_reduction_applied = True
+
+        world["events"].append({
+            "type": "visual_effect",
+            "data": {"type": "thick_fog_start", "x": 0, "y": 0}
+        })
+
+    def tick(self, world, balls, delta):
+        if not self.active:
+            return
+
+        self.timer -= delta
+        if self.timer <= 0:
+            self.active = False
+            for b in balls:
+                if isinstance(b, dict):
+                    pass
+                else:
+                    b.vision_reduction_timer = 0.0
+                    if getattr(b, "vision_reduction_applied", False):
+                        b.perception_radius = getattr(b, "base_perception_radius", 500)
+                        b.vision_reduction_applied = False
+
+            world["events"].append({
+                "type": "visual_effect",
+                "data": {"type": "thick_fog_end", "x": 0, "y": 0}
+            })
+            return
+
+        for b in balls:
+            if isinstance(b, dict):
+                continue
+
+            # Reapply if not active or timer ran out
+            if getattr(b, "vision_reduction_timer", 0) <= 0:
+                b.vision_reduction_timer = self.timer
+                if not getattr(b, "vision_reduction_applied", False) and hasattr(b, "base_perception_radius"):
+                    b.perception_radius = b.base_perception_radius * 0.5
+                    b.vision_reduction_applied = True
+
+            # Flares and torches counter effect
+            has_counter = False
+            if hasattr(b, "inventory") and getattr(b, "inventory", None):
+                if b.inventory in ["decoy_flare_item", "decoy_volatile_barrel_item"]:
+                    has_counter = True
+            if getattr(b, "mutated_env", "") == "vision_booster":
+                has_counter = True
+
+            if has_counter and getattr(b, "vision_reduction_applied", False):
+                b.vision_reduction_timer = 0.0
+                b.perception_radius = getattr(b, "base_perception_radius", 500)
+                b.vision_reduction_applied = False
+
 GAME_MODES = {
     'ice_floor': IceFloorMode(),
+    'vision_reduction_event': VisionReductionEventMode(),
     'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),
 
