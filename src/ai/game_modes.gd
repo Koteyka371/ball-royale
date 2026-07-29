@@ -42013,7 +42013,8 @@ class StationaryTurretsMode extends GameMode:
 				"fire_timer": 0.0,
 				"attack_range": 300.0,
 				"damage": 15.0,
-				"kind": "capture_turret"
+				"hp": 100.0,
+					"kind": "capture_turret"
 			}
 			turrets.append(new_turret)
 
@@ -42025,8 +42026,52 @@ class StationaryTurretsMode extends GameMode:
 				if "arena" in world and "hazards" in world.arena:
 					world.arena.hazards.append(new_turret)
 
+		var alive_turrets = []
 		for i in range(turrets.size()):
 			var t = turrets[i]
+
+			if typeof(t) == TYPE_DICTIONARY and t.get("hp", 100.0) <= 0:
+				if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": t.x, "y": t.y, "radius": 100.0}})
+				elif typeof(world) != TYPE_DICTIONARY and "events" in world:
+					world.events.append({"type": "visual_effect", "data": {"type": "explosion", "x": t.x, "y": t.y, "radius": 100.0}})
+
+				# Deal damage to nearby balls
+				for b in balls:
+					var is_alive = false
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						is_alive = b.alive if "alive" in b else false
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+
+					if is_alive:
+						var dist = sqrt(pow(bx - t.x, 2) + pow(by - t.y, 2))
+						if dist <= 100.0:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = max(0.0, b.get("hp", 100.0) - 50.0)
+							else:
+								if b.has_method("take_damage"):
+									b.take_damage(50.0)
+								else:
+									b.hp = max(0.0, (b.hp if "hp" in b else 100.0) - 50.0)
+
+				if typeof(world) == TYPE_DICTIONARY:
+					if ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY:
+						if world.arena.has("hazards"):
+							world.arena.hazards.erase(t)
+				else:
+					if "arena" in world and "hazards" in world.arena:
+						if typeof(world.arena.hazards) == TYPE_ARRAY and world.arena.hazards.has(t):
+							world.arena.hazards.erase(t)
+				continue
+
+			alive_turrets.append(t)
 			var teams_in_radius = []
 			for b in balls:
 				var is_alive = false
@@ -42116,6 +42161,8 @@ class StationaryTurretsMode extends GameMode:
 								world.events.append({"type": "turret_shot", "x": t.x, "y": t.y, "target_x": ne_x, "target_y": ne_y})
 
 
+
+		turrets = alive_turrets
 
 class SacrificeAltarMode extends GameMode:
 	func _init():
