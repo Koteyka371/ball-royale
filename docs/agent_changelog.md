@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1640] EMP Decoy — *2026-07-29 01:49:34 UTC*
+
+When destroyed, this decoy disables all skills of nearby enemies for a few seconds.
+
+---
+
 ## [idea-1644] Black Hole Collapser — *2026-07-29 01:49:29 UTC*
 
 A hazard that slowly pulls entities toward its center. When it expires, it violently explodes, pushing everyone away.
