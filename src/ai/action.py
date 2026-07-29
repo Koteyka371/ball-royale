@@ -691,6 +691,59 @@ class Action:
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
 
+        if getattr(target, "directional_shield_active", False):
+            import math
+            # If it's a projectile, use the projectile's velocity to determine angle if possible
+            # But the attacker parameter might just be the ball that shot it. Wait, in `_attempt_damage_internal`, `attacker` IS the ball that shot it.
+            # How do we know the projectile's position? If `is_ranged` is true, the `attacker` is usually the ball.
+            # We can use the angle between the target and the attacker's position as a fallback,
+            # but ideally we look for suspended_projectiles or we just use `attacker`.
+
+            a_x = getattr(attacker, 'x', 0.0)
+            a_y = getattr(attacker, 'y', 0.0)
+            t_x = getattr(target, 'x', 0.0)
+            t_y = getattr(target, 'y', 0.0)
+
+            attack_angle = math.atan2(a_y - t_y, a_x - t_x)
+            shield_angle = getattr(target, "directional_shield_angle", 0.0)
+
+            def normalize_angle(a):
+                while a > math.pi: a -= 2*math.pi
+                while a <= -math.pi: a += 2*math.pi
+                return a
+
+            angle_diff = abs(normalize_angle(attack_angle - shield_angle))
+
+            if angle_diff <= math.pi / 2:
+                if is_ranged:
+                    # Reflect the projectile! We do this by capturing it in suspended_projectiles and sending it back.
+                    if not hasattr(target, "suspended_projectiles"):
+                        target.suspended_projectiles = []
+
+                    # Actually physically reflecting a projectile:
+                    # The game uses suspended_projectiles for this in other reflect mechanics (like bounce_shield).
+                    target.suspended_projectiles.append({
+                        "x": target.x,
+                        "y": target.y,
+                        "target": attacker,
+                        "damage": getattr(attacker, "damage", 10.0) * 1.5,
+                        "speed": 1000.0, # Increased velocity
+                        "type": "reflected_projectile"
+                    })
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
+                    return
+                else:
+                    # Melee hit shatters shield and stuns user
+                    target.directional_shield_active = False
+                    target.directional_shield_timer = 0.0
+                    target.stun_timer = max(getattr(target, "stun_timer", 0.0), 2.0)
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_break', 'x': target.x, 'y': target.y}})
+                    return
+
         if getattr(target, "deflector_shield_active", False) and is_ranged:
             if not hasattr(target, "suspended_projectiles"):
                 target.suspended_projectiles = []
@@ -3839,6 +3892,23 @@ class Action:
                     self.world.arena.hazards.append(bh)
                 self.ball.inventory.remove("deployable_black_hole")
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "directional_shield_item" in self.ball.inventory:
+            import math
+            self.ball.directional_shield_active = True
+            self.ball.directional_shield_timer = 5.0
+
+            # Find closest enemy to face
+            enemies = self._get_enemies()
+            target_enemy = None
+            if enemies:
+                target_enemy = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+
+            if target_enemy:
+                self.ball.directional_shield_angle = math.atan2(target_enemy.y - self.ball.y, target_enemy.x - self.ball.x)
+            else:
+                self.ball.directional_shield_angle = getattr(self.ball, "angle", 0.0)
+
+            self.ball.inventory.remove("directional_shield_item")
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "lightning_rod_item" in self.ball.inventory:
             weather_is_ts = hasattr(self.world, "arena") and getattr(self.world.arena, "weather", "") == "thunderstorm"
             if not weather_is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm":
@@ -15157,6 +15227,15 @@ class Action:
                                 self.world.boosters.remove(nearest)
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("buff_collected", {"x": self.ball.x, "y": self.ball.y})
+                elif getattr(nearest, "kind", None) == "directional_shield_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("directional_shield_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "lightning_rod_item":
                     self.ball.has_lightning_rod = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -15975,6 +16054,15 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+                elif getattr(nearest, "kind", None) == "directional_shield_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("directional_shield_item")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "lightning_rod_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -21983,6 +22071,10 @@ class Action:
             if self.ball.half_reflect_shield_timer <= 0:
                 self.ball.half_reflect_shield_active = False
 
+        if hasattr(self.ball, "directional_shield_timer") and self.ball.directional_shield_timer > 0:
+            self.ball.directional_shield_timer -= delta
+            if self.ball.directional_shield_timer <= 0:
+                self.ball.directional_shield_active = False
         if hasattr(self.ball, "energy_shield_timer") and self.ball.energy_shield_timer > 0:
             self.ball.energy_shield_timer -= delta
             if self.ball.energy_shield_timer <= 0:
