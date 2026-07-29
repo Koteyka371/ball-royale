@@ -43118,6 +43118,36 @@ class PulsingBlackHoleMutatorMode(GameMode):
                             b.alive = False
                             b.killer = "pulsing_black_hole"
 
+
+class DirectionalWindMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Directional Wind Mutator"
+        self.description = "A mutator where wind constantly pushes all balls to a random side of the arena."
+        self.mutators_active = True
+        self.mutators = ["directional_wind"]
+        self.wind_dir_x = 0.0
+        self.wind_dir_y = 0.0
+        self.wind_strength = 300.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import math
+        import random
+        angle = random.uniform(0, 2 * math.pi)
+        self.wind_dir_x = math.cos(angle)
+        self.wind_dir_y = math.sin(angle)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                if not hasattr(b, "vx"): b.vx = 0.0
+                if not hasattr(b, "vy"): b.vy = 0.0
+                b.vx += self.wind_dir_x * self.wind_strength * delta
+                b.vy += self.wind_dir_y * self.wind_strength * delta
+
+
 class StationaryBlackHoleMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -43188,6 +43218,7 @@ class StationaryBlackHoleMutatorMode(GameMode):
 
 GAME_MODES['stationary_black_hole_mutator'] = StationaryBlackHoleMutatorMode()
 GAME_MODES['pulsing_black_hole_mutator'] = PulsingBlackHoleMutatorMode()
+GAME_MODES['directional_wind_mutator'] = DirectionalWindMutatorMode()
 GAME_MODES['double_juggernaut'] = DoubleJuggernautMode()
 GAME_MODES['mirror_illusion'] = MirrorIllusionMode()
 from ai.neon_lightcycles import NeonLightcyclesMode
