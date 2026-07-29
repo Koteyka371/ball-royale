@@ -4607,8 +4607,14 @@ class Action:
 
         # Check inventory for reverse_gravity_item
         if hasattr(self.ball, "inventory") and "reverse_gravity_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
-            # Apply reverse gravity status effect
-            self.ball.reverse_gravity_item_timer = 5.0
+            # Spawn reverse gravity field hazard in an area
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                from arena.procedural_arena import Hazard
+                rg_id = len(self.world.arena.hazards) + 8600
+                rg = Hazard(rg_id, self.ball.x, self.ball.y, 250.0, "reverse_gravity_field", 0.0)
+                rg.duration = 5.0
+                setattr(rg, "owner_id", getattr(self.ball, "id", -1))
+                self.world.arena.hazards.append(rg)
             self.ball.inventory.remove("reverse_gravity_item")
             self.ball.use_item = False
 
@@ -9060,15 +9066,18 @@ class Action:
                                 if dist_sq > 0.0001:
                                     import math
                                     dist = math.sqrt(dist_sq)
-                                    # Push upwards and outwards
+                                    # Invert gravity for enemies in the area by buffing them with reverse_gravity_timer
+                                    if getattr(self.ball, "reverse_gravity_timer", 0.0) < 0.5:
+                                        self.ball.reverse_gravity_timer = 0.5
+                                        if hasattr(self.ball, "gravity_multiplier_timer"):
+                                            self.ball.gravity_multiplier_timer = max(getattr(self.ball, "gravity_multiplier_timer", 0.0), 0.5)
+
+                                    # Also push them upwards and outwards gently
                                     nx = -dx / dist
-                                    ny = -1.0 # Violently upwards
-                                    push_strength = 200.0 * delta
+                                    ny = -1.0
+                                    push_strength = 100.0 * delta
                                     self.ball.x += nx * push_strength
                                     self.ball.y += ny * push_strength
-                                    # Heavily disrupt momentum
-                                    if hasattr(self.ball, "vx"): self.ball.vx *= 0.5
-                                    if hasattr(self.ball, "vy"): self.ball.vy *= 0.5
 
                                     # Scatter items
                                     if hasattr(self.ball, "inventory") and len(self.ball.inventory) > 0:

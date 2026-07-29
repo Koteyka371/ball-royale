@@ -1,0 +1,4 @@
+{
+    "title": "Reverse Gravity Item Consumable Mechanic",
+    "description": "Implemented reverse_gravity_item properly as an Area of Effect (AoE) consumable instead of a self-buff. When a ball uses it, it now spawns a reverse_gravity_field hazard that pushes enemies up and outwards in a radius, granting them a reverse_gravity_timer penalty for gravity inversion physics. Backward compatibility was maintained for reverse_gravity_pad which utilizes the self-buff behavior of reverse_gravity_item_timer."
+}
