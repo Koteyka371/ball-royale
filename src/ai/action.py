@@ -6531,14 +6531,27 @@ class Action:
                     if getattr(b, "hp", 1.0) <= 0 or getattr(b, "decoy_timer", 1.0) <= 0 or not getattr(b, "alive", True):
                         if not getattr(b, "_decoy_exploded", False):
                             owner_id = getattr(b, "owner_id", None)
-                            decoy_sibs = [sib for sib in getattr(self.world, "balls", []) if getattr(sib, "is_decoy", False) and getattr(sib, "owner_id", None) == owner_id and (getattr(sib, "hp", 1.0) <= 0 or getattr(sib, "decoy_timer", 1.0) <= 0 or not getattr(sib, "alive", True)) and not getattr(sib, "_decoy_exploded", False)]
-                            simultaneous = (len(decoy_sibs) >= 2)
+                            import math
+
+                            all_exploding = [sib for sib in getattr(self.world, "balls", []) if getattr(sib, "is_decoy", False) and (getattr(sib, "hp", 1.0) <= 0 or getattr(sib, "decoy_timer", 1.0) <= 0 or not getattr(sib, "alive", True)) and not getattr(sib, "_decoy_exploded", False)]
+
+                            # For resonance, find if there are >= 3 decoys near b (including b)
+                            # "near each other" - let's say within 150 units of b
+                            nearby_exploding = [sib for sib in all_exploding if math.hypot(sib.x - b.x, sib.y - b.y) <= 200.0]
+                            resonance = (len(nearby_exploding) >= 3)
+
+                            # For regular simultaneous explosion, we use owner's decoys
+                            decoy_sibs = [sib for sib in all_exploding if getattr(sib, "owner_id", None) == owner_id]
+                            simultaneous = (len(decoy_sibs) >= 2) and not resonance
+
+                            # The decoys that are detonated together as part of this event
+                            involved_decoys = nearby_exploding if resonance else decoy_sibs
 
                             b._decoy_exploded = True
                             b.alive = False
                             b.hp = 0
 
-                            for sib in decoy_sibs:
+                            for sib in involved_decoys:
                                 if sib != b:
                                     sib._decoy_exploded = True
                                     sib.alive = False
@@ -6577,11 +6590,21 @@ class Action:
 
                                 radius = 300.0
 
+                            if resonance:
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "resonance_chain_explosion", "x": b.x, "y": b.y, "radius": 400.0}})
+                            else:
+                                if hasattr(self.world, "events"):
+                                    self.world.events.append({"type": "visual_effect", "data": {"type": "decoy_explosion", "x": b.x, "y": b.y, "radius": radius}})
+
                             decoy_element = getattr(b, "element", None)
                             if decoy_element:
                                 radius *= 1.25
 
-                            if simultaneous:
+                            if resonance:
+                                radius = 400.0
+                                explosion_damage = 250.0
+                            elif simultaneous:
                                 radius *= 2.0
                                 explosion_damage *= 2.0
 
@@ -6639,7 +6662,21 @@ class Action:
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
                                                     actual_damage *= 1.25
-                                                other.hp -= actual_damage
+
+                                                if resonance:
+                                                    # True damage ignoring armor
+                                                    other.hp -= actual_damage
+                                                    # Pull toward center
+                                                    pull_dist = dist
+                                                    if pull_dist > 0.1:
+                                                        pull_force = 200.0 * (1.0 - pull_dist / radius)
+                                                        nx = (b.x - other.x) / pull_dist
+                                                        ny = (b.y - other.y) / pull_dist
+                                                        other.x += nx * pull_force
+                                                        other.y += ny * pull_force
+                                                else:
+                                                    other.hp -= actual_damage
+
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                                 if getattr(b, "proximity_detonated", False):
                                                     other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 3.0
@@ -6647,7 +6684,20 @@ class Action:
                                                 actual_damage = explosion_damage
                                                 if getattr(b, "rearm_damage_boost", False):
                                                     actual_damage *= 1.25
-                                                other.hp -= actual_damage
+
+                                                if resonance:
+                                                    # True damage ignoring armor
+                                                    other.hp -= actual_damage
+                                                    # Pull toward center
+                                                    pull_dist = dist
+                                                    if pull_dist > 0.1:
+                                                        pull_force = 200.0 * (1.0 - pull_dist / radius)
+                                                        nx = (b.x - other.x) / pull_dist
+                                                        ny = (b.y - other.y) / pull_dist
+                                                        other.x += nx * pull_force
+                                                        other.y += ny * pull_force
+                                                else:
+                                                    other.hp -= actual_damage
                                                 other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 2.0
                                                 if getattr(b, "proximity_detonated", False):
                                                     other.stutter_timer = getattr(other, "stutter_timer", 0.0) + 3.0
@@ -6777,16 +6827,47 @@ class Action:
                                         other.x -= (dx/dist) * pull_strength
                                         other.y -= (dy/dist) * pull_strength
 
-                            # Spawn poison cloud
+                            # Spawn poison cloud (if applicable based on some logic) or scorched earth for resonance
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                                try:
-                                    from arena.procedural_arena import Hazard
-                                    h_id = 9000 + len(self.world.arena.hazards) + int(b.x) + int(b.y)
-                                    cloud = Hazard(id=h_id, x=b.x, y=b.y, radius=100.0, kind="poison_cloud", damage=10.0)
-                                    setattr(cloud, "duration", 5.0)
-                                    self.world.arena.hazards.append(cloud)
-                                except Exception:
-                                    pass
+                                if resonance:
+                                    import random
+                                    h_id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                    if hasattr(self.world, "next_id"):
+                                        self.world.next_id += 1
+
+                                    try:
+                                        from arena.arena_types import Hazard
+                                        hz = Hazard(h_id, b.x, b.y, 80.0, "scorched_earth", 0.0)
+                                        hz.duration = 9999.0
+                                        hz.damage = 15.0
+                                        self.world.arena.hazards.append(hz)
+                                    except ImportError:
+                                        try:
+                                            from arena.procedural_arena import Hazard
+                                            hz = Hazard(id=h_id, x=b.x, y=b.y, radius=80.0, kind="scorched_earth", damage=15.0)
+                                            setattr(hz, "duration", 9999.0)
+                                            self.world.arena.hazards.append(hz)
+                                        except ImportError:
+                                            class MockHz:
+                                                pass
+                                            hz = MockHz()
+                                            hz.id = h_id
+                                            hz.x = b.x
+                                            hz.y = b.y
+                                            hz.radius = 80.0
+                                            hz.kind = "scorched_earth"
+                                            hz.damage = 15.0
+                                            hz.duration = 9999.0
+                                            self.world.arena.hazards.append(hz)
+                                else:
+                                    try:
+                                        from arena.procedural_arena import Hazard
+                                        h_id = 9000 + len(self.world.arena.hazards) + int(b.x) + int(b.y)
+                                        cloud = Hazard(id=h_id, x=b.x, y=b.y, radius=100.0, kind="poison_cloud", damage=10.0)
+                                        setattr(cloud, "duration", 5.0)
+                                        self.world.arena.hazards.append(cloud)
+                                    except Exception:
+                                        pass
 
         if getattr(self.ball, "is_illusion", False) and not getattr(self.ball, "is_mimic_charging", False) and not getattr(self.ball, "is_mimic_clone", False):
             self.ball.illusion_timer -= delta
