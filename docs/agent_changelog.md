@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1661] Weather Event: Eclipse — *2026-07-29 08:59:01 UTC*
+
+A new procedural arena event that reduces the vision range of all entities by 50% for 30 seconds. Players must rely on proximity and sound cues, while stealth items become exceptionally powerful. Torches or flares could counter this effect.
+
+---
+
 ## [idea-1669] Decoy Drone — *2026-07-29 08:06:26 UTC*
 
 Drone that distracts guards.
