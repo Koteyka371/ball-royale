@@ -18033,14 +18033,14 @@ func execute(strategy: String, delta: float):
 
                                 var nx = -dx / dist
                                 var ny = -1.0
-                                var push_strength = 100.0 * delta
+                                var push_force = 1500.0
 
                                 if typeof(self.ball) == TYPE_OBJECT:
-                                    if "x" in self.ball: self.ball.x += nx * push_strength
-                                    if "y" in self.ball: self.ball.y += ny * push_strength
+                                    if "vx" in self.ball: self.ball.vx += nx * push_force * delta
+                                    if "vy" in self.ball: self.ball.vy += ny * push_force * delta
                                 elif typeof(self.ball) == TYPE_DICTIONARY:
-                                    if self.ball.has("x"): self.ball["x"] += nx * push_strength
-                                    if self.ball.has("y"): self.ball["y"] += ny * push_strength
+                                    if self.ball.has("vx"): self.ball["vx"] += nx * push_force * delta
+                                    if self.ball.has("vy"): self.ball["vy"] += ny * push_force * delta
 
                                 # Scatter items
                                 var ball_inv = []

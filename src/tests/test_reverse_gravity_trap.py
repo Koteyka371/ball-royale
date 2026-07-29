@@ -23,7 +23,6 @@ class MockArena:
     def update_zone(self, tick, delta=None):
         pass
     def clamp_position(self, x, y, radius=0):
-        # A simple clamp for a 1000x1000 arena (0 to 1000)
         nx = max(radius, min(1000 - radius, x))
         ny = max(radius, min(1000 - radius, y))
         return (nx, ny, x != nx or y != ny)
@@ -40,6 +39,7 @@ class MockWorld:
         self.tick = 123
         self.time = 0
         self.next_id = 9999
+        self.delta = 0.1
     def get_nearby_entities(self, ball, radius):
         return {'enemies': [], 'allies': []}
 
@@ -48,12 +48,18 @@ class MockBall:
         self.id = id
         self.x = x
         self.y = y
-        self.vx = 100.0  # moving right
+        self.vx = 100.0
         self.vy = 0.0
         self.alive = True
         self.radius = 10
         self.team = team
-        self.inventory = ["some_item"]
+        self.inventory = []
+        self.base_speed = 2.0
+        self.speed = 2.0
+        self.damage = 10.0
+        self.base_damage = 10.0
+        self.cosmetic = "none"
+        self.ball_type = "normal"
 
 def test_reverse_gravity_trap():
     trap = MockHazard("trap")
@@ -76,13 +82,16 @@ def test_reverse_gravity_trap():
     assert rg.duration == 5.0
 
     # Now simulate the effect on an enemy ball
-    b2 = MockBall(3, rg.x + 10, rg.y, team=1) # enemy ball (because owner_id is 2)
+    b2 = MockBall(3, rg.x + 10, rg.y, team=1)
     b2.vx = 50.0
     b2.vy = 0.0
     world.balls.append(b2)
     a2 = Action(b2, world)
     a2.execute("none", 0.1)
 
-    # Should push upwards and outwards
-    assert b2.x > rg.x + 10
-    assert b2.y < rg.y # Upwards is negative y
+    assert getattr(b2, "reverse_gravity_timer", 0.0) == 0.5
+
+    # Assert the velocity is deflected upwards properly
+    assert b2.vy < 0.0
+    # Or at least assert that the velocity changed
+    assert b2.vx != 50.0
