@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1685] Idea 2: Phantom Walk — *2026-07-30 09:53:49 UTC*
+
+A new skill that allows the ball to ignore walls and pass through enemies while dealing heavy tick damage for 3 seconds.
+
+---
+
 ## [idea-1699] Stasis Bubble — *2026-07-30 09:53:43 UTC*
 
 A deployable bubble that freezes projectiles and entities in time when they enter it, creating a brief safe zone or trapping enemies.
