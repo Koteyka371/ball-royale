@@ -25759,6 +25759,58 @@ func execute(strategy: String, delta: float):
                 if inv_t < 0: inv_t = 0.0
                 self.ball.set_meta("invert_timer", inv_t)
 
+        var safe_zone_teleport_t = 0.0
+        if "safe_zone_teleport_timer" in self.ball:
+            safe_zone_teleport_t = float(self.ball.safe_zone_teleport_timer)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("safe_zone_teleport_timer"):
+            safe_zone_teleport_t = float(self.ball.get_meta("safe_zone_teleport_timer"))
+
+        if safe_zone_teleport_t > 0:
+            safe_zone_teleport_t -= delta
+            if safe_zone_teleport_t < 0:
+                safe_zone_teleport_t = 0.0
+            if "safe_zone_teleport_timer" in self.ball:
+                self.ball.safe_zone_teleport_timer = safe_zone_teleport_t
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("safe_zone_teleport_timer", safe_zone_teleport_t)
+
+            if safe_zone_teleport_t > 0:
+                var sz_cx = null
+                var sz_cy = null
+                var sz_r = null
+                if self.world != null and "arena" in self.world:
+                    if "safe_zone_center" in self.world.arena:
+                        var szc = self.world.arena.safe_zone_center
+                        if typeof(szc) == TYPE_ARRAY:
+                            sz_cx = szc[0]
+                            sz_cy = szc[1]
+                        else:
+                            sz_cx = szc.x
+                            sz_cy = szc.y
+                    else:
+                        var w = 1000
+                        var h = 1000
+                        if "width" in self.world.arena: w = self.world.arena.width
+                        if "height" in self.world.arena: h = self.world.arena.height
+                        sz_cx = w / 2.0
+                        sz_cy = h / 2.0
+
+                    if "safe_zone_radius" in self.world.arena:
+                        sz_r = self.world.arena.safe_zone_radius
+                    else:
+                        sz_r = 5000.0
+
+                if sz_cx != null and sz_cy != null and sz_r != null:
+                    var dx = self.ball.x - sz_cx
+                    var dy = self.ball.y - sz_cy
+                    var dist = sqrt(dx*dx + dy*dy)
+                    if dist > sz_r:
+                        if "x" in self.ball:
+                            self.ball.x = sz_cx
+                            self.ball.y = sz_cy
+                        if self.world != null and self.world.has_method("add_event"):
+                            self.world.add_event("visual_effect", {"type": "teleport", "x": sz_cx, "y": sz_cy})
+
         var safe_zone_t = 0.0
         if "safe_zone_booster_timer" in self.ball:
             safe_zone_t = float(self.ball.safe_zone_booster_timer)
@@ -29044,6 +29096,20 @@ func _collect_booster(delta: float):
                         self.world.arena.hazards.remove_at(idx)
 
 
+            elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "safe_zone_teleport_booster":
+                self.ball.set_meta("safe_zone_teleport_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "safe_zone_teleport_booster":
+                self.ball.set_meta("safe_zone_teleport_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
             elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "safe_zone_booster":
                 self.ball.set_meta("safe_zone_booster_timer", 10.0)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -31700,6 +31766,20 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "safe_zone_teleport_booster":
+                self.ball.set_meta("safe_zone_teleport_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
+            elif typeof(nearest) == TYPE_DICTIONARY and nearest.has("kind") and nearest["kind"] == "safe_zone_teleport_booster":
+                self.ball.set_meta("safe_zone_teleport_timer", 10.0)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    if self.world.arena.hazards.has(nearest):
+                        self.world.arena.hazards.erase(nearest)
+                if self.world != null and "boosters" in self.world and self.world.boosters.has(nearest):
+                    self.world.boosters.erase(nearest)
             elif typeof(nearest) == TYPE_OBJECT and "kind" in nearest and nearest.kind == "safe_zone_booster":
                 self.ball.set_meta("safe_zone_booster_timer", 10.0)
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:

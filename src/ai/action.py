@@ -16045,6 +16045,13 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "safe_zone_teleport_booster":
+                    self.ball.safe_zone_teleport_timer = 10.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "safe_zone_booster":
                     self.ball.safe_zone_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -22672,6 +22679,32 @@ class Action:
 
 
 
+
+        if getattr(self.ball, "safe_zone_teleport_timer", 0.0) > 0:
+            self.ball.safe_zone_teleport_timer -= delta
+            if self.ball.safe_zone_teleport_timer < 0:
+                self.ball.safe_zone_teleport_timer = 0.0
+
+            if self.ball.safe_zone_teleport_timer > 0:
+                # check if outside safe zone
+                sz_cx, sz_cy = None, None
+                sz_r = None
+                if hasattr(self.world, "arena"):
+                    if hasattr(self.world.arena, "safe_zone_center"):
+                        sz_cx, sz_cy = self.world.arena.safe_zone_center
+                    else:
+                        sz_cx = getattr(self.world.arena, "width", 1000) / 2
+                        sz_cy = getattr(self.world.arena, "height", 1000) / 2
+
+                    sz_r = getattr(self.world.arena, "safe_zone_radius", 5000.0)
+
+                if sz_cx is not None and sz_cy is not None and sz_r is not None:
+                    dist = ((self.ball.x - sz_cx)**2 + (self.ball.y - sz_cy)**2)**0.5
+                    if dist > sz_r:
+                        self.ball.x = sz_cx
+                        self.ball.y = sz_cy
+                        if hasattr(self.world, "add_event"):
+                            self.world.add_event("visual_effect", {"type": "teleport", "x": sz_cx, "y": sz_cy})
 
         if getattr(self.ball, "safe_zone_booster_timer", 0.0) > 0:
             self.ball.safe_zone_booster_timer -= delta
