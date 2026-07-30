@@ -14168,6 +14168,17 @@ func execute(strategy: String, delta: float):
                                         var new_skill = max(current_skill, 3.0)
                                         if "skill_timer" in other: other.skill_timer = new_skill
                                         elif other.has_method("set_meta"): other.set_meta("skill_timer", new_skill)
+                                    elif b_decoy_type == "gas" and is_enemy:
+                                        var current_conf = 0.0
+                                        if "confused_timer" in other: current_conf = float(other.confused_timer)
+                                        elif other.has_method("get_meta") and other.has_meta("confused_timer"): current_conf = float(other.get_meta("confused_timer"))
+
+                                        var new_conf = max(current_conf, 3.0)
+                                        if "confused_timer" in other: other.confused_timer = new_conf
+                                        elif other.has_method("set_meta"): other.set_meta("confused_timer", new_conf)
+
+                                        if "is_confused" in other: other.is_confused = true
+                                        elif other.has_method("set_meta"): other.set_meta("is_confused", true)
 
                                     elif is_enemy and b_decoy_type != "healing":
                                         var emp_combo = false

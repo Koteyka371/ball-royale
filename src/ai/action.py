@@ -6869,6 +6869,9 @@ class Action:
                                         elif decoy_type == "emp_decoy" and is_enemy:
                                             other.silence_timer = max(getattr(other, "silence_timer", 0.0), 3.0)
                                             other.skill_timer = max(getattr(other, "skill_timer", 0.0), 3.0)
+                                        elif decoy_type == "gas" and is_enemy:
+                                            other.confused_timer = max(getattr(other, "confused_timer", 0.0), 3.0)
+                                            other.is_confused = True
                                         elif is_enemy and decoy_type != "healing":
                                             # Check for EMP combo (explosive + stun)
                                             emp_combo = False
@@ -18200,7 +18203,7 @@ class Action:
                 for e in nearby_enemies:
                     if hasattr(self, "_spawn_directed_particles"):
                         self._spawn_directed_particles(decoy, e, "tether_link")
-            elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced", "deploy_decoy_black_hole", "deploy_decoy_emp"]:
+            elif skill_name in ["deploy_decoy", "deploy_decoy_flash", "deploy_decoy_advanced", "deploy_decoy_black_hole", "deploy_decoy_emp", "deploy_decoy_gas"]:
                 import copy
                 active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
                 if active_decoys:
@@ -18284,6 +18287,8 @@ class Action:
                             decoy.decoy_type = "black_hole"
                         elif skill_name == "deploy_decoy_emp":
                             decoy.decoy_type = "emp_decoy"
+                        elif skill_name == "deploy_decoy_gas":
+                            decoy.decoy_type = "gas"
                         elif skill_name in ["deploy_decoy_flash", "deploy_decoy_advanced"]:
                             decoy.decoy_type = "flash"
                         elif getattr(self.ball, "ball_type", "") == "trickster":
