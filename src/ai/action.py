@@ -1813,6 +1813,44 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        import math
+        # Gravity Well Booster effect
+        if getattr(self.ball, 'gravity_well_booster_timer', 0.0) > 0.0:
+            self.ball.gravity_well_booster_timer -= delta
+            pull_radius = 200.0
+            pull_force = 300.0
+
+            # Pull enemies
+            for e in self.world.balls:
+                if not getattr(e, 'alive', True) or getattr(e, 'id', None) == getattr(self.ball, 'id', None):
+                    continue
+                # Optional: exclude same team? No, rule doesn't say team only but let's be safe: pull enemies
+                if getattr(e, 'team', 'A') != getattr(self.ball, 'team', 'B'):
+                    dx = self.ball.x - e.x
+                    dy = self.ball.y - e.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if 0 < dist < pull_radius:
+                        f = (pull_force * (1 - dist/pull_radius)) * delta
+                        e.vx += (dx/dist) * f
+                        e.vy += (dy/dist) * f
+
+            # Pull hazards/projectiles
+            if hasattr(self.world, 'arena') and hasattr(self.world.arena, 'hazards'):
+                for h in self.world.arena.hazards:
+                    if getattr(h, 'active', True):
+                        dx = self.ball.x - getattr(h, 'x', 0)
+                        dy = self.ball.y - getattr(h, 'y', 0)
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if 0 < dist < pull_radius:
+                            f = (pull_force * (1 - dist/pull_radius)) * delta
+                            if isinstance(h, dict):
+                                h['vx'] = h.get('vx', 0) + (dx/dist) * f
+                                h['vy'] = h.get('vy', 0) + (dy/dist) * f
+                            elif hasattr(h, 'vx'):
+                                h.vx += (dx/dist) * f
+                                h.vy += (dy/dist) * f
+
+
 
         if getattr(self.ball, "spectral_burn_timer", 0.0) > 0.0:
             self.ball.spectral_burn_timer -= delta
@@ -14527,6 +14565,15 @@ class Action:
                         self.world.boosters.remove(b)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                         self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "gravity_well_booster":
+                    dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.gravity_well_booster_timer = 5.0
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "chameleon_item":
                     dist = math.sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:

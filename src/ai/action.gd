@@ -3371,6 +3371,100 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	var gw_timer = 0.0
+	if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("gravity_well_booster_timer"):
+		gw_timer = float(self.ball["gravity_well_booster_timer"])
+	elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("gravity_well_booster_timer"):
+		gw_timer = float(self.ball.get_meta("gravity_well_booster_timer"))
+	elif typeof(self.ball) == TYPE_OBJECT and "gravity_well_booster_timer" in self.ball:
+		gw_timer = float(self.ball.gravity_well_booster_timer)
+
+	if gw_timer > 0.0:
+		gw_timer -= delta
+		if typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["gravity_well_booster_timer"] = gw_timer
+		elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+			self.ball.set_meta("gravity_well_booster_timer", gw_timer)
+		elif typeof(self.ball) == TYPE_OBJECT and "gravity_well_booster_timer" in self.ball:
+			self.ball.gravity_well_booster_timer = gw_timer
+
+		var pull_radius = 200.0
+		var pull_force = 300.0
+
+		if self.world != null and "balls" in self.world and typeof(self.world.balls) == TYPE_ARRAY:
+			for e in self.world.balls:
+				var e_alive = true
+				if typeof(e) == TYPE_DICTIONARY and e.has("alive"): e_alive = e["alive"]
+				elif typeof(e) == TYPE_OBJECT and "alive" in e: e_alive = e.alive
+
+				var e_id = -1
+				if typeof(e) == TYPE_DICTIONARY and e.has("id"): e_id = e["id"]
+				elif typeof(e) == TYPE_OBJECT and "id" in e: e_id = e.id
+				var my_id = -2
+				if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+				elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: my_id = self.ball.id
+
+				if not e_alive or e_id == my_id:
+					continue
+
+				var e_team = "A"
+				if typeof(e) == TYPE_DICTIONARY and e.has("team"): e_team = e["team"]
+				elif typeof(e) == TYPE_OBJECT and "team" in e: e_team = e.team
+				var my_team = "B"
+				if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+				elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+
+				if e_team != my_team:
+					var ex = 0.0
+					var ey = 0.0
+					if typeof(e) == TYPE_DICTIONARY:
+						if e.has("x"): ex = e["x"]
+						if e.has("y"): ey = e["y"]
+					elif typeof(e) == TYPE_OBJECT:
+						if "x" in e: ex = e.x
+						if "y" in e: ey = e.y
+
+					var dx = self.ball.x - ex
+					var dy = self.ball.y - ey
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0 and dist < pull_radius:
+						var f = (pull_force * (1.0 - dist/pull_radius)) * delta
+						if typeof(e) == TYPE_DICTIONARY:
+							e["vx"] = e.get("vx", 0.0) + (dx/dist) * f
+							e["vy"] = e.get("vy", 0.0) + (dy/dist) * f
+						elif typeof(e) == TYPE_OBJECT and "vx" in e:
+							e.vx += (dx/dist) * f
+							e.vy += (dy/dist) * f
+
+		if self.world != null and "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+			for h in self.world.arena.hazards:
+				var h_active = true
+				if typeof(h) == TYPE_DICTIONARY and h.has("active"): h_active = h["active"]
+				elif typeof(h) == TYPE_OBJECT and "active" in h: h_active = h.active
+
+				if h_active:
+					var hx = 0.0
+					var hy = 0.0
+					if typeof(h) == TYPE_DICTIONARY:
+						if h.has("x"): hx = h["x"]
+						if h.has("y"): hy = h["y"]
+					elif typeof(h) == TYPE_OBJECT:
+						if "x" in h: hx = h.x
+						if "y" in h: hy = h.y
+
+					var dx = self.ball.x - hx
+					var dy = self.ball.y - hy
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist > 0 and dist < pull_radius:
+						var f = (pull_force * (1.0 - dist/pull_radius)) * delta
+						if typeof(h) == TYPE_DICTIONARY:
+							h["vx"] = h.get("vx", 0.0) + (dx/dist) * f
+							h["vy"] = h.get("vy", 0.0) + (dy/dist) * f
+						elif typeof(h) == TYPE_OBJECT and "vx" in h:
+							h.vx += (dx/dist) * f
+							h.vy += (dy/dist) * f
+
+
 	var spectral_timer = 0.0
 	if typeof(self.ball) == TYPE_OBJECT:
 		if "spectral_burn_timer" in self.ball: spectral_timer = self.ball.spectral_burn_timer
@@ -28491,6 +28585,38 @@ func _collect_booster(delta: float):
                     self.world.boosters.erase(b)
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
+            elif b_kind == "gravity_well_booster":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                elif typeof(b) == TYPE_OBJECT:
+                    if "x" in b: bx = b.x
+                    if "y" in b: by = b.y
+                var bradius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): bradius = b["radius"]
+                elif typeof(b) == TYPE_OBJECT and "radius" in b: bradius = b.radius
+                var ball_rad = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): ball_rad = self.ball["radius"]
+                elif typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: ball_rad = self.ball.radius
+                var dist = sqrt(pow(bx - self.ball.x, 2) + pow(by - self.ball.y, 2))
+
+                if dist <= ball_rad + bradius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["gravity_well_booster_timer"] = 5.0
+                    elif self.ball.has_method("set_meta"):
+                        self.ball.set_meta("gravity_well_booster_timer", 5.0)
+                    elif "gravity_well_booster_timer" in self.ball:
+                        self.ball.gravity_well_booster_timer = 5.0
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    elif typeof(b) == TYPE_OBJECT and "active" in b: b.active = false
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
             elif b_kind == "chameleon_item":
                 var bx = 0.0
                 var by = 0.0
