@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1714] Nightmare Hazard — *2026-07-30 17:59:51 UTC*
+
+During the Haunted Event, a new hazard called Nightmare appears. It specifically targets players with low stamina, chasing them at high speeds. If it catches them, it inflicts a 'Feared' status effect, making their controls inverted for a short duration.
+
+---
+
 ## [idea-1695] Shrinking Zones Speed Modifier — *2026-07-30 17:50:52 UTC*
 
 Players outside the shrinking safe zone should not only take damage, but also be affected by a significant speed penalty (e.g., -50% speed) which makes it harder for them to return to the safe area if they wander too far off. This encourages early positioning.
