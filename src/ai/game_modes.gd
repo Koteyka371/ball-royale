@@ -71628,3 +71628,6 @@ class QuantumWormholeMode extends GameMode:
 						break
 
 GAME_MODES['quantum_wormhole'] = QuantumWormholeMode.new()
+
+var DecoySwapSurvivalModeClass = load("res://src/ai/decoy_swap_mode.gd")
+GAME_MODES["decoy_swap_survival"] = DecoySwapSurvivalModeClass.new()

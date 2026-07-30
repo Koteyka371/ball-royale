@@ -45448,3 +45448,6 @@ class QuantumWormholeMode(GameMode):
                             break
 
 GAME_MODES['quantum_wormhole'] = QuantumWormholeMode()
+
+from ai.decoy_swap_mode import DecoySwapSurvivalMode
+GAME_MODES['decoy_swap_survival'] = DecoySwapSurvivalMode()
