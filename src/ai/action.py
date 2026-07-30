@@ -9959,6 +9959,44 @@ class Action:
                                         self.ball.is_confused = True
                                     self.ball.confusion_timer = max(getattr(self.ball, "confusion_timer", 0.0), 3.0)
                                     self.ball.invert_timer = max(getattr(self.ball, "invert_timer", 0.0), 3.0)
+                                elif trap_variant == "shriek":
+                                    # Shriek trap: emit deafening shriek, reducing perception and revealing stealthy entities in area
+                                    owner_id = getattr(hazard, "owner_id", None)
+                                    owner_team = None
+                                    if owner_id is not None and hasattr(self.world, "balls"):
+                                        owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id), None)
+                                        if owner:
+                                            owner_team = getattr(owner, "team", getattr(owner, "ball_type", ""))
+
+                                    shriek_radius = getattr(hazard, "radius", 50.0) * 1.5 # Area of effect is slightly larger than trap trigger
+
+                                    if hasattr(self.world, "balls"):
+                                        for b in self.world.balls:
+                                            if not getattr(b, "alive", True): continue
+                                            b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+
+                                            # Affect everyone, or only enemies if we can determine the owner
+                                            if owner_team is not None and b_team == owner_team:
+                                                continue
+
+                                            dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                            if dist_sq <= shriek_radius**2:
+                                                # Reduce perception
+                                                if not getattr(b, "is_blinded", False):
+                                                    b.is_blinded = True
+                                                    b.blindness_timer = 3.0
+                                                    if not hasattr(b, "base_perception_radius"):
+                                                        b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                                                    b.perception_radius = b.base_perception_radius * 0.1 # Near zero
+                                                else:
+                                                    b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 3.0)
+
+                                                # Reveal stealthy entities
+                                                if getattr(b, "invisible_timer", 0.0) > 0.0:
+                                                    b.invisible_timer = 0.0
+                                                    if hasattr(b, "is_invisible"):
+                                                        b.is_invisible = False
+                                    hazard.duration = 0.0
                                 elif trap_variant == "blindness":
                                     if not getattr(self.ball, "is_blinded", False):
                                         self.ball.is_blinded = True
