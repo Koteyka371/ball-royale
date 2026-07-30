@@ -24524,16 +24524,22 @@ func execute(strategy: String, delta: float):
                 elif link_target.has_method("set_meta"): link_target.set_meta("damage_link_is_receiving_silence", false)
 
 
-    if is_hologram_stat:
+        if is_hologram_stat:
         var hx = 1.0
         var hy = 0.0
         var bspeed = 1000.0
         if typeof(self.ball) == TYPE_DICTIONARY:
             hx = self.ball.get("hologram_dir_x", 1.0)
             hy = self.ball.get("hologram_dir_y", 0.0)
+            self.ball["vx"] = hx * bspeed
+            self.ball["vy"] = hy * bspeed
         else:
             if self.ball.has_method("has_meta") and self.ball.has_meta("hologram_dir_x"): hx = self.ball.get_meta("hologram_dir_x")
             if self.ball.has_method("has_meta") and self.ball.has_meta("hologram_dir_y"): hy = self.ball.get_meta("hologram_dir_y")
+            if "vx" in self.ball: self.ball.vx = hx * bspeed
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", hx * bspeed)
+            if "vy" in self.ball: self.ball.vy = hy * bspeed
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", hy * bspeed)
 
         var bx = 0.0
         var by = 0.0
@@ -24544,17 +24550,12 @@ func execute(strategy: String, delta: float):
             bx = self.ball.x
             by = self.ball.y
 
-        bx += hx * bspeed * delta * 60.0
-        by += hy * bspeed * delta * 60.0
-
         if self.world != null and "arena" in self.world and self.world.arena != null and self.world.arena.has_method("clamp_position"):
             var bradius = 10.0
             if typeof(self.ball) == TYPE_DICTIONARY: bradius = self.ball.get("radius", 10.0)
             elif "radius" in self.ball: bradius = self.ball.radius
 
             var clamp_res = self.world.arena.clamp_position(bx, by, bradius)
-            bx = clamp_res[0]
-            by = clamp_res[1]
             var bounced = clamp_res[2]
             if bounced:
                 hx = -hx + (randf() - 0.5) * 0.5
@@ -24570,13 +24571,6 @@ func execute(strategy: String, delta: float):
                     if self.ball.has_method("set_meta"):
                         self.ball.set_meta("hologram_dir_x", hx)
                         self.ball.set_meta("hologram_dir_y", hy)
-
-        if typeof(self.ball) == TYPE_DICTIONARY:
-            self.ball["x"] = bx
-            self.ball["y"] = by
-        else:
-            self.ball.x = bx
-            self.ball.y = by
         return
     if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
         var i = self.world.arena.hazards.size() - 1

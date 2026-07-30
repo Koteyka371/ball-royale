@@ -84,9 +84,8 @@ def test_hologram_booster_spawns_holograms_and_they_move_fast():
     # Tick hologram to move
     # First, tick with a small delta to observe movement speed
     holo_action = Action(holo, world)
-    start_x, start_y = holo.x, holo.y
     holo_action.execute("idle", 0.016)
 
-    moved_dist = math.sqrt((holo.x - start_x)**2 + (holo.y - start_y)**2)
-    expected_dist = 1000.0 * 0.016 * 60 # wait, action.py uses 1000.0 * delta * 60 = 960.0
-    assert abs(moved_dist - expected_dist) < 1.0, f"Expected {expected_dist} but got {moved_dist}"
+    speed = math.sqrt(holo.vx**2 + holo.vy**2)
+    expected_speed = 1000.0
+    assert abs(speed - expected_speed) < 1.0, f"Expected {expected_speed} but got {speed}"

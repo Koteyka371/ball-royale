@@ -12297,25 +12297,11 @@ class Action:
 
 
         if getattr(self.ball, "is_hologram", False):
-            import math
-            import random
             hx = getattr(self.ball, "hologram_dir_x", 1.0)
             hy = getattr(self.ball, "hologram_dir_y", 0.0)
             spd = 1000.0
-            self.ball.x += hx * spd * delta * 60
-            self.ball.y += hy * spd * delta * 60
-
-            if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
-                cx, cy, bounced = self.world.arena.clamp_position(self.ball.x, self.ball.y, getattr(self.ball, "radius", 10))
-                if bounced:
-                    self.ball.hologram_dir_x = -hx + (random.random() - 0.5) * 0.5
-                    self.ball.hologram_dir_y = -hy + (random.random() - 0.5) * 0.5
-                    dist = math.sqrt(self.ball.hologram_dir_x**2 + self.ball.hologram_dir_y**2)
-                    if dist > 0:
-                        self.ball.hologram_dir_x /= dist
-                        self.ball.hologram_dir_y /= dist
-                self.ball.x = cx
-                self.ball.y = cy
+            self.ball.vx = hx * spd
+            self.ball.vy = hy * spd
             return
         if strategy == "flee":
             self._flee(delta)
