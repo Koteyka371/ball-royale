@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1688] Mirror Hazard — *2026-07-30 05:51:53 UTC*
+
+A hazard that creates identical visual clones of balls entering it, making it confusing to target the real ball for a short duration.
+
+---
+
 ## [idea-1656] Chameleon Booster — *2026-07-30 04:40:53 UTC*
 
 A booster item that grants temporary invisibility while standing completely still, but breaking movement instantly breaks stealth and resets the cooldown.
