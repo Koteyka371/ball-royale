@@ -43565,6 +43565,90 @@ func _update_skill_timer(delta: float):
         if "confusion_zone_timer" in self.ball: self.ball.confusion_zone_timer = 0.0
         elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("confusion_zone_timer", 0.0)
 
+    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+        for hazard in self.world.arena.hazards:
+            var h_kind = ""
+            if "kind" in hazard: h_kind = hazard.kind
+            elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): h_kind = hazard["kind"]
+            elif typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+            if h_kind == "mirage_field":
+                var hx = hazard.x if "x" in hazard else (hazard["x"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("x"))
+                var hy = hazard.y if "y" in hazard else (hazard["y"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("y"))
+                var bx = self.ball.x if "x" in self.ball else (self.ball["x"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get_meta("x"))
+                var by = self.ball.y if "y" in self.ball else (self.ball["y"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get_meta("y"))
+
+                var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+                var r = 50.0
+                if "radius" in hazard: r = float(hazard.radius)
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): r = float(hazard["radius"])
+                elif typeof(hazard) != TYPE_DICTIONARY and hazard.has_method("get_meta") and hazard.has_meta("radius"): r = float(hazard.get_meta("radius"))
+
+                if dist_sq <= r*r:
+                    var m_cd = 0.0
+                    if "mirage_cooldown" in self.ball: m_cd = float(self.ball.mirage_cooldown)
+                    elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("mirage_cooldown"): m_cd = float(self.ball.get_meta("mirage_cooldown"))
+
+                    if m_cd <= 0.0:
+                        if "mirage_cooldown" in self.ball: self.ball.mirage_cooldown = 2.0
+                        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("mirage_cooldown", 2.0)
+
+                        # Create clones
+                        for i in range(2):
+                            var clone_obj = null
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                clone_obj = self.ball.duplicate()
+                            elif self.ball.has_method("duplicate"):
+                                clone_obj = self.ball.duplicate()
+                            else:
+                                clone_obj = {"is_hologram": true}
+
+                            var next_id = 999999
+                            if "next_id" in self.world:
+                                next_id = self.world.next_id
+                                self.world.next_id += 1
+
+                            var c_bx = bx + randf_range(-20.0, 20.0)
+                            var c_by = by + randf_range(-20.0, 20.0)
+
+                            if clone_obj != null:
+                                if typeof(clone_obj) == TYPE_DICTIONARY:
+                                    clone_obj["id"] = next_id
+                                    clone_obj["x"] = c_bx
+                                    clone_obj["y"] = c_by
+                                    clone_obj["hp"] = 1.0
+                                    clone_obj["max_hp"] = 1.0
+                                    clone_obj["is_hologram"] = true
+                                    clone_obj["hologram_timer"] = 3.0
+                                    clone_obj["clone_owner"] = self.ball.id if "id" in self.ball else (self.ball["id"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get_meta("id"))
+                                else:
+                                    if "id" in clone_obj: clone_obj.id = next_id
+                                    if "x" in clone_obj: clone_obj.x = c_bx
+                                    if "y" in clone_obj: clone_obj.y = c_by
+                                    if "hp" in clone_obj: clone_obj.hp = 1.0
+                                    if "max_hp" in clone_obj: clone_obj.max_hp = 1.0
+
+                                    if clone_obj.has_method("set_meta"):
+                                        clone_obj.set_meta("is_hologram", true)
+                                        clone_obj.set_meta("hologram_timer", 3.0)
+                                        clone_obj.set_meta("clone_owner", self.ball.id if "id" in self.ball else (self.ball["id"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get_meta("id")))
+                                    elif "is_hologram" in clone_obj:
+                                        clone_obj.is_hologram = true
+                                        clone_obj.hologram_timer = 3.0
+                                        clone_obj.clone_owner = self.ball.id if "id" in self.ball else (self.ball["id"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.get_meta("id"))
+
+                                if "balls" in self.world:
+                                    self.world.balls.append(clone_obj)
+
+    var cur_m_cd = 0.0
+    if "mirage_cooldown" in self.ball: cur_m_cd = float(self.ball.mirage_cooldown)
+    elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("mirage_cooldown"): cur_m_cd = float(self.ball.get_meta("mirage_cooldown"))
+
+    if cur_m_cd > 0.0:
+        cur_m_cd -= delta
+        if "mirage_cooldown" in self.ball: self.ball.mirage_cooldown = cur_m_cd
+        elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("mirage_cooldown", cur_m_cd)
+
     var bm_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("blood_magic_timer"):
         bm_timer = float(self.ball.get_meta("blood_magic_timer"))

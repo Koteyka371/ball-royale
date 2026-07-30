@@ -1727,6 +1727,10 @@ func update_zone(current_tick: int, delta: float) -> void:
                 if randf() < 0.1:
                     h.kind = "confusion_zone"
                     h.damage = 0.0
+
+                elif randf() < 0.1:
+                    h.kind = "mirage_field"
+                    h.damage = 0.0
                 elif randf() < 0.1:
                     h.kind = "drone_item"
                     h.damage = 0.0

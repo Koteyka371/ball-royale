@@ -22085,6 +22085,40 @@ class Action:
             if hasattr(self.ball, "confusion_zone_timer"):
                 self.ball.confusion_zone_timer = 0.0
 
+        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") == "mirage_field":
+                    dist_sq = (self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2
+                    r = getattr(hazard, "radius", 50.0)
+                    if dist_sq <= r*r:
+                        if getattr(self.ball, "mirage_cooldown", 0.0) <= 0.0:
+                            self.ball.mirage_cooldown = 2.0
+                            import copy
+                            import random
+                            for _ in range(2):
+                                try:
+                                    clone = copy.copy(self.ball)
+                                    clone.id = getattr(self.world, "next_id", random.randint(100000, 999999))
+                                    if hasattr(self.world, "next_id"):
+                                        self.world.next_id += 1
+
+                                    clone.x = self.ball.x + random.uniform(-20, 20)
+                                    clone.y = self.ball.y + random.uniform(-20, 20)
+                                    clone.hp = 1.0
+                                    clone.max_hp = 1.0
+                                    clone.is_hologram = True
+                                    clone.hologram_timer = 3.0
+                                    clone.clone_owner = getattr(self.ball, "id", None)
+                                    clone.skill = None
+                                    clone.active_skill = None
+
+                                    self.world.balls.append(clone)
+                                except Exception:
+                                    pass
+
+        if getattr(self.ball, "mirage_cooldown", 0.0) > 0.0:
+            self.ball.mirage_cooldown -= delta
+
         if getattr(self.ball, "blood_magic_timer", 0.0) > 0.0:
             current_st = getattr(self.ball, "skill_timer", 0.0)
             prev_st = getattr(self.ball, "_prev_skill_timer", 0.0)
