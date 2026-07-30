@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1701] Decoy Minefield Mode — *2026-07-30 10:03:13 UTC*
+
+A game mode where the arena is seeded with dormant decoys that activate and walk around randomly when players approach. They act as moving proximity mines that confuse and detonate, adding a stealth and careful movement requirement to navigation.
+
+---
+
 ## [idea-1685] Idea 2: Phantom Walk — *2026-07-30 09:53:49 UTC*
 
 A new skill that allows the ball to ignore walls and pass through enemies while dealing heavy tick damage for 3 seconds.
