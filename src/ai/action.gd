@@ -419,6 +419,31 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.damage = orig_dmg
 
 func _attempt_damage_internal(attacker, target) -> void:
+	var is_trap_holo = false
+	if typeof(target) == TYPE_DICTIONARY and target.has("is_trap_hologram"): is_trap_holo = target["is_trap_hologram"]
+	elif typeof(target) == TYPE_OBJECT and "is_trap_hologram" in target: is_trap_holo = target.is_trap_hologram
+	elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("is_trap_hologram"): is_trap_holo = target.get_meta("is_trap_hologram")
+
+	if is_trap_holo:
+		if typeof(attacker) == TYPE_DICTIONARY:
+			attacker["minimap_ping_timer"] = 3.0
+			if attacker.has("hp"): attacker["hp"] -= 5.0
+		elif typeof(attacker) == TYPE_OBJECT:
+			if "minimap_ping_timer" in attacker: attacker.minimap_ping_timer = 3.0
+			elif attacker.has_method("set_meta"): attacker.set_meta("minimap_ping_timer", 3.0)
+			if "hp" in attacker: attacker.hp -= 5.0
+		if world != null and world.has_method("add_event"):
+			var ax = 0.0
+			var ay = 0.0
+			if typeof(attacker) == TYPE_DICTIONARY:
+				if attacker.has("x"): ax = attacker.x
+				if attacker.has("y"): ay = attacker.y
+			elif typeof(attacker) == TYPE_OBJECT:
+				if "x" in attacker: ax = attacker.x
+				if "y" in attacker: ay = attacker.y
+			world.add_event("minimap_ping", {"x": ax, "y": ay, "color": "red", "duration": 3.0})
+		return
+
 	var intangible = false
 	if typeof(target) == TYPE_DICTIONARY and target.has("intangible"): intangible = target["intangible"]
 	elif typeof(target) == TYPE_OBJECT and "intangible" in target: intangible = target.intangible
@@ -19681,73 +19706,53 @@ func execute(strategy: String, delta: float):
                                     hazard.duration = 0.0
 
                             elif trap_variant == "decoy":
-                                var owner_id = null
-                                if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
-                                    owner_id = hazard.get_meta("owner_id")
-                                elif "owner_id" in hazard:
-                                    owner_id = hazard.owner_id
+                                for i in range(3):
+                                    var clone = null
+                                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("duplicate"):
+                                        clone = self.ball.duplicate()
+                                    elif typeof(self.ball) == TYPE_DICTIONARY:
+                                        clone = self.ball.duplicate()
+                                    if clone != null:
+                                        if "id" in clone:
+                                            clone.id = randi() % 90000 + 10000
+                                        if "hp" in clone and "max_hp" in clone:
+                                            clone.max_hp = 100.0
+                                            clone.hp = 100.0
+                                        if "damage" in clone:
+                                            clone.damage = 0.0
 
-                                if owner_id != null:
-                                    var owner_ball = null
-                                    var balls_list = []
-                                    if world != null and "balls" in world:
-                                        balls_list = world.balls
-                                    elif world != null and "entities" in world:
-                                        balls_list = world.entities
+                                        var angle = randf() * PI * 2.0
+                                        var spd = 100.0
+                                        if "speed" in self.ball: spd = self.ball.speed
+                                        if "vx" in clone: clone.vx = cos(angle) * spd
+                                        if "vy" in clone: clone.vy = sin(angle) * spd
 
-                                    for b in balls_list:
-                                        if "id" in b and b.id == owner_id:
-                                            owner_ball = b
-                                            break
+                                        if "x" in clone: clone.x = hazard.x + (randf() * 40.0 - 20.0)
+                                        if "y" in clone: clone.y = hazard.y + (randf() * 40.0 - 20.0)
+                                        if "alive" in clone: clone.alive = true
 
-                                    if owner_ball != null:
-                                        var decoy = null
-                                        if owner_ball.has_method("duplicate"):
-                                            decoy = owner_ball.duplicate()
-                                        elif typeof(owner_ball) == TYPE_DICTIONARY:
-                                            decoy = owner_ball.duplicate()
+                                        if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                                            clone.set_meta("is_hologram", true)
+                                            clone.set_meta("is_trap_hologram", true)
+                                            clone.set_meta("hologram_timer", 10.0)
+                                            if "id" in self.ball: clone.set_meta("clone_owner", self.ball.id)
+                                            clone.set_meta("skill", null)
+                                            clone.set_meta("active_skill", null)
+                                            clone.set_meta("SKILL", null)
+                                        elif typeof(clone) == TYPE_DICTIONARY:
+                                            clone["is_hologram"] = true
+                                            clone["is_trap_hologram"] = true
+                                            clone["hologram_timer"] = 10.0
+                                            if "id" in self.ball: clone["clone_owner"] = self.ball.id
+                                            clone["skill"] = null
+                                            clone["active_skill"] = null
+                                            clone["SKILL"] = null
 
-                                        if decoy != null:
-                                            if "id" in decoy:
-                                                decoy.id = randi() % 90000 + 10000
-                                            if "hp" in decoy and "max_hp" in decoy:
-                                                decoy.max_hp = 100.0
-                                                decoy.hp = 100.0
-                                            if "damage" in decoy:
-                                                decoy.damage = 0.0
-                                            if "vx" in decoy:
-                                                decoy.vx = 0.0
-                                            if "vy" in decoy:
-                                                decoy.vy = 0.0
-                                            if "speed" in decoy:
-                                                decoy.speed = 0.0
-
-                                            if "x" in decoy: decoy.x = hazard.x
-                                            if "y" in decoy: decoy.y = hazard.y
-                                            if "alive" in decoy: decoy.alive = true
-
-                                            if typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
-                                                decoy.set_meta("is_decoy", true)
-                                                decoy.set_meta("decoy_timer", 5.0)
-                                                decoy.set_meta("decoy_type", "stun_trap")
-                                                decoy.set_meta("skill", null)
-                                                decoy.set_meta("active_skill", null)
-                                                decoy.set_meta("SKILL", null)
-                                            elif typeof(decoy) == TYPE_DICTIONARY:
-                                                decoy["is_decoy"] = true
-                                                decoy["decoy_timer"] = 5.0
-                                                decoy["decoy_type"] = "stun_trap"
-                                                decoy["skill"] = null
-                                                decoy["active_skill"] = null
-                                                decoy["SKILL"] = null
-
-                                            if world != null and "balls" in world:
-                                                world.balls.append(decoy)
-
-                                if hazard.has_method("set_meta"):
-                                    hazard.set_meta("duration", 0.0)
-                                elif "duration" in hazard:
-                                    hazard.duration = 0.0
+                                        if world != null and "balls" in world:
+                                            world.balls.append(clone)
+                                        elif world != null and "entities" in world:
+                                            world.entities.append(clone)
+                                hazard.duration = 0.0
                             elif trap_variant == "nullifier":
                                 if self.world != null and "balls" in self.world:
                                     for b in self.world.balls:

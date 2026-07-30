@@ -256,6 +256,14 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+        if getattr(target, "is_trap_hologram", False):
+            attacker.minimap_ping_timer = 3.0
+            if hasattr(attacker, "hp"):
+                attacker.hp -= 5.0
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'minimap_ping', 'data': {'x': attacker.x, 'y': attacker.y, 'color': 'red', 'duration': 3.0}})
+            return
+
         if getattr(target, "nemesis_shield_active", False):
             pm = getattr(self.world, "profile_manager", None)
             if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
@@ -10443,39 +10451,34 @@ class Action:
                                     hazard.duration = 0.0 # Destroy trap
 
                                 elif trap_variant == "decoy":
-                                    owner_id = getattr(hazard, "owner_id", None)
-                                    owner = None
-                                    if owner_id is not None:
-                                        balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
-                                        for b in balls:
-                                            if getattr(b, "id", None) == owner_id:
-                                                owner = b
-                                                break
-                                    if owner:
-                                        import copy
-                                        import random
-                                        decoy = copy.copy(owner)
-                                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                    import copy
+                                    import random
+                                    import math
+                                    for i in range(3):
+                                        clone = copy.copy(self.ball)
+                                        clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
                                         if hasattr(self.world, "next_id"):
                                             self.world.next_id += 1
-                                        decoy.x = hazard.x
-                                        decoy.y = hazard.y
-                                        decoy.hp = 100.0
-                                        decoy.max_hp = 100.0
-                                        decoy.is_decoy = True
-                                        decoy.decoy_timer = 5.0
-                                        decoy.decoy_type = "stun_trap"
-                                        decoy.skill = None
-                                        decoy.active_skill = None
-                                        if hasattr(decoy, "SKILL"):
-                                            decoy.SKILL = None
-                                        decoy.vx = 0.0
-                                        decoy.vy = 0.0
-                                        decoy.speed = 0.0
-                                        decoy.damage = 0.0
-                                        decoy.alive = True
+                                        clone.x = hazard.x + random.uniform(-20, 20)
+                                        clone.y = hazard.y + random.uniform(-20, 20)
+                                        clone.hp = 100.0
+                                        clone.max_hp = 100.0
+                                        clone.is_hologram = True
+                                        clone.is_trap_hologram = True
+                                        clone.hologram_timer = 10.0
+                                        clone.clone_owner = self.ball.id
+                                        clone.skill = None
+                                        clone.active_skill = None
+                                        if hasattr(clone, "SKILL"):
+                                            clone.SKILL = None
+                                        clone.damage = 0.0
+                                        clone.alive = True
+                                        angle = random.uniform(0, 2 * math.pi)
+                                        speed = getattr(self.ball, "speed", 100.0)
+                                        clone.vx = math.cos(angle) * speed
+                                        clone.vy = math.sin(angle) * speed
                                         if hasattr(self.world, "balls"):
-                                            self.world.balls.append(decoy)
+                                            self.world.balls.append(clone)
                                     hazard.duration = 0.0 # Destroy trap
 
                                 else:
