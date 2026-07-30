@@ -206,6 +206,16 @@ class Perception:
 
             if not revealed_by_flare:
                 # If enemy has stealth drone, we can only see them if they are very close
+                is_active_stealthed = False
+                if hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("active_stealth_active"):
+                    is_active_stealthed = e.get_meta("active_stealth_active")
+                elif hasattr(e, "active_stealth_active"):
+                    is_active_stealthed = e.active_stealth_active
+
+                if is_active_stealthed:
+                    # Complete invisibility
+                    continue
+
                 e_has_stealth = getattr(e, "has_stealth_drone", False)
                 if not e_has_stealth and hasattr(e, "has_method") and e.has_method("get_meta") and e.has_meta("has_stealth_drone"):
                     e_has_stealth = e.get_meta("has_stealth_drone")

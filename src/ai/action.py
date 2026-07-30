@@ -20987,6 +20987,17 @@ class Action:
                     setattr(dome, 'duration', 10.0)
                     self.world.arena.hazards.append(dome)
 
+            elif skill_name == "active_stealth":
+                if not getattr(self.ball, "active_stealth_active", False):
+                    stamina = getattr(self.ball, "stamina", 0.0)
+                    if stamina >= 20.0:
+                        self.ball.active_stealth_active = True
+                        if hasattr(self, "_spawn_skill_particles"):
+                            self._spawn_skill_particles("active_stealth")
+                        self.ball.skill_timer = 0.5
+                else:
+                    self.ball.active_stealth_active = False
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
             elif skill_name == "phantom_stride":
                 if not getattr(self.ball, "phantom_stride_active", False):
                     stamina = getattr(self.ball, "stamina", 0.0)
@@ -22004,6 +22015,15 @@ class Action:
                                 self.ball.speed = getattr(self.ball, "speed", 0.0) * 0.7
 
     def _update_skill_timer(self, delta: float) -> None:
+
+        if getattr(self.ball, "active_stealth_active", False):
+            stamina = getattr(self.ball, "stamina", 0.0)
+            drain = 40.0 * delta
+            if stamina > 0:
+                self.ball.stamina = max(0.0, stamina - drain)
+
+            if self.ball.stamina <= 0.0:
+                self.ball.active_stealth_active = False
 
         if getattr(self.ball, "phantom_stride_active", False):
             stamina = getattr(self.ball, "stamina", 0.0)
