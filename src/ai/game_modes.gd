@@ -69966,3 +69966,214 @@ class TeleportingSafeZoneMode extends GameMode:
 							world.add_event("kill", {"killer": "safe_zone", "victim": b.get("id")})
 
 GAME_MODES["teleporting_safe_zone"] = TeleportingSafeZoneMode.new()
+
+
+
+class ResonanceChainMode extends GameMode:
+	var prev_state = {}
+
+	func _init():
+		super()
+		name = "Resonance Chain"
+		description = "Links multiple balls, mirroring any damage taken by one to all others."
+
+	func _init_prev_state(b):
+		var hp = 100.0
+		if typeof(b) == TYPE_DICTIONARY:
+			hp = b.get("hp", 100.0)
+		elif typeof(b) == TYPE_OBJECT:
+			hp = b.get("hp") if b.get("hp") != null else 100.0
+
+		prev_state[b.id] = {"hp": hp}
+
+	func setup(world, balls):
+		super(world, balls)
+		prev_state.clear()
+
+		var alive_balls = []
+		for b in balls:
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			elif typeof(b) == TYPE_OBJECT:
+				b_type = b.get("ball_type") if b.get("ball_type") != null else ""
+
+			if b_type != "spectator":
+				alive_balls.append(b)
+
+		for b in alive_balls:
+			var targets = []
+			for other in alive_balls:
+				if other != b:
+					targets.append(other)
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["resonance_targets"] = targets
+			elif typeof(b) == TYPE_OBJECT:
+				if b.has_method("set_meta"):
+					b.set_meta("resonance_targets", targets)
+				elif "resonance_targets" in b:
+					b.resonance_targets = targets
+
+		for b in balls:
+			_init_prev_state(b)
+
+	func tick(world, balls, delta = 0.016):
+		super(world, balls, delta)
+
+		var hp_diffs = {}
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.get("alive") != null else false
+
+			var curr_hp = 100.0
+			if typeof(b) == TYPE_DICTIONARY:
+				curr_hp = b.get("hp", 100.0)
+			elif typeof(b) == TYPE_OBJECT:
+				curr_hp = b.get("hp") if b.get("hp") != null else 100.0
+
+			if not is_alive:
+				if curr_hp <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = 0
+						b["alive"] = false
+					elif typeof(b) == TYPE_OBJECT:
+						if "hp" in b: b.hp = 0
+						if "alive" in b: b.alive = false
+				continue
+
+			if not prev_state.has(b.id):
+				_init_prev_state(b)
+
+			var state = prev_state[b.id]
+
+			if curr_hp < state["hp"]:
+				hp_diffs[b.id] = state["hp"] - curr_hp
+				if curr_hp <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = 0
+						b["alive"] = false
+					elif typeof(b) == TYPE_OBJECT:
+						if "hp" in b: b.hp = 0
+						if "alive" in b: b.alive = false
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.get("alive") != null else false
+
+			if not is_alive and not hp_diffs.has(b.id):
+				continue
+
+			var targets = []
+			if typeof(b) == TYPE_DICTIONARY:
+				targets = b.get("resonance_targets", [])
+			elif typeof(b) == TYPE_OBJECT:
+				if b.has_method("get_meta") and b.has_meta("resonance_targets"):
+					targets = b.get_meta("resonance_targets")
+				elif "resonance_targets" in b:
+					targets = b.resonance_targets
+
+			if hp_diffs.has(b.id):
+				var damage = hp_diffs[b.id]
+
+				for target in targets:
+					var target_alive = false
+					if typeof(target) == TYPE_DICTIONARY:
+						target_alive = target.get("alive", false)
+					elif typeof(target) == TYPE_OBJECT:
+						target_alive = target.get("alive") if target.get("alive") != null else false
+
+					if target_alive:
+						var target_curr_hp = 100.0
+						if typeof(target) == TYPE_DICTIONARY:
+							target_curr_hp = target.get("hp", 100.0)
+						elif typeof(target) == TYPE_OBJECT:
+							target_curr_hp = target.get("hp") if target.get("hp") != null else 100.0
+
+						if target_curr_hp > 0:
+							var new_hp = target_curr_hp - damage
+							if new_hp <= 0:
+								new_hp = 0
+								if typeof(target) == TYPE_DICTIONARY:
+									target["alive"] = false
+
+									var b_killer = ""
+									if typeof(b) == TYPE_DICTIONARY:
+										b_killer = b.get("killer", "resonance_chain")
+									elif typeof(b) == TYPE_OBJECT:
+										b_killer = b.get("killer") if b.get("killer") != null else "resonance_chain"
+									target["killer"] = b_killer
+
+								elif typeof(target) == TYPE_OBJECT:
+									if "alive" in target:
+										target.alive = false
+
+									var b_killer = ""
+									if typeof(b) == TYPE_DICTIONARY:
+										b_killer = b.get("killer", "resonance_chain")
+									elif typeof(b) == TYPE_OBJECT:
+										b_killer = b.get("killer") if b.get("killer") != null else "resonance_chain"
+
+									if "killer" in target:
+										target.killer = b_killer
+
+								if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+									var t_x = 0.0
+									var t_y = 0.0
+									var t_rad = 20.0
+									if typeof(target) == TYPE_DICTIONARY:
+										t_x = target.get("x", 0.0)
+										t_y = target.get("y", 0.0)
+										t_rad = target.get("radius", 20.0)
+									elif typeof(target) == TYPE_OBJECT:
+										t_x = target.get("x") if target.get("x") != null else 0.0
+										t_y = target.get("y") if target.get("y") != null else 0.0
+										t_rad = target.get("radius") if target.get("radius") != null else 20.0
+
+									world["events"].append({"type": "visual_effect", "data": {"type": "resonance_chain_explosion", "x": t_x, "y": t_y, "radius": t_rad}})
+								elif typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									var t_x = 0.0
+									var t_y = 0.0
+									var t_rad = 20.0
+									if typeof(target) == TYPE_DICTIONARY:
+										t_x = target.get("x", 0.0)
+										t_y = target.get("y", 0.0)
+										t_rad = target.get("radius", 20.0)
+									elif typeof(target) == TYPE_OBJECT:
+										t_x = target.get("x") if target.get("x") != null else 0.0
+										t_y = target.get("y") if target.get("y") != null else 0.0
+										t_rad = target.get("radius") if target.get("radius") != null else 20.0
+
+									world.add_event("visual_effect", {"type": "resonance_chain_explosion", "x": t_x, "y": t_y, "radius": t_rad})
+
+							if typeof(target) == TYPE_DICTIONARY:
+								target["hp"] = new_hp
+							elif typeof(target) == TYPE_OBJECT:
+								if "hp" in target:
+									target.hp = new_hp
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.get("alive") != null else false
+
+			if not is_alive:
+				continue
+
+			if prev_state.has(b.id):
+				var curr_hp = 100.0
+				if typeof(b) == TYPE_DICTIONARY:
+					curr_hp = b.get("hp", 100.0)
+				elif typeof(b) == TYPE_OBJECT:
+					curr_hp = b.get("hp") if b.get("hp") != null else 100.0
+				prev_state[b.id]["hp"] = curr_hp
+GAME_MODES["resonance_chain"] = ResonanceChainMode.new()

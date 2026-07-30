@@ -34760,6 +34760,95 @@ class ReversedInputMode(GameMode):
 
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
+
+class ResonanceChainMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Resonance Chain"
+        self.description = "Links multiple balls, mirroring any damage taken by one to all others."
+        self.prev_state = {}
+
+    class BallState:
+        def __init__(self, hp):
+            self.hp = hp
+
+    def _init_prev_state(self, b):
+        self.prev_state[b.id] = self.BallState(getattr(b, "hp", 100.0))
+
+    def setup(self, world: Any, balls: List[Any]) -> None:
+        super().setup(world, balls)
+        self.prev_state = {}
+
+        # Link all alive balls together
+        alive_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+
+        for b in alive_balls:
+            # Resonance links to ALL other alive balls
+            b.resonance_targets = [other for other in alive_balls if other != b]
+
+        for b in balls:
+            self._init_prev_state(b)
+
+    def tick(self, world: Any, balls: List[Any], delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        hp_diffs = {}
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                # Ensure dead balls are tracked properly
+                if getattr(b, "hp", 100.0) <= 0:
+                    b.hp = 0
+                    b.alive = False
+                continue
+
+            if getattr(b, "id", None) not in self.prev_state:
+                self._init_prev_state(b)
+
+            state = self.prev_state[b.id]
+
+            curr_hp = getattr(b, "hp", 100.0)
+            if curr_hp < state.hp:
+                hp_diffs[b.id] = state.hp - curr_hp
+                if curr_hp <= 0:
+                    b.hp = 0
+                    b.alive = False
+
+        for b in balls:
+            if not getattr(b, "alive", False) and b.id not in hp_diffs:
+                continue
+
+            targets = getattr(b, "resonance_targets", [])
+            if b.id in hp_diffs:
+                damage = hp_diffs[b.id]
+
+                # Apply same damage to all linked targets
+                for target in targets:
+                    if getattr(target, "alive", False):
+                        target_curr_hp = getattr(target, "hp", 100.0)
+                        if target_curr_hp > 0:
+                            target.hp = target_curr_hp - damage
+                            if target.hp <= 0:
+                                target.hp = 0
+                                target.alive = False
+                                target.killer = getattr(b, "killer", "resonance_chain")
+
+                                # Add visual effect for resonance kill
+                                if hasattr(world, "events"):
+                                    world.events.append({'type': 'visual_effect', 'data': {'type': 'resonance_chain_explosion', 'x': getattr(target, "x", 0.0), 'y': getattr(target, "y", 0.0), 'radius': getattr(target, "radius", 20.0)}})
+                                elif hasattr(world, "add_event"):
+                                    world.add_event('visual_effect', {'type': 'resonance_chain_explosion', 'x': getattr(target, "x", 0.0), 'y': getattr(target, "y", 0.0), 'radius': getattr(target, "radius", 20.0)})
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            if getattr(b, "id", None) in self.prev_state:
+                state = self.prev_state[b.id]
+                state.hp = getattr(b, "hp", 100.0)
+
+GAME_MODES["resonance_chain"] = ResonanceChainMode()
+
+
 GAME_MODES["clan_tournament"] = ClanTournamentMode()
 GAME_MODES["reversed_input"] = ReversedInputMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
