@@ -21549,6 +21549,122 @@ class InvisibleDecoysMode(GameMode):
                 world.balls = []
             world.balls.append(decoy)
 
+
+class ExtremeTornadoMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Extreme Tornado"
+        self.description = "An intense extreme weather variant where tornadoes move unpredictably across the arena. They apply heavy push forces inside their radius, and lighter balls could be thrown farther."
+        self.change_dir_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            hazard_class = None
+
+        if hazard_class is None or not hasattr(hazard_class, "__init__"):
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+            hazard_class = FallbackHazard
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        for i in range(3):
+            tx = random.uniform(100.0, arena_width - 100.0)
+            ty = random.uniform(100.0, arena_height - 100.0)
+            t_id = f"extreme_tornado_{random.randint(1000, 9999)}_{i}"
+            tornado = hazard_class(t_id, tx, ty, 150.0, "tornado", 0.0)
+            setattr(tornado, "is_extreme_tornado", True)
+            setattr(tornado, "vx", random.uniform(-200.0, 200.0))
+            setattr(tornado, "vy", random.uniform(-200.0, 200.0))
+            setattr(tornado, "duration", 9999.0)
+            world.arena.hazards.append(tornado)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+        import math
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        self.change_dir_timer -= delta
+        change_dir = False
+        if self.change_dir_timer <= 0:
+            change_dir = True
+            self.change_dir_timer = random.uniform(1.0, 3.0)
+
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "tornado" and getattr(h, "is_extreme_tornado", False):
+                vx = getattr(h, "vx", 0.0)
+                vy = getattr(h, "vy", 0.0)
+                if change_dir:
+                    vx += random.uniform(-150.0, 150.0)
+                    vy += random.uniform(-150.0, 150.0)
+
+                speed = math.hypot(vx, vy)
+                if speed > 300.0:
+                    vx = (vx / speed) * 300.0
+                    vy = (vy / speed) * 300.0
+
+                x = getattr(h, "x", 0.0) + vx * delta
+                y = getattr(h, "y", 0.0) + vy * delta
+
+                radius = getattr(h, "radius", 150.0)
+                if x - radius < 0:
+                    x = radius
+                    vx = abs(vx)
+                elif x + radius > arena_width:
+                    x = arena_width - radius
+                    vx = -abs(vx)
+                if y - radius < 0:
+                    y = radius
+                    vy = abs(vy)
+                elif y + radius > arena_height:
+                    y = arena_height - radius
+                    vy = -abs(vy)
+
+                setattr(h, "x", x)
+                setattr(h, "y", y)
+                setattr(h, "vx", vx)
+                setattr(h, "vy", vy)
+
+                for b in balls:
+                    bx = getattr(b, "x", 0.0)
+                    by = getattr(b, "y", 0.0)
+                    dx = bx - x
+                    dy = by - y
+                    dist = math.hypot(dx, dy)
+
+                    if dist < radius and dist > 0.1:
+                        force = 10000.0
+                        mass = getattr(b, "mass", 1.0)
+                        push = force / mass
+                        nx = dx / dist
+                        ny = dy / dist
+
+                        b.vx = getattr(b, "vx", 0.0) + nx * push * delta
+                        b.vy = getattr(b, "vy", 0.0) + ny * push * delta
+
 class ExtremeWeatherMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -33706,6 +33822,7 @@ class MiniBlackHolesMode(GameMode):
 
 
 GAME_MODES = {
+    'extreme_tornado': ExtremeTornadoMode(),
     'mini_black_holes': MiniBlackHolesMode(),
     'supercell_storm': SupercellStormMode(),
     'ice_floor': IceFloorMode(),

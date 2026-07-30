@@ -34139,6 +34139,185 @@ class InvisibleDecoysMode extends GameMode:
 				world.balls.append(decoy)
 
 
+
+class ExtremeTornadoMode extends GameMode:
+	var change_dir_timer = 0.0
+
+	func _init():
+		name = "Extreme Tornado"
+		description = "An intense extreme weather variant where tornadoes move unpredictably across the arena. They apply heavy push forces inside their radius, and lighter balls could be thrown farther."
+
+	func setup(world, balls):
+		.setup(world, balls)
+		if not world.has("arena"):
+			return
+		if not world.arena.has("hazards"):
+			world.arena["hazards"] = []
+
+		var arena_width = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+			arena_width = float(world.arena.width)
+		elif typeof(world.arena) == TYPE_OBJECT and "width" in world.arena:
+			arena_width = float(world.arena.get("width"))
+
+		var arena_height = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
+			arena_height = float(world.arena.height)
+		elif typeof(world.arena) == TYPE_OBJECT and "height" in world.arena:
+			arena_height = float(world.arena.get("height"))
+
+		for i in range(3):
+			var tx = rand_range(100.0, arena_width - 100.0)
+			var ty = rand_range(100.0, arena_height - 100.0)
+			var tornado = {
+				"id": "extreme_tornado_%d_%d" % [randi() % 10000, i],
+				"x": tx,
+				"y": ty,
+				"radius": 150.0,
+				"kind": "tornado",
+				"damage": 0.0,
+				"is_extreme_tornado": true,
+				"vx": rand_range(-200.0, 200.0),
+				"vy": rand_range(-200.0, 200.0),
+				"duration": 9999.0
+			}
+			world.arena["hazards"].append(tornado)
+
+	func tick(world, balls, delta=0.016):
+		.tick(world, balls, delta)
+
+		if not world.has("arena") or not world.arena.has("hazards"):
+			return
+
+		var arena_width = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("width"):
+			arena_width = float(world.arena.width)
+		elif typeof(world.arena) == TYPE_OBJECT and "width" in world.arena:
+			arena_width = float(world.arena.get("width"))
+
+		var arena_height = 1000.0
+		if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
+			arena_height = float(world.arena.height)
+		elif typeof(world.arena) == TYPE_OBJECT and "height" in world.arena:
+			arena_height = float(world.arena.get("height"))
+
+		change_dir_timer -= delta
+		var change_dir = false
+		if change_dir_timer <= 0:
+			change_dir = true
+			change_dir_timer = rand_range(1.0, 3.0)
+
+		for i in range(world.arena["hazards"].size()):
+			var h = world.arena["hazards"][i]
+
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY:
+				kind = h.get("kind", "")
+			else:
+				kind = h.get("kind") if h.get("kind") != null else ""
+
+			var is_extreme = false
+			if typeof(h) == TYPE_DICTIONARY:
+				is_extreme = h.get("is_extreme_tornado", false)
+			else:
+				is_extreme = h.get("is_extreme_tornado") if h.get("is_extreme_tornado") != null else false
+
+			if kind == "tornado" and is_extreme:
+				var vx = 0.0
+				var vy = 0.0
+				var x = 0.0
+				var y = 0.0
+				var radius = 150.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					vx = h.get("vx", 0.0)
+					vy = h.get("vy", 0.0)
+					x = h.get("x", 0.0)
+					y = h.get("y", 0.0)
+					radius = h.get("radius", 150.0)
+				else:
+					vx = h.get("vx") if h.get("vx") != null else 0.0
+					vy = h.get("vy") if h.get("vy") != null else 0.0
+					x = h.get("x") if h.get("x") != null else 0.0
+					y = h.get("y") if h.get("y") != null else 0.0
+					radius = h.get("radius") if h.get("radius") != null else 150.0
+
+				if change_dir:
+					vx += rand_range(-150.0, 150.0)
+					vy += rand_range(-150.0, 150.0)
+
+				var speed = sqrt(vx * vx + vy * vy)
+				if speed > 300.0:
+					vx = (vx / speed) * 300.0
+					vy = (vy / speed) * 300.0
+
+				x += vx * delta
+				y += vy * delta
+
+				if x - radius < 0:
+					x = radius
+					vx = abs(vx)
+				elif x + radius > arena_width:
+					x = arena_width - radius
+					vx = -abs(vx)
+				if y - radius < 0:
+					y = radius
+					vy = abs(vy)
+				elif y + radius > arena_height:
+					y = arena_height - radius
+					vy = -abs(vy)
+
+				if typeof(h) == TYPE_DICTIONARY:
+					h["x"] = x
+					h["y"] = y
+					h["vx"] = vx
+					h["vy"] = vy
+				else:
+					h.set("x", x)
+					h.set("y", y)
+					h.set("vx", vx)
+					h.set("vy", vy)
+
+				for b in balls:
+					var bx = 0.0
+					var by = 0.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						bx = b.get("x") if b.get("x") != null else 0.0
+						by = b.get("y") if b.get("y") != null else 0.0
+
+					var dx = bx - x
+					var dy = by - y
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist < radius and dist > 0.1:
+						var force = 10000.0
+						var mass = 1.0
+						if typeof(b) == TYPE_DICTIONARY:
+							mass = b.get("mass", 1.0)
+						else:
+							mass = b.get("mass") if b.get("mass") != null else 1.0
+
+						var push = force / mass
+						var nx = dx / dist
+						var ny = dy / dist
+
+						var bvx = 0.0
+						var bvy = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bvx = b.get("vx", 0.0)
+							bvy = b.get("vy", 0.0)
+							b["vx"] = bvx + nx * push * delta
+							b["vy"] = bvy + ny * push * delta
+						else:
+							bvx = b.get("vx") if b.get("vx") != null else 0.0
+							bvy = b.get("vy") if b.get("vy") != null else 0.0
+							b.set("vx", bvx + nx * push * delta)
+							b.set("vy", bvy + ny * push * delta)
+
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
@@ -53949,6 +54128,7 @@ class MiniBlackHolesMode extends GameMode:
 
 
 var GAME_MODES = {
+	"extreme_tornado": ExtremeTornadoMode.new(),
 	"mini_black_holes": MiniBlackHolesMode.new(),
 	"supercell_storm": SupercellStormMode.new(),
 	"wall_leapers": WallLeapersMode.new(),
