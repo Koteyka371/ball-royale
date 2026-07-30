@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1676] Conveyor Belts — *2026-07-30 02:19:06 UTC*
+
+Moving paths on the arena that linearly accelerate entities in one fixed direction.
+
+---
+
 ## [idea-1691] Tornado Weather Event — *2026-07-30 01:49:37 UTC*
 
 An intense extreme weather variant where tornadoes move unpredictably across the arena. They apply heavy push forces inside their radius, and lighter balls could be thrown farther.
