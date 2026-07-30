@@ -45522,3 +45522,101 @@ class OrbitingChaosOrbsMode(GameMode):
                         break
 
 GAME_MODES['orbiting_chaos_orbs'] = OrbitingChaosOrbsMode()
+
+class DecoySwapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Decoy Swap"
+        self.description = "Periodically swaps every player's position with their nearest active decoy or clone. If a player lacks one, a decoy is spawned at their location moments before the swap."
+        self.timer = 0.0
+        self.swap_interval = 12.0
+        self.pre_spawn_time = 11.5
+        self.pre_spawn_triggered = False
+
+    class ChaosSwapDecoy:
+        def __init__(self, target_ball):
+            self.owner_id = getattr(target_ball, "id", None)
+            self.x = getattr(target_ball, "x", 0.0)
+            self.y = getattr(target_ball, "y", 0.0)
+            self.vx = getattr(target_ball, "vx", 0.0)
+            self.vy = getattr(target_ball, "vy", 0.0)
+            self.radius = getattr(target_ball, "radius", 15.0)
+            self.hp = 10.0
+            self.max_hp = 10.0
+            self.alive = True
+            self.team = getattr(target_ball, "team", "neutral")
+            self.is_decoy = True
+            self.decoy_type = "chaos_swap"
+            self.kind = "chaos_swap_decoy"
+            self.decoy_timer = 5.0 # Required timer for decoys
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        self.timer += delta
+
+        if self.timer >= self.pre_spawn_time and not self.pre_spawn_triggered:
+            self.pre_spawn_triggered = True
+            if hasattr(world, "add_event"):
+                world.add_event("chaos_swap_warning", {"message": "Chaos Swap imminent!"})
+
+            # Find players without decoys and spawn one for them
+            for b in balls:
+                if getattr(b, "alive", False) and not getattr(b, "is_decoy", False) and not getattr(b, "is_decoy_clone", False) and not getattr(b, "is_illusion", False) and getattr(b, "ball_type", "") != "spectator":
+                    # Check if they have an active decoy
+                    has_decoy = False
+                    for other in balls:
+                        if getattr(other, "alive", False) and (getattr(other, "is_decoy", False) or getattr(other, "is_decoy_clone", False) or getattr(other, "is_illusion", False)):
+                            if getattr(other, "owner_id", None) == b.id:
+                                has_decoy = True
+                                break
+
+                    if not has_decoy:
+                        decoy = self.ChaosSwapDecoy(b)
+                        if hasattr(world, "next_id"):
+                            decoy.id = world.next_id
+                            world.next_id += 1
+                        else:
+                            decoy.id = 99999 + b.id
+
+                        if hasattr(world, "balls"):
+                            world.balls.append(decoy)
+
+        if self.timer >= self.swap_interval:
+            self.timer = 0.0
+            self.pre_spawn_triggered = False
+
+            if hasattr(world, "add_event"):
+                world.add_event("chaos_swap_execute", {"message": "Swapped!"})
+
+            for b in balls:
+                if getattr(b, "alive", False) and not getattr(b, "is_decoy", False) and not getattr(b, "is_decoy_clone", False) and not getattr(b, "is_illusion", False) and getattr(b, "ball_type", "") != "spectator":
+                    # Find nearest decoy owned by this player
+                    nearest_decoy = None
+                    min_dist = float('inf')
+                    for other in balls:
+                        if getattr(other, "alive", False) and (getattr(other, "is_decoy", False) or getattr(other, "is_decoy_clone", False) or getattr(other, "is_illusion", False)):
+                            if getattr(other, "owner_id", None) == b.id:
+                                dist = math.hypot(b.x - other.x, b.y - other.y)
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    nearest_decoy = other
+
+                    if nearest_decoy:
+                        # Swap positions
+                        temp_x, temp_y = b.x, b.y
+                        b.x, b.y = nearest_decoy.x, nearest_decoy.y
+                        nearest_decoy.x, nearest_decoy.y = temp_x, temp_y
+
+                        if hasattr(world, "events"):
+                            world.events.append({
+                                'type': 'visual_effect',
+                                'data': {
+                                    'type': 'teleport_swap',
+                                    'x1': b.x,
+                                    'y1': b.y,
+                                    'x2': nearest_decoy.x,
+                                    'y2': nearest_decoy.y
+                                }
+                            })
+
+GAME_MODES['decoy_swap'] = DecoySwapMode()

@@ -55370,7 +55370,197 @@ class TimeLoopMode extends GameMode:
 			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
 				world["events"].append({"type": "time_loop_reset", "data": {"message": "Time Loop Reset!"}})
 
+
+class DecoySwapMode extends GameMode:
+    var timer: float = 0.0
+    var swap_interval: float = 12.0
+    var pre_spawn_time: float = 11.5
+    var pre_spawn_triggered: bool = false
+
+    class ChaosSwapDecoy:
+        var id = 0
+        var owner_id = 0
+        var x = 0.0
+        var y = 0.0
+        var vx = 0.0
+        var vy = 0.0
+        var radius = 15.0
+        var hp = 10.0
+        var max_hp = 10.0
+        var alive = true
+        var team = "neutral"
+        var is_decoy = true
+        var decoy_type = "chaos_swap"
+        var kind = "chaos_swap_decoy"
+        var decoy_timer = 5.0
+
+    func _init():
+        name = "Decoy Swap"
+        description = "Periodically swaps every player's position with their nearest active decoy or clone. If a player lacks one, a decoy is spawned at their location moments before the swap."
+
+    func tick(world, balls, delta=0.016):
+        timer += delta
+
+        if timer >= pre_spawn_time and not pre_spawn_triggered:
+            pre_spawn_triggered = true
+            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("chaos_swap_warning", {"message": "Chaos Swap imminent!"})
+            elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+                world["events"].append({"type": "chaos_swap_warning", "message": "Chaos Swap imminent!"})
+
+            for b in balls:
+                var b_alive = b.alive if typeof(b) == TYPE_OBJECT else b.get("alive", false)
+                var b_is_decoy = b.is_decoy if typeof(b) == TYPE_OBJECT else b.get("is_decoy", false)
+                var b_is_decoy_clone = b.get("is_decoy_clone") if typeof(b) == TYPE_OBJECT else b.get("is_decoy_clone", false)
+                var b_is_illusion = b.get("is_illusion") if typeof(b) == TYPE_OBJECT else b.get("is_illusion", false)
+                var b_ball_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+
+                if b_alive and not b_is_decoy and not b_is_decoy_clone and not b_is_illusion and b_ball_type != "spectator":
+                    var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id")
+                    var has_decoy = false
+                    for other in balls:
+                        var other_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", false)
+                        var other_is_decoy = other.is_decoy if typeof(other) == TYPE_OBJECT else other.get("is_decoy", false)
+                        var other_is_decoy_clone = other.get("is_decoy_clone") if typeof(other) == TYPE_OBJECT else other.get("is_decoy_clone", false)
+                        var other_is_illusion = other.get("is_illusion") if typeof(other) == TYPE_OBJECT else other.get("is_illusion", false)
+                        var other_owner_id = other.get("owner_id") if typeof(other) == TYPE_OBJECT else other.get("owner_id")
+
+                        if other_alive and (other_is_decoy or other_is_decoy_clone or other_is_illusion):
+                            if other_owner_id == b_id:
+                                has_decoy = true
+                                break
+
+                    if not has_decoy:
+                        var b_x = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+                        var b_y = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+                        var b_vx = b.get("vx") if typeof(b) == TYPE_OBJECT else b.get("vx", 0.0)
+                        var b_vy = b.get("vy") if typeof(b) == TYPE_OBJECT else b.get("vy", 0.0)
+                        var b_radius = b.radius if typeof(b) == TYPE_OBJECT else b.get("radius", 15.0)
+                        var b_team = b.team if typeof(b) == TYPE_OBJECT else b.get("team", "neutral")
+
+                        var next_id = 99999 + b_id
+                        if typeof(world) == TYPE_OBJECT and "next_id" in world:
+                            next_id = world.next_id
+                            world.next_id += 1
+                        elif typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+                            next_id = world["next_id"]
+                            world["next_id"] += 1
+
+                        if typeof(world) == TYPE_OBJECT:
+                            var decoy = ChaosSwapDecoy.new()
+                            decoy.id = next_id
+                            decoy.owner_id = b_id
+                            decoy.x = b_x
+                            decoy.y = b_y
+                            decoy.vx = b_vx
+                            decoy.vy = b_vy
+                            decoy.radius = b_radius
+                            decoy.team = b_team
+
+                            if "balls" in world:
+                                world.balls.append(decoy)
+                            if "entities" in world and world.entities != world.balls:
+                                world.entities.append(decoy)
+                        else:
+                            var decoy = {
+                                "id": next_id,
+                                "owner_id": b_id,
+                                "x": b_x,
+                                "y": b_y,
+                                "vx": b_vx,
+                                "vy": b_vy,
+                                "radius": b_radius,
+                                "hp": 10.0,
+                                "max_hp": 10.0,
+                                "alive": true,
+                                "team": b_team,
+                                "is_decoy": true,
+                                "decoy_type": "chaos_swap",
+                                "kind": "chaos_swap_decoy",
+                                "decoy_timer": 5.0
+                            }
+                            if "balls" in world:
+                                world["balls"].append(decoy)
+                            if "entities" in world and world["entities"] != world["balls"]:
+                                world["entities"].append(decoy)
+
+        if timer >= swap_interval:
+            timer = 0.0
+            pre_spawn_triggered = false
+
+            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("chaos_swap_execute", {"message": "Swapped!"})
+            elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+                world["events"].append({"type": "chaos_swap_execute", "message": "Swapped!"})
+
+            for b in balls:
+                var b_alive = b.alive if typeof(b) == TYPE_OBJECT else b.get("alive", false)
+                var b_is_decoy = b.is_decoy if typeof(b) == TYPE_OBJECT else b.get("is_decoy", false)
+                var b_is_decoy_clone = b.get("is_decoy_clone") if typeof(b) == TYPE_OBJECT else b.get("is_decoy_clone", false)
+                var b_is_illusion = b.get("is_illusion") if typeof(b) == TYPE_OBJECT else b.get("is_illusion", false)
+                var b_ball_type = b.get("ball_type") if typeof(b) == TYPE_OBJECT else b.get("ball_type", "")
+
+                if b_alive and not b_is_decoy and not b_is_decoy_clone and not b_is_illusion and b_ball_type != "spectator":
+                    var b_id = b.id if typeof(b) == TYPE_OBJECT else b.get("id")
+                    var b_x = b.x if typeof(b) == TYPE_OBJECT else b.get("x", 0.0)
+                    var b_y = b.y if typeof(b) == TYPE_OBJECT else b.get("y", 0.0)
+
+                    var nearest_decoy = null
+                    var min_dist = 9999999.0
+
+                    for other in balls:
+                        var other_alive = other.alive if typeof(other) == TYPE_OBJECT else other.get("alive", false)
+                        var other_is_decoy = other.is_decoy if typeof(other) == TYPE_OBJECT else other.get("is_decoy", false)
+                        var other_is_decoy_clone = other.get("is_decoy_clone") if typeof(other) == TYPE_OBJECT else other.get("is_decoy_clone", false)
+                        var other_is_illusion = other.get("is_illusion") if typeof(other) == TYPE_OBJECT else other.get("is_illusion", false)
+                        var other_owner_id = other.get("owner_id") if typeof(other) == TYPE_OBJECT else other.get("owner_id")
+
+                        if other_alive and (other_is_decoy or other_is_decoy_clone or other_is_illusion):
+                            if other_owner_id == b_id:
+                                var other_x = other.x if typeof(other) == TYPE_OBJECT else other.get("x", 0.0)
+                                var other_y = other.y if typeof(other) == TYPE_OBJECT else other.get("y", 0.0)
+                                var dist = sqrt(pow(b_x - other_x, 2) + pow(b_y - other_y, 2))
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    nearest_decoy = other
+
+                    if nearest_decoy != null:
+                        var other_x = nearest_decoy.x if typeof(nearest_decoy) == TYPE_OBJECT else nearest_decoy.get("x", 0.0)
+                        var other_y = nearest_decoy.y if typeof(nearest_decoy) == TYPE_OBJECT else nearest_decoy.get("y", 0.0)
+
+                        if typeof(b) == TYPE_OBJECT:
+                            b.x = other_x
+                            b.y = other_y
+                        else:
+                            b["x"] = other_x
+                            b["y"] = other_y
+
+                        if typeof(nearest_decoy) == TYPE_OBJECT:
+                            nearest_decoy.x = b_x
+                            nearest_decoy.y = b_y
+                        else:
+                            nearest_decoy["x"] = b_x
+                            nearest_decoy["y"] = b_y
+
+                        var v_event = {
+                            "type": "visual_effect",
+                            "data": {
+                                "type": "teleport_swap",
+                                "x1": b_x,
+                                "y1": b_y,
+                                "x2": other_x,
+                                "y2": other_y
+                            }
+                        }
+
+                        if typeof(world) == TYPE_OBJECT and "events" in world:
+                            world.events.append(v_event)
+                        elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+                            world["events"].append(v_event)
+
+
 var GAME_MODES = {
+    "decoy_swap": DecoySwapMode.new(),
 	"time_loop": TimeLoopMode.new(),
 	'dormant_decoys': DormantDecoysMode.new(),
 	'orbital_debris': OrbitalDebrisMode.new(),
