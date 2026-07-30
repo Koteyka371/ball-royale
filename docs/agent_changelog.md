@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1709] Chrono Shift Booster — *2026-07-30 20:52:09 UTC*
+
+A consumable item that accelerates cooldowns for allies and slows them for enemies within an aura.
+
+---
+
 ## [idea-1706] Chaos Orbs Mode — *2026-07-30 20:39:09 UTC*
 
 Every player periodically spawns orbiting chaos orbs.
