@@ -54349,7 +54349,167 @@ class OrbitalDebrisMode extends GameMode:
 								b["vy"] = b_vy * 0.8
 
 
+
+class DormantDecoysMode extends GameMode:
+	var decoys = []
+
+	func _init():
+		super()
+		name = "Dormant Decoys"
+		description = "Arena is seeded with dormant decoys that activate on fast movement and detonate on proximity."
+
+	func setup(world: Dictionary, balls: Array, is_resume: bool = false):
+		super.setup(world, balls, is_resume)
+		decoys = []
+		if not is_resume:
+			for i in range(15):
+				decoys.append({
+					"x": randf_range(100, 900),
+					"y": randf_range(100, 900),
+					"active": false,
+					"vx": 0.0,
+					"vy": 0.0,
+					"radius": 15.0,
+					"activation_range": 200.0,
+					"detonation_range": 50.0,
+					"damage": 30.0
+				})
+
+		self.world = world
+		if not world.has("game_mode") or world["game_mode"] != self:
+			world["game_mode"] = self
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		if not world.get("arena", {}).has("hazards"):
+			if world.has("arena"):
+				world["arena"]["hazards"] = []
+
+		var decoys_to_remove = []
+		for decoy in decoys:
+			var closest_activation_dist = 999999.0
+			var closest_detonation_dist = 999999.0
+
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT and b.hp <= 0:
+					continue
+				elif typeof(b) == TYPE_DICTIONARY and b.get("hp", 1) <= 0:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var bvx = 0.0
+				var bvy = 0.0
+				var bradius = 15.0
+
+				if typeof(b) == TYPE_OBJECT:
+					bx = b.x
+					by = b.y
+					bvx = b.vx
+					bvy = b.vy
+					bradius = b.radius
+				elif typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0)
+					by = b.get("y", 0)
+					bvx = b.get("vx", 0)
+					bvy = b.get("vy", 0)
+					bradius = b.get("radius", 15.0)
+
+				var dist = sqrt(pow(bx - decoy["x"], 2) + pow(by - decoy["y"], 2))
+				var vel = sqrt(pow(bvx, 2) + pow(bvy, 2))
+
+				if vel > 30.0:
+					if dist < closest_activation_dist:
+						closest_activation_dist = dist
+
+				if dist < closest_detonation_dist:
+					closest_detonation_dist = dist
+
+			if not decoy["active"]:
+				if closest_activation_dist < decoy["activation_range"]:
+					decoy["active"] = true
+					var angle = randf_range(0, 2 * PI)
+					var speed = 100.0
+					decoy["vx"] = cos(angle) * speed
+					decoy["vy"] = sin(angle) * speed
+			else:
+				if randf() < 0.05:
+					var angle = randf_range(0, 2 * PI)
+					var speed = 100.0
+					decoy["vx"] = cos(angle) * speed
+					decoy["vy"] = sin(angle) * speed
+
+				decoy["x"] += decoy["vx"] * delta
+				decoy["y"] += decoy["vy"] * delta
+
+				if decoy["x"] < 50:
+					decoy["x"] = 50
+					decoy["vx"] *= -1
+				elif decoy["x"] > 950:
+					decoy["x"] = 950
+					decoy["vx"] *= -1
+
+				if decoy["y"] < 50:
+					decoy["y"] = 50
+					decoy["vy"] *= -1
+				elif decoy["y"] > 950:
+					decoy["y"] = 950
+					decoy["vy"] *= -1
+
+				if closest_detonation_dist < decoy["detonation_range"]:
+					decoys_to_remove.append(decoy)
+					var explosion = {
+						"id": world.get("arena", {}).get("hazards", []).size() + randi_range(1000, 9000),
+						"x": decoy["x"],
+						"y": decoy["y"],
+						"radius": 80.0,
+						"kind": "explosion",
+						"damage": decoy["damage"],
+						"active": true,
+						"target_radius": 80.0
+					}
+					if world.has("arena") and world["arena"].has("hazards"):
+						world["arena"]["hazards"].append(explosion)
+
+					for b in balls:
+						if typeof(b) == TYPE_OBJECT and b.hp <= 0:
+							continue
+						elif typeof(b) == TYPE_DICTIONARY and b.get("hp", 1) <= 0:
+							continue
+
+						var bx = 0.0
+						var by = 0.0
+						var bradius = 15.0
+
+						if typeof(b) == TYPE_OBJECT:
+							bx = b.x
+							by = b.y
+							bradius = b.radius
+						elif typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0)
+							by = b.get("y", 0)
+							bradius = b.get("radius", 15.0)
+
+						var dist = sqrt(pow(bx - decoy["x"], 2) + pow(by - decoy["y"], 2))
+						if dist < 80.0 + bradius:
+							if typeof(b) == TYPE_OBJECT:
+								b.hp -= decoy["damage"]
+								b.is_confused = true
+								if b.get("confused_timer") != null:
+									b.confused_timer = max(b.confused_timer, 3.0)
+								else:
+									b.set("confused_timer", 3.0)
+							elif typeof(b) == TYPE_DICTIONARY:
+								b["hp"] -= decoy["damage"]
+								b["is_confused"] = true
+								b["confused_timer"] = max(b.get("confused_timer", 0.0), 3.0)
+
+		for d in decoys_to_remove:
+			decoys.erase(d)
+
 var GAME_MODES = {
+	'dormant_decoys': DormantDecoysMode.new(),
 	'orbital_debris': OrbitalDebrisMode.new(),
 	"extreme_tornado_weather": ExtremeTornadoWeatherMode.new(),
 	"mini_black_holes": MiniBlackHolesMode.new(),

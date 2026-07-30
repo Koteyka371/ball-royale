@@ -33898,7 +33898,126 @@ class ExtremeTornadoWeatherMode(GameMode):
                         b.vx += -ny * applied_force * 0.5 * delta
                         b.vy += nx * applied_force * 0.5 * delta
 
+
+class DormantDecoysMode(GameMode):
+    """
+    A game mode where the arena is seeded with dormant decoys that activate and walk around randomly
+    when players approach. They act as moving proximity mines that confuse and detonate, adding a
+    stealth and careful movement requirement to navigation.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Dormant Decoys"
+        self.description = "Arena is seeded with dormant decoys that activate on fast movement and detonate on proximity."
+        self.decoys = []
+
+    def setup(self, world, balls, is_resume=False):
+        super().setup(world, balls)
+        self.decoys = []
+        if not is_resume:
+            import random
+            for _ in range(15):
+                self.decoys.append({
+                    'x': random.uniform(100, 900),
+                    'y': random.uniform(100, 900),
+                    'active': False,
+                    'vx': 0.0,
+                    'vy': 0.0,
+                    'radius': 15.0,
+                    'activation_range': 200.0,
+                    'detonation_range': 50.0,
+                    'damage': 30.0
+                })
+        self.world = world
+        if not hasattr(world, "game_mode") or world.game_mode != self:
+            world.game_mode = self
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        import random
+        from arena.procedural_arena import Hazard
+
+        if not hasattr(world.arena, 'hazards'):
+            world.arena.hazards = []
+
+        decoys_to_remove = []
+        for decoy in self.decoys:
+            closest_activation_dist = float('inf')
+            closest_detonation_dist = float('inf')
+
+            for b in balls:
+                if b.hp <= 0: continue
+                dist = math.hypot(b.x - decoy['x'], b.y - decoy['y'])
+                vel = math.hypot(b.vx, b.vy)
+
+                if vel > 30.0:
+                    if dist < closest_activation_dist:
+                        closest_activation_dist = dist
+
+                if dist < closest_detonation_dist:
+                    closest_detonation_dist = dist
+
+            if not decoy['active']:
+                if closest_activation_dist < decoy['activation_range']:
+                    decoy['active'] = True
+                    angle = random.uniform(0, 2 * math.pi)
+                    speed = 100.0
+                    decoy['vx'] = math.cos(angle) * speed
+                    decoy['vy'] = math.sin(angle) * speed
+            else:
+                if random.random() < 0.05:
+                    angle = random.uniform(0, 2 * math.pi)
+                    speed = 100.0
+                    decoy['vx'] = math.cos(angle) * speed
+                    decoy['vy'] = math.sin(angle) * speed
+
+                decoy['x'] += decoy['vx'] * delta
+                decoy['y'] += decoy['vy'] * delta
+
+                if decoy['x'] < 50:
+                    decoy['x'] = 50
+                    decoy['vx'] *= -1
+                elif decoy['x'] > 950:
+                    decoy['x'] = 950
+                    decoy['vx'] *= -1
+
+                if decoy['y'] < 50:
+                    decoy['y'] = 50
+                    decoy['vy'] *= -1
+                elif decoy['y'] > 950:
+                    decoy['y'] = 950
+                    decoy['vy'] *= -1
+
+                if closest_detonation_dist < decoy['detonation_range']:
+                    decoys_to_remove.append(decoy)
+                    explosion = Hazard(
+                        id=len(world.arena.hazards) + random.randint(1000, 9000),
+                        x=decoy['x'],
+                        y=decoy['y'],
+                        radius=80.0,
+                        kind='explosion',
+                        damage=decoy['damage'],
+                        active=True,
+                        target_radius=80.0
+                    )
+                    world.arena.hazards.append(explosion)
+
+                    for b in balls:
+                        if b.hp <= 0: continue
+                        dist = math.hypot(b.x - decoy['x'], b.y - decoy['y'])
+                        if dist < 80.0 + b.radius:
+                            b.hp -= decoy['damage']
+                            b.is_confused = True
+                            b.confused_timer = max(getattr(b, 'confused_timer', 0.0), 3.0)
+
+        for d in decoys_to_remove:
+            if d in self.decoys:
+                self.decoys.remove(d)
+
+
 GAME_MODES = {
+    'dormant_decoys': DormantDecoysMode(),
     'extreme_tornado_weather': ExtremeTornadoWeatherMode(),
 
     'mini_black_holes': MiniBlackHolesMode(),
