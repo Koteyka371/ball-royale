@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1632] Holo-Decoy Ball — *2026-07-30 18:23:08 UTC*
+
+A consumable item that drops a visually identical hologram of the player's ball that travels in a straight line at maximum speed to confuse enemies and draw sniper fire or homing attacks.
+
+---
+
 ## [idea-1714] Nightmare Hazard — *2026-07-30 17:59:51 UTC*
 
 During the Haunted Event, a new hazard called Nightmare appears. It specifically targets players with low stamina, chasing them at high speeds. If it catches them, it inflicts a 'Feared' status effect, making their controls inverted for a short duration.
