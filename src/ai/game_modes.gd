@@ -24688,6 +24688,121 @@ class BouncyTerrainMode extends GameMode:
 		name = "Bouncy Terrain"
 		description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
 
+class LocalizedZeroGravityZoneMode extends GameMode:
+	var zone_timer: float = 0.0
+
+	func _init() -> void:
+		name = "Localized Zero Gravity Zone"
+		description = "Certain parts of the arena periodically lose gravity, causing friction to drop and speed to skyrocket."
+		zone_timer = 0.0
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		if not ("arena" in world) or typeof(world.arena) != TYPE_DICTIONARY or not ("hazards" in world.arena):
+			return
+
+		zone_timer += delta
+		if zone_timer >= 5.0:
+			zone_timer = 0.0
+			var arena_width = world.arena.get("width", 1000.0)
+			var arena_height = world.arena.get("height", 1000.0)
+
+			var x = 150.0 + randf() * (arena_width - 300.0)
+			var y = 150.0 + randf() * (arena_height - 300.0)
+			var h_id = "zero_gravity_zone_" + str(randi() % 90000 + 10000)
+
+			var zone = {
+				"id": h_id,
+				"x": x,
+				"y": y,
+				"radius": 150.0,
+				"kind": "zero_gravity_zone",
+				"damage": 0.0,
+				"active": true,
+				"duration": 10.0
+			}
+			world.arena.hazards.append(zone)
+
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if not b.get("alive", true) or b.get("ball_type", "") == "spectator":
+					continue
+			else:
+				if not b.get("alive") if b.get("alive") != null else true:
+					continue
+				if b.get("ball_type") == "spectator":
+					continue
+
+			var in_zone = false
+			for h in world.arena.hazards:
+				if typeof(h) == TYPE_DICTIONARY and h.get("active", true):
+					if h.get("kind", "") == "zero_gravity_zone":
+						var hx = h.get("x", 0.0)
+						var hy = h.get("y", 0.0)
+						var hr = h.get("radius", 150.0)
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if b.has_meta("x") else (b.get("x") if b.get("x") != null else 0.0))
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if b.has_meta("y") else (b.get("y") if b.get("y") != null else 0.0))
+						var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("radius") if b.has_meta("radius") else (b.get("radius") if b.get("radius") != null else 15.0))
+
+						var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+						if dist <= hr + br:
+							in_zone = true
+							break
+				else:
+					if h.get("active") if h.get("active") != null else true:
+						if h.get("kind") == "zero_gravity_zone":
+							var hx = h.get("x") if h.get("x") != null else 0.0
+							var hy = h.get("y") if h.get("y") != null else 0.0
+							var hr = h.get("radius") if h.get("radius") != null else 150.0
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("x") if b.has_meta("x") else (b.get("x") if b.get("x") != null else 0.0))
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("y") if b.has_meta("y") else (b.get("y") if b.get("y") != null else 0.0))
+							var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("radius") if b.has_meta("radius") else (b.get("radius") if b.get("radius") != null else 15.0))
+
+							var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+							if dist <= hr + br:
+								in_zone = true
+								break
+
+			if in_zone:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["is_frictionless"] = true
+					b["friction_multiplier"] = 0.0
+					if not b.get("zero_g_speed_applied", false):
+						b["zero_g_speed_applied"] = true
+						if not b.has("base_speed") and b.has("speed"):
+							b["base_speed"] = b["speed"]
+					if b.has("base_speed"):
+						b["speed"] = b["base_speed"] * 3.0
+				else:
+					b.set("is_frictionless", true)
+					b.set("friction_multiplier", 0.0)
+					if not (b.get_meta("zero_g_speed_applied") if b.has_meta("zero_g_speed_applied") else false):
+						b.set_meta("zero_g_speed_applied", true)
+						if b.get("base_speed") == null and b.get("speed") != null:
+							b.set("base_speed", b.get("speed"))
+					if b.get("base_speed") != null:
+						b.set("speed", b.get("base_speed") * 3.0)
+			else:
+				var applied = false
+				if typeof(b) == TYPE_DICTIONARY:
+					applied = b.get("zero_g_speed_applied", false)
+				else:
+					applied = b.get_meta("zero_g_speed_applied") if b.has_meta("zero_g_speed_applied") else false
+
+				if applied:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("base_speed"):
+							b["speed"] = b["base_speed"]
+						b["zero_g_speed_applied"] = false
+						b["is_frictionless"] = false
+						b["friction_multiplier"] = 1.0
+					else:
+						if b.get("base_speed") != null:
+							b.set("speed", b.get("base_speed"))
+						b.set_meta("zero_g_speed_applied", false)
+						b.set("is_frictionless", false)
+						b.set("friction_multiplier", 1.0)
+
 class ZeroGravityMode extends GameMode:
 	func _init() -> void:
 		name = "Zero Gravity"
@@ -54528,6 +54643,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"invisible_walls": InvisibleWallsMode.new(),
 	"mirror_walls": MirrorWallsMode.new(),
 	"stamina_regen": StaminaRegenMode.new(),
+	"localized_zero_gravity_zone": LocalizedZeroGravityZoneMode.new(),
 	"zero_gravity": ZeroGravityMode.new(),
 	"magnetic_collisions": MagneticCollisionsMode.new(),
 	"polarity_shift": PolarityShiftMode.new(),
