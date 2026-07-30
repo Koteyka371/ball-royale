@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1677] Sticky Wall Modification — *2026-07-30 07:06:30 UTC*
+
+Balls striking sticky walls stick to them for up to 3 seconds before sliding off.
+
+---
+
 ## [idea-1688] Mirror Hazard — *2026-07-30 05:51:53 UTC*
 
 A hazard that creates identical visual clones of balls entering it, making it confusing to target the real ball for a short duration.
