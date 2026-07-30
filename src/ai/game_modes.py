@@ -43703,9 +43703,11 @@ from ai.ghost_companion import GhostCompanionMode
 GAME_MODES['ghost_companion'] = GhostCompanionMode()
 
 from ai.bouncy_portals import BouncyPortalsMode
+from ai.spiderman import SpidermanMode
 import ai.hovercraft
 GAME_MODES['hovercraft'] = ai.hovercraft.HovercraftMode()
 GAME_MODES['bouncy_portals'] = BouncyPortalsMode()
+GAME_MODES['spiderman'] = SpidermanMode()
 
 from ai.curling import CurlingMode
 GAME_MODES["curling"] = CurlingMode()
