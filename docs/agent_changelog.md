@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1674] Abyssal Labyrinth — *2026-07-30 08:08:57 UTC*
+
+A new game mode where the map is a maze that slowly shifts and changes its layout over time. Balls must find the center to win.
+
+---
+
 ## [idea-1677] Sticky Wall Modification — *2026-07-30 07:06:30 UTC*
 
 Balls striking sticky walls stick to them for up to 3 seconds before sliding off.
