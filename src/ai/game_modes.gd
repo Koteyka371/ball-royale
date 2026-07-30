@@ -27846,8 +27846,13 @@ class FactoryMode extends GameMode:
 					var dx = c.x - item.x
 					var dy = c.y - item.y
 					if dx*dx + dy*dy < c.radius * c.radius:
-						item.x += c.direction_vector[0] * c.speed_magnitude * delta
-						item.y += c.direction_vector[1] * c.speed_magnitude * delta
+						var mass = item.get("mass", 1.0) if typeof(item) == TYPE_DICTIONARY else (item.mass if "mass" in item else 1.0)
+						if typeof(item) == TYPE_DICTIONARY:
+							item["vx"] = item.get("vx", 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+							item["vy"] = item.get("vy", 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
+						else:
+							item.vx = (item.vx if "vx" in item else 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+							item.vy = (item.vy if "vy" in item else 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
 
 			for h in world.arena.hazards:
 				if h == c or h.kind == "conveyor_belt":
@@ -27855,16 +27860,26 @@ class FactoryMode extends GameMode:
 				var dx = c.x - h.x
 				var dy = c.y - h.y
 				if dx*dx + dy*dy < c.radius * c.radius:
-					h.x += c.direction_vector[0] * c.speed_magnitude * delta
-					h.y += c.direction_vector[1] * c.speed_magnitude * delta
+					var mass = h.get("mass", 1.0) if typeof(h) == TYPE_DICTIONARY else (h.mass if "mass" in h else 1.0)
+					if typeof(h) == TYPE_DICTIONARY:
+						h["vx"] = h.get("vx", 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+						h["vy"] = h.get("vy", 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
+					else:
+						h.vx = (h.vx if "vx" in h else 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+						h.vy = (h.vy if "vy" in h else 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
 
 			if "balls" in world:
 				for b in world.balls:
 					var dx = c.x - b.x
 					var dy = c.y - b.y
 					if dx*dx + dy*dy < c.radius * c.radius:
-						b.x += c.direction_vector[0] * c.speed_magnitude * delta
-						b.y += c.direction_vector[1] * c.speed_magnitude * delta
+						var mass = b.get("mass", 1.0) if typeof(b) == TYPE_DICTIONARY else (b.mass if "mass" in b else 1.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = b.get("vx", 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+							b["vy"] = b.get("vy", 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
+						else:
+							b.vx = (b.vx if "vx" in b else 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+							b.vy = (b.vy if "vy" in b else 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
 
 class HazardBilliardsMode extends GameMode:
 	func _init() -> void:
