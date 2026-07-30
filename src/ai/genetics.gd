@@ -21,7 +21,7 @@ func _init(_battles_to_reproduce: int = 3, _mutation_rate: float = 0.1, _mutatio
 
 	skills = [
 		"wave_attack", "shield", "dash", "health_link", "precision_shot",
-		"explosion", "rage_burst", "ground_pound", "phase_through",
+		"explosion", "rage_burst", "ground_pound", "phase_through", "spectral_burn",
 		"steal_boost", "clone", "mimic_clone", "protect_ally", "command", "stealth", "summon_minions", "wind_rider"
 	]
 
