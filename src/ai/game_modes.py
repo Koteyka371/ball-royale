@@ -45620,3 +45620,85 @@ class DecoySwapMode(GameMode):
                             })
 
 GAME_MODES['decoy_swap'] = DecoySwapMode()
+
+
+class PermutationSwapMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Permutation Swap"
+        self.description = "A hazard periodically swaps the positions of all entities caught within its radius in a random permutation."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+
+        # Add permutation swap zone hazard
+        class Hazard:
+            def __init__(self, id_val, x, y):
+                self.id = id_val
+                self.x = x
+                self.y = y
+                self.radius = 200.0
+                self.kind = "permutation_swap_zone"
+                self.damage = 0.0
+                self.swap_interval = 3.0
+                self.swap_timer = self.swap_interval
+                self.active = True
+
+        arena_width = getattr(world.arena, "width", 1000.0)
+        arena_height = getattr(world.arena, "height", 1000.0)
+
+        hazard = Hazard(getattr(world, "next_id", 100000), arena_width / 2.0, arena_height / 2.0)
+        if hasattr(world, "next_id"):
+            world.next_id += 1
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        world.arena.hazards.append(hazard)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        for hazard in world.arena.hazards:
+            if getattr(hazard, "kind", "") == "permutation_swap_zone" and getattr(hazard, "active", True):
+                swap_interval = getattr(hazard, "swap_interval", 3.0)
+                swap_timer = getattr(hazard, "swap_timer", swap_interval)
+                swap_timer -= delta
+
+                if swap_timer <= 0.0:
+                    hazard.swap_timer = swap_interval
+                    targets = []
+                    for b in balls:
+                        if getattr(b, "alive", False):
+                            dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                            if dist_sq <= getattr(hazard, "radius", 100.0)**2:
+                                targets.append(b)
+
+                    if len(targets) > 1:
+                        import random
+                        # Stable sort before shuffle
+                        targets.sort(key=lambda b: getattr(b, "id", 0))
+                        random.shuffle(targets)
+
+                        # Apply cyclic permutation
+                        first_pos = (targets[0].x, targets[0].y)
+                        for i in range(len(targets) - 1):
+                            targets[i].x = targets[i+1].x
+                            targets[i].y = targets[i+1].y
+                            # Reset velocities since they teleported (prevents glitchy AI movement after teleport)
+                            if hasattr(targets[i], "vx"): targets[i].vx = 0.0
+                            if hasattr(targets[i], "vy"): targets[i].vy = 0.0
+                            if hasattr(world, "events"):
+                                world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": targets[i].x, "y": targets[i].y}})
+
+                        targets[-1].x, targets[-1].y = first_pos
+                        if hasattr(targets[-1], "vx"): targets[-1].vx = 0.0
+                        if hasattr(targets[-1], "vy"): targets[-1].vy = 0.0
+                        if hasattr(world, "events"):
+                            world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": targets[-1].x, "y": targets[-1].y}})
+                else:
+                    hazard.swap_timer = swap_timer
+
+GAME_MODES['permutation_swap'] = PermutationSwapMode()

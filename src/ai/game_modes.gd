@@ -72005,3 +72005,176 @@ class OrbitingChaosOrbsMode extends GameMode:
 			i -= 1
 
 GAME_MODES['orbiting_chaos_orbs'] = OrbitingChaosOrbsMode.new()
+
+
+class PermutationSwapMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Permutation Swap"
+		description = "A hazard periodically swaps the positions of all entities caught within its radius in a random permutation."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and world.has_method("get_arena"):
+			var arena = world.get_arena()
+			if arena:
+				if "width" in arena: arena_width = arena.width
+				elif typeof(arena) == TYPE_DICTIONARY and arena.has("width"): arena_width = arena["width"]
+				if "height" in arena: arena_height = arena.height
+				elif typeof(arena) == TYPE_DICTIONARY and arena.has("height"): arena_height = arena["height"]
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world["arena"]
+			if typeof(arena) == TYPE_DICTIONARY:
+				if arena.has("width"): arena_width = arena["width"]
+				if arena.has("height"): arena_height = arena["height"]
+
+		var hazard = {
+			"id": _get_next_id(world),
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"radius": 200.0,
+			"kind": "permutation_swap_zone",
+			"damage": 0.0,
+			"swap_interval": 3.0,
+			"swap_timer": 3.0,
+			"active": true
+		}
+
+		if typeof(world) == TYPE_OBJECT and world.has_method("get_arena"):
+			var arena = world.get_arena()
+			if arena and "hazards" in arena:
+				arena.hazards.append(hazard)
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world["arena"]
+			if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+				arena["hazards"].append(hazard)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		var hazards = []
+		if typeof(world) == TYPE_OBJECT and world.has_method("get_arena"):
+			var arena = world.get_arena()
+			if arena and "hazards" in arena:
+				hazards = arena.hazards
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			var arena = world["arena"]
+			if typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+				hazards = arena["hazards"]
+
+		for hazard in hazards:
+			var kind = ""
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
+			elif typeof(hazard) == TYPE_OBJECT and "kind" in hazard: kind = hazard.kind
+
+			var is_active = true
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("active"): is_active = hazard["active"]
+			elif typeof(hazard) == TYPE_OBJECT and "active" in hazard: is_active = hazard.active
+
+			if kind == "permutation_swap_zone" and is_active:
+				var swap_interval = 3.0
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("swap_interval"): swap_interval = hazard["swap_interval"]
+				elif typeof(hazard) == TYPE_OBJECT and "swap_interval" in hazard: swap_interval = hazard.swap_interval
+
+				var swap_timer = swap_interval
+				if typeof(hazard) == TYPE_DICTIONARY and hazard.has("swap_timer"): swap_timer = hazard["swap_timer"]
+				elif typeof(hazard) == TYPE_OBJECT and "swap_timer" in hazard: swap_timer = hazard.swap_timer
+
+				swap_timer -= delta
+
+				if swap_timer <= 0.0:
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard["swap_timer"] = swap_interval
+					elif typeof(hazard) == TYPE_OBJECT:
+						hazard.swap_timer = swap_interval
+
+					var targets = []
+					for b in balls:
+						if _get_alive(b):
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("x"): bx = b["x"]
+								if b.has("y"): by = b["y"]
+							elif typeof(b) == TYPE_OBJECT:
+								if "x" in b: bx = b.x
+								if "y" in b: by = b.y
+
+							var hx = 0.0
+							var hy = 0.0
+							var hr = 100.0
+							if typeof(hazard) == TYPE_DICTIONARY:
+								if hazard.has("x"): hx = hazard["x"]
+								if hazard.has("y"): hy = hazard["y"]
+								if hazard.has("radius"): hr = hazard["radius"]
+							elif typeof(hazard) == TYPE_OBJECT:
+								if "x" in hazard: hx = hazard.x
+								if "y" in hazard: hy = hazard.y
+								if "radius" in hazard: hr = hazard.radius
+
+							var dist_sq = (bx - hx) * (bx - hx) + (by - hy) * (by - hy)
+							if dist_sq <= hr * hr:
+								targets.append(b)
+
+					if targets.size() > 1:
+						targets.shuffle()
+						var first_x = 0.0
+						var first_y = 0.0
+						if typeof(targets[0]) == TYPE_DICTIONARY:
+							if targets[0].has("x"): first_x = targets[0]["x"]
+							if targets[0].has("y"): first_y = targets[0]["y"]
+						else:
+							if "x" in targets[0]: first_x = targets[0].x
+							if "y" in targets[0]: first_y = targets[0].y
+
+						for i in range(targets.size() - 1):
+							var next_x = 0.0
+							var next_y = 0.0
+							if typeof(targets[i+1]) == TYPE_DICTIONARY:
+								if targets[i+1].has("x"): next_x = targets[i+1]["x"]
+								if targets[i+1].has("y"): next_y = targets[i+1]["y"]
+							else:
+								if "x" in targets[i+1]: next_x = targets[i+1].x
+								if "y" in targets[i+1]: next_y = targets[i+1].y
+
+							if typeof(targets[i]) == TYPE_DICTIONARY:
+								targets[i]["x"] = next_x
+								targets[i]["y"] = next_y
+								targets[i]["vx"] = 0.0
+								targets[i]["vy"] = 0.0
+							else:
+								targets[i].x = next_x
+								targets[i].y = next_y
+								targets[i].vx = 0.0
+								targets[i].vy = 0.0
+
+							if typeof(world) == TYPE_OBJECT and "events" in world:
+								world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": next_x, "y": next_y}})
+							elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+								world["events"].append({"type": "visual_effect", "data": {"type": "teleport", "x": next_x, "y": next_y}})
+
+						if typeof(targets[targets.size()-1]) == TYPE_DICTIONARY:
+							targets[targets.size()-1]["x"] = first_x
+							targets[targets.size()-1]["y"] = first_y
+							targets[targets.size()-1]["vx"] = 0.0
+							targets[targets.size()-1]["vy"] = 0.0
+						else:
+							targets[targets.size()-1].x = first_x
+							targets[targets.size()-1].y = first_y
+							targets[targets.size()-1].vx = 0.0
+							targets[targets.size()-1].vy = 0.0
+
+						if typeof(world) == TYPE_OBJECT and "events" in world:
+							world.events.append({"type": "visual_effect", "data": {"type": "teleport", "x": first_x, "y": first_y}})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+							world["events"].append({"type": "visual_effect", "data": {"type": "teleport", "x": first_x, "y": first_y}})
+				else:
+					if typeof(hazard) == TYPE_DICTIONARY:
+						hazard["swap_timer"] = swap_timer
+					elif typeof(hazard) == TYPE_OBJECT:
+						hazard.swap_timer = swap_timer
+
+GAME_MODES['permutation_swap'] = PermutationSwapMode.new()
