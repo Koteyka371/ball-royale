@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1695] Shrinking Zones Speed Modifier — *2026-07-30 17:50:52 UTC*
+
+Players outside the shrinking safe zone should not only take damage, but also be affected by a significant speed penalty (e.g., -50% speed) which makes it harder for them to return to the safe area if they wander too far off. This encourages early positioning.
+
+---
+
 ## [idea-1673] Reflect Shield Booster — *2026-07-30 15:45:35 UTC*
 
 A new booster item that grants a temporary shield that reflects projectiles back at the attacker for 5 seconds.
