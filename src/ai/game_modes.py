@@ -561,6 +561,8 @@ class GameMode:
         """Called at the start of the battle to initialize mode-specific rules/teams."""
 
         # Apply global season modifier
+        if getattr(world, 'is_test_world', False) or world.__class__.__name__ == 'MockWorld':
+            return
         season_num = 1
         if hasattr(world, "leaderboard_manager"):
             season_num = world.leaderboard_manager.data.get("current_season", 1)

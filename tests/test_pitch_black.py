@@ -48,6 +48,7 @@ def test_pitch_black_mode():
     assert ball1.visibility_timer > 0
 
     # Reset visibility
+    world.arena.hazards = []
     ball1.visibility_timer = 0
     ball2.x = 200
     mode.tick(world, balls, delta=0.1)
@@ -59,9 +60,11 @@ def test_pitch_black_mode():
     assert ball1.invisible == False
 
     # 4. Attack visibility (skill shots)
+    world.arena.hazards = []
     ball1.visibility_timer = 0
     ball2.x = 200
     ball1.pb_attack_cooldown = 0 # Ready to attack
+    ball2.pb_attack_cooldown = 1000
     mode.tick(world, balls, delta=0.1)
 
     # Flare shot should be spawned

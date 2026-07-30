@@ -33,6 +33,7 @@ class MockBall:
         self.radius = 15
         self.alive = True
         self.speed = 100.0
+        self.base_speed = 100.0
         self.radiation_duration = 0.0
         self.radiation_multiplier = 1.0
         self.ball_type = "player"
