@@ -98,3 +98,19 @@ def test_invisibility_booster_perception():
 
     data = p.scan()
     assert len(data["enemies"]) == 0
+
+def test_invisibility_broken_on_movement():
+    ball = MockBall(x=0, y=0)
+    ball.invisibility_timer = 5.0
+    world = MockWorld()
+    world.balls.append(ball)
+
+    action = Action(ball, world)
+
+    # Movement is simulated by vx, vy
+    ball.vx = 5.0
+    ball.vy = 0.0
+
+    action.execute("idle", 1.0)
+
+    assert ball.invisibility_timer == 0.0
