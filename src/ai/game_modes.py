@@ -44639,3 +44639,63 @@ class TeleportingSafeZoneMode(GameMode):
                         world.add_event("kill", {"killer": "safe_zone", "victim": getattr(b, "id", "Unknown")})
 
 GAME_MODES["teleporting_safe_zone"] = TeleportingSafeZoneMode()
+
+class OrbitalDebrisMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbital Debris"
+        self.description = "Indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully."
+        self.id = "orbital_debris"
+        self.orbit_speed = 0.5
+        self.orbit_distance = 250.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+
+        if not (hasattr(world, 'arena') and hasattr(world.arena, 'hazards')):
+            return
+
+        cx = getattr(world, 'width', 1000) / 2.0
+        cy = getattr(world, 'height', 1000) / 2.0
+
+        # Count existing orbital debris
+        debris_clusters = [h for h in world.arena.hazards if getattr(h, 'kind', '') == 'orbital_debris']
+
+        # Spawn debris if fewer than 8
+        if len(debris_clusters) < 8:
+            from arena.procedural_arena import Hazard
+            num_to_spawn = 8 - len(debris_clusters)
+            for _ in range(num_to_spawn):
+                d_id = len(world.arena.hazards) + random.randint(10000, 99999)
+                debris = Hazard(d_id, cx, cy, 35.0, "orbital_debris", 9999.0)
+                setattr(debris, 'active', True)
+                setattr(debris, 'duration', 9999.0)
+                setattr(debris, 'angle', random.uniform(0, 2 * math.pi))
+                setattr(debris, 'orbit_dist', random.uniform(100.0, 400.0))
+                setattr(debris, 'speed_mult', random.choice([-1, 1]) * random.uniform(0.5, 1.2))
+                world.arena.hazards.append(debris)
+                debris_clusters.append(debris)
+
+        # Update debris positions
+        for d in debris_clusters:
+            if getattr(d, 'active', True):
+                ang = getattr(d, 'angle', 0.0)
+                spd = self.orbit_speed * getattr(d, 'speed_mult', 1.0)
+                ang += spd * delta
+                setattr(d, 'angle', ang)
+
+                dist = getattr(d, 'orbit_dist', self.orbit_distance)
+
+                # Update position based on orbit
+                d.x = cx + math.cos(ang) * dist
+                d.y = cy + math.sin(ang) * dist
+
+                # Optionally set vx, vy on the debris for completeness
+                d_vx = -spd * dist * math.sin(ang)
+                d_vy = spd * dist * math.cos(ang)
+                setattr(d, 'vx', d_vx)
+                setattr(d, 'vy', d_vy)
+
+GAME_MODES["orbital_debris"] = OrbitalDebrisMode()

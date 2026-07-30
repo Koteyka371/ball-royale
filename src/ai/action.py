@@ -10392,9 +10392,26 @@ class Action:
                                 if dist > 0.0001:
                                     nx = dx / dist
                                     ny = dy / dist
-                                    push_strength = 200.0 * delta
-                                    self.ball.x += nx * push_strength
-                                    self.ball.y += ny * push_strength
+
+                                    # Calculate relative speed (assuming debris vx/vy is negligible or using ball speed)
+                                    b_vx = getattr(self.ball, "vx", 0.0)
+                                    b_vy = getattr(self.ball, "vy", 0.0)
+                                    rel_speed = math.hypot(b_vx, b_vy)
+
+                                    if rel_speed > 300.0:
+                                        # High-speed collision damage
+                                        dmg = (rel_speed - 300.0) * 0.5 * delta
+                                        if hasattr(self.ball, "take_damage"):
+                                            self.ball.take_damage(dmg, "orbital_debris")
+                                        else:
+                                            self.ball.hp -= dmg
+                                            if getattr(self.ball, "hp", 0) <= 0:
+                                                self.ball.alive = False
+
+                                    # Push effect via velocity to maintain physics integrity
+                                    push_strength = 2000.0 * delta
+                                    self.ball.vx = b_vx + nx * push_strength
+                                    self.ball.vy = b_vy + ny * push_strength
                             continue
                         elif hazard.kind == "emp_strike_active":
                             # Check if under an orbital shield dome

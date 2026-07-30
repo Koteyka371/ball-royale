@@ -20398,9 +20398,38 @@ func execute(strategy: String, delta: float):
                             if dist > 0.0001:
                                 var nx = dx / dist
                                 var ny = dy / dist
-                                var push_strength = 200.0 * delta
-                                self.ball.x += nx * push_strength
-                                self.ball.y += ny * push_strength
+
+                                var b_vx = 0.0
+                                if "vx" in self.ball: b_vx = self.ball.vx
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): b_vx = self.ball["vx"]
+
+                                var b_vy = 0.0
+                                if "vy" in self.ball: b_vy = self.ball.vy
+                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): b_vy = self.ball["vy"]
+
+                                var rel_speed = sqrt(b_vx*b_vx + b_vy*b_vy)
+                                if rel_speed > 300.0:
+                                    var dmg = (rel_speed - 300.0) * 0.5 * delta
+                                    if self.ball.has_method("take_damage"):
+                                        self.ball.take_damage(dmg, "orbital_debris")
+                                    else:
+                                        var hp = 100.0
+                                        if "hp" in self.ball: hp = self.ball.hp
+                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): hp = self.ball["hp"]
+                                        hp -= dmg
+                                        if typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = hp
+                                        elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = hp
+                                        if hp <= 0:
+                                            if typeof(self.ball) == TYPE_OBJECT and "alive" in self.ball: self.ball.alive = false
+                                            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["alive"] = false
+
+                                var push_strength = 2000.0 * delta
+                                if typeof(self.ball) == TYPE_OBJECT:
+                                    if "vx" in self.ball: self.ball.vx = b_vx + nx * push_strength
+                                    if "vy" in self.ball: self.ball.vy = b_vy + ny * push_strength
+                                elif typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball["vx"] = b_vx + nx * push_strength
+                                    self.ball["vy"] = b_vy + ny * push_strength
                         continue
                     elif hazard.kind == "emp_strike_active":
                         var shielded = false

@@ -69850,3 +69850,100 @@ class TeleportingSafeZoneMode extends GameMode:
 							world.add_event("kill", {"killer": "safe_zone", "victim": b.get("id")})
 
 GAME_MODES["teleporting_safe_zone"] = TeleportingSafeZoneMode.new()
+
+class OrbitalDebrisMode extends GameMode:
+	var orbit_speed: float = 0.5
+	var orbit_distance: float = 250.0
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
+	func _init():
+		super()
+		name = "Orbital Debris"
+		description = "Indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully."
+		id = "orbital_debris"
+		rng.randomize()
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+		if typeof(world) != TYPE_OBJECT or not ("arena" in world) or not ("hazards" in world.arena):
+			return
+
+		var cx = 500.0
+		var cy = 500.0
+		if "width" in world:
+			cx = world.width / 2.0
+		elif "width" in world.arena:
+			cx = world.arena.width / 2.0
+		if "height" in world:
+			cy = world.height / 2.0
+		elif "height" in world.arena:
+			cy = world.arena.height / 2.0
+
+		var debris_clusters = []
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_OBJECT and h.get("kind") == "orbital_debris":
+				debris_clusters.append(h)
+			elif typeof(h) == TYPE_DICTIONARY and h.get("kind") == "orbital_debris":
+				debris_clusters.append(h)
+
+		if debris_clusters.size() < 8:
+			var HazardObj = load("res://src/arena/procedural_arena.gd")
+			if HazardObj != null:
+				HazardObj = HazardObj.Hazard
+				var num_to_spawn = 8 - debris_clusters.size()
+				for i in range(num_to_spawn):
+					var d_id = world.arena.hazards.size() + rng.randi_range(10000, 99999)
+					var d = HazardObj.new(d_id, cx, cy, "orbital_debris", 35.0)
+					if "damage" in d: d.damage = 0.0
+					if d.has_method("set_meta"):
+						d.set_meta("active", true)
+						d.set_meta("duration", 9999.0)
+						d.set_meta("angle", rng.randf_range(0, 2 * PI))
+						d.set_meta("orbit_dist", rng.randf_range(100.0, 400.0))
+						var mult = rng.randf_range(0.5, 1.2)
+						if rng.randi() % 2 == 0: mult = -mult
+						d.set_meta("speed_mult", mult)
+					world.arena.hazards.append(d)
+					debris_clusters.append(d)
+
+		for d in debris_clusters:
+			var is_active = true
+			if typeof(d) == TYPE_OBJECT and d.has_method("has_meta") and d.has_meta("active"):
+				is_active = d.get_meta("active")
+			elif typeof(d) == TYPE_DICTIONARY and d.has("active"):
+				is_active = d.get("active")
+
+			if is_active:
+				var ang = 0.0
+				var mult = 1.0
+				var dist = orbit_distance
+				if typeof(d) == TYPE_OBJECT and d.has_method("get_meta"):
+					ang = d.get_meta("angle")
+					mult = d.get_meta("speed_mult")
+					dist = d.get_meta("orbit_dist")
+				elif typeof(d) == TYPE_DICTIONARY:
+					ang = d.get("angle") if d.has("angle") else 0.0
+					mult = d.get("speed_mult") if d.has("speed_mult") else 1.0
+					dist = d.get("orbit_dist") if d.has("orbit_dist") else orbit_distance
+
+				var spd = orbit_speed * mult
+				ang += spd * delta
+
+				var nx = cx + cos(ang) * dist
+				var ny = cy + sin(ang) * dist
+
+				if typeof(d) == TYPE_OBJECT:
+					if d.has_method("set_meta"):
+						d.set_meta("angle", ang)
+					if "x" in d: d.x = nx
+					if "y" in d: d.y = ny
+					if "vx" in d: d.vx = -spd * dist * sin(ang)
+					if "vy" in d: d.vy = spd * dist * cos(ang)
+				elif typeof(d) == TYPE_DICTIONARY:
+					d["angle"] = ang
+					d["x"] = nx
+					d["y"] = ny
+					d["vx"] = -spd * dist * sin(ang)
+					d["vy"] = spd * dist * cos(ang)
+
+GAME_MODES["orbital_debris"] = OrbitalDebrisMode.new()
