@@ -6,6 +6,10 @@ def test_random_gravity_shift_mode_registered():
     assert 'random_gravity_shift' in GAME_MODES
     assert isinstance(GAME_MODES['random_gravity_shift'], RandomGravityShiftMode)
 
+def test_random_gravity_shift_mode_interval():
+    mode = RandomGravityShiftMode()
+    assert mode.shift_interval == 10.0
+
 def test_random_gravity_shift_mode_tick():
     mode = RandomGravityShiftMode()
     world = Mock()
