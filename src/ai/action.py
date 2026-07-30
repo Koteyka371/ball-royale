@@ -13065,6 +13065,11 @@ class Action:
 
 
     def _get_enemies(self) -> list:
+        # If we are a turret with negative damage, we should target allies to heal them
+        if getattr(self.ball, "is_turret", False) and getattr(self.ball, "damage", 0) < 0:
+            allies = self._get_allies_internal()
+            # Only target allies that need healing
+            return [a for a in allies if getattr(a, "hp", 100) < getattr(a, "max_hp", 100)]
 
         if getattr(self.ball, "amnesia_timer", 0.0) > 0:
             import random
