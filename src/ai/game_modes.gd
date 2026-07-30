@@ -54349,7 +54349,263 @@ class OrbitalDebrisMode extends GameMode:
 								b["vy"] = b_vy * 0.8
 
 
+class ProximityDecoyMinesMode extends GameMode:
+	var setup_done = false
+	var decoy_count = 10
+	var trigger_radius = 200.0
+	var explosion_radius = 100.0
+	var explosion_damage = 30.0
+
+	func _init().():
+		name = "Proximity Decoy Mines"
+		description = "The arena is seeded with dormant decoys that activate when players approach. They act as moving proximity mines that wander randomly and detonate on contact."
+
+	func setup(world, balls: Array) -> void:
+		if setup_done:
+			return
+		setup_done = true
+
+		var arena_w = 1000
+		var arena_h = 1000
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			arena_w = world.arena.get("width", 1000)
+			arena_h = world.arena.get("height", 1000)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			arena_w = world.arena.get("width") if world.arena.get("width") != null else 1000
+			arena_h = world.arena.get("height") if world.arena.get("height") != null else 1000
+
+		if typeof(world) == TYPE_DICTIONARY and not "balls" in world:
+			world["balls"] = []
+		elif typeof(world) == TYPE_OBJECT and not "balls" in world:
+			world.balls = []
+
+		for i in range(decoy_count):
+			var x = 50.0 + randf() * (arena_w - 100.0)
+			var y = 50.0 + randf() * (arena_h - 100.0)
+			var next_id = randi() % 900000 + 100000
+			if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+				next_id = world.next_id
+				world.next_id += 1
+			elif typeof(world) == TYPE_OBJECT and "next_id" in world:
+				next_id = world.next_id
+				world.next_id += 1
+
+			var decoy = {
+				"id": next_id,
+				"x": x,
+				"y": y,
+				"vx": 0.0,
+				"vy": 0.0,
+				"radius": 20.0,
+				"hp": 1.0,
+				"max_hp": 1.0,
+				"alive": true,
+				"team": "DecoyMines",
+				"ball_type": "decoy_mine",
+				"speed": 80.0,
+				"damage": 0.0,
+				"state": "dormant",
+				"timer": 0.0,
+				"is_decoy": true
+			}
+			if typeof(world) == TYPE_DICTIONARY:
+				world.balls.append(decoy)
+			elif typeof(world) == TYPE_OBJECT:
+				world.balls.append(decoy)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		var real_balls = []
+		var decoys = []
+
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = b.get("ball_type", "")
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.get("alive") != null else false
+				b_type = b.get("ball_type") if b.get("ball_type") != null else ""
+
+			if is_alive:
+				if b_type == "decoy_mine":
+					decoys.append(b)
+				elif b_type != "spectator":
+					real_balls.append(b)
+
+		var arena_w = 1000
+		var arena_h = 1000
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			arena_w = world.arena.get("width", 1000)
+			arena_h = world.arena.get("height", 1000)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			arena_w = world.arena.get("width") if world.arena.get("width") != null else 1000
+			arena_h = world.arena.get("height") if world.arena.get("height") != null else 1000
+
+		for decoy in decoys:
+			var d_state = "dormant"
+			var d_x = 0.0
+			var d_y = 0.0
+			var d_speed = 80.0
+			var d_timer = 0.0
+			var d_vx = 0.0
+			var d_vy = 0.0
+			var d_radius = 20.0
+
+			if typeof(decoy) == TYPE_DICTIONARY:
+				d_state = decoy.get("state", "dormant")
+				d_x = decoy.get("x", 0.0)
+				d_y = decoy.get("y", 0.0)
+				d_speed = decoy.get("speed", 80.0)
+				d_timer = decoy.get("timer", 0.0)
+				d_vx = decoy.get("vx", 0.0)
+				d_vy = decoy.get("vy", 0.0)
+				d_radius = decoy.get("radius", 20.0)
+			elif typeof(decoy) == TYPE_OBJECT:
+				d_state = decoy.get("state") if decoy.get("state") != null else "dormant"
+				d_x = decoy.get("x") if decoy.get("x") != null else 0.0
+				d_y = decoy.get("y") if decoy.get("y") != null else 0.0
+				d_speed = decoy.get("speed") if decoy.get("speed") != null else 80.0
+				d_timer = decoy.get("timer") if decoy.get("timer") != null else 0.0
+				d_vx = decoy.get("vx") if decoy.get("vx") != null else 0.0
+				d_vy = decoy.get("vy") if decoy.get("vy") != null else 0.0
+				d_radius = decoy.get("radius") if decoy.get("radius") != null else 20.0
+
+			if d_state == "dormant":
+				for b in real_balls:
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					elif typeof(b) == TYPE_OBJECT:
+						bx = b.get("x") if b.get("x") != null else 0.0
+						by = b.get("y") if b.get("y") != null else 0.0
+
+					var dx = d_x - bx
+					var dy = d_y - by
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= trigger_radius:
+						d_state = "active"
+						d_timer = 0.5 + randf() * 1.5
+						var angle = randf() * 2.0 * PI
+						d_vx = cos(angle) * d_speed
+						d_vy = sin(angle) * d_speed
+						break
+			elif d_state == "active":
+				d_timer -= delta
+				if d_timer <= 0:
+					d_timer = 0.5 + randf() * 1.5
+					var angle = randf() * 2.0 * PI
+					d_vx = cos(angle) * d_speed
+					d_vy = sin(angle) * d_speed
+
+				d_x += d_vx * delta
+				d_y += d_vy * delta
+
+				if d_x < 0:
+					d_vx *= -1
+					d_x = 0.0
+				elif d_x > arena_w:
+					d_vx *= -1
+					d_x = float(arena_w)
+
+				if d_y < 0:
+					d_vy *= -1
+					d_y = 0.0
+				elif d_y > arena_h:
+					d_vy *= -1
+					d_y = float(arena_h)
+
+				var exploded = false
+				for b in real_balls:
+					var bx = 0.0
+					var by = 0.0
+					var bradius = 20.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						bradius = b.get("radius", 20.0)
+					elif typeof(b) == TYPE_OBJECT:
+						bx = b.get("x") if b.get("x") != null else 0.0
+						by = b.get("y") if b.get("y") != null else 0.0
+						bradius = b.get("radius") if b.get("radius") != null else 20.0
+
+					var dx = d_x - bx
+					var dy = d_y - by
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist <= d_radius + bradius:
+						exploded = true
+						break
+
+				if exploded:
+					if typeof(decoy) == TYPE_DICTIONARY:
+						decoy.hp = 0.0
+						decoy.alive = false
+					elif typeof(decoy) == TYPE_OBJECT:
+						decoy.set("hp", 0.0)
+						decoy.set("alive", false)
+
+					var has_events = false
+					var events_ref = null
+					if typeof(world) == TYPE_DICTIONARY and "events" in world:
+						has_events = true
+						events_ref = world.events
+					elif typeof(world) == TYPE_OBJECT and "events" in world:
+						has_events = true
+						events_ref = world.events
+
+					if has_events:
+						events_ref.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': d_x, 'y': d_y, 'radius': explosion_radius}})
+
+					for b in real_balls:
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+						elif typeof(b) == TYPE_OBJECT:
+							bx = b.get("x") if b.get("x") != null else 0.0
+							by = b.get("y") if b.get("y") != null else 0.0
+
+						var dx = d_x - bx
+						var dy = d_y - by
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist <= explosion_radius:
+							if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+								b.take_damage(explosion_damage, decoy)
+							else:
+								var cur_hp = 100.0
+								if typeof(b) == TYPE_DICTIONARY:
+									cur_hp = b.get("hp", 100.0)
+									b.hp = max(0.0, cur_hp - explosion_damage)
+									if b.hp <= 0:
+										b.alive = false
+								elif typeof(b) == TYPE_OBJECT:
+									cur_hp = b.get("hp") if b.get("hp") != null else 100.0
+									b.set("hp", max(0.0, cur_hp - explosion_damage))
+									if b.get("hp") <= 0:
+										b.set("alive", false)
+
+			if typeof(decoy) == TYPE_DICTIONARY:
+				decoy.state = d_state
+				decoy.x = d_x
+				decoy.y = d_y
+				decoy.timer = d_timer
+				decoy.vx = d_vx
+				decoy.vy = d_vy
+			elif typeof(decoy) == TYPE_OBJECT:
+				decoy.set("state", d_state)
+				decoy.set("x", d_x)
+				decoy.set("y", d_y)
+				decoy.set("timer", d_timer)
+				decoy.set("vx", d_vx)
+				decoy.set("vy", d_vy)
+
 var GAME_MODES = {
+	"proximity_decoy_mines": ProximityDecoyMinesMode.new(),
 	'orbital_debris': OrbitalDebrisMode.new(),
 	"extreme_tornado_weather": ExtremeTornadoWeatherMode.new(),
 	"mini_black_holes": MiniBlackHolesMode.new(),

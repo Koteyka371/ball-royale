@@ -33898,7 +33898,127 @@ class ExtremeTornadoWeatherMode(GameMode):
                         b.vx += -ny * applied_force * 0.5 * delta
                         b.vy += nx * applied_force * 0.5 * delta
 
+class ProximityDecoyMinesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Proximity Decoy Mines"
+        self.description = "The arena is seeded with dormant decoys that activate when players approach. They act as moving proximity mines that wander randomly and detonate on contact."
+        self.setup_done = False
+        self.decoy_count = 10
+        self.trigger_radius = 200.0
+        self.explosion_radius = 100.0
+        self.explosion_damage = 30.0
+
+    class ProximityDecoy:
+        def __init__(self, x, y, id_val):
+            self.id = id_val
+            self.x = x
+            self.y = y
+            self.vx = 0.0
+            self.vy = 0.0
+            self.radius = 20.0
+            self.hp = 1.0
+            self.max_hp = 1.0
+            self.alive = True
+            self.team = "DecoyMines"
+            self.ball_type = "decoy_mine"
+            self.speed = 80.0
+            self.damage = 0.0
+            self.state = "dormant"
+            self.timer = 0.0
+            self.is_decoy = True
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        if not self.setup_done:
+            self.setup_done = True
+            arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+            arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+            if not hasattr(world, "balls"):
+                world.balls = []
+
+            for i in range(self.decoy_count):
+                x = random.uniform(50, arena_w - 50)
+                y = random.uniform(50, arena_h - 50)
+                next_id = getattr(world, "next_id", random.randint(100000, 999999))
+                if hasattr(world, "next_id"):
+                    world.next_id += 1
+
+                decoy = self.ProximityDecoy(x, y, next_id)
+                world.balls.append(decoy)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+
+        real_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "decoy_mine" and getattr(b, "ball_type", "") != "spectator"]
+        decoys = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") == "decoy_mine"]
+
+        for decoy in decoys:
+            if decoy.state == "dormant":
+                # Check proximity
+                for b in real_balls:
+                    dist = math.hypot(decoy.x - getattr(b, "x", 0), decoy.y - getattr(b, "y", 0))
+                    if dist <= self.trigger_radius:
+                        decoy.state = "active"
+                        decoy.timer = random.uniform(0.5, 2.0)
+                        angle = random.uniform(0, 2 * math.pi)
+                        decoy.vx = math.cos(angle) * decoy.speed
+                        decoy.vy = math.sin(angle) * decoy.speed
+                        break
+
+            elif decoy.state == "active":
+                decoy.timer -= delta
+                if decoy.timer <= 0:
+                    decoy.timer = random.uniform(0.5, 2.0)
+                    angle = random.uniform(0, 2 * math.pi)
+                    decoy.vx = math.cos(angle) * decoy.speed
+                    decoy.vy = math.sin(angle) * decoy.speed
+
+                # Update position based on velocity
+                decoy.x += decoy.vx * delta
+                decoy.y += decoy.vy * delta
+
+                # Keep within bounds
+                arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+                arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+                if decoy.x < 0 or decoy.x > arena_w:
+                    decoy.vx *= -1
+                    decoy.x = max(0.0, min(float(arena_w), decoy.x))
+                if decoy.y < 0 or decoy.y > arena_h:
+                    decoy.vy *= -1
+                    decoy.y = max(0.0, min(float(arena_h), decoy.y))
+
+                # Check for explosion
+                exploded = False
+                for b in real_balls:
+                    dist = math.hypot(decoy.x - getattr(b, "x", 0), decoy.y - getattr(b, "y", 0))
+                    rad_sum = decoy.radius + getattr(b, "radius", 20.0)
+                    if dist <= rad_sum:
+                        exploded = True
+                        break
+
+                if exploded:
+                    decoy.hp = 0
+                    decoy.alive = False
+
+                    if hasattr(world, "events"):
+                        world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': decoy.x, 'y': decoy.y, 'radius': self.explosion_radius}})
+
+                    for b in real_balls:
+                        dist = math.hypot(decoy.x - getattr(b, "x", 0), decoy.y - getattr(b, "y", 0))
+                        if dist <= self.explosion_radius:
+                            if hasattr(b, "take_damage"):
+                                b.take_damage(self.explosion_damage, source=decoy)
+                            else:
+                                b.hp = max(0.0, getattr(b, "hp", 100.0) - self.explosion_damage)
+                                if b.hp <= 0:
+                                    b.alive = False
+
+
 GAME_MODES = {
+    'proximity_decoy_mines': ProximityDecoyMinesMode(),
     'extreme_tornado_weather': ExtremeTornadoWeatherMode(),
 
     'mini_black_holes': MiniBlackHolesMode(),
