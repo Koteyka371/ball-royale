@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1645] Gravity Swap Pad — *2026-07-30 23:33:18 UTC*
+
+A hazard pad that reverses the effect of gravity for any ball that touches it for 3 seconds.
+
+---
+
 ## [idea-1704] Gravity Well Booster — *2026-07-30 21:59:51 UTC*
 
 A consumable booster that allows the ball to generate a temporary small gravity well around itself, pulling in nearby enemies and projectiles towards it for 5 seconds.
