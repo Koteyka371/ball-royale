@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1656] Chameleon Booster — *2026-07-30 04:40:53 UTC*
+
+A booster item that grants temporary invisibility while standing completely still, but breaking movement instantly breaks stealth and resets the cooldown.
+
+---
+
 ## [idea-1689] Black Hole Anomaly Mode — *2026-07-30 04:40:48 UTC*
 
 Periodically spawns mini black holes that pull in players and hazards.
