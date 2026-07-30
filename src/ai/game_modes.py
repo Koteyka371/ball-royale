@@ -17795,8 +17795,9 @@ class FactoryMode(GameMode):
                     dx = c.x - getattr(item, "x", 0)
                     dy = c.y - getattr(item, "y", 0)
                     if dx*dx + dy*dy < c.radius * c.radius:
-                        item.x = getattr(item, "x", 0) + c.direction_vector[0] * c.speed_magnitude * delta
-                        item.y = getattr(item, "y", 0) + c.direction_vector[1] * c.speed_magnitude * delta
+                        mass = getattr(item, "mass", 1.0)
+                        item.vx = getattr(item, "vx", 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+                        item.vy = getattr(item, "vy", 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
 
             for h in self.arena.hazards:
                 if h is c or getattr(h, "kind", "") == "conveyor_belt":
@@ -17804,16 +17805,18 @@ class FactoryMode(GameMode):
                 dx = c.x - getattr(h, "x", 0)
                 dy = c.y - getattr(h, "y", 0)
                 if dx*dx + dy*dy < c.radius * c.radius:
-                    h.x = getattr(h, "x", 0) + c.direction_vector[0] * c.speed_magnitude * delta
-                    h.y = getattr(h, "y", 0) + c.direction_vector[1] * c.speed_magnitude * delta
+                    mass = getattr(h, "mass", 1.0)
+                    h.vx = getattr(h, "vx", 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+                    h.vy = getattr(h, "vy", 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
 
             if hasattr(world, "balls"):
                 for b in world.balls:
                     dx = c.x - getattr(b, "x", 0)
                     dy = c.y - getattr(b, "y", 0)
                     if dx*dx + dy*dy < c.radius * c.radius:
-                        b.x = getattr(b, "x", 0) + c.direction_vector[0] * c.speed_magnitude * delta
-                        b.y = getattr(b, "y", 0) + c.direction_vector[1] * c.speed_magnitude * delta
+                        mass = getattr(b, "mass", 1.0)
+                        b.vx = getattr(b, "vx", 0.0) + (c.direction_vector[0] * c.speed_magnitude / mass) * delta
+                        b.vy = getattr(b, "vy", 0.0) + (c.direction_vector[1] * c.speed_magnitude / mass) * delta
 
 class HazardBilliardsMode(GameMode):
     def __init__(self):
