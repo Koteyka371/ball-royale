@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1697] Grapple Hook Only Mode — *2026-07-30 09:15:09 UTC*
+
+All balls start with a grapple hook and zero friction, relying entirely on grapple points and walls to navigate the arena.
+
+---
+
 ## [idea-1674] Abyssal Labyrinth — *2026-07-30 08:08:57 UTC*
 
 A new game mode where the map is a maze that slowly shifts and changes its layout over time. Balls must find the center to win.
