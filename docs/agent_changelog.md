@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1684] Healing Turret — *2026-07-30 10:58:35 UTC*
+
+Turrets can heal allies.
+
+---
+
 ## [idea-1703] Quantum Teleportation Zone — *2026-07-30 10:36:18 UTC*
 
 A hazard zone that instantly teleports a ball to a paired zone on the other side of the arena, maintaining their exact velocity and direction, which can be used defensively or aggressively.
