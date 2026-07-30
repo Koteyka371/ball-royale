@@ -24251,6 +24251,10 @@ class Action:
                     self.ball.shadow_speed_applied = False
 
         if hasattr(self.ball, "invisibility_timer") and self.ball.invisibility_timer > 0:
+            vx = getattr(self.ball, "vx", 0.0)
+            vy = getattr(self.ball, "vy", 0.0)
+            if vx**2 + vy**2 > 0.01:
+                self.ball.invisibility_timer = 0.0
             self.ball.invisibility_timer -= delta
             if self.ball.invisibility_timer < 0:
                 self.ball.invisibility_timer = 0.0

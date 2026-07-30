@@ -48184,6 +48184,18 @@ func _update_skill_timer(delta: float):
         invisibility_timer = self.ball.get_meta("invisibility_timer")
 
     if invisibility_timer > 0:
+        var vx = 0.0
+        if "vx" in self.ball:
+            vx = float(self.ball.vx)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vx"):
+            vx = float(self.ball.get_meta("vx"))
+        var vy = 0.0
+        if "vy" in self.ball:
+            vy = float(self.ball.vy)
+        elif self.ball.has_method("get_meta") and self.ball.has_meta("vy"):
+            vy = float(self.ball.get_meta("vy"))
+        if vx*vx + vy*vy > 0.01:
+            invisibility_timer = 0.0
         invisibility_timer -= delta
         if invisibility_timer < 0:
             invisibility_timer = 0.0
