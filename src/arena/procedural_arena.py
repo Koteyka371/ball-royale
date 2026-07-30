@@ -1327,6 +1327,10 @@ class ProceduralArena:
                 if random.random() < 0.1:
                     kind = "confusion_zone"
                     damage = 0.0
+
+                elif random.random() < 0.1:
+                    kind = "mirage_field"
+                    damage = 0.0
                 elif random.random() < 0.1:
                     kind = "drone_item"
                     damage = 0.0
