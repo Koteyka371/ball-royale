@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1716] Doppelganger Mirror Mode — *2026-07-30 21:35:31 UTC*
+
+A chaotic new game mode where periodically every player on the map is instantly swapped in position with their nearest active decoy or clone. If they do not have a decoy active, one is spawned for them at their location moments before the swap.
+
+---
+
 ## [idea-1718] Banshee Shriek Trap — *2026-07-30 21:18:47 UTC*
 
 A new deployable trap that emits a deafening shriek when triggered. It reduces the perception radius of all nearby players to near zero for a few seconds and temporarily reveals all invisible or stealthy entities in the area.
