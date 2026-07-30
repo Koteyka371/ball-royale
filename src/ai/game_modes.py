@@ -34016,7 +34016,87 @@ class DormantDecoysMode(GameMode):
                 self.decoys.remove(d)
 
 
+class TimeLoopMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Loop"
+        self.description = "Every 30 seconds the arena resets state (hazard positions, player positions, hp), but players retain any items picked up."
+        self.loop_timer = 0.0
+        self.saved_state = None
+        self.setup_done = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.loop_timer = 0.0
+        self.saved_state = self._capture_state(world, balls)
+        self.setup_done = True
+
+    def _capture_state(self, world, balls):
+        state = {
+            "balls": {},
+            "hazards": {}
+        }
+        for b in balls:
+            b_id = getattr(b, "id", str(id(b)))
+            state["balls"][b_id] = {
+                "x": getattr(b, "x", 0.0),
+                "y": getattr(b, "y", 0.0),
+                "hp": getattr(b, "hp", 100.0),
+                "alive": getattr(b, "alive", True)
+            }
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for i, h in enumerate(world.arena.hazards):
+                state["hazards"][i] = {
+                    "x": getattr(h, "x", 0.0),
+                    "y": getattr(h, "y", 0.0)
+                }
+        return state
+
+    def _restore_state(self, world, balls):
+        if not self.saved_state:
+            return
+
+        for b in balls:
+            b_id = getattr(b, "id", str(id(b)))
+            if b_id in self.saved_state["balls"]:
+                b_state = self.saved_state["balls"][b_id]
+                b.x = b_state["x"]
+                b.y = b_state["y"]
+                b.hp = b_state["hp"]
+                b.alive = b_state["alive"]
+
+                b.vx = 0.0
+                b.vy = 0.0
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for i, h in enumerate(world.arena.hazards):
+                if i in self.saved_state["hazards"]:
+                    h_state = self.saved_state["hazards"][i]
+                    h.x = h_state["x"]
+                    h.y = h_state["y"]
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not self.setup_done:
+            self.setup(world, balls)
+
+        if self.saved_state is None:
+            self.saved_state = self._capture_state(world, balls)
+
+        self.loop_timer += delta
+
+        if self.loop_timer >= 30.0:
+            self._restore_state(world, balls)
+            self.loop_timer = 0.0
+            self.saved_state = self._capture_state(world, balls)
+
+            if hasattr(world, "add_event"):
+                world.add_event("time_loop_reset", {"message": "Time Loop Reset!"})
+
 GAME_MODES = {
+    'time_loop': TimeLoopMode(),
     'dormant_decoys': DormantDecoysMode(),
     'extreme_tornado_weather': ExtremeTornadoWeatherMode(),
 
