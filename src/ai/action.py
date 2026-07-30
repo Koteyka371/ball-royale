@@ -9569,7 +9569,7 @@ class Action:
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
-                                if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
+                                if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                     # Slingshot velocity addition
                                     import math as _math
                                     speed = _math.hypot(self.ball.vx, self.ball.vy)

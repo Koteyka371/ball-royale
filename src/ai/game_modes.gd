@@ -53947,7 +53947,7 @@ class MiniBlackHolesMode extends GameMode:
 				"x": rand_range(200.0, aw - 200.0),
 				"y": rand_range(200.0, ah - 200.0),
 				"radius": 30.0,
-				"kind": "black_hole",
+				"kind": "mini_black_hole",
 				"damage": 5.0,
 				"active": true,
 				"is_mini_bh": true,
@@ -54033,7 +54033,7 @@ class MiniBlackHolesMode extends GameMode:
 						if other_h.get("id") != null: other_id = other_h.get("id")
 						if other_h.get("kind") != null: other_kind = other_h.get("kind")
 
-					if other_id != h_id and other_kind != "black_hole":
+					if other_id != h_id and other_kind != "black_hole" and other_kind != "mini_black_hole":
 						var ox = 0.0
 						var oy = 0.0
 						if typeof(other_h) == TYPE_DICTIONARY:

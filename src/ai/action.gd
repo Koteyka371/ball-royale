@@ -18803,7 +18803,7 @@ func execute(strategy: String, delta: float):
                                     if b_anchor_timer <= 0:
                                         b.x += bnx * bpull_strength
                                         b.y += bny * bpull_strength
-                                    if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"]:
+                                    if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"]:
                                         var has_vx = false
                                         if "vx" in b: has_vx = true
                                         elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("vx"): has_vx = true
@@ -18904,7 +18904,7 @@ func execute(strategy: String, delta: float):
                                 var mod = 0.05 if cb == "rooted_boots" else (0.1 if cb == "grounded_boots" else 1.0)
                                 self.ball.x += nx * pull_strength * mod
                                 self.ball.y += ny * pull_strength * mod
-                            if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole"]:
+                            if hazard.kind in ["black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"]:
                                 var has_vx = false
                                 if "vx" in self.ball: has_vx = true
                                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx"): has_vx = true
