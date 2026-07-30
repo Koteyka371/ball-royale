@@ -16165,6 +16165,13 @@ class MovingSafeZoneMode extends GameMode:
 			var bdist = sqrt(bdx*bdx + bdy*bdy)
 
 			if bdist > zone_radius:
+				# Apply significant speed penalty for being outside safe zone
+				if "slow_timer" in b:
+					b.slow_timer = max(b.slow_timer, 0.5)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+				elif b.has_method("set_meta"):
+					b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 				if "hp" in b:
 					var damage = outside_damage_per_second * (10.0 if collapse_triggered else 1.0) * delta
 					b.hp -= damage
@@ -16234,6 +16241,13 @@ class PoisonGasZoneMode extends MovingSafeZoneMode:
 			var dist = sqrt(dx*dx + dy*dy)
 
 			if dist > zone_radius:
+				# Apply significant speed penalty for being outside safe zone
+				if "slow_timer" in b:
+					b.slow_timer = max(b.slow_timer, 0.5)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+				elif b.has_method("set_meta"):
+					b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 				if "poison_timer" in b:
 					b.poison_timer += delta * 2.0
 				elif b.has_method("set_meta"):
@@ -16558,6 +16572,13 @@ class ShrinkingDangerZoneMode extends GameMode:
 				var dist = sqrt(dx*dx + dy*dy)
 
 				if dist > zone_radius:
+					# Apply significant speed penalty for being outside safe zone
+					if "slow_timer" in b:
+						b.slow_timer = max(b.slow_timer, 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 					b.hp -= damage_this_tick
 					if "minimap_ping_timer" not in b or b.minimap_ping_timer <= 0:
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
@@ -17508,6 +17529,13 @@ class MutantSafeZoneMode extends SafeZoneMode:
 			var distance_to_center = sqrt(dx*dx + dy*dy)
 
 			if distance_to_center > zone_radius:
+				# Apply significant speed penalty for being outside safe zone
+				if "slow_timer" in b:
+					b.slow_timer = max(b.slow_timer, 0.5)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+				elif b.has_method("set_meta"):
+					b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 				if randf() < 0.3 * delta:
 					var mut_options = ["speed", "damage", "perception"]
 					var mut_type = mut_options[randi() % mut_options.size()]
@@ -17954,6 +17982,13 @@ class SafeZoneMode extends GameMode:
 
 				# If the distance to center is greater than the safe zone radius, inflict damage
 				if distance_to_center > zone_radius:
+					# Apply significant speed penalty for being outside safe zone
+					if "slow_timer" in b:
+						b.slow_timer = max(b.slow_timer, 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 					b.hp -= damage_this_tick
 					if "minimap_ping_timer" not in b or b.minimap_ping_timer <= 0:
 						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
@@ -19509,6 +19544,13 @@ class SumoKnockoutMode extends GameMode:
 			var dist = sqrt(dx*dx + dy*dy)
 
 			if dist > zone_radius:
+				# Apply significant speed penalty for being outside safe zone
+				if "slow_timer" in b:
+					b.slow_timer = max(b.slow_timer, 0.5)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+				elif b.has_method("set_meta"):
+					b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 				if "hp" in b:
 					b.hp -= outside_damage_per_second * delta
 					if b.hp <= 0:
@@ -33935,6 +33977,13 @@ class MazeSafeZoneMode extends GameMode:
 				var sz_dy = by - zone_y
 				var sz_dist = sqrt(sz_dx*sz_dx + sz_dy*sz_dy)
 				if sz_dist > zone_radius:
+					# Apply significant speed penalty for being outside safe zone
+					if "slow_timer" in b:
+						b.slow_timer = max(b.slow_timer, 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 					if "hp" in b:
 						b.hp -= damage_this_tick
 					if "hp" in b and b.hp <= 0:
@@ -40017,6 +40066,13 @@ class LavaRoyaleMode extends GameMode:
 				var distance_to_center = sqrt(pow(b_x - zone_x, 2) + pow(b_y - zone_y, 2))
 
 				if distance_to_center > zone_radius:
+					# Apply significant speed penalty for being outside safe zone
+					if "slow_timer" in b:
+						b.slow_timer = max(b.slow_timer, 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 					var damage_amount = zone_damage_per_second * delta
 					if b.has_method("take_damage"):
 						b.take_damage(damage_amount)
@@ -51296,6 +51352,13 @@ class VulnerabilitySafeZoneMode extends SafeZoneMode:
 				var distance_to_center = sqrt((b_x - zone_x)*(b_x - zone_x) + (b_y - zone_y)*(b_y - zone_y))
 
 				if distance_to_center > zone_radius:
+					# Apply significant speed penalty for being outside safe zone
+					if "slow_timer" in b:
+						b.slow_timer = max(b.slow_timer, 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 					var extra_dist = distance_to_center - zone_radius
 					var multiplier = 1.0 + (extra_dist / 100.0)
 					if collapse_triggered:
@@ -58184,6 +58247,13 @@ class SectorCollapseMode extends GameMode:
 
 			var dist = sqrt(pow(bx - zone_x, 2) + pow(by - zone_y, 2))
 			if dist > zone_radius:
+				# Apply significant speed penalty for being outside safe zone
+				if "slow_timer" in b:
+					b.slow_timer = max(b.slow_timer, 0.5)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+				elif b.has_method("set_meta"):
+					b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 				var dmg = outside_damage_per_second * delta
 				if typeof(b) == TYPE_DICTIONARY:
 					var cur_hp = b.get("hp", 100.0)
@@ -60152,6 +60222,13 @@ class PeriodicSafeZoneMode extends GameMode:
 
 			var dist = hypot(b.x - zone_x, b.y - zone_y)
 			if dist > zone_radius:
+				# Apply significant speed penalty for being outside safe zone
+				if "slow_timer" in b:
+					b.slow_timer = max(b.slow_timer, 0.5)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+				elif b.has_method("set_meta"):
+					b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 				if b.has_method("take_damage"):
 					b.take_damage(damage_this_tick, "periodic_safe_zone")
 				elif "hp" in b:
@@ -70560,6 +70637,13 @@ class TeleportingSafeZoneMode extends GameMode:
 				var dist = sqrt(dx*dx + dy*dy)
 
 				if dist > zone_radius:
+					# Apply significant speed penalty for being outside safe zone
+					if "slow_timer" in b:
+						b.slow_timer = max(b.slow_timer, 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 					b.hp -= damage
 					if b.hp <= 0:
 						b.hp = 0
@@ -70575,6 +70659,13 @@ class TeleportingSafeZoneMode extends GameMode:
 				var dist = sqrt(dx*dx + dy*dy)
 
 				if dist > zone_radius:
+					# Apply significant speed penalty for being outside safe zone
+					if "slow_timer" in b:
+						b.slow_timer = max(b.slow_timer, 0.5)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+					elif b.has_method("set_meta"):
+						b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
 					b["hp"] = b.get("hp", 100) - damage
 					if b["hp"] <= 0:
 						b["hp"] = 0

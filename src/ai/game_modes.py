@@ -2820,6 +2820,8 @@ class BattleRoyaleMode(GameMode):
 
                 # Check if player is outside the shrinking circular safe zone
                 if distance_to_center > self.zone_radius:
+                    # Apply significant speed penalty for being outside safe zone
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                     # In this Battle Royale, outside the safe zone is LAVA!
                     damage_amount = zone_damage_per_second * delta
                     # Lava damage multiplier (more punishing than standard storm)
@@ -11147,6 +11149,8 @@ class MovingSafeZoneMode(GameMode):
             bdist = math.sqrt(bdx*bdx + bdy*bdy)
 
             if bdist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 if hasattr(b, "hp"):
                     damage = self.outside_damage_per_second * (10.0 if getattr(self, 'collapse_triggered', False) else 1.0) * delta
                     b.hp -= damage
@@ -11199,6 +11203,8 @@ class PoisonGasZoneMode(MovingSafeZoneMode):
             bdist = math.sqrt(bdx*bdx + bdy*bdy)
 
             if bdist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 # Apply poison visual meta or status if applicable
                 b.poison_timer = getattr(b, "poison_timer", 0.0) + delta * 2.0 # Keeps it topped up while in gas
 
@@ -11339,6 +11345,8 @@ class ShrinkingDangerZoneMode(GameMode):
 
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
+                    # Apply significant speed penalty for being outside safe zone
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                     b.hp -= damage_this_tick
                     if not getattr(b, "invisible_to_minimap", False):
                         ping_timer = getattr(b, "minimap_ping_timer", 0.0)
@@ -11756,6 +11764,8 @@ class ModifierZonesSafeZoneMode(GameMode):
             dist = math.sqrt(dx*dx + dy*dy)
 
             if dist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 if hasattr(b, "hp"):
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
@@ -12013,6 +12023,8 @@ class SafeZoneMode(GameMode):
 
                 # If the distance to center is greater than the safe zone radius, inflict damage
                 if distance_to_center > self.zone_radius:
+                    # Apply significant speed penalty for being outside safe zone
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                     b.hp -= damage_this_tick
                     if not getattr(b, "invisible_to_minimap", False):
                         ping_timer = getattr(b, "minimap_ping_timer", 0.0)
@@ -12834,6 +12846,8 @@ class SumoKnockoutMode(GameMode):
             dist = math.sqrt(dx*dx + dy*dy)
 
             if dist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 b.hp = getattr(b, "hp", 100.0) - self.outside_damage_per_second * delta
                 if b.hp <= 0:
                     b.hp = 0
@@ -18245,6 +18259,8 @@ class MutantSafeZoneMode(SafeZoneMode):
                 distance_to_center = math.sqrt(dx*dx + dy*dy)
 
                 if distance_to_center > self.zone_radius:
+                    # Apply significant speed penalty for being outside safe zone
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                     # Random mutations
                     if random.random() < 0.3 * delta:
                         mut_type = random.choice(["speed", "damage", "perception"])
@@ -18621,6 +18637,8 @@ class DynamicSafeZoneMode(GameMode):
 
             # Check if outside safe zone
             if dist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 if hasattr(b, "hp"):
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
@@ -21383,6 +21401,8 @@ class MazeSafeZoneMode(GameMode):
                 bdist = math.sqrt(bdx*bdx + bdy*bdy)
 
                 if bdist > self.zone_radius:
+                    # Apply significant speed penalty for being outside safe zone
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                     b.hp -= damage_this_tick
                     if b.hp <= 0:
                         b.alive = False
@@ -24974,6 +24994,8 @@ class LavaRoyaleMode(GameMode):
                 distance_to_center = math.hypot(b_x - self.zone_x, b_y - self.zone_y)
 
                 if distance_to_center > self.zone_radius:
+                    # Apply significant speed penalty for being outside safe zone
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                     damage_amount = zone_damage_per_second * delta
                     if hasattr(b, "take_damage"):
                         b.take_damage(damage_amount)
@@ -31842,6 +31864,8 @@ class VulnerabilitySafeZoneMode(SafeZoneMode):
                 distance_to_center = math.sqrt(dx*dx + dy*dy)
 
                 if distance_to_center > self.zone_radius:
+                    # Apply significant speed penalty for being outside safe zone
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                     # Calculate multiplier based on how far outside they are
                     extra_dist = distance_to_center - self.zone_radius
                     multiplier = 1.0 + (extra_dist / 100.0)
@@ -37306,6 +37330,8 @@ class SectorCollapseMode(GameMode):
             bdist = math.hypot(bdx, bdy)
 
             if bdist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 dmg = self.outside_damage_per_second * delta
                 if hasattr(b, "take_damage"):
                     b.take_damage(dmg)
@@ -38842,6 +38868,8 @@ class PeriodicSafeZoneMode(GameMode):
 
             dist = math.hypot(b.x - self.zone_x, b.y - self.zone_y)
             if dist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 if hasattr(b, "take_damage"):
                     b.take_damage(damage_this_tick, "periodic_safe_zone")
                 elif hasattr(b, "hp"):
@@ -45092,6 +45120,8 @@ class TeleportingSafeZoneMode(GameMode):
             dist = math.sqrt(dx*dx + dy*dy)
 
             if dist > self.zone_radius:
+                # Apply significant speed penalty for being outside safe zone
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
                 b.hp -= damage
                 if b.hp <= 0:
                     b.hp = 0
