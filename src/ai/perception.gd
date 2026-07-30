@@ -255,6 +255,15 @@ func scan() -> Dictionary:
                 break
 
         if not revealed_by_flare:
+            var is_active_stealthed = false
+            if e.has_method("get_meta") and e.has_meta("active_stealth_active"):
+                is_active_stealthed = e.get_meta("active_stealth_active")
+            elif "active_stealth_active" in e:
+                is_active_stealthed = e.active_stealth_active
+
+            if is_active_stealthed:
+                continue
+
             var e_has_stealth = false
             if "has_stealth_drone" in e and e.has_stealth_drone:
                 e_has_stealth = true

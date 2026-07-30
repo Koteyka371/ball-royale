@@ -40713,6 +40713,50 @@ func _use_skill():
             dome.set_meta("duration", 10.0)
             arena.hazards.append(dome)
 
+        elif skill_name == "active_stealth":
+            var stealth_active = false
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("active_stealth_active"):
+                stealth_active = self.ball.get_meta("active_stealth_active")
+            elif "active_stealth_active" in self.ball:
+                stealth_active = self.ball.active_stealth_active
+
+            if not stealth_active:
+                var stamina = 0.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+                    stamina = self.ball.get_meta("stamina")
+                elif "stamina" in self.ball:
+                    stamina = self.ball.stamina
+
+                if stamina >= 20.0:
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("active_stealth_active", true)
+                    else:
+                        self.ball.active_stealth_active = true
+
+                    if self.has_method("_spawn_skill_particles"):
+                        self._spawn_skill_particles("active_stealth")
+
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("skill_timer", 0.5)
+                    else:
+                        self.ball.skill_timer = 0.5
+            else:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("active_stealth_active", false)
+                else:
+                    self.ball.active_stealth_active = false
+
+                var cd = 3.0
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"):
+                    cd = self.ball.get_meta("SKILL_COOLDOWN")
+                elif "SKILL_COOLDOWN" in self.ball:
+                    cd = self.ball.SKILL_COOLDOWN
+
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("skill_timer", cd)
+                else:
+                    self.ball.skill_timer = cd
+
         elif skill_name == "phantom_stride":
             var phantom_active = false
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phantom_stride_active"):
@@ -43358,6 +43402,36 @@ func _update_skill_timer(delta: float):
     elif "skill" in self.ball:
         cur_skill = self.ball.skill
 
+
+    var active_stealth_active = false
+    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("active_stealth_active"):
+        active_stealth_active = self.ball.get_meta("active_stealth_active")
+    elif "active_stealth_active" in self.ball:
+        active_stealth_active = self.ball.active_stealth_active
+
+    if active_stealth_active:
+        var drain = 40.0 * delta
+        var stamina = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stamina"):
+            stamina = self.ball.get_meta("stamina")
+        elif "stamina" in self.ball:
+            stamina = self.ball.stamina
+
+        if stamina > 0:
+            var new_stamina = max(0.0, stamina - drain)
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("stamina", new_stamina)
+            else:
+                if "stamina" in self.ball:
+                    self.ball.stamina = new_stamina
+
+            if new_stamina <= 0.0:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("active_stealth_active", false)
+                else:
+                    if "active_stealth_active" in self.ball:
+                        self.ball.active_stealth_active = false
 
     var phantom_active = false
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phantom_stride_active"):
