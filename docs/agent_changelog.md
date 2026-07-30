@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1691] Tornado Weather Event — *2026-07-30 01:49:37 UTC*
+
+An intense extreme weather variant where tornadoes move unpredictably across the arena. They apply heavy push forces inside their radius, and lighter balls could be thrown farther.
+
+---
+
 ## [idea-1641] Cryogenic Ammo — *2026-07-29 23:52:34 UTC*
 
 A booster that imbues a ball's attacks with cryogenic properties for a limited time, causing any target hit to leave behind temporary small ice patches where they walk.
