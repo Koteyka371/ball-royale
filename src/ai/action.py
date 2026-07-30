@@ -9531,6 +9531,9 @@ class Action:
                                 if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
                                 radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                                 pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 50.0 * delta * lifetime_mult
+                                if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
+                                    mass = getattr(self.ball, "mass", 1.0)
+                                    pull_strength = pull_strength / max(mass, 0.1)
                                 if getattr(self.world, 'gravity_reversal_active', False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"):
                                     pull_strength = -pull_strength
                                 if getattr(hazard, "is_inverted", False) and hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well"):
@@ -10678,6 +10681,8 @@ class Action:
                             if not is_ts and hasattr(self.world, "game_mode") and getattr(self.world.game_mode, "weather", "") == "thunderstorm": is_ts = True
                             radius_mult = 1.5 if is_ts and getattr(hazard, "kind", "") == "tornado" else 1.0
                             pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 200.0 * delta
+                            mass = getattr(self.ball, "mass", 1.0)
+                            pull_strength = pull_strength / max(mass, 0.1)
                             nx, ny = dx / max(0.1, dist), dy / max(0.1, dist)
                             self.ball.x += nx * pull_strength
                             self.ball.y += ny * pull_strength

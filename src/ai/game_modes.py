@@ -21556,7 +21556,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "tornado"]
         self.flood_level = 0.0
         import random
         self.random = random
@@ -21627,8 +21627,45 @@ class ExtremeWeatherMode(GameMode):
             elif self.current_weather == "solar_eclipse": booster_kind = "vision_booster"
             elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
             elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
+
             elif self.current_weather == "monsoon": booster_kind = "umbrella_booster"
             elif self.current_weather == "celestial_alignment": booster_kind = "starlight_booster"
+            elif self.current_weather == "tornado": booster_kind = "heavy_anchor_booster"
+
+            # Extreme Weather Tornado Logic
+            if self.current_weather == "tornado" and hasattr(world, "arena"):
+                arena_w = getattr(world.arena, "width", 1000)
+                arena_h = getattr(world.arena, "height", 1000)
+
+                # Spawn unpredictable tornadoes
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+
+                try:
+                    from arena.procedural_arena import Hazard
+                    HazardClass = Hazard
+                except ImportError:
+                    class FallbackHazard:
+                        def __init__(self, h_id, x, y, radius, kind, damage=0):
+                            self.id = h_id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                    HazardClass = FallbackHazard
+
+                num_tornadoes = 3
+                for i in range(num_tornadoes):
+                    tx = self.random.uniform(100.0, arena_w - 100.0)
+                    ty = self.random.uniform(100.0, arena_h - 100.0)
+                    t_id = f"extreme_tornado_{self.random.randint(1000, 9999)}"
+                    tornado = HazardClass(t_id, tx, ty, 100.0, "tornado", 15.0)
+                    setattr(tornado, "vx", self.random.uniform(-150.0, 150.0))
+                    setattr(tornado, "vy", self.random.uniform(-150.0, 150.0))
+                    setattr(tornado, "duration", 15.0)  # Matches weather duration
+                    world.arena.hazards.append(tornado)
+
 
             # Also spawn rain-exclusive umbrella booster in acid rain
             if self.current_weather == "acid_rain" and hasattr(world, "boosters"):

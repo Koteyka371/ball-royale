@@ -34142,7 +34142,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "tornado"]
 	var flood_level: float = 0.0
 
 	func _init():
@@ -34240,6 +34240,65 @@ class ExtremeWeatherMode extends GameMode:
 			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
 			elif current_weather == "monsoon": booster_kind = "umbrella_booster"
 			elif current_weather == "celestial_alignment": booster_kind = "starlight_booster"
+			elif current_weather == "tornado": booster_kind = "heavy_anchor_booster"
+
+			if current_weather == "tornado" and world != null and ("arena" in world or (typeof(world) == TYPE_DICTIONARY and world.has("arena"))):
+				var arena_w = 1000.0
+				var arena_h = 1000.0
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					if world.arena.has("width"): arena_w = float(world.arena.width)
+					if world.arena.has("height"): arena_h = float(world.arena.height)
+					if not world.arena.has("hazards"): world.arena.hazards = []
+				elif typeof(world.arena) == TYPE_OBJECT:
+					if "width" in world.arena: arena_w = float(world.arena.width)
+					if "height" in world.arena: arena_h = float(world.arena.height)
+					if not ("hazards" in world.arena): return
+
+				var HazardClass = null
+				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+					var script = load("res://src/arena/procedural_arena.gd")
+					if script != null:
+						for k in script.get_script_constant_map().keys():
+							if k == "Hazard":
+								HazardClass = script.Hazard
+								break
+
+				var hazards_list = []
+				if typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					hazards_list = world.arena.hazards
+				elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					hazards_list = world.arena.hazards
+
+				for i in range(3):
+					var tx = randf_range(100.0, arena_w - 100.0)
+					var ty = randf_range(100.0, arena_h - 100.0)
+					var t_id = hazards_list.size() + (randi() % 10000 + 10000)
+
+					var tornado = null
+					if HazardClass != null and HazardClass.has_method("new"):
+						tornado = HazardClass.new(t_id, tx, ty, 100.0, "tornado", 15.0)
+					else:
+						tornado = {
+							"id": t_id, "x": tx, "y": ty, "radius": 100.0,
+							"kind": "tornado", "damage": 15.0, "active": true
+						}
+
+					if typeof(tornado) == TYPE_DICTIONARY:
+						tornado["vx"] = randf_range(-150.0, 150.0)
+						tornado["vy"] = randf_range(-150.0, 150.0)
+						tornado["duration"] = 15.0
+					elif typeof(tornado) == TYPE_OBJECT:
+						if "vx" in tornado: tornado.vx = randf_range(-150.0, 150.0)
+						elif tornado.has_method("set_meta"): tornado.set_meta("vx", randf_range(-150.0, 150.0))
+
+						if "vy" in tornado: tornado.vy = randf_range(-150.0, 150.0)
+						elif tornado.has_method("set_meta"): tornado.set_meta("vy", randf_range(-150.0, 150.0))
+
+						if "duration" in tornado: tornado.duration = 15.0
+						elif tornado.has_method("set_meta"): tornado.set_meta("duration", 15.0)
+
+					hazards_list.append(tornado)
+
 
 			if current_weather == "acid_rain" and world != null and "boosters" in world:
 				var arena_w = 1000

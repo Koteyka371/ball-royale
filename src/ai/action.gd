@@ -18694,6 +18694,13 @@ func execute(strategy: String, delta: float):
                                     elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
                                     var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
                                     var bpull_strength = (hazard.radius * 2.0 * radius_mult / bmin_dist) * 50.0 * delta * lifetime_mult
+									if hazard.kind in ["tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+										var mass = 1.0
+										if "mass" in b: mass = float(b.mass)
+										elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("mass"): mass = float(b.get_meta("mass"))
+										elif typeof(b) == TYPE_DICTIONARY and b.has("mass"): mass = float(b["mass"])
+										if mass < 0.1: mass = 0.1
+										bpull_strength = bpull_strength / mass
                                     var is_world_reversed = false
                                     if "gravity_reversal_active" in self.world:
                                         is_world_reversed = self.world.gravity_reversal_active
@@ -18796,6 +18803,13 @@ func execute(strategy: String, delta: float):
                             elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
                             var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
                             var pull_strength = (hazard.radius * 2.0 * radius_mult / min_dist) * 50.0 * delta * lifetime_mult
+							if hazard.kind in ["tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+								var mass = 1.0
+								if "mass" in self.ball: mass = float(self.ball.mass)
+								elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mass"): mass = float(self.ball.get_meta("mass"))
+								elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mass"): mass = float(self.ball["mass"])
+								if mass < 0.1: mass = 0.1
+								pull_strength = pull_strength / mass
                             var is_world_reversed = false
                             if "gravity_reversal_active" in self.world:
                                 is_world_reversed = self.world.gravity_reversal_active
@@ -20781,6 +20795,13 @@ func execute(strategy: String, delta: float):
                         elif "game_mode" in self.world and self.world.game_mode != null and "weather" in self.world.game_mode and self.world.game_mode.weather == "thunderstorm": is_ts = true
                         var radius_mult = 1.5 if is_ts and hazard.kind == "tornado" else 1.0
                         var pull_strength = (hazard.radius * 2.0 * radius_mult / max(10.0, dist)) * 200.0 * delta
+                        if hazard.kind in ["tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"]:
+                            var mass = 1.0
+                            if "mass" in self.ball: mass = float(self.ball.mass)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mass"): mass = float(self.ball.get_meta("mass"))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("mass"): mass = float(self.ball["mass"])
+                            if mass < 0.1: mass = 0.1
+                            pull_strength = pull_strength / mass
                         var nx = dx / md
                         var ny = dy / md
                         var anchor_timer = 0.0
