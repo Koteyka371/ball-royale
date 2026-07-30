@@ -54508,7 +54508,119 @@ class DormantDecoysMode extends GameMode:
 		for d in decoys_to_remove:
 			decoys.erase(d)
 
+class TimeLoopMode extends GameMode:
+	var loop_timer: float = 0.0
+	var saved_state = null
+	var setup_done: bool = false
+
+	func _init():
+		name = "Time Loop"
+		description = "Every 30 seconds the arena resets state (hazard positions, player positions, hp), but players retain any items picked up."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		loop_timer = 0.0
+		saved_state = _capture_state(world, balls)
+		setup_done = true
+
+	func _capture_state(world, balls: Array) -> Dictionary:
+		var state = {
+			"balls": {},
+			"hazards": {}
+		}
+		for b in balls:
+			var b_id = str(b.get_instance_id()) if typeof(b) == TYPE_OBJECT else str(b.get("id", ""))
+			state["balls"][b_id] = {
+				"x": b.get("x") if typeof(b) == TYPE_OBJECT else b.get("x", 0.0),
+				"y": b.get("y") if typeof(b) == TYPE_OBJECT else b.get("y", 0.0),
+				"hp": b.get("hp") if typeof(b) == TYPE_OBJECT else b.get("hp", 100.0),
+				"alive": b.get("alive") if typeof(b) == TYPE_OBJECT else b.get("alive", true)
+			}
+
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.arena) == TYPE_OBJECT and world.arena.get("hazards") != null:
+			var hazards = world.arena.get("hazards")
+			for i in range(hazards.size()):
+				var h = hazards[i]
+				state["hazards"][i] = {
+					"x": h.get("x") if typeof(h) == TYPE_OBJECT else h.get("x", 0.0),
+					"y": h.get("y") if typeof(h) == TYPE_OBJECT else h.get("y", 0.0)
+				}
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+			var hazards = world["arena"]["hazards"]
+			for i in range(hazards.size()):
+				var h = hazards[i]
+				state["hazards"][i] = {
+					"x": h.get("x", 0.0),
+					"y": h.get("y", 0.0)
+				}
+		return state
+
+	func _restore_state(world, balls: Array):
+		if saved_state == null:
+			return
+
+		for b in balls:
+			var b_id = str(b.get_instance_id()) if typeof(b) == TYPE_OBJECT else str(b.get("id", ""))
+			if saved_state["balls"].has(b_id):
+				var b_state = saved_state["balls"][b_id]
+				if typeof(b) == TYPE_OBJECT:
+					b.set("x", b_state["x"])
+					b.set("y", b_state["y"])
+					b.set("hp", b_state["hp"])
+					b.set("alive", b_state["alive"])
+					b.set("vx", 0.0)
+					b.set("vy", 0.0)
+				else:
+					b["x"] = b_state["x"]
+					b["y"] = b_state["y"]
+					b["hp"] = b_state["hp"]
+					b["alive"] = b_state["alive"]
+					b["vx"] = 0.0
+					b["vy"] = 0.0
+
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null and typeof(world.arena) == TYPE_OBJECT and world.arena.get("hazards") != null:
+			var hazards = world.arena.get("hazards")
+			for i in range(hazards.size()):
+				if saved_state["hazards"].has(i):
+					var h_state = saved_state["hazards"][i]
+					var h = hazards[i]
+					if typeof(h) == TYPE_OBJECT:
+						h.set("x", h_state["x"])
+						h.set("y", h_state["y"])
+					else:
+						h["x"] = h_state["x"]
+						h["y"] = h_state["y"]
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+			var hazards = world["arena"]["hazards"]
+			for i in range(hazards.size()):
+				if saved_state["hazards"].has(i):
+					var h_state = saved_state["hazards"][i]
+					hazards[i]["x"] = h_state["x"]
+					hazards[i]["y"] = h_state["y"]
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		if not setup_done:
+			setup(world, balls)
+
+		if saved_state == null:
+			saved_state = _capture_state(world, balls)
+
+		loop_timer += delta
+
+		if loop_timer >= 30.0:
+			_restore_state(world, balls)
+			loop_timer = 0.0
+			saved_state = _capture_state(world, balls)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("time_loop_reset", {"message": "Time Loop Reset!"})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+				world["events"].append({"type": "time_loop_reset", "data": {"message": "Time Loop Reset!"}})
+
 var GAME_MODES = {
+	"time_loop": TimeLoopMode.new(),
 	'dormant_decoys': DormantDecoysMode.new(),
 	'orbital_debris': OrbitalDebrisMode.new(),
 	"extreme_tornado_weather": ExtremeTornadoWeatherMode.new(),
