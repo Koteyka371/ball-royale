@@ -26161,6 +26161,27 @@ func _apply_obstacle_avoidance(nx: float, ny: float, target=null, ignore_enemies
     return [nx, ny]
 
 func _get_enemies() -> Array:
+	var is_turret = false
+	if "is_turret" in ball: is_turret = ball.is_turret
+	elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("is_turret"): is_turret = ball.get_meta("is_turret")
+	var damage = 0.0
+	if "damage" in ball: damage = ball.damage
+	elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("damage"): damage = ball.get_meta("damage")
+
+	if is_turret and damage < 0:
+		var allies = _get_allies_internal()
+		var targets = []
+		for a in allies:
+			var hp = 100.0
+			if "hp" in a: hp = a.hp
+			elif typeof(a) == TYPE_OBJECT and a.has_method("has_meta") and a.has_meta("hp"): hp = a.get_meta("hp")
+			var max_hp = 100.0
+			if "max_hp" in a: max_hp = a.max_hp
+			elif typeof(a) == TYPE_OBJECT and a.has_method("has_meta") and a.has_meta("max_hp"): max_hp = a.get_meta("max_hp")
+			if hp < max_hp:
+				targets.append(a)
+		return targets
+
 	var amnesia_timer = 0.0
 	if typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta") and ball.has_meta("amnesia_timer"): amnesia_timer = ball.get_meta("amnesia_timer")
 	elif "amnesia_timer" in ball: amnesia_timer = ball.amnesia_timer
