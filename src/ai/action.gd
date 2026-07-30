@@ -32126,9 +32126,9 @@ func _collect_booster(delta: float):
                         self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "gravity_well_booster":
                 if self.ball.has_method("set_meta"):
-                    self.ball.set_meta("gravity_well_aura_timer", 10.0)
+                    self.ball.set_meta("gravity_well_aura_timer", 5.0)
                 else:
-                    self.ball.gravity_well_aura_timer = 10.0
+                    self.ball.gravity_well_aura_timer = 5.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
@@ -45059,6 +45059,41 @@ func _update_skill_timer(delta: float):
                             else:
                                 if "x" in b: b.x += nx * pull_strength
                                 if "y" in b: b.y += ny * pull_strength
+
+        if self.world != null and "projectiles" in self.world:
+            for proj in self.world.projectiles:
+                var p_active = true
+                if typeof(proj) == TYPE_DICTIONARY:
+                    if proj.has("active"): p_active = proj["active"]
+                elif "active" in proj:
+                    p_active = proj.active
+                if not p_active:
+                    continue
+
+                var px = 0.0
+                var py = 0.0
+                if typeof(proj) == TYPE_DICTIONARY:
+                    if proj.has("x"): px = proj["x"]
+                    if proj.has("y"): py = proj["y"]
+                else:
+                    if "x" in proj: px = proj.x
+                    if "y" in proj: py = proj.y
+
+                var dx = self.ball.x - px
+                var dy = self.ball.y - py
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq < 250000:
+                    var dist = sqrt(dist_sq)
+                    if dist > 0.0001:
+                        var nx = dx / dist
+                        var ny = dy / dist
+                        var pull_strength = 150.0 * delta
+                        if typeof(proj) == TYPE_OBJECT:
+                            if "x" in proj: proj.x += nx * pull_strength
+                            if "y" in proj: proj.y += ny * pull_strength
+                        elif typeof(proj) == TYPE_DICTIONARY:
+                            if proj.has("x"): proj["x"] += nx * pull_strength
+                            if proj.has("y"): proj["y"] += ny * pull_strength
 
     var f_tether_timer = 0.0
     if "forced_tether_timer" in self.ball:

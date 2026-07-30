@@ -16255,7 +16255,7 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "gravity_well_booster":
-                    self.ball.gravity_well_aura_timer = 10.0
+                    self.ball.gravity_well_aura_timer = 5.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -22902,6 +22902,20 @@ class Action:
                                 # Weak pull towards the center
                                 b.x += nx * pull_strength
                                 b.y += ny * pull_strength
+
+            if hasattr(self.world, "projectiles"):
+                for proj in self.world.projectiles:
+                    if not getattr(proj, "active", True):
+                        continue
+                    dist_sq = (proj.x - self.ball.x)**2 + (proj.y - self.ball.y)**2
+                    if dist_sq < 250000: # 500 range
+                        import math
+                        dist = math.sqrt(dist_sq)
+                        if dist > 0.0001:
+                            nx, ny = (self.ball.x - proj.x) / dist, (self.ball.y - proj.y) / dist
+                            pull_strength = 150.0 * delta
+                            if hasattr(proj, "x"): proj.x += nx * pull_strength
+                            if hasattr(proj, "y"): proj.y += ny * pull_strength
 
         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
             # Bush stealth state
