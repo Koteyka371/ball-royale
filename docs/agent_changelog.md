@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1706] Chaos Orbs Mode — *2026-07-30 20:39:09 UTC*
+
+Every player periodically spawns orbiting chaos orbs.
+
+---
+
 ## [idea-1632] Holo-Decoy Ball — *2026-07-30 18:23:08 UTC*
 
 A consumable item that drops a visually identical hologram of the player's ball that travels in a straight line at maximum speed to confuse enemies and draw sniper fire or homing attacks.
