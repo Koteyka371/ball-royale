@@ -29407,7 +29407,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -39351,7 +39351,38 @@ func _use_skill():
                     elif typeof(self.ball) == TYPE_DICTIONARY:
                         self.ball["active_relay_id"] = relay_id
                 self.world.arena.hazards.append(relay)
-        elif skill_name == "deploy_lightning_rod", "bounty_trap":
+        elif skill_name == "deploy_chain_lightning_relay":
+            if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
+                var bid = -1
+                var bteam = ""
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("id"): bid = self.ball.id
+                    if self.ball.has("team"): bteam = self.ball.team
+                    if self.ball.has("x"): bx = self.ball.x
+                    if self.ball.has("y"): by = self.ball.y
+                else:
+                    if "id" in self.ball: bid = self.ball.id
+                    if "team" in self.ball: bteam = self.ball.team
+                    bx = self.ball.x
+                    by = self.ball.y
+
+                var node = {
+                    "id": "crelay_" + str(bid) + "_" + str(self.world.tick),
+                    "kind": "chain_lightning_relay",
+                    "x": bx,
+                    "y": by,
+                    "radius": 20.0,
+                    "team": bteam,
+                    "active": true,
+                    "duration": 20.0,
+                    "charge": 0.0,
+                    "max_charge": 50.0,
+                    "owner_id": bid
+                }
+                self.world.arena.hazards.append(node)
+        elif skill_name == "deploy_lightning_rod" or skill_name == "bounty_trap":
             if self.world.get("arena") != null and self.world.arena.get("hazards") != null:
                 var bid = -1
                 var bteam = ""
@@ -41981,7 +42012,7 @@ func _resolve_collisions() -> bool:
                                 var e_kind = ""
                                 if typeof(e) == TYPE_OBJECT and "kind" in e: e_kind = e.kind
                                 elif typeof(e) == TYPE_DICTIONARY and e.has("kind"): e_kind = e["kind"]
-                                if e_kind == "lightning_rod" or e_kind == "deployable_lightning_rod":
+                                if e_kind == "lightning_rod" or e_kind == "deployable_lightning_rod" or e_kind == "chain_lightning_relay":
                                     var e_x = e.x if typeof(e) == TYPE_OBJECT else e["x"]
                                     var e_y = e.y if typeof(e) == TYPE_OBJECT else e["y"]
                                     var c_x = current_pos.x if typeof(current_pos) == TYPE_OBJECT else current_pos["x"]
@@ -41995,11 +42026,51 @@ func _resolve_collisions() -> bool:
                             if typeof(next_target) == TYPE_OBJECT and "kind" in next_target: nt_kind = next_target.kind
                             elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("kind"): nt_kind = next_target["kind"]
 
-                            if nt_kind == "lightning_rod" or nt_kind == "deployable_lightning_rod":
+                            if nt_kind == "lightning_rod" or nt_kind == "deployable_lightning_rod" or nt_kind == "chain_lightning_relay":
                                 if nt_kind == "deployable_lightning_rod":
                                     var add_charge = chain_damage * 2.0
                                     if typeof(next_target) == TYPE_OBJECT and "charge" in next_target: next_target.charge = float(next_target.charge) + add_charge
                                     elif typeof(next_target) == TYPE_DICTIONARY: next_target["charge"] = float(next_target.get("charge", 0.0)) + add_charge
+                                elif nt_kind == "chain_lightning_relay":
+                                    chain_damage *= 1.5
+                                    jump_count -= 2
+                                    var add_charge = chain_damage
+                                    var current_charge = 0.0
+                                    if typeof(next_target) == TYPE_OBJECT and "charge" in next_target:
+                                        next_target.charge = float(next_target.charge) + add_charge
+                                        current_charge = next_target.charge
+                                    elif typeof(next_target) == TYPE_DICTIONARY:
+                                        next_target["charge"] = float(next_target.get("charge", 0.0)) + add_charge
+                                        current_charge = next_target["charge"]
+                                    if current_charge >= 50.0:
+                                        if typeof(next_target) == TYPE_OBJECT and "active" in next_target: next_target.active = false
+                                        elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("active"): next_target["active"] = false
+
+                                        var b_list = []
+                                        if self.world != null and "balls" in self.world: b_list = self.world.balls
+                                        elif self.world != null and "entities" in self.world: b_list = self.world.entities
+                                        if b_list.size() > 0:
+                                            var nt_x = next_target.x if typeof(next_target) == TYPE_OBJECT else next_target["x"]
+                                            var nt_y = next_target.y if typeof(next_target) == TYPE_OBJECT else next_target["y"]
+                                            var nt_owner = next_target.owner_id if typeof(next_target) == TYPE_OBJECT and "owner_id" in next_target else (next_target["owner_id"] if typeof(next_target) == TYPE_DICTIONARY and next_target.has("owner_id") else null)
+                                            for b in b_list:
+                                                var is_alive = true
+                                                if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+                                                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+                                                var b_id = b.id if typeof(b) == TYPE_OBJECT and "id" in b else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else null)
+                                                if is_alive and b_id != nt_owner:
+                                                    var bx = b.x if typeof(b) == TYPE_OBJECT else b["x"]
+                                                    var by = b.y if typeof(b) == TYPE_OBJECT else b["y"]
+                                                    var dist = sqrt((bx - nt_x)*(bx - nt_x) + (by - nt_y)*(by - nt_y))
+                                                    if dist <= 150.0:
+                                                        if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+                                                            b.take_damage(30.0)
+                                                        elif typeof(b) == TYPE_OBJECT and "hp" in b:
+                                                            b.hp -= 30.0
+                                                            if b.hp <= 0: b.alive = false
+                                                        elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+                                                            b["hp"] -= 30.0
+                                                            if b["hp"] <= 0: b["alive"] = false
                                 else:
                                     if typeof(next_target) == TYPE_OBJECT and "active" in next_target: next_target.active = false
                                     elif typeof(next_target) == TYPE_DICTIONARY and next_target.has("active"): next_target["active"] = false

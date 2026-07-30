@@ -1658,9 +1658,33 @@ class Action:
                                                     b.speed = getattr(b, "base_speed", 100.0) * 0.5
                                                     b.is_scrambled = True
                                                     b.scramble_timer = 3.0
-                        elif getattr(next_entity, "kind", "") in ["lightning_rod", "deployable_lightning_rod"]:
+                        elif getattr(next_entity, "kind", "") in ["lightning_rod", "deployable_lightning_rod", "chain_lightning_relay"]:
                             if getattr(next_entity, "kind", "") == "deployable_lightning_rod":
                                 next_entity.charge = getattr(next_entity, "charge", 0.0) + getattr(attacker, "damage", 10.0) * 2.0
+                            elif getattr(next_entity, "kind", "") == "chain_lightning_relay":
+                                # Amplifies damage and extends jumps
+                                current_damage *= 1.5
+                                # Extends the maximum chain jumps by 2
+                                jump_count -= 2
+                                next_entity.charge = getattr(next_entity, "charge", 0.0) + current_damage
+                                if next_entity.charge >= 50.0:
+                                    next_entity.active = False
+                                    if hasattr(self.world, "balls"):
+                                        import math
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(next_entity, "owner_id", None):
+                                                dist_burst = math.hypot(b.x - getattr(next_entity, "x", 0), b.y - getattr(next_entity, "y", 0))
+                                                if dist_burst <= 150.0:
+                                                    if hasattr(self.world, "_deal_damage"):
+                                                        old_dmg = getattr(next_entity, "damage", 10.0)
+                                                        next_entity.damage = 30.0
+                                                        self.world._deal_damage(next_entity, b)
+                                                        next_entity.damage = old_dmg
+                                                    elif hasattr(b, "take_damage"):
+                                                        b.take_damage(30.0)
+                                                    elif hasattr(b, "hp"):
+                                                        b.hp -= 30.0
+                                                        if b.hp <= 0: b.alive = False
                             else:
                                 setattr(next_entity, "active", False)
                             if hasattr(self.world, "balls"):
@@ -14772,7 +14796,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -20547,6 +20571,23 @@ class Action:
                         self.ball.active_relay_id = relay_id
                         relay.linked_relay_id = None
                     self.world.arena.hazards.append(relay)
+            elif skill_name == "deploy_chain_lightning_relay":
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    class RelayNode:
+                        pass
+                    node = RelayNode()
+                    node.id = f"crelay_{self.ball.id}_{getattr(self.world, 'tick', 0)}"
+                    node.kind = "chain_lightning_relay"
+                    node.x = self.ball.x
+                    node.y = self.ball.y
+                    node.radius = 20.0
+                    node.team = getattr(self.ball, "team", "")
+                    node.active = True
+                    node.duration = 20.0
+                    node.charge = 0.0
+                    node.max_charge = 50.0
+                    node.owner_id = self.ball.id
+                    self.world.arena.hazards.append(node)
             elif skill_name == "deploy_lightning_rod":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     class LightningRodNode:
