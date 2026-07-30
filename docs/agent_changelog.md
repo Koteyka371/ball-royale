@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1687] Quantum Leap Booster — *2026-07-30 23:33:23 UTC*
+
+A new booster that instantly teleports the ball to the safe zone center if it enters an area with no safe zone remaining.
+
+---
+
 ## [idea-1645] Gravity Swap Pad — *2026-07-30 23:33:18 UTC*
 
 A hazard pad that reverses the effect of gravity for any ball that touches it for 3 seconds.
