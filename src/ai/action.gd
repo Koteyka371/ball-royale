@@ -19539,6 +19539,74 @@ func execute(strategy: String, delta: float):
                                 var new_inv = max(cur_inv, 3.0)
                                 if "invert_timer" in self.ball: self.ball.invert_timer = new_inv
                                 elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("invert_timer", new_inv)
+                            elif trap_variant == "shriek":
+                                var shriek_radius = hazard.get("radius", 50.0) * 1.5
+                                var owner_team = ""
+                                if hazard.has("owner_id"):
+                                    var owner_id = hazard.owner_id
+                                    for b in self.world.balls:
+                                        var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null)
+                                        if b_id == owner_id:
+                                            owner_team = b.get("team", b.get("ball_type", "")) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else (b.ball_type if "ball_type" in b else ""))
+                                            break
+
+                                for b in self.world.balls:
+                                    var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+                                    if not b_alive: continue
+
+                                    var b_team = b.get("team", b.get("ball_type", "")) if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else (b.ball_type if "ball_type" in b else ""))
+                                    if owner_team != "" and b_team == owner_team:
+                                        continue
+
+                                    var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+                                    var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+                                    var dist_sq = pow(bx - hazard.x, 2) + pow(by - hazard.y, 2)
+                                    if dist_sq <= pow(shriek_radius, 2):
+                                        # Reduce perception
+                                        var is_blinded = false
+                                        if "is_blinded" in b: is_blinded = b.is_blinded
+                                        elif b.has_method("get_meta") and b.has_meta("is_blinded"): is_blinded = b.get_meta("is_blinded")
+
+                                        if not is_blinded:
+                                            if "is_blinded" in b:
+                                                b.is_blinded = true
+                                                b.blindness_timer = 3.0
+                                            elif b.has_method("set_meta"):
+                                                b.set_meta("is_blinded", true)
+                                                b.set_meta("blindness_timer", 3.0)
+
+                                            var base_perc = 250.0
+                                            if "base_perception_radius" in b: base_perc = float(b.base_perception_radius)
+                                            elif b.has_method("get_meta") and b.has_meta("base_perception_radius"): base_perc = b.get_meta("base_perception_radius")
+                                            else:
+                                                var b_perc = b.get("perception_radius", 250.0) if typeof(b) == TYPE_DICTIONARY else (b.perception_radius if "perception_radius" in b else 250.0)
+                                                base_perc = float(b_perc)
+                                                if "base_perception_radius" in b: b.base_perception_radius = base_perc
+                                                elif b.has_method("set_meta"): b.set_meta("base_perception_radius", base_perc)
+
+                                            if "perception_radius" in b: b.perception_radius = base_perc * 0.1
+                                            elif b.has_method("set_meta"): b.set_meta("perception_radius", base_perc * 0.1)
+                                        else:
+                                            var btimer = 0.0
+                                            if "blindness_timer" in b: btimer = b.blindness_timer
+                                            elif b.has_method("get_meta") and b.has_meta("blindness_timer"): btimer = b.get_meta("blindness_timer")
+                                            var new_timer = max(btimer, 3.0)
+                                            if "blindness_timer" in b: b.blindness_timer = new_timer
+                                            elif b.has_method("set_meta"): b.set_meta("blindness_timer", new_timer)
+
+                                        # Reveal stealthy entities
+                                        var inv_timer = 0.0
+                                        if "invisible_timer" in b: inv_timer = b.invisible_timer
+                                        elif b.has_method("get_meta") and b.has_meta("invisible_timer"): inv_timer = b.get_meta("invisible_timer")
+
+                                        if inv_timer > 0.0:
+                                            if "invisible_timer" in b: b.invisible_timer = 0.0
+                                            elif b.has_method("set_meta"): b.set_meta("invisible_timer", 0.0)
+                                            if "is_invisible" in b: b.is_invisible = false
+                                            elif b.has_method("set_meta"): b.set_meta("is_invisible", false)
+
+                                hazard.duration = 0.0
                             elif trap_variant == "blindness":
                                 var is_blinded = false
                                 if "is_blinded" in self.ball:
