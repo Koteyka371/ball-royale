@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1718] Banshee Shriek Trap — *2026-07-30 21:18:47 UTC*
+
+A new deployable trap that emits a deafening shriek when triggered. It reduces the perception radius of all nearby players to near zero for a few seconds and temporarily reveals all invisible or stealthy entities in the area.
+
+---
+
 ## [idea-1709] Chrono Shift Booster — *2026-07-30 20:52:09 UTC*
 
 A consumable item that accelerates cooldowns for allies and slows them for enemies within an aura.
