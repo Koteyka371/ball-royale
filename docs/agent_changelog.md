@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1690] Anti-Gravity Zone Event — *2026-07-30 02:28:41 UTC*
+
+Certain parts of the arena periodically lose gravity, causing friction to drop and speed to skyrocket.
+
+---
+
 ## [idea-1676] Conveyor Belts — *2026-07-30 02:19:06 UTC*
 
 Moving paths on the arena that linearly accelerate entities in one fixed direction.
