@@ -54180,7 +54180,157 @@ class ExtremeTornadoWeatherMode extends GameMode:
 		for h in hazards_to_remove:
 			world.arena.hazards.erase(h)
 
+
+class OrbitalDebrisMode extends GameMode:
+	var center_x: float = 500.0
+	var center_y: float = 500.0
+	var num_debris: int = 5
+	var orbit_speed: float = 0.5
+	var orbit_radius: float = 250.0
+
+	func _init().():
+		name = "Orbital Debris"
+		description = "Indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully."
+
+	func setup(world: Dictionary, balls: Array) -> void:
+		.setup(world, balls)
+
+		center_x = 500.0
+		center_y = 500.0
+		if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+			center_x = world["arena"].get("width", 1000.0) / 2.0
+			center_y = world["arena"].get("height", 1000.0) / 2.0
+
+			if not world["arena"].has("hazards"):
+				world["arena"]["hazards"] = []
+
+			var existing_well = false
+			for h in world["arena"]["hazards"]:
+				if typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "gravity_well" and h.get("id", -1) == 88888:
+					existing_well = true
+					break
+
+			if not existing_well:
+				var well = {
+					"id": 88888,
+					"x": center_x,
+					"y": center_y,
+					"radius": 100.0,
+					"kind": "gravity_well",
+					"damage": 10.0,
+					"pull_strength": 150.0
+				}
+				world["arena"]["hazards"].append(well)
+
+			for i in range(num_debris):
+				var d_id = 88890 + i
+				var existing = false
+				for h in world["arena"]["hazards"]:
+					if typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "orbital_debris" and h.get("id", -1) == d_id:
+						existing = true
+						break
+
+				if not existing:
+					var angle = (2.0 * PI / num_debris) * i
+					var dx = cos(angle) * orbit_radius
+					var dy = sin(angle) * orbit_radius
+					var debris = {
+						"id": d_id,
+						"x": center_x + dx,
+						"y": center_y + dy,
+						"radius": 40.0,
+						"kind": "orbital_debris",
+						"damage": 0.0,
+						"indestructible": true,
+						"blocks_projectiles": true,
+						"orbit_angle": angle
+					}
+					world["arena"]["hazards"].append(debris)
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		.tick(world, balls, delta)
+
+		if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY and world["arena"].has("hazards"):
+			var well = null
+			for h in world["arena"]["hazards"]:
+				if typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "orbital_debris":
+					var angle = h.get("orbit_angle", 0.0)
+					angle += orbit_speed * delta
+					h["orbit_angle"] = angle
+					h["x"] = center_x + cos(angle) * orbit_radius
+					h["y"] = center_y + sin(angle) * orbit_radius
+				elif typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "gravity_well" and h.get("id", -1) == 88888:
+					well = h
+
+			if well != null:
+				var pull_strength = well.get("pull_strength", 150.0)
+				for b in balls:
+					if b.get("alive", false):
+						var dx = well.get("x", center_x) - b.get("x", center_x)
+						var dy = well.get("y", center_y) - b.get("y", center_y)
+						var dist = sqrt(dx * dx + dy * dy)
+						if dist > 10.0 and dist < 500.0:
+							var force = (pull_strength * delta) / dist
+							b["vx"] = b.get("vx", 0.0) + dx * force
+							b["vy"] = b.get("vy", 0.0) + dy * force
+
+			if world.has("projectiles"):
+				var projs = world["projectiles"]
+				var i = projs.size() - 1
+				while i >= 0:
+					var p = projs[i]
+					var removed = false
+					for h in world["arena"]["hazards"]:
+						if typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "orbital_debris":
+							var hx = h.get("x", 0.0)
+							var hy = h.get("y", 0.0)
+							var r = h.get("radius", 40.0)
+							var pdx = p.get("x", 0.0) - hx
+							var pdy = p.get("y", 0.0) - hy
+							if sqrt(pdx * pdx + pdy * pdy) < r:
+								projs.remove(i)
+								removed = true
+								break
+					i -= 1
+
+			for b in balls:
+				if not b.get("alive", false):
+					continue
+				var b_vx = b.get("vx", 0.0)
+				var b_vy = b.get("vy", 0.0)
+				var speed = sqrt(b_vx * b_vx + b_vy * b_vy)
+
+				for h in world["arena"]["hazards"]:
+					if typeof(h) == TYPE_DICTIONARY and h.get("kind", "") == "orbital_debris":
+						var hx = h.get("x", 0.0)
+						var hy = h.get("y", 0.0)
+						var r = h.get("radius", 40.0)
+						var br = b.get("radius", 10.0)
+						var dx = b.get("x", 0.0) - hx
+						var dy = b.get("y", 0.0) - hy
+						var dist = sqrt(dx * dx + dy * dy)
+
+						if dist < (br + r):
+							if speed > 200.0:
+								b["hp"] = b.get("hp", 100.0) - 25.0
+
+							if dist > 0.01:
+								var nx = dx / dist
+								var ny = dy / dist
+								var overlap = (br + r) - dist
+								b["x"] = b.get("x", 0.0) + nx * overlap
+								b["y"] = b.get("y", 0.0) + ny * overlap
+
+								var dot = (b_vx * nx + b_vy * ny)
+								b_vx = b_vx - 2.0 * dot * nx
+								b_vy = b_vy - 2.0 * dot * ny
+
+								b["vx"] = b_vx * 0.8
+								b["vy"] = b_vy * 0.8
+
+
 var GAME_MODES = {
+	'orbital_debris': OrbitalDebrisMode.new(),
 	"extreme_tornado_weather": ExtremeTornadoWeatherMode.new(),
 	"mini_black_holes": MiniBlackHolesMode.new(),
 	"supercell_storm": SupercellStormMode.new(),
