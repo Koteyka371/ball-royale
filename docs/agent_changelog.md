@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1705] Shifting Gravity Mode — *2026-07-30 10:36:13 UTC*
+
+Gravity randomly shifts directions every 10 seconds.
+
+---
+
 ## [idea-1701] Decoy Minefield Mode — *2026-07-30 10:03:13 UTC*
 
 A game mode where the arena is seeded with dormant decoys that activate and walk around randomly when players approach. They act as moving proximity mines that confuse and detonate, adding a stealth and careful movement requirement to navigation.
