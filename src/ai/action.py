@@ -7291,53 +7291,23 @@ class Action:
                 self.ball.speed = getattr(self.ball, "base_speed", 2.0) * 1.5
 
         if getattr(self.ball, "is_hologram", False):
-            self.ball.hologram_timer -= delta
-            if self.ball.hologram_timer <= 0:
-                self.ball.alive = False
-                self.ball.hp = 0
+            import math
+            import random
+            hx = getattr(self.ball, "hologram_dir_x", 1.0)
+            hy = getattr(self.ball, "hologram_dir_y", 0.0)
+            spd = 1000.0
+            self.ball.vx = hx * spd
+            self.ball.vy = hy * spd
 
-        # Global hologram explosion check
-        if hasattr(self.world, "balls"):
-            for b in getattr(self.world, "balls", []):
-                if getattr(b, "is_hologram", False):
-                    if getattr(b, "hp", 1.0) <= 0 or getattr(b, "hologram_timer", 1.0) <= 0 or not getattr(b, "alive", True):
-                        if not getattr(b, "_hologram_exploded", False):
-                            b._hologram_exploded = True
-                            b.alive = False
-                            b.hp = 0
-                            for other in self.world.balls:
-                                if getattr(other, "alive", False) and getattr(other, "team", getattr(b, "team", "")) != getattr(b, "team", "") and getattr(other, "id", None) != getattr(b, "id", None):
-                                    dx = other.x - b.x
-                                    dy = other.y - b.y
-                                    dist = math.sqrt(dx*dx + dy*dy)
-                                    if dist <= 75.0:
-                                        if hasattr(other, "take_damage"):
-                                            other.take_damage(15.0)
-                                        else:
-                                            other.hp -= 15.0
-                                        if getattr(other, "hp", 1.0) <= 0:
-                                            other.alive = False
-
-                                        if not getattr(other, "is_stunned", False):
-                                            other.is_stunned = True
-                                        other.stun_timer = 2.0
-
-                                        import random
-                                        if random.random() < 0.3:
-                                            if not getattr(other, "is_confused", False):
-                                                other.is_confused = True
-                                            other.confusion_timer = 3.0
-
-
-
-        if strategy == "target_weak":
-            self._target_weak(delta)
-            self._apply_friendly_aura(delta)
-            self._update_skill_timer(delta)
-            self._resolve_collisions()
-            bounced_wall = self._clamp_position()
-            if bounced_wall and (getattr(self.ball, "vx", 0.0)**2 + getattr(self.ball, "vy", 0.0)**2 > 1.0):
-                pass
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                cx, cy, bounced = self.world.arena.clamp_position(self.ball.x, self.ball.y, getattr(self.ball, "radius", 10))
+                if bounced:
+                    self.ball.hologram_dir_x = -hx + (random.random() - 0.5) * 0.5
+                    self.ball.hologram_dir_y = -hy + (random.random() - 0.5) * 0.5
+                    dist = math.sqrt(self.ball.hologram_dir_x**2 + self.ball.hologram_dir_y**2)
+                    if dist > 0:
+                        self.ball.hologram_dir_x /= dist
+                        self.ball.hologram_dir_y /= dist
             return
 
         """
@@ -12296,14 +12266,14 @@ class Action:
                     link_target.damage_link_is_receiving_silence = False
 
 
-                if getattr(self.ball, "is_hologram", False):
+        if getattr(self.ball, "is_hologram", False):
             import math
             import random
             hx = getattr(self.ball, "hologram_dir_x", 1.0)
             hy = getattr(self.ball, "hologram_dir_y", 0.0)
             spd = 1000.0
-            self.ball.vx = hx * spd
-            self.ball.vy = hy * spd
+            self.ball.x += hx * spd * delta * 60
+            self.ball.y += hy * spd * delta * 60
 
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
                 cx, cy, bounced = self.world.arena.clamp_position(self.ball.x, self.ball.y, getattr(self.ball, "radius", 10))
@@ -12314,6 +12284,8 @@ class Action:
                     if dist > 0:
                         self.ball.hologram_dir_x /= dist
                         self.ball.hologram_dir_y /= dist
+                self.ball.x = cx
+                self.ball.y = cy
             return
         if strategy == "flee":
             self._flee(delta)
