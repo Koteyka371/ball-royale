@@ -45088,3 +45088,114 @@ class OrbitalDebrisMode(GameMode):
 
 
 GAME_MODES['orbital_debris'] = OrbitalDebrisMode()
+
+
+class QuantumWormholeMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Quantum Wormhole"
+        self.description = "A hazard zone that instantly teleports a ball to a paired zone on the other side of the arena, maintaining their exact velocity and direction, which can be used defensively or aggressively."
+        self.wormholes = []
+        self.setup_done = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_w = getattr(world.arena, "width", 800) if hasattr(world, "arena") and world.arena else 800
+        arena_h = getattr(world.arena, "height", 600) if hasattr(world, "arena") and world.arena else 600
+
+        self.wormholes = []
+        self.setup_done = False
+
+        # We will create two wormholes
+        w1 = {
+            "x": 150.0,
+            "y": arena_h / 2,
+            "radius": 50.0,
+            "cooldown": 0.0,
+            "linked_idx": 1
+        }
+        w2 = {
+            "x": arena_w - 150.0,
+            "y": arena_h / 2,
+            "radius": 50.0,
+            "cooldown": 0.0,
+            "linked_idx": 0
+        }
+        self.wormholes.extend([w1, w2])
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not self.setup_done:
+            self.setup(world, balls)
+            self.setup_done = True
+
+        for w in self.wormholes:
+            if w["cooldown"] > 0:
+                w["cooldown"] -= delta
+
+        for i, w in enumerate(self.wormholes):
+            if w["cooldown"] > 0:
+                continue
+
+            wx, wy, wr = w["x"], w["y"], w["radius"]
+
+            # Balls teleportation
+            for b in balls:
+                if getattr(b, "alive", False):
+                    dx = getattr(b, "x", 0.0) - wx
+                    dy = getattr(b, "y", 0.0) - wy
+                    import math
+                    dist = math.sqrt(dx * dx + dy * dy)
+
+                    if dist < wr + getattr(b, "radius", 10.0):
+                        linked = self.wormholes[w["linked_idx"]]
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("teleport_out", {"message": "Teleported!", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+
+                        b.x = linked["x"]
+                        b.y = linked["y"]
+                        # We do NOT reset momentum! (exact velocity maintained)
+
+                        linked["cooldown"] = 0.5
+                        w["cooldown"] = 0.5
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("teleport_in", {"message": "Arrived!", "x": getattr(b, "x", 0.0), "y": getattr(b, "y", 0.0)})
+
+                        break # Only teleport once per tick per wormhole
+
+            # Hazards/Projectiles teleportation
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    dx = getattr(h, "x", 0.0) - wx
+                    dy = getattr(h, "y", 0.0) - wy
+                    import math
+                    dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < wr + getattr(h, "radius", 10.0):
+                        linked = self.wormholes[w["linked_idx"]]
+                        h.x = linked["x"]
+                        h.y = linked["y"]
+                        linked["cooldown"] = 0.5
+                        w["cooldown"] = 0.5
+                        break
+
+            if hasattr(world, "projectiles"):
+                for p in world.projectiles:
+                    if getattr(p, "alive", False) or getattr(p, "active", False):
+                        dx = getattr(p, "x", 0.0) - wx
+                        dy = getattr(p, "y", 0.0) - wy
+                        import math
+                        dist = math.sqrt(dx * dx + dy * dy)
+                        if dist < wr + getattr(p, "radius", 5.0):
+                            linked = self.wormholes[w["linked_idx"]]
+                            if hasattr(p, "x"):
+                                p.x = linked["x"]
+                            if hasattr(p, "y"):
+                                p.y = linked["y"]
+                            linked["cooldown"] = 0.5
+                            w["cooldown"] = 0.5
+                            break
+
+GAME_MODES['quantum_wormhole'] = QuantumWormholeMode()
