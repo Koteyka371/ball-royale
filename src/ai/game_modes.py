@@ -16023,6 +16023,79 @@ class BouncyTerrainMode(GameMode):
         self.name = "Bouncy Terrain"
         self.description = "Collision with arena boundaries dramatically reflects velocity without dealing damage."
 
+import random
+import math
+
+class LocalizedZeroGravityZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Localized Zero Gravity Zone"
+        self.description = "Certain parts of the arena periodically lose gravity, causing friction to drop and speed to skyrocket."
+        self.zone_timer = 0.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        self.zone_timer += delta
+        if self.zone_timer >= 5.0:
+            self.zone_timer = 0.0
+            arena_width = getattr(world.arena, "width", 1000.0)
+            arena_height = getattr(world.arena, "height", 1000.0)
+
+            x = random.uniform(150.0, arena_width - 150.0)
+            y = random.uniform(150.0, arena_height - 150.0)
+            h_id = f"zero_gravity_zone_{random.randint(10000, 99999)}"
+
+            try:
+                from arena.procedural_arena import Hazard
+                zone = Hazard(id=h_id, x=x, y=y, radius=150.0, kind="zero_gravity_zone", damage=0.0)
+                zone.duration = 10.0
+                zone.active = True
+                world.arena.hazards.append(zone)
+            except ImportError:
+                zone = {"id": h_id, "x": x, "y": y, "radius": 150.0, "kind": "zero_gravity_zone", "damage": 0.0, "active": True, "duration": 10.0}
+                world.arena.hazards.append(zone)
+
+        for b in balls:
+            if not getattr(b, "alive", True) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            in_zone = False
+            for h in world.arena.hazards:
+                if getattr(h, "active", True):
+                    h_kind = getattr(h, "kind", "") if not isinstance(h, dict) else h.get("kind", "")
+                    if h_kind == "zero_gravity_zone":
+                        hx = getattr(h, "x", 0.0) if not isinstance(h, dict) else h.get("x", 0.0)
+                        hy = getattr(h, "y", 0.0) if not isinstance(h, dict) else h.get("y", 0.0)
+                        hr = getattr(h, "radius", 150.0) if not isinstance(h, dict) else h.get("radius", 150.0)
+
+                        dist = math.hypot(b.x - hx, b.y - hy)
+                        if dist <= hr + getattr(b, "radius", 15.0):
+                            in_zone = True
+                            break
+
+            if in_zone:
+                b.is_frictionless = True
+                b.friction_multiplier = 0.0
+
+                if not hasattr(b, "zero_g_speed_applied") or not b.zero_g_speed_applied:
+                    b.zero_g_speed_applied = True
+                    if not hasattr(b, "base_speed") and hasattr(b, "speed"):
+                        b.base_speed = b.speed
+
+                if hasattr(b, "base_speed"):
+                    b.speed = b.base_speed * 3.0
+            else:
+                if getattr(b, "zero_g_speed_applied", False):
+                    if hasattr(b, "base_speed"):
+                        b.speed = b.base_speed
+                    b.zero_g_speed_applied = False
+                    b.is_frictionless = False
+                    b.friction_multiplier = 1.0
+
 class ZeroGravityMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -33831,6 +33904,7 @@ GAME_MODES = {
     "invisible_walls": InvisibleWallsMode(),
     "mirror_walls": MirrorWallsMode(),
     "stamina_regen": StaminaRegenMode(),
+    "localized_zero_gravity_zone": LocalizedZeroGravityZoneMode(),
     "zero_gravity": ZeroGravityMode(),
     "magnetic_collisions": MagneticCollisionsMode(),
     "cursed_aura_event": CursedAuraEventMode(),
