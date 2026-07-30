@@ -33808,7 +33808,82 @@ class ExtremeTornadoWeatherMode(GameMode):
                         b.vx += -ny * applied_force * 0.5 * delta
                         b.vy += nx * applied_force * 0.5 * delta
 
+
+class ShiftingMazeMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shifting Maze"
+        self.description = "A maze that slowly shifts and changes its layout over time. Balls must find the center to win."
+        self.maze_update_timer = 0.0
+        self.maze_update_interval = 5.0
+        self.maze_walls = []
+        self.center_x = 500.0
+        self.center_y = 500.0
+        self.win_radius = 50.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.center_x = arena_width / 2.0
+        self.center_y = arena_height / 2.0
+        self.maze_update_timer = 0.0
+
+        import random
+        # Initialize some maze walls
+        for i in range(20):
+            wall_id = len(getattr(world.arena, "hazards", [])) + i + 10000
+            wx = random.uniform(100, arena_width - 100)
+            wy = random.uniform(100, arena_height - 100)
+
+            from arena.arena_types import Hazard
+            wall = Hazard(wall_id, wx, wy, 40.0, "maze_wall", 0.0)
+            setattr(wall, "is_solid", True)
+            if hasattr(world.arena, "hazards"):
+                world.arena.hazards.append(wall)
+            self.maze_walls.append(wall)
+
+        # Center win zone
+        win_zone = Hazard(99999, self.center_x, self.center_y, self.win_radius, "win_zone", 0.0)
+        if hasattr(world.arena, "hazards"):
+            world.arena.hazards.append(win_zone)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import random
+
+        self.maze_update_timer += delta
+        if self.maze_update_timer >= self.maze_update_interval:
+            self.maze_update_timer = 0.0
+
+            # Shift maze walls
+            for wall in self.maze_walls:
+                if hasattr(wall, "x") and hasattr(wall, "y"):
+                    # Random small movement to simulate shifting
+                    wall.x += random.uniform(-50.0, 50.0)
+                    wall.y += random.uniform(-50.0, 50.0)
+
+            if hasattr(world, "add_event"):
+                world.add_event("maze_shift", {"message": "The maze has shifted!"})
+
+        # Check for win condition
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dist = math.sqrt((b.x - self.center_x)**2 + (b.y - self.center_y)**2)
+            if dist < self.win_radius:
+                if hasattr(world, "add_event"):
+                    world.add_event("maze_win", {"winner": getattr(b, "id", "Unknown")})
+                for other in balls:
+                    if other != b and getattr(other, "alive", False):
+                        other.hp = 0
+                        other.alive = False
+                        if hasattr(world, "add_event"):
+                            world.add_event("kill", {"killer": getattr(b, "id", "Unknown"), "victim": getattr(other, "id", "Unknown")})
+
 GAME_MODES = {
+    'shifting_maze': ShiftingMazeMode(),
     'extreme_tornado_weather': ExtremeTornadoWeatherMode(),
 
     'mini_black_holes': MiniBlackHolesMode(),

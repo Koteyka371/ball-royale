@@ -54050,7 +54050,150 @@ class ExtremeTornadoWeatherMode extends GameMode:
 		for h in hazards_to_remove:
 			world.arena.hazards.erase(h)
 
+
+class ShiftingMazeMode extends GameMode:
+	var maze_update_timer = 0.0
+	var maze_update_interval = 5.0
+	var maze_walls = []
+	var center_x = 500.0
+	var center_y = 500.0
+	var win_radius = 50.0
+
+	func _init():
+		name = "Shifting Maze"
+		description = "A maze that slowly shifts and changes its layout over time. Balls must find the center to win."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
+			if "width" in world.arena: arena_width = world.arena.width
+			if "height" in world.arena: arena_height = world.arena.height
+
+		center_x = arena_width / 2.0
+		center_y = arena_height / 2.0
+		maze_update_timer = 0.0
+		maze_walls = []
+
+		for i in range(20):
+			var wall_id = 10000 + i
+			var hazards_len = 0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				hazards_len = world.arena.hazards.size()
+			elif typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+				hazards_len = world.arena.hazards.size()
+			wall_id += hazards_len
+
+			var wx = randf_range(100.0, arena_width - 100.0)
+			var wy = randf_range(100.0, arena_height - 100.0)
+			var dist_to_center = sqrt(pow(wx - center_x, 2) + pow(wy - center_y, 2))
+			if dist_to_center > win_radius + 100.0:
+				var wall = {
+					"id": wall_id,
+					"x": wx,
+					"y": wy,
+					"radius": 40.0,
+					"kind": "maze_wall",
+					"damage": 0.0,
+					"is_solid": true
+				}
+				if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					world.arena.hazards.append(wall)
+				elif typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+					world.arena.hazards.append(wall)
+				maze_walls.append(wall)
+
+		var win_zone = {
+			"id": 99999,
+			"x": center_x,
+			"y": center_y,
+			"radius": win_radius,
+			"kind": "win_zone",
+			"damage": 0.0
+		}
+		if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			world.arena.hazards.append(win_zone)
+		elif typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+			world.arena.hazards.append(win_zone)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		maze_update_timer += delta
+		if maze_update_timer >= maze_update_interval:
+			maze_update_timer = 0.0
+			for wall in maze_walls:
+				if typeof(wall) == TYPE_DICTIONARY and "x" in wall and "y" in wall:
+					wall.x += randf_range(-50.0, 50.0)
+					wall.y += randf_range(-50.0, 50.0)
+				elif typeof(wall) == TYPE_OBJECT and "x" in wall and "y" in wall:
+					wall.x += randf_range(-50.0, 50.0)
+					wall.y += randf_range(-50.0, 50.0)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("maze_shift", {"message": "The maze has shifted!"})
+			elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+				world.events.append({"type": "maze_shift", "data": {"message": "The maze has shifted!"}})
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			var b_type = null
+			if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+			elif typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+
+			if not is_alive or b_type == "spectator":
+				continue
+
+			var bx = 0.0
+			var by = 0.0
+			if typeof(b) == TYPE_OBJECT and "x" in b and "y" in b:
+				bx = b.x
+				by = b.y
+			elif typeof(b) == TYPE_DICTIONARY and "x" in b and "y" in b:
+				bx = b.x
+				by = b.y
+
+			var dist = sqrt(pow(bx - center_x, 2) + pow(by - center_y, 2))
+			if dist < win_radius:
+				var winner_id = "Unknown"
+				if typeof(b) == TYPE_OBJECT and "id" in b: winner_id = b.id
+				elif typeof(b) == TYPE_DICTIONARY and "id" in b: winner_id = b.id
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("maze_win", {"winner": winner_id})
+				elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+					world.events.append({"type": "maze_win", "data": {"winner": winner_id}})
+
+				for other in balls:
+					var other_alive = false
+					if typeof(other) == TYPE_OBJECT and "alive" in other: other_alive = other.alive
+					elif typeof(other) == TYPE_DICTIONARY and "alive" in other: other_alive = other.alive
+
+					if other != b and other_alive:
+						if typeof(other) == TYPE_OBJECT:
+							other.hp = 0
+							other.alive = false
+						elif typeof(other) == TYPE_DICTIONARY:
+							other.hp = 0
+							other.alive = false
+
+						var victim_id = "Unknown"
+						if typeof(other) == TYPE_OBJECT and "id" in other: victim_id = other.id
+						elif typeof(other) == TYPE_DICTIONARY and "id" in other: victim_id = other.id
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("kill", {"killer": winner_id, "victim": victim_id})
+						elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+							world.events.append({"type": "kill", "data": {"killer": winner_id, "victim": victim_id}})
+
 var GAME_MODES = {
+	"shifting_maze": ShiftingMazeMode.new(),
 	"extreme_tornado_weather": ExtremeTornadoWeatherMode.new(),
 	"mini_black_holes": MiniBlackHolesMode.new(),
 	"supercell_storm": SupercellStormMode.new(),
