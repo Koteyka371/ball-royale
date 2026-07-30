@@ -30847,61 +30847,63 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "flashbang_booster":
-                for i in range(3):
-                    var clone = null
-                    if self.ball.has_method("duplicate"):
-                        clone = self.ball.duplicate()
-                    elif typeof(self.ball) == TYPE_DICTIONARY:
-                        clone = self.ball.duplicate()
+                var my_team = self.ball.get("team", "") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.team if "team" in self.ball else "")
+                var my_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.x if "x" in self.ball else 0.0)
+                var my_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.y if "y" in self.ball else 0.0)
 
-                    if clone != null:
-                        if "id" in clone: clone.id = randi() % 90000 + 10000
-                        if "hp" in clone: clone.hp = 1.0
-                        if "max_hp" in clone: clone.max_hp = 1.0
-                        if "damage" in clone: clone.damage = 0.0
-                        if "base_damage" in clone: clone.base_damage = 0.0
+                var enemies = []
+                if self.has_method("_get_enemies"):
+                    enemies = self._get_enemies()
 
-                        var self_id = -2
-                        if "id" in self.ball: self_id = self.ball.id
-                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+                if self.world != null and "balls" in self.world:
+                    for b in self.world.balls:
+                        var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else (b.team if "team" in b else "")
+                        var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+                        if b != self.ball and b_team != my_team and b_alive:
+                            if not b in enemies:
+                                enemies.append(b)
 
-                        var angle = i * (PI * 2.0 / 3.0)
-                        var bspeed = 200.0
-                        if "base_speed" in self.ball: bspeed = self.ball.base_speed
-                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): bspeed = self.ball.base_speed
+                for enemy in enemies:
+                    var ex = enemy.get("x", 0.0) if typeof(enemy) == TYPE_DICTIONARY else (enemy.x if "x" in enemy else 0.0)
+                    var ey = enemy.get("y", 0.0) if typeof(enemy) == TYPE_DICTIONARY else (enemy.y if "y" in enemy else 0.0)
+                    var dist = sqrt(pow(ex - my_x, 2.0) + pow(ey - my_y, 2.0))
 
-                        if clone.has_method("set_meta"):
-                            clone.set_meta("owner_id", self_id)
-                            clone.set_meta("is_decoy", true)
-                            clone.set_meta("decoy_type", "flash")
-                            clone.set_meta("decoy_timer", 5.0)
-                            clone.set_meta("skill_timer", 9999.0)
-                            clone.set_meta("attack_timer", 9999.0)
-                            clone.set_meta("vx", cos(angle) * bspeed)
-                            clone.set_meta("vy", sin(angle) * bspeed)
-                        elif typeof(clone) == TYPE_DICTIONARY:
-                            clone["owner_id"] = self_id
-                            clone["is_decoy"] = true
-                            clone["decoy_type"] = "flash"
-                            clone["decoy_timer"] = 5.0
-                            clone["skill_timer"] = 9999.0
-                            clone["attack_timer"] = 9999.0
-                            clone["vx"] = cos(angle) * bspeed
-                            clone["vy"] = sin(angle) * bspeed
+                    if dist <= 300.0:
+                        if typeof(enemy) == TYPE_DICTIONARY:
+                            enemy["is_stunned"] = true
+                            enemy["stun_timer"] = max(enemy.get("stun_timer", 0.0), 3.0)
+                            if not enemy.has("base_perception_radius"):
+                                enemy["base_perception_radius"] = enemy.get("perception_radius", 250.0)
+                            enemy["perception_radius"] = 0.0
+                            enemy["vision_reduction_timer"] = max(enemy.get("vision_reduction_timer", 0.0), 3.0)
+                            enemy["vision_reduction_applied"] = true
                         else:
-                            clone.owner_id = self_id
-                            clone.is_decoy = true
-                            clone.decoy_type = "flash"
-                            clone.decoy_timer = 5.0
-                            clone.skill_timer = 9999.0
-                            clone.attack_timer = 9999.0
-                            clone.vx = cos(angle) * bspeed
-                            clone.vy = sin(angle) * bspeed
-                            if "skill" in clone: clone.skill = ""
-                            if "active_skill" in clone: clone.active_skill = ""
+                            if enemy.has_method("set_meta"):
+                                enemy.set_meta("is_stunned", true)
+                                enemy.set_meta("stun_timer", max(enemy.get_meta("stun_timer") if enemy.has_meta("stun_timer") else 0.0, 3.0))
+                                if not enemy.has_meta("base_perception_radius"):
+                                    enemy.set_meta("base_perception_radius", enemy.get_meta("perception_radius") if enemy.has_meta("perception_radius") else 250.0)
+                                enemy.set_meta("perception_radius", 0.0)
+                                enemy.set_meta("vision_reduction_timer", max(enemy.get_meta("vision_reduction_timer") if enemy.has_meta("vision_reduction_timer") else 0.0, 3.0))
+                                enemy.set_meta("vision_reduction_applied", true)
+                            else:
+                                enemy.is_stunned = true
+                                enemy.stun_timer = max(enemy.stun_timer if "stun_timer" in enemy else 0.0, 3.0)
+                                if not "base_perception_radius" in enemy:
+                                    enemy.base_perception_radius = enemy.perception_radius if "perception_radius" in enemy else 250.0
+                                enemy.perception_radius = 0.0
+                                enemy.vision_reduction_timer = max(enemy.vision_reduction_timer if "vision_reduction_timer" in enemy else 0.0, 3.0)
+                                enemy.vision_reduction_applied = true
 
-                        if self.world != null and "balls" in self.world:
-                            self.world.balls.append(clone)
+                        if self.world != null and "events" in self.world:
+                            self.world.events.append({"type": "visual_effect", "data": {"type": "flashbang_hit", "x": ex, "y": ey}})
+                        elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                            self.world["events"].append({"type": "visual_effect", "data": {"type": "flashbang_hit", "x": ex, "y": ey}})
+
+                if self.world != null and "events" in self.world:
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "flashbang_explosion", "x": my_x, "y": my_y}})
+                elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                    self.world["events"].append({"type": "visual_effect", "data": {"type": "flashbang_explosion", "x": my_x, "y": my_y}})
 
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)

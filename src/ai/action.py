@@ -15606,40 +15606,44 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "flashbang_booster":
-                    import copy
+                    # Blind and stun nearby enemies
                     import math
-                    import random
-                    if hasattr(self.world, "balls"):
-                        for i in range(3):
-                            clone = copy.copy(self.ball)
-                            clone.id = getattr(self.world, "next_id", random.randint(10000, 99999))
-                            if hasattr(self.world, "next_id"):
-                                self.world.next_id += 1
+                    my_team = getattr(self.ball, "team", "")
+                    my_x = getattr(self.ball, "x", 0.0)
+                    my_y = getattr(self.ball, "y", 0.0)
 
-                            # Make fragile
-                            clone.hp = 1.0
-                            clone.max_hp = clone.hp
-                            clone.damage = 0
-                            if hasattr(clone, "base_damage"): clone.base_damage = 0
-                            clone.speed = getattr(self.ball, "speed", 2.0)
-                            clone.owner_id = getattr(self.ball, "id", None)
-                            clone.is_decoy = True
-                            clone.decoy_type = "flash"
-                            clone.decoy_timer = 5.0
-                            clone.skill_timer = 9999.0
-                            clone.attack_timer = 9999.0
-                            clone.SKILL = None
-                            clone.skill = None
-                            if hasattr(clone, "active_skill"):
-                                clone.active_skill = None
-                            clone.vx = math.cos(i * (math.pi * 2 / 3.0)) * getattr(self.ball, "base_speed", 200.0)
-                            clone.vy = math.sin(i * (math.pi * 2 / 3.0)) * getattr(self.ball, "base_speed", 200.0)
-                            self.world.balls.append(clone)
+                    enemies = self._get_enemies() if hasattr(self, "_get_enemies") else []
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if b != self.ball and getattr(b, "team", "") != my_team and getattr(b, "alive", True):
+                                if b not in enemies: enemies.append(b)
+
+                    for enemy in enemies:
+                        ex = getattr(enemy, "x", 0.0)
+                        ey = getattr(enemy, "y", 0.0)
+                        dist = math.sqrt((ex - my_x)**2 + (ey - my_y)**2)
+                        if dist <= 300.0:
+                            enemy.is_stunned = True
+                            enemy.stun_timer = max(getattr(enemy, "stun_timer", 0.0), 3.0)
+                            if not hasattr(enemy, "base_perception_radius"):
+                                enemy.base_perception_radius = getattr(enemy, "perception_radius", 250.0)
+                            enemy.perception_radius = 0.0
+                            enemy.vision_reduction_timer = max(getattr(enemy, "vision_reduction_timer", 0.0), 3.0)
+                            enemy.vision_reduction_applied = True
+                            if hasattr(self.world, "events"):
+                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'flashbang_hit', 'x': ex, 'y': ey}})
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({'type': 'visual_effect', 'data': {'type': 'flashbang_explosion', 'x': my_x, 'y': my_y}})
+
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
-                        if nearest in self.world.arena.hazards:
-                            self.world.arena.hazards.remove(nearest)
-                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
-                        self.world.boosters.remove(nearest)
+                        if hasattr(self.world.arena.hazards, "remove"):
+                            if nearest in self.world.arena.hazards:
+                                self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters"):
+                        if hasattr(self.world.boosters, "remove"):
+                            if nearest in self.world.boosters:
+                                self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "clone_booster":
                     import copy
                     import math
