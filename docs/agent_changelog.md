@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1699] Stasis Bubble — *2026-07-30 09:53:43 UTC*
+
+A deployable bubble that freezes projectiles and entities in time when they enter it, creating a brief safe zone or trapping enemies.
+
+---
+
 ## [idea-1700] Decoy Balloon Trap — *2026-07-30 09:25:42 UTC*
 
 Players can deploy a balloon that perfectly mirrors their appearance and movement patterns, but has zero health. When an enemy pops it, it releases a small cloud of confusing gas that temporarily randomizes their movement controls.
