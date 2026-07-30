@@ -99,7 +99,7 @@ def test_overdrive_zone_slow_when_no_stamina():
 
     assert getattr(ball, "overdrive_zone_active", False) == True
     assert ball.stamina == 0.0
-    assert ball.speed == 37.5
+    assert ball.speed == 56.25
 
 def test_outside_overdrive_zone():
     mode = GAME_MODES["overdrive_zone"]

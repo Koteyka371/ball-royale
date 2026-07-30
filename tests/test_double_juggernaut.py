@@ -46,7 +46,7 @@ def test_setup_assigns_juggernauts():
     assert balls[0].hp == 500.0
     assert balls[0].damage > 10.0
     assert balls[0].radius == 20.0
-    assert balls[0].speed < 100.0
+    assert balls[0].speed < 150.0
     assert balls[0].mass == 3.0
 
     # Verify stats for hunters

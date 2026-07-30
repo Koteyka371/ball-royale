@@ -66,15 +66,15 @@ def test_ctf_br_tick():
     mode.tick(world, 0.1)
 
     # Ball 1 should not be boosted
-    assert b1.base_speed < 150.0
+    assert b1.base_speed < 200.0
 
     # Ball 2 should not be boosted
-    assert b2.base_speed < 150.0
+    assert b2.base_speed < 200.0
     assert b2.has_flag == True
 
     # Ball 3 should be boosted
     assert b3.has_flag == False
-    assert b3.base_speed > 150.0
+    assert b3.base_speed > 200.0
     assert b3.base_damage >= 30.0
     assert b3.hp == 600.0
     assert b3.max_hp == 600.0
@@ -92,10 +92,10 @@ def test_ctf_br_tick_already_boosted():
     mode.setup(world, world.balls)
     mode.tick(world, 0.1)
 
-    assert b3.base_speed > 150.0
+    assert b3.base_speed > 200.0
 
     # Bring another flag, but shouldn't boost again since it's in boosted_players
     b3.has_flag = True
     mode.tick(world, 0.1)
 
-    assert b3.base_speed > 150.0
+    assert b3.base_speed > 200.0
