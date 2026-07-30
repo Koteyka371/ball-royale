@@ -23065,6 +23065,62 @@ class HauntedEventMode(GameMode):
                 clone.vy = random.uniform(-100, 100)
                 world.arena.hazards.append(clone)
 
+        # Nightmare logic
+        if not hasattr(self, "nightmare_timer"):
+            self.nightmare_timer = 0.0
+        self.nightmare_timer += delta
+
+        if self.nightmare_timer >= 10.0:
+            self.nightmare_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                import random
+                h_id = "nightmare_" + str(random.randint(10000, 99999))
+                class NightmareHazard: pass
+                nightmare = NightmareHazard()
+                nightmare.id = h_id
+                nightmare.x = random.uniform(100, getattr(world.arena, "width", 1000) - 100)
+                nightmare.y = random.uniform(100, getattr(world.arena, "height", 1000) - 100)
+                nightmare.radius = 25.0
+                nightmare.kind = "nightmare"
+                nightmare.active = True
+                nightmare.duration = 15.0
+                nightmare.damage = 0.0
+                nightmare.speed = 400.0
+                world.arena.hazards.append(nightmare)
+
+        # Update nightmare hazards
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            import math
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "nightmare" and getattr(h, "active", False):
+                    # Find player with lowest stamina
+                    target = None
+                    lowest_stamina = float('inf')
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            b_stamina = getattr(b, "stamina", 100.0)
+                            b_max_stamina = getattr(b, "max_stamina", 100.0)
+                            # Target if stamina < 30% of max
+                            if b_stamina < b_max_stamina * 0.3:
+                                if b_stamina < lowest_stamina:
+                                    lowest_stamina = b_stamina
+                                    target = b
+
+                    if target:
+                        dx = target.x - h.x
+                        dy = target.y - h.y
+                        dist = math.sqrt(dx*dx + dy*dy)
+                        if dist > 0.001:
+                            h.x += (dx / dist) * getattr(h, "speed", 400.0) * delta
+                            h.y += (dy / dist) * getattr(h, "speed", 400.0) * delta
+
+                        # Collision with target
+                        if dist < h.radius + getattr(target, "radius", 20.0):
+                            target.emotion = "fear"
+                            target.siren_feared_timer = max(getattr(target, "siren_feared_timer", 0.0), 2.0)
+                            target.invert_timer = max(getattr(target, "invert_timer", 0.0), 3.0)
+                            h.active = False # despawn on catch
+
 class BlackoutEventMode(GameMode):
     def __init__(self):
         super().__init__()
