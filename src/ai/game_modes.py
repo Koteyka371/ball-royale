@@ -44802,3 +44802,154 @@ class TeleportingSafeZoneMode(GameMode):
                         world.add_event("kill", {"killer": "safe_zone", "victim": getattr(b, "id", "Unknown")})
 
 GAME_MODES["teleporting_safe_zone"] = TeleportingSafeZoneMode()
+
+
+class OrbitalDebrisMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbital Debris"
+        self.description = "Indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully."
+        self.id = "orbital_debris"
+
+        self.center_x = 500.0
+        self.center_y = 500.0
+        self.num_debris = 5
+        self.orbit_speed = 0.5  # radians per second
+        self.orbit_radius = 250.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.center_x = getattr(world.arena, "width", 1000.0) / 2.0
+        self.center_y = getattr(world.arena, "height", 1000.0) / 2.0
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import math
+        try:
+            from arena.procedural_arena import Hazard
+        except ImportError:
+            class Hazard:
+                def __init__(self, id, x, y, radius, kind, damage, **kwargs):
+                    self.id = id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    for k, v in kwargs.items():
+                        setattr(self, k, v)
+
+        # Central gravity well
+        existing_well = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "gravity_well" and getattr(h, "id", None) == 88888), None)
+        if not existing_well:
+            well = Hazard(
+                id=88888,
+                x=self.center_x,
+                y=self.center_y,
+                radius=100.0,
+                kind="gravity_well",
+                damage=10.0
+            )
+            setattr(well, "pull_strength", 150.0)
+            world.arena.hazards.append(well)
+
+        # Debris clusters
+        for i in range(self.num_debris):
+            d_id = 88890 + i
+            existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "orbital_debris" and getattr(h, "id", None) == d_id), None)
+            if not existing:
+                angle = (2 * math.pi / self.num_debris) * i
+                dx = math.cos(angle) * self.orbit_radius
+                dy = math.sin(angle) * self.orbit_radius
+
+                debris = Hazard(
+                    id=d_id,
+                    x=self.center_x + dx,
+                    y=self.center_y + dy,
+                    radius=40.0,
+                    kind="orbital_debris",
+                    damage=0.0
+                )
+                setattr(debris, "indestructible", True)
+                setattr(debris, "blocks_projectiles", True)
+                setattr(debris, "orbit_angle", angle)
+                world.arena.hazards.append(debris)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        # Update debris positions
+        for h in getattr(world.arena, "hazards", []):
+            if getattr(h, "kind", "") == "orbital_debris":
+                angle = getattr(h, "orbit_angle", 0.0)
+                angle += self.orbit_speed * delta
+                setattr(h, "orbit_angle", angle)
+
+                h.x = self.center_x + math.cos(angle) * self.orbit_radius
+                h.y = self.center_y + math.sin(angle) * self.orbit_radius
+
+        # Gravity well logic
+        well = next((h for h in getattr(world.arena, "hazards", []) if getattr(h, "kind", "") == "gravity_well" and getattr(h, "id", None) == 88888), None)
+        if well:
+            pull_strength = getattr(well, "pull_strength", 150.0)
+            for b in balls:
+                if not getattr(b, "alive", False):
+                    continue
+                dx = well.x - b.x
+                dy = well.y - b.y
+                dist = math.hypot(dx, dy)
+                if 10.0 < dist < 500.0:
+                    force = (pull_strength * delta) / dist
+                    b.vx += dx * force
+                    b.vy += dy * force
+
+        # Projectile blocking
+        if hasattr(world, "projectiles"):
+            projs_to_remove = []
+            for p in world.projectiles:
+                for h in getattr(world.arena, "hazards", []):
+                    if getattr(h, "kind", "") == "orbital_debris":
+                        dx = p.x - h.x
+                        dy = p.y - h.y
+                        if math.hypot(dx, dy) < h.radius:
+                            projs_to_remove.append(p)
+                            break
+            for p in projs_to_remove:
+                if p in world.projectiles:
+                    world.projectiles.remove(p)
+
+        # High-speed collision damage
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            speed = math.hypot(getattr(b, "vx", 0.0), getattr(b, "vy", 0.0))
+            for h in getattr(world.arena, "hazards", []):
+                if getattr(h, "kind", "") == "orbital_debris":
+                    dx = b.x - h.x
+                    dy = b.y - h.y
+                    dist = math.hypot(dx, dy)
+                    if dist < (getattr(b, "radius", 10.0) + getattr(h, "radius", 40.0)):
+                        if speed > 200.0:
+                            b.hp -= 25.0  # Burst damage for high speed collision
+
+                        # Physics deflection (bounce off)
+                        if dist > 0.01:
+                            nx, ny = dx / dist, dy / dist
+                            # Push ball out of hazard to prevent sticking
+                            overlap = (getattr(b, "radius", 10.0) + getattr(h, "radius", 40.0)) - dist
+                            b.x += nx * overlap
+                            b.y += ny * overlap
+
+                            # Reflect velocity
+                            dot = (b.vx * nx + b.vy * ny)
+                            b.vx -= 2 * dot * nx
+                            b.vy -= 2 * dot * ny
+
+                            # Add some dampening so it doesn't infinite bounce
+                            b.vx *= 0.8
+                            b.vy *= 0.8
+
+
+GAME_MODES['orbital_debris'] = OrbitalDebrisMode()
