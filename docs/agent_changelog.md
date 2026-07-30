@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1693] Nemesis Link Trap — *2026-07-30 02:58:12 UTC*
+
+Links multiple balls, mirroring any damage taken by one to all others
+
+---
+
 ## [idea-1657] Chameleon Skin Environmental Camouflage — *2026-07-30 02:46:08 UTC*
 
 A new ball type or passive ability that gradually blends into the background color or the nearest wall's color when standing still, significantly reducing their perception radius for enemy AI and removing them from the minimap.
