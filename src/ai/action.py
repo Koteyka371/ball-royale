@@ -9060,7 +9060,7 @@ class Action:
                                 pull_strength = 80.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
 
@@ -9478,7 +9478,7 @@ class Action:
                                                     pull_strength = -pull_strength
                                                 if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                     c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
-                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                                     b.x += bnx * pull_strength * mod
                                                     b.y += bny * pull_strength * mod
                                                 if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole") and hasattr(b, "vx") and hasattr(b, "vy"):
@@ -9496,7 +9496,7 @@ class Action:
                                                             effect_ny = b.vy / speed
                                                             if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                                 c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
-                                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                                                 b.vx += effect_nx * slingshot_strength * delta * mod
                                                                 b.vy += effect_ny * slingshot_strength * delta * mod
                                                         else:
@@ -9505,7 +9505,7 @@ class Action:
                                                             if dot > -speed * 0.8: # If not flying directly into it
                                                                 if getattr(b, "anchor_booster_timer", 0.0) <= 0:
                                                                     c = getattr(b, "cosmetic", "").lower().replace(" ", "_")
-                                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                                                     b.vx += effect_nx * slingshot_strength * delta * mod
                                                                     b.vy += effect_ny * slingshot_strength * delta * mod
                                                 if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
@@ -9587,7 +9587,7 @@ class Action:
 
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
                                 if hazard.kind in ("black_hole", "clone_black_hole", "massive_black_hole", "mini_black_hole", "gravity_well") and hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
@@ -9605,7 +9605,7 @@ class Action:
                                             effect_ny = self.ball.vy / speed
                                             if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                                 c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                                 self.ball.vx += effect_nx * slingshot_strength * delta * mod
                                                 self.ball.vy += effect_ny * slingshot_strength * delta * mod
                                         else:
@@ -9614,7 +9614,7 @@ class Action:
                                             if dot > -speed * 0.8: # If not flying directly into it
                                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                                     self.ball.vx += effect_nx * slingshot_strength * delta * mod
                                                     self.ball.vy += effect_ny * slingshot_strength * delta * mod
                                 if hazard.kind in ("tornado", "supercell_tornado", "local_tornado", "firenado", "local_firenado", "poison_tornado", "local_poison_tornado"):
@@ -10494,6 +10494,8 @@ class Action:
                                     knockback_force *= 0.1
                                 elif cosmetic == "rooted_boots":
                                     knockback_force *= 0.05
+                                elif cosmetic == "link_boots":
+                                    knockback_force *= 0.5
                                 self.ball.x += nx * knockback_force
                                 self.ball.y += ny * knockback_force
                             continue
@@ -21317,6 +21319,37 @@ class Action:
                     knockback_multiplier *= 0.05
                 elif cosmetic == "hover_boots":
                     knockback_multiplier *= 1.5
+
+                elif cosmetic == "link_boots":
+                    nearest_ally = None
+                    min_dist = float('inf')
+                    if hasattr(self, "world") and hasattr(self.world, "balls"):
+                        my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+                        for ally in self.world.balls:
+                            if getattr(ally, "alive", True) and ally != self.ball:
+                                ally_team = getattr(ally, "team", getattr(ally, "ball_type", ""))
+                                if ally_team == my_team:
+                                    dist = math.hypot(ally.x - self.ball.x, ally.y - self.ball.y)
+                                    if dist < min_dist:
+                                        min_dist = dist
+                                        nearest_ally = ally
+
+                    if nearest_ally:
+                        knockback_multiplier *= 0.5
+                        shared_kb_x = nx * overlap * 0.5
+                        shared_kb_y = ny * overlap * 0.5
+                        nearest_ally.x += shared_kb_x
+                        nearest_ally.y += shared_kb_y
+
+                        # Share positive status effects
+                        effects = ["speed_boost_timer", "shield_timer", "damage_buff_timer", "invulnerability_timer", "invisible_timer", "reflect_shield_timer"]
+                        for eff in effects:
+                            my_val = getattr(self.ball, eff, 0.0)
+                            if my_val > 0.0:
+                                ally_val = getattr(nearest_ally, eff, 0.0)
+                                if ally_val < my_val:
+                                    setattr(nearest_ally, eff, my_val)
+
                 elif (cosmetic == "kinetic_absorber" or getattr(self.ball, "has_kinetic_absorber", False)) and getattr(other, "team", None) != getattr(self.ball, "team", None):
                     if cosmetic == "kinetic_absorber":
                         knockback_multiplier = 0.0
@@ -23243,7 +23276,7 @@ class Action:
                                 pull_strength = 100.0 * delta
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
                                 if hasattr(self.ball, "hp"):
@@ -23362,7 +23395,7 @@ class Action:
                                 pull_strength = 200.0 * delta # Faster pull than pull_trap
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
-                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)
+                                    mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else (0.5 if c == "link_boots" else 1.0))
                                     self.ball.x += nx * pull_strength * mod
                                     self.ball.y += ny * pull_strength * mod
 
