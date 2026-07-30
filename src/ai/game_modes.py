@@ -32468,7 +32468,7 @@ class ChaoticArtifactMode(GameMode):
         self.artifact_y = 0.0
         self.randomize_timer = 0.0
 
-        self.ball_types = ['basic', 'sniper', 'scout', 'juggernaut', 'trickster', 'berserker']
+        self.ball_types = ['basic', 'sniper', 'scout', 'juggernaut', 'trickster', 'berserker', 'chameleon']
 
     def setup(self, world, balls):
         self.artifact_spawned = True

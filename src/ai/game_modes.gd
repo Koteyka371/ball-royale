@@ -51733,7 +51733,7 @@ class ChaoticArtifactMode extends GameMode:
 	var artifact_x = 0.0
 	var artifact_y = 0.0
 	var randomize_timer = 0.0
-	var ball_types = ["basic", "sniper", "scout", "juggernaut", "trickster", "berserker"]
+	var ball_types = ["basic", "sniper", "scout", "juggernaut", "trickster", "berserker", "chameleon"]
 	var rng = RandomNumberGenerator.new()
 
 	func _init():

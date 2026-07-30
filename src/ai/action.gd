@@ -3347,6 +3347,90 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+	var b_type_exec = ball.ball_type if "ball_type" in ball else (ball.get_ball_type() if typeof(ball) == TYPE_OBJECT and ball.has_method("get_ball_type") else "")
+	if b_type_exec == "chameleon":
+		var vx = 0.0
+		var vy = 0.0
+		if typeof(ball) == TYPE_DICTIONARY:
+			vx = ball.get("vx", 0.0)
+			vy = ball.get("vy", 0.0)
+		else:
+			vx = ball.vx if "vx" in ball else 0.0
+			vy = ball.vy if "vy" in ball else 0.0
+
+		var speed_sq = vx*vx + vy*vy
+		var blend = 0.0
+		if typeof(ball) == TYPE_DICTIONARY:
+			blend = ball.get("blend_amount", 0.0)
+		else:
+			blend = ball.blend_amount if "blend_amount" in ball else 0.0
+
+
+		if speed_sq < 0.1:
+			blend = min(1.0, blend + delta * 0.5)
+		else:
+			blend = max(0.0, blend - delta * 2.0)
+
+		if typeof(ball) == TYPE_DICTIONARY:
+			ball["blend_amount"] = blend
+			ball["invisible_to_minimap"] = blend > 0.5
+		else:
+			if "blend_amount" in ball:
+				ball.blend_amount = blend
+			if "invisible_to_minimap" in ball:
+				ball.invisible_to_minimap = blend > 0.5
+
+		# Visual blending
+		var orig_col = null
+		if typeof(ball) == TYPE_DICTIONARY:
+			if not ball.has("original_color"):
+				ball["original_color"] = ball.get("color", "black")
+			orig_col = ball.get("original_color", "black")
+		else:
+			if not "original_color" in ball:
+				if typeof(ball) == TYPE_OBJECT and ball.has_method("set_meta"):
+					ball.set_meta("original_color", ball.color if "color" in ball else "black")
+				elif "original_color" in ball:
+					ball.original_color = ball.color if "color" in ball else "black"
+			if "original_color" in ball:
+				orig_col = ball.original_color
+			elif typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("original_color"):
+				orig_col = ball.get_meta("original_color")
+			else:
+				orig_col = "black"
+
+		var c_r = 0
+		var c_g = 0
+		var c_b = 0
+		var valid_col = false
+		if typeof(orig_col) == TYPE_STRING and orig_col.begins_with("#"):
+			if orig_col.length() == 7:
+				c_r = ("0x" + orig_col.substr(1, 2)).hex_to_int()
+				c_g = ("0x" + orig_col.substr(3, 2)).hex_to_int()
+				c_b = ("0x" + orig_col.substr(5, 2)).hex_to_int()
+				valid_col = true
+		elif typeof(orig_col) == TYPE_STRING and orig_col == "black":
+			c_r = 0
+			c_g = 0
+			c_b = 0
+			valid_col = true
+
+		if valid_col:
+			var t_r = 128
+			var t_g = 128
+			var t_b = 128
+			var f_r = int(c_r + (t_r - c_r) * blend)
+			var f_g = int(c_g + (t_g - c_g) * blend)
+			var f_b = int(c_b + (t_b - c_b) * blend)
+			var new_col = "#%02x%02x%02x" % [f_r, f_g, f_b]
+			if typeof(ball) == TYPE_DICTIONARY:
+				ball["color"] = new_col
+			else:
+				if "color" in ball:
+					ball.color = new_col
+
+
 	var delayed = []
 	if typeof(ball) == TYPE_OBJECT and ball.has_method("has_meta") and ball.has_meta("delayed_clones"): delayed = ball.get_meta("delayed_clones")
 	elif typeof(ball) == TYPE_DICTIONARY and ball.has("delayed_clones"): delayed = ball.delayed_clones
@@ -26146,6 +26230,20 @@ func _get_enemies_internal() -> Array:
                     var dy = hy - ey
                     if dx*dx + dy*dy <= hr*hr:
                         enemy_stealth_zones.append(h)
+
+
+        var e_btype = e.ball_type if "ball_type" in e else (e.get_ball_type() if typeof(e) == TYPE_OBJECT and e.has_method("get_ball_type") else "")
+        if e_btype == "chameleon":
+            var blend = e.blend_amount if "blend_amount" in e else (e.get("blend_amount") if typeof(e) == TYPE_DICTIONARY else 0.0)
+            if blend > 0.1:
+                var ex_c = e.x if "x" in e else (e.get_meta("x") if typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("x") else 0)
+                var ey_c = e.y if "y" in e else (e.get_meta("y") if typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("y") else 0)
+                var dx_c = ex_c - float(self.ball.x)
+                var dy_c = ey_c - float(self.ball.y)
+                var dist_sq_c = dx_c*dx_c + dy_c*dy_c
+                var reduced_perception = max(50.0, perception_radius * (1.0 - blend * 0.9))
+                if dist_sq_c > reduced_perception * reduced_perception:
+                    continue
 
         var is_visible = true
         var in_healing = false
