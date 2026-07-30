@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1689] Black Hole Anomaly Mode — *2026-07-30 04:40:48 UTC*
+
+Periodically spawns mini black holes that pull in players and hazards.
+
+---
+
 ## [idea-1608] Gravity Inverter — *2026-07-30 04:01:56 UTC*
 
 A consumable item that inverts gravity in an area.
