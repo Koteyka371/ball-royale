@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1657] Chameleon Skin Environmental Camouflage — *2026-07-30 02:46:08 UTC*
+
+A new ball type or passive ability that gradually blends into the background color or the nearest wall's color when standing still, significantly reducing their perception radius for enemy AI and removing them from the minimap.
+
+---
+
 ## [idea-1690] Anti-Gravity Zone Event — *2026-07-30 02:28:41 UTC*
 
 Certain parts of the arena periodically lose gravity, causing friction to drop and speed to skyrocket.
