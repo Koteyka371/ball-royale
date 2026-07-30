@@ -702,18 +702,28 @@ class Action:
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
 
-        if getattr(target, "deflector_shield_active", False) and is_ranged:
-            if not hasattr(target, "suspended_projectiles"):
-                target.suspended_projectiles = []
+        if getattr(target, "deflector_shield_active", False):
+            if is_ranged:
+                if not hasattr(target, "suspended_projectiles"):
+                    target.suspended_projectiles = []
 
-            target.suspended_projectiles.append({
-                "x": target.x,
-                "y": target.y,
-                "target": attacker,
-                "damage": getattr(attacker, "damage", 10.0),
-                "speed": 600.0,
-                "type": "reflected_projectile"
-            })
+                target.suspended_projectiles.append({
+                    "x": target.x,
+                    "y": target.y,
+                    "target": attacker,
+                    "damage": getattr(attacker, "damage", 10.0),
+                    "speed": 600.0 * 1.5,
+                    "type": "reflected_projectile"
+                })
+            else:
+                target.deflector_shield_active = False
+                target.deflector_shield_timer = 0.0
+                target.stun_timer = 2.0
+                if hasattr(target, "take_damage"):
+                    target.take_damage(getattr(attacker, "damage", 10.0))
+                elif hasattr(target, "hp"):
+                    target.hp -= getattr(attacker, "damage", 10.0)
+
             if hasattr(self.world, "events"):
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
