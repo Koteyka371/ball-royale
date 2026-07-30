@@ -70349,3 +70349,230 @@ class ResonanceChainMode extends GameMode:
 					curr_hp = b.get("hp") if b.get("hp") != null else 100.0
 				prev_state[b.id]["hp"] = curr_hp
 GAME_MODES["resonance_chain"] = ResonanceChainMode.new()
+
+
+class QuantumWormholeMode extends GameMode:
+	var wormholes = []
+	var setup_done = false
+
+	func _init():
+		super._init()
+		name = "Quantum Wormhole"
+		description = "A hazard zone that instantly teleports a ball to a paired zone on the other side of the arena, maintaining their exact velocity and direction, which can be used defensively or aggressively."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_w = 800.0
+		var arena_h = 600.0
+		if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_OBJECT and arena.has_method("get"):
+				arena_w = float(arena.get("width")) if arena.get("width") != null else 800.0
+				arena_h = float(arena.get("height")) if arena.get("height") != null else 600.0
+			elif typeof(arena) == TYPE_DICTIONARY:
+				arena_w = float(arena.get("width", 800.0))
+				arena_h = float(arena.get("height", 600.0))
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_w = float(arena.get("width", 800.0))
+				arena_h = float(arena.get("height", 600.0))
+			else:
+				if "width" in arena: arena_w = float(arena.width)
+				if "height" in arena: arena_h = float(arena.height)
+
+		wormholes = []
+		setup_done = false
+
+		var w1 = {
+			"x": 150.0,
+			"y": arena_h / 2.0,
+			"radius": 50.0,
+			"cooldown": 0.0,
+			"linked_idx": 1
+		}
+		var w2 = {
+			"x": arena_w - 150.0,
+			"y": arena_h / 2.0,
+			"radius": 50.0,
+			"cooldown": 0.0,
+			"linked_idx": 0
+		}
+		wormholes.append(w1)
+		wormholes.append(w2)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		if not setup_done:
+			setup(world, balls)
+			setup_done = true
+
+		for w in wormholes:
+			if w["cooldown"] > 0:
+				w["cooldown"] -= delta
+
+		for i in range(wormholes.size()):
+			var w = wormholes[i]
+			if w["cooldown"] > 0:
+				continue
+
+			var wx = w["x"]
+			var wy = w["y"]
+			var wr = w["radius"]
+
+			# Balls teleportation
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: is_alive = b.get("alive")
+
+				if is_alive:
+					var bx = 0.0
+					var by = 0.0
+					var br = 10.0
+
+					if typeof(b) == TYPE_DICTIONARY:
+						if "x" in b: bx = b.x
+						if "y" in b: by = b.y
+						if "radius" in b: br = b.radius
+					else:
+						if b.has_method("get"):
+							if b.get("x") != null: bx = b.get("x")
+							if b.get("y") != null: by = b.get("y")
+							if b.get("radius") != null: br = b.get("radius")
+
+					var dx = bx - wx
+					var dy = by - wy
+					var dist = sqrt(dx * dx + dy * dy)
+
+					if dist < wr + br:
+						var linked = wormholes[w["linked_idx"]]
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("teleport_out", {"message": "Teleported!", "x": bx, "y": by})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("events") and typeof(world.events) == TYPE_ARRAY:
+							world.events.append({"type": "teleport_out", "data": {"message": "Teleported!", "x": bx, "y": by}})
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b.x = linked["x"]
+							b.y = linked["y"]
+						else:
+							if b.has_method("set"):
+								b.set("x", linked["x"])
+								b.set("y", linked["y"])
+							else:
+								b.x = linked["x"]
+								b.y = linked["y"]
+
+						linked["cooldown"] = 0.5
+						w["cooldown"] = 0.5
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("teleport_in", {"message": "Arrived!", "x": linked["x"], "y": linked["y"]})
+						elif typeof(world) == TYPE_DICTIONARY and world.has("events") and typeof(world.events) == TYPE_ARRAY:
+							world.events.append({"type": "teleport_in", "data": {"message": "Arrived!", "x": linked["x"], "y": linked["y"]}})
+
+						break
+
+			# Hazards/Projectiles teleportation
+			var hazards = []
+			if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_OBJECT and arena.has_method("get") and arena.get("hazards") != null:
+					hazards = arena.get("hazards")
+				elif typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+					hazards = arena.hazards
+			elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+					hazards = world.arena.hazards
+				elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get") and world.arena.get("hazards") != null:
+					hazards = world.arena.get("hazards")
+
+			for h in hazards:
+				var hx = 0.0
+				var hy = 0.0
+				var hr = 10.0
+
+				if typeof(h) == TYPE_DICTIONARY:
+					if "x" in h: hx = h.x
+					if "y" in h: hy = h.y
+					if "radius" in h: hr = h.radius
+				else:
+					if h.has_method("get"):
+						if h.get("x") != null: hx = h.get("x")
+						if h.get("y") != null: hy = h.get("y")
+						if h.get("radius") != null: hr = h.get("radius")
+
+				var dx = hx - wx
+				var dy = hy - wy
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist < wr + hr:
+					var linked = wormholes[w["linked_idx"]]
+					if typeof(h) == TYPE_DICTIONARY:
+						h.x = linked["x"]
+						h.y = linked["y"]
+					else:
+						if h.has_method("set"):
+							h.set("x", linked["x"])
+							h.set("y", linked["y"])
+						else:
+							h.x = linked["x"]
+							h.y = linked["y"]
+					linked["cooldown"] = 0.5
+					w["cooldown"] = 0.5
+					break
+
+			var projectiles = []
+			if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("projectiles") != null:
+				projectiles = world.get("projectiles")
+			elif typeof(world) == TYPE_DICTIONARY and world.has("projectiles"):
+				projectiles = world.projectiles
+
+			for p in projectiles:
+				var is_active = false
+				if typeof(p) == TYPE_DICTIONARY:
+					if "alive" in p: is_active = p.alive
+					if not is_active and "active" in p: is_active = p.active
+				elif typeof(p) == TYPE_OBJECT:
+					if p.has_method("get"):
+						if p.get("alive") != null: is_active = p.get("alive")
+						if not is_active and p.get("active") != null: is_active = p.get("active")
+					else:
+						if "alive" in p: is_active = p.alive
+						if not is_active and "active" in p: is_active = p.active
+
+				if is_active:
+					var px = 0.0
+					var py = 0.0
+					var pr = 5.0
+					if typeof(p) == TYPE_DICTIONARY:
+						if "x" in p: px = p.x
+						if "y" in p: py = p.y
+						if "radius" in p: pr = p.radius
+					else:
+						if p.has_method("get"):
+							if p.get("x") != null: px = p.get("x")
+							if p.get("y") != null: py = p.get("y")
+							if p.get("radius") != null: pr = p.get("radius")
+
+					var dx = px - wx
+					var dy = py - wy
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist < wr + pr:
+						var linked = wormholes[w["linked_idx"]]
+						if typeof(p) == TYPE_DICTIONARY:
+							p.x = linked["x"]
+							p.y = linked["y"]
+						else:
+							if p.has_method("set"):
+								p.set("x", linked["x"])
+								p.set("y", linked["y"])
+							else:
+								if "x" in p: p.x = linked["x"]
+								if "y" in p: p.y = linked["y"]
+						linked["cooldown"] = 0.5
+						w["cooldown"] = 0.5
+						break
+
+GAME_MODES['quantum_wormhole'] = QuantumWormholeMode.new()
