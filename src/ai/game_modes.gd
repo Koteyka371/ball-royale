@@ -72005,3 +72005,48 @@ class OrbitingChaosOrbsMode extends GameMode:
 			i -= 1
 
 GAME_MODES['orbiting_chaos_orbs'] = OrbitingChaosOrbsMode.new()
+class ReverseGravityPadsMode extends GameMode:
+	func _init() -> void:
+		name = "Reverse Gravity Pads"
+		description = "Pads are scattered across the arena. Touching them reverses gravity for 3 seconds."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if world != null and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY:
+				if not arena.has("hazards"):
+					arena["hazards"] = []
+				var arena_width = arena.get("width", 1000.0)
+				var arena_height = arena.get("height", 1000.0)
+				for i in range(10):
+					var hx = randf_range(100.0, arena_width - 100.0)
+					var hy = randf_range(100.0, arena_height - 100.0)
+					var hr = 40.0
+					arena["hazards"].append({
+						"id": 14000 + i,
+						"x": hx,
+						"y": hy,
+						"radius": hr,
+						"kind": "reverse_gravity_pad",
+						"damage": 0.0,
+						"duration": 9999.0
+					})
+			else:
+				if not ("hazards" in arena):
+					arena.hazards = []
+				var arena_width = 1000.0
+				if "width" in arena: arena_width = arena.width
+				var arena_height = 1000.0
+				if "height" in arena: arena_height = arena.height
+				for i in range(10):
+					var hx = randf_range(100.0, arena_width - 100.0)
+					var hy = randf_range(100.0, arena_height - 100.0)
+					var hr = 40.0
+					var h = null
+					if load("res://src/arena/procedural_arena.gd") != null:
+						h = load("res://src/arena/procedural_arena.gd").Hazard.new(14000 + i, hx, hy, hr, "reverse_gravity_pad", 0.0)
+						h.duration = 9999.0
+						arena.hazards.append(h)
+
+GAME_MODES['reverse_gravity_pads'] = ReverseGravityPadsMode.new()

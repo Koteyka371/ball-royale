@@ -10216,10 +10216,11 @@ func execute(strategy: String, delta: float):
 			elif typeof(self.ball) == TYPE_DICTIONARY:
 				self.ball["use_item"] = false
 
-		if self.ball.get("reverse_gravity_item_timer", 0.0) > 0.0:
+		var rev_grav_timer = self.ball.get("reverse_gravity_item_timer", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("reverse_gravity_item_timer") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("reverse_gravity_item_timer") else 0.0)
+		if rev_grav_timer > 0.0:
 			if typeof(self.ball) == TYPE_DICTIONARY:
 				self.ball["gravity_multiplier"] = -1.0
-				self.ball["reverse_gravity_item_timer"] = self.ball.get("reverse_gravity_item_timer", 0.0) - delta
+				self.ball["reverse_gravity_item_timer"] = rev_grav_timer - delta
 				if self.ball["reverse_gravity_item_timer"] <= 0.0:
 					self.ball["reverse_gravity_item_timer"] = 0.0
 					self.ball["gravity_multiplier"] = 1.0
@@ -10229,13 +10230,15 @@ func execute(strategy: String, delta: float):
 						self.ball.set_meta("gravity_multiplier", -1.0)
 				else:
 					self.ball.gravity_multiplier = -1.0
-				self.ball.reverse_gravity_item_timer -= delta
-				if self.ball.reverse_gravity_item_timer <= 0.0:
-					self.ball.reverse_gravity_item_timer = 0.0
+				var new_timer = rev_grav_timer - delta
+				if new_timer <= 0.0:
+					new_timer = 0.0
 					if "gravity_multiplier" in self.ball:
 						self.ball.gravity_multiplier = 1.0
 					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
 						self.ball.set_meta("gravity_multiplier", 1.0)
+				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+					self.ball.set_meta("reverse_gravity_item_timer", new_timer)
 
 		if inv.has("smoke_grenade"):
 			if world != null and "arena" in world and "hazards" in world.arena:
@@ -18472,7 +18475,10 @@ func execute(strategy: String, delta: float):
                     var dist_sq = dx * dx + dy * dy
                     if dist_sq < hazard.radius * hazard.radius:
                         if not (("intangible" in self.ball and self.ball.intangible) or (typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("intangible") and self.ball.get_meta("intangible"))):
-                            self.ball.reverse_gravity_item_timer = 3.0
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                self.ball["reverse_gravity_item_timer"] = 3.0
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                                self.ball.set_meta("reverse_gravity_item_timer", 3.0)
                 elif hazard.kind == "reverse_gravity":
                     var dx = hazard.x - self.ball.x
                     var dy = hazard.y - self.ball.y

@@ -45620,3 +45620,34 @@ class DecoySwapMode(GameMode):
                             })
 
 GAME_MODES['decoy_swap'] = DecoySwapMode()
+
+class ReverseGravityPadsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Reverse Gravity Pads"
+        self.description = "Pads are scattered across the arena. Touching them reverses gravity for 3 seconds."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            if not hasattr(world.arena, "hazards"):
+                world.arena.hazards = []
+            import random
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+
+            for i in range(10):
+                x = random.uniform(100, arena_width - 100)
+                y = random.uniform(100, arena_height - 100)
+                r = 40.0
+                world.arena.hazards.append({
+                    "id": 14000 + i,
+                    "x": x,
+                    "y": y,
+                    "radius": r,
+                    "kind": "reverse_gravity_pad",
+                    "damage": 0.0,
+                    "duration": 9999.0
+                })
+
+GAME_MODES['reverse_gravity_pads'] = ReverseGravityPadsMode()
