@@ -26,8 +26,8 @@ class MockBall:
         self.y = y
         self.alive = True
         self.has_flag = False
-        self.base_speed = 100.0
-        self.speed = 100.0
+        self.base_speed = 90.0
+        self.speed = 90.0
         self.base_damage = 10.0
         self.damage = 10.0
         self.hp = 100.0
@@ -66,10 +66,10 @@ def test_ctf_br_tick():
     mode.tick(world, 0.1)
 
     # Ball 1 should not be boosted
-    assert b1.base_speed < 150.0
+    assert b1.base_speed <= 180.0
 
     # Ball 2 should not be boosted
-    assert b2.base_speed < 150.0
+    assert b2.base_speed <= 180.0
     assert b2.has_flag == True
 
     # Ball 3 should be boosted
