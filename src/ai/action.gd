@@ -3371,6 +3371,113 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	var spectral_timer = 0.0
+	if typeof(self.ball) == TYPE_OBJECT:
+		if "spectral_burn_timer" in self.ball: spectral_timer = self.ball.spectral_burn_timer
+		elif self.ball.has_method("has_meta") and self.ball.has_meta("spectral_burn_timer"): spectral_timer = self.ball.get_meta("spectral_burn_timer")
+	elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("spectral_burn_timer"):
+		spectral_timer = self.ball["spectral_burn_timer"]
+
+	if spectral_timer > 0.0:
+		spectral_timer -= delta
+
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "intangible" in self.ball: self.ball.intangible = true
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", true)
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["intangible"] = true
+
+		var balls_array = []
+		if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+			balls_array = world["balls"]
+		elif typeof(world) == TYPE_OBJECT and "balls" in world:
+			balls_array = world.balls
+
+		var my_team = ""
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "team" in self.ball: my_team = self.ball.team
+			elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+			my_team = self.ball["team"]
+
+		var b_radius = 10.0
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "radius" in self.ball: b_radius = self.ball.radius
+			elif self.ball.has_method("has_meta") and self.ball.has_meta("radius"): b_radius = self.ball.get_meta("radius")
+		elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"):
+			b_radius = self.ball["radius"]
+
+		var burn_radius = b_radius * 2.5
+		var bx = 0.0
+		var by = 0.0
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "x" in self.ball: bx = self.ball.x
+			elif self.ball.has_method("has_meta") and self.ball.has_meta("x"): bx = self.ball.get_meta("x")
+			if "y" in self.ball: by = self.ball.y
+			elif self.ball.has_method("has_meta") and self.ball.has_meta("y"): by = self.ball.get_meta("y")
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			if self.ball.has("x"): bx = self.ball["x"]
+			if self.ball.has("y"): by = self.ball["y"]
+
+		for e in balls_array:
+			if e == self.ball:
+				continue
+			var e_team = ""
+			if typeof(e) == TYPE_OBJECT:
+				if "team" in e: e_team = e.team
+				elif e.has_method("has_meta") and e.has_meta("team"): e_team = e.get_meta("team")
+			elif typeof(e) == TYPE_DICTIONARY and e.has("team"):
+				e_team = e["team"]
+			if e_team == my_team:
+				continue
+			var e_alive = true
+			if typeof(e) == TYPE_OBJECT:
+				if "alive" in e: e_alive = e.alive
+				elif e.has_method("has_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+			elif typeof(e) == TYPE_DICTIONARY and e.has("alive"):
+				e_alive = e["alive"]
+			if not e_alive:
+				continue
+
+			var ex = 0.0
+			var ey = 0.0
+			var er = 10.0
+			if typeof(e) == TYPE_OBJECT:
+				if "x" in e: ex = e.x
+				elif e.has_method("has_meta") and e.has_meta("x"): ex = e.get_meta("x")
+				if "y" in e: ey = e.y
+				elif e.has_method("has_meta") and e.has_meta("y"): ey = e.get_meta("y")
+				if "radius" in e: er = e.radius
+				elif e.has_method("has_meta") and e.has_meta("radius"): er = e.get_meta("radius")
+			elif typeof(e) == TYPE_DICTIONARY:
+				if e.has("x"): ex = e["x"]
+				if e.has("y"): ey = e["y"]
+				if e.has("radius"): er = e["radius"]
+
+			var dist = sqrt((bx - ex)*(bx - ex) + (by - ey)*(by - ey))
+			if dist < burn_radius + er:
+				if typeof(e) == TYPE_OBJECT and e.has_method("take_damage"):
+					e.take_damage(50.0 * delta)
+				elif typeof(e) == TYPE_OBJECT:
+					if "hp" in e: e.hp -= 50.0 * delta
+					elif e.has_method("has_meta") and e.has_meta("hp"): e.set_meta("hp", e.get_meta("hp") - 50.0 * delta)
+				elif typeof(e) == TYPE_DICTIONARY and e.has("hp"):
+					e["hp"] -= 50.0 * delta
+
+		if spectral_timer <= 0.0:
+			spectral_timer = 0.0
+			if typeof(self.ball) == TYPE_OBJECT:
+				if "intangible" in self.ball: self.ball.intangible = false
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", false)
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["intangible"] = false
+
+		if typeof(self.ball) == TYPE_OBJECT:
+			if "spectral_burn_timer" in self.ball: self.ball.spectral_burn_timer = spectral_timer
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("spectral_burn_timer", spectral_timer)
+		elif typeof(self.ball) == TYPE_DICTIONARY:
+			self.ball["spectral_burn_timer"] = spectral_timer
+
 	if typeof(ball) == TYPE_DICTIONARY:
 		if ball.get("sticky_wall_timer", 0.0) > 0.0:
 			ball["sticky_wall_timer"] = ball.get("sticky_wall_timer", 0.0) - delta
@@ -29643,7 +29750,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -40919,6 +41026,26 @@ func _use_skill():
                     elif self.ball.has_method("set_meta"): self.ball.set_meta("skill_timer", 15.0)
                 self._spawn_skill_particles("tunnel")
 
+
+        elif skill_name == "spectral_burn":
+            var cd = 10.0
+            if typeof(self.ball) == TYPE_OBJECT:
+                if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+                elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("SKILL_COOLDOWN"): cd = self.ball["SKILL_COOLDOWN"]
+
+            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("spectral_burn_timer", 3.0)
+                self.ball.set_meta("intangible", true)
+                self.ball.set_meta("skill_timer", cd)
+            elif typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["spectral_burn_timer"] = 3.0
+                self.ball["intangible"] = true
+                self.ball["skill_timer"] = cd
+            elif typeof(self.ball) == TYPE_OBJECT:
+                self.ball.spectral_burn_timer = 3.0
+                self.ball.intangible = true
+                self.ball.skill_timer = cd
         elif skill_name == "phase_through":
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                 self.ball.set_meta("intangible_timer", 3.0)

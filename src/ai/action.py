@@ -1814,6 +1814,30 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "spectral_burn_timer", 0.0) > 0.0:
+            self.ball.spectral_burn_timer -= delta
+            self.ball.intangible = True
+
+            burn_radius = getattr(self.ball, "radius", 10.0) * 2.5
+            import math
+            my_team = getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))
+            balls = getattr(self.world, "balls", [])
+            for b in balls:
+                if b == self.ball: continue
+                b_team = getattr(b, "team", getattr(b, "ball_type", ""))
+                if b_team == my_team: continue
+                if not getattr(b, "alive", True): continue
+                dist = math.sqrt((self.ball.x - getattr(b, "x", 0.0))**2 + (self.ball.y - getattr(b, "y", 0.0))**2)
+                if dist < burn_radius + getattr(b, "radius", 10.0):
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(50.0 * delta)
+                    else:
+                        b.hp -= 50.0 * delta
+
+            if self.ball.spectral_burn_timer <= 0.0:
+                self.ball.spectral_burn_timer = 0.0
+                self.ball.intangible = False
+
         if getattr(self.ball, "sticky_wall_timer", 0.0) > 0.0:
             self.ball.sticky_wall_timer -= delta
             self.ball.vx = 0.0
@@ -14964,7 +14988,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -21146,6 +21170,11 @@ class Action:
                     self.ball.phantom_stride_active = False
                     self.ball.intangible = False
                     self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 3.0)
+
+            elif skill_name == "spectral_burn":
+                self.ball.spectral_burn_timer = 3.0
+                self.ball.intangible = True
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 10.0)
             elif skill_name == "phase_through":
                 self.ball.intangible_timer = 3.0
                 self.ball.intangible = True
