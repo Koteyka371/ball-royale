@@ -1777,6 +1777,14 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        if getattr(self.ball, "sticky_wall_timer", 0.0) > 0.0:
+            self.ball.sticky_wall_timer -= delta
+            self.ball.vx = 0.0
+            self.ball.vy = 0.0
+            if self.ball.sticky_wall_timer <= 0.0:
+                self.ball.sticky_wall_timer = 0.0
+                self.ball.is_sliding_off = True
+
         if getattr(self.ball, "ball_type", "") == "chameleon":
             vx = getattr(self.ball, "vx", 0.0)
             vy = getattr(self.ball, "vy", 0.0)
@@ -12347,6 +12355,10 @@ class Action:
                 hit_wall = "right"
 
             wall_state = "normal"
+            if hit_wall is None:
+                self.ball.was_stuck = False
+                self.ball.is_sliding_off = False
+
             if hit_wall and hasattr(self.world, "arena") and hasattr(self.world.arena, "boundary_states"):
                 wall_state = self.world.arena.boundary_states.get(hit_wall, "normal")
 
@@ -12383,17 +12395,49 @@ class Action:
                         wall_state = "damaged_bouncy"
 
             if wall_state == "sticky":
-                self.ball.vx = 0.0
-                self.ball.vy = 0.0
-                self.ball._reflection_vx = 0.0
-                self.ball._reflection_vy = 0.0
-                speed_sq = 0.0 # prevent normal bounce processing
+                sticky_timer = getattr(self.ball, "sticky_wall_timer", 0.0)
+                is_sliding_off = getattr(self.ball, "is_sliding_off", False)
 
-                # Push slightly into the arena to prevent continuous sticking
-                if hit_wall == "top": self.ball.y = margin + 1.0 + top_bound
-                elif hit_wall == "bottom": self.ball.y = bottom_bound - margin - 1.0
-                elif hit_wall == "left": self.ball.x = margin + 1.0 + left_bound
-                elif hit_wall == "right": self.ball.x = right_bound - margin - 1.0
+                if not is_sliding_off:
+                    if sticky_timer <= 0.0 and not getattr(self.ball, "was_stuck", False):
+                        # Just hit the wall
+                        self.ball.sticky_wall_timer = 3.0
+                        self.ball.was_stuck = True
+                        self.ball.vx = 0.0
+                        self.ball.vy = 0.0
+                        self.ball._reflection_vx = 0.0
+                        self.ball._reflection_vy = 0.0
+                        speed_sq = 0.0
+
+                        if hit_wall == "top": self.ball.y = margin + top_bound
+                        elif hit_wall == "bottom": self.ball.y = bottom_bound - margin
+                        elif hit_wall == "left": self.ball.x = margin + left_bound
+                        elif hit_wall == "right": self.ball.x = right_bound - margin
+                    elif sticky_timer > 0.0:
+                        # We are stuck
+                        self.ball.vx = 0.0
+                        self.ball.vy = 0.0
+                        self.ball._reflection_vx = 0.0
+                        self.ball._reflection_vy = 0.0
+                        speed_sq = 0.0
+
+                        if hit_wall == "top": self.ball.y = margin + top_bound
+                        elif hit_wall == "bottom": self.ball.y = bottom_bound - margin
+                        elif hit_wall == "left": self.ball.x = margin + left_bound
+                        elif hit_wall == "right": self.ball.x = right_bound - margin
+                    else:
+                        # Timer reached 0, start sliding off
+                        self.ball.is_sliding_off = True
+
+                        # Add a tiny bit of gravity or bounce so it detaches/slides?
+                        # No, the wall collision logic will just naturally reflect it or apply physics if speed_sq isn't 0.
+                        # Wait, if speed_sq is 0, we are just stuck. To slide off, we might want to let gravity or other forces take over.
+                        # Setting speed_sq = 0 prevents bouncing, which is good. But we want it to slide.
+                        # So we don't zero vx, vy, and we let forces work!
+                        pass
+                else:
+                    # We are sliding off, don't stick
+                    pass
 
             # Simple reflection heuristic since we don't have exact normal here.
             # We can approximate by reversing velocity and increasing speed.
