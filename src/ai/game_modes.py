@@ -14424,14 +14424,16 @@ class ShiftingMazeMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Shifting Maze"
-        self.description = "The arena starts as a complex maze that slowly shifts and shrinks. Walls deal damage."
+        self.description = "The arena starts as a complex maze that slowly shifts and shrinks. Find the center to win! Walls deal damage."
         self.walls = []
         self.maze_scale = 1.0
         self.shrink_rate = 0.01
         self.wall_damage_per_second = 50.0
+        self.winner = None
 
     def setup(self, world, balls):
         super().setup(world, balls)
+        self.winner = None
         self.world = world
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
         arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
@@ -14485,6 +14487,15 @@ class ShiftingMazeMode(GameMode):
         center_x = arena_width / 2.0
         center_y = arena_height / 2.0
 
+        win_radius = 50.0
+        for b in balls:
+            if getattr(b, "alive", False):
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                if (bx - center_x)**2 + (by - center_y)**2 < win_radius**2:
+                    self.winner = getattr(b, "ball_type", "Unknown")
+                    break
+
         for w in self.walls:
             w["x"] += w["dx"] * delta
             w["y"] += w["dy"] * delta
@@ -14534,6 +14545,8 @@ class ShiftingMazeMode(GameMode):
                         b.alive = False
 
     def check_winner(self, world, balls):
+        if getattr(self, "winner", None) is not None:
+            return self.winner
         alive = [b for b in balls if getattr(b, "alive", False)]
         if len(alive) == 1:
             return alive[0].ball_type
@@ -21202,6 +21215,7 @@ class MazeSafeZoneMode(GameMode):
         # Maze props
         self.walls = []
         self.wall_damage_per_second = 50.0
+        self.winner = None
 
         # Safe zone props
         self.collapse_triggered = False

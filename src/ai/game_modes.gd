@@ -22242,6 +22242,8 @@ class EarthquakeMode extends GameMode:
 
 
 class ShiftingMazeMode extends GameMode:
+	var winner = null
+
 	var walls: Array = []
 	var maze_scale: float = 1.0
 	var shrink_rate: float = 0.01
@@ -22417,6 +22419,7 @@ class ShiftingMazeMode extends GameMode:
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
+		winner = null
 		var arena_width = 1000.0
 		var arena_height = 1000.0
 		if "arena" in world and world.arena != null:
@@ -22474,6 +22477,20 @@ class ShiftingMazeMode extends GameMode:
 		var center_x = arena_width / 2.0
 		var center_y = arena_height / 2.0
 
+		var win_radius = 50.0
+		for b in balls:
+			if b.alive:
+				var bx_w = 0.0
+				var by_w = 0.0
+				if "x" in b: bx_w = float(b.x)
+				if "y" in b: by_w = float(b.y)
+				if (bx_w - center_x)*(bx_w - center_x) + (by_w - center_y)*(by_w - center_y) < win_radius * win_radius:
+					if "ball_type" in b:
+						winner = b.ball_type
+					else:
+						winner = "Unknown"
+					break
+
 		for w in walls:
 			w["x"] += w["dx"] * delta
 			w["y"] += w["dy"] * delta
@@ -22528,6 +22545,9 @@ class ShiftingMazeMode extends GameMode:
 						b.alive = false
 
 	func check_winner(world, balls: Array):
+		if winner != null:
+			return winner
+
 		var alive_count = 0
 		var last_alive = null
 		for b in balls:
