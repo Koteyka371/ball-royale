@@ -602,6 +602,43 @@ class Action:
                                 if h.hp <= 0:
                                     h.active = False
                             return
+
+                    elif getattr(h, "kind", "") == "stasis_bubble":
+                        hx = h.x
+                        hy = h.y
+                        hr = getattr(h, "radius", 80.0)
+
+                        dx = t_x - a_x
+                        dy = t_y - a_y
+                        dist = math.hypot(dx, dy)
+                        if dist > 0.0001:
+                            # Raycast check for intersection with stasis_bubble
+                            vx = dx / dist
+                            vy = dy / dist
+
+                            p1x = a_x - hx
+                            p1y = a_y - hy
+
+                            a = vx**2 + vy**2
+                            b = 2 * (p1x * vx + p1y * vy)
+                            c = p1x**2 + p1y**2 - hr**2
+
+                            discriminant = b**2 - 4 * a * c
+                            if discriminant >= 0:
+                                t1 = (-b - math.sqrt(discriminant)) / (2 * a)
+                                t2 = (-b + math.sqrt(discriminant)) / (2 * a)
+
+                                if (0 <= t1 <= dist) or (0 <= t2 <= dist) or (t1 < 0 and t2 > dist):
+                                    if not hasattr(attacker, "suspended_projectiles"):
+                                        attacker.suspended_projectiles = []
+                                    is_resuming = getattr(attacker, "_is_resuming_projectile", False)
+                                    if not is_resuming:
+                                        attacker.suspended_projectiles.append({
+                                            "target": target,
+                                            "timer": 4.0
+                                        })
+                                        return
+
                     elif getattr(h, "kind", "") in ["slow_motion_zone", "time_bubble", "slow_motion_trap"]:
                         hx = h.x
                         hy = h.y
@@ -3138,6 +3175,15 @@ class Action:
                                 hazard.active = False
                             elif hasattr(self.ball, "stamina"):
                                 self.ball.stamina = min(getattr(self.ball, "max_stamina", 100.0), getattr(self.ball, "stamina", 100.0) + 60.0 * delta)
+
+                elif getattr(hazard, "kind", "") == "stasis_bubble":
+                    hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
+                    hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 80.0) + getattr(self.ball, "radius", 10.0):
+                        self.ball.freeze_timer = max(getattr(self.ball, "freeze_timer", 0.0), 0.5)
+                        self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
+                        self.ball.stasis_bubble_active = True
+
                 elif getattr(hazard, "kind", "") == "time_bubble":
                     if getattr(hazard, "last_updated_tick", -1) != getattr(self.world, "tick", 0):
                         hazard.radius = min(200.0, getattr(hazard, "radius", 50.0) + (10.0 * delta))
@@ -4012,7 +4058,10 @@ class Action:
                 self.ball.inventory.remove("lightning_rod_item")
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_mud_puddle" in self.ball.inventory:
-            nearest = self._get_nearest_enemy()
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
@@ -4029,7 +4078,10 @@ class Action:
                             pass
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_proximity_mud_puddle" in self.ball.inventory:
-            nearest = self._get_nearest_enemy()
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
@@ -4047,7 +4099,10 @@ class Action:
                             pass
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_confetti_bomb" in self.ball.inventory:
-            nearest = self._get_nearest_enemy()
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
@@ -4064,7 +4119,10 @@ class Action:
                             pass
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_time_anomaly" in self.ball.inventory:
-            nearest = self._get_nearest_enemy()
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
@@ -4104,8 +4162,33 @@ class Action:
                         self.world.arena.hazards.append(mine)
                     except ImportError:
                         pass
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_stasis_bubble" in self.ball.inventory:
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_stasis_bubble")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            pass
+                        else:
+                            stasis_id = f"{len(self.world.arena.hazards)}_{self.world.tick}_stasis"
+                            bubble = Hazard(stasis_id, self.ball.x, self.ball.y, 80.0, "stasis_bubble", 0.0)
+                            bubble.duration = 8.0
+                            setattr(bubble, 'owner_id', getattr(self.ball, 'id', None))
+                            self.world.arena.hazards.append(bubble)
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_acid_puddle" in self.ball.inventory:
-            nearest = self._get_nearest_enemy()
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
@@ -4121,8 +4204,33 @@ class Action:
                             pass
 
 
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_stasis_bubble" in self.ball.inventory:
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_stasis_bubble")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                        except ImportError:
+                            pass
+                        else:
+                            stasis_id = f"{len(self.world.arena.hazards)}_{self.world.tick}_stasis"
+                            bubble = Hazard(stasis_id, self.ball.x, self.ball.y, 80.0, "stasis_bubble", 0.0)
+                            bubble.duration = 8.0
+                            setattr(bubble, 'owner_id', getattr(self.ball, 'id', None))
+                            self.world.arena.hazards.append(bubble)
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_acid_puddle" in self.ball.inventory:
-            nearest = self._get_nearest_enemy()
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
             if nearest:
                 dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
                 if dist < 300:
@@ -8026,6 +8134,9 @@ class Action:
                                                     b.hp -= 5.0
                                                     if hasattr(self.world, "add_combat_log"):
                                                         self.world.add_combat_log(getattr(b, "id", -1), "hit by deployable_shockwave_mine", 5.0)
+
+
+
 
                     elif hazard.kind == "deployable_acid_puddle":
                         current_tick = getattr(self.world, "tick", 0)
@@ -16334,6 +16445,16 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "deployable_stasis_bubble":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_stasis_bubble")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "deployable_acid_puddle":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -16348,6 +16469,16 @@ class Action:
                         self.ball.inventory = []
                     self.ball.inventory.append("reverse_gravity_item")
                     nearest.active = False
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "deployable_stasis_bubble":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("deployable_stasis_bubble")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
@@ -19187,7 +19318,7 @@ class Action:
                     target_hazard = None
                     min_dist_sq = 22500.0  # Range 150
                     for h in hazards:
-                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster"]:
+                        if getattr(h, "kind", "") not in ["deployable_proximity_mud_puddle", "deployable_stasis_bubble", "event_horizon_trap", "repulsion_zone", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster"]:
                             dx = h.x - self.ball.x
                             dy = h.y - self.ball.y
                             dist_sq = dx*dx + dy*dy
@@ -22621,7 +22752,7 @@ class Action:
             self.ball.pull_booster_timer -= delta
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster"]:
+                    if getattr(hazard, "radius", 100) < 30.0 or getattr(hazard, "kind", "") in ["deployable_stasis_bubble", "vampiric_aura_booster", "vampiric_puddle", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "invert_booster", "freeze_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "reverse_gravity_item", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "aura_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "insulator_booster", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "pinball_projectile_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "miniature_black_hole_item", "reverse_gravity_item", "wind_tunnel", "cryogenic_booster"]:
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                         if dist_sq < 250000: # 500 range
                             import math
