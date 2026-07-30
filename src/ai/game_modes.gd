@@ -22489,6 +22489,26 @@ class ShiftingMazeMode extends GameMode:
 			var br = 20.0
 			if "radius" in b: br = float(b.radius)
 
+			var dist_to_center_sq = (bx - center_x) * (bx - center_x) + (by - center_y) * (by - center_y)
+			var center_target_radius = 50.0
+
+			# If the ball reaches the center, it wins instantly!
+			if dist_to_center_sq < (center_target_radius + br) * (center_target_radius + br):
+				# Kill everyone else to force a win
+				for other in balls:
+					if other != b and other.alive:
+						if other.has_method("take_damage"):
+							other.take_damage(9999.0, "maze_center_loss")
+						else:
+							if "hp" in other:
+								other.hp = 0
+							other.alive = false
+				if world.has_method("add_event"):
+					var w_id = null
+					if "id" in b: w_id = b.id
+					world.add_event("maze_center_reached", {"x": bx, "y": by, "winner": w_id})
+				break # game over
+
 			var touching_wall = false
 			var touched_wall_ref = null
 			for w in walls:

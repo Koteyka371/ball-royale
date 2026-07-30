@@ -14499,6 +14499,24 @@ class ShiftingMazeMode(GameMode):
             by = getattr(b, "y", 0.0)
             br = getattr(b, "radius", 20.0)
 
+            # Center target mechanic
+            dist_to_center_sq = (bx - center_x)**2 + (by - center_y)**2
+            center_target_radius = 50.0
+
+            # If the ball reaches the center, it wins instantly!
+            if dist_to_center_sq < (center_target_radius + br)**2:
+                # Kill everyone else to force a win
+                for other in balls:
+                    if other != b and getattr(other, "alive", False):
+                        if hasattr(other, "take_damage"):
+                            other.take_damage(9999.0, "maze_center_loss")
+                        else:
+                            other.hp = 0
+                            other.alive = False
+                if hasattr(world, "add_event"):
+                    world.add_event("maze_center_reached", {"x": bx, "y": by, "winner": getattr(b, "id", None)})
+                break # game over
+
             touching_wall = False
             touched_wall_ref = None
             for w in self.walls:
