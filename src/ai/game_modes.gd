@@ -53948,7 +53948,110 @@ class MiniBlackHolesMode extends GameMode:
 			world.arena.set("hazards", new_hazards)
 
 
+
+class ExtremeTornadoWeatherMode extends GameMode:
+	var tornado_spawn_timer = 0.0
+	var tornado_spawn_interval = 3.0
+	var tornado_duration = 10.0
+
+	func _init():
+		name = "Extreme Tornado Weather"
+		description = "An intense extreme weather variant where tornadoes move unpredictably across the arena. They apply heavy push forces inside their radius, and lighter balls are thrown farther."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT:
+			if "is_night" in world.arena:
+				world.arena.is_night = true
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		if typeof(world) != TYPE_OBJECT or not ("arena" in world):
+			return
+
+		if typeof(world.arena) != TYPE_OBJECT or not ("hazards" in world.arena):
+			return
+
+		tornado_spawn_timer -= delta
+		if tornado_spawn_timer <= 0:
+			tornado_spawn_timer = tornado_spawn_interval
+
+			var arena_w = 1000.0
+			if "width" in world.arena:
+				arena_w = world.arena.width
+			var arena_h = 1000.0
+			if "height" in world.arena:
+				arena_h = world.arena.height
+
+			var x = randf_range(100.0, arena_w - 100.0)
+			var y = randf_range(100.0, arena_h - 100.0)
+
+			var tornado = {
+				"id": randi() % 9000 + 1000,
+				"x": x,
+				"y": y,
+				"radius": 120.0,
+				"kind": "extreme_tornado",
+				"damage": 0.0,
+				"vx": randf_range(-150.0, 150.0),
+				"vy": randf_range(-150.0, 150.0),
+				"duration": tornado_duration,
+				"active": true
+			}
+			world.arena.hazards.append(tornado)
+
+		var hazards_to_remove = []
+		for i in range(world.arena.hazards.size()):
+			var hazard = world.arena.hazards[i]
+			if typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind") and hazard["kind"] == "extreme_tornado":
+				var duration = hazard.get("duration", 0.0) - delta
+				hazard["duration"] = duration
+				if duration <= 0:
+					hazards_to_remove.append(hazard)
+					continue
+
+				hazard["x"] += hazard.get("vx", 0.0) * delta
+				hazard["y"] += hazard.get("vy", 0.0) * delta
+
+				if randf() < 0.05:
+					hazard["vx"] += randf_range(-50.0, 50.0)
+					hazard["vy"] += randf_range(-50.0, 50.0)
+
+				# Apply push force to balls
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT and b.get("alive") == true:
+						var dx = b.x - hazard["x"]
+						var dy = b.y - hazard["y"]
+						var dist = sqrt(dx*dx + dy*dy)
+
+						if dist < hazard["radius"]:
+							var force = 500.0 * (1.0 - dist / max(hazard["radius"], 1.0))
+
+							var mass = 1.0
+							if "mass" in b and b.mass > 0:
+								mass = b.mass
+
+							var applied_force = force / mass
+
+							var nx = 1.0
+							var ny = 0.0
+							if dist > 0.0001:
+								nx = dx / dist
+								ny = dy / dist
+
+							b.vx += nx * applied_force * delta
+							b.vy += ny * applied_force * delta
+
+							# Swirl
+							b.vx += -ny * applied_force * 0.5 * delta
+							b.vy += nx * applied_force * 0.5 * delta
+
+		for h in hazards_to_remove:
+			world.arena.hazards.erase(h)
+
 var GAME_MODES = {
+	"extreme_tornado_weather": ExtremeTornadoWeatherMode.new(),
 	"mini_black_holes": MiniBlackHolesMode.new(),
 	"supercell_storm": SupercellStormMode.new(),
 	"wall_leapers": WallLeapersMode.new(),

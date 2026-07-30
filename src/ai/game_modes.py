@@ -33705,7 +33705,112 @@ class MiniBlackHolesMode(GameMode):
         world.arena.hazards = new_hazards
 
 
+
+
+import random
+import math
+
+class ExtremeTornadoHazard:
+    def __init__(self, id, x, y, radius, kind, damage):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.kind = kind
+        self.damage = damage
+
+class ExtremeTornadoWeatherMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Extreme Tornado Weather"
+        self.description = "An intense extreme weather variant where tornadoes move unpredictably across the arena. They apply heavy push forces inside their radius, and lighter balls are thrown farther."
+        self.tornado_spawn_timer = 0.0
+        self.tornado_spawn_interval = 3.0
+        self.tornado_duration = 10.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena") and world.arena is not None:
+            world.arena.is_night = True
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena") or world.arena is None:
+            return
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        self.tornado_spawn_timer -= delta
+        if self.tornado_spawn_timer <= 0:
+            self.tornado_spawn_timer = self.tornado_spawn_interval
+
+            arena_w = getattr(world.arena, "width", 1000)
+            arena_h = getattr(world.arena, "height", 1000)
+            x = random.uniform(100, arena_w - 100)
+            y = random.uniform(100, arena_h - 100)
+
+            tornado = ExtremeTornadoHazard(id=random.randint(1000, 9999), x=x, y=y, radius=120.0, kind="extreme_tornado", damage=0.0)
+            setattr(tornado, "vx", random.uniform(-150.0, 150.0))
+            setattr(tornado, "vy", random.uniform(-150.0, 150.0))
+            setattr(tornado, "duration", self.tornado_duration)
+            setattr(tornado, "active", True)
+            world.arena.hazards.append(tornado)
+
+        for hazard in list(world.arena.hazards):
+            if getattr(hazard, "kind", "") == "extreme_tornado":
+                duration = getattr(hazard, "duration", 0.0) - delta
+                setattr(hazard, "duration", duration)
+                if duration <= 0:
+                    if hazard in world.arena.hazards:
+                        world.arena.hazards.remove(hazard)
+                    continue
+
+                hazard.x += getattr(hazard, "vx", 0.0) * delta
+                hazard.y += getattr(hazard, "vy", 0.0) * delta
+
+                if random.random() < 0.05:
+                    hazard.vx += random.uniform(-50.0, 50.0)
+                    hazard.vy += random.uniform(-50.0, 50.0)
+
+                # Apply push force to balls
+                for b in balls:
+                    if not getattr(b, "alive", False):
+                        continue
+
+                    dx = b.x - hazard.x
+                    dy = b.y - hazard.y
+                    dist = math.hypot(dx, dy)
+
+                    if dist < hazard.radius:
+                        # Push outwards and slightly rotate
+                        force = 500.0 * (1.0 - dist / max(hazard.radius, 1.0))
+
+                        mass = getattr(b, "mass", 1.0)
+                        if mass <= 0:
+                            mass = 1.0
+
+                        # Lighter balls are thrown farther
+                        applied_force = force / mass
+
+                        if dist > 0.0001:
+                            nx = dx / dist
+                            ny = dy / dist
+                        else:
+                            nx, ny = 1.0, 0.0
+
+                        # Outward push
+                        b.vx += nx * applied_force * delta
+                        b.vy += ny * applied_force * delta
+
+                        # Swirl
+                        b.vx += -ny * applied_force * 0.5 * delta
+                        b.vy += nx * applied_force * 0.5 * delta
+
 GAME_MODES = {
+    'extreme_tornado_weather': ExtremeTornadoWeatherMode(),
+
     'mini_black_holes': MiniBlackHolesMode(),
     'supercell_storm': SupercellStormMode(),
     'ice_floor': IceFloorMode(),
