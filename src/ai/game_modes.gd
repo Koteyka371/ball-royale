@@ -36461,6 +36461,522 @@ class HauntedEventMode extends GameMode:
 				world.arena.hazards.append(clone)
 
 
+
+		# Nightmare logic
+		var nightmare_timer = 0.0
+		if "nightmare_timer" in self: nightmare_timer = self.nightmare_timer
+		elif self.has_meta("nightmare_timer"): nightmare_timer = self.get_meta("nightmare_timer")
+
+		nightmare_timer += delta
+
+		if nightmare_timer >= 10.0:
+			nightmare_timer = 0.0
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var h_id = "nightmare_" + str(randi() % 100000)
+				var width = 1000.0
+				var height = 1000.0
+				if "width" in world.arena: width = world.arena.width
+				if "height" in world.arena: height = world.arena.height
+				var nightmare = {"id": h_id, "x": randf_range(100, width - 100), "y": randf_range(100, height - 100), "radius": 25.0, "kind": "nightmare", "active": true, "duration": 15.0, "damage": 0.0, "speed": 400.0}
+				world.arena.hazards.append(nightmare)
+
+		if self.has_method("set_meta"): self.set_meta("nightmare_timer", nightmare_timer)
+		if "nightmare_timer" in self: self.nightmare_timer = nightmare_timer
+
+		# Update nightmare hazards
+		if world != null and "arena" in world and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				var h_active = false
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+					h_active = h.get("active", false)
+				elif typeof(h) == TYPE_OBJECT:
+					h_kind = h.get("kind") if "kind" in h else ""
+					h_active = h.get("active") if "active" in h else false
+
+				if h_kind == "nightmare" and h_active:
+					var target = null
+					var lowest_stamina = 9999999.0
+
+					for b in balls:
+						var b_alive = false
+						var b_type = ""
+						var b_stamina = 100.0
+						var b_max_stamina = 100.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+							b_type = b.get("ball_type", "")
+							b_stamina = b.get("stamina", 100.0)
+							b_max_stamina = b.get("max_stamina", 100.0)
+						elif typeof(b) == TYPE_OBJECT:
+							b_alive = b.get("alive") if "alive" in b else false
+							b_type = b.get("ball_type") if "ball_type" in b else ""
+							b_stamina = b.get("stamina") if "stamina" in b else 100.0
+							b_max_stamina = b.get("max_stamina") if "max_stamina" in b else 100.0
+
+						if b_alive and b_type != "spectator":
+							if b_stamina < b_max_stamina * 0.3:
+								if b_stamina < lowest_stamina:
+									lowest_stamina = b_stamina
+									target = b
+
+					if target != null:
+						var tx = 0.0
+						var ty = 0.0
+						var t_radius = 20.0
+						if typeof(target) == TYPE_DICTIONARY:
+							tx = target.get("x", 0.0)
+							ty = target.get("y", 0.0)
+							t_radius = target.get("radius", 20.0)
+						elif typeof(target) == TYPE_OBJECT:
+							tx = target.get("x") if "x" in target else 0.0
+							ty = target.get("y") if "y" in target else 0.0
+							t_radius = target.get("radius") if "radius" in target else 20.0
+
+						var hx = 0.0
+						var hy = 0.0
+						var h_speed = 400.0
+						var h_rad = 25.0
+						if typeof(h) == TYPE_DICTIONARY:
+							hx = h.get("x", 0.0)
+							hy = h.get("y", 0.0)
+							h_speed = h.get("speed", 400.0)
+							h_rad = h.get("radius", 25.0)
+						elif typeof(h) == TYPE_OBJECT:
+							hx = h.get("x") if "x" in h else 0.0
+							hy = h.get("y") if "y" in h else 0.0
+							h_speed = h.get("speed") if "speed" in h else 400.0
+							h_rad = h.get("radius") if "radius" in h else 25.0
+
+						var dx = tx - hx
+						var dy = ty - hy
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist > 0.001:
+							hx += (dx / dist) * h_speed * delta
+							hy += (dy / dist) * h_speed * delta
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["x"] = hx
+								h["y"] = hy
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("x", hx)
+								h.set("y", hy)
+
+						if dist < h_rad + t_radius:
+							if typeof(target) == TYPE_DICTIONARY:
+								target["emotion"] = "fear"
+								target["siren_feared_timer"] = max(target.get("siren_feared_timer", 0.0), 2.0)
+								target["invert_timer"] = max(target.get("invert_timer", 0.0), 3.0)
+							elif typeof(target) == TYPE_OBJECT:
+								if "emotion" in target: target.emotion = "fear"
+								elif target.has_method("set_meta"): target.set_meta("emotion", "fear")
+
+								var sf_timer = 0.0
+								if "siren_feared_timer" in target: sf_timer = target.siren_feared_timer
+								elif target.has_method("get_meta") and target.has_meta("siren_feared_timer"): sf_timer = target.get_meta("siren_feared_timer")
+								if "siren_feared_timer" in target: target.siren_feared_timer = max(sf_timer, 2.0)
+								elif target.has_method("set_meta"): target.set_meta("siren_feared_timer", max(sf_timer, 2.0))
+
+								var inv_timer = 0.0
+								if "invert_timer" in target: inv_timer = target.invert_timer
+								elif target.has_method("get_meta") and target.has_meta("invert_timer"): inv_timer = target.get_meta("invert_timer")
+								if "invert_timer" in target: target.invert_timer = max(inv_timer, 3.0)
+								elif target.has_method("set_meta"): target.set_meta("invert_timer", max(inv_timer, 3.0))
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["active"] = false
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("active", false)
+
+
+
+		# Nightmare logic
+		var nightmare_timer = 0.0
+		if "nightmare_timer" in self: nightmare_timer = self.nightmare_timer
+		elif self.has_meta("nightmare_timer"): nightmare_timer = self.get_meta("nightmare_timer")
+
+		nightmare_timer += delta
+
+		if nightmare_timer >= 10.0:
+			nightmare_timer = 0.0
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var h_id = "nightmare_" + str(randi() % 100000)
+				var width = 1000.0
+				var height = 1000.0
+				if "width" in world.arena: width = world.arena.width
+				if "height" in world.arena: height = world.arena.height
+				var nightmare = {"id": h_id, "x": randf_range(100, width - 100), "y": randf_range(100, height - 100), "radius": 25.0, "kind": "nightmare", "active": true, "duration": 15.0, "damage": 0.0, "speed": 400.0}
+				world.arena.hazards.append(nightmare)
+
+		if self.has_method("set_meta"): self.set_meta("nightmare_timer", nightmare_timer)
+		if "nightmare_timer" in self: self.nightmare_timer = nightmare_timer
+
+		# Update nightmare hazards
+		if world != null and "arena" in world and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				var h_active = false
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+					h_active = h.get("active", false)
+				elif typeof(h) == TYPE_OBJECT:
+					h_kind = h.get("kind") if "kind" in h else ""
+					h_active = h.get("active") if "active" in h else false
+
+				if h_kind == "nightmare" and h_active:
+					var target = null
+					var lowest_stamina = 9999999.0
+
+					for b in balls:
+						var b_alive = false
+						var b_type = ""
+						var b_stamina = 100.0
+						var b_max_stamina = 100.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+							b_type = b.get("ball_type", "")
+							b_stamina = b.get("stamina", 100.0)
+							b_max_stamina = b.get("max_stamina", 100.0)
+						elif typeof(b) == TYPE_OBJECT:
+							b_alive = b.get("alive") if "alive" in b else false
+							b_type = b.get("ball_type") if "ball_type" in b else ""
+							b_stamina = b.get("stamina") if "stamina" in b else 100.0
+							b_max_stamina = b.get("max_stamina") if "max_stamina" in b else 100.0
+
+						if b_alive and b_type != "spectator":
+							if b_stamina < b_max_stamina * 0.3:
+								if b_stamina < lowest_stamina:
+									lowest_stamina = b_stamina
+									target = b
+
+					if target != null:
+						var tx = 0.0
+						var ty = 0.0
+						var t_radius = 20.0
+						if typeof(target) == TYPE_DICTIONARY:
+							tx = target.get("x", 0.0)
+							ty = target.get("y", 0.0)
+							t_radius = target.get("radius", 20.0)
+						elif typeof(target) == TYPE_OBJECT:
+							tx = target.get("x") if "x" in target else 0.0
+							ty = target.get("y") if "y" in target else 0.0
+							t_radius = target.get("radius") if "radius" in target else 20.0
+
+						var hx = 0.0
+						var hy = 0.0
+						var h_speed = 400.0
+						var h_rad = 25.0
+						if typeof(h) == TYPE_DICTIONARY:
+							hx = h.get("x", 0.0)
+							hy = h.get("y", 0.0)
+							h_speed = h.get("speed", 400.0)
+							h_rad = h.get("radius", 25.0)
+						elif typeof(h) == TYPE_OBJECT:
+							hx = h.get("x") if "x" in h else 0.0
+							hy = h.get("y") if "y" in h else 0.0
+							h_speed = h.get("speed") if "speed" in h else 400.0
+							h_rad = h.get("radius") if "radius" in h else 25.0
+
+						var dx = tx - hx
+						var dy = ty - hy
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist > 0.001:
+							hx += (dx / dist) * h_speed * delta
+							hy += (dy / dist) * h_speed * delta
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["x"] = hx
+								h["y"] = hy
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("x", hx)
+								h.set("y", hy)
+
+						if dist < h_rad + t_radius:
+							if typeof(target) == TYPE_DICTIONARY:
+								target["emotion"] = "fear"
+								target["siren_feared_timer"] = max(target.get("siren_feared_timer", 0.0), 2.0)
+								target["invert_timer"] = max(target.get("invert_timer", 0.0), 3.0)
+							elif typeof(target) == TYPE_OBJECT:
+								if "emotion" in target: target.emotion = "fear"
+								elif target.has_method("set_meta"): target.set_meta("emotion", "fear")
+
+								var sf_timer = 0.0
+								if "siren_feared_timer" in target: sf_timer = target.siren_feared_timer
+								elif target.has_method("get_meta") and target.has_meta("siren_feared_timer"): sf_timer = target.get_meta("siren_feared_timer")
+								if "siren_feared_timer" in target: target.siren_feared_timer = max(sf_timer, 2.0)
+								elif target.has_method("set_meta"): target.set_meta("siren_feared_timer", max(sf_timer, 2.0))
+
+								var inv_timer = 0.0
+								if "invert_timer" in target: inv_timer = target.invert_timer
+								elif target.has_method("get_meta") and target.has_meta("invert_timer"): inv_timer = target.get_meta("invert_timer")
+								if "invert_timer" in target: target.invert_timer = max(inv_timer, 3.0)
+								elif target.has_method("set_meta"): target.set_meta("invert_timer", max(inv_timer, 3.0))
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["active"] = false
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("active", false)
+
+
+
+		# Nightmare logic
+		var nightmare_timer = 0.0
+		if "nightmare_timer" in self: nightmare_timer = self.nightmare_timer
+		elif self.has_meta("nightmare_timer"): nightmare_timer = self.get_meta("nightmare_timer")
+
+		nightmare_timer += delta
+
+		if nightmare_timer >= 10.0:
+			nightmare_timer = 0.0
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var h_id = "nightmare_" + str(randi() % 100000)
+				var width = 1000.0
+				var height = 1000.0
+				if "width" in world.arena: width = world.arena.width
+				if "height" in world.arena: height = world.arena.height
+				var nightmare = {"id": h_id, "x": randf_range(100, width - 100), "y": randf_range(100, height - 100), "radius": 25.0, "kind": "nightmare", "active": true, "duration": 15.0, "damage": 0.0, "speed": 400.0}
+				world.arena.hazards.append(nightmare)
+
+		if self.has_method("set_meta"): self.set_meta("nightmare_timer", nightmare_timer)
+		if "nightmare_timer" in self: self.nightmare_timer = nightmare_timer
+
+		# Update nightmare hazards
+		if world != null and "arena" in world and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				var h_active = false
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+					h_active = h.get("active", false)
+				elif typeof(h) == TYPE_OBJECT:
+					h_kind = h.get("kind") if "kind" in h else ""
+					h_active = h.get("active") if "active" in h else false
+
+				if h_kind == "nightmare" and h_active:
+					var target = null
+					var lowest_stamina = 9999999.0
+
+					for b in balls:
+						var b_alive = false
+						var b_type = ""
+						var b_stamina = 100.0
+						var b_max_stamina = 100.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+							b_type = b.get("ball_type", "")
+							b_stamina = b.get("stamina", 100.0)
+							b_max_stamina = b.get("max_stamina", 100.0)
+						elif typeof(b) == TYPE_OBJECT:
+							b_alive = b.get("alive") if "alive" in b else false
+							b_type = b.get("ball_type") if "ball_type" in b else ""
+							b_stamina = b.get("stamina") if "stamina" in b else 100.0
+							b_max_stamina = b.get("max_stamina") if "max_stamina" in b else 100.0
+
+						if b_alive and b_type != "spectator":
+							if b_stamina < b_max_stamina * 0.3:
+								if b_stamina < lowest_stamina:
+									lowest_stamina = b_stamina
+									target = b
+
+					if target != null:
+						var tx = 0.0
+						var ty = 0.0
+						var t_radius = 20.0
+						if typeof(target) == TYPE_DICTIONARY:
+							tx = target.get("x", 0.0)
+							ty = target.get("y", 0.0)
+							t_radius = target.get("radius", 20.0)
+						elif typeof(target) == TYPE_OBJECT:
+							tx = target.get("x") if "x" in target else 0.0
+							ty = target.get("y") if "y" in target else 0.0
+							t_radius = target.get("radius") if "radius" in target else 20.0
+
+						var hx = 0.0
+						var hy = 0.0
+						var h_speed = 400.0
+						var h_rad = 25.0
+						if typeof(h) == TYPE_DICTIONARY:
+							hx = h.get("x", 0.0)
+							hy = h.get("y", 0.0)
+							h_speed = h.get("speed", 400.0)
+							h_rad = h.get("radius", 25.0)
+						elif typeof(h) == TYPE_OBJECT:
+							hx = h.get("x") if "x" in h else 0.0
+							hy = h.get("y") if "y" in h else 0.0
+							h_speed = h.get("speed") if "speed" in h else 400.0
+							h_rad = h.get("radius") if "radius" in h else 25.0
+
+						var dx = tx - hx
+						var dy = ty - hy
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist > 0.001:
+							hx += (dx / dist) * h_speed * delta
+							hy += (dy / dist) * h_speed * delta
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["x"] = hx
+								h["y"] = hy
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("x", hx)
+								h.set("y", hy)
+
+						if dist < h_rad + t_radius:
+							if typeof(target) == TYPE_DICTIONARY:
+								target["emotion"] = "fear"
+								target["siren_feared_timer"] = max(target.get("siren_feared_timer", 0.0), 2.0)
+								target["invert_timer"] = max(target.get("invert_timer", 0.0), 3.0)
+							elif typeof(target) == TYPE_OBJECT:
+								if "emotion" in target: target.emotion = "fear"
+								elif target.has_method("set_meta"): target.set_meta("emotion", "fear")
+
+								var sf_timer = 0.0
+								if "siren_feared_timer" in target: sf_timer = target.siren_feared_timer
+								elif target.has_method("get_meta") and target.has_meta("siren_feared_timer"): sf_timer = target.get_meta("siren_feared_timer")
+								if "siren_feared_timer" in target: target.siren_feared_timer = max(sf_timer, 2.0)
+								elif target.has_method("set_meta"): target.set_meta("siren_feared_timer", max(sf_timer, 2.0))
+
+								var inv_timer = 0.0
+								if "invert_timer" in target: inv_timer = target.invert_timer
+								elif target.has_method("get_meta") and target.has_meta("invert_timer"): inv_timer = target.get_meta("invert_timer")
+								if "invert_timer" in target: target.invert_timer = max(inv_timer, 3.0)
+								elif target.has_method("set_meta"): target.set_meta("invert_timer", max(inv_timer, 3.0))
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["active"] = false
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("active", false)
+
+
+
+		# Nightmare logic
+		var nightmare_timer = 0.0
+		if "nightmare_timer" in self: nightmare_timer = self.nightmare_timer
+		elif self.has_meta("nightmare_timer"): nightmare_timer = self.get_meta("nightmare_timer")
+
+		nightmare_timer += delta
+
+		if nightmare_timer >= 10.0:
+			nightmare_timer = 0.0
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var h_id = "nightmare_" + str(randi() % 100000)
+				var width = 1000.0
+				var height = 1000.0
+				if "width" in world.arena: width = world.arena.width
+				if "height" in world.arena: height = world.arena.height
+				var nightmare = {"id": h_id, "x": randf_range(100, width - 100), "y": randf_range(100, height - 100), "radius": 25.0, "kind": "nightmare", "active": true, "duration": 15.0, "damage": 0.0, "speed": 400.0}
+				world.arena.hazards.append(nightmare)
+
+		if self.has_method("set_meta"): self.set_meta("nightmare_timer", nightmare_timer)
+		if "nightmare_timer" in self: self.nightmare_timer = nightmare_timer
+
+		# Update nightmare hazards
+		if world != null and "arena" in world and "hazards" in world.arena:
+			for h in world.arena.hazards:
+				var h_kind = ""
+				var h_active = false
+				if typeof(h) == TYPE_DICTIONARY:
+					h_kind = h.get("kind", "")
+					h_active = h.get("active", false)
+				elif typeof(h) == TYPE_OBJECT:
+					h_kind = h.get("kind") if "kind" in h else ""
+					h_active = h.get("active") if "active" in h else false
+
+				if h_kind == "nightmare" and h_active:
+					var target = null
+					var lowest_stamina = 9999999.0
+
+					for b in balls:
+						var b_alive = false
+						var b_type = ""
+						var b_stamina = 100.0
+						var b_max_stamina = 100.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b_alive = b.get("alive", false)
+							b_type = b.get("ball_type", "")
+							b_stamina = b.get("stamina", 100.0)
+							b_max_stamina = b.get("max_stamina", 100.0)
+						elif typeof(b) == TYPE_OBJECT:
+							b_alive = b.get("alive") if "alive" in b else false
+							b_type = b.get("ball_type") if "ball_type" in b else ""
+							b_stamina = b.get("stamina") if "stamina" in b else 100.0
+							b_max_stamina = b.get("max_stamina") if "max_stamina" in b else 100.0
+
+						if b_alive and b_type != "spectator":
+							if b_stamina < b_max_stamina * 0.3:
+								if b_stamina < lowest_stamina:
+									lowest_stamina = b_stamina
+									target = b
+
+					if target != null:
+						var tx = 0.0
+						var ty = 0.0
+						var t_radius = 20.0
+						if typeof(target) == TYPE_DICTIONARY:
+							tx = target.get("x", 0.0)
+							ty = target.get("y", 0.0)
+							t_radius = target.get("radius", 20.0)
+						elif typeof(target) == TYPE_OBJECT:
+							tx = target.get("x") if "x" in target else 0.0
+							ty = target.get("y") if "y" in target else 0.0
+							t_radius = target.get("radius") if "radius" in target else 20.0
+
+						var hx = 0.0
+						var hy = 0.0
+						var h_speed = 400.0
+						var h_rad = 25.0
+						if typeof(h) == TYPE_DICTIONARY:
+							hx = h.get("x", 0.0)
+							hy = h.get("y", 0.0)
+							h_speed = h.get("speed", 400.0)
+							h_rad = h.get("radius", 25.0)
+						elif typeof(h) == TYPE_OBJECT:
+							hx = h.get("x") if "x" in h else 0.0
+							hy = h.get("y") if "y" in h else 0.0
+							h_speed = h.get("speed") if "speed" in h else 400.0
+							h_rad = h.get("radius") if "radius" in h else 25.0
+
+						var dx = tx - hx
+						var dy = ty - hy
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist > 0.001:
+							hx += (dx / dist) * h_speed * delta
+							hy += (dy / dist) * h_speed * delta
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["x"] = hx
+								h["y"] = hy
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("x", hx)
+								h.set("y", hy)
+
+						if dist < h_rad + t_radius:
+							if typeof(target) == TYPE_DICTIONARY:
+								target["emotion"] = "fear"
+								target["siren_feared_timer"] = max(target.get("siren_feared_timer", 0.0), 2.0)
+								target["invert_timer"] = max(target.get("invert_timer", 0.0), 3.0)
+							elif typeof(target) == TYPE_OBJECT:
+								if "emotion" in target: target.emotion = "fear"
+								elif target.has_method("set_meta"): target.set_meta("emotion", "fear")
+
+								var sf_timer = 0.0
+								if "siren_feared_timer" in target: sf_timer = target.siren_feared_timer
+								elif target.has_method("get_meta") and target.has_meta("siren_feared_timer"): sf_timer = target.get_meta("siren_feared_timer")
+								if "siren_feared_timer" in target: target.siren_feared_timer = max(sf_timer, 2.0)
+								elif target.has_method("set_meta"): target.set_meta("siren_feared_timer", max(sf_timer, 2.0))
+
+								var inv_timer = 0.0
+								if "invert_timer" in target: inv_timer = target.invert_timer
+								elif target.has_method("get_meta") and target.has_meta("invert_timer"): inv_timer = target.get_meta("invert_timer")
+								if "invert_timer" in target: target.invert_timer = max(inv_timer, 3.0)
+								elif target.has_method("set_meta"): target.set_meta("invert_timer", max(inv_timer, 3.0))
+
+							if typeof(h) == TYPE_DICTIONARY:
+								h["active"] = false
+							elif typeof(h) == TYPE_OBJECT:
+								h.set("active", false)
+
+
 class BlackoutEventMode extends GameMode:
 	var timer: float = 0.0
 	var is_blackout: bool = false
