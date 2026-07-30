@@ -48452,6 +48452,178 @@ class CollapsingCeilingMode extends GameMode:
 
 
 
+
+class WaterfallsMode extends GameMode:
+	var random_gen = RandomNumberGenerator.new()
+	var spawn_timer = 5.0
+
+	func _init():
+		super._init()
+		self.name = "Waterfalls"
+		self.description = "A waterfall hazard periodically appears. Balls caught in it are pulled to the center and then dropped to a lower arena layer, briefly disabling their attacks while they fall."
+		self.random_gen.randomize()
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = random_gen.randf_range(10.0, 20.0)
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+				var aw = world.arena.get("width", 1000)
+				var ah = world.arena.get("height", 1000)
+				var hz = {
+					"id": (world.arena.get("hazards", []).size() if typeof(world.arena.get("hazards", [])) == TYPE_ARRAY else 0) + (randi() % 9000 + 1000),
+					"x": random_gen.randf_range(200, aw - 200),
+					"y": random_gen.randf_range(200, ah - 200),
+					"radius": 120.0,
+					"kind": "waterfall",
+					"damage": 0.0,
+					"duration": 15.0,
+					"vx": 0.0,
+					"vy": 0.0,
+					"active": true
+				}
+				if typeof(world.arena.get("hazards")) == TYPE_ARRAY:
+					world.arena.hazards.append(hz)
+					if typeof(world.get("events")) == TYPE_ARRAY:
+						world.events.append({"type": "hazard_spawned", "data": {"kind": "waterfall", "x": hz.x, "y": hz.y}})
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+				var aw = world.arena.width if "width" in world.arena else 1000
+				var ah = world.arena.height if "height" in world.arena else 1000
+				var hz = {
+					"id": (world.arena.hazards.size() if "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY else 0) + (randi() % 9000 + 1000),
+					"x": random_gen.randf_range(200, aw - 200),
+					"y": random_gen.randf_range(200, ah - 200),
+					"radius": 120.0,
+					"kind": "waterfall",
+					"damage": 0.0,
+					"duration": 15.0,
+					"vx": 0.0,
+					"vy": 0.0,
+					"active": true
+				}
+				if "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY:
+					world.arena.hazards.append(hz)
+					if "events" in world and typeof(world.events) == TYPE_ARRAY:
+						world.events.append({"type": "hazard_spawned", "data": {"kind": "waterfall", "x": hz.x, "y": hz.y}})
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: alive = b.alive
+			if not alive: continue
+
+			var f_timer = 0.0
+			if typeof(b) == TYPE_DICTIONARY and b.has("waterfall_fall_timer"): f_timer = b.waterfall_fall_timer
+			elif typeof(b) == TYPE_OBJECT and "waterfall_fall_timer" in b: f_timer = b.waterfall_fall_timer
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("waterfall_fall_timer"): f_timer = b.get_meta("waterfall_fall_timer")
+
+			if f_timer > 0.0:
+				if typeof(b) == TYPE_DICTIONARY and not b.has("waterfall_cached_damage"):
+					b["waterfall_cached_damage"] = b.get("damage", 10.0)
+					b["waterfall_cached_base_damage"] = b.get("base_damage", 10.0)
+				elif typeof(b) == TYPE_OBJECT and not (b.has_method("has_meta") and b.has_meta("waterfall_cached_damage")):
+					if b.has_method("set_meta"):
+						b.set_meta("waterfall_cached_damage", b.damage if "damage" in b else 10.0)
+						b.set_meta("waterfall_cached_base_damage", b.base_damage if "base_damage" in b else 10.0)
+
+				f_timer -= delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["waterfall_fall_timer"] = max(f_timer, 0.0)
+					if f_timer > 0.0:
+						if b.has("damage"): b["damage"] = 0.0
+						if b.has("base_damage"): b["base_damage"] = 0.0
+					else:
+						if b.has("damage"): b["damage"] = b.get("waterfall_cached_damage", 10.0)
+						if b.has("base_damage"): b["base_damage"] = b.get("waterfall_cached_base_damage", 10.0)
+				elif typeof(b) == TYPE_OBJECT:
+					if "waterfall_fall_timer" in b: b.waterfall_fall_timer = max(f_timer, 0.0)
+					elif b.has_method("set_meta"): b.set_meta("waterfall_fall_timer", max(f_timer, 0.0))
+
+					if f_timer > 0.0:
+						if "damage" in b: b.damage = 0.0
+						if "base_damage" in b: b.base_damage = 0.0
+					else:
+						var cached_dmg = 10.0
+						var cached_base = 10.0
+						if b.has_method("has_meta"):
+							if b.has_meta("waterfall_cached_damage"): cached_dmg = b.get_meta("waterfall_cached_damage")
+							if b.has_meta("waterfall_cached_base_damage"): cached_base = b.get_meta("waterfall_cached_base_damage")
+						if "damage" in b: b.damage = cached_dmg
+						if "base_damage" in b: b.base_damage = cached_base
+
+			var hazards = []
+			if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards") and typeof(world.arena.hazards) == TYPE_ARRAY:
+				hazards = world.arena.hazards
+			elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null and "hazards" in world.arena and typeof(world.arena.hazards) == TYPE_ARRAY:
+				hazards = world.arena.hazards
+
+			for hz in hazards:
+				var kind = ""
+				if typeof(hz) == TYPE_DICTIONARY and hz.has("kind"): kind = hz.kind
+				elif typeof(hz) == TYPE_OBJECT and "kind" in hz: kind = hz.kind
+				if kind == "waterfall":
+					var hx = 0.0
+					var hy = 0.0
+					var hr = 0.0
+					if typeof(hz) == TYPE_DICTIONARY:
+						if hz.has("x"): hx = hz.x
+						if hz.has("y"): hy = hz.y
+						if hz.has("radius"): hr = hz.radius
+					elif typeof(hz) == TYPE_OBJECT:
+						if "x" in hz: hx = hz.x
+						if "y" in hz: hy = hz.y
+						if "radius" in hz: hr = hz.radius
+
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					elif typeof(b) == TYPE_OBJECT:
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+
+					var dx = hx - bx
+					var dy = hy - by
+					var dist_sq = dx*dx + dy*dy
+					if dist_sq < hr*hr:
+						var dist = sqrt(dist_sq)
+						if dist > 0:
+							var nx = dx / dist
+							var ny = dy / dist
+							var pull = 80.0 * delta
+							var anchor_timer = 0.0
+							if typeof(b) == TYPE_DICTIONARY and b.has("anchor_booster_timer"): anchor_timer = b.anchor_booster_timer
+							elif typeof(b) == TYPE_OBJECT and "anchor_booster_timer" in b: anchor_timer = b.anchor_booster_timer
+
+							if anchor_timer <= 0.0:
+								if typeof(b) == TYPE_DICTIONARY:
+									b["x"] = bx + nx * pull
+									b["y"] = by + ny * pull
+								elif typeof(b) == TYPE_OBJECT:
+									if "x" in b: b.x = bx + nx * pull
+									if "y" in b: b.y = by + ny * pull
+
+							if dist < 15.0 and f_timer <= 0.0:
+								var zl = 0
+								if typeof(b) == TYPE_DICTIONARY and b.has("z_layer"): zl = b.z_layer
+								elif typeof(b) == TYPE_OBJECT and "z_layer" in b: zl = b.z_layer
+								elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("z_layer"): zl = b.get_meta("z_layer")
+
+								if typeof(b) == TYPE_DICTIONARY:
+									b["z_layer"] = zl - 1
+									b["waterfall_fall_timer"] = 2.0
+								elif typeof(b) == TYPE_OBJECT:
+									if "z_layer" in b: b.z_layer = zl - 1
+									elif b.has_method("set_meta"): b.set_meta("z_layer", zl - 1)
+									if "waterfall_fall_timer" in b: b.waterfall_fall_timer = 2.0
+									elif b.has_method("set_meta"): b.set_meta("waterfall_fall_timer", 2.0)
+
 class FallingTilesRoyaleMode extends GameMode:
 	var grid_size = 50.0
 	var tiles = {}
@@ -54547,6 +54719,7 @@ var GAME_MODES = {
 	"expanding_lava_royale": ExpandingLavaRoyaleMode.new(),
 	"massive_pinball_arena": MassivePinballArenaMode.new(),
 	"aura_pulse_event": AuraPulseEventMode.new(),
+	"waterfalls_mode": WaterfallsMode.new(),
 	"falling_tiles_royale": FallingTilesRoyaleMode.new(),
 	"tilting_platform": TiltingPlatformMode.new(),
 	"collapsing_ceiling": CollapsingCeilingMode.new(),

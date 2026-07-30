@@ -41828,6 +41828,88 @@ GAME_MODES['gravity_shift'] = GravityShiftMode()
 GAME_MODES['random_gravity_shift'] = RandomGravityShiftMode()
 
 
+
+class WaterfallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Waterfalls"
+        self.description = "A waterfall hazard periodically appears. Balls caught in it are pulled to the center and then dropped to a lower arena layer, briefly disabling their attacks while they fall."
+        self.spawn_timer = 5.0
+        import random
+        self.random = random
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.random.uniform(10.0, 20.0)
+            if hasattr(world, "arena"):
+                aw = getattr(world.arena, "width", 1000)
+                ah = getattr(world.arena, "height", 1000)
+                class Hazard:
+                    def __init__(self, id, x, y, radius, kind, damage, duration):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.duration = duration
+                        self.vx = 0.0
+                        self.vy = 0.0
+                        self.active = True
+                hz = Hazard(id=len(getattr(world.arena, "hazards", [])) + self.random.randint(1000, 9999), x=self.random.uniform(200, aw-200), y=self.random.uniform(200, ah-200), radius=120.0, kind="waterfall", damage=0.0, duration=15.0)
+                if hasattr(world.arena, "hazards"):
+                    world.arena.hazards.append(hz)
+                    if hasattr(world, "add_event"):
+                        world.add_event("hazard_spawned", {"kind": "waterfall", "x": hz.x, "y": hz.y})
+
+        # Process waterfalls and falling state
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+
+            # Decrease falling timer and prevent attacks
+            if getattr(b, "waterfall_fall_timer", 0.0) > 0.0:
+                if not hasattr(b, "waterfall_cached_damage"):
+                    b.waterfall_cached_damage = getattr(b, "damage", 10.0)
+                    b.waterfall_cached_base_damage = getattr(b, "base_damage", 10.0)
+                b.waterfall_fall_timer -= delta
+                b.damage = 0.0
+                b.base_damage = 0.0
+                if b.waterfall_fall_timer <= 0.0:
+                    b.waterfall_fall_timer = 0.0
+                    b.damage = getattr(b, "waterfall_cached_damage", 10.0)
+                    b.base_damage = getattr(b, "waterfall_cached_base_damage", 10.0)
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for hz in world.arena.hazards:
+                    if getattr(hz, "kind", "") == "waterfall":
+                        hx, hy = getattr(hz, "x", 0.0), getattr(hz, "y", 0.0)
+                        hr = getattr(hz, "radius", 0.0)
+                        dx = hx - b.x
+                        dy = hy - b.y
+                        dist_sq = dx*dx + dy*dy
+                        if dist_sq < hr*hr:
+                            dist = dist_sq**0.5
+                            if dist > 0:
+                                nx = dx / dist
+                                ny = dy / dist
+                                pull = 80.0 * delta
+                                # Pull logic
+                                if getattr(b, "anchor_booster_timer", 0.0) <= 0:
+                                    b.x += nx * pull
+                                    b.y += ny * pull
+
+                                # Drop logic if close to center
+                                if dist < 15.0 and getattr(b, "waterfall_fall_timer", 0.0) <= 0.0:
+                                    b.z_layer = getattr(b, "z_layer", 0) - 1
+                                    b.waterfall_fall_timer = 2.0
+
 class FallingTilesRoyaleMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -42049,6 +42131,7 @@ class QuadrantRoyaleMode(GameMode):
                         if b.hp <= 0.0:
                             b.alive = False
 
+GAME_MODES['waterfalls_mode'] = WaterfallsMode()
 GAME_MODES['falling_tiles_royale'] = FallingTilesRoyaleMode()
 GAME_MODES['tilting_platform'] = TiltingPlatformMode()
 
