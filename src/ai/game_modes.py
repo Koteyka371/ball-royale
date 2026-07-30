@@ -45448,3 +45448,77 @@ class QuantumWormholeMode(GameMode):
                             break
 
 GAME_MODES['quantum_wormhole'] = QuantumWormholeMode()
+
+
+class OrbitingChaosOrbsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbiting Chaos Orbs"
+        self.description = "Players periodically spawn orbiting chaos orbs."
+        self.spawn_timer = 5.0
+        self.spawn_interval = 5.0
+
+    class ChaosOrb:
+        def __init__(self, owner, angle):
+            import math
+            self.kind = "chaos_orb"
+            self.owner = owner
+            self.angle = angle
+            self.orbit_speed = 3.0
+            self.orbit_radius = 60.0
+            self.radius = 15.0
+            self.x = getattr(owner, "x", 0.0) + self.orbit_radius * math.cos(self.angle)
+            self.y = getattr(owner, "y", 0.0) + self.orbit_radius * math.sin(self.angle)
+            self.damage = 25.0
+            self.active = True
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.spawn_timer = 5.0
+        self.orbs = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                    import math
+                    import random
+                    angle = random.uniform(0, 2 * math.pi)
+                    orb = self.ChaosOrb(b, angle)
+                    self.orbs.append(orb)
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        world.arena.hazards.append(orb)
+
+        for orb in self.orbs[:]:
+            if not getattr(orb.owner, "alive", False):
+                orb.active = False
+
+            if not orb.active:
+                self.orbs.remove(orb)
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards") and orb in world.arena.hazards:
+                    world.arena.hazards.remove(orb)
+                continue
+
+            import math
+            orb.angle += orb.orbit_speed * delta
+            orb.x = getattr(orb.owner, "x", 0.0) + orb.orbit_radius * math.cos(orb.angle)
+            orb.y = getattr(orb.owner, "y", 0.0) + orb.orbit_radius * math.sin(orb.angle)
+
+            for b in balls:
+                if getattr(b, "alive", False) and b != orb.owner:
+                    dx = getattr(b, "x", 0.0) - orb.x
+                    dy = getattr(b, "y", 0.0) - orb.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist < orb.radius + getattr(b, "radius", 10.0):
+                        if hasattr(b, "hp"):
+                            b.hp -= orb.damage
+                            if hasattr(world, "add_event"):
+                                world.add_event("damage", {"target": getattr(b, "id", 0), "amount": orb.damage, "source": getattr(orb.owner, "id", 0)})
+                        orb.active = False
+                        break
+
+GAME_MODES['orbiting_chaos_orbs'] = OrbitingChaosOrbsMode()

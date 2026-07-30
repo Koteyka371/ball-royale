@@ -71628,3 +71628,190 @@ class QuantumWormholeMode extends GameMode:
 						break
 
 GAME_MODES['quantum_wormhole'] = QuantumWormholeMode.new()
+
+
+class OrbitingChaosOrbsMode extends GameMode:
+	var spawn_timer = 5.0
+	var spawn_interval = 5.0
+	var orbs = []
+
+	func _init():
+		name = "Orbiting Chaos Orbs"
+		description = "Players periodically spawn orbiting chaos orbs."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		spawn_timer = 5.0
+		orbs = []
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					if "alive" in b: is_alive = b.alive
+				else:
+					if b.has_method("get") and b.get("alive") != null:
+						is_alive = b.get("alive")
+					elif "alive" in b:
+						is_alive = b.alive
+
+				var ball_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					if "ball_type" in b: ball_type = b.ball_type
+				else:
+					if b.has_method("get") and b.get("ball_type") != null:
+						ball_type = b.get("ball_type")
+					elif "ball_type" in b:
+						ball_type = b.ball_type
+
+				if is_alive and ball_type != "spectator":
+					var angle = randf() * 2.0 * PI
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						if "x" in b: bx = b.x
+						if "y" in b: by = b.y
+					else:
+						if b.has_method("get"):
+							if b.get("x") != null: bx = b.get("x")
+							if b.get("y") != null: by = b.get("y")
+						else:
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
+
+					var orbit_radius = 60.0
+					var orb = {
+						"kind": "chaos_orb",
+						"owner": b,
+						"angle": angle,
+						"orbit_speed": 3.0,
+						"orbit_radius": orbit_radius,
+						"radius": 15.0,
+						"x": bx + orbit_radius * cos(angle),
+						"y": by + orbit_radius * sin(angle),
+						"damage": 25.0,
+						"active": true
+					}
+					orbs.append(orb)
+					if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+						world.arena.hazards.append(orb)
+					elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+						var arena = world.get("arena")
+						if typeof(arena) == TYPE_OBJECT and arena.has_method("get") and arena.get("hazards") != null:
+							arena.get("hazards").append(orb)
+
+		var i = orbs.size() - 1
+		while i >= 0:
+			var orb = orbs[i]
+			var owner = orb["owner"]
+			var owner_alive = false
+
+			if typeof(owner) == TYPE_DICTIONARY:
+				if "alive" in owner: owner_alive = owner.alive
+			else:
+				if owner.has_method("get") and owner.get("alive") != null:
+					owner_alive = owner.get("alive")
+				elif "alive" in owner:
+					owner_alive = owner.alive
+
+			if not owner_alive:
+				orb["active"] = false
+
+			if not orb["active"]:
+				orbs.remove_at(i)
+				if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
+					world.arena.hazards.erase(orb)
+				elif typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+					var arena = world.get("arena")
+					if typeof(arena) == TYPE_OBJECT and arena.has_method("get") and arena.get("hazards") != null:
+						arena.get("hazards").erase(orb)
+				i -= 1
+				continue
+
+			orb["angle"] += orb["orbit_speed"] * delta
+			var ox = 0.0
+			var oy = 0.0
+			if typeof(owner) == TYPE_DICTIONARY:
+				if "x" in owner: ox = owner.x
+				if "y" in owner: oy = owner.y
+			else:
+				if owner.has_method("get"):
+					if owner.get("x") != null: ox = owner.get("x")
+					if owner.get("y") != null: oy = owner.get("y")
+				else:
+					if "x" in owner: ox = owner.x
+					if "y" in owner: oy = owner.y
+
+			orb["x"] = ox + orb["orbit_radius"] * cos(orb["angle"])
+			orb["y"] = oy + orb["orbit_radius"] * sin(orb["angle"])
+
+			var hit = false
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					if "alive" in b: is_alive = b.alive
+				else:
+					if b.has_method("get") and b.get("alive") != null:
+						is_alive = b.get("alive")
+					elif "alive" in b:
+						is_alive = b.alive
+
+				var b_id = -1
+				var owner_id = -2
+				if typeof(b) == TYPE_DICTIONARY and "id" in b: b_id = b.id
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("id") != null: b_id = b.get("id")
+				elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+
+				if typeof(owner) == TYPE_DICTIONARY and "id" in owner: owner_id = owner.id
+				elif typeof(owner) == TYPE_OBJECT and owner.has_method("get") and owner.get("id") != null: owner_id = owner.get("id")
+				elif typeof(owner) == TYPE_OBJECT and "id" in owner: owner_id = owner.id
+
+				var is_same = false
+				if b_id != -1 and owner_id != -2 and b_id == owner_id:
+					is_same = true
+				elif b == owner:
+					is_same = true
+
+				if is_alive and not is_same:
+					var bx = 0.0
+					var by = 0.0
+					var br = 10.0
+					if typeof(b) == TYPE_DICTIONARY:
+						if "x" in b: bx = b.x
+						if "y" in b: by = b.y
+						if "radius" in b: br = b.radius
+					else:
+						if b.has_method("get"):
+							if b.get("x") != null: bx = b.get("x")
+							if b.get("y") != null: by = b.get("y")
+							if b.get("radius") != null: br = b.get("radius")
+						else:
+							if "x" in b: bx = b.x
+							if "y" in b: by = b.y
+							if "radius" in b: br = b.radius
+
+					var dx = bx - orb["x"]
+					var dy = by - orb["y"]
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist < orb["radius"] + br:
+						if typeof(b) == TYPE_DICTIONARY and "hp" in b:
+							b.hp -= orb["damage"]
+						elif typeof(b) == TYPE_OBJECT:
+							if b.has_method("set") and b.get("hp") != null:
+								b.set("hp", b.get("hp") - orb["damage"])
+							elif "hp" in b:
+								b.hp -= orb["damage"]
+						hit = true
+						break
+
+			if hit:
+				orb["active"] = false
+
+			i -= 1
+
+GAME_MODES['orbiting_chaos_orbs'] = OrbitingChaosOrbsMode.new()
