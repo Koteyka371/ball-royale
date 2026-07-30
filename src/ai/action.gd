@@ -3371,6 +3371,33 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	if typeof(ball) == TYPE_DICTIONARY:
+		if ball.get("sticky_wall_timer", 0.0) > 0.0:
+			ball["sticky_wall_timer"] = ball.get("sticky_wall_timer", 0.0) - delta
+			ball["vx"] = 0.0
+			ball["vy"] = 0.0
+			if ball["sticky_wall_timer"] <= 0.0:
+				ball["sticky_wall_timer"] = 0.0
+				ball["is_sliding_off"] = true
+	else:
+		if typeof(ball) == TYPE_OBJECT and ball.has_method("get_meta"):
+			if ball.has_meta("sticky_wall_timer") and ball.get_meta("sticky_wall_timer") > 0.0:
+				ball.set_meta("sticky_wall_timer", ball.get_meta("sticky_wall_timer") - delta)
+				ball.set_meta("vx", 0.0)
+				ball.set_meta("vy", 0.0)
+				if "vx" in ball: ball.vx = 0.0
+				if "vy" in ball: ball.vy = 0.0
+				if ball.get_meta("sticky_wall_timer") <= 0.0:
+					ball.set_meta("sticky_wall_timer", 0.0)
+					ball.set_meta("is_sliding_off", true)
+		elif "sticky_wall_timer" in ball and ball.sticky_wall_timer > 0.0:
+			ball.sticky_wall_timer -= delta
+			ball.vx = 0.0
+			ball.vy = 0.0
+			if ball.sticky_wall_timer <= 0.0:
+				ball.sticky_wall_timer = 0.0
+				ball.is_sliding_off = true
+
 	var b_type_exec = ball.ball_type if "ball_type" in ball else (ball.get_ball_type() if typeof(ball) == TYPE_OBJECT and ball.has_method("get_ball_type") else "")
 	if b_type_exec == "chameleon":
 		var vx = 0.0
@@ -24895,6 +24922,18 @@ func execute(strategy: String, delta: float):
             hit_wall = "right"
 
         var wall_state = "normal"
+        if hit_wall == "":
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["was_stuck"] = false
+                self.ball["is_sliding_off"] = false
+            else:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("was_stuck", false)
+                    self.ball.set_meta("is_sliding_off", false)
+                elif "was_stuck" in self.ball:
+                    self.ball.was_stuck = false
+                    self.ball.is_sliding_off = false
+
         if hit_wall != "" and "arena" in self.world and self.world.arena != null and "boundary_states" in self.world.arena:
             if self.world.arena.boundary_states.has(hit_wall):
                 wall_state = self.world.arena.boundary_states[hit_wall]
@@ -24934,29 +24973,94 @@ func execute(strategy: String, delta: float):
                 wall_state = "damaged_bouncy"
 
         if wall_state == "sticky":
-            if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-                self.ball.set_meta("vx", 0.0)
-                self.ball.set_meta("vy", 0.0)
-                self.ball.set_meta("_reflection_vx", 0.0)
-                self.ball.set_meta("_reflection_vy", 0.0)
-            if "vx" in self.ball: self.ball.vx = 0.0
-            if "vy" in self.ball: self.ball.vy = 0.0
-            if "_reflection_vx" in self.ball: self.ball._reflection_vx = 0.0
-            if "_reflection_vy" in self.ball: self.ball._reflection_vy = 0.0
-            speed_sq = 0.0
+            var sticky_timer = 0.0
+            var is_sliding_off = false
+            var was_stuck = false
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                sticky_timer = self.ball.get("sticky_wall_timer", 0.0)
+                is_sliding_off = self.ball.get("is_sliding_off", false)
+                was_stuck = self.ball.get("was_stuck", false)
+            else:
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta"):
+                    if self.ball.has_meta("sticky_wall_timer"):
+                        sticky_timer = self.ball.get_meta("sticky_wall_timer")
+                    if self.ball.has_meta("is_sliding_off"):
+                        is_sliding_off = self.ball.get_meta("is_sliding_off")
+                    if self.ball.has_meta("was_stuck"):
+                        was_stuck = self.ball.get_meta("was_stuck")
+                elif "sticky_wall_timer" in self.ball:
+                    sticky_timer = self.ball.sticky_wall_timer
+                    is_sliding_off = self.ball.is_sliding_off if "is_sliding_off" in self.ball else false
+                    was_stuck = self.ball.was_stuck if "was_stuck" in self.ball else false
 
-            if hit_wall == "top":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", margin + 1.0 + top_bound)
-                if "y" in self.ball: self.ball.y = margin + 1.0 + top_bound
-            elif hit_wall == "bottom":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", bottom_bound - margin - 1.0)
-                if "y" in self.ball: self.ball.y = bottom_bound - margin - 1.0
-            elif hit_wall == "left":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", margin + 1.0 + left_bound)
-                if "x" in self.ball: self.ball.x = margin + 1.0 + left_bound
-            elif hit_wall == "right":
-                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", right_bound - margin - 1.0)
-                if "x" in self.ball: self.ball.x = right_bound - margin - 1.0
+            if not is_sliding_off:
+                if sticky_timer <= 0.0 and not was_stuck:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["sticky_wall_timer"] = 3.0
+                        self.ball["was_stuck"] = true
+                    else:
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                            self.ball.set_meta("sticky_wall_timer", 3.0)
+                            self.ball.set_meta("was_stuck", true)
+                        elif "sticky_wall_timer" in self.ball:
+                            self.ball.sticky_wall_timer = 3.0
+                            self.ball.was_stuck = true
+
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("vx", 0.0)
+                        self.ball.set_meta("vy", 0.0)
+                        self.ball.set_meta("_reflection_vx", 0.0)
+                        self.ball.set_meta("_reflection_vy", 0.0)
+                    if "vx" in self.ball: self.ball.vx = 0.0
+                    if "vy" in self.ball: self.ball.vy = 0.0
+                    if "_reflection_vx" in self.ball: self.ball._reflection_vx = 0.0
+                    if "_reflection_vy" in self.ball: self.ball._reflection_vy = 0.0
+                    speed_sq = 0.0
+
+                    if hit_wall == "top":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", margin + top_bound)
+                        if "y" in self.ball: self.ball.y = margin + top_bound
+                    elif hit_wall == "bottom":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", bottom_bound - margin)
+                        if "y" in self.ball: self.ball.y = bottom_bound - margin
+                    elif hit_wall == "left":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", margin + left_bound)
+                        if "x" in self.ball: self.ball.x = margin + left_bound
+                    elif hit_wall == "right":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", right_bound - margin)
+                        if "x" in self.ball: self.ball.x = right_bound - margin
+                elif sticky_timer > 0.0:
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("vx", 0.0)
+                        self.ball.set_meta("vy", 0.0)
+                        self.ball.set_meta("_reflection_vx", 0.0)
+                        self.ball.set_meta("_reflection_vy", 0.0)
+                    if "vx" in self.ball: self.ball.vx = 0.0
+                    if "vy" in self.ball: self.ball.vy = 0.0
+                    if "_reflection_vx" in self.ball: self.ball._reflection_vx = 0.0
+                    if "_reflection_vy" in self.ball: self.ball._reflection_vy = 0.0
+                    speed_sq = 0.0
+
+                    if hit_wall == "top":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", margin + top_bound)
+                        if "y" in self.ball: self.ball.y = margin + top_bound
+                    elif hit_wall == "bottom":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("y", bottom_bound - margin)
+                        if "y" in self.ball: self.ball.y = bottom_bound - margin
+                    elif hit_wall == "left":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", margin + left_bound)
+                        if "x" in self.ball: self.ball.x = margin + left_bound
+                    elif hit_wall == "right":
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("x", right_bound - margin)
+                        if "x" in self.ball: self.ball.x = right_bound - margin
+                else:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["is_sliding_off"] = true
+                    else:
+                        if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                            self.ball.set_meta("is_sliding_off", true)
+                        elif "is_sliding_off" in self.ball:
+                            self.ball.is_sliding_off = true
 
         if speed_sq > 0:
             var speed = sqrt(speed_sq)
