@@ -1300,6 +1300,42 @@ func _attempt_damage_internal(attacker, target) -> void:
 		is_nemesis_active = pm.is_nemesis(attacker_type, target_type)
 
 
+
+		var has_mirror_shield = false
+		if "mirror_shield_active" in target and target.mirror_shield_active:
+			has_mirror_shield = true
+		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("mirror_shield_active") and target.get_meta("mirror_shield_active"):
+			has_mirror_shield = true
+
+		if has_mirror_shield and is_ranged_attack:
+			var base_dmg_refl = 10.0
+			if "damage" in attacker: base_dmg_refl = float(attacker.damage)
+
+			var sus_proj = []
+			if typeof(target) == TYPE_DICTIONARY and target.has("suspended_projectiles"):
+				sus_proj = target["suspended_projectiles"]
+			elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("suspended_projectiles"):
+				sus_proj = target.get_meta("suspended_projectiles")
+			elif typeof(target) == TYPE_OBJECT and "suspended_projectiles" in target:
+				sus_proj = target.suspended_projectiles
+
+			sus_proj.append({
+				"x": target_x,
+				"y": target_y,
+				"target": attacker,
+				"damage": base_dmg_refl,
+				"speed": 600.0,
+				"type": "reflected_projectile"
+			})
+
+			if typeof(target) == TYPE_DICTIONARY:
+				target["suspended_projectiles"] = sus_proj
+			elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"):
+				target.set_meta("suspended_projectiles", sus_proj)
+			elif typeof(target) == TYPE_OBJECT and "suspended_projectiles" in target:
+				target.suspended_projectiles = sus_proj
+			return
+
 		var has_projectile_reflect = false
 		if "projectile_reflect_active" in target and target.projectile_reflect_active:
 			has_projectile_reflect = true
@@ -31439,6 +31475,24 @@ func _collect_booster(delta: float):
                     if b_idx != -1:
                         self.world.boosters.remove_at(b_idx)
 
+
+            elif "kind" in nearest and nearest.kind == "mirror_shield_booster":
+                if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                    self.ball.set_meta("mirror_shield_active", true)
+                    self.ball.set_meta("mirror_shield_timer", 5.0)
+                else:
+                    self.ball.mirror_shield_active = true
+                    self.ball.mirror_shield_timer = 5.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+
             elif "kind" in nearest and nearest.kind == "projectile_reflect_booster":
                 if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
                     self.ball.set_meta("projectile_reflect_active", true)
@@ -44267,6 +44321,28 @@ func _update_skill_timer(delta: float):
             self.ball["aura_disruption_timer"] = ad_timer
 
 
+
+
+    var mirror_shield_timer = 0.0
+    if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("mirror_shield_timer"):
+        mirror_shield_timer = float(self.ball.get_meta("mirror_shield_timer"))
+    elif "mirror_shield_timer" in self.ball:
+        mirror_shield_timer = float(self.ball.mirror_shield_timer)
+
+    if mirror_shield_timer > 0:
+        mirror_shield_timer -= delta
+        if mirror_shield_timer <= 0:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("mirror_shield_timer", 0.0)
+                self.ball.set_meta("mirror_shield_active", false)
+            else:
+                self.ball.mirror_shield_timer = 0.0
+                self.ball.mirror_shield_active = false
+        else:
+            if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
+                self.ball.set_meta("mirror_shield_timer", mirror_shield_timer)
+            else:
+                self.ball.mirror_shield_timer = mirror_shield_timer
 
     var projectile_reflect_timer = 0.0
     if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("has_meta") and self.ball.has_meta("projectile_reflect_timer"):

@@ -723,6 +723,21 @@ class Action:
             is_nemesis_active = pm.is_nemesis(attacker.ball_type, target.ball_type)
 
 
+
+        if getattr(target, "mirror_shield_active", False) and is_ranged:
+            if not hasattr(target, "suspended_projectiles"):
+                target.suspended_projectiles = []
+
+            target.suspended_projectiles.append({
+                "x": target.x,
+                "y": target.y,
+                "target": attacker,
+                "damage": getattr(attacker, "damage", 10.0),
+                "speed": 600.0,
+                "type": "reflected_projectile"
+            })
+            return
+
         if getattr(target, "projectile_reflect_active", False) and is_ranged:
             if not hasattr(target, "suspended_projectiles"):
                 target.suspended_projectiles = []
@@ -15929,6 +15944,16 @@ class Action:
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
 
+
+                elif getattr(nearest, "kind", None) == "mirror_shield_booster":
+                    self.ball.mirror_shield_active = True
+                    self.ball.mirror_shield_timer = 5.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+
                 elif getattr(nearest, "kind", None) == "projectile_reflect_booster":
                     self.ball.projectile_reflect_active = True
                     self.ball.projectile_reflect_timer = 5.0
@@ -22461,6 +22486,12 @@ class Action:
             if self.ball.aura_disruption_timer < 0:
                 self.ball.aura_disruption_timer = 0.0
 
+
+
+        if hasattr(self.ball, "mirror_shield_timer") and self.ball.mirror_shield_timer > 0:
+            self.ball.mirror_shield_timer -= delta
+            if self.ball.mirror_shield_timer <= 0:
+                self.ball.mirror_shield_active = False
 
         if hasattr(self.ball, "projectile_reflect_timer") and self.ball.projectile_reflect_timer > 0:
             self.ball.projectile_reflect_timer -= delta
