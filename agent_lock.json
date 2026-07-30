@@ -211,9 +211,9 @@
     "agent-26": {
       "name": "Jules Worker 26",
       "area": "innovation",
-      "status": "assigned",
-      "task_id": "idea-1710",
-      "started_at": "2026-07-30T17:52:39.168235+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 2
     },
     "agent-27": {
@@ -243,9 +243,9 @@
     "agent-30": {
       "name": "Jules Worker 30",
       "area": "meta",
-      "status": "assigned",
-      "task_id": "idea-1714",
-      "started_at": "2026-07-30T17:52:39.168235+00:00",
+      "status": "idle",
+      "task_id": null,
+      "started_at": null,
       "cycles_today": 7
     }
   },
