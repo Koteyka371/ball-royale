@@ -31708,7 +31708,7 @@ class RandomGravityShiftMode(GameMode):
         self.name = "Random Gravity Shift"
         self.description = "A mode where gravity periodically shifts in random directions."
         self.shift_timer = 0.0
-        self.shift_interval = 5.0
+        self.shift_interval = 10.0
         self.gravity_dir_x = 0.0
         self.gravity_dir_y = 1.0
         self.gravity_strength = 300.0
@@ -41783,7 +41783,7 @@ class RandomGravityShiftMode(GameMode):
         self.name = "Random Gravity Shift"
         self.description = "A mode where gravity periodically shifts in random directions."
         self.shift_timer = 0.0
-        self.shift_interval = 5.0
+        self.shift_interval = 10.0
         self.gravity_dir_x = 0.0
         self.gravity_dir_y = 1.0
         self.gravity_strength = 300.0

@@ -50963,7 +50963,7 @@ class SingularityBombEventMode extends GameMode:
 
 class RandomGravityShiftMode extends GameMode:
 	var shift_timer = 0.0
-	var shift_interval = 5.0
+	var shift_interval = 10.0
 	var gravity_dir_x = 0.0
 	var gravity_dir_y = 1.0
 	var gravity_strength = 300.0
