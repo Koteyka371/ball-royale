@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1673] Reflect Shield Booster — *2026-07-30 15:45:35 UTC*
+
+A new booster item that grants a temporary shield that reflects projectiles back at the attacker for 5 seconds.
+
+---
+
 ## [idea-1628] Waterfalls (Vertical Currents) — *2026-07-30 14:37:33 UTC*
 
 Introduce a Waterfall hazard that operates similarly to flood zones but dynamically changes the elevation level of the arena, dropping entities to a lower arena layer where different hazards might exist. While falling, entities cannot attack but can be attacked.
