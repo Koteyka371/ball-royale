@@ -18398,6 +18398,7 @@ func execute(strategy: String, delta: float):
                                 var mod = 1.0
                                 if c == "grounded_boots": mod = 0.5
                                 elif c == "rooted_boots": mod = 0.2
+                                elif c == "link_boots": mod = 0.5
 
                                 if "x" in self.ball: self.ball.x += nx * pull_strength * mod
                                 elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * pull_strength * mod)
@@ -41913,6 +41914,75 @@ func _resolve_collisions() -> bool:
                 knockback_multiplier *= 0.05
             elif cosmetic_val == "hover_boots":
                 knockback_multiplier *= 1.5
+
+            elif cosmetic_val == "link_boots":
+                var nearest_ally = null
+                var min_dist = 1000000.0
+                if self.world != null and "balls" in self.world:
+                    for ally in self.world.balls:
+                        var a_alive = ally.get("alive") if typeof(ally) == TYPE_DICTIONARY else ally.alive
+                        if a_alive and ally != self.ball:
+                            var a_team = null
+                            if typeof(ally) == TYPE_DICTIONARY and ally.has("team"):
+                                a_team = ally["team"]
+                            elif typeof(ally) == TYPE_OBJECT and "team" in ally:
+                                a_team = ally.team
+                            elif typeof(ally) == TYPE_OBJECT and ally.has_method("has_meta") and ally.has_meta("team"):
+                                a_team = ally.get_meta("team")
+
+                            var my_t = null
+                            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+                                my_t = self.ball["team"]
+                            elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball:
+                                my_t = self.ball.team
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("team"):
+                                my_t = self.ball.get_meta("team")
+
+                            if a_team == my_t:
+                                var ax = ally.x if typeof(ally) == TYPE_OBJECT else ally["x"]
+                                var ay = ally.y if typeof(ally) == TYPE_OBJECT else ally["y"]
+                                var bxx = self.ball.x if typeof(self.ball) == TYPE_OBJECT else self.ball["x"]
+                                var byy = self.ball.y if typeof(self.ball) == TYPE_OBJECT else self.ball["y"]
+                                var dist = sqrt((ax - bxx)*(ax - bxx) + (ay - byy)*(ay - byy))
+                                if dist < min_dist:
+                                    min_dist = dist
+                                    nearest_ally = ally
+
+                if nearest_ally != null:
+                    knockback_multiplier *= 0.5
+                    var shared_kb_x = nx * overlap * 0.5
+                    var shared_kb_y = ny * overlap * 0.5
+                    if typeof(nearest_ally) == TYPE_OBJECT:
+                        nearest_ally.x += shared_kb_x
+                        nearest_ally.y += shared_kb_y
+                    else:
+                        nearest_ally["x"] += shared_kb_x
+                        nearest_ally["y"] += shared_kb_y
+
+                    # Share positive status effects (speed, shield, etc)
+                    var effects = ["speed_boost_timer", "shield_timer", "damage_buff_timer", "invulnerability_timer", "invisible_timer", "reflect_shield_timer"]
+                    for eff in effects:
+                        var my_val = 0.0
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has(eff):
+                            my_val = self.ball[eff]
+                        elif typeof(self.ball) == TYPE_OBJECT and eff in self.ball:
+                            my_val = self.ball.get(eff)
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta(eff):
+                            my_val = self.ball.get_meta(eff)
+
+                        if my_val > 0.0:
+                            if typeof(nearest_ally) == TYPE_OBJECT:
+                                var cur_ally_val = nearest_ally.get(eff) if eff in nearest_ally else (nearest_ally.get_meta(eff) if nearest_ally.has_method("has_meta") and nearest_ally.has_meta(eff) else 0.0)
+                                if cur_ally_val < my_val:
+                                    if eff in nearest_ally:
+                                        nearest_ally.set(eff, my_val)
+                                    elif nearest_ally.has_method("set_meta"):
+                                        nearest_ally.set_meta(eff, my_val)
+                            else:
+                                var cur_ally_val = nearest_ally.get(eff, 0.0)
+                                if cur_ally_val < my_val:
+                                    nearest_ally[eff] = my_val
+
             elif cosmetic_val == "kinetic_absorber" or has_kin_abs_skill:
                 var o_team = null
                 if typeof(other) == TYPE_DICTIONARY and other.has("team"):
@@ -47106,6 +47176,7 @@ func _update_skill_timer(delta: float):
                                 elif self.ball.has_method("get_meta") and self.ball.has_meta("cosmetic"): c = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
                                 if c == "grounded_boots": mod = 0.1
                                 elif c == "rooted_boots": mod = 0.05
+                                elif c == "link_boots": mod = 0.5
 
                                 self.ball.x += nx * pull_strength * mod
                                 self.ball.y += ny * pull_strength * mod
