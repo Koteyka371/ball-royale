@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1700] Decoy Balloon Trap — *2026-07-30 09:25:42 UTC*
+
+Players can deploy a balloon that perfectly mirrors their appearance and movement patterns, but has zero health. When an enemy pops it, it releases a small cloud of confusing gas that temporarily randomizes their movement controls.
+
+---
+
 ## [idea-1694] Thermo-Optic Camouflage — *2026-07-30 09:25:36 UTC*
 
 An active stealth system that rapidly drains stamina but grants complete invisibility to radar and heat sensors.
