@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1704] Gravity Well Booster — *2026-07-30 21:59:51 UTC*
+
+A consumable booster that allows the ball to generate a temporary small gravity well around itself, pulling in nearby enemies and projectiles towards it for 5 seconds.
+
+---
+
 ## [idea-1716] Doppelganger Mirror Mode — *2026-07-30 21:35:31 UTC*
 
 A chaotic new game mode where periodically every player on the map is instantly swapped in position with their nearest active decoy or clone. If they do not have a decoy active, one is spawned for them at their location moments before the swap.
