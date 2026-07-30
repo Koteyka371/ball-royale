@@ -1,7 +1,7 @@
 import pytest
 import math
-from src.ai.action import Action
-from src.ai.game_modes import GameMode
+from ai.action import Action
+from ai.game_modes import GameMode
 
 class MockBall:
     def __init__(self, id, ball_type='player', x=100.0, y=100.0, vx=0.0, vy=0.0):
@@ -89,6 +89,8 @@ def test_reverse_gravity_item_pickup_and_use():
     action.execute({"strategy": "attack"}, 0.016)
     world.tick += 1
 
-    # check status effect applied
-    assert getattr(ball, "reverse_gravity_item_timer", 0) > 0
-    assert getattr(ball, "gravity_multiplier", 1.0) == -1.0
+    # check status effect applied (spawns field hazard)
+    rg_hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") == "reverse_gravity_field"]
+    assert len(rg_hazards) == 1
+    assert rg_hazards[0].radius == 250.0
+    assert rg_hazards[0].duration == 5.0
