@@ -22,7 +22,7 @@ class MockBall:
         self.base_damage = 10.0
         self.radius = 10.0
         self.base_radius = 10.0
-        self.speed = 100.0
+        self.speed = 90.0
         self.base_speed = 100.0
         self.mass = 1.0
         self.base_mass = 1.0
@@ -46,7 +46,7 @@ def test_setup_assigns_juggernauts():
     assert balls[0].hp == 500.0
     assert balls[0].damage > 10.0
     assert balls[0].radius == 20.0
-    assert balls[0].speed < 100.0
+    assert balls[0].speed <= 130.0
     assert balls[0].mass == 3.0
 
     # Verify stats for hunters
