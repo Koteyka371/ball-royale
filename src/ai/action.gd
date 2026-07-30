@@ -13384,7 +13384,13 @@ func execute(strategy: String, delta: float):
     elif my_ball.has_method("get_meta") and my_ball.has_meta("is_decoy_beacon"):
         is_decoy_beacon = my_ball.get_meta("is_decoy_beacon")
 
-    if is_decoy_beacon:
+    var is_turret = false
+    if "is_turret" in my_ball:
+        is_turret = my_ball.is_turret
+    elif my_ball.has_method("get_meta") and my_ball.has_meta("is_turret"):
+        is_turret = my_ball.get_meta("is_turret")
+
+    if is_decoy_beacon or is_turret:
         if world != null and "balls" in world:
             var b_team = ""
             if "team" in my_ball: b_team = my_ball.team

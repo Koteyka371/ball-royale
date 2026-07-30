@@ -6552,7 +6552,7 @@ class Action:
                 self.ball.alive = False
 
 
-        if getattr(self.ball, "is_decoy_beacon", False):
+        if getattr(self.ball, "is_decoy_beacon", False) or getattr(self.ball, "is_turret", False):
             # heal allies
             if hasattr(self.world, "balls"):
                 for b in getattr(self.world, "balls", []):

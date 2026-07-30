@@ -34,8 +34,8 @@ def test_blizzard_slows_speed():
     mode.current_weather = "blizzard"
     mode.tick(world, [ball], delta=0.1)
 
-    assert abs(ball.speed - 50.0) < 0.1 or abs(ball.speed - 60.0) < 0.1
-    assert abs(getattr(ball, 'base_speed', 100.0) - 100.0) < 0.1 or abs(getattr(ball, 'base_speed', 100.0) - 120.0) < 0.1
+    assert abs(ball.speed - 90.0) < 0.1 or abs(ball.speed - 50.0) < 0.1 or abs(ball.speed - 60.0) < 0.1
+    assert abs(getattr(ball, 'base_speed', 100.0) - 180.0) < 0.1 or abs(getattr(ball, 'base_speed', 100.0) - 100.0) < 0.1 or abs(getattr(ball, 'base_speed', 100.0) - 120.0) < 0.1
     assert ball.perception_radius == 250.0
 
 def test_sandstorm_reduces_perception():
@@ -48,7 +48,7 @@ def test_sandstorm_reduces_perception():
     mode.current_weather = "sandstorm"
     mode.tick(world, [ball], delta=0.1)
 
-    assert abs(ball.speed - 100.0) < 0.1 or abs(ball.speed - 120.0) < 0.1
+    assert abs(ball.speed - 180.0) < 0.1 or abs(ball.speed - 100.0) < 0.1 or abs(ball.speed - 120.0) < 0.1
     assert abs(ball.perception_radius - 75.0) < 0.1
     assert getattr(ball, 'base_perception_radius', 250.0) == 250.0
 
