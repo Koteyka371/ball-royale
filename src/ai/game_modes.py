@@ -33703,7 +33703,7 @@ class MiniBlackHolesMode(GameMode):
                     id=f"mini_bh_{random.randint(10000, 99999)}",
                     x=hx, y=hy,
                     radius=30.0,
-                    kind="black_hole",
+                    kind="mini_black_hole",
                     damage=5.0
                 )
                 h.is_mini_bh = True
@@ -33718,7 +33718,7 @@ class MiniBlackHolesMode(GameMode):
                 h.x = hx
                 h.y = hy
                 h.radius = 30.0
-                h.kind = "black_hole"
+                h.kind = "mini_black_hole"
                 h.damage = 5.0
                 h.active = True
                 h.is_mini_bh = True
@@ -33754,7 +33754,7 @@ class MiniBlackHolesMode(GameMode):
 
                 # Pull hazards
                 for other_h in world.arena.hazards:
-                    if getattr(other_h, "id", None) != getattr(h, "id", None) and getattr(other_h, "kind", "") != "black_hole":
+                    if getattr(other_h, "id", None) != getattr(h, "id", None) and getattr(other_h, "kind", "") not in ("black_hole", "mini_black_hole"):
                         hx_other = getattr(other_h, "x", 0.0)
                         hy_other = getattr(other_h, "y", 0.0)
                         dx_h = h.x - hx_other
