@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1707] Time Loop Event — *2026-07-30 13:41:08 UTC*
+
+An event where every 30 seconds the arena resets state (hazard positions, player positions, hp), but the players retain any items picked up. Allows for strategic routing and resource gathering.
+
+---
+
 ## [idea-1684] Healing Turret — *2026-07-30 10:58:35 UTC*
 
 Turrets can heal allies.
