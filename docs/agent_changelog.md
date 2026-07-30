@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1703] Quantum Teleportation Zone — *2026-07-30 10:36:18 UTC*
+
+A hazard zone that instantly teleports a ball to a paired zone on the other side of the arena, maintaining their exact velocity and direction, which can be used defensively or aggressively.
+
+---
+
 ## [idea-1705] Shifting Gravity Mode — *2026-07-30 10:36:13 UTC*
 
 Gravity randomly shifts directions every 10 seconds.
