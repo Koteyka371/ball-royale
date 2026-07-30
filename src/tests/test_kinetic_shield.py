@@ -71,3 +71,29 @@ def test_kinetic_shield_moving_wall_collision():
     assert b.speed_boost_timer > 0.0
     assert b.shielding > 0.0
     assert b.vx == 50.0
+
+def test_kinetic_shield_stored_damage_buff_knockback():
+    world = MockWorld()
+    b1 = MockEntity(id=1, x=0, y=0, vx=0, vy=0, kinetic_shield_active=False, kinetic_shield_stored_damage=100.0, speed_boost_timer=0, speed=200.0, base_speed=200.0)
+    b2 = MockEntity(id=2, x=10, y=0, vx=0, vy=0)
+    world.balls.extend([b1, b2])
+
+    action = Action(b1, world)
+
+    # We trigger the melee attack
+    # _attempt_damage_internal triggers the logic we just patched
+    action._attempt_damage_internal(b1, b2)
+
+    # b1 should get speed boost
+    assert b1.speed_boost_timer == 3.0
+    assert b1.speed == 200.0 + 100.0 + (100.0 * 2.0)
+    assert b1.kinetic_shield_active == False
+    assert b1.kinetic_shield_stored_damage == 0.0
+
+    # b2 should get knockback
+    # knockback_force = 1000.0 + stored_dmg * 50.0 = 1000.0 + 5000.0 = 6000.0
+    # direction is from b1(0,0) to b2(10,0) -> nx=1, ny=0
+    # b2.vx should be 6000.0
+    assert b2.vx == 6000.0
+    assert b2.vy == 0.0
+    assert b2._knockback_timer == 0.5

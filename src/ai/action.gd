@@ -1787,7 +1787,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 	elif "kinetic_shield_stored_damage" in attacker:
 		a_stored_dmg = float(attacker.kinetic_shield_stored_damage)
 
-	if a_stored_dmg > 0.0 and not is_ranged_attack:
+	if a_stored_dmg >= 100.0 and not is_ranged_attack:
 		original_damage += a_stored_dmg
 		var cur_speed_boost_timer = 0.0
 		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("speed_boost_timer"):
@@ -1797,12 +1797,89 @@ func _attempt_damage_internal(attacker, target) -> void:
 
 		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
 			attacker.set_meta("speed_boost_timer", cur_speed_boost_timer + 3.0)
+
+			var cur_speed = 200.0
+			if attacker.has_meta("speed"): cur_speed = float(attacker.get_meta("speed"))
+			elif "speed" in attacker: cur_speed = float(attacker.speed)
+
+			var base_speed = 200.0
+			if attacker.has_meta("base_speed"): base_speed = float(attacker.get_meta("base_speed"))
+			elif "base_speed" in attacker: base_speed = float(attacker.base_speed)
+
+			attacker.set_meta("speed", min(cur_speed + 100.0 + (a_stored_dmg * 2.0), base_speed * 3.0))
+
 			attacker.set_meta("kinetic_shield_active", false)
 			attacker.set_meta("kinetic_shield_stored_damage", 0.0)
 		else:
 			attacker.speed_boost_timer = cur_speed_boost_timer + 3.0
+			var cur_speed = 200.0
+			if "speed" in attacker: cur_speed = float(attacker.speed)
+			var base_speed = 200.0
+			if "base_speed" in attacker: base_speed = float(attacker.base_speed)
+
+			attacker.speed = min(cur_speed + 100.0 + (a_stored_dmg * 2.0), base_speed * 3.0)
+
 			attacker.kinetic_shield_active = false
 			attacker.kinetic_shield_stored_damage = 0.0
+
+		var t_x = 0.0
+		var t_y = 0.0
+		if typeof(target) == TYPE_DICTIONARY:
+			if target.has("x"): t_x = float(target["x"])
+			if target.has("y"): t_y = float(target["y"])
+		else:
+			if "x" in target: t_x = float(target.x)
+			elif target.has_method("has_meta") and target.has_meta("x"): t_x = float(target.get_meta("x"))
+			if "y" in target: t_y = float(target.y)
+			elif target.has_method("has_meta") and target.has_meta("y"): t_y = float(target.get_meta("y"))
+
+		var a_x = 0.0
+		var a_y = 0.0
+		if typeof(attacker) == TYPE_DICTIONARY:
+			if attacker.has("x"): a_x = float(attacker["x"])
+			if attacker.has("y"): a_y = float(attacker["y"])
+		else:
+			if "x" in attacker: a_x = float(attacker.x)
+			elif attacker.has_method("has_meta") and attacker.has_meta("x"): a_x = float(attacker.get_meta("x"))
+			if "y" in attacker: a_y = float(attacker.y)
+			elif attacker.has_method("has_meta") and attacker.has_meta("y"): a_y = float(attacker.get_meta("y"))
+
+		var dx = t_x - a_x
+		var dy = t_y - a_y
+		var dist = sqrt(dx*dx + dy*dy)
+		if dist > 0.01:
+			var nx = dx / dist
+			var ny = dy / dist
+			var knockback_force = 1000.0 + a_stored_dmg * 50.0
+
+			if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
+				var cur_vx = 0.0
+				if target.has_meta("vx"): cur_vx = float(target.get_meta("vx"))
+				elif "vx" in target: cur_vx = float(target.vx)
+
+				var cur_vy = 0.0
+				if target.has_meta("vy"): cur_vy = float(target.get_meta("vy"))
+				elif "vy" in target: cur_vy = float(target.vy)
+
+				target.set_meta("vx", cur_vx + nx * knockback_force)
+				target.set_meta("vy", cur_vy + ny * knockback_force)
+				target.set_meta("_knockback_timer", 0.5)
+			elif typeof(target) == TYPE_DICTIONARY:
+				var cur_vx = 0.0
+				if target.has("vx"): cur_vx = float(target["vx"])
+				var cur_vy = 0.0
+				if target.has("vy"): cur_vy = float(target["vy"])
+				target["vx"] = cur_vx + nx * knockback_force
+				target["vy"] = cur_vy + ny * knockback_force
+				target["_knockback_timer"] = 0.5
+			else:
+				var cur_vx = 0.0
+				if "vx" in target: cur_vx = float(target.vx)
+				var cur_vy = 0.0
+				if "vy" in target: cur_vy = float(target.vy)
+				target.vx = cur_vx + nx * knockback_force
+				target.vy = cur_vy + ny * knockback_force
+				target._knockback_timer = 0.5
 
 	var target_weakness = ""
 	if typeof(target) == TYPE_DICTIONARY:
