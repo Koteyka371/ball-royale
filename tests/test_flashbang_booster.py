@@ -41,6 +41,15 @@ class MockBall:
         self.is_blinded = False
         self.blindness_timer = 0.0
         self._base_speed_set = True
+        self.perception_radius = 250.0
+        self.is_stunned = False
+        self.stun_timer = 0.0
+        self.vision_reduction_timer = 0.0
+        self.vision_reduction_applied = False
+    def __eq__(self, other):
+        if not isinstance(other, MockBall):
+            return False
+        return self.id == other.id
 
 def test_flashbang_booster_pickup():
     world = MockWorld()
@@ -57,49 +66,40 @@ def test_flashbang_booster_pickup():
 
     # Booster removed
     assert len(world.boosters) == 0
-    # 3 decoys spawned + player = 4 balls
-    assert len(world.balls) == 4
-
-    decoys = world.balls[1:]
-    assert len(decoys) == 3
-    for d in decoys:
-        assert d.is_decoy
-        assert d.decoy_type == "flash"
-        assert d.decoy_timer == 5.0
-        assert d.hp == 1.0
-        assert d.owner_id == player.id
-
-    # Check scatter (velocity should be separated by 120 degrees)
-    # Using small epsilon for float comparison
-    vxs = [d.vx for d in decoys]
-    vys = [d.vy for d in decoys]
-
-    assert math.isclose(vxs[0], 200.0, rel_tol=1e-5)
-    assert math.isclose(vys[0], 0.0, abs_tol=1e-5)
-
-    assert math.isclose(vxs[1], -100.0, rel_tol=1e-5)
-    assert math.isclose(vys[1], 173.205081, rel_tol=1e-5)
+    # We no longer spawn decoys on flashbang pickup, it explodes immediately
+    assert len(world.balls) == 1
 
 def test_flashbang_booster_explosion_blindness():
     world = MockWorld()
-    decoy = MockBall(2)
-    decoy.is_decoy = True
-    decoy.decoy_type = "flash"
-    world.balls.append(decoy)
 
     enemy = MockBall(3, x=50, y=0, team="team_b")
     world.balls.append(enemy)
 
-    player = MockBall(4, x=100, y=0, team="team_a")
+    player = MockBall(4, x=0, y=0, team="team_a")
     world.balls.append(player)
 
-    # Detonate decoy
-    decoy.hp = 0
+    booster = MockHazard("flashbang_booster")
+    booster.x = 0
+    booster.y = 0
+    world.boosters.append(booster)
 
-    action = Action(decoy, world)
-    action.execute("idle", 0.016)
+    action = Action(player, world)
 
-    assert enemy.is_blinded
-    assert enemy.blindness_timer == 3.0
+    # We must properly mock action._get_enemies() so it returns a new list each time,
+    # rather than modifying the same list, or just ensure it returns a list correctly.
+    def mock_get_enemies():
+        return [enemy]
+    action._get_enemies = mock_get_enemies
 
-    assert not player.is_blinded
+    action._get_boosters = lambda: [booster]
+    action._collect_booster(0.016)
+
+    # Replaced blindness logic with perception radius reduction
+    assert enemy.perception_radius == 0.0
+    assert enemy.vision_reduction_timer >= 3.0
+    assert enemy.is_stunned
+    assert enemy.stun_timer >= 3.0
+
+    # Ensure player is not affected by their own booster
+    assert not getattr(player, 'is_stunned', False)
+    assert getattr(player, 'perception_radius', 250.0) != 0.0
