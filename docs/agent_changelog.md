@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1686] Idea 1: Laser Mirror Arena — *2026-07-31 09:58:45 UTC*
+
+Arena borders are replaced with laser mirrors. Projectiles bounce infinitely but grow stronger with each bounce.
+
+---
+
 ## [idea-1712] Decoy Swap Item — *2026-07-31 08:49:43 UTC*
 
 An item that allows a ball to instantly swap positions with their deployed decoy, allowing for tricky escapes or offensive misdirection.
