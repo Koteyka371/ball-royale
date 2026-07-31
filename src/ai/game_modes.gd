@@ -30619,7 +30619,7 @@ class FloorIsLavaMode extends GameMode:
 				if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
 					arena_class = load("res://src/arena/procedural_arena.gd")
 				if arena_class != null and arena_class.const_defined("Hazard"):
-					var h = arena_class.Hazard.new(99000 + idx, bp["x"], bp["y"], bp["radius"], "bounce_pad", 0.0)
+					var h = arena_class.Hazard.new(99000 + idx, bp["x"], bp["y"], bp["radius"], "jump_pad", 0.0)
 					hazards_array.append(h)
 				else:
 					var h = {
@@ -30627,7 +30627,7 @@ class FloorIsLavaMode extends GameMode:
 						"x": bp["x"],
 						"y": bp["y"],
 						"radius": bp["radius"],
-						"kind": "bounce_pad",
+						"kind": "jump_pad",
 						"damage": 0.0,
 						"active": true
 					}
@@ -41852,7 +41852,7 @@ class AerialArenaMode extends GameMode:
 				"x": rx,
 				"y": ry,
 				"radius": 60.0,
-				"kind": "bounce_pad",
+				"kind": "jump_pad",
 				"damage": 0.0,
 				"active": true
 			}
@@ -72350,7 +72350,7 @@ class VerticalLavaPlatformerMode extends GameMode:
 						"x": x_pos,
 						"y": y_pos,
 						"radius": 40.0,
-						"kind": "bounce_pad",
+						"kind": "jump_pad",
 						"damage": 0.0,
 						"active": true
 					})
@@ -72367,7 +72367,7 @@ class VerticalLavaPlatformerMode extends GameMode:
 					var x_pos = randf_range(100.0, arena_width - 100.0)
 					var h = null
 					if load("res://src/arena/procedural_arena.gd") != null:
-						h = load("res://src/arena/procedural_arena.gd").Hazard.new(190000 + i, x_pos, y_pos, 40.0, "bounce_pad", 0.0)
+						h = load("res://src/arena/procedural_arena.gd").Hazard.new(190000 + i, x_pos, y_pos, 40.0, "jump_pad", 0.0)
 						h.active = true
 						arena.hazards.append(h)
 
