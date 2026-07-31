@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1711] Sniper Drone Pet — *2026-07-31 19:50:12 UTC*
+
+A pet that stays behind the player and occasionally fires high-damage shots at distant enemies.
+
+---
+
 ## [idea-1717] Quantum Leap Boots (Booster) — *2026-07-31 19:24:37 UTC*
 
 A booster that allows the player to perform a short, instantaneous dash ignoring all collision and hazards (like walls, traps, and enemies) along the path. After the dash, a temporary shockwave is emitted at the starting point, staggering enemies left behind.
