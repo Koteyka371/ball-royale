@@ -833,6 +833,23 @@ class GameMode:
                 b1.is_receiving_shared_damage = False
                 b2.is_receiving_shared_damage = False
 
+        # Hologram Clones mimic logic
+        for b in balls:
+            if getattr(b, "alive", False) and hasattr(b, "hologram_clones"):
+                alive_holograms = []
+                for c in b.hologram_clones:
+                    if getattr(c, "alive", False):
+                        c.vx = getattr(b, "vx", 0.0)
+                        c.vy = getattr(b, "vy", 0.0)
+                        c.target_x = getattr(b, "target_x", c.x)
+                        c.target_y = getattr(b, "target_y", c.y)
+                        if hasattr(c, "clone_duration"):
+                            c.clone_duration -= delta
+                            if c.clone_duration <= 0:
+                                c.alive = False
+                        alive_holograms.append(c)
+                b.hologram_clones = alive_holograms
+
         # Cosmetic Synergy Logic
         # Group alive balls by team
         team_cosmetics = {}
@@ -935,6 +952,51 @@ class GameMode:
                                 # Explode logic
                                 if hasattr(world, "add_event"):
                                     world.add_event("grave_trap_explosion", {"x": getattr(h, "x", 0.0), "y": getattr(h, "y", 0.0)})
+                                break
+
+                elif getattr(h, "kind", "") == "deployable_hologram_trap":
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(h, "owner_team", "") and not getattr(b, "is_hologram", False):
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0.0) - getattr(h, "x", 0.0), getattr(b, "y", 0.0) - getattr(h, "y", 0.0))
+                            if dist <= getattr(h, "radius", 30.0) + getattr(b, "radius", 15.0):
+                                hazards_to_remove.append(h)
+                                import copy
+                                import random
+                                for _ in range(3):
+                                    try:
+                                        clone = copy.copy(b)
+                                    except Exception:
+                                        class DummyClone: pass
+                                        clone = DummyClone()
+                                        for k in ["x", "y", "vx", "vy", "radius", "speed", "hp", "max_hp", "alive", "ball_type", "team", "mass"]:
+                                            if hasattr(b, k):
+                                                setattr(clone, k, getattr(b, k))
+                                    clone.id = 150000 + random.randint(1, 99999)
+                                    clone.x += random.uniform(-40, 40)
+                                    clone.y += random.uniform(-40, 40)
+                                    clone.damage = 0.0
+                                    clone.is_hologram = True
+                                    clone.hologram_owner_id = getattr(b, "id", None)
+                                    clone.is_delayed_clone = True
+                                    # Duration so they expire
+                                    clone.hp = 10.0 # Make them fragile
+                                    clone.max_hp = 10.0
+                                    clone.clone_duration = 10.0
+
+                                    # Explicitly clear abilities for holograms
+                                    clone.skill = None
+                                    clone.active_skill = None
+                                    clone.brain = None
+
+                                    if not hasattr(b, "hologram_clones"):
+                                        b.hologram_clones = []
+                                    b.hologram_clones.append(clone)
+
+                                    if hasattr(world, "balls"):
+                                        world.balls.append(clone)
+                                        if hasattr(world, "entities") and world.balls is not getattr(world, "entities", None):
+                                            world.entities.append(clone)
                                 break
 
                 elif getattr(h, "kind", "") == "bone_fragment":
