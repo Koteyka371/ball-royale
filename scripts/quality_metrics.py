@@ -61,7 +61,7 @@ def measure_complexity(filepath: Path) -> dict:
 
 
 def measure_test_coverage() -> dict:
-    test_files = list(PROJECT_ROOT.glob("tests/test_*.py"))
+    test_files = list(PROJECT_ROOT.glob("src/tests/test_*.py"))
     src_files = list(PROJECT_ROOT.glob("src/**/*.py"))
     tested_modules = set()
     for tf in test_files:
@@ -87,7 +87,7 @@ def measure_test_coverage() -> dict:
             covered += 1
         else:
             # Check if test file exists for this module
-            test_file = PROJECT_ROOT / "tests" / f"test_{mod}.py"
+            test_file = PROJECT_ROOT / "src/tests" / f"test_{mod}.py"
             if test_file.exists():
                 covered += 1
 

@@ -1,0 +1,7 @@
+{
+  "id": "idea-9999",
+  "title": "Improve CI Code Quality Metrics",
+  "description": "Increase test coverage so that the code quality metric passes.",
+  "area": "maintenance",
+  "risk": "low"
+}
