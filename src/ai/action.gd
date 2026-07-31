@@ -10467,6 +10467,25 @@ func execute(strategy: String, delta: float):
 							if "id" in self.ball: p_puddle.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(p_puddle)
 
+		if inv.has("deployable_swapper"):
+			var nearest = _get_nearest_enemy()
+			if nearest != null:
+				var dist = sqrt(pow(self.ball.x - nearest.x, 2) + pow(self.ball.y - nearest.y, 2))
+				if dist < 300:
+					inv.erase("deployable_swapper")
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+					elif "inventory" in self.ball: self.ball.inventory = inv
+					if world != null and "arena" in world and "hazards" in world.arena:
+						var arena = world.arena
+						var swapper_id = str(arena.hazards.size()) + "_" + str(world.tick if "tick" in world else 0) + "_swapper"
+						var swapper = null
+						if load("res://src/arena/procedural_arena.gd") != null:
+							swapper = load("res://src/arena/procedural_arena.gd").Hazard.new(swapper_id, self.ball.x, self.ball.y, 100.0, "deployable_swapper", 0.0)
+							swapper.set_meta("duration", 15.0)
+							swapper.set_meta("tick_interval", 2.0)
+							swapper.set_meta("stat_tick_timer", 0.0)
+							if "id" in self.ball: swapper.set_meta("owner_id", self.ball.id)
+							arena.hazards.append(swapper)
 
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")

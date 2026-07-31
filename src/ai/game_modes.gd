@@ -188,6 +188,84 @@ class GameMode:
 						else:
 							hazard.set("stat_tick_timer", h_tick_timer)
 
+					if h_kind == "deployable_swapper":
+						var h_x = hazard.get("x") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("x")
+						if h_x == null: h_x = 0.0
+						var h_y = hazard.get("y") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("y")
+						if h_y == null: h_y = 0.0
+						var h_radius = hazard.get("radius") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("radius")
+						if h_radius == null: h_radius = 80.0
+
+						var h_tick_timer = hazard.get("stat_tick_timer") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("stat_tick_timer")
+						if h_tick_timer == null: h_tick_timer = 0.0
+
+						h_tick_timer -= delta
+						if h_tick_timer <= 0.0:
+							var h_tick_interval = hazard.get("tick_interval") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("tick_interval")
+							if h_tick_interval == null: h_tick_interval = 1.0
+							h_tick_timer = h_tick_interval
+
+							var caught_balls = []
+							for b in balls:
+								var is_alive = false
+								if typeof(b) == TYPE_DICTIONARY:
+									is_alive = b.get("alive", false)
+								else:
+									is_alive = b.get("alive") if "alive" in b else false
+								if not is_alive: continue
+
+								var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else (b.get("ball_type") if "ball_type" in b else "")
+								if b_type == "spectator": continue
+
+								var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+								if b_x == null: b_x = 0.0
+								var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+								if b_y == null: b_y = 0.0
+								var b_radius = b.get("radius") if typeof(b) == TYPE_DICTIONARY else (b.get("radius") if "radius" in b else 15.0)
+								if b_radius == null: b_radius = 15.0
+
+								var dist_sq = (b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y)
+								if dist_sq < (h_radius + b_radius)*(h_radius + b_radius):
+									caught_balls.append(b)
+
+							if caught_balls.size() > 1:
+								var positions = []
+								for b in caught_balls:
+									var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+									var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+									positions.append({"x": bx, "y": by})
+
+								var shuffled_positions = positions.duplicate()
+								var is_derangement = false
+								var max_attempts = 10
+								var attempt = 0
+								while not is_derangement and attempt < max_attempts and positions.size() > 1:
+									shuffled_positions.shuffle()
+									is_derangement = true
+									for i in range(positions.size()):
+										if shuffled_positions[i].x == positions[i].x and shuffled_positions[i].y == positions[i].y:
+											is_derangement = false
+											break
+									attempt += 1
+
+								for i in range(caught_balls.size()):
+									var b = caught_balls[i]
+									var new_pos = shuffled_positions[i]
+									if typeof(b) == TYPE_DICTIONARY:
+										b["x"] = new_pos.x
+										b["y"] = new_pos.y
+									else:
+										b.set("x", new_pos.x)
+										b.set("y", new_pos.y)
+
+									var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else null)
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+										world.add_event("swapper_proc", {"x": new_pos.x, "y": new_pos.y, "target_id": b_id})
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["stat_tick_timer"] = h_tick_timer
+						else:
+							hazard.set("stat_tick_timer", h_tick_timer)
 					if h_kind == "high_risk_nuke_mine":
 						var defusing_timers = {}
 						if typeof(hazard) == TYPE_DICTIONARY and "defusing_timers" in hazard: defusing_timers = hazard.defusing_timers
