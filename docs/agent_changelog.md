@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1719] Ice Rink Arena Modifier — *2026-07-31 04:00:37 UTC*
+
+A random procedural arena event that freezes the ground, reducing friction drastically. Balls take much longer to stop and turn, creating chaotic collisions and making hazards harder to dodge.
+
+---
+
 ## [idea-1708] Gravitational Mine — *2026-07-31 02:53:22 UTC*
 
 A trap that slowly pulls nearby enemies towards its center before detonating.
