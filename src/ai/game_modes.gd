@@ -56207,6 +56207,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 
 	"toxic_flood_royale": ToxicFloodRoyaleMode.new(),
 	"bouncing_projectiles_mutator": BouncingProjectilesMutatorMode.new(),
+	"laser_mirror_borders": LaserMirrorBordersMode.new(),
 	"wrap_around": WrapAroundMode.new(),
 
 	"slime_boss": SlimeBossMode.new(),
@@ -72545,3 +72546,75 @@ class AlternatingZoneMode extends GameMode:
 
 							if typeof(b) == TYPE_DICTIONARY: b["hp"] = current_hp - (damage_rate * delta)
 							else: b.set("hp", current_hp - (damage_rate * delta))
+
+
+class LaserMirrorBordersMode extends GameMode:
+	func _init():
+		super._init()
+		name = "Laser Mirror Borders"
+		description = "Arena borders are replaced with laser mirrors. Projectiles bounce infinitely but grow stronger with each bounce."
+
+	func tick(world: Dictionary, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+			arena_width = world["arena"].get("width", 1000.0)
+			arena_height = world["arena"].get("height", 1000.0)
+
+		var projectiles = []
+		if world.has("projectiles"):
+			projectiles = world["projectiles"]
+
+		for proj in projectiles:
+			var alive = proj.get("alive", true) if typeof(proj) == TYPE_DICTIONARY else (proj.alive if "alive" in proj else true)
+			var hp = proj.get("hp", 1.0) if typeof(proj) == TYPE_DICTIONARY else (proj.hp if "hp" in proj else 1.0)
+			if not alive and hp <= 0:
+				continue
+
+			var x = proj.get("x", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.x if "x" in proj else 0.0)
+			var y = proj.get("y", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.y if "y" in proj else 0.0)
+			var radius = proj.get("radius", 5.0) if typeof(proj) == TYPE_DICTIONARY else (proj.radius if "radius" in proj else 5.0)
+			var vx = proj.get("vx", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.vx if "vx" in proj else 0.0)
+			var vy = proj.get("vy", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.vy if "vy" in proj else 0.0)
+
+			var bounced = false
+
+			if x - radius < 0 and vx < 0:
+				vx = -vx
+				x = radius
+				bounced = true
+			elif x + radius > arena_width and vx > 0:
+				vx = -vx
+				x = arena_width - radius
+				bounced = true
+
+			if y - radius < 0 and vy < 0:
+				vy = -vy
+				y = radius
+				bounced = true
+			elif y + radius > arena_height and vy > 0:
+				vy = -vy
+				y = arena_height - radius
+				bounced = true
+
+			if bounced:
+				if typeof(proj) == TYPE_DICTIONARY:
+					proj["vx"] = vx
+					proj["vy"] = vy
+					proj["x"] = x
+					proj["y"] = y
+					if proj.has("bounces_left"):
+						proj["bounces_left"] += 1
+					if proj.has("damage"):
+						proj["damage"] *= 1.25
+				else:
+					proj.vx = vx
+					proj.vy = vy
+					proj.x = x
+					proj.y = y
+					if "bounces_left" in proj:
+						proj.bounces_left += 1
+					if "damage" in proj:
+						proj.damage *= 1.25

@@ -46019,3 +46019,54 @@ class AlternatingZoneMode(GameMode):
                             b.hp -= self.damage_rate * delta
 
 GAME_MODES['alternating_zone'] = AlternatingZoneMode()
+
+
+class LaserMirrorBordersMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Laser Mirror Borders"
+        self.description = "Arena borders are replaced with laser mirrors. Projectiles bounce infinitely but grow stronger with each bounce."
+
+    def tick(self, world, balls, delta):
+        super().tick(world, balls, delta)
+
+        arena_width = getattr(getattr(world, "arena", None), "width", 1000)
+        arena_height = getattr(getattr(world, "arena", None), "height", 1000)
+
+        for proj in getattr(world, "projectiles", []):
+            if not getattr(proj, "alive", True) and not getattr(proj, "hp", 1.0) > 0:
+                continue
+
+            x = getattr(proj, "x", 0.0)
+            y = getattr(proj, "y", 0.0)
+            radius = getattr(proj, "radius", 5.0)
+            vx = getattr(proj, "vx", 0.0)
+            vy = getattr(proj, "vy", 0.0)
+
+            bounced = False
+            if x - radius < 0 and vx < 0:
+                proj.vx = -vx
+                proj.x = radius
+                bounced = True
+            elif x + radius > arena_width and vx > 0:
+                proj.vx = -vx
+                proj.x = arena_width - radius
+                bounced = True
+
+            if y - radius < 0 and vy < 0:
+                proj.vy = -vy
+                proj.y = radius
+                bounced = True
+            elif y + radius > arena_height and vy > 0:
+                proj.vy = -vy
+                proj.y = arena_height - radius
+                bounced = True
+
+            if bounced:
+                if hasattr(proj, "bounces_left"):
+                    proj.bounces_left += 1
+                if hasattr(proj, "damage"):
+                    proj.damage *= 1.25
+
+
+GAME_MODES["laser_mirror_borders"] = LaserMirrorBordersMode()
