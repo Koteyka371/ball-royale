@@ -37,6 +37,7 @@ class MockWorld:
         self.balls = balls
         self.arena = arena
         self.boosters = boosters
+        self.tick = 0
 
 def test_blink_booster_collection():
     ball = MockBall(0, 0, 100, 0)
@@ -54,3 +55,21 @@ def test_blink_booster_collection():
     assert ball.x > 100.0
     assert booster not in world.boosters
     assert booster not in world.arena.hazards
+
+def test_blink_booster_spawns_shockwave():
+    ball = MockBall(0, 0, 100, 0)
+    booster = MockBooster(10, 0, "blink_booster")
+    arena = MockArena([booster])
+    world = MockWorld([ball], arena, [booster])
+    action = Action(ball, world)
+
+    action._get_boosters = lambda: [booster]
+    action._get_enemies = lambda: []
+
+    action._collect_booster(0.016)
+
+    assert any(getattr(h, "kind", "") == "deployable_shockwave_mine" for h in world.arena.hazards)
+    shockwave = next(h for h in world.arena.hazards if getattr(h, "kind", "") == "deployable_shockwave_mine")
+    assert abs(shockwave.x - 1.92) < 0.1 # original position before blink
+    assert abs(shockwave.y - 0) < 0.1 # original position
+    assert shockwave.armed == True # Should be instantly armed
