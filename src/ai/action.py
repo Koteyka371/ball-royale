@@ -23656,7 +23656,7 @@ class Action:
                             dist = math.sqrt(dist_sq)
                             if dist > 0.0001:
                                 nx, ny = (hazard.x - self.ball.x) / dist, (hazard.y - self.ball.y) / dist
-                                pull_strength = 150.0 * delta # Fast pull
+                                pull_strength = 50.0 * delta # Slow pull
                                 if getattr(self.ball, "anchor_booster_timer", 0.0) <= 0:
                                     c = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
                                     mod = 0.05 if c == "rooted_boots" else (0.1 if c == "grounded_boots" else 1.0)

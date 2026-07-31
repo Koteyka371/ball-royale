@@ -47019,7 +47019,7 @@ func _update_skill_timer(delta: float):
                             if dist > 0.0001:
                                 var nx = dx / dist
                                 var ny = dy / dist
-                                var pull_strength = 150.0 * delta
+                                var pull_strength = 50.0 * delta
 
                                 var anchor = 0.0
                                 if "anchor_booster_timer" in ball: anchor = ball.anchor_booster_timer
