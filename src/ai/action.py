@@ -4963,6 +4963,18 @@ class Action:
                 self.ball.inventory.remove("portal_gun")
 
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "emp_wave_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
+            if hasattr(self.world, "balls"):
+                import math
+                for other_ball in self.world.balls:
+                    if getattr(other_ball, "team", None) != getattr(self.ball, "team", None):
+                        dist_emp = math.sqrt((other_ball.x - self.ball.x)**2 + (other_ball.y - self.ball.y)**2)
+                        if dist_emp < 300.0:  # EMP wave radius
+                            if getattr(other_ball, "emp_immunity_timer", 0.0) <= 0:
+                                other_ball.invert_timer = max(getattr(other_ball, "invert_timer", 0.0), 3.0)
+            self.ball.inventory.remove("emp_wave_item")
+            self.ball.use_item = False
+
         # Check inventory for reverse_gravity_item
         if hasattr(self.ball, "inventory") and "reverse_gravity_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
             # Spawn reverse gravity field hazard in an area
@@ -15939,6 +15951,15 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "zone_immunity":
                     self.ball.zone_immunity_timer = getattr(nearest, "duration", 5.0)
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if nearest in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "emp_wave_item":
+                    if not hasattr(self.ball, "inventory"):
+                        self.ball.inventory = []
+                    self.ball.inventory.append("emp_wave_item")
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)

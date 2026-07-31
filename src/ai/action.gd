@@ -10194,6 +10194,40 @@ func execute(strategy: String, delta: float):
 			self.ball.silence_timer = max(0.0, st)
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
+		if inv.has("emp_wave_item") and self.ball.get("use_item", false):
+			if world != null and "balls" in world:
+				for other_ball in world.balls:
+					var same_team = false
+					if "team" in other_ball and "team" in self.ball and other_ball.team == self.ball.team:
+						same_team = true
+					if not same_team:
+						var dist_emp = sqrt(pow(other_ball.x - self.ball.x, 2) + pow(other_ball.y - self.ball.y, 2))
+						if dist_emp < 300.0:
+							var ob_emp_imm = 0.0
+							if "emp_immunity_timer" in other_ball: ob_emp_imm = other_ball.emp_immunity_timer
+							elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("get_meta") and other_ball.has_meta("emp_immunity_timer"): ob_emp_imm = other_ball.get_meta("emp_immunity_timer")
+							elif typeof(other_ball) == TYPE_DICTIONARY and other_ball.has("emp_immunity_timer"): ob_emp_imm = other_ball.get("emp_immunity_timer", 0.0)
+							if ob_emp_imm <= 0:
+								var ct = 0.0
+								if "invert_timer" in other_ball: ct = other_ball.invert_timer
+								elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("get_meta") and other_ball.has_meta("invert_timer"): ct = other_ball.get_meta("invert_timer")
+								elif typeof(other_ball) == TYPE_DICTIONARY and other_ball.has("invert_timer"): ct = other_ball.get("invert_timer", 0.0)
+								var nt = max(ct, 3.0)
+								if typeof(other_ball) == TYPE_DICTIONARY: other_ball["invert_timer"] = nt
+								elif "invert_timer" in other_ball: other_ball.invert_timer = nt
+								elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("set_meta"): other_ball.set_meta("invert_timer", nt)
+			inv.erase("emp_wave_item")
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["inventory"] = inv
+			elif "inventory" in self.ball:
+				self.ball.inventory = inv
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("inventory", inv)
+			if "use_item" in self.ball:
+				self.ball.use_item = false
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["use_item"] = false
+
 		if inv.has("reverse_gravity_item") and self.ball.get("use_item", false):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -31307,6 +31341,27 @@ func _collect_booster(delta: float):
                             var new_frozen = max(current_frozen, fduration)
                             if "frozen_timer" in h: h.frozen_timer = new_frozen
                             elif h.has_method("set_meta"): h.set_meta("frozen_timer", new_frozen)
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "emp_wave_item":
+                if self.ball.has_meta("inventory"):
+                    var inv = self.ball.get_meta("inventory")
+                    inv.append("emp_wave_item")
+                    self.ball.set_meta("inventory", inv)
+                elif "inventory" in self.ball:
+                    self.ball.inventory.append("emp_wave_item")
+                else:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["inventory"] = ["emp_wave_item"]
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("inventory", ["emp_wave_item"])
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
