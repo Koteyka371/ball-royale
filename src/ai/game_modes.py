@@ -65,6 +65,84 @@ class GameMode:
 
                 is_dict = isinstance(hazard, dict)
                 h_kind = hazard.get("kind", "") if is_dict else getattr(hazard, "kind", "")
+
+                if h_kind == "kinetic_reflector":
+                    m_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
+                    m_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
+                    m_radius = hazard.get("radius", 50.0) if is_dict else getattr(hazard, "radius", 50.0)
+
+                    if is_dict:
+                        if "affected_entities" not in hazard:
+                            hazard["affected_entities"] = set()
+                        affected_entities = hazard["affected_entities"]
+                    else:
+                        if not hasattr(hazard, "affected_entities"):
+                            hazard.affected_entities = set()
+                        affected_entities = hazard.affected_entities
+
+                    current_affected = set()
+
+                    entities = []
+                    for b in balls:
+                        is_alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+                        b_type = b.get("ball_type", "") if isinstance(b, dict) else getattr(b, "ball_type", "")
+                        if is_alive and b_type != "spectator":
+                            entities.append(("ball", b))
+
+                    projectiles = []
+                    if isinstance(world, dict) and "projectiles" in world:
+                        projectiles = world["projectiles"]
+                    elif hasattr(world, "projectiles"):
+                        projectiles = world.projectiles
+
+                    for p in projectiles:
+                        entities.append(("projectile", p))
+
+                    for e_type, e in entities:
+                        e_is_dict = isinstance(e, dict)
+                        e_x = e.get("x", 0.0) if e_is_dict else getattr(e, "x", 0.0)
+                        e_y = e.get("y", 0.0) if e_is_dict else getattr(e, "y", 0.0)
+                        e_radius = e.get("radius", 15.0) if e_is_dict else getattr(e, "radius", 15.0)
+
+                        dist_sq = (e_x - m_x)**2 + (e_y - m_y)**2
+                        if dist_sq < (m_radius + e_radius)**2:
+                            e_id = e.get("id", id(e)) if e_is_dict else getattr(e, "id", id(e))
+                            current_affected.add(e_id)
+
+                            if e_id not in affected_entities:
+                                vx = e.get("vx", 0.0) if e_is_dict else getattr(e, "vx", 0.0)
+                                vy = e.get("vy", 0.0) if e_is_dict else getattr(e, "vy", 0.0)
+
+                                import math
+                                speed = math.hypot(vx, vy)
+
+                                import random
+                                base_mult = max(0.5, min(2.0, speed / 150.0))
+                                lower = max(0.5, base_mult - 0.25)
+                                upper = min(2.0, base_mult + 0.25)
+                                multiplier = random.uniform(lower, upper)
+
+                                if e_is_dict:
+                                    e["vx"] = -vx * multiplier
+                                    e["vy"] = -vy * multiplier
+                                    if e_type == "projectile" and "damage" in e:
+                                        e["damage"] *= multiplier
+                                else:
+                                    e.vx = -vx * multiplier
+                                    e.vy = -vy * multiplier
+                                    if e_type == "projectile" and hasattr(e, "damage"):
+                                        e.damage *= multiplier
+
+                                if isinstance(world, dict) and "events" in world:
+                                    world["events"].append({"type": "kinetic_reflection", "data": {"x": e_x, "y": e_y, "multiplier": multiplier}})
+                                elif hasattr(world, "add_event"):
+                                    world.add_event("kinetic_reflection", {"x": e_x, "y": e_y, "multiplier": multiplier})
+
+                    if is_dict:
+                        hazard["affected_entities"] = current_affected
+                    else:
+                        hazard.affected_entities = current_affected
+
                 if h_kind == "random_stat_hazard":
                     h_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
                     h_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)

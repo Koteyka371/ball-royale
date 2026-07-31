@@ -107,6 +107,132 @@ class GameMode:
 						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
 							hazard.set_meta("affected_balls", current_affected)
 
+
+					var is_dict = typeof(hazard) == TYPE_DICTIONARY
+					var h_kind = ""
+					if is_dict and "kind" in hazard: h_kind = hazard.kind
+					elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
+
+					if h_kind == "kinetic_reflector":
+						var m_x = 0.0
+						if is_dict and "x" in hazard: m_x = hazard.x
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("x"): m_x = hazard.get_meta("x")
+
+						var m_y = 0.0
+						if is_dict and "y" in hazard: m_y = hazard.y
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("y"): m_y = hazard.get_meta("y")
+
+						var m_radius = 50.0
+						if is_dict and "radius" in hazard: m_radius = hazard.radius
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("radius"): m_radius = hazard.get_meta("radius")
+
+						var affected_entities = []
+						if is_dict and "affected_entities" in hazard: affected_entities = hazard.affected_entities
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("affected_entities"): affected_entities = hazard.get_meta("affected_entities")
+
+						var current_affected = []
+
+						var entities = []
+						for b in balls:
+							var is_alive = false
+							if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+							elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY and "ball_type" in b: b_type = b.ball_type
+							elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+							elif typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+
+							if is_alive and b_type != "spectator":
+								entities.append({"type": "ball", "obj": b})
+
+						var projectiles = []
+						if typeof(world) == TYPE_DICTIONARY and "projectiles" in world:
+							projectiles = world.projectiles
+						elif typeof(world) == TYPE_OBJECT and "projectiles" in world and world.projectiles != null:
+							projectiles = world.projectiles
+
+						for p in projectiles:
+							entities.append({"type": "projectile", "obj": p})
+
+						for e_data in entities:
+							var e_type = e_data["type"]
+							var e = e_data["obj"]
+
+							var e_x = 0.0
+							if typeof(e) == TYPE_DICTIONARY and "x" in e: e_x = e.x
+							elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("x"): e_x = e.get_meta("x")
+							elif typeof(e) == TYPE_OBJECT and "x" in e: e_x = e.x
+
+							var e_y = 0.0
+							if typeof(e) == TYPE_DICTIONARY and "y" in e: e_y = e.y
+							elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("y"): e_y = e.get_meta("y")
+							elif typeof(e) == TYPE_OBJECT and "y" in e: e_y = e.y
+
+							var e_radius = 15.0
+							if typeof(e) == TYPE_DICTIONARY and "radius" in e: e_radius = e.radius
+							elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("radius"): e_radius = e.get_meta("radius")
+							elif typeof(e) == TYPE_OBJECT and "radius" in e: e_radius = e.radius
+
+							var dist_sq = (e_x - m_x) * (e_x - m_x) + (e_y - m_y) * (e_y - m_y)
+							if dist_sq < (m_radius + e_radius) * (m_radius + e_radius):
+								var e_id = e.hash() if typeof(e) == TYPE_DICTIONARY else e.get_instance_id()
+								if typeof(e) == TYPE_DICTIONARY and "id" in e: e_id = e.id
+								elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("id"): e_id = e.get_meta("id")
+								elif typeof(e) == TYPE_OBJECT and "id" in e: e_id = e.id
+
+								if e_id != null and e_id != -1:
+									current_affected.append(e_id)
+									var is_new = true
+									for ae_id in affected_entities:
+										if ae_id == e_id:
+											is_new = false
+											break
+
+									if is_new:
+										var e_vx = 0.0
+										if typeof(e) == TYPE_DICTIONARY and "vx" in e: e_vx = e.vx
+										elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("vx"): e_vx = e.get_meta("vx")
+										elif typeof(e) == TYPE_OBJECT and "vx" in e: e_vx = e.vx
+
+										var e_vy = 0.0
+										if typeof(e) == TYPE_DICTIONARY and "vy" in e: e_vy = e.vy
+										elif typeof(e) == TYPE_OBJECT and e.has_method("get_meta") and e.has_meta("vy"): e_vy = e.get_meta("vy")
+										elif typeof(e) == TYPE_OBJECT and "vy" in e: e_vy = e.vy
+
+										var speed = sqrt(e_vx*e_vx + e_vy*e_vy)
+										var base_mult = max(0.5, min(2.0, speed / 150.0))
+										var lower = max(0.5, base_mult - 0.25)
+										var upper = min(2.0, base_mult + 0.25)
+										var multiplier = randf_range(lower, upper)
+
+										if typeof(e) == TYPE_DICTIONARY:
+											if "vx" in e: e.vx = -e_vx * multiplier
+											if "vy" in e: e.vy = -e_vy * multiplier
+											if e_type == "projectile" and "damage" in e: e.damage *= multiplier
+										elif typeof(e) == TYPE_OBJECT:
+											if e.has_method("set_meta"):
+												if e.has_meta("vx"): e.set_meta("vx", -e_vx * multiplier)
+												if e.has_meta("vy"): e.set_meta("vy", -e_vy * multiplier)
+												if e_type == "projectile" and e.has_meta("damage"): e.set_meta("damage", e.get_meta("damage") * multiplier)
+											else:
+												if "vx" in e: e.vx = -e_vx * multiplier
+												if "vy" in e: e.vy = -e_vy * multiplier
+												if e_type == "projectile" and "damage" in e: e.damage *= multiplier
+
+										if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+											world.add_event("kinetic_reflection", {"x": e_x, "y": e_y, "multiplier": multiplier})
+										elif typeof(world) == TYPE_DICTIONARY and "events" in world:
+											world.events.append({"type": "kinetic_reflection", "data": {"x": e_x, "y": e_y, "multiplier": multiplier}})
+
+						if is_dict:
+							hazard.affected_entities = current_affected
+						elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+							hazard.set_meta("affected_entities", current_affected)
+						elif typeof(hazard) == TYPE_OBJECT:
+							hazard.affected_entities = current_affected
+
 					if h_kind == "random_stat_hazard":
 						var h_x = hazard.get("x") if typeof(hazard) == TYPE_DICTIONARY else hazard.get("x")
 						if h_x == null: h_x = 0.0
