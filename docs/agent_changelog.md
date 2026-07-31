@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1723] Quantum Ricochet Hazard — *2026-07-31 04:39:55 UTC*
+
+A new hazard type that acts like a mirror for incoming damage or projectiles, but applying a random multiplier (0.5x to 2x) based on the speed of the entity hitting it. It rewards fast, high-risk maneuvers with potentially devastating offensive plays against enemies caught in the crossfire.
+
+---
+
 ## [idea-1720] Grapple Hook Momentum — *2026-07-31 04:24:28 UTC*
 
 A new skill or item that lets a player grapple onto static arena elements or hazards and swing around them to gain momentum and close gaps quickly.
