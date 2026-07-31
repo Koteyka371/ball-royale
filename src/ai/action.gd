@@ -42337,6 +42337,92 @@ func _resolve_collisions() -> bool:
                 knockback_multiplier *= 0.05
             elif cosmetic_val == "hover_boots":
                 knockback_multiplier *= 1.5
+            elif cosmetic_val == "link_boots":
+                var allies = []
+                var raw_allies = _get_allies()
+                for a in raw_allies:
+                    var a_id = null
+                    if typeof(a) == TYPE_DICTIONARY and a.has("id"): a_id = a["id"]
+                    elif typeof(a) == TYPE_OBJECT and "id" in a: a_id = a.id
+
+                    var o_id = null
+                    if typeof(other) == TYPE_DICTIONARY and other.has("id"): o_id = other["id"]
+                    elif typeof(other) == TYPE_OBJECT and "id" in other: o_id = other.id
+
+                    if a_id != o_id:
+                        allies.append(a)
+
+                if allies.size() > 0:
+                    var min_dist = INF
+                    var nearest_ally = null
+                    for a in allies:
+                        var dx_a = 0.0
+                        var dy_a = 0.0
+                        if typeof(a) == TYPE_DICTIONARY:
+                            dx_a = a["x"] - b_x
+                            dy_a = a["y"] - b_y
+                        else:
+                            dx_a = a.x - b_x
+                            dy_a = a.y - b_y
+                        var dist_sq = dx_a * dx_a + dy_a * dy_a
+                        if dist_sq < min_dist:
+                            min_dist = dist_sq
+                            nearest_ally = a
+
+                    if nearest_ally != null:
+                        knockback_multiplier *= 0.5
+
+                        var nx_scaled = nx * overlap * knockback_multiplier
+                        var ny_scaled = ny * overlap * knockback_multiplier
+
+                        if typeof(nearest_ally) == TYPE_DICTIONARY:
+                            nearest_ally["x"] += nx_scaled
+                            nearest_ally["y"] += ny_scaled
+                        else:
+                            nearest_ally.x += nx_scaled
+                            nearest_ally.y += ny_scaled
+
+                        # Share positive status effects
+                        var positive_effects = ["speed_boost_timer", "shield_timer", "invulnerability_timer", "damage_buff_timer"]
+                        for effect in positive_effects:
+                            var self_val = 0.0
+                            var ally_val = 0.0
+
+                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                if self.ball.has(effect):
+                                    self_val = self.ball[effect]
+                            else:
+                                if effect in self.ball:
+                                    self_val = self.ball.get(effect)
+                                elif self.ball.has_method("has_meta") and self.ball.has_meta(effect):
+                                    self_val = self.ball.get_meta(effect)
+
+                            if typeof(nearest_ally) == TYPE_DICTIONARY:
+                                if nearest_ally.has(effect):
+                                    ally_val = nearest_ally[effect]
+                            else:
+                                if effect in nearest_ally:
+                                    ally_val = nearest_ally.get(effect)
+                                elif nearest_ally.has_method("has_meta") and nearest_ally.has_meta(effect):
+                                    ally_val = nearest_ally.get_meta(effect)
+
+                            var max_val = max(self_val, ally_val)
+                            if max_val > 0.0:
+                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                    self.ball[effect] = max_val
+                                else:
+                                    if effect in self.ball:
+                                        self.ball.set(effect, max_val)
+                                    elif self.ball.has_method("set_meta"):
+                                        self.ball.set_meta(effect, max_val)
+
+                                if typeof(nearest_ally) == TYPE_DICTIONARY:
+                                    nearest_ally[effect] = max_val
+                                else:
+                                    if effect in nearest_ally:
+                                        nearest_ally.set(effect, max_val)
+                                    elif nearest_ally.has_method("set_meta"):
+                                        nearest_ally.set_meta(effect, max_val)
             elif cosmetic_val == "kinetic_absorber" or has_kin_abs_skill:
                 var o_team = null
                 if typeof(other) == TYPE_DICTIONARY and other.has("team"):
@@ -47291,13 +47377,116 @@ func _update_skill_timer(delta: float):
                                             var nx = (self.ball.x - hazard.x) / dist
                                             var ny = (self.ball.y - hazard.y) / dist
                                             var push_strength = 500.0 * (1.0 - (dist / h_rad)) * delta
-                                            if "x" in self.ball: self.ball.x += nx * push_strength
-                                            elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * push_strength)
-                                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): self.ball["x"] += nx * push_strength
 
-                                            if "y" in self.ball: self.ball.y += ny * push_strength
-                                            elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * push_strength)
-                                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): self.ball["y"] += ny * push_strength
+                                            var cos_val = ""
+                                            if "cosmetic" in self.ball: cos_val = str(self.ball.cosmetic).to_lower().replace(" ", "_")
+                                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("cosmetic"): cos_val = str(self.ball["cosmetic"]).to_lower().replace(" ", "_")
+                                            elif self.ball.has_method("has_meta") and self.ball.has_meta("cosmetic"): cos_val = str(self.ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+                                            if cos_val == "link_boots":
+                                                var allies = _get_allies()
+                                                if allies.size() > 0:
+                                                    var min_dist = INF
+                                                    var nearest_ally = null
+                                                    var bx = self.ball.x if typeof(self.ball) != TYPE_DICTIONARY else self.ball["x"]
+                                                    var by = self.ball.y if typeof(self.ball) != TYPE_DICTIONARY else self.ball["y"]
+                                                    for a in allies:
+                                                        var dx_a = 0.0
+                                                        var dy_a = 0.0
+                                                        if typeof(a) == TYPE_DICTIONARY:
+                                                            dx_a = a["x"] - bx
+                                                            dy_a = a["y"] - by
+                                                        else:
+                                                            dx_a = a.x - bx
+                                                            dy_a = a.y - by
+                                                        var dist_sq = dx_a * dx_a + dy_a * dy_a
+                                                        if dist_sq < min_dist:
+                                                            min_dist = dist_sq
+                                                            nearest_ally = a
+
+                                                    if nearest_ally != null:
+                                                        if "x" in self.ball: self.ball.x += nx * push_strength * 0.5
+                                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * push_strength * 0.5)
+                                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): self.ball["x"] += nx * push_strength * 0.5
+
+                                                        if "y" in self.ball: self.ball.y += ny * push_strength * 0.5
+                                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * push_strength * 0.5)
+                                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): self.ball["y"] += ny * push_strength * 0.5
+
+                                                        if typeof(nearest_ally) == TYPE_DICTIONARY:
+                                                            nearest_ally["x"] += nx * push_strength * 0.5
+                                                            nearest_ally["y"] += ny * push_strength * 0.5
+                                                        else:
+                                                            if "x" in nearest_ally: nearest_ally.x += nx * push_strength * 0.5
+                                                            elif nearest_ally.has_method("set_meta") and nearest_ally.has_meta("x"): nearest_ally.set_meta("x", nearest_ally.get_meta("x") + nx * push_strength * 0.5)
+                                                            if "y" in nearest_ally: nearest_ally.y += ny * push_strength * 0.5
+                                                            elif nearest_ally.has_method("set_meta") and nearest_ally.has_meta("y"): nearest_ally.set_meta("y", nearest_ally.get_meta("y") + ny * push_strength * 0.5)
+
+                                                        # Share positive status effects
+                                                        var positive_effects = ["speed_boost_timer", "shield_timer", "invulnerability_timer", "damage_buff_timer"]
+                                                        for effect in positive_effects:
+                                                            var self_val = 0.0
+                                                            var ally_val = 0.0
+
+                                                            if typeof(self.ball) == TYPE_DICTIONARY:
+                                                                if self.ball.has(effect):
+                                                                    self_val = self.ball[effect]
+                                                            else:
+                                                                if effect in self.ball:
+                                                                    self_val = self.ball.get(effect)
+                                                                elif self.ball.has_method("has_meta") and self.ball.has_meta(effect):
+                                                                    self_val = self.ball.get_meta(effect)
+
+                                                            if typeof(nearest_ally) == TYPE_DICTIONARY:
+                                                                if nearest_ally.has(effect):
+                                                                    ally_val = nearest_ally[effect]
+                                                            else:
+                                                                if effect in nearest_ally:
+                                                                    ally_val = nearest_ally.get(effect)
+                                                                elif nearest_ally.has_method("has_meta") and nearest_ally.has_meta(effect):
+                                                                    ally_val = nearest_ally.get_meta(effect)
+
+                                                            var max_val = max(self_val, ally_val)
+                                                            if max_val > 0.0:
+                                                                if typeof(self.ball) == TYPE_DICTIONARY:
+                                                                    self.ball[effect] = max_val
+                                                                else:
+                                                                    if effect in self.ball:
+                                                                        self.ball.set(effect, max_val)
+                                                                    elif self.ball.has_method("set_meta"):
+                                                                        self.ball.set_meta(effect, max_val)
+
+                                                                if typeof(nearest_ally) == TYPE_DICTIONARY:
+                                                                    nearest_ally[effect] = max_val
+                                                                else:
+                                                                    if effect in nearest_ally:
+                                                                        nearest_ally.set(effect, max_val)
+                                                                    elif nearest_ally.has_method("set_meta"):
+                                                                        nearest_ally.set_meta(effect, max_val)
+                                                    else:
+                                                        if "x" in self.ball: self.ball.x += nx * push_strength
+                                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * push_strength)
+                                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): self.ball["x"] += nx * push_strength
+
+                                                        if "y" in self.ball: self.ball.y += ny * push_strength
+                                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * push_strength)
+                                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): self.ball["y"] += ny * push_strength
+                                                else:
+                                                    if "x" in self.ball: self.ball.x += nx * push_strength
+                                                    elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * push_strength)
+                                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): self.ball["x"] += nx * push_strength
+
+                                                    if "y" in self.ball: self.ball.y += ny * push_strength
+                                                    elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * push_strength)
+                                                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): self.ball["y"] += ny * push_strength
+                                            else:
+                                                if "x" in self.ball: self.ball.x += nx * push_strength
+                                                elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + nx * push_strength)
+                                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): self.ball["x"] += nx * push_strength
+
+                                                if "y" in self.ball: self.ball.y += ny * push_strength
+                                                elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + ny * push_strength)
+                                                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): self.ball["y"] += ny * push_strength
 
                                 if h_kind == "event_horizon_trap":
                     var h_owner_id = null

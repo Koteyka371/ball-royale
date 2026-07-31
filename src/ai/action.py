@@ -9426,8 +9426,30 @@ class Action:
                                     push_strength *= 0.5
                                 elif cosmetic == "rooted_boots":
                                     push_strength *= 0.1
-                                self.ball.x += nx * push_strength
-                                self.ball.y += ny * push_strength
+
+                                if cosmetic == "link_boots":
+                                    allies = self._get_allies()
+                                    if allies:
+                                        nearest_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+                                        self.ball.x += nx * push_strength * 0.5
+                                        self.ball.y += ny * push_strength * 0.5
+                                        nearest_ally.x += nx * push_strength * 0.5
+                                        nearest_ally.y += ny * push_strength * 0.5
+
+                                        positive_effects = ["speed_boost_timer", "shield_timer", "invulnerability_timer", "damage_buff_timer"]
+                                        for effect in positive_effects:
+                                            self_val = getattr(self.ball, effect, 0.0)
+                                            ally_val = getattr(nearest_ally, effect, 0.0)
+                                            max_val = max(self_val, ally_val)
+                                            if max_val > 0.0:
+                                                setattr(self.ball, effect, max_val)
+                                                setattr(nearest_ally, effect, max_val)
+                                    else:
+                                        self.ball.x += nx * push_strength
+                                        self.ball.y += ny * push_strength
+                                else:
+                                    self.ball.x += nx * push_strength
+                                    self.ball.y += ny * push_strength
                     elif hazard.kind == "reverse_gravity_field":
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
@@ -9530,8 +9552,30 @@ class Action:
                                     push_strength *= 0.5
                                 elif cosmetic == "rooted_boots":
                                     push_strength *= 0.1
-                                self.ball.x += nx * push_strength
-                                self.ball.y += ny * push_strength
+
+                                if cosmetic == "link_boots":
+                                    allies = self._get_allies()
+                                    if allies:
+                                        nearest_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+                                        self.ball.x += nx * push_strength * 0.5
+                                        self.ball.y += ny * push_strength * 0.5
+                                        nearest_ally.x += nx * push_strength * 0.5
+                                        nearest_ally.y += ny * push_strength * 0.5
+
+                                        positive_effects = ["speed_boost_timer", "shield_timer", "invulnerability_timer", "damage_buff_timer"]
+                                        for effect in positive_effects:
+                                            self_val = getattr(self.ball, effect, 0.0)
+                                            ally_val = getattr(nearest_ally, effect, 0.0)
+                                            max_val = max(self_val, ally_val)
+                                            if max_val > 0.0:
+                                                setattr(self.ball, effect, max_val)
+                                                setattr(nearest_ally, effect, max_val)
+                                    else:
+                                        self.ball.x += nx * push_strength
+                                        self.ball.y += ny * push_strength
+                                else:
+                                    self.ball.x += nx * push_strength
+                                    self.ball.y += ny * push_strength
                     elif hazard.kind == "gravity_pulse":
                         if getattr(hazard, "active", True):
                             dx = hazard.x - self.ball.x
@@ -10789,8 +10833,30 @@ class Action:
                                     knockback_force *= 0.1
                                 elif cosmetic == "rooted_boots":
                                     knockback_force *= 0.05
-                                self.ball.x += nx * knockback_force
-                                self.ball.y += ny * knockback_force
+
+                                if cosmetic == "link_boots":
+                                    allies = self._get_allies()
+                                    if allies:
+                                        nearest_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+                                        self.ball.x += nx * knockback_force * 0.5
+                                        self.ball.y += ny * knockback_force * 0.5
+                                        nearest_ally.x += nx * knockback_force * 0.5
+                                        nearest_ally.y += ny * knockback_force * 0.5
+
+                                        positive_effects = ["speed_boost_timer", "shield_timer", "invulnerability_timer", "damage_buff_timer"]
+                                        for effect in positive_effects:
+                                            self_val = getattr(self.ball, effect, 0.0)
+                                            ally_val = getattr(nearest_ally, effect, 0.0)
+                                            max_val = max(self_val, ally_val)
+                                            if max_val > 0.0:
+                                                setattr(self.ball, effect, max_val)
+                                                setattr(nearest_ally, effect, max_val)
+                                    else:
+                                        self.ball.x += nx * knockback_force
+                                        self.ball.y += ny * knockback_force
+                                else:
+                                    self.ball.x += nx * knockback_force
+                                    self.ball.y += ny * knockback_force
                             continue
                         elif hazard.kind == "fire_zone":
                             hazard_damage = hazard.damage * delta
@@ -21704,8 +21770,34 @@ class Action:
                 if getattr(self.ball, "heavy_gravity_timer", 0.0) > 0.0:
                     knockback_multiplier = 0.0
 
-                self.ball.x += nx * overlap * knockback_multiplier
-                self.ball.y += ny * overlap * knockback_multiplier
+                if cosmetic == "link_boots":
+                    allies = [a for a in self._get_allies() if getattr(a, "id", None) != getattr(other, "id", None)]
+                    if allies:
+                        nearest_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+
+                        # Apply half knockback to self
+                        self.ball.x += nx * overlap * knockback_multiplier * 0.5
+                        self.ball.y += ny * overlap * knockback_multiplier * 0.5
+
+                        # Apply other half to nearest ally
+                        nearest_ally.x += nx * overlap * knockback_multiplier * 0.5
+                        nearest_ally.y += ny * overlap * knockback_multiplier * 0.5
+
+                        # Share positive status effects
+                        positive_effects = ["speed_boost_timer", "shield_timer", "invulnerability_timer", "damage_buff_timer"]
+                        for effect in positive_effects:
+                            self_val = getattr(self.ball, effect, 0.0)
+                            ally_val = getattr(nearest_ally, effect, 0.0)
+                            max_val = max(self_val, ally_val)
+                            if max_val > 0.0:
+                                setattr(self.ball, effect, max_val)
+                                setattr(nearest_ally, effect, max_val)
+                    else:
+                        self.ball.x += nx * overlap * knockback_multiplier
+                        self.ball.y += ny * overlap * knockback_multiplier
+                else:
+                    self.ball.x += nx * overlap * knockback_multiplier
+                    self.ball.y += ny * overlap * knockback_multiplier
 
                 # Handle kinetic_absorber hazard collision
                 if getattr(other, "kind", "") == "kinetic_absorber":
@@ -24052,8 +24144,22 @@ class Action:
                             ny = (self.ball.y - hazard.y) / dist
                             # Push strength scales with proximity (500 base strength)
                             push_strength = 500.0 * (1.0 - (dist / h_rad)) * delta
-                            self.ball.x += nx * push_strength
-                            self.ball.y += ny * push_strength
+
+                            cosmetic = getattr(self.ball, "cosmetic", "").lower().replace(" ", "_")
+                            if cosmetic == "link_boots":
+                                allies = self._get_allies()
+                                if allies:
+                                    nearest_ally = min(allies, key=lambda a: (a.x - self.ball.x)**2 + (a.y - self.ball.y)**2)
+                                    self.ball.x += nx * push_strength * 0.5
+                                    self.ball.y += ny * push_strength * 0.5
+                                    nearest_ally.x += nx * push_strength * 0.5
+                                    nearest_ally.y += ny * push_strength * 0.5
+                                else:
+                                    self.ball.x += nx * push_strength
+                                    self.ball.y += ny * push_strength
+                            else:
+                                self.ball.x += nx * push_strength
+                                self.ball.y += ny * push_strength
 
                 if getattr(hazard, "kind", "") == "event_horizon_trap":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
