@@ -45967,3 +45967,55 @@ class VerticalLavaPlatformerMode(GameMode):
                         b.killer = "lava"
 
 GAME_MODES['vertical_lava_platformer'] = VerticalLavaPlatformerMode()
+
+class AlternatingZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Alternating Zone"
+        self.description = "A central zone that alternates between healing players and damaging them every 5 seconds."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 150.0
+        self.phase_duration = 5.0
+        self.phase_timer = 5.0
+        self.is_healing_phase = True
+        self.heal_rate = 20.0
+        self.damage_rate = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.phase_timer = self.phase_duration
+        self.is_healing_phase = True
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+        self.phase_timer -= delta
+        if self.phase_timer <= 0:
+            self.phase_timer = self.phase_duration
+            self.is_healing_phase = not self.is_healing_phase
+            phase_name = "Healing" if self.is_healing_phase else "Damaging"
+            if hasattr(world, "add_event"):
+                world.add_event("alternating_zone_phase", {"message": f"Zone changed to {phase_name} Phase!"})
+            elif isinstance(world, dict) and "events" in world:
+                world["events"].append({"type": "alternating_zone_phase", "data": {"message": f"Zone changed to {phase_name} Phase!"}})
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dist = math.hypot(b.x - self.zone_x, b.y - self.zone_y)
+                if dist <= self.zone_radius:
+                    if self.is_healing_phase:
+                        max_hp = getattr(b, "max_hp", 100.0)
+                        b.hp = min(b.hp + self.heal_rate * delta, max_hp)
+                        b.in_healing_zone = True
+                    else:
+                        if hasattr(world, "_deal_damage"):
+                            world._deal_damage(None, b, self.damage_rate * delta)
+                        else:
+                            b.hp -= self.damage_rate * delta
+
+GAME_MODES['alternating_zone'] = AlternatingZoneMode()
