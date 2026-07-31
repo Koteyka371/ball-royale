@@ -46069,4 +46069,69 @@ class LaserMirrorBordersMode(GameMode):
                     proj.damage *= 1.25
 
 
-GAME_MODES["laser_mirror_borders"] = LaserMirrorBordersMode()
+
+class RoamingBlackHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Roaming Black Hole"
+        self.description = "A massive black hole continuously roams and bounces around the arena, pulling players in."
+        self.bh_x = 500.0
+        self.bh_y = 500.0
+        self.bh_vx = 150.0
+        self.bh_vy = 100.0
+        self.bh_radius = 80.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+        self.bh_x = arena_width / 2.0
+        self.bh_y = arena_height / 2.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        self.bh_x += self.bh_vx * delta
+        self.bh_y += self.bh_vy * delta
+
+        if self.bh_x - self.bh_radius < 0:
+            self.bh_x = self.bh_radius
+            self.bh_vx = -self.bh_vx
+        elif self.bh_x + self.bh_radius > arena_width:
+            self.bh_x = arena_width - self.bh_radius
+            self.bh_vx = -self.bh_vx
+
+        if self.bh_y - self.bh_radius < 0:
+            self.bh_y = self.bh_radius
+            self.bh_vy = -self.bh_vy
+        elif self.bh_y + self.bh_radius > arena_height:
+            self.bh_y = arena_height - self.bh_radius
+            self.bh_vy = -self.bh_vy
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+
+            if getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dx = self.bh_x - b.x
+            dy = self.bh_y - b.y
+            dist = math.hypot(dx, dy)
+
+            if dist < self.bh_radius:
+                b.hp = 0
+                b.alive = False
+            elif dist > 0:
+                pull_strength = 2000000.0 / (dist * dist)
+                pull_strength = min(pull_strength, 500.0)
+
+                multiplier = getattr(b, "gravity_multiplier", 1.0)
+                mass = getattr(b, "mass", 1.0)
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += (dx / dist) * pull_strength * multiplier / mass * delta
+                    b.vy += (dy / dist) * pull_strength * multiplier / mass * delta
+
+GAME_MODES["roaming_black_hole"] = RoamingBlackHoleMode()
