@@ -117,6 +117,61 @@ class GameMode:
                                 if hasattr(world, "add_event"):
                                     world.add_event("random_stat_hazard_proc", {"x": b_x, "y": b_y, "stat": stat_choice})
 
+                if h_kind == "deployable_swapper":
+                    h_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
+                    h_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
+                    h_radius = hazard.get("radius", 80.0) if is_dict else getattr(hazard, "radius", 80.0)
+
+                    if is_dict:
+                        if "stat_tick_timer" not in hazard:
+                            hazard["stat_tick_timer"] = 0.0
+                        hazard["stat_tick_timer"] -= delta
+                        if hazard["stat_tick_timer"] <= 0:
+                            hazard["stat_tick_timer"] = hazard.get("tick_interval", 1.0)
+                            should_trigger = True
+                        else:
+                            should_trigger = False
+                    else:
+                        if not hasattr(hazard, "stat_tick_timer"):
+                            hazard.stat_tick_timer = 0.0
+                        hazard.stat_tick_timer -= delta
+                        if hazard.stat_tick_timer <= 0:
+                            hazard.stat_tick_timer = getattr(hazard, "tick_interval", 1.0)
+                            should_trigger = True
+                        else:
+                            should_trigger = False
+
+                    if should_trigger:
+                        import random
+                        caught_balls = []
+                        for b in balls:
+                            if not getattr(b, "alive", False): continue
+                            if getattr(b, "ball_type", "") == "spectator": continue
+                            b_x = getattr(b, "x", 0.0)
+                            b_y = getattr(b, "y", 0.0)
+                            b_radius = getattr(b, "radius", 15.0)
+                            dist_sq = (b_x - h_x)**2 + (b_y - h_y)**2
+                            if dist_sq < (h_radius + b_radius)**2:
+                                caught_balls.append(b)
+
+                        if len(caught_balls) > 1:
+                            positions = [(getattr(b, "x", 0.0), getattr(b, "y", 0.0)) for b in caught_balls]
+                            # Generate a derangement to ensure no ball stays in its original spot if possible, or just shuffle
+                            shuffled_positions = list(positions)
+                            max_attempts = 10
+                            attempt = 0
+                            while shuffled_positions == positions and len(positions) > 1 and attempt < max_attempts:
+                                random.shuffle(shuffled_positions)
+                                attempt += 1
+
+                            for i, b in enumerate(caught_balls):
+                                new_x, new_y = shuffled_positions[i]
+                                b.x = new_x
+                                b.y = new_y
+                                if hasattr(world, "add_event"):
+                                    world.add_event("swapper_proc", {"x": new_x, "y": new_y, "target_id": getattr(b, "id", None)})
+
+
                 if getattr(hazard, "kind", "") == "high_risk_nuke_mine":
                     # --- Defusing logic ---
                     defusing_timers = getattr(hazard, "defusing_timers", {})

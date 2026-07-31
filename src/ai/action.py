@@ -4290,6 +4290,28 @@ class Action:
                         except ImportError:
                             pass
 
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_swapper" in self.ball.inventory:
+            enemies = self._get_enemies()
+            nearest = None
+            if enemies:
+                nearest = min(enemies, key=lambda e: (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2)
+            if nearest:
+                dist = math.hypot(self.ball.x - nearest.x, self.ball.y - nearest.y)
+                if dist < 300:
+                    self.ball.inventory.remove("deployable_swapper")
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            swapper_id = f"{len(self.world.arena.hazards)}_{getattr(self.world, 'tick', 0)}_swapper"
+                            swapper = Hazard(swapper_id, self.ball.x, self.ball.y, 100.0, "deployable_swapper", 0.0)
+                            setattr(swapper, 'duration', 15.0)
+                            setattr(swapper, 'tick_interval', 2.0)
+                            setattr(swapper, 'stat_tick_timer', 0.0)
+                            setattr(swapper, 'owner_id', getattr(self.ball, 'id', None))
+                            self.world.arena.hazards.append(swapper)
+                        except ImportError:
+                            pass
+
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
