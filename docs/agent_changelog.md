@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1713] Chain Swap Hazard — *2026-07-31 00:24:24 UTC*
+
+A hazard that periodically swaps the positions of all entities caught within its radius in a random permutation.
+
+---
+
 ## [idea-1687] Quantum Leap Booster — *2026-07-30 23:33:23 UTC*
 
 A new booster that instantly teleports the ball to the safe zone center if it enters an area with no safe zone remaining.
