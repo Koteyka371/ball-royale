@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1598] Quantum Entanglement Boots — *2026-07-31 04:13:51 UTC*
+
+A new cosmetic boot loadout that links the player's movement and knockback taken with the nearest ally. When the player receives knockback, the force is halved and the other half is applied to the linked ally in the same direction, allowing them to reposition together during chaotic team fights. Also shares positive status effect durations between them.
+
+---
+
 ## [idea-1662] Item: Mirror Shield — *2026-07-31 04:00:41 UTC*
 
 An active item that deploys a directional shield for a short duration. Any projectile or spell hitting the shield is reflected back towards the attacker with increased velocity, but taking a direct melee hit shatters the shield and stuns the user.
