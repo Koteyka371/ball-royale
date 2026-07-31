@@ -46189,3 +46189,5 @@ class RoamingBlackHoleMode(GameMode):
                     b.vy += (dy / dist) * pull_strength * multiplier / mass * delta
 
 GAME_MODES["roaming_black_hole"] = RoamingBlackHoleMode()
+from ai.noise_hazard_mode import NoiseHazardMode
+GAME_MODES['noise_hazard_mode'] = NoiseHazardMode()
