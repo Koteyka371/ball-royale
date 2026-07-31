@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1708] Gravitational Mine — *2026-07-31 02:53:22 UTC*
+
+A trap that slowly pulls nearby enemies towards its center before detonating.
+
+---
+
 ## [idea-1713] Chain Swap Hazard — *2026-07-31 00:24:24 UTC*
 
 A hazard that periodically swaps the positions of all entities caught within its radius in a random permutation.
