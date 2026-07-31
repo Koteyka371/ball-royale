@@ -45706,3 +45706,60 @@ class ReverseGravityPadsMode(GameMode):
                 })
 
 GAME_MODES['reverse_gravity_pads'] = ReverseGravityPadsMode()
+
+
+class VerticalLavaPlatformerMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Vertical Lava Platformer"
+        self.description = "A vertical-scrolling platformer where balls must outrun a rising lava pool using jump pads and low gravity to reach the top."
+        self.mutators_active = True
+        self.mutators = ["low_gravity"]
+        self.lava_y = 10000.0
+        self.initialized = False
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.initialized = False
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        arena_width = getattr(world.arena, "width", 1000.0)
+        arena_height = getattr(world.arena, "height", 1000.0)
+
+        num_pads = 15
+        for i in range(num_pads):
+            y_pos = arena_height - (i * (arena_height / num_pads))
+            x_pos = random.uniform(100.0, arena_width - 100.0)
+            bp = type("Hazard", (), {"id": 190000 + i, "x": x_pos, "y": y_pos, "radius": 40.0, "kind": "bounce_pad", "damage": 0.0, "active": True})
+            world.arena.hazards.append(bp)
+
+    def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().apply_dynamic_traits(world, balls, delta)
+
+        arena_height = 2000.0
+        if hasattr(world, 'arena') and hasattr(world.arena, 'height'):
+            arena_height = world.arena.height
+
+        if not self.initialized:
+            self.lava_y = arena_height
+            self.initialized = True
+
+        self.lava_y -= 15.0 * delta
+
+        if hasattr(world, 'arena') and hasattr(world.arena, 'platforms'):
+            world.arena.platforms = [p for p in world.arena.platforms if getattr(p, 'y', 0.0) < self.lava_y]
+
+        for b in balls:
+            if getattr(b, 'alive', False):
+                if getattr(b, 'y', 0.0) > self.lava_y:
+                    b.hp -= 50.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        b.killer = "lava"
+
+GAME_MODES['vertical_lava_platformer'] = VerticalLavaPlatformerMode()
