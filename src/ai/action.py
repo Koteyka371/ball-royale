@@ -19857,10 +19857,10 @@ class Action:
                             else:
                                 # Tangential swing around hazard
                                 # Instead of pulling towards the target, we swing around it tangentially.
-                                speed_boost = 100.0
+                                speed_boost = 500.0  # Increased for rapid momentum gain
                                 if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                                     current_speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
-                                    if current_speed > 0:
+                                    if current_speed >= 0:
                                         # Cross product with Z axis gives perpendicular tangent vector to the dx, dy vector from us to target
                                         # Vector from ball to target is (dx, dy)
                                         # A tangent vector is (-dy, dx) or (dy, -dx). We pick the one closer to our current velocity to conserve momentum.
@@ -19932,10 +19932,10 @@ class Action:
                 else:
                     # Grapple to wall
                     # Tangential swing along the wall instead of pulling towards it
-                    speed_boost = 100.0
+                    speed_boost = 500.0  # Increased for rapid momentum gain
                     if hasattr(self.ball, "vx") and hasattr(self.ball, "vy"):
                         current_speed = math.sqrt(self.ball.vx**2 + self.ball.vy**2)
-                        if current_speed > 0:
+                        if current_speed >= 0:
                             # Boost along the wall direction
                             if closest_wall in ["left", "right"]:
                                 # Wall is vertical, boost in y direction

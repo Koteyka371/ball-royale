@@ -38371,7 +38371,7 @@ func _use_skill():
                                 self.ball.is_frictionless = true
                         else:
                             # Tangential swing around hazard
-                            var speed_boost = 100.0
+                            var speed_boost = 500.0
                             var b_vx = 0.0
                             var b_vy = 0.0
                             if typeof(self.ball) == TYPE_DICTIONARY:
@@ -38546,7 +38546,7 @@ func _use_skill():
                 elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"):
                     ball_radius = float(self.ball.get_meta("radius"))
                 # Grapple to wall (swing tangentially instead of pulling in)
-                var speed_boost = 100.0
+                var speed_boost = 500.0
                 var b_vx = 0.0
                 var b_vy = 0.0
                 if typeof(self.ball) == TYPE_DICTIONARY:
@@ -38557,7 +38557,7 @@ func _use_skill():
                     if "vy" in self.ball: b_vy = float(self.ball.vy)
 
                 var current_speed = sqrt(b_vx * b_vx + b_vy * b_vy)
-                if current_speed > 0.0:
+                if current_speed >= 0.0:
                     if min_dist == dist_left or min_dist == dist_right:
                         if b_vy >= 0:
                             b_vy += speed_boost
