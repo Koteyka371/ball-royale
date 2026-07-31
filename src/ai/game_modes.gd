@@ -72128,3 +72128,127 @@ class ReverseGravityPadsMode extends GameMode:
 						arena.hazards.append(h)
 
 GAME_MODES['reverse_gravity_pads'] = ReverseGravityPadsMode.new()
+
+
+class VerticalLavaPlatformerMode extends GameMode:
+	var lava_y: float = 10000.0
+	var initialized: bool = false
+
+	func _init() -> void:
+		super._init()
+		name = "Vertical Lava Platformer"
+		description = "A vertical-scrolling platformer where balls must outrun a rising lava pool using jump pads and low gravity to reach the top."
+		mutators_active = true
+		mutators = ["low_gravity"]
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		initialized = false
+		if world != null and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY:
+				if not arena.has("hazards"):
+					arena["hazards"] = []
+				var arena_width = arena.get("width", 1000.0)
+				var arena_height = arena.get("height", 1000.0)
+				var num_pads = 15
+				for i in range(num_pads):
+					var y_pos = arena_height - (i * (arena_height / num_pads))
+					var x_pos = randf_range(100.0, arena_width - 100.0)
+					arena["hazards"].append({
+						"id": 190000 + i,
+						"x": x_pos,
+						"y": y_pos,
+						"radius": 40.0,
+						"kind": "bounce_pad",
+						"damage": 0.0,
+						"active": true
+					})
+			else:
+				if not ("hazards" in arena):
+					arena.hazards = []
+				var arena_width = 1000.0
+				if "width" in arena: arena_width = arena.width
+				var arena_height = 1000.0
+				if "height" in arena: arena_height = arena.height
+				var num_pads = 15
+				for i in range(num_pads):
+					var y_pos = arena_height - (i * (arena_height / num_pads))
+					var x_pos = randf_range(100.0, arena_width - 100.0)
+					var h = null
+					if load("res://src/arena/procedural_arena.gd") != null:
+						h = load("res://src/arena/procedural_arena.gd").Hazard.new(190000 + i, x_pos, y_pos, 40.0, "bounce_pad", 0.0)
+						h.active = true
+						arena.hazards.append(h)
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+
+		var arena_height = 2000.0
+		if typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("height"):
+			arena_height = world.arena.height
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and "height" in world.arena:
+			arena_height = world.arena.height
+
+		if not initialized:
+			lava_y = arena_height
+			initialized = true
+
+		lava_y -= 15.0 * delta
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and "platforms" in world.arena:
+			var new_platforms = []
+			for p in world.arena.platforms:
+				if p.y <= lava_y:
+					new_platforms.append(p)
+			world.arena.platforms = new_platforms
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("platforms"):
+			var new_platforms = []
+			for p in world.arena.platforms:
+				var py = 0.0
+				if typeof(p) == TYPE_DICTIONARY and "y" in p: py = p.y
+				elif typeof(p) == TYPE_OBJECT and p.has_method("get"): py = p.get("y")
+				elif typeof(p) == TYPE_OBJECT and "y" in p: py = p.y
+				if py <= lava_y:
+					new_platforms.append(p)
+			world.arena.platforms = new_platforms
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("alive") != null: is_alive = b.get("alive")
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+			if is_alive:
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY and "y" in b: by = b.y
+				elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("y") != null: by = b.get("y")
+				elif typeof(b) == TYPE_OBJECT and "y" in b: by = b.y
+
+				if by > lava_y:
+					var hp = 0.0
+					if typeof(b) == TYPE_DICTIONARY and "hp" in b: hp = b.hp
+					elif typeof(b) == TYPE_OBJECT and b.has_method("get") and b.get("hp") != null: hp = b.get("hp")
+					elif typeof(b) == TYPE_OBJECT and "hp" in b: hp = b.hp
+
+					hp -= 50.0 * delta
+
+					if hp <= 0:
+						hp = 0
+						if typeof(b) == TYPE_DICTIONARY:
+							b.alive = false
+							b.killer = "lava"
+						elif typeof(b) == TYPE_OBJECT:
+							if b.has_method("set"):
+								b.set("alive", false)
+								b.set("killer", "lava")
+							else:
+								if "alive" in b: b.alive = false
+								if "killer" in b: b.killer = "lava"
+
+					if typeof(b) == TYPE_DICTIONARY and "hp" in b: b.hp = hp
+					elif typeof(b) == TYPE_OBJECT:
+						if b.has_method("set"): b.set("hp", hp)
+						elif "hp" in b: b.hp = hp
+
+GAME_MODES['vertical_lava_platformer'] = VerticalLavaPlatformerMode.new()
