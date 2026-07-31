@@ -70257,6 +70257,8 @@ GAME_MODES["pulsating_core"] = PulsatingCoreMode.new()
 var ADField = load("res://src/ai/acoustic_disruption_field.gd")
 if ADField != null:
 	GAME_MODES["acoustic_disruption_field"] = ADField.new()
+	var NHMode = load("res://src/ai/noise_hazard_mode.gd")
+	GAME_MODES["noise_hazard_mode"] = NHMode.new()
 
 
 class IndestructibleLaserCoreMode extends GameMode:
