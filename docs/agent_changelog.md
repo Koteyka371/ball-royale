@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1698] Vertical Platformer Mode — *2026-07-31 04:40:01 UTC*
+
+A vertical-scrolling platformer where balls must outrun a rising lava pool using jump pads and low gravity to reach the top.
+
+---
+
 ## [idea-1723] Quantum Ricochet Hazard — *2026-07-31 04:39:55 UTC*
 
 A new hazard type that acts like a mirror for incoming damage or projectiles, but applying a random multiplier (0.5x to 2x) based on the speed of the entity hitting it. It rewards fast, high-risk maneuvers with potentially devastating offensive plays against enemies caught in the crossfire.
