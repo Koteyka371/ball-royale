@@ -33633,6 +33633,69 @@ class IceFloorMode(GameMode):
 
 
 
+
+class FrozenGroundEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Frozen Ground Event"
+        self.description = "The arena freezes over! Drastically reduced friction makes it hard to stop and turn, causing chaotic collisions."
+        self.duration = 20.0
+        self.timer = 0.0
+        self.active = True
+
+    def setup(self, world, balls):
+        self.timer = self.duration
+        self.active = True
+
+        # Save original friction to restore later
+        if type(world) == dict:
+            pass
+        elif hasattr(world, 'arena') and hasattr(world.arena, 'base_friction'):
+            self.original_friction = world.arena.base_friction
+            world.arena.base_friction = 0.1 # Drastically reduced friction
+
+        # Emit event
+        if type(world) == dict:
+            world['events'].append({
+                "type": "visual_effect",
+                "data": {"type": "frozen_ground_start", "x": 0, "y": 0}
+            })
+        else:
+            world.add_event({
+                "type": "visual_effect",
+                "data": {"type": "frozen_ground_start", "x": 0, "y": 0}
+            })
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        if not self.active:
+            return
+
+        self.timer -= delta
+        if self.timer <= 0:
+            self.active = False
+            # Restore friction
+            if type(world) != dict and hasattr(world, 'arena') and hasattr(self, 'original_friction'):
+                world.arena.base_friction = self.original_friction
+
+            # Emit end event
+            if type(world) == dict:
+                world['events'].append({
+                    "type": "visual_effect",
+                    "data": {"type": "frozen_ground_end", "x": 0, "y": 0}
+                })
+            else:
+                world.add_event({
+                    "type": "visual_effect",
+                    "data": {"type": "frozen_ground_end", "x": 0, "y": 0}
+                })
+        else:
+            for b in balls:
+                if type(b) == dict:
+                    b['friction_multiplier'] = 0.1
+                else:
+                    if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                        b.friction_multiplier = 0.1
+
 class VisionReductionEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -34239,6 +34302,7 @@ GAME_MODES = {
     'supercell_storm': SupercellStormMode(),
     'ice_floor': IceFloorMode(),
     'vision_reduction_event': VisionReductionEventMode(),
+    'frozen_ground_event': FrozenGroundEventMode(),
     'wall_leapers': WallLeapersMode(),
     'networked_black_holes': NetworkedBlackHolesMode(),
 
