@@ -15725,18 +15725,22 @@ func execute(strategy: String, delta: float):
                                     if dist_sq <= (p_rad + br) * (p_rad + br):
                                         if b_team == hazard.team:
                                             if typeof(b) == TYPE_DICTIONARY:
-                                                b.energy_shield_active = true
-                                                var c_hp = 0.0
-                                                if b.has("energy_shield_hp"): c_hp = float(b.energy_shield_hp)
-                                                b.energy_shield_hp = max(c_hp, 50.0)
+                                                var b_hp = 0.0
+                                                var b_max_hp = 100.0
+                                                if b.has("hp"): b_hp = float(b.hp)
+                                                if b.has("max_hp"): b_max_hp = float(b.max_hp)
+                                                b["hp"] = min(b_max_hp, b_hp + 5.0 * delta)
                                             elif typeof(b) == TYPE_OBJECT:
-                                                if "energy_shield_active" in b: b.energy_shield_active = true
-                                                elif b.has_method("set_meta"): b.set_meta("energy_shield_active", true)
-                                                var c_hp = 0.0
-                                                if "energy_shield_hp" in b: c_hp = float(b.energy_shield_hp)
-                                                elif b.has_method("has_meta") and b.has_meta("energy_shield_hp"): c_hp = float(b.get_meta("energy_shield_hp"))
-                                                if "energy_shield_hp" in b: b.energy_shield_hp = max(c_hp, 50.0)
-                                                elif b.has_method("set_meta"): b.set_meta("energy_shield_hp", max(c_hp, 50.0))
+                                                var b_hp = 0.0
+                                                var b_max_hp = 100.0
+                                                if "hp" in b: b_hp = float(b.hp)
+                                                elif b.has_method("has_meta") and b.has_meta("hp"): b_hp = float(b.get_meta("hp"))
+                                                if "max_hp" in b: b_max_hp = float(b.max_hp)
+                                                elif b.has_method("has_meta") and b.has_meta("max_hp"): b_max_hp = float(b.get_meta("max_hp"))
+
+                                                var new_hp = min(b_max_hp, b_hp + 5.0 * delta)
+                                                if "hp" in b: b.hp = new_hp
+                                                elif b.has_method("set_meta"): b.set_meta("hp", new_hp)
                                         elif b_team != hazard.team:
                                             var charge = 0.0
                                             if hazard.has("charge"): charge = float(hazard.charge)
