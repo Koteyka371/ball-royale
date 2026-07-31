@@ -46016,6 +46016,6 @@ class AlternatingZoneMode(GameMode):
                         if hasattr(world, "_deal_damage"):
                             world._deal_damage(None, b, self.damage_rate * delta)
                         else:
-                            b.hp -= self.damage_rate * delta
+                            b.hp = getattr(b, "hp", 100.0) - self.damage_rate * delta
 
 GAME_MODES['alternating_zone'] = AlternatingZoneMode()
