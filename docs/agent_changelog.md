@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1722] Heal or Hurt Zone — *2026-07-31 08:33:08 UTC*
+
+A zone that alternates between healing and hurting.
+
+---
+
 ## [idea-1702] Holographic projection traps — *2026-07-31 05:18:36 UTC*
 
 Traps that, when triggered, spawn 3 fake holographic clones of the player that triggered it. The clones mirror the player's inputs but cannot deal damage. Any enemy attacking a hologram is revealed on the minimap and takes minor feedback damage.
