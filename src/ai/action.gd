@@ -30133,7 +30133,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -36715,6 +36715,85 @@ func _use_skill():
                         clone["is_mirroring"] = true
 
                     self.world.balls.append(clone)
+
+        elif skill_name == "deploy_fake_balls":
+            if "invisibility_timer" in self.ball:
+                self.ball.invisibility_timer = 2.0
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+                self.ball.set("invisibility_timer", 2.0)
+
+            if "balls" in self.world:
+                for i in range(3):
+                    var clone = null
+                    if self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+                    elif self.ball is Dictionary:
+                        clone = self.ball.duplicate()
+
+                    if clone != null:
+                        var next_id = randi() % 90000 + 10000
+                        if "next_id" in self.world:
+                            next_id = self.world.next_id
+                            self.world.next_id += 1
+
+                        if "id" in clone: clone.id = next_id
+
+                        var owner_max_hp = 100.0
+                        if "max_hp" in self.ball: owner_max_hp = float(self.ball.max_hp)
+
+                        if "hp" in clone and "max_hp" in clone:
+                            clone.max_hp = owner_max_hp * 0.5
+                            clone.hp = clone.max_hp
+                        if "damage" in clone: clone.damage = 0.0
+
+                        if "skill" in clone: clone.skill = ""
+                        if "SKILL" in clone: clone.SKILL = ""
+                        if "active_skill" in clone: clone.active_skill = ""
+                        if "skill_timer" in clone: clone.skill_timer = 9999.0
+                        if "invisibility_timer" in clone: clone.invisibility_timer = 0.0
+
+                        var owner_id = -1
+                        if "id" in self.ball: owner_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): owner_id = self.ball.get_meta("id")
+
+                        if typeof(clone) == TYPE_OBJECT and clone.has_method("set_meta"):
+                            clone.set_meta("is_decoy_clone", true)
+                            clone.set_meta("is_illusion", true)
+                            clone.set_meta("mimic_owner", owner_id)
+                            clone.set_meta("mimic_timer", 15.0)
+                            clone.set_meta("is_decoy", true)
+                            clone.set_meta("decoy_type", "taunt")
+                            clone.set_meta("decoy_timer", 15.0)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["is_decoy_clone"] = true
+                            clone["is_illusion"] = true
+                            clone["mimic_owner"] = owner_id
+                            clone["mimic_timer"] = 15.0
+                            clone["is_decoy"] = true
+                            clone["decoy_type"] = "taunt"
+                            clone["decoy_timer"] = 15.0
+
+                        var angle = (i * 2.0 * PI) / 3.0
+                        if "vx" in clone and "vy" in clone:
+                            clone.vx = 200.0 * cos(angle)
+                            clone.vy = 200.0 * sin(angle)
+                        elif typeof(clone) == TYPE_DICTIONARY:
+                            clone["vx"] = 200.0 * cos(angle)
+                            clone["vy"] = 200.0 * sin(angle)
+
+                        self.world.balls.append(clone)
+
+            if "skill_timer" in self.ball:
+                if "SKILL_COOLDOWN" in self.ball:
+                    self.ball.skill_timer = self.ball.SKILL_COOLDOWN
+                else:
+                    self.ball.skill_timer = 15.0
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set"):
+                var cd = 15.0
+                if self.ball.has_method("get") and self.ball.get("SKILL_COOLDOWN") != null:
+                    cd = self.ball.get("SKILL_COOLDOWN")
+                self.ball.set("skill_timer", cd)
+
         elif skill_name == "trickster_clone":
             if "balls" in self.world:
                 for i in range(3):
