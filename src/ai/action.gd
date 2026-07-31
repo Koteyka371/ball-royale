@@ -15692,38 +15692,30 @@ func execute(strategy: String, delta: float):
                                                 elif b.has_method("has_meta") and b.has_meta("energy_shield_hp"): c_hp = float(b.get_meta("energy_shield_hp"))
                                                 if "energy_shield_hp" in b: b.energy_shield_hp = max(c_hp, 50.0)
                                                 elif b.has_method("set_meta"): b.set_meta("energy_shield_hp", max(c_hp, 50.0))
-                                        elif b_team != hazard.team:
+
                                             var charge = 0.0
                                             if hazard.has("charge"): charge = float(hazard.charge)
                                             var max_charge = 100.0
                                             if hazard.has("max_charge"): max_charge = float(hazard.max_charge)
                                             if charge >= max_charge:
+                                                var heal_amount = 30.0
                                                 if typeof(b) == TYPE_DICTIONARY:
-                                                    b["energy_shield_active"] = false
-                                                    b["energy_shield_hp"] = 0.0
-                                                    var st = 0.0
-                                                    if b.has("stun_timer"): st = float(b.stun_timer)
-                                                    b.stun_timer = max(st, 2.0)
-                                                    var si = 0.0
-                                                    if b.has("silence_timer"): si = float(b.silence_timer)
-                                                    b.silence_timer = max(si, 5.0)
+                                                    var maxhp = 100.0
+                                                    if b.has("max_hp"): maxhp = float(b.max_hp)
+                                                    b["hp"] = min(maxhp, float(b.get("hp", 100.0)) + heal_amount)
+                                                    b["stun_timer"] = 0.0
+                                                    b["silence_timer"] = 0.0
                                                 elif typeof(b) == TYPE_OBJECT:
-                                                    if "energy_shield_active" in b: b.energy_shield_active = false
-                                                    elif b.has_method("set_meta"): b.set_meta("energy_shield_active", false)
-                                                    if "energy_shield_hp" in b: b.energy_shield_hp = 0.0
-                                                    elif b.has_method("set_meta"): b.set_meta("energy_shield_hp", 0.0)
-                                                    var st = 0.0
-                                                    if "stun_timer" in b: st = float(b.stun_timer)
-                                                    elif b.has_method("has_meta") and b.has_meta("stun_timer"): st = float(b.get_meta("stun_timer"))
-                                                    if "stun_timer" in b: b.stun_timer = max(st, 2.0)
-                                                    elif b.has_method("set_meta"): b.set_meta("stun_timer", max(st, 2.0))
-                                                    var si = 0.0
-                                                    if "silence_timer" in b: si = float(b.silence_timer)
-                                                    elif b.has_method("has_meta") and b.has_meta("silence_timer"): si = float(b.get_meta("silence_timer"))
-                                                    if "silence_timer" in b: b.silence_timer = max(si, 5.0)
-                                                    elif b.has_method("set_meta"): b.set_meta("silence_timer", max(si, 5.0))
+                                                    var maxhp = 100.0
+                                                    if "max_hp" in b: maxhp = float(b.max_hp)
+                                                    if "hp" in b: b.hp = min(maxhp, float(b.hp) + heal_amount)
+                                                    elif b.has_method("set_meta") and b.has_meta("hp"): b.set_meta("hp", min(maxhp, float(b.get_meta("hp")) + heal_amount))
+                                                    if "stun_timer" in b: b.stun_timer = 0.0
+                                                    elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
+                                                    if "silence_timer" in b: b.silence_timer = 0.0
+                                                    elif b.has_method("set_meta"): b.set_meta("silence_timer", 0.0)
                                                 if self.has_method("_spawn_directed_particles"):
-                                                    self._spawn_directed_particles(hazard, b, "lightning")
+                                                    self._spawn_directed_particles(hazard, b, "heal")
 
                         var charge2 = 0.0
                         if hazard.has("charge"): charge2 = float(hazard.charge)
@@ -15732,7 +15724,7 @@ func execute(strategy: String, delta: float):
                         if charge2 >= max_charge2:
                             hazard.charge = 0.0
                             if self.world.get("events") != null:
-                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
+                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'heal_burst', 'x': hazard.x, 'y': hazard.y, 'radius': p_rad}})
 
                 elif hazard.kind == "sticky_mud_puddle":
                     var current_tick = world.tick if "tick" in world else 0
