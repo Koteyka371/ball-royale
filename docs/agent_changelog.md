@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1720] Grapple Hook Momentum — *2026-07-31 04:24:28 UTC*
+
+A new skill or item that lets a player grapple onto static arena elements or hazards and swing around them to gain momentum and close gaps quickly.
+
+---
+
 ## [idea-1598] Quantum Entanglement Boots — *2026-07-31 04:13:51 UTC*
 
 A new cosmetic boot loadout that links the player's movement and knockback taken with the nearest ally. When the player receives knockback, the force is halved and the other half is applied to the linked ally in the same direction, allowing them to reposition together during chaotic team fights. Also shares positive status effect durations between them.
