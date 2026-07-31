@@ -55826,7 +55826,86 @@ class DecoySwapMode extends GameMode:
                             world["events"].append(v_event)
 
 
+
+class HotPotatoMode:
+	extends GameMode
+
+	func _init():
+		name = "Hot Potato"
+		description = "A frantic game where a sticky bomb is always active and must be passed."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		_ensure_sticky_bomb(world, balls)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		_ensure_sticky_bomb(world, balls)
+
+	func _ensure_sticky_bomb(world, balls):
+		var hazards = null
+		if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("arena") != null:
+			hazards = world.arena.get("hazards")
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and world.arena.has("hazards"):
+			hazards = world.arena.hazards
+
+		if hazards == null:
+			return
+
+		var has_bomb = false
+		for h in hazards:
+			var kind = ""
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind"):
+				kind = h.kind
+			elif typeof(h) == TYPE_OBJECT and h.get("kind") != null:
+				kind = h.kind
+			if kind == "sticky_bomb":
+				has_bomb = true
+				break
+
+		if not has_bomb:
+			var living_balls = []
+			for b in balls:
+				var alive = true
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					alive = b.alive
+				elif typeof(b) == TYPE_OBJECT and b.get("alive") != null:
+					alive = b.alive
+				if alive:
+					living_balls.append(b)
+
+			if living_balls.size() == 0:
+				return
+
+			var target = living_balls[randi() % living_balls.size()]
+			var target_x = 0.0
+			var target_y = 0.0
+			var target_id = null
+
+			if typeof(target) == TYPE_DICTIONARY:
+				target_x = target.get("x", 0.0)
+				target_y = target.get("y", 0.0)
+				target_id = target.get("id")
+			elif typeof(target) == TYPE_OBJECT:
+				target_x = target.get("x")
+				target_y = target.get("y")
+				target_id = target.get("id")
+
+			var bomb = {}
+			bomb["id"] = hazards.size() + 60000 + (randi() % 10000)
+			bomb["x"] = target_x
+			bomb["y"] = target_y
+			bomb["radius"] = 20.0
+			bomb["kind"] = "sticky_bomb"
+			bomb["damage"] = 0.0
+			bomb["duration"] = 5.0
+			bomb["attached_id"] = target_id
+
+			hazards.append(bomb)
+
 var GAME_MODES = {
+	"hot_potato": HotPotatoMode.new(),
+
     "decoy_swap": DecoySwapMode.new(),
 	"time_loop": TimeLoopMode.new(),
 	'dormant_decoys': DormantDecoysMode.new(),

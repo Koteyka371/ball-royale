@@ -34433,7 +34433,61 @@ class TimeLoopMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("time_loop_reset", {"message": "Time Loop Reset!"})
 
+
+class HotPotatoMode(GameMode):
+    """
+    A frantic game where at least one sticky bomb is always active in the arena.
+    Players must constantly pass it to avoid elimination, turning the match into a game of hot potato.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Hot Potato"
+        self.description = "A frantic game where a sticky bomb is always active and must be passed."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self._ensure_sticky_bomb(world, balls)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self._ensure_sticky_bomb(world, balls)
+
+    def _ensure_sticky_bomb(self, world, balls):
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        has_bomb = False
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "sticky_bomb":
+                has_bomb = True
+                break
+
+        if not has_bomb:
+            living_balls = [b for b in balls if getattr(b, "alive", True)]
+            if not living_balls:
+                return
+
+            import random
+            target = random.choice(living_balls)
+
+            bomb_id = len(world.arena.hazards) + 60000 + random.randint(1, 9999)
+            try:
+                from arena.procedural_arena import Hazard
+                bomb = Hazard(bomb_id, target.x, target.y, 20.0, "sticky_bomb", 0.0)
+            except ImportError:
+                class TempHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                bomb = TempHazard(bomb_id, target.x, target.y, 20.0, "sticky_bomb", 0.0)
+
+            setattr(bomb, "duration", 5.0)
+            setattr(bomb, "attached_id", getattr(target, "id", None))
+
+            world.arena.hazards.append(bomb)
+
 GAME_MODES = {
+    'hot_potato': HotPotatoMode(),
+
     'time_loop': TimeLoopMode(),
     'dormant_decoys': DormantDecoysMode(),
     'extreme_tornado_weather': ExtremeTornadoWeatherMode(),
