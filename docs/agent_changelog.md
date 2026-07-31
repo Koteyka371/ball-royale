@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1710] Flashbang Grenade — *2026-07-31 13:03:17 UTC*
+
+An explosive item that blinds enemies caught in its radius for a few seconds. Blinded enemies have zero perception radius and are briefly stunned, allowing for escapes or counter-attacks.
+
+---
+
 ## [idea-1686] Idea 1: Laser Mirror Arena — *2026-07-31 09:58:45 UTC*
 
 Arena borders are replaced with laser mirrors. Projectiles bounce infinitely but grow stronger with each bounce.
