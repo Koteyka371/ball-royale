@@ -15695,9 +15695,36 @@ class Action:
                     else:
                         nx, ny = 1.0, 0.0
 
-                    # Teleport forward 200 units
-                    self.ball.x += nx * 200.0
-                    self.ball.y += ny * 200.0
+                    # Store starting point for shockwave
+                    start_x = self.ball.x
+                    start_y = self.ball.y
+
+                    # Teleport forward 200 units, ignoring collisions (just straight up translate)
+                    teleport_dist = 200.0
+                    teleport_x = start_x + nx * teleport_dist
+                    teleport_y = start_y + ny * teleport_dist
+
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "clamp_position"):
+                        res = self.world.arena.clamp_position(teleport_x, teleport_y, getattr(self.ball, "radius", 10.0))
+                        if isinstance(res, (list, tuple)):
+                            teleport_x, teleport_y = res[0], res[1]
+
+                    self.ball.x = teleport_x
+                    self.ball.y = teleport_y
+
+                    # Create a temporary shockwave hazard at start point to stagger enemies
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            mine_id = self.ball.id * 10000 + int(getattr(self.world, "tick", 0) * 1000) + 123
+                            mine = Hazard(mine_id, start_x, start_y, 60.0, "deployable_shockwave_mine", 0.0)
+                            mine.owner_id = getattr(self.ball, "id", -1)
+                            mine.duration = 1.0 # Short duration
+                            mine.armed = True # Arm instantly to stagger left-behinds
+                            mine.spawn_tick = getattr(self.world, 'tick', 0)
+                            self.world.arena.hazards.append(mine)
+                        except ImportError:
+                            pass
 
                     nearest.active = False
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
