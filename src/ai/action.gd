@@ -10237,7 +10237,8 @@ func execute(strategy: String, delta: float):
 		if st > 0.0:
 			st -= delta
 			self.ball.silence_timer = max(0.0, st)
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("emp_wave_item") and self.ball.get("use_item", false):
 			if world != null and "balls" in world:
@@ -10489,7 +10490,8 @@ func execute(strategy: String, delta: float):
 
 
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("deployable_mud_puddle"):
 			var nearest = _get_nearest_enemy()
@@ -10574,7 +10576,8 @@ func execute(strategy: String, delta: float):
 		if val > 0:
 			self.ball.set_meta("decoy_swap_cooldown", val - delta)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("deployable_decoy_swap_item"):
 			var new_decoy = null
@@ -10726,7 +10729,8 @@ func execute(strategy: String, delta: float):
 					inv.erase("deployable_flare")
 					self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("deployable_acid_puddle"):
 			var nearest = _get_nearest_enemy()
@@ -10782,7 +10786,8 @@ func execute(strategy: String, delta: float):
 					inv.erase("placeable_trap")
 					self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("weather_shield"):
 			var weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "frozen_timer"]
@@ -10911,7 +10916,8 @@ func execute(strategy: String, delta: float):
 				inv.erase("weather_shield")
 				self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("nemesis_compass_item"):
 			if self.world != null and "profile_manager" in self.world and self.world.profile_manager != null:
@@ -10955,7 +10961,8 @@ func execute(strategy: String, delta: float):
 			inv.erase("nemesis_compass_item")
 			self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("weather_scanner"):
 			if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
@@ -10968,7 +10975,8 @@ func execute(strategy: String, delta: float):
 				inv.erase("weather_scanner")
 				self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 
 		if inv.has("invisible_status_trap"):
@@ -11025,7 +11033,8 @@ func execute(strategy: String, delta: float):
 					inv.erase("booster_trap")
 					self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("zero_gravity_trap"):
 			if world != null and "arena" in world and "hazards" in world.arena:
@@ -11048,7 +11057,8 @@ func execute(strategy: String, delta: float):
 					inv.erase("zero_gravity_trap")
 					self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("placeable_trap_booster"):
 			if world != null and "arena" in world and "hazards" in world.arena:
@@ -11072,7 +11082,8 @@ func execute(strategy: String, delta: float):
 					self.ball.set_meta("inventory", inv)
 
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("aura_amplifier_trap_booster"):
 			if world != null and "arena" in world and "hazards" in world.arena:
@@ -11277,7 +11288,8 @@ func execute(strategy: String, delta: float):
 							target.set_meta("slow_timer", curr_slow + 2.0)
 
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("tether_hook"):
 			var enemies = self._get_enemies()
@@ -11295,7 +11307,8 @@ func execute(strategy: String, delta: float):
 					inv.erase("tether_hook")
 					self.ball.set_meta("inventory", inv)
 
-	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+
+		if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("grapple_hook"):
 			var arena_width = 1000.0
@@ -31639,6 +31652,48 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "flashbang_item":
+                if self.ball.has_meta("inventory"):
+                    var inv_fb = self.ball.get_meta("inventory")
+                    inv_fb.append("flashbang_item")
+                    self.ball.set_meta("inventory", inv_fb)
+                elif "inventory" in self.ball:
+                    self.ball.inventory.append("flashbang_item")
+                else:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["inventory"] = ["flashbang_item"]
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("inventory", ["flashbang_item"])
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx_fb = self.world.arena.hazards.find(nearest)
+                    if idx_fb != -1:
+                        self.world.arena.hazards.remove_at(idx_fb)
+                if self.world != null and "boosters" in self.world:
+                    var idx_fb = self.world.boosters.find(nearest)
+                    if idx_fb != -1:
+                        self.world.boosters.remove_at(idx_fb)
+elif "kind" in nearest and nearest.kind == "flashbang_item":
+                if self.ball.has_meta("inventory"):
+                    var inv_fb = self.ball.get_meta("inventory")
+                    inv_fb.append("flashbang_item")
+                    self.ball.set_meta("inventory", inv_fb)
+                elif "inventory" in self.ball:
+                    self.ball.inventory.append("flashbang_item")
+                else:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["inventory"] = ["flashbang_item"]
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("inventory", ["flashbang_item"])
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx_fb = self.world.arena.hazards.find(nearest)
+                    if idx_fb != -1:
+                        self.world.arena.hazards.remove_at(idx_fb)
+                if self.world != null and "boosters" in self.world:
+                    var idx_fb = self.world.boosters.find(nearest)
+                    if idx_fb != -1:
+                        self.world.boosters.remove_at(idx_fb)
             elif "kind" in nearest and nearest.kind == "emp_wave_item":
                 if self.ball.has_meta("inventory"):
                     var inv = self.ball.get_meta("inventory")
