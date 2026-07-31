@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1721] Moving Black Hole — *2026-07-31 13:10:15 UTC*
+
+A mode where a black hole moves around the map.
+
+---
+
 ## [idea-1710] Flashbang Grenade — *2026-07-31 13:03:17 UTC*
 
 An explosive item that blinds enemies caught in its radius for a few seconds. Blinded enemies have zero perception radius and are briefly stunned, allowing for escapes or counter-attacks.
