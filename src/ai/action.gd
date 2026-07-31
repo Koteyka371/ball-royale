@@ -10521,6 +10521,145 @@ func execute(strategy: String, delta: float):
 							if "id" in self.ball: swapper.set_meta("owner_id", self.ball.id)
 							arena.hazards.append(swapper)
 
+
+	if "decoy_swap_cooldown" in self.ball and self.ball.decoy_swap_cooldown > 0:
+		self.ball.decoy_swap_cooldown -= delta
+	elif self.ball.has_method("has_meta") and self.ball.has_meta("decoy_swap_cooldown"):
+		var val = self.ball.get_meta("decoy_swap_cooldown")
+		if val > 0:
+			self.ball.set_meta("decoy_swap_cooldown", val - delta)
+
+	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
+		var inv = self.ball.get_meta("inventory")
+		if inv.has("deployable_decoy_swap_item"):
+			var new_decoy = null
+			if load("res://src/arena/procedural_arena.gd") != null:
+				var ball_id = randi() % 100000
+				if world != null and "next_id" in world:
+					ball_id = world.next_id
+					world.next_id += 1
+
+				# Duplicate ball properties
+				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("duplicate"):
+					# Fallback or proper clone if available
+					pass
+
+				# Basic mock
+				var d_dict = {}
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					d_dict = self.ball.duplicate()
+				else:
+					d_dict["x"] = self.ball.x
+					d_dict["y"] = self.ball.y
+					d_dict["radius"] = self.ball.radius if "radius" in self.ball else 10.0
+					d_dict["color"] = self.ball.color if "color" in self.ball else "white"
+					d_dict["team"] = self.ball.team if "team" in self.ball else ""
+
+				d_dict["id"] = ball_id
+				d_dict["is_decoy"] = true
+				d_dict["decoy_timer"] = 10.0
+				d_dict["owner_id"] = self.ball.id if "id" in self.ball else null
+				d_dict["skill"] = null
+				d_dict["active_skill"] = null
+				d_dict["brain"] = null
+
+				if world != null and typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+					world["balls"].append(d_dict)
+				elif world != null and typeof(world) == TYPE_OBJECT and "balls" in world:
+					# Create object if in Godot context
+					if load("res://src/entities/ball.gd") != null:
+						var decoy_obj = load("res://src/entities/ball.gd").new()
+						for k in d_dict.keys():
+							if k in decoy_obj:
+								decoy_obj[k] = d_dict[k]
+						decoy_obj.set_meta("is_decoy", true)
+						decoy_obj.set_meta("decoy_timer", 10.0)
+						decoy_obj.set_meta("owner_id", self.ball.id if "id" in self.ball else null)
+						world.balls.append(decoy_obj)
+					else:
+						world.balls.append(d_dict)
+
+			inv.erase("deployable_decoy_swap_item")
+			inv.append("decoy_swap_trigger_item")
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball.decoy_swap_cooldown = 1.0
+			else:
+				self.ball.set_meta("decoy_swap_cooldown", 1.0)
+			self.ball.set_meta("inventory", inv)
+
+		elif inv.has("decoy_swap_trigger_item"):
+			var cd = 0.0
+			if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("decoy_swap_cooldown"): cd = self.ball.decoy_swap_cooldown
+			elif self.ball.has_method("has_meta") and self.ball.has_meta("decoy_swap_cooldown"): cd = self.ball.get_meta("decoy_swap_cooldown")
+
+			if cd <= 0:
+				var decoy = null
+				if world != null and "balls" in world:
+					var b_list = world.balls if typeof(world) == TYPE_OBJECT else world["balls"]
+					for b in b_list:
+						var is_decoy = false
+						if typeof(b) == TYPE_DICTIONARY:
+							is_decoy = b.has("is_decoy") and b["is_decoy"]
+						elif b.has_method("has_meta"):
+							is_decoy = b.has_meta("is_decoy") and b.get_meta("is_decoy")
+						elif "is_decoy" in b:
+							is_decoy = b.is_decoy
+
+						var is_alive = true
+						if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+							is_alive = b["alive"]
+						elif typeof(b) == TYPE_OBJECT and "alive" in b:
+							is_alive = b.alive
+
+						var owner_id = null
+						if typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): owner_id = b["owner_id"]
+						elif b.has_method("has_meta") and b.has_meta("owner_id"): owner_id = b.get_meta("owner_id")
+						elif "owner_id" in b: owner_id = b.owner_id
+
+						var my_id = null
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): my_id = self.ball["id"]
+						elif "id" in self.ball: my_id = self.ball.id
+
+						if is_decoy and is_alive and owner_id != null and my_id != null and owner_id == my_id:
+							decoy = b
+							break
+
+				if decoy != null:
+					var bx = self.ball.x
+					var by = self.ball.y
+
+					var dx = 0
+					var dy = 0
+					if typeof(decoy) == TYPE_DICTIONARY:
+						dx = decoy["x"]
+						dy = decoy["y"]
+						decoy["x"] = bx
+						decoy["y"] = by
+					else:
+						dx = decoy.x
+						dy = decoy.y
+						decoy.x = bx
+						decoy.y = by
+
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						self.ball["x"] = dx
+						self.ball["y"] = dy
+					else:
+						self.ball.x = dx
+						self.ball.y = dy
+
+					if world != null and "events" in world:
+						var ev1 = {"type": "teleport", "data": {"x": self.ball.x, "y": self.ball.y, "radius": 20, "color": "purple"}}
+						var ev2 = {"type": "teleport", "data": {"x": dx, "y": dy, "radius": 20, "color": "purple"}}
+						if typeof(world) == TYPE_DICTIONARY:
+							world["events"].append(ev1)
+							world["events"].append(ev2)
+						elif typeof(world) == TYPE_OBJECT:
+							world.events.append(ev1)
+							world.events.append(ev2)
+
+				inv.erase("decoy_swap_trigger_item")
+				self.ball.set_meta("inventory", inv)
 	if (strategy == "flee" or strategy == "defend") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("deployable_flare"):
@@ -31267,6 +31406,25 @@ func _collect_booster(delta: float):
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "deployable_decoy_swap_item":
+                var inv = []
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("inventory"): inv = self.ball.inventory
+                    else: self.ball.inventory = inv
+                    inv.append("deployable_decoy_swap_item")
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "inventory" in self.ball: inv = self.ball.inventory
+                    elif self.ball.has_method("has_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                    else:
+                        if "inventory" in self.ball: self.ball.inventory = inv
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                    inv.append("deployable_decoy_swap_item")
+                    if "inventory" in self.ball: self.ball.inventory = inv
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "decoy_flare_item":
                 var inv = []
                 if typeof(self.ball) == TYPE_DICTIONARY:
@@ -45618,7 +45776,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "deployable_stasis_bubble", "deployable_pull_trap", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "deployable_stasis_bubble", "deployable_pull_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
