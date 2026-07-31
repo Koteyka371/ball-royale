@@ -38,6 +38,7 @@ class MockBall:
         self.energy_shield_active = False
         self.energy_shield_hp = 0.0
 
+
 def test_deployable_lightning_rod():
     world = MockWorld()
 
@@ -61,13 +62,17 @@ def test_deployable_lightning_rod():
     assert getattr(rod, "max_charge", 0) == 100.0
 
     ally = MockBall(2, 120, 100, team="A")
+    ally.hp = 10  # Damaged ally
+    ally.max_hp = 100
     enemy = MockBall(3, 200, 100, team="B")
     world.balls.extend([ally, enemy])
 
-    # Tick loop 1: ally gets shield
+    # Add charge to rod
+    rod.charge = 20.0
     action.world.tick = 2
     delta = 0.1
-    # We call apply hazards logic directly for test
+
+    # Tick loop 1: ally gets healed from charge over time
     for hazard in list(action.world.arena.hazards):
         if hazard.kind == "deployable_lightning_rod":
             current_tick = getattr(action.world, "tick", 0)
@@ -79,39 +84,22 @@ def test_deployable_lightning_rod():
                     continue
 
                 pulse_radius = getattr(hazard, "pulse_radius", 250.0)
-                if hasattr(action.world, "balls"):
-                    for b in action.world.balls:
-                        if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
-                            dx = b.x - hazard.x
-                            dy = b.y - hazard.y
-                            dist_sq = dx*dx + dy*dy
-                            if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
-                                b.energy_shield_active = True
-                                b.energy_shield_hp = max(getattr(b, "energy_shield_hp", 0.0), 50.0)
-
                 charge = getattr(hazard, "charge", 0.0)
-                max_charge = getattr(hazard, "max_charge", 100.0)
-                if charge >= max_charge:
-                    hazard.charge = 0.0
-                    if hasattr(action.world, "events"):
-                        action.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
+                if charge > 0.0:
+                    heal_amount = charge * delta * 0.1
                     if hasattr(action.world, "balls"):
                         for b in action.world.balls:
-                            if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(hazard, "team", ""):
+                            if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
                                 dx = b.x - hazard.x
                                 dy = b.y - hazard.y
                                 dist_sq = dx*dx + dy*dy
                                 if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
-                                    b.energy_shield_active = False
-                                    b.energy_shield_hp = 0.0
-                                    b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
-                                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
-                                    if hasattr(action, "_spawn_directed_particles"):
-                                        action._spawn_directed_particles(hazard, b, "lightning")
+                                    if hasattr(b, "hp") and hasattr(b, "max_hp") and b.hp < b.max_hp:
+                                        b.hp = min(b.max_hp, b.hp + heal_amount)
+                    hazard.charge = max(0.0, charge - (50.0 * delta))
 
-    assert ally.energy_shield_active is True
-    assert ally.energy_shield_hp == 50.0
-    assert enemy.stun_timer == 0.0
+    assert ally.hp > 10.0  # Healed
+    assert ally.hp == 10.0 + (20.0 * 0.1 * 0.1)
 
     # Tick loop 2: charge >= max_charge
     rod.charge = 150.0
@@ -127,28 +115,25 @@ def test_deployable_lightning_rod():
                     continue
 
                 pulse_radius = getattr(hazard, "pulse_radius", 250.0)
-
                 charge = getattr(hazard, "charge", 0.0)
                 max_charge = getattr(hazard, "max_charge", 100.0)
+
+                # ... (skip heal over time for this tick for test simplicity) ...
+
                 if charge >= max_charge:
                     hazard.charge = 0.0
                     if hasattr(action.world, "events"):
                         action.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
                     if hasattr(action.world, "balls"):
                         for b in action.world.balls:
-                            if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(hazard, "team", ""):
+                            if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
                                 dx = b.x - hazard.x
                                 dy = b.y - hazard.y
                                 dist_sq = dx*dx + dy*dy
                                 if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
-                                    b.energy_shield_active = False
-                                    b.energy_shield_hp = 0.0
-                                    b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
-                                    b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
-                                    if hasattr(action, "_spawn_directed_particles"):
-                                        action._spawn_directed_particles(hazard, b, "lightning")
+                                    if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                                        b.hp = min(b.max_hp, b.hp + 50.0)
 
     assert rod.charge == 0.0
-    assert enemy.stun_timer == 2.0
-    assert getattr(enemy, "silence_timer", 0.0) == 5.0
+    assert ally.hp > 10.0 + (20.0 * 0.1 * 0.1)  # Burst healed
     assert any(e == {'type': 'visual_effect', 'data': {'type': 'lightning', 'x': rod.x, 'y': rod.y}} for e in world.events)

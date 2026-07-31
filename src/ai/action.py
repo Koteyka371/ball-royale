@@ -8115,41 +8115,46 @@ class Action:
                                     self.world.arena.hazards.remove(hazard)
                                 continue
 
-                            # Apply shield to nearby allies
+                            # Heal nearby allies based on charge
                             pulse_radius = getattr(hazard, "pulse_radius", 250.0)
-                            if hasattr(self.world, "balls"):
-                                for b in getattr(self.world, "balls", []):
-                                    if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
-                                        dx = b.x - hazard.x
-                                        dy = b.y - hazard.y
-                                        dist_sq = dx*dx + dy*dy
-                                        if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
-                                            b.energy_shield_active = True
-                                            b.energy_shield_hp = max(getattr(b, "energy_shield_hp", 0.0), 50.0)
-
-                            # Stun nearby enemies if fully charged
                             charge = getattr(hazard, "charge", 0.0)
+                            if charge > 0.0:
+                                heal_amount = charge * delta * 0.1  # Consume some charge to heal
+                                actual_heal = 0.0
+                                if hasattr(self.world, "balls"):
+                                    for b in getattr(self.world, "balls", []):
+                                        if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
+                                            dx = b.x - hazard.x
+                                            dy = b.y - hazard.y
+                                            dist_sq = dx*dx + dy*dy
+                                            if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
+                                                if hasattr(b, "hp") and hasattr(b, "max_hp") and b.hp < b.max_hp:
+                                                    b.hp = min(b.max_hp, b.hp + heal_amount)
+                                                    actual_heal += heal_amount
+                                                    if hasattr(self, "_spawn_directed_particles"):
+                                                        self._spawn_directed_particles(hazard, b, "heal")
+
+                                # Reduce charge by the amount we healed (cap reduction so we don't drop below 0 immediately)
+                                # Instead of tying perfectly to actual_heal, we can just consume it over time.
+                                hazard.charge = max(0.0, charge - (50.0 * delta))
+
                             max_charge = getattr(hazard, "max_charge", 100.0)
-                            if charge >= max_charge:
+                            if getattr(hazard, "charge", 0.0) >= max_charge:
                                 hazard.charge = 0.0
-                                # Shockwave
                                 if hasattr(self.world, "events"):
                                     self.world.events.append({'type': 'visual_effect', 'data': {'type': 'lightning', 'x': hazard.x, 'y': hazard.y}})
 
                                 if hasattr(self.world, "balls"):
                                     for b in getattr(self.world, "balls", []):
-                                        if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(hazard, "team", ""):
+                                        if getattr(b, "alive", True) and getattr(b, "team", None) == getattr(hazard, "team", ""):
                                             dx = b.x - hazard.x
                                             dy = b.y - hazard.y
                                             dist_sq = dx*dx + dy*dy
                                             if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
-                                                # EMP Effect: Disables shields and abilities
-                                                b.energy_shield_active = False
-                                                b.energy_shield_hp = 0.0
-                                                b.stun_timer = max(getattr(b, "stun_timer", 0.0), 2.0)
-                                                b.silence_timer = max(getattr(b, "silence_timer", 0.0), 5.0)
-                                                if hasattr(self, "_spawn_directed_particles"):
-                                                    self._spawn_directed_particles(hazard, b, "lightning")
+                                                if hasattr(b, "hp") and hasattr(b, "max_hp"):
+                                                    b.hp = min(b.max_hp, b.hp + 50.0)
+                                                    if hasattr(self, "_spawn_directed_particles"):
+                                                        self._spawn_directed_particles(hazard, b, "heal")
 
                     elif hazard.kind == "proximity_mud_puddle":
                         current_tick = getattr(self.world, "tick", 0)
