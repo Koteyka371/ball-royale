@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1734] Sticky Bomb Relay Mode — *2026-07-31 13:50:51 UTC*
+
+A game mode where at least one sticky bomb is always active in the arena. Players must constantly pass it to avoid elimination, turning the match into a frantic game of hot potato.
+
+---
+
 ## [idea-1721] Moving Black Hole — *2026-07-31 13:10:15 UTC*
 
 A mode where a black hole moves around the map.
