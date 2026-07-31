@@ -1491,17 +1491,84 @@ func _attempt_damage_internal(attacker, target) -> void:
 		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("kinetic_shield_active") and target.get_meta("kinetic_shield_active"):
 			has_kinetic = true
 
-		if has_kinetic and is_ranged_attack:
+		if has_kinetic:
 			var inc_dmg = 10.0
 			if "damage" in attacker: inc_dmg = float(attacker.damage)
-			if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
-				var cur_stored = target.get_meta("kinetic_shield_stored_damage") if target.has_meta("kinetic_shield_stored_damage") else 0.0
-				target.set_meta("kinetic_shield_stored_damage", cur_stored + inc_dmg)
+			var cur_stored = 0.0
+			if typeof(target) != TYPE_DICTIONARY and target.has_method("get_meta") and target.has_meta("kinetic_shield_stored_damage"):
+				cur_stored = target.get_meta("kinetic_shield_stored_damage")
+			elif "kinetic_shield_stored_damage" in target:
+				cur_stored = target.kinetic_shield_stored_damage
+
+			var new_stored = cur_stored + inc_dmg
+			var threshold = 50.0
+			if "kinetic_shield_threshold" in target:
+				threshold = float(target.kinetic_shield_threshold)
+			elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("kinetic_shield_threshold"):
+				threshold = float(target.get_meta("kinetic_shield_threshold"))
+
+			if new_stored >= threshold:
+				var cur_speed = 0.0
+				if typeof(target) != TYPE_DICTIONARY and target.has_method("get_meta") and target.has_meta("speed_boost_timer"):
+					cur_speed = target.get_meta("speed_boost_timer")
+				elif "speed_boost_timer" in target:
+					cur_speed = target.speed_boost_timer
+
+				if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
+					target.set_meta("kinetic_shield_active", false)
+					target.set_meta("kinetic_shield_stored_damage", 0.0)
+					target.set_meta("speed_boost_timer", cur_speed + 5.0)
+				else:
+					target.kinetic_shield_active = false
+					target.kinetic_shield_stored_damage = 0.0
+					target.speed_boost_timer = cur_speed + 5.0
+
+				if world != null and typeof(world) == TYPE_OBJECT and "balls" in world:
+					for b in world.balls:
+						if b == target: continue
+						var is_spectator = false
+						if typeof(b) == TYPE_DICTIONARY and b.has("ball_type") and b["ball_type"] == "spectator": is_spectator = true
+						elif typeof(b) == TYPE_OBJECT and "ball_type" in b and b.ball_type == "spectator": is_spectator = true
+						if is_spectator: continue
+						var bx = 0.0
+						var by = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							bx = b.get("x", 0.0)
+							by = b.get("y", 0.0)
+						elif typeof(b) == TYPE_OBJECT and "x" in b and "y" in b:
+							bx = b.x
+							by = b.y
+						var dx = bx - t_x2
+						var dy = by - t_y2
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist < 200.0:
+							if dist == 0:
+								dist = 1.0
+								dx = 1.0
+							var nx = dx / dist
+							var ny = dy / dist
+							var k_force = 5000.0
+							if typeof(b) == TYPE_DICTIONARY:
+								b["vx"] = b.get("vx", 0.0) + nx * k_force
+								b["vy"] = b.get("vy", 0.0) + ny * k_force
+								b["_knockback_timer"] = 1.0
+							elif typeof(b) == TYPE_OBJECT and "vx" in b and "vy" in b:
+								b.vx += nx * k_force
+								b.vy += ny * k_force
+								if b.has_method("set_meta"):
+									b.set_meta("_knockback_timer", 1.0)
+								else:
+									b._knockback_timer = 1.0
+
+				if world != null and "events" in world:
+					world.events.append({"type": "visual_effect", "data": {"type": "kinetic_shield_burst", "x": t_x2, "y": t_y2}})
 			else:
-				var cur_stored = target.kinetic_shield_stored_damage if "kinetic_shield_stored_damage" in target else 0.0
-				target.kinetic_shield_stored_damage = cur_stored + inc_dmg
-			if world != null and "events" in world:
-				world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
+				if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
+					target.set_meta("kinetic_shield_stored_damage", new_stored)
+				else:
+					target.kinetic_shield_stored_damage = new_stored
+				if world != null and "events" in world:
+					world.events.append({"type": "visual_effect", "data": {"type": "shield_block", "x": t_x2, "y": t_y2}})
 			return
 
 		var has_half_reflect = false
@@ -1780,29 +1847,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 							original_damage *= (1.0 + (speed / 100.0))
 						break
 
-	var a_has_kinetic = false
-	var a_stored_dmg = 0.0
-	if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("kinetic_shield_stored_damage"):
-		a_stored_dmg = float(attacker.get_meta("kinetic_shield_stored_damage"))
-	elif "kinetic_shield_stored_damage" in attacker:
-		a_stored_dmg = float(attacker.kinetic_shield_stored_damage)
 
-	if a_stored_dmg > 0.0 and not is_ranged_attack:
-		original_damage += a_stored_dmg
-		var cur_speed_boost_timer = 0.0
-		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("speed_boost_timer"):
-			cur_speed_boost_timer = float(attacker.get_meta("speed_boost_timer"))
-		elif "speed_boost_timer" in attacker:
-			cur_speed_boost_timer = float(attacker.speed_boost_timer)
-
-		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
-			attacker.set_meta("speed_boost_timer", cur_speed_boost_timer + 3.0)
-			attacker.set_meta("kinetic_shield_active", false)
-			attacker.set_meta("kinetic_shield_stored_damage", 0.0)
-		else:
-			attacker.speed_boost_timer = cur_speed_boost_timer + 3.0
-			attacker.kinetic_shield_active = false
-			attacker.kinetic_shield_stored_damage = 0.0
 
 	var target_weakness = ""
 	if typeof(target) == TYPE_DICTIONARY:
@@ -29535,11 +29580,11 @@ func _collect_booster(delta: float):
             elif "kind" in nearest and nearest.kind == "kinetic_shield_booster":
                 if typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"):
                     self.ball.set_meta("kinetic_shield_active", true)
-                    self.ball.set_meta("kinetic_shield_timer", 10.0)
+                    self.ball.set_meta("kinetic_shield_timer", 9999.0)
                     self.ball.set_meta("kinetic_shield_stored_damage", 0.0)
                 else:
                     self.ball.kinetic_shield_active = true
-                    self.ball.kinetic_shield_timer = 10.0
+                    self.ball.kinetic_shield_timer = 9999.0
                     self.ball.kinetic_shield_stored_damage = 0.0
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)

@@ -56,7 +56,7 @@ def test_kinetic_shield_booster_collection():
     action._collect_booster(1.0)
 
     assert getattr(ball, "kinetic_shield_active", False) is True
-    assert getattr(ball, "kinetic_shield_timer", 0.0) == 10.0
+    assert getattr(ball, "kinetic_shield_timer", 0.0) == 9999.0
     assert getattr(ball, "kinetic_shield_stored_damage", -1) == 0.0
     assert len(world.boosters) == 0
 
@@ -90,35 +90,13 @@ def test_kinetic_shield_takes_melee_damage():
     world._deal_damage = mock_deal_damage
     action._attempt_damage(attacker, target)
 
-    assert target.hp < 100.0 # Damage taken
-    assert target.kinetic_shield_stored_damage == 0.0
+    assert target.hp == 100.0 # Damage absorbed by shield now
+    assert target.kinetic_shield_stored_damage == 10.0
 
-def test_kinetic_shield_releases_energy_on_melee_attack():
-    world = MockWorld()
-    attacker = MockBall(x=10, y=10)
-    attacker.kinetic_shield_active = True
-    attacker.kinetic_shield_stored_damage = 25.0
 
-    target = MockBall(x=15, y=10) # Melee range
 
-    action = Action(attacker, world)
 
-    # Let's intercept damage dealing
-    damage_dealt = [0.0]
-    def mock_deal_damage(att, tgt):
-        damage_dealt[0] = att.damage
-        tgt.hp -= att.damage
 
-    world._deal_damage = mock_deal_damage
-
-    action._attempt_damage(attacker, target)
-
-    # Speed boost should be applied
-    assert getattr(attacker, "speed_boost_timer", 0.0) >= 3.0
-
-    # Shield should be removed
-    assert attacker.kinetic_shield_active is False
-    assert attacker.kinetic_shield_stored_damage == 0.0
 
     # Damage should be increased (original 10.0 + 25.0 stored = 35.0? Or it's handled differently?)
     # Wait, in the Python code for action.py _attempt_damage:

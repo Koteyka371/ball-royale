@@ -854,12 +854,45 @@ class Action:
                 self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
 
-        if getattr(target, "kinetic_shield_active", False) and is_ranged:
-            # Absorb ranged attack
+        if getattr(target, "kinetic_shield_active", False):
+            # Store kinetic energy from taking damage
             inc_dmg = getattr(attacker, "damage", 10.0)
             target.kinetic_shield_stored_damage = getattr(target, "kinetic_shield_stored_damage", 0.0) + inc_dmg
-            if hasattr(self.world, "events"):
-                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
+
+            # Check if threshold is reached
+            threshold = getattr(target, "kinetic_shield_threshold", 50.0)
+            if target.kinetic_shield_stored_damage >= threshold:
+                target.kinetic_shield_active = False
+                target.kinetic_shield_stored_damage = 0.0
+                target.speed_boost_timer = getattr(target, "speed_boost_timer", 0.0) + 5.0
+
+                # Massive outward knockback
+                import math
+                t_x = getattr(target, 'x', 0.0)
+                t_y = getattr(target, 'y', 0.0)
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if b == target or getattr(b, "ball_type", "") == "spectator": continue
+                        b_x = getattr(b, 'x', 0.0)
+                        b_y = getattr(b, 'y', 0.0)
+                        dx = b_x - t_x
+                        dy = b_y - t_y
+                        dist = math.hypot(dx, dy)
+                        if dist < 200.0:
+                            if dist == 0:
+                                dist = 1.0
+                                dx = 1.0
+                            nx, ny = dx/dist, dy/dist
+                            knockback_force = 5000.0
+                            b.vx = getattr(b, "vx", 0.0) + nx * knockback_force
+                            b.vy = getattr(b, "vy", 0.0) + ny * knockback_force
+                            setattr(b, "_knockback_timer", 1.0)
+
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'kinetic_shield_burst', 'x': target.x, 'y': target.y}})
+            else:
+                if hasattr(self.world, "events"):
+                    self.world.events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': target.x, 'y': target.y}})
             return
 
         if getattr(target, "passive_reflect_percent", 0.0) > 0.0:
@@ -981,14 +1014,7 @@ class Action:
                             original_damage *= (1.0 + (speed / 100.0))
                         break
 
-        if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0 and not is_ranged:
-            stored_dmg = attacker.kinetic_shield_stored_damage
-            original_damage += stored_dmg
-            # Apply speed boost
-            attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 3.0
-            # Remove shield
-            attacker.kinetic_shield_active = False
-            attacker.kinetic_shield_stored_damage = 0.0
+
 
         if getattr(target, "takes_double_damage", False):
             original_damage *= 2.0
@@ -15115,7 +15141,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "kinetic_shield_booster":
                     self.ball.kinetic_shield_active = True
-                    self.ball.kinetic_shield_timer = 10.0
+                    self.ball.kinetic_shield_timer = 9999.0
                     self.ball.kinetic_shield_stored_damage = 0.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
