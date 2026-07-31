@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1712] Decoy Swap Item — *2026-07-31 08:49:43 UTC*
+
+An item that allows a ball to instantly swap positions with their deployed decoy, allowing for tricky escapes or offensive misdirection.
+
+---
+
 ## [idea-1722] Heal or Hurt Zone — *2026-07-31 08:33:08 UTC*
 
 A zone that alternates between healing and hurting.
