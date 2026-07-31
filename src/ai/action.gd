@@ -28905,6 +28905,96 @@ func _collect_booster(delta: float):
                     self.world.boosters.erase(b)
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
+            elif b_kind == "flashbang_booster":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                else:
+                    if "x" in b: bx = b.x
+                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                    if "y" in b: by = b.y
+                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT:
+                    if "radius" in b: b_radius = b.radius
+                    elif b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                var my_radius = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): my_radius = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "radius" in self.ball: my_radius = self.ball.radius
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+
+                var dist = sqrt(pow(bx - self.ball.x, 2) + pow(by - self.ball.y, 2))
+                if dist <= my_radius + b_radius + 5.0:
+                    if self.world != null and "balls" in self.world:
+                        for other in self.world.balls:
+                            if other != self.ball:
+                                var b_alive = other.alive if "alive" in other else (other.get_meta("alive") if typeof(other) == TYPE_OBJECT and other.has_meta("alive") else true)
+                                var b_team = other.team if "team" in other else (other.get_meta("team") if typeof(other) == TYPE_OBJECT and other.has_meta("team") else "")
+                                var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("team") else "")
+
+                                var ox = other.x if "x" in other else (other.get_meta("x") if typeof(other) == TYPE_OBJECT and other.has_meta("x") else 0.0)
+                                var oy = other.y if "y" in other else (other.get_meta("y") if typeof(other) == TYPE_OBJECT and other.has_meta("y") else 0.0)
+                                var odist = sqrt(pow(ox - self.ball.x, 2) + pow(oy - self.ball.y, 2))
+
+                                if b_alive and b_team != my_team and odist <= 500.0:
+                                    if typeof(other) == TYPE_OBJECT:
+                                        if "is_blinded" in other: other.is_blinded = true
+                                        elif other.has_method("set_meta"): other.set_meta("is_blinded", true)
+
+                                        var current_blindness = other.blindness_timer if "blindness_timer" in other else (other.get_meta("blindness_timer") if other.has_method("has_meta") and other.has_meta("blindness_timer") else 0.0)
+                                        if current_blindness < 5.0:
+                                            if "blindness_timer" in other: other.blindness_timer = 5.0
+                                            elif other.has_method("set_meta"): other.set_meta("blindness_timer", 5.0)
+
+                                        if "is_stunned" in other: other.is_stunned = true
+                                        elif other.has_method("set_meta"): other.set_meta("is_stunned", true)
+
+                                        var current_stun = other.stun_timer if "stun_timer" in other else (other.get_meta("stun_timer") if other.has_method("has_meta") and other.has_meta("stun_timer") else 0.0)
+                                        if current_stun < 3.0:
+                                            if "stun_timer" in other: other.stun_timer = 3.0
+                                            elif other.has_method("set_meta"): other.set_meta("stun_timer", 3.0)
+
+                                        var has_base_pr = other.has_meta("base_perception_radius") if other.has_method("has_meta") else ("base_perception_radius" in other)
+                                        if not has_base_pr:
+                                            var pr = other.perception_radius if "perception_radius" in other else (other.get_meta("perception_radius") if other.has_method("has_meta") and other.has_meta("perception_radius") else 100.0)
+                                            if "base_perception_radius" in other: other.base_perception_radius = pr
+                                            elif other.has_method("set_meta"): other.set_meta("base_perception_radius", pr)
+
+                                        if "perception_radius" in other: other.perception_radius = 0.0
+                                        elif other.has_method("set_meta"): other.set_meta("perception_radius", 0.0)
+                                    elif typeof(other) == TYPE_DICTIONARY:
+                                        other["is_blinded"] = true
+                                        var current_blindness = other.get("blindness_timer", 0.0)
+                                        if current_blindness < 5.0:
+                                            other["blindness_timer"] = 5.0
+                                        other["is_stunned"] = true
+                                        var current_stun = other.get("stun_timer", 0.0)
+                                        if current_stun < 3.0:
+                                            other["stun_timer"] = 3.0
+                                        if not other.has("base_perception_radius"):
+                                            other["base_perception_radius"] = other.get("perception_radius", 100.0)
+                                        other["perception_radius"] = 0.0
+
+                    if self.world != null and "events" in self.world:
+                        var pbx = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("x") else 0.0)
+                        var pby = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("y") else 0.0)
+                        self.world.events.append({"type": "visual_effect", "data": {"type": "flashbang_explosion", "x": pbx, "y": pby, "radius": 500.0}})
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world and typeof(self.world.boosters) == TYPE_ARRAY:
+                        self.world.boosters.erase(b)
+                    if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                        self.world.arena.hazards.erase(b)
             elif b_kind == "chameleon_item":
                 var bx = 0.0
                 var by = 0.0
@@ -31254,62 +31344,60 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1: self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "flashbang_booster":
-                for i in range(3):
-                    var clone = null
-                    if self.ball.has_method("duplicate"):
-                        clone = self.ball.duplicate()
-                    elif typeof(self.ball) == TYPE_DICTIONARY:
-                        clone = self.ball.duplicate()
+                if self.world != null and "balls" in self.world:
+                    for b in self.world.balls:
+                        if b != self.ball:
+                            var b_alive = b.alive if "alive" in b else (b.get_meta("alive") if typeof(b) == TYPE_OBJECT and b.has_meta("alive") else true)
+                            var b_team = b.team if "team" in b else (b.get_meta("team") if typeof(b) == TYPE_OBJECT and b.has_meta("team") else "")
+                            var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("team") else "")
 
-                    if clone != null:
-                        if "id" in clone: clone.id = randi() % 90000 + 10000
-                        if "hp" in clone: clone.hp = 1.0
-                        if "max_hp" in clone: clone.max_hp = 1.0
-                        if "damage" in clone: clone.damage = 0.0
-                        if "base_damage" in clone: clone.base_damage = 0.0
+                            var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_meta("x") else 0.0)
+                            var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_meta("y") else 0.0)
+                            var dist = sqrt(pow(bx - self.ball.x, 2) + pow(by - self.ball.y, 2))
 
-                        var self_id = -2
-                        if "id" in self.ball: self_id = self.ball.id
-                        elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+                            if b_alive and b_team != my_team and dist <= 500.0:
+                                if typeof(b) == TYPE_OBJECT:
+                                    if "is_blinded" in b: b.is_blinded = true
+                                    elif b.has_method("set_meta"): b.set_meta("is_blinded", true)
 
-                        var angle = i * (PI * 2.0 / 3.0)
-                        var bspeed = 200.0
-                        if "base_speed" in self.ball: bspeed = self.ball.base_speed
-                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): bspeed = self.ball.base_speed
+                                    var current_blindness = b.blindness_timer if "blindness_timer" in b else (b.get_meta("blindness_timer") if b.has_method("has_meta") and b.has_meta("blindness_timer") else 0.0)
+                                    if current_blindness < 5.0:
+                                        if "blindness_timer" in b: b.blindness_timer = 5.0
+                                        elif b.has_method("set_meta"): b.set_meta("blindness_timer", 5.0)
 
-                        if clone.has_method("set_meta"):
-                            clone.set_meta("owner_id", self_id)
-                            clone.set_meta("is_decoy", true)
-                            clone.set_meta("decoy_type", "flash")
-                            clone.set_meta("decoy_timer", 5.0)
-                            clone.set_meta("skill_timer", 9999.0)
-                            clone.set_meta("attack_timer", 9999.0)
-                            clone.set_meta("vx", cos(angle) * bspeed)
-                            clone.set_meta("vy", sin(angle) * bspeed)
-                        elif typeof(clone) == TYPE_DICTIONARY:
-                            clone["owner_id"] = self_id
-                            clone["is_decoy"] = true
-                            clone["decoy_type"] = "flash"
-                            clone["decoy_timer"] = 5.0
-                            clone["skill_timer"] = 9999.0
-                            clone["attack_timer"] = 9999.0
-                            clone["vx"] = cos(angle) * bspeed
-                            clone["vy"] = sin(angle) * bspeed
-                        else:
-                            clone.owner_id = self_id
-                            clone.is_decoy = true
-                            clone.decoy_type = "flash"
-                            clone.decoy_timer = 5.0
-                            clone.skill_timer = 9999.0
-                            clone.attack_timer = 9999.0
-                            clone.vx = cos(angle) * bspeed
-                            clone.vy = sin(angle) * bspeed
-                            if "skill" in clone: clone.skill = ""
-                            if "active_skill" in clone: clone.active_skill = ""
+                                    if "is_stunned" in b: b.is_stunned = true
+                                    elif b.has_method("set_meta"): b.set_meta("is_stunned", true)
 
-                        if self.world != null and "balls" in self.world:
-                            self.world.balls.append(clone)
+                                    var current_stun = b.stun_timer if "stun_timer" in b else (b.get_meta("stun_timer") if b.has_method("has_meta") and b.has_meta("stun_timer") else 0.0)
+                                    if current_stun < 3.0:
+                                        if "stun_timer" in b: b.stun_timer = 3.0
+                                        elif b.has_method("set_meta"): b.set_meta("stun_timer", 3.0)
 
+                                    var has_base_pr = b.has_meta("base_perception_radius") if b.has_method("has_meta") else ("base_perception_radius" in b)
+                                    if not has_base_pr:
+                                        var pr = b.perception_radius if "perception_radius" in b else (b.get_meta("perception_radius") if b.has_method("has_meta") and b.has_meta("perception_radius") else 100.0)
+                                        if "base_perception_radius" in b: b.base_perception_radius = pr
+                                        elif b.has_method("set_meta"): b.set_meta("base_perception_radius", pr)
+
+                                    if "perception_radius" in b: b.perception_radius = 0.0
+                                    elif b.has_method("set_meta"): b.set_meta("perception_radius", 0.0)
+                                elif typeof(b) == TYPE_DICTIONARY:
+                                    b["is_blinded"] = true
+                                    var current_blindness = b.get("blindness_timer", 0.0)
+                                    if current_blindness < 5.0:
+                                        b["blindness_timer"] = 5.0
+                                    b["is_stunned"] = true
+                                    var current_stun = b.get("stun_timer", 0.0)
+                                    if current_stun < 3.0:
+                                        b["stun_timer"] = 3.0
+                                    if not b.has("base_perception_radius"):
+                                        b["base_perception_radius"] = b.get("perception_radius", 100.0)
+                                    b["perception_radius"] = 0.0
+
+                if self.world != null and "events" in self.world:
+                    var bx = self.ball.x if "x" in self.ball else (self.ball.get_meta("x") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("x") else 0.0)
+                    var by = self.ball.y if "y" in self.ball else (self.ball.get_meta("y") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_meta("y") else 0.0)
+                    self.world.events.append({"type": "visual_effect", "data": {"type": "flashbang_explosion", "x": bx, "y": by, "radius": 500.0}})
                 if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
