@@ -45477,7 +45477,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "deployable_stasis_bubble", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "deployable_stasis_bubble", "deployable_pull_trap", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -46996,6 +46996,141 @@ func _update_skill_timer(delta: float):
                                         if "duration" in hazard: hazard.duration = 0.0
                                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                if h_kind == "deployable_pull_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var b_id = null
+                    if "id" in ball: b_id = ball.id
+                    elif ball.has_method("get_meta") and ball.has_meta("id"): b_id = ball.get_meta("id")
+
+                    if owner_id != b_id:
+                        var dx = h_x - b_x
+                        var dy = h_y - b_y
+                        var dist_sq = dx*dx + dy*dy
+
+                        var h_radius = 60.0
+                        if "radius" in hazard: h_radius = hazard.radius
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_radius = hazard.get_meta("radius")
+
+                        if dist_sq < h_radius * h_radius:
+                            var dist = sqrt(dist_sq)
+                            if dist > 0.0001:
+                                var nx = dx / dist
+                                var ny = dy / dist
+                                var pull_strength = 150.0 * delta
+
+                                var anchor = 0.0
+                                if "anchor_booster_timer" in ball: anchor = ball.anchor_booster_timer
+                                elif ball.has_method("get_meta") and ball.has_meta("anchor_booster_timer"): anchor = ball.get_meta("anchor_booster_timer")
+
+                                if anchor <= 0:
+                                    var mod = 1.0
+                                    var c = ""
+                                    if "cosmetic" in ball: c = str(ball.cosmetic).to_lower().replace(" ", "_")
+                                    elif ball.has_method("get_meta") and ball.has_meta("cosmetic"): c = str(ball.get_meta("cosmetic")).to_lower().replace(" ", "_")
+
+                                    if c == "rooted_boots": mod = 0.05
+                                    elif c == "grounded_boots": mod = 0.1
+
+                                    if "x" in ball: ball.x += nx * pull_strength * mod
+                                    elif ball.has_method("set_meta"): ball.set_meta("x", ball.get_meta("x") + nx * pull_strength * mod)
+                                    if "y" in ball: ball.y += ny * pull_strength * mod
+                                    elif ball.has_method("set_meta"): ball.set_meta("y", ball.get_meta("y") + ny * pull_strength * mod)
+
+                                var b_radius = 10.0
+                                if "radius" in ball: b_radius = ball.radius
+                                elif ball.has_method("get_meta") and ball.has_meta("radius"): b_radius = ball.get_meta("radius")
+
+                                if dist < b_radius + 10.0:
+                                    var owner = null
+                                    if owner_id != null and typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("balls") != null:
+                                        for tb in world.get("balls"):
+                                            var tb_id = null
+                                            if "id" in tb: tb_id = tb.id
+                                            elif tb.has_method("get_meta") and tb.has_meta("id"): tb_id = tb.get_meta("id")
+                                            if tb_id == owner_id:
+                                                owner = tb
+                                                break
+                                    elif owner_id != null and typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                                        for tb in world["balls"]:
+                                            var tb_id = null
+                                            if "id" in tb: tb_id = tb.id
+                                            elif tb.has_method("get_meta") and tb.has_meta("id"): tb_id = tb.get_meta("id")
+                                            if tb_id == owner_id:
+                                                owner = tb
+                                                break
+
+                                    var target_balls = []
+                                    if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("balls") != null:
+                                        target_balls = world.get("balls")
+                                    elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+                                        target_balls = world["balls"]
+
+                                    for tb in target_balls:
+                                        var tb_alive = true
+                                        if "alive" in tb: tb_alive = tb.alive
+                                        elif tb.has_method("get_meta") and tb.has_meta("alive"): tb_alive = tb.get_meta("alive")
+
+                                        var tb_id = null
+                                        if "id" in tb: tb_id = tb.id
+                                        elif tb.has_method("get_meta") and tb.has_meta("id"): tb_id = tb.get_meta("id")
+
+                                        if tb_alive and tb_id != owner_id:
+                                            var t_x = 0.0
+                                            if "x" in tb: t_x = tb.x
+                                            elif tb.has_method("get_meta") and tb.has_meta("x"): t_x = tb.get_meta("x")
+                                            var t_y = 0.0
+                                            if "y" in tb: t_y = tb.y
+                                            elif tb.has_method("get_meta") and tb.has_meta("y"): t_y = tb.get_meta("y")
+
+                                            var tb_dist_sq = (h_x - t_x)*(h_x - t_x) + (h_y - t_y)*(h_y - t_y)
+                                            if tb_dist_sq < h_radius * h_radius:
+                                                if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+                                                    if owner != null:
+                                                        var old_dmg = 10.0
+                                                        if "damage" in owner: old_dmg = owner.damage
+                                                        elif owner.has_method("get_meta") and owner.has_meta("damage"): old_dmg = owner.get_meta("damage")
+
+                                                        if "damage" in owner: owner.damage = 60.0
+                                                        elif owner.has_method("set_meta"): owner.set_meta("damage", 60.0)
+
+                                                        world._deal_damage(owner, tb)
+
+                                                        if "damage" in owner: owner.damage = old_dmg
+                                                        elif owner.has_method("set_meta"): owner.set_meta("damage", old_dmg)
+                                                    else:
+                                                        var t_hp = 0.0
+                                                        if "hp" in tb: t_hp = tb.hp
+                                                        elif tb.has_method("get_meta") and tb.has_meta("hp"): t_hp = tb.get_meta("hp")
+                                                        t_hp -= 60.0
+                                                        if "hp" in tb: tb.hp = t_hp
+                                                        elif tb.has_method("set_meta"): tb.set_meta("hp", t_hp)
+
+                                                        if t_hp <= 0:
+                                                            if "alive" in tb: tb.alive = false
+                                                            elif tb.has_method("set_meta"): tb.set_meta("alive", false)
+                                                            if "killer" in tb: tb.killer = "deployable_pull_trap"
+                                                            elif tb.has_method("set_meta"): tb.set_meta("killer", "deployable_pull_trap")
+                                                else:
+                                                    var t_hp = 0.0
+                                                    if "hp" in tb: t_hp = tb.hp
+                                                    elif tb.has_method("get_meta") and tb.has_meta("hp"): t_hp = tb.get_meta("hp")
+                                                    t_hp -= 60.0
+                                                    if "hp" in tb: tb.hp = t_hp
+                                                    elif tb.has_method("set_meta"): tb.set_meta("hp", t_hp)
+
+                                                    if t_hp <= 0:
+                                                        if "alive" in tb: tb.alive = false
+                                                        elif tb.has_method("set_meta"): tb.set_meta("alive", false)
+                                                        if "killer" in tb: tb.killer = "deployable_pull_trap"
+                                                        elif tb.has_method("set_meta"): tb.set_meta("killer", "deployable_pull_trap")
+
+                                    if "duration" in hazard: hazard.duration = 0.0
+                                    elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
                 if h_kind == "zero_gravity_trap_hazard":
                     var h_owner_id = null
                     if "owner_id" in hazard: h_owner_id = hazard.owner_id
