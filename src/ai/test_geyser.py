@@ -17,6 +17,10 @@ class MockBall:
         self.base_speed = 10.0
         self.speed = 10.0
         self.alive = True
+        self.is_flying = False
+        self.fly_timer = 0.0
+        self.fly_target_x = 0.0
+        self.fly_target_y = 0.0
 
 class MockArena:
     def __init__(self):
@@ -47,6 +51,20 @@ def test_geyser_eruption_damage():
     assert ball.hp < 100.0
     assert ball.stun_timer >= 1.0
     assert ball.geyser_immunity_timer > 0.0
+
+    # Check flying stats
+    assert ball.is_flying == True
+    assert ball.fly_timer > 0
+    assert getattr(ball, "geyser_fall_damage", False) == True
+
+    # Simulate landing
+    ball.fly_timer = 0.0
+    action.execute("idle", 0.1)
+
+    assert ball.is_flying == False
+    assert getattr(ball, "geyser_fall_damage", False) == False
+    assert ball.hp < 80.0  # Fall damage applied
+    assert ball.stun_timer >= 0.5
 
 def test_geyser_buff():
     world = MockWorld()
