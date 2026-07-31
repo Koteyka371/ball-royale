@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1741] Echo Mine — *2026-07-31 22:23:49 UTC*
+
+A hazard that pulses and damages players around it based on the amount of noise they make while moving
+
+---
+
 ## [idea-1711] Sniper Drone Pet — *2026-07-31 19:50:12 UTC*
 
 A pet that stays behind the player and occasionally fires high-damage shots at distant enemies.
