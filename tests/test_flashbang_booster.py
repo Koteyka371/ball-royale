@@ -52,33 +52,20 @@ def test_flashbang_booster_pickup():
     booster.y = 0
     world.boosters.append(booster)
 
+    enemy = MockBall(2, x=200, y=0, team="team_b")
+    world.balls.append(enemy)
+
     action = Action(player, world)
     action._collect_booster(0.016)
 
     # Booster removed
     assert len(world.boosters) == 0
-    # 3 decoys spawned + player = 4 balls
-    assert len(world.balls) == 4
 
-    decoys = world.balls[1:]
-    assert len(decoys) == 3
-    for d in decoys:
-        assert d.is_decoy
-        assert d.decoy_type == "flash"
-        assert d.decoy_timer == 5.0
-        assert d.hp == 1.0
-        assert d.owner_id == player.id
-
-    # Check scatter (velocity should be separated by 120 degrees)
-    # Using small epsilon for float comparison
-    vxs = [d.vx for d in decoys]
-    vys = [d.vy for d in decoys]
-
-    assert math.isclose(vxs[0], 200.0, rel_tol=1e-5)
-    assert math.isclose(vys[0], 0.0, abs_tol=1e-5)
-
-    assert math.isclose(vxs[1], -100.0, rel_tol=1e-5)
-    assert math.isclose(vys[1], 173.205081, rel_tol=1e-5)
+    # Check enemy is blinded and stunned
+    assert enemy.is_blinded
+    assert enemy.blindness_timer > 0.0
+    assert enemy.is_stunned
+    assert getattr(enemy, "stun_timer", 0.0) > 0.0
 
 def test_flashbang_booster_explosion_blindness():
     world = MockWorld()
