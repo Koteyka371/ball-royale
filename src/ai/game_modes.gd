@@ -72618,3 +72618,109 @@ class LaserMirrorBordersMode extends GameMode:
 						proj.bounces_left += 1
 					if "damage" in proj:
 						proj.damage *= 1.25
+
+
+class RoamingBlackHoleMode extends GameMode:
+	var bh_x = 500.0
+	var bh_y = 500.0
+	var bh_vx = 150.0
+	var bh_vy = 100.0
+	var bh_radius = 80.0
+
+	func _init() -> void:
+		name = "Roaming Black Hole"
+		description = "A massive black hole continuously roams and bounces around the arena, pulling players in."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
+		bh_x = arena_width / 2.0
+		bh_y = arena_height / 2.0
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = float(world.arena.width)
+			if "height" in world.arena:
+				arena_height = float(world.arena.height)
+
+		bh_x += bh_vx * delta
+		bh_y += bh_vy * delta
+
+		if bh_x - bh_radius < 0:
+			bh_x = bh_radius
+			bh_vx = -bh_vx
+		elif bh_x + bh_radius > arena_width:
+			bh_x = arena_width - bh_radius
+			bh_vx = -bh_vx
+
+		if bh_y - bh_radius < 0:
+			bh_y = bh_radius
+			bh_vy = -bh_vy
+		elif bh_y + bh_radius > arena_height:
+			bh_y = arena_height - bh_radius
+			bh_vy = -bh_vy
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+
+			if not is_alive:
+				continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			else:
+				b_type = b.ball_type if "ball_type" in b else ""
+
+			if b_type == "spectator":
+				continue
+
+			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+			var dx = bh_x - b_x
+			var dy = bh_y - b_y
+			var dist = sqrt(dx * dx + dy * dy)
+
+			if dist < bh_radius:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = 0
+					b["alive"] = false
+				else:
+					if "hp" in b:
+						b.hp = 0
+					if "alive" in b:
+						b.alive = false
+			elif dist > 0:
+				var pull_strength = 2000000.0 / (dist * dist)
+				pull_strength = min(pull_strength, 500.0)
+
+				var multiplier = 1.0
+				var mass = 1.0
+				if typeof(b) == TYPE_DICTIONARY:
+					multiplier = float(b.get("gravity_multiplier", 1.0))
+					mass = float(b.get("mass", 1.0))
+					if b.has("vx") and b.has("vy"):
+						b["vx"] += (dx / dist) * pull_strength * multiplier / mass * delta
+						b["vy"] += (dy / dist) * pull_strength * multiplier / mass * delta
+				else:
+					if "gravity_multiplier" in b:
+						multiplier = float(b.gravity_multiplier)
+					if "mass" in b:
+						mass = float(b.mass)
+					if "vx" in b and "vy" in b:
+						b.vx += (dx / dist) * pull_strength * multiplier / mass * delta
+						b.vy += (dy / dist) * pull_strength * multiplier / mass * delta
