@@ -8774,6 +8774,51 @@ func execute(strategy: String, delta: float):
                     self.ball.set_meta("is_flying", false)
                 else:
                     self.ball.is_flying = false
+
+                var takes_fall_dmg = false
+                if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("geyser_fall_damage"):
+                    takes_fall_dmg = self.ball.get_meta("geyser_fall_damage")
+                elif "geyser_fall_damage" in self.ball:
+                    takes_fall_dmg = self.ball.geyser_fall_damage
+
+                if takes_fall_dmg:
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("geyser_fall_damage", false)
+                    elif "geyser_fall_damage" in self.ball:
+                        self.ball.geyser_fall_damage = false
+
+                    # Apply fall damage
+                    var b_hp = 100.0
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("hp"):
+                        b_hp = self.ball.get_meta("hp")
+                    elif "hp" in self.ball:
+                        b_hp = self.ball.hp
+
+                    b_hp -= 20.0
+
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("hp", b_hp)
+                    elif "hp" in self.ball:
+                        self.ball.hp = b_hp
+
+                    # Apply stun
+                    var b_stun = 0.0
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer"):
+                        b_stun = self.ball.get_meta("stun_timer")
+                    elif "stun_timer" in self.ball:
+                        b_stun = self.ball.stun_timer
+
+                    b_stun = max(b_stun, 0.5)
+
+                    if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("stun_timer", b_stun)
+                    elif "stun_timer" in self.ball:
+                        self.ball.stun_timer = b_stun
+
+                    if typeof(self.world) == TYPE_DICTIONARY and self.world.has("events"):
+                        self.world.events.append({"type": "fall_damage", "x": self.ball.x, "y": self.ball.y})
+                    elif typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                        self.world.add_event("fall_damage", {"x": self.ball.x, "y": self.ball.y})
         else:
             if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
                 self.ball.set_meta("is_flying", false)
@@ -46779,6 +46824,22 @@ func _update_skill_timer(delta: float):
 
                                 if "vy" in self.ball: self.ball.vy = new_vy
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("vy", new_vy)
+
+                                if "is_flying" in self.ball: self.ball.is_flying = true
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_flying", true)
+
+                                if "fly_target_x" in self.ball: self.ball.fly_target_x = self.ball.x + new_vx
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("fly_target_x", self.ball.x + new_vx)
+
+                                if "fly_target_y" in self.ball: self.ball.fly_target_y = self.ball.y + new_vy
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("fly_target_y", self.ball.y + new_vy)
+
+                                if "fly_timer" in self.ball: self.ball.fly_timer = 2.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("fly_timer", 2.0)
+
+                                if not has_geyser_boots:
+                                    if "geyser_fall_damage" in self.ball: self.ball.geyser_fall_damage = true
+                                    elif self.ball.has_method("set_meta"): self.ball.set_meta("geyser_fall_damage", true)
 
                                 if not has_geyser_boots:
                                     var c_stun = self.ball.stun_timer if "stun_timer" in self.ball else (self.ball.get_meta("stun_timer") if self.ball.has_method("get_meta") and self.ball.has_meta("stun_timer") else 0.0)

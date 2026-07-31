@@ -26,6 +26,10 @@ class MockBall:
         self.intangible = False
         self.intangible_timer = 0.0
         self.terminal_velocity = 99999.0
+        self.is_flying = False
+        self.fly_timer = 0.0
+        self.fly_target_x = 0.0
+        self.fly_target_y = 0.0
 
 class MockBooster:
     def __init__(self, id, x, y, kind):
@@ -92,6 +96,9 @@ def test_geyser_boots_immunity_and_launch():
     speed = math.hypot(ball.vx, ball.vy)
     assert abs(speed - 3500.0) < 1.0
 
+    # Boots grant immunity to fall damage
+    assert getattr(ball, "geyser_fall_damage", False) == False
+
 def test_geyser_boots_normal_behavior_without_boots():
     world = MockWorld()
     world.time = 1.0 # Erupting window
@@ -112,3 +119,11 @@ def test_geyser_boots_normal_behavior_without_boots():
     # Check normal launch force
     speed = math.hypot(ball.vx, ball.vy)
     assert abs(speed - 1500.0) < 1.0
+
+    assert getattr(ball, "geyser_fall_damage", False) == True
+
+    # Simulate landing
+    ball.fly_timer = 0.0
+    action.execute("idle", 0.0)
+    assert getattr(ball, "geyser_fall_damage", False) == False
+    assert ball.hp < 80.0  # Takes fall damage

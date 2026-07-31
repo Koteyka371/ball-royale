@@ -3976,8 +3976,50 @@ class Action:
                     self.ball.y += (dy / dist) * min(speed, dist)
                 if self.ball.fly_timer <= 0:
                     self.ball.is_flying = False
+                    if getattr(self.ball, "geyser_fall_damage", False):
+                        self.ball.geyser_fall_damage = False
+
+                        class FallAttacker:
+                            pass
+                        att = FallAttacker()
+                        att.id = -1
+                        att.element = "physical"
+                        att.damage = 20.0
+
+                        if hasattr(self.world, "_deal_damage"):
+                            self.world._deal_damage(att, self.ball, dmg=att.damage)
+                        elif hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(att.damage)
+                        else:
+                            self.ball.hp = getattr(self.ball, "hp", 100.0) - att.damage
+
+                        self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
+
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({"type": "fall_damage", "x": self.ball.x, "y": self.ball.y})
             else:
                 self.ball.is_flying = False
+                if getattr(self.ball, "geyser_fall_damage", False):
+                    self.ball.geyser_fall_damage = False
+
+                    class FallAttacker:
+                        pass
+                    att = FallAttacker()
+                    att.id = -1
+                    att.element = "physical"
+                    att.damage = 20.0
+
+                    if hasattr(self.world, "_deal_damage"):
+                        self.world._deal_damage(att, self.ball, dmg=att.damage)
+                    elif hasattr(self.ball, "take_damage"):
+                        self.ball.take_damage(att.damage)
+                    else:
+                        self.ball.hp = getattr(self.ball, "hp", 100.0) - att.damage
+
+                    self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "fall_damage", "x": self.ball.x, "y": self.ball.y})
             return  # skip normal strategy
 
         start_hp = getattr(self.ball, "hp", 100.0)
@@ -23694,6 +23736,14 @@ class Action:
                                 launch_force = 3500.0 if has_geyser_boots else 1500.0
                                 self.ball.vx = math.cos(angle) * launch_force
                                 self.ball.vy = math.sin(angle) * launch_force
+
+                                self.ball.is_flying = True
+                                self.ball.fly_target_x = self.ball.x + self.ball.vx
+                                self.ball.fly_target_y = self.ball.y + self.ball.vy
+                                self.ball.fly_timer = 2.0
+
+                                if not has_geyser_boots:
+                                    self.ball.geyser_fall_damage = True
 
                                 if not has_geyser_boots:
                                     self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 1.0)
