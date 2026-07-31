@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1662] Item: Mirror Shield — *2026-07-31 04:00:41 UTC*
+
+An active item that deploys a directional shield for a short duration. Any projectile or spell hitting the shield is reflected back towards the attacker with increased velocity, but taking a direct melee hit shatters the shield and stuns the user.
+
+---
+
 ## [idea-1719] Ice Rink Arena Modifier — *2026-07-31 04:00:37 UTC*
 
 A random procedural arena event that freezes the ground, reducing friction drastically. Balls take much longer to stop and turn, creating chaotic collisions and making hazards harder to dodge.
