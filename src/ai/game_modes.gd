@@ -54313,6 +54313,69 @@ class QuantumThreadMode extends GameMode:
 
 
 
+
+class FrozenGroundEventMode extends GameMode:
+	var duration: float = 20.0
+	var timer: float = 0.0
+	var original_friction: float = 1.0
+
+	func _init():
+		name = "Frozen Ground Event"
+		description = "The arena freezes over! Drastically reduced friction makes it hard to stop and turn, causing chaotic collisions."
+		active = true
+
+	func setup(world, balls: Array):
+		timer = duration
+		active = true
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and "base_friction" in world.arena:
+			original_friction = world.arena.base_friction
+			world.arena.base_friction = 0.1
+
+		if typeof(world) == TYPE_DICTIONARY:
+			world["events"].append({
+				"type": "visual_effect",
+				"data": {"type": "frozen_ground_start", "x": 0, "y": 0}
+			})
+		else:
+			world.add_event({
+				"type": "visual_effect",
+				"data": {"type": "frozen_ground_start", "x": 0, "y": 0}
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		if not active:
+			return
+
+		timer -= delta
+		if timer <= 0:
+			active = false
+			if typeof(world) == TYPE_OBJECT and "arena" in world and "base_friction" in world.arena:
+				world.arena.base_friction = original_friction
+
+			if typeof(world) == TYPE_DICTIONARY:
+				world["events"].append({
+					"type": "visual_effect",
+					"data": {"type": "frozen_ground_end", "x": 0, "y": 0}
+				})
+			else:
+				world.add_event({
+					"type": "visual_effect",
+					"data": {"type": "frozen_ground_end", "x": 0, "y": 0}
+				})
+		else:
+			for b in balls:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["friction_multiplier"] = 0.1
+				else:
+					var alive = b.get("alive") if "alive" in b else (b.call("get_meta", "alive") if b.has_method("get_meta") and b.call("has_meta", "alive") else false)
+					var ball_type = b.get("ball_type") if "ball_type" in b else (b.call("get_meta", "ball_type") if b.has_method("get_meta") and b.call("has_meta", "ball_type") else "")
+					if alive and ball_type != "spectator":
+						if "friction_multiplier" in b:
+							b.friction_multiplier = 0.1
+						elif b.has_method("set_meta"):
+							b.call("set_meta", "friction_multiplier", 0.1)
+
 class VisionReductionEventMode extends GameMode:
     var duration = 30.0
     var timer = 0.0
@@ -55647,6 +55710,7 @@ var GAME_MODES = {
 	"supercell_storm": SupercellStormMode.new(),
 	"wall_leapers": WallLeapersMode.new(),
 	"vision_reduction_event": VisionReductionEventMode.new(),
+	"frozen_ground_event": FrozenGroundEventMode.new(),
 	"networked_black_holes": NetworkedBlackHolesMode.new(),
 
 	"bumper_frenzy": BumperFrenzyMode.new(),
