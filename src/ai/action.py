@@ -8124,8 +8124,10 @@ class Action:
                                         dy = b.y - hazard.y
                                         dist_sq = dx*dx + dy*dy
                                         if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
-                                            b.energy_shield_active = True
-                                            b.energy_shield_hp = max(getattr(b, "energy_shield_hp", 0.0), 50.0)
+                                            # Healing aura instead of energy shield
+                                            max_hp = getattr(b, "max_hp", 100.0)
+                                            current_hp = getattr(b, "hp", 100.0)
+                                            b.hp = min(max_hp, current_hp + 5.0 * delta)
 
                             # Stun nearby enemies if fully charged
                             charge = getattr(hazard, "charge", 0.0)

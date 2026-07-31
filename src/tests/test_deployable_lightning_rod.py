@@ -61,6 +61,7 @@ def test_deployable_lightning_rod():
     assert getattr(rod, "max_charge", 0) == 100.0
 
     ally = MockBall(2, 120, 100, team="A")
+    ally.hp = 50.0
     enemy = MockBall(3, 200, 100, team="B")
     world.balls.extend([ally, enemy])
 
@@ -86,8 +87,7 @@ def test_deployable_lightning_rod():
                             dy = b.y - hazard.y
                             dist_sq = dx*dx + dy*dy
                             if dist_sq <= (pulse_radius + getattr(b, "radius", 10.0))**2:
-                                b.energy_shield_active = True
-                                b.energy_shield_hp = max(getattr(b, "energy_shield_hp", 0.0), 50.0)
+                                b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 5.0 * delta)
 
                 charge = getattr(hazard, "charge", 0.0)
                 max_charge = getattr(hazard, "max_charge", 100.0)
@@ -109,8 +109,7 @@ def test_deployable_lightning_rod():
                                     if hasattr(action, "_spawn_directed_particles"):
                                         action._spawn_directed_particles(hazard, b, "lightning")
 
-    assert ally.energy_shield_active is True
-    assert ally.energy_shield_hp == 50.0
+    assert ally.hp == 50.5
     assert enemy.stun_timer == 0.0
 
     # Tick loop 2: charge >= max_charge
