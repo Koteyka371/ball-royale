@@ -5898,7 +5898,7 @@ class BattleRoyaleMode extends GameMode:
 					if "height" in world.arena: arena_height = world.arena.height
 
 				rng.randomize()
-				var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
+				var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
 				var chosen_kind = booster_kinds[rng.randi() % booster_kinds.size()]
 				var b_id = 9000 + world.boosters.size() + (rng.randi() % 1000)
 				var b_x = rng.randf_range(100, arena_width - 100)
@@ -6908,7 +6908,7 @@ class BattleRoyaleMode extends GameMode:
 						boosters_array = world.boosters
 
 					if boosters_array != null:
-						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
+						var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
 						for i in range(3):
 							var b_id = 9100 + boosters_array.size() + rng.randi() % 1000
 							var b_x = bx + rng.randf_range(-30, 30)
@@ -23012,7 +23012,7 @@ class SupernovaMode extends GameMode:
 					boosters_array = world.boosters
 
 				if boosters_array != null:
-					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
+					var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_booster", "speed_booster", "charging_shockwave_shield_booster", "shield_booster", "hp_booster", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "hologram_booster"]
 					var rng = RandomNumberGenerator.new()
 					rng.randomize()
 					for i in range(10):
@@ -35483,7 +35483,7 @@ class SolarFlareMode extends GameMode:
 	var flare_interval: float = 20.0
 	var flare_duration: float = 5.0
 	var is_flaring: bool = false
-	var excluded_hazards = ["safe_zone_teleport_booster", "damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "slingshot_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster"]
+	var excluded_hazards = ["safe_zone_teleport_booster", "damage_link_booster", "healing_spring", "booster", "drone_item", "reverse_gravity_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "placeable_trap_item", "exit_portal_item", "position_swap_item", "portal_gun_item", "freeze_booster", "reverse_gravity_booster", "laser_sight_attachment", "anchor_booster", "disruptor_booster", "hazard_immunity_booster", "emp_booster", "cursed_booster", "status_absorber_item", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "shield_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "weather_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "invert_booster", "aura_booster", "exploding_booster", "debuff_booster", "forecast_booster", "teleporter", "quantum_teleporter", "grapple_node", "slingshot_node", "decoy_flare_item", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster"]
 
 	func _init():
 		super()
@@ -58140,7 +58140,7 @@ class ItemMorphMode extends GameMode:
 	var morph_timer: float = 0.0
 	var morph_interval: float = 10.0
 	var rng = RandomNumberGenerator.new()
-	var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
+	var booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item"]
 
 	func _init() -> void:
 		name = "Item Morph"
@@ -72626,180 +72626,3 @@ class AlternatingZoneMode extends GameMode:
 							if typeof(b) == TYPE_DICTIONARY: b["hp"] = current_hp - (damage_rate * delta)
 							else: b.set("hp", current_hp - (damage_rate * delta))
 
-
-class LaserMirrorBordersMode extends GameMode:
-	func _init():
-		super._init()
-		name = "Laser Mirror Borders"
-		description = "Arena borders are replaced with laser mirrors. Projectiles bounce infinitely but grow stronger with each bounce."
-
-	func tick(world: Dictionary, balls: Array, delta: float) -> void:
-		super.tick(world, balls, delta)
-
-		var arena_width = 1000.0
-		var arena_height = 1000.0
-		if world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
-			arena_width = world["arena"].get("width", 1000.0)
-			arena_height = world["arena"].get("height", 1000.0)
-
-		var projectiles = []
-		if world.has("projectiles"):
-			projectiles = world["projectiles"]
-
-		for proj in projectiles:
-			var alive = proj.get("alive", true) if typeof(proj) == TYPE_DICTIONARY else (proj.alive if "alive" in proj else true)
-			var hp = proj.get("hp", 1.0) if typeof(proj) == TYPE_DICTIONARY else (proj.hp if "hp" in proj else 1.0)
-			if not alive and hp <= 0:
-				continue
-
-			var x = proj.get("x", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.x if "x" in proj else 0.0)
-			var y = proj.get("y", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.y if "y" in proj else 0.0)
-			var radius = proj.get("radius", 5.0) if typeof(proj) == TYPE_DICTIONARY else (proj.radius if "radius" in proj else 5.0)
-			var vx = proj.get("vx", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.vx if "vx" in proj else 0.0)
-			var vy = proj.get("vy", 0.0) if typeof(proj) == TYPE_DICTIONARY else (proj.vy if "vy" in proj else 0.0)
-
-			var bounced = false
-
-			if x - radius < 0 and vx < 0:
-				vx = -vx
-				x = radius
-				bounced = true
-			elif x + radius > arena_width and vx > 0:
-				vx = -vx
-				x = arena_width - radius
-				bounced = true
-
-			if y - radius < 0 and vy < 0:
-				vy = -vy
-				y = radius
-				bounced = true
-			elif y + radius > arena_height and vy > 0:
-				vy = -vy
-				y = arena_height - radius
-				bounced = true
-
-			if bounced:
-				if typeof(proj) == TYPE_DICTIONARY:
-					proj["vx"] = vx
-					proj["vy"] = vy
-					proj["x"] = x
-					proj["y"] = y
-					if proj.has("bounces_left"):
-						proj["bounces_left"] += 1
-					if proj.has("damage"):
-						proj["damage"] *= 1.25
-				else:
-					proj.vx = vx
-					proj.vy = vy
-					proj.x = x
-					proj.y = y
-					if "bounces_left" in proj:
-						proj.bounces_left += 1
-					if "damage" in proj:
-						proj.damage *= 1.25
-
-
-class RoamingBlackHoleMode extends GameMode:
-	var bh_x = 500.0
-	var bh_y = 500.0
-	var bh_vx = 150.0
-	var bh_vy = 100.0
-	var bh_radius = 80.0
-
-	func _init() -> void:
-		name = "Roaming Black Hole"
-		description = "A massive black hole continuously roams and bounces around the arena, pulling players in."
-
-	func setup(world, balls: Array) -> void:
-		.setup(world, balls)
-		var arena_width = 1000.0
-		var arena_height = 1000.0
-		if world != null and "arena" in world and world.arena != null:
-			if "width" in world.arena:
-				arena_width = float(world.arena.width)
-			if "height" in world.arena:
-				arena_height = float(world.arena.height)
-		bh_x = arena_width / 2.0
-		bh_y = arena_height / 2.0
-
-	func tick(world, balls: Array, delta: float = 0.016) -> void:
-		var arena_width = 1000.0
-		var arena_height = 1000.0
-		if world != null and "arena" in world and world.arena != null:
-			if "width" in world.arena:
-				arena_width = float(world.arena.width)
-			if "height" in world.arena:
-				arena_height = float(world.arena.height)
-
-		bh_x += bh_vx * delta
-		bh_y += bh_vy * delta
-
-		if bh_x - bh_radius < 0:
-			bh_x = bh_radius
-			bh_vx = -bh_vx
-		elif bh_x + bh_radius > arena_width:
-			bh_x = arena_width - bh_radius
-			bh_vx = -bh_vx
-
-		if bh_y - bh_radius < 0:
-			bh_y = bh_radius
-			bh_vy = -bh_vy
-		elif bh_y + bh_radius > arena_height:
-			bh_y = arena_height - bh_radius
-			bh_vy = -bh_vy
-
-		for b in balls:
-			var is_alive = false
-			if typeof(b) == TYPE_DICTIONARY:
-				is_alive = b.get("alive", false)
-			else:
-				is_alive = b.get("alive") if "alive" in b else false
-
-			if not is_alive:
-				continue
-
-			var b_type = ""
-			if typeof(b) == TYPE_DICTIONARY:
-				b_type = b.get("ball_type", "")
-			else:
-				b_type = b.ball_type if "ball_type" in b else ""
-
-			if b_type == "spectator":
-				continue
-
-			var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
-			var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
-
-			var dx = bh_x - b_x
-			var dy = bh_y - b_y
-			var dist = sqrt(dx * dx + dy * dy)
-
-			if dist < bh_radius:
-				if typeof(b) == TYPE_DICTIONARY:
-					b["hp"] = 0
-					b["alive"] = false
-				else:
-					if "hp" in b:
-						b.hp = 0
-					if "alive" in b:
-						b.alive = false
-			elif dist > 0:
-				var pull_strength = 2000000.0 / (dist * dist)
-				pull_strength = min(pull_strength, 500.0)
-
-				var multiplier = 1.0
-				var mass = 1.0
-				if typeof(b) == TYPE_DICTIONARY:
-					multiplier = float(b.get("gravity_multiplier", 1.0))
-					mass = float(b.get("mass", 1.0))
-					if b.has("vx") and b.has("vy"):
-						b["vx"] += (dx / dist) * pull_strength * multiplier / mass * delta
-						b["vy"] += (dy / dist) * pull_strength * multiplier / mass * delta
-				else:
-					if "gravity_multiplier" in b:
-						multiplier = float(b.gravity_multiplier)
-					if "mass" in b:
-						mass = float(b.mass)
-					if "vx" in b and "vy" in b:
-						b.vx += (dx / dist) * pull_strength * multiplier / mass * delta
-						b.vy += (dy / dist) * pull_strength * multiplier / mass * delta
