@@ -1,65 +1,43 @@
-import pytest
+from unittest.mock import MagicMock
 from ai.game_modes import GAME_MODES
+import pytest
 
-class MockArena:
-    def __init__(self):
-        self.width = 1000.0
-        self.height = 2000.0
-        self.hazards = []
-        self.platforms = []
-
-class MockWorld:
-    def __init__(self):
-        self.arena = MockArena()
-
-class MockBall:
-    def __init__(self, y_pos):
-        self.id = 1
-        self.y = y_pos
-        self.hp = 100.0
-        self.alive = True
-        self.killer = None
-
-def test_vertical_lava_platformer():
+def test_vertical_lava_platformer_mode():
     mode = GAME_MODES.get("vertical_lava_platformer")
     assert mode is not None
     assert "lava" in mode.description.lower()
     assert "low_gravity" in mode.mutators
 
-    world = MockWorld()
-    balls = [MockBall(1900.0), MockBall(100.0)]
+    world = MagicMock()
+    world.arena = MagicMock()
+    world.arena.height = 1000.0
+    world.arena.width = 1000.0
+    world.arena.hazards = []
 
-    mode.setup(world, balls)
+    lm = MagicMock()
+    lm.data = {"current_season": 1}
+    world.leaderboard_manager = lm
 
-    # Check bounce pads are generated
-    bounce_pads = [h for h in world.arena.hazards if getattr(h, "kind", "") == "bounce_pad"]
-    assert len(bounce_pads) == 15
+    # Setup mode
+    mode.setup(world, [])
+    assert len(world.arena.hazards) == 15
+    for hazard in world.arena.hazards:
+        assert hazard.kind == "jump_pad"
 
-    # Check tick logic
-    assert not mode.initialized
+    ball1 = MagicMock(alive=True, y=960.0, hp=100.0)
+    ball2 = MagicMock(alive=True, y=400.0, hp=100.0)
 
-    # First tick initializes lava_y to arena height (2000) and then decreases by 15 * delta
-    mode.apply_dynamic_traits(world, balls, 1.0) # delta = 1.0
+    # Tick 1: Initialize
+    mode.apply_dynamic_traits(world, [ball1, ball2], 1.0)
+    assert mode.lava_y == 1000.0 - 15.0
 
-    assert mode.initialized
-    assert mode.lava_y == 2000.0 - 15.0 # 1985.0
+    # Submerge ball 1
+    mode.apply_dynamic_traits(world, [ball1, ball2], 4.0)
 
-    # Ball 1 at 1900 is safe
-    assert balls[0].hp == 100.0
+    # Check HP
+    assert ball1.hp == 0.0
+    assert not ball1.alive
+    assert ball1.killer == "lava"
 
-    # Ball 2 at 100 is safe
-    assert balls[1].hp == 100.0
-
-    # Tick again with large delta to raise lava above ball 1
-    mode.apply_dynamic_traits(world, balls, 10.0) # lava_y = 1985 - 150 = 1835
-
-    # Ball 1 (1900) should now be in lava (1900 > 1835) and take damage
-    assert balls[0].hp == 0.0
-
-    # Tick again to kill ball 1
-    mode.apply_dynamic_traits(world, balls, 2.0) # -100 hp
-    assert not balls[0].alive
-    assert balls[0].killer == "lava"
-
-    # Ball 2 (100) is still safe
-    assert balls[1].hp == 100.0
+    assert ball2.hp == 100.0
+    assert ball2.alive

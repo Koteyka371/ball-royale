@@ -19369,7 +19369,7 @@ class FloorIsLavaMode(GameMode):
                     world.arena.hazards.append(new_h)
                 except ImportError:
                     # Fallback to dict
-                    new_h = type("Hazard", (), {"id": 99000 + idx, "x": bp["x"], "y": bp["y"], "radius": bp["radius"], "kind": "bounce_pad", "damage": 0.0, "active": True})
+                    new_h = type("Hazard", (), {"id": 99000 + idx, "x": bp["x"], "y": bp["y"], "radius": bp["radius"], "kind": "jump_pad", "damage": 0.0, "active": True})
                     world.arena.hazards.append(new_h)
 
             # Add current bubbling pools to hazards
@@ -37059,7 +37059,7 @@ class AerialArenaMode(GameMode):
         for i in range(5):
             x = random.uniform(200, w - 200)
             y = random.uniform(200, h - 200)
-            bp = type("Hazard", (), {"id": 98000 + i, "x": x, "y": y, "radius": 60.0, "kind": "bounce_pad", "damage": 0.0, "active": True})
+            bp = type("Hazard", (), {"id": 98000 + i, "x": x, "y": y, "radius": 60.0, "kind": "jump_pad", "damage": 0.0, "active": True})
             world.arena.hazards.append(bp)
 
     def tick(self, world, balls, delta: float = 0.016) -> None:
@@ -45734,7 +45734,7 @@ class VerticalLavaPlatformerMode(GameMode):
         for i in range(num_pads):
             y_pos = arena_height - (i * (arena_height / num_pads))
             x_pos = random.uniform(100.0, arena_width - 100.0)
-            bp = type("Hazard", (), {"id": 190000 + i, "x": x_pos, "y": y_pos, "radius": 40.0, "kind": "bounce_pad", "damage": 0.0, "active": True})
+            bp = type("Hazard", (), {"id": 190000 + i, "x": x_pos, "y": y_pos, "radius": 40.0, "kind": "jump_pad", "damage": 0.0, "active": True})
             world.arena.hazards.append(bp)
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
