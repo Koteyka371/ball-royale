@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1727] Grounding Field — *2026-07-31 23:44:39 UTC*
+
+A deployable hazard that acts as a lightning rod, absorbing incoming lightning strikes and converting them into a healing aura for nearby allies.
+
+---
+
 ## [idea-1741] Echo Mine — *2026-07-31 22:23:49 UTC*
 
 A hazard that pulses and damages players around it based on the amount of noise they make while moving
