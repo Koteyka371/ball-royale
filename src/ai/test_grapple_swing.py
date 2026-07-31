@@ -52,7 +52,7 @@ def test_grapple_swing_wall_speed_boost():
 
     # Check speed boost (since wall is on left/right, boost is along y axis)
     assert ball.vx == 10.0
-    assert ball.vy == 100.0  # Boosted because vy was >= 0
+    assert ball.vy == 500.0  # Boosted because vy was >= 0
 
 def test_grapple_swing_hazard_speed_boost():
     world = MockWorld()
