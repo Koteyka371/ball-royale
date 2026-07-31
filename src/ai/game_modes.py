@@ -45967,3 +45967,138 @@ class VerticalLavaPlatformerMode(GameMode):
                         b.killer = "lava"
 
 GAME_MODES['vertical_lava_platformer'] = VerticalLavaPlatformerMode()
+
+
+class OrbitalDebrisMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Orbital Debris Mutator"
+        self.description = "Indestructible debris clusters orbit the center gravity well. They block projectiles and damage entities upon high-speed collision, forcing careful slingshot trajectories."
+        self.mutators_active = True
+        self.mutators = ["orbital_debris"]
+        self.bh_id = 999999
+        self.pull_strength = 200.0
+        self.num_debris = 4
+        self.orbit_radius = 250.0
+        self.orbit_speed = 1.0 # radians per second
+        self.orbit_angle = 0.0
+        self.debris_radius = 30.0
+        self.high_speed_threshold = 400.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        cx = getattr(world.arena, "width", 1000.0) / 2.0
+        cy = getattr(world.arena, "height", 1000.0) / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+                bh = Hazard(
+                    id=self.bh_id,
+                    x=cx,
+                    y=cy,
+                    radius=20.0,
+                    kind="black_hole",
+                    damage=10.0
+                )
+                world.arena.hazards.append(bh)
+            except ImportError:
+                class DummyHazard:
+                    def __init__(self, id, x, y, radius, kind, damage, active=True):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = active
+                bh = DummyHazard(id=self.bh_id, x=cx, y=cy, radius=20.0, kind="black_hole", damage=10.0, active=True)
+                world.arena.hazards.append(bh)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        self.orbit_angle += self.orbit_speed * delta
+
+        cx = getattr(world.arena, "width", 1000.0) / 2.0
+        cy = getattr(world.arena, "height", 1000.0) / 2.0
+
+        if hasattr(world.arena, "hazards"):
+            bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
+            if bh:
+                cx = bh.x
+                cy = bh.y
+                for b in balls:
+                    if not getattr(b, "alive", True):
+                        continue
+                    dx = cx - b.x
+                    dy = cy - b.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist > 0:
+                        if hasattr(b, "vx") and hasattr(b, "vy"):
+                            b.vx += (dx / dist) * self.pull_strength * delta
+                            b.vy += (dy / dist) * self.pull_strength * delta
+
+        debris_positions = []
+        for i in range(self.num_debris):
+            angle = self.orbit_angle + (i * 2 * math.pi / self.num_debris)
+            dx = math.cos(angle) * self.orbit_radius
+            dy = math.sin(angle) * self.orbit_radius
+            debris_positions.append((cx + dx, cy + dy))
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            b_radius = getattr(b, "radius", 10.0)
+            vx = getattr(b, "vx", 0.0)
+            vy = getattr(b, "vy", 0.0)
+            speed = math.sqrt(vx*vx + vy*vy)
+
+            for (dx, dy) in debris_positions:
+                dist_x = b.x - dx
+                dist_y = b.y - dy
+                dist = math.sqrt(dist_x*dist_x + dist_y*dist_y)
+
+                min_dist = b_radius + self.debris_radius
+                if dist < min_dist and dist > 0:
+                    overlap = min_dist - dist
+                    nx = dist_x / dist
+                    ny = dist_y / dist
+
+                    b.x += nx * overlap
+                    b.y += ny * overlap
+
+                    dot = vx * nx + vy * ny
+                    if dot < 0:
+                        b.vx -= 2 * dot * nx
+                        b.vy -= 2 * dot * ny
+
+                    if speed > self.high_speed_threshold:
+                        if hasattr(world, "_deal_damage"):
+                            world._deal_damage(None, b, 20.0)
+                        else:
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - 20.0)
+                            if b.hp <= 0:
+                                b.alive = False
+                                if hasattr(world, "add_event"):
+                                    world.add_event("ball_died", {"ball_id": b.id, "reason": "debris_collision"})
+
+        if hasattr(world, "projectiles"):
+            for p in world.projectiles:
+                if not getattr(p, "active", True):
+                    continue
+                for (dx, dy) in debris_positions:
+                    dist_x = p.x - dx
+                    dist_y = p.y - dy
+                    dist = math.sqrt(dist_x*dist_x + dist_y*dist_y)
+                    if dist < self.debris_radius:
+                        p.active = False
+                        break
+
+GAME_MODES['orbital_debris_mutator'] = OrbitalDebrisMutatorMode()

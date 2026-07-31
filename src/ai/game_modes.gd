@@ -72442,3 +72442,239 @@ class VerticalLavaPlatformerMode extends GameMode:
 						elif "hp" in b: b.hp = hp
 
 GAME_MODES['vertical_lava_platformer'] = VerticalLavaPlatformerMode.new()
+
+
+class OrbitalDebrisMutatorMode extends GameMode:
+	var bh_id = 999999
+	var pull_strength = 200.0
+	var num_debris = 4
+	var orbit_radius = 250.0
+	var orbit_speed = 1.0 # radians per second
+	var orbit_angle = 0.0
+	var debris_radius = 30.0
+	var high_speed_threshold = 400.0
+
+	func _init():
+		super()
+		name = "Orbital Debris Mutator"
+		description = "Indestructible debris clusters orbit the center gravity well. They block projectiles and damage entities upon high-speed collision, forcing careful slingshot trajectories."
+		mutators_active = true
+		mutators = ["orbital_debris"]
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var cx = 500.0
+		var cy = 500.0
+
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			cx = world.arena.get("width", 1000.0) / 2.0
+			cy = world.arena.get("height", 1000.0) / 2.0
+		else:
+			if "width" in world.arena: cx = world.arena.width / 2.0
+			if "height" in world.arena: cy = world.arena.height / 2.0
+
+		var existing = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "black_hole" and h.get("id", null) == bh_id:
+					existing = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "black_hole" and h.get("id") == bh_id:
+					existing = h
+					break
+
+		if not existing:
+			world.arena.hazards.append({
+				"id": bh_id,
+				"x": cx,
+				"y": cy,
+				"radius": 20.0,
+				"kind": "black_hole",
+				"damage": 10.0,
+				"active": true
+			})
+
+	func tick(world, balls: Array, delta: float) -> void:
+		super.tick(world, balls, delta)
+		orbit_angle += orbit_speed * delta
+
+		var cx = 500.0
+		var cy = 500.0
+
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			cx = world.arena.get("width", 1000.0) / 2.0
+			cy = world.arena.get("height", 1000.0) / 2.0
+		else:
+			if "width" in world.arena: cx = world.arena.width / 2.0
+			if "height" in world.arena: cy = world.arena.height / 2.0
+
+		if "hazards" in world.arena:
+			var bh = null
+			for h in world.arena.hazards:
+				if typeof(h) == TYPE_DICTIONARY:
+					if h.get("kind", "") == "black_hole" and h.get("id", null) == bh_id:
+						bh = h
+						break
+				elif typeof(h) == TYPE_OBJECT:
+					if h.get("kind") == "black_hole" and h.get("id") == bh_id:
+						bh = h
+						break
+			if bh != null:
+				cx = bh.get("x") if typeof(bh) == TYPE_OBJECT else bh["x"]
+				cy = bh.get("y") if typeof(bh) == TYPE_OBJECT else bh["y"]
+
+				for b in balls:
+					var is_alive = true
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", true)
+					elif typeof(b) == TYPE_OBJECT:
+						is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+					if not is_alive:
+						continue
+
+					var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b["x"]
+					var by = b.get("y") if typeof(b) == TYPE_OBJECT else b["y"]
+
+					var dx = cx - bx
+					var dy = cy - by
+					var dist = sqrt(dx*dx + dy*dy)
+
+					if dist > 0:
+						var pull_x = (dx / dist) * pull_strength * delta
+						var pull_y = (dy / dist) * pull_strength * delta
+
+						if typeof(b) == TYPE_DICTIONARY:
+							if "vx" in b and "vy" in b:
+								b["vx"] += pull_x
+								b["vy"] += pull_y
+						elif typeof(b) == TYPE_OBJECT:
+							if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+								b.set("vx", b.get("vx") + pull_x)
+								b.set("vy", b.get("vy") + pull_y)
+
+		var debris_positions = []
+		for i in range(num_debris):
+			var angle = orbit_angle + (i * 2 * PI / num_debris)
+			var dx = cos(angle) * orbit_radius
+			var dy = sin(angle) * orbit_radius
+			debris_positions.append({"x": cx + dx, "y": cy + dy})
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			if not is_alive:
+				continue
+
+			var b_radius = 10.0
+			var bx = 0.0
+			var by = 0.0
+			var bvx = 0.0
+			var bvy = 0.0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b_radius = b.get("radius", 10.0)
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+				bvx = b.get("vx", 0.0)
+				bvy = b.get("vy", 0.0)
+			elif typeof(b) == TYPE_OBJECT:
+				b_radius = b.get("radius") if b.get("radius") != null else 10.0
+				bx = b.get("x") if b.get("x") != null else 0.0
+				by = b.get("y") if b.get("y") != null else 0.0
+				bvx = b.get("vx") if b.get("vx") != null else 0.0
+				bvy = b.get("vy") if b.get("vy") != null else 0.0
+
+			var speed = sqrt(bvx*bvx + bvy*bvy)
+
+			for pos in debris_positions:
+				var dist_x = bx - pos["x"]
+				var dist_y = by - pos["y"]
+				var dist = sqrt(dist_x*dist_x + dist_y*dist_y)
+				var min_dist = b_radius + debris_radius
+
+				if dist < min_dist and dist > 0:
+					var overlap = min_dist - dist
+					var nx = dist_x / dist
+					var ny = dist_y / dist
+
+					bx += nx * overlap
+					by += ny * overlap
+
+					var dot = bvx * nx + bvy * ny
+					if dot < 0:
+						bvx -= 2 * dot * nx
+						bvy -= 2 * dot * ny
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = bx
+						b["y"] = by
+						b["vx"] = bvx
+						b["vy"] = bvy
+					elif typeof(b) == TYPE_OBJECT:
+						b.set("x", bx)
+						b.set("y", by)
+						b.set("vx", bvx)
+						b.set("vy", bvy)
+
+					if speed > high_speed_threshold:
+						if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+							world._deal_damage(null, b, 20.0)
+						elif typeof(world) == TYPE_DICTIONARY and world.has("damage_func"):
+							world.damage_func.call(null, b, 20.0)
+						else:
+							var hp = b.get("hp") if typeof(b) == TYPE_OBJECT else b.get("hp", 100.0)
+							hp = max(0.0, hp - 20.0)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = hp
+								if hp <= 0:
+									b["alive"] = false
+									if "events" in world:
+										if typeof(world.events) == TYPE_ARRAY:
+											world.events.append({"type": "ball_died", "ball_id": b.get("id"), "reason": "debris_collision"})
+							elif typeof(b) == TYPE_OBJECT:
+								b.set("hp", hp)
+								if hp <= 0:
+									b.set("alive", false)
+									if world.has_method("add_event"):
+										world.add_event("ball_died", {"ball_id": b.get("id"), "reason": "debris_collision"})
+
+		var projectiles = []
+		if typeof(world) == TYPE_DICTIONARY:
+			projectiles = world.get("projectiles", [])
+		elif typeof(world) == TYPE_OBJECT:
+			projectiles = world.get("projectiles") if world.get("projectiles") != null else []
+
+		for p in projectiles:
+			var p_active = true
+			if typeof(p) == TYPE_DICTIONARY:
+				p_active = p.get("active", true)
+			elif typeof(p) == TYPE_OBJECT:
+				p_active = p.get("active") if p.get("active") != null else true
+
+			if not p_active:
+				continue
+
+			var px = p.get("x") if typeof(p) == TYPE_OBJECT else p.get("x", 0.0)
+			var py = p.get("y") if typeof(p) == TYPE_OBJECT else p.get("y", 0.0)
+
+			for pos in debris_positions:
+				var dist_x = px - pos["x"]
+				var dist_y = py - pos["y"]
+				var dist = sqrt(dist_x*dist_x + dist_y*dist_y)
+				if dist < debris_radius:
+					if typeof(p) == TYPE_DICTIONARY:
+						p["active"] = false
+					elif typeof(p) == TYPE_OBJECT:
+						p.set("active", false)
+					break
+
+GAME_MODES['orbital_debris_mutator'] = OrbitalDebrisMutatorMode.new()
