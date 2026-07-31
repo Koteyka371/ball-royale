@@ -30307,6 +30307,39 @@ func _collect_booster(delta: float):
                     self.ball.stealth_drone_timer = 15.0
                 elif "stealth_drone_timer" in self.ball:
                     self.ball.stealth_drone_timer = 15.0
+            elif "kind" in nearest and nearest.kind == "artillery_pet_item":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("has_pet", true)
+                    self.ball.set_meta("pet_type", "artillery")
+                    self.ball.set_meta("pet_cooldown", 0.0)
+                else:
+                    self.ball["has_pet"] = true
+                    self.ball["pet_type"] = "artillery"
+                    self.ball["pet_cooldown"] = 0.0
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                    else:
+                        if "items" in self.world.arena:
+                            idx = self.world.arena.items.find(nearest)
+                            if idx != -1:
+                                self.world.arena.items.remove_at(idx)
+                    var pet_exists = false
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") and self.ball.get("id") != null: b_id = self.ball.get("id")
+                    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): b_id = self.ball["id"]
+
+                    for h in self.world.arena.hazards:
+                        var hk = h.get("kind", h.kind if "kind" in h else "")
+                        var ho = h.get("owner_id", h.owner_id if "owner_id" in h else null)
+                        if hk == "pet" and ho == b_id:
+                            pet_exists = true
+                            break
+                    if not pet_exists:
+                        var new_pet = {"id": 999000 + self.world.arena.hazards.size() + randi() % 10000, "x": self.ball.x, "y": self.ball.y, "radius": 8.0, "kind": "pet", "damage": 0.0, "owner_id": b_id}
+                        self.world.arena.hazards.append(new_pet)
             elif "kind" in nearest and nearest.kind == "pet_item":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("has_pet", true)
@@ -49498,6 +49531,54 @@ func _update_skill_timer(delta: float):
             if "pet_type" in self.ball: pet_type = self.ball.pet_type
             elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("pet_type"): pet_type = self.ball.get_meta("pet_type")
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("pet_type"): pet_type = self.ball["pet_type"]
+
+            if pet_type == "artillery" and self.world != null and "arena" in self.world and "balls" in self.world:
+                var pet_cooldown = 0.0
+                if "pet_cooldown" in self.ball: pet_cooldown = float(self.ball.pet_cooldown)
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("pet_cooldown"): pet_cooldown = self.ball.get_meta("pet_cooldown")
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("pet_cooldown"): pet_cooldown = self.ball["pet_cooldown"]
+
+                if pet_cooldown > 0:
+                    pet_cooldown -= delta
+                else:
+                    var target = null
+                    var target_dist_sq = 0.0
+                    for b in self.world.balls:
+                        var bid = b.id if "id" in b else b.get("id", null)
+                        var t_team = b.team if "team" in b else b.get("team", null)
+                        var alive = b.alive if "alive" in b else b.get("alive", true)
+                        if bid == b_id or t_team == (self.ball.team if "team" in self.ball else self.ball.get("team")) or not alive:
+                            continue
+
+                        var b_dx = (b.x if "x" in b else b.get("x", 0.0)) - p_x
+                        var b_dy = (b.y if "y" in b else b.get("y", 0.0)) - p_y
+                        var t_dist_sq = b_dx*b_dx + b_dy*b_dy
+
+                        if t_dist_sq > 40000.0: # > 200 distance
+                            if target == null or t_dist_sq < target_dist_sq:
+                                target = b
+                                target_dist_sq = t_dist_sq
+
+                    if target != null:
+                        var tx = target.x if "x" in target else target.get("x", 0.0)
+                        var ty = target.y if "y" in target else target.get("y", 0.0)
+                        var pdx = tx - p_x
+                        var pdy = ty - p_y
+                        var pdist = sqrt(target_dist_sq)
+                        if pdist > 0.0001:
+                            var pnx = pdx / pdist
+                            var pny = pdy / pdist
+                            var proj = {"id": 800000 + randi() % 100000, "x": p_x, "y": p_y, "vx": pnx * 600, "vy": pny * 600, "radius": 5.0, "damage": 30.0, "owner_id": b_id, "kind": "artillery"}
+                            if "projectiles" in self.world:
+                                self.world.projectiles.append(proj)
+                            pet_cooldown = 3.0
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["pet_cooldown"] = pet_cooldown
+                elif self.ball.has_method("set_meta"):
+                    self.ball.set_meta("pet_cooldown", pet_cooldown)
+                else:
+                    self.ball.pet_cooldown = pet_cooldown
 
             if pet_type == "auto_looter" and self.world != null and "arena" in self.world and "items" in self.world.arena:
                 for item in self.world.arena.items:
