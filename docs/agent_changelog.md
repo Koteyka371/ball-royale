@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1756] Chameleon Mimic Enemy — *2026-08-01 12:35:19 UTC*
+
+A new AI enemy type that spawns disguised as a random booster or health pack. If a player approaches within a short distance, it transforms into an aggressive fast-moving enemy, forcing players to use perception skills or cautiously approach loot.
+
+---
+
 ## [idea-1729] Decoy Swarm Skill — *2026-08-01 11:21:23 UTC*
 
 An active skill that instantly deploys 3 fake balls around the user and briefly cloaks the user for 2 seconds, causing immense confusion during chaotic team fights.
