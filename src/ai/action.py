@@ -5170,6 +5170,25 @@ class Action:
             self.ball.inventory.remove("overload_zone_item")
             self.ball.use_item = False
 
+        # Check inventory for orbital_moon_item
+        if hasattr(self.ball, "inventory") and "orbital_moon_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    Hazard = type('Hazard', (), {}) # dummy
+                import math
+                for i in range(3):
+                    om_id = f"om_{getattr(self.ball, 'id', 'x')}_{len(self.world.arena.hazards) + i + 9900}"
+                    moon = Hazard(id=om_id, x=self.ball.x, y=self.ball.y, radius=10.0, kind="orbital_moon", damage=15.0)
+                    setattr(moon, "owner_id", getattr(self.ball, "id", -1))
+                    setattr(moon, "orbit_angle", (2 * math.pi / 3) * i)
+                    setattr(moon, "orbit_radius", 45.0)
+                    setattr(moon, "duration", 15.0)
+                    self.world.arena.hazards.append(moon)
+            self.ball.inventory.remove("orbital_moon_item")
+            self.ball.use_item = False
+
         # Check inventory for reverse_gravity_item
         if hasattr(self.ball, "inventory") and "reverse_gravity_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
             # Spawn reverse gravity field hazard in an area
