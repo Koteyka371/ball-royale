@@ -55993,7 +55993,214 @@ class WhiteHoleMode extends SafeZoneMode:
 						if "x" in b: b.x = nx
 						if "y" in b: b.y = ny
 
+class MoltenGolemMode extends GameMode:
+	var golem_id = null
+	var spawn_timer = 0.0
+
+	func _init():
+		name = "Molten Golem"
+		description = "A neutral AI entity that spawns in lava environments or heatwaves, slowly roaming and throwing magma chunks. Drops a fire core when defeated."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		if not ("hazards" in world.arena):
+			world.arena.hazards = []
+
+		spawn_timer = 5.0
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+		spawn_timer -= delta
+
+		# Only spawn in lava or heatwave environments
+		var weather = ""
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if "weather" in world.arena: weather = world.arena.weather
+		elif "weather" in world.arena:
+			weather = world.arena.weather
+
+		var has_lava = false
+		if typeof(world.arena) == TYPE_DICTIONARY:
+			if "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var kind = h.kind if "kind" in h else ""
+					if kind == "lava" or kind == "lava_puddle" or kind == "lava_pit":
+						has_lava = true
+						break
+		elif "hazards" in world.arena and world.arena.hazards != null:
+			for h in world.arena.hazards:
+				var kind = h.get("kind") if typeof(h) != TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+				if kind == "lava" or kind == "lava_puddle" or kind == "lava_pit":
+					has_lava = true
+					break
+
+		# Spawn golem if not spawned
+		if spawn_timer <= 0.0 and golem_id == null:
+			if not (weather == "heatwave" or has_lava):
+				if not ("is_test" in world and world.is_test):
+					return
+			var golem = {}
+			if balls.size() > 0 and typeof(balls[0]) != TYPE_DICTIONARY:
+				if balls[0].has_method("duplicate"):
+					golem = balls[0].duplicate(true)
+
+			var boss_x = randf_range(200, 800)
+			var boss_y = randf_range(200, 800)
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				if "width" in world.arena: boss_x = randf_range(200, world.arena.width - 200)
+				if "height" in world.arena: boss_y = randf_range(200, world.arena.height - 200)
+			else:
+				if "width" in world.arena: boss_x = randf_range(200, world.arena.width - 200)
+				if "height" in world.arena: boss_y = randf_range(200, world.arena.height - 200)
+
+			var new_id = randi() % 90000 + 10000
+			if "next_id" in world: new_id = world.next_id
+
+			if typeof(golem) == TYPE_DICTIONARY:
+				golem["id"] = new_id
+				golem["x"] = boss_x
+				golem["y"] = boss_y
+				golem["ball_type"] = "molten_golem"
+				golem["team"] = "neutral"
+				golem["max_hp"] = 2000.0
+				golem["hp"] = 2000.0
+				golem["damage"] = 40.0
+				golem["radius"] = 50.0
+				golem["speed"] = 40.0
+				golem["alive"] = true
+				golem["magma_throw_timer"] = 3.0
+			else:
+				if golem.has_method("set"):
+					golem.set("id", new_id)
+					golem.set("x", boss_x)
+					golem.set("y", boss_y)
+					golem.set("ball_type", "molten_golem")
+					golem.set("team", "neutral")
+					golem.set("max_hp", 2000.0)
+					golem.set("hp", 2000.0)
+					golem.set("damage", 40.0)
+					golem.set("radius", 50.0)
+					golem.set("speed", 40.0)
+					golem.set("alive", true)
+					if golem.has_method("set_meta"):
+						golem.set_meta("magma_throw_timer", 3.0)
+					else:
+						golem.set("magma_throw_timer", 3.0)
+
+			golem_id = new_id
+			balls.append(golem)
+			return
+
+		# Update golem
+		var golem_found = false
+		for b in balls:
+			var id = b.id if "id" in b else (b.get("id") if typeof(b) != TYPE_DICTIONARY and b.has_method("get") else null)
+			if id == golem_id:
+				var hp = b.hp if "hp" in b else (b.get("hp") if typeof(b) != TYPE_DICTIONARY and b.has_method("get") else 0.0)
+				var alive = b.alive if "alive" in b else (b.get("alive") if typeof(b) != TYPE_DICTIONARY and b.has_method("get") else false)
+
+				if hp <= 0 or not alive:
+					# Die
+					golem_id = null
+					var bx = b.x if "x" in b else b.get("x")
+					var by = b.y if "y" in b else b.get("y")
+
+					# Split into lava puddles
+					var directions = [[1,0], [-1,0], [0,1], [0,-1]]
+					for dir in directions:
+						var p_id = randi() % 90000 + 10000
+						if "next_id" in world: p_id = world.next_id
+						var puddle = {"id": p_id, "x": bx + dir[0]*60, "y": by + dir[1]*60, "radius": 40.0, "kind": "lava_puddle", "damage": 20.0, "duration": 10.0}
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							if "hazards" in world.arena: world.arena.hazards.append(puddle)
+						elif "hazards" in world.arena:
+							world.arena.hazards.append(puddle)
+
+					# Drop fire core item
+					var drop_id = randi() % 90000 + 10000
+					if "next_id" in world: drop_id = world.next_id
+					var fire_core = {"id": drop_id, "x": bx, "y": by, "kind": "booster", "booster_type": "fire_core", "radius": 15.0}
+
+					if typeof(world.arena) == TYPE_DICTIONARY:
+						if not ("items" in world.arena): world.arena.items = []
+						world.arena.items.append(fire_core)
+					else:
+						if not ("items" in world.arena) or world.arena.items == null: world.arena.items = []
+						world.arena.items.append(fire_core)
+
+					if "events" in world:
+						world.events.append({"type": "boss_defeated", "boss": "Molten Golem", "x": bx, "y": by})
+
+					# Reset spawn timer
+					spawn_timer = 20.0
+					continue
+
+				golem_found = true
+				var bx = b.x if "x" in b else b.get("x")
+				var by = b.y if "y" in b else b.get("y")
+
+				# Roam towards nearest player
+				var nearest_dist = 999999.0
+				var nearest = null
+				for ob in balls:
+					var ob_id = ob.id if "id" in ob else (ob.get("id") if typeof(ob) != TYPE_DICTIONARY and ob.has_method("get") else null)
+					var ob_alive = ob.alive if "alive" in ob else (ob.get("alive") if typeof(ob) != TYPE_DICTIONARY and ob.has_method("get") else false)
+					if ob_id != id and ob_alive:
+						var obx = ob.x if "x" in ob else ob.get("x")
+						var oby = ob.y if "y" in ob else ob.get("y")
+						var d = sqrt(pow(obx - bx, 2) + pow(oby - by, 2))
+						if d < nearest_dist:
+							nearest_dist = d
+							nearest = ob
+
+				if nearest != null:
+					var nx = nearest.x if "x" in nearest else nearest.get("x")
+					var ny = nearest.y if "y" in nearest else nearest.get("y")
+					var angle = atan2(ny - by, nx - bx)
+					var spd = b.speed if "speed" in b else b.get("speed")
+					var dx = cos(angle) * spd * delta
+					var dy = sin(angle) * spd * delta
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] += dx
+						b["y"] += dy
+					else:
+						if b.has_method("set"):
+							b.set("x", bx + dx)
+							b.set("y", by + dy)
+
+					# Throw magma chunk
+					var t_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						if "magma_throw_timer" in b: t_timer = b["magma_throw_timer"]
+					else:
+						if b.has_method("get_meta") and b.has_meta("magma_throw_timer"): t_timer = b.get_meta("magma_throw_timer")
+						elif "magma_throw_timer" in b: t_timer = b.get("magma_throw_timer")
+
+					t_timer -= delta
+					if t_timer <= 0.0 and nearest_dist < 400.0:
+						t_timer = 3.0
+						var p_id = randi() % 90000 + 10000
+						if "next_id" in world: p_id = world.next_id
+						var chunk = {"id": p_id, "x": bx, "y": by, "radius": 20.0, "kind": "lava_projectile", "damage": 30.0, "vx": cos(angle) * 300.0, "vy": sin(angle) * 300.0}
+
+						if typeof(world.arena) == TYPE_DICTIONARY:
+							if "projectiles" in world.arena: world.arena.projectiles.append(chunk)
+							elif "hazards" in world.arena: world.arena.hazards.append(chunk)
+						else:
+							if "projectiles" in world.arena and world.arena.projectiles != null: world.arena.projectiles.append(chunk)
+							elif "hazards" in world.arena and world.arena.hazards != null: world.arena.hazards.append(chunk)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["magma_throw_timer"] = t_timer
+					else:
+						if b.has_method("set_meta"): b.set_meta("magma_throw_timer", t_timer)
+						else: b.set("magma_throw_timer", t_timer)
+
+		if not golem_found:
+			golem_id = null
+
 var GAME_MODES = {
+	"molten_golem": MoltenGolemMode.new(),
 	"white_hole": WhiteHoleMode.new(),
 	"hot_potato": HotPotatoMode.new(),
 

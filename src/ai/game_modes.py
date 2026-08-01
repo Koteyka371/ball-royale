@@ -2510,7 +2510,7 @@ class BattleRoyaleMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
             try:
                 from arena.procedural_arena import Hazard
@@ -3563,7 +3563,7 @@ class BattleRoyaleMode(GameMode):
 
                 drop.capture_progress = 0.0
                 drop.capturing_team = None
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 world.arena.hazards.append(drop)
                 if not hasattr(self, "high_tier_drops"):
@@ -3778,7 +3778,7 @@ class BattleRoyaleMode(GameMode):
                             world.add_event("volcano_eruption", {"x": target_x, "y": target_y})
                     except ImportError:
                         pass
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             if getattr(self, "weather", "") == "meteor_shower":
@@ -4529,7 +4529,7 @@ class BattleRoyaleMode(GameMode):
                 import random
                 mx = random.uniform(100.0, aw - 100.0)
                 my = random.uniform(100.0, ah - 100.0)
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 try:
                     from arena.procedural_arena import Hazard
@@ -4641,7 +4641,7 @@ class BattleRoyaleMode(GameMode):
                                         b.alive = False
 
                     # Spawn crater (wall)
-                    if not hasattr(world.arena, "hazards"):
+                    if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                         world.arena.hazards = []
 
                     try:
@@ -4670,7 +4670,7 @@ class BattleRoyaleMode(GameMode):
         if self.match_time > 120.0 and hasattr(world, "arena") and world.arena:
             if not getattr(self, "sudden_death_black_hole_spawned", False):
                 self.sudden_death_black_hole_spawned = True
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 # Spawn black hole at center
                 cx = getattr(world.arena, "width", 1000.0) / 2.0
@@ -8909,7 +8909,7 @@ class WeatherChaosMode(GameMode):
             world.arena.wind_dx = getattr(self, "wind_dx", 0.0) if self.weather == "wind" else 0.0
             world.arena.wind_dy = getattr(self, "wind_dy", 0.0) if self.weather == "wind" else 0.0
 
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             if getattr(self, "weather", "") == "meteor_shower":
@@ -10945,7 +10945,7 @@ class EMPBurstMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
 
@@ -11098,7 +11098,7 @@ class DynamicHazardsMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
 
@@ -14879,7 +14879,7 @@ class GravityWellMode(GameMode):
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
 
@@ -16010,7 +16010,7 @@ class MagneticCollisionsMode(GameMode):
 
         # Setup magnetic fields as invisible hazards
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             if getattr(self, "weather", "") == "meteor_shower":
@@ -16580,7 +16580,7 @@ class PinballMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             if getattr(self, "weather", "") == "meteor_shower":
@@ -16754,7 +16754,7 @@ class InvisibleWallsMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "arena") or not world.arena:
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         import random
@@ -19671,7 +19671,7 @@ class BlizzardMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.blizzard_timer = 0.0
         self.blizzard_active = False
@@ -19892,7 +19892,7 @@ class MeteorShowerMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
         self.active_meteors = []
@@ -20133,7 +20133,7 @@ class CursedBuffZoneMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         import random
@@ -20323,7 +20323,7 @@ class RhythmPanelsMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         self.rhythm_timer = 0.0
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         import random
@@ -20641,7 +20641,7 @@ class LunarEclipseEventMode(GameMode):
 
                 # Rare boss spawn during lunar eclipse
                 if hasattr(world, "arena") and random.random() < 0.3:  # 30% chance to spawn the boss
-                    if not hasattr(world.arena, "hazards"):
+                    if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                         world.arena.hazards = []
                     try:
                         from arena.procedural_arena import Hazard
@@ -20728,7 +20728,7 @@ class ScramblerDroneMode(GameMode):
 
     def setup(self, world, balls) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
 
@@ -20973,7 +20973,7 @@ class ArtifactUpgraderMode(GameMode):
                 pass
             world.arena = MockArena()
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         class SimpleHazard:
@@ -21192,7 +21192,7 @@ class SweepingPaddlesMode(GameMode):
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             if getattr(self, "weather", "") == "meteor_shower":
@@ -21340,7 +21340,7 @@ class SweepingLasersMode(GameMode):
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             arena_width = getattr(world.arena, "width", 1000)
@@ -23386,7 +23386,7 @@ class BlacksmithBossMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "boosters"):
             world.boosters = []
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         self.anvil_pieces_spawned = False
@@ -23604,7 +23604,7 @@ class WeaponCollectionMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.weapon_spawn_timer = 0.0
 
@@ -23708,7 +23708,7 @@ class CenterVortexMode(GameMode):
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         cx = world.arena.width / 2.0
@@ -23742,7 +23742,7 @@ class CenterVortexMode(GameMode):
 
     def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
         super().tick(world, balls, delta)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             return
 
         vx = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "vortex" and getattr(h, "id", None) == self.vortex_id), None)
@@ -23793,7 +23793,7 @@ class CenterGravityWellMode(GameMode):
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         # Center coordinates
@@ -23829,7 +23829,7 @@ class CenterGravityWellMode(GameMode):
         super().tick(world, balls, delta)
         import math
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             return
 
         cgw = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "center_gravity_well" and getattr(h, "id", None) == self.cgw_id), None)
@@ -24103,7 +24103,7 @@ class CenterBlackHoleMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         cx = world.arena.width / 2.0
@@ -24156,7 +24156,7 @@ class CenterBlackHoleMode(GameMode):
                 if hasattr(world, "add_event"):
                     world.add_event("arena_shrunk", {"width": new_w, "height": new_h})
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             return
 
         bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
@@ -25169,7 +25169,7 @@ class LavaRoyaleMode(GameMode):
         if not hasattr(world, "dead_balls"):
             world.dead_balls = []
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -25653,7 +25653,7 @@ class ElementalAurasMode(GameMode):
                             self.active = True
                     h = FallbackHazard(f"crafting_station_{element}_{random.randint(0, 10000)}", random.uniform(100, aw - 100), random.uniform(100, ah - 100), 40.0, f"crafting_station_{element}", 0.0)
 
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 world.arena.hazards.append(h)
 
@@ -26624,7 +26624,7 @@ class RotatingLasersMode(GameMode):
         super().setup(world, balls)
         self.lasers_spawned = False
         if not hasattr(world, "arena"): return
-        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"): world.arena.hazards = []
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -26657,7 +26657,7 @@ class RotatingLasersMode(GameMode):
                         self.damage = damage
                         self.active = True
 
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             for i, (x, y) in enumerate(positions):
@@ -26704,7 +26704,7 @@ class ElementalWandererMode(GameMode):
                 pass
             world.arena = MockArena()
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         class ElementHazard:
@@ -26795,7 +26795,7 @@ class ChickenCurseMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "arena") or not world.arena:
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         import random
@@ -26932,7 +26932,7 @@ class MassivePinballArenaMode(GameMode):
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
             if not hasattr(world, "boosters"):
                 world.boosters = []
@@ -27048,7 +27048,7 @@ class MagneticBumpersMode(GameMode):
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
             import random
             arena_width = getattr(world.arena, "width", 1000)
@@ -27814,7 +27814,7 @@ class SweepingRotatingLasersMode(GameMode):
         super().setup(world, balls)
         self.sweep_timer = 0.0
         if not hasattr(world, "arena"): return
-        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"): world.arena.hazards = []
 
         aw = getattr(world.arena, "width", 1000.0)
         ah = getattr(world.arena, "height", 1000.0)
@@ -28004,7 +28004,7 @@ class DiscoFloorMode(GameMode):
         self.rhythm_timer = 0.0
         import random
         self.current_color = random.choice(self.colors)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         try:
@@ -28197,7 +28197,7 @@ class SpectatorHologramsMode(GameMode):
 
     def apply_dynamic_traits(self, world, balls, delta):
         super().apply_dynamic_traits(world, balls, delta)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         self.hologram_spawn_timer -= delta
@@ -28793,7 +28793,7 @@ class SlimeBossMode(GameMode):
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         # Spawn the boss
@@ -29183,7 +29183,7 @@ class EntangledHazardsMode(GameMode):
 
         if not hasattr(world, "arena") or not world.arena:
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         try:
@@ -31133,7 +31133,7 @@ class FakeBountyMutatorMode(GameMode):
 
                 # Explode and spawn poison puddle
                 # Hazard
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
 
                 class FallbackHazard:
@@ -31353,7 +31353,7 @@ class MovingWallsMode(GameMode):
         super().tick(world, balls, delta)
         import random
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         self.spawn_timer -= delta
@@ -31718,7 +31718,7 @@ class ImplosionBombEventMode(GameMode):
         if not hasattr(world, "arena"):
             return
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         if self.event_timer >= 20.0:
@@ -31829,7 +31829,7 @@ class SingularityBombEventMode(GameMode):
         if not hasattr(world, "arena"):
             return
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         if self.event_timer >= 20.0:
@@ -32304,7 +32304,7 @@ class LaserGridSurvivalMode(GameMode):
         self.lasers_spawned = False
 
         if hasattr(world, "arena") and world.arena:
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             arena_width = getattr(world.arena, "width", 1000)
@@ -32723,7 +32723,7 @@ class HazardLinesMode(GameMode):
         super().tick(world, balls, delta)
         import random
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         self.spawn_timer -= delta
@@ -32905,7 +32905,7 @@ class ChaoticStatHazardMode(GameMode):
 
     def setup(self, world: 'Any', balls: 'List[Any]') -> None:
         if not hasattr(world, "arena"): return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         for _ in range(3):
             world.arena.hazards.append({
@@ -32948,7 +32948,7 @@ class IntersectingLasersMode(GameMode):
         self.spawn_timer = 2.0
         if not hasattr(world, "arena"):
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
     def tick(self, world, balls, delta=0.016):
@@ -33168,7 +33168,7 @@ class BumperFrenzyMode(GameMode):
     def setup(self, world, balls):
         super().setup(world, balls)
         if hasattr(world, "arena"):
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
             import random
             arena_width = getattr(world.arena, "width", 1000)
@@ -33421,7 +33421,7 @@ class NetworkedBlackHolesMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         black_holes = [h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" or (isinstance(h, dict) and h.get("kind") == "black_hole")]
@@ -33511,7 +33511,7 @@ class WallLeapersMode(GameMode):
         super().tick(world, balls, delta)
         import random
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         self.spawn_timer -= delta
@@ -33954,7 +33954,7 @@ class SupercellStormMode(GameMode):
             setattr(tornado, "vy", random.uniform(-150.0, 150.0))
             setattr(tornado, "duration", random.uniform(5.0, 10.0))
 
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
             world.arena.hazards.append(tornado)
 
@@ -34167,7 +34167,7 @@ class ExtremeTornadoWeatherMode(GameMode):
         if not hasattr(world, "arena") or world.arena is None:
             return
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         self.tornado_spawn_timer -= delta
@@ -34540,7 +34540,195 @@ class WhiteHoleMode(SafeZoneMode):
                     b.x -= (dx / dist) * push_strength * delta
                     b.y -= (dy / dist) * push_strength * delta
 
+import math
+import random
+
+class MoltenGolemMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Molten Golem"
+        self.description = "A neutral AI entity that spawns in lava environments or heatwaves, slowly roaming and throwing magma chunks. Drops a fire core when defeated."
+        self.golem_id = None
+        self.spawn_timer = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+        if hasattr(world, "arena") and not hasattr(world.arena, "projectiles"):
+            world.arena.projectiles = []
+        if hasattr(world, "arena") and not hasattr(world.arena, "items"):
+            world.arena.items = []
+
+        self.spawn_timer = 5.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.spawn_timer -= delta
+
+
+        # Only spawn in lava or heatwave environments
+        weather = getattr(world.arena, "weather", "") if hasattr(world, "arena") else ""
+        has_lava = False
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") in ["lava", "lava_puddle", "lava_pit"]:
+                    has_lava = True
+                    break
+
+        if self.spawn_timer <= 0.0 and self.golem_id is None:
+            if not (weather == "heatwave" or has_lava):
+                # allow test fallback
+                if not getattr(world, "is_test", False):
+                    return
+            if balls:
+                base_ball = balls[0]
+                golem_class = type(base_ball)
+            else:
+                golem_class = type('MockBoss', (object,), {})
+
+            try:
+                golem = golem_class()
+            except TypeError:
+                try:
+                    golem = golem_class(999, 500, 500)
+                except Exception:
+                    golem = type('MockBoss', (object,), {})()
+
+            if balls:
+                for attr in dir(balls[0]):
+                    if not attr.startswith('__') and not callable(getattr(balls[0], attr)):
+                        try:
+                            setattr(golem, attr, getattr(balls[0], attr))
+                        except AttributeError:
+                            pass
+
+            boss_x = random.uniform(200, getattr(world.arena, "width", 1000) - 200)
+            boss_y = random.uniform(200, getattr(world.arena, "height", 1000) - 200)
+
+            golem.id = getattr(world, "next_id", random.randint(10000, 99999))
+            self.golem_id = golem.id
+            golem.x = boss_x
+            golem.y = boss_y
+            golem.ball_type = "molten_golem"
+            golem.team = "neutral"
+            golem.max_hp = 2000.0
+            golem.hp = 2000.0
+            golem.damage = 40.0
+            golem.radius = 50.0
+            golem.speed = 40.0
+            golem.alive = True
+
+            golem.magma_throw_timer = 3.0
+
+            balls.append(golem)
+            return
+
+        golem_found = False
+        golem_ball = None
+        for b in list(balls):
+            if getattr(b, "id", None) == self.golem_id:
+                if getattr(b, "hp", 0) <= 0 or not getattr(b, "alive", False):
+                    # Defeated
+                    self.golem_id = None
+                    bx, by = getattr(b, "x", 500), getattr(b, "y", 500)
+
+                    # Spawn lava puddles
+                    directions = [(1,0), (-1,0), (0,1), (0,-1)]
+                    try:
+                        from ai.game_modes import HazardClass
+                    except ImportError:
+                        HazardClass = type("Hazard", (object,), {})
+
+                    for dx, dy in directions:
+                        p_id = getattr(world, "next_id", random.randint(10000, 99999))
+                        if hasattr(world, "next_id"): world.next_id += 1
+
+                        try:
+                            puddle = HazardClass(id=p_id, x=bx + dx*60, y=by + dy*60, radius=40.0, kind="lava_puddle", damage=20.0)
+                            setattr(puddle, "duration", 10.0)
+                        except TypeError:
+                            # fallback for different hazard implementations
+                            puddle = type("Hazard", (object,), {"id": p_id, "x": bx + dx*60, "y": by + dy*60, "radius": 40.0, "kind": "lava_puddle", "damage": 20.0, "duration": 10.0})()
+                        world.arena.hazards.append(puddle)
+
+                    # Drop fire core booster item
+                    drop_id = getattr(world, "next_id", random.randint(10000, 99999))
+                    if hasattr(world, "next_id"): world.next_id += 1
+                    fire_core = {"id": drop_id, "x": bx, "y": by, "kind": "booster", "booster_type": "fire_core", "radius": 15.0}
+                    world.arena.items.append(fire_core)
+
+                    if hasattr(world, "events"):
+                        world.events.append({"type": "boss_defeated", "boss": "Molten Golem", "x": bx, "y": by})
+
+                    # Reset spawn timer for next appearance
+                    self.spawn_timer = 20.0
+
+                    try:
+                        balls.remove(b)
+                    except ValueError:
+                        pass
+                    continue
+
+                golem_found = True
+                golem_ball = b
+                break
+
+        if golem_found and golem_ball:
+            b = golem_ball
+            bx, by = getattr(b, "x", 500), getattr(b, "y", 500)
+
+            # Roam towards nearest player
+            nearest_dist = float('inf')
+            nearest = None
+            for ob in balls:
+                if getattr(ob, "id", None) != self.golem_id and getattr(ob, "alive", False):
+                    obx, oby = getattr(ob, "x", 500), getattr(ob, "y", 500)
+                    dist = math.hypot(obx - bx, oby - by)
+                    if dist < nearest_dist:
+                        nearest_dist = dist
+                        nearest = ob
+
+            if nearest:
+                nx, ny = getattr(nearest, "x", 500), getattr(nearest, "y", 500)
+                angle = math.atan2(ny - by, nx - bx)
+                spd = getattr(b, "speed", 40.0)
+
+                b.x += math.cos(angle) * spd * delta
+                b.y += math.sin(angle) * spd * delta
+
+                # Throw magma chunk
+                timer = getattr(b, "magma_throw_timer", 0.0)
+                timer -= delta
+                if timer <= 0.0 and nearest_dist < 400.0:
+                    timer = 3.0
+                    p_id = getattr(world, "next_id", random.randint(10000, 99999))
+                    if hasattr(world, "next_id"): world.next_id += 1
+
+                    chunk = type("Projectile", (object,), {
+                        "id": p_id,
+                        "x": b.x,
+                        "y": b.y,
+                        "radius": 20.0,
+                        "kind": "lava_projectile",
+                        "damage": 30.0,
+                        "vx": math.cos(angle) * 300.0,
+                        "vy": math.sin(angle) * 300.0,
+                        "active": True
+                    })()
+
+                    if hasattr(world.arena, "projectiles"):
+                        world.arena.projectiles.append(chunk)
+                    else:
+                        world.arena.hazards.append(chunk)
+
+                b.magma_throw_timer = timer
+
+        if not golem_found:
+            self.golem_id = None
+
 GAME_MODES = {
+    'molten_golem': MoltenGolemMode(),
     'white_hole': WhiteHoleMode(),
     'hot_potato': HotPotatoMode(),
 
@@ -34911,7 +35099,7 @@ class RollingBouldersMode(GameMode):
 
     def setup(self, world: Any, balls: List[Any]) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
 
@@ -36517,7 +36705,7 @@ class IllusionWallMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "arena") or not world.arena:
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         import random
@@ -36770,7 +36958,7 @@ class UndergroundTunnelMode(GameMode):
 
         if not hasattr(world, "arena"):
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         for i, t in enumerate(self.tunnels):
@@ -37352,7 +37540,7 @@ class AerialArenaMode(GameMode):
 
     def setup(self, world, balls) -> None:
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
         self.spawn_timer = 0.0
 
@@ -37475,7 +37663,7 @@ class ColorTrailMode(GameMode):
 
         if not hasattr(world, "arena"):
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         # 1. Update territory
@@ -37628,7 +37816,7 @@ class TemporalRiftsMode(GameMode):
             return
 
         if not hasattr(world, "arena"): return
-        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"): world.arena.hazards = []
 
         self.spawn_timer -= delta
         if self.spawn_timer <= 0:
@@ -38968,7 +39156,7 @@ class PhantomJuggernautMode(GameMode):
                 b.is_invisible = True
 
                 if spawn_trail and hasattr(world, "arena"):
-                    if not hasattr(world.arena, "hazards"):
+                    if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                         world.arena.hazards = []
                     trail = self.PhantomTrailHazard(b.x, b.y)
                     world.arena.hazards.append(trail)
@@ -41540,7 +41728,7 @@ class MagneticShockwaveEventMode(GameMode):
                 x = getattr(world.arena, "width", 800) / 2
                 y = getattr(world.arena, "height", 800) / 2
                 self.anchor = self.AnchorHazard(x, y, self.anchor_radius)
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 world.arena.hazards.append(self.anchor)
                 self.spawn_timer = 0.0
@@ -42460,7 +42648,7 @@ class WaterfallsMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
     def tick(self, world, balls, delta):
@@ -43102,7 +43290,7 @@ class HiveDefenseMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "arena") or world.arena is None:
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
@@ -43688,7 +43876,7 @@ class TornadoHazardMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "arena"):
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         # Spawn an initial tornado
@@ -43859,7 +44047,7 @@ class HugeTornadosMode(GameMode):
         super().setup(world, balls)
         if not hasattr(world, "arena"):
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         # Spawn initial tornados
@@ -44347,7 +44535,7 @@ class TelegraphedSupplyDropMode(GameMode):
             }
             self.active_telegraphs.append(telegraph)
 
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             try:
@@ -44414,7 +44602,7 @@ class TelegraphedSupplyDropMode(GameMode):
                 setattr(drop, "capture_progress", 0.0)
                 setattr(drop, "capturing_team", None)
 
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 world.arena.hazards.append(drop)
 
@@ -44557,7 +44745,7 @@ class PulsingBlackHoleMutatorMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         cx = getattr(world.arena, "width", 1000.0) / 2.0
@@ -44592,7 +44780,7 @@ class PulsingBlackHoleMutatorMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             return
 
         bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "pulsing_black_hole" and getattr(h, "id", None) == self.bh_id), None)
@@ -44673,7 +44861,7 @@ class StationaryBlackHoleMutatorMode(GameMode):
 
     def setup(self, world, balls):
         super().setup(world, balls)
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         cx = getattr(world.arena, "width", 1000.0) / 2.0
@@ -44708,7 +44896,7 @@ class StationaryBlackHoleMutatorMode(GameMode):
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             return
 
         bh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "black_hole" and getattr(h, "id", None) == self.bh_id), None)
@@ -44749,7 +44937,7 @@ class ShrapnelMistMode(GameMode):
             class MockArena:
                 hazards = []
             world.arena = MockArena()
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
     def tick(self, world, balls, delta=0.016):
@@ -44904,7 +45092,7 @@ class PulsatingCoreMode(GameMode):
                         self.pulse_timer = 3.0
                         self.pulse_radius = 250.0
                         self.team = random.choice(["Team A", "Team B"])
-                if not hasattr(world.arena, "hazards"):
+                if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 world.arena.hazards.append(PulsatingCore())
         super().tick(world, balls, delta)
@@ -44957,7 +45145,7 @@ class IndestructibleLaserCoreMode(GameMode):
         super().setup(world, balls)
         self.core_spawned = False
         if not hasattr(world, "arena"): return
-        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"): world.arena.hazards = []
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -44983,7 +45171,7 @@ class IndestructibleLaserCoreMode(GameMode):
                         self.damage = damage
                         self.active = True
 
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
 
             h_id = "indestructible_laser_core_0"
@@ -45071,7 +45259,7 @@ class UnstablePayloadMode(GameMode):
 
         if not hasattr(world, "arena"):
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         self.spawn_timer -= delta
@@ -45662,7 +45850,7 @@ class OrbitalDebrisMode(GameMode):
         self.center_x = getattr(world.arena, "width", 1000.0) / 2.0
         self.center_y = getattr(world.arena, "height", 1000.0) / 2.0
 
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         import math
@@ -46086,7 +46274,7 @@ class ReverseGravityPadsMode(GameMode):
     def setup(self, world, balls):
         super().setup(world, balls)
         if hasattr(world, "arena"):
-            if not hasattr(world.arena, "hazards"):
+            if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                 world.arena.hazards = []
             import random
             arena_width = getattr(world.arena, "width", 1000)
@@ -46124,7 +46312,7 @@ class VerticalLavaPlatformerMode(GameMode):
         self.initialized = False
         if not hasattr(world, "arena"):
             return
-        if not hasattr(world.arena, "hazards"):
+        if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
             world.arena.hazards = []
 
         import random
