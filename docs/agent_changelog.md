@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1740] Molten Rock Golem Entity — *2026-08-01 02:19:15 UTC*
+
+Introduce a neutral AI entity, the Molten Golem, which spawns exclusively in lava environments or during extreme heatwaves. It slowly roams the arena, throwing chunks of magma at the nearest players. If defeated, it splits into multiple smaller lava puddles and drops a high-tier Fire core or item, providing a high-risk, high-reward encounter in hazardous areas.
+
+---
+
 ## [idea-1679] Holographic Decoy Modules — *2026-08-01 00:56:40 UTC*
 
 Players can equip a holographic decoy module that periodically spawns illusory clones which perfectly mimic the player's movements and attacks, but deal zero damage. They explode into a small blinding flash when destroyed, confusing enemies.
