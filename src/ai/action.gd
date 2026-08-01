@@ -3406,6 +3406,60 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+        var my_ball_type = self.ball.BALL_TYPE if "BALL_TYPE" in self.ball else (self.ball.get("BALL_TYPE") if typeof(self.ball) == TYPE_DICTIONARY else "")
+        if my_ball_type == "":
+            my_ball_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_ball_type") else "")
+
+        var is_disguised = false
+        if "is_disguised" in self.ball:
+            is_disguised = self.ball.is_disguised
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_disguised"):
+            is_disguised = self.ball.get("is_disguised")
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_disguised"):
+            is_disguised = self.ball.get_meta("is_disguised")
+
+        if my_ball_type == "loot_bug" and is_disguised:
+            var trigger_dist = self.ball.trigger_distance if "trigger_distance" in self.ball else 60.0
+            var ambush = false
+            if self.world != null and "balls" in self.world:
+                for e in self.world.balls:
+                    var e_id = e.id if "id" in e else null
+                    var self_id = self.ball.id if "id" in self.ball else null
+                    if e_id != null and self_id != null and e_id != self_id:
+                        var e_alive = e.alive if "alive" in e else (e.get_meta("alive") if e.has_method("has_meta") and e.has_meta("alive") else true)
+                        var is_decoy = e.is_decoy if "is_decoy" in e else (e.get_meta("is_decoy") if e.has_method("has_meta") and e.has_meta("is_decoy") else false)
+                        if e_alive and not is_decoy:
+                            var e_team = e.team if "team" in e else (e.get_meta("team") if e.has_method("has_meta") and e.has_meta("team") else "")
+                            var my_team = self.ball.team if "team" in self.ball else (self.ball.get_meta("team") if self.ball.has_method("has_meta") and self.ball.has_meta("team") else "")
+                            if e_team != my_team or my_team == "":
+                                var ex = e.x if "x" in e else e.get_meta("x")
+                                var ey = e.y if "y" in e else e.get_meta("y")
+                                var dx = ex - self.ball.x
+                                var dy = ey - self.ball.y
+                                if sqrt(dx*dx + dy*dy) <= trigger_dist:
+                                    ambush = true
+                                    break
+            if ambush:
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["is_disguised"] = false
+                    self.ball["speed"] = self.ball.get("base_speed", 5.0)
+                    self.ball["speed_multiplier"] = 1.5
+                    self.ball["speed_multiplier_timer"] = 2.0
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "is_disguised" in self.ball: self.ball.is_disguised = false
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_disguised", false)
+
+                    if "speed" in self.ball: self.ball.speed = self.ball.base_speed if "base_speed" in self.ball else 5.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed", self.ball.get_meta("base_speed") if self.ball.has_meta("base_speed") else 5.0)
+
+                    if "speed_multiplier" in self.ball: self.ball.speed_multiplier = 1.5
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", 1.5)
+
+                    if "speed_multiplier_timer" in self.ball: self.ball.speed_multiplier_timer = 2.0
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier_timer", 2.0)
+
+                self._spawn_skill_particles("ambush_dust")
+
         # Clone death handler for holographic decoy module
         var holographic_decoy_timer = 0.0
         if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("holographic_decoy_timer"): holographic_decoy_timer = float(self.ball["holographic_decoy_timer"])
@@ -27302,6 +27356,22 @@ func _get_enemies_internal() -> Array:
                         enemy_stealth_zones.append(h)
 
 
+        var is_lootbug_disguised = false
+        var enemy_ball_type = e.BALL_TYPE if "BALL_TYPE" in e else (e.get("BALL_TYPE") if typeof(e) == TYPE_DICTIONARY else "")
+        if enemy_ball_type == "":
+            enemy_ball_type = e.ball_type if "ball_type" in e else (e.get_ball_type() if typeof(e) == TYPE_OBJECT and e.has_method("get_ball_type") else "")
+
+        var is_disguised = false
+        if "is_disguised" in e:
+            is_disguised = e.is_disguised
+        elif typeof(e) == TYPE_DICTIONARY and e.has("is_disguised"):
+            is_disguised = e.get("is_disguised")
+        elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("is_disguised"):
+            is_disguised = e.get_meta("is_disguised")
+
+        if enemy_ball_type == "loot_bug" and is_disguised:
+            continue
+
         var e_btype = e.ball_type if "ball_type" in e else (e.get_ball_type() if typeof(e) == TYPE_OBJECT and e.has_method("get_ball_type") else "")
         if e_btype == "chameleon":
             var blend = e.blend_amount if "blend_amount" in e else (e.get("blend_amount") if typeof(e) == TYPE_DICTIONARY else 0.0)
@@ -27458,7 +27528,41 @@ func _get_boosters() -> Array:
             if sqrt(dx*dx + dy*dy) <= perception_radius:
                 boosters.append(c)
 
+    if self.world != null and "balls" in self.world:
+        for b in self.world.balls:
+            var b_alive = true
+            if "alive" in b:
+                b_alive = b.alive
+            elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+                b_alive = b.get("alive")
+            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+                b_alive = b.get_meta("alive")
 
+            var b_type = b.BALL_TYPE if "BALL_TYPE" in b else (b.get("BALL_TYPE") if typeof(b) == TYPE_DICTIONARY else "")
+            if b_type == "":
+                b_type = b.ball_type if "ball_type" in b else (b.get_ball_type() if typeof(b) == TYPE_OBJECT and b.has_method("get_ball_type") else "")
+
+            var b_disguised = false
+            if "is_disguised" in b:
+                b_disguised = b.is_disguised
+            elif typeof(b) == TYPE_DICTIONARY and b.has("is_disguised"):
+                b_disguised = b.get("is_disguised")
+            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_disguised"):
+                b_disguised = b.get_meta("is_disguised")
+
+            if b_type == "loot_bug" and b_disguised and b_alive:
+                var bx = b.x if "x" in b else b.get_meta("x")
+                var by = b.y if "y" in b else b.get_meta("y")
+                var dx = bx - self.ball.x
+                var dy = by - self.ball.y
+                if sqrt(dx*dx + dy*dy) <= perception_radius:
+                    var fake_booster = {}
+                    fake_booster["x"] = bx
+                    fake_booster["y"] = by
+                    fake_booster["kind"] = b.disguise_type if "disguise_type" in b else "hp_booster"
+                    fake_booster["active"] = true
+                    fake_booster["bug"] = b
+                    boosters.append(fake_booster)
 
     return boosters
 
