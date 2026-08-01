@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1745] Bone Splinters — *2026-08-01 05:53:08 UTC*
+
+When the Bone Wall is destroyed, it sends out shrapnel in all directions dealing damage.
+
+---
+
 ## [idea-1746] Decoy Clone Upgrade — *2026-08-01 05:16:07 UTC*
 
 When a decoy clone is deployed, it actively moves towards nearby enemies instead of just fleeing, and occasionally shoots fake projectiles.
