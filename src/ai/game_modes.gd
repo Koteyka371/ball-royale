@@ -2727,7 +2727,74 @@ class GameMode:
 					if kind == "homing_missile":
 						missiles.append(h)
 
+			var scramblers = []
+			if "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						kind = h.get("kind", "")
+					elif "kind" in h:
+						kind = h.kind
+					if kind == "signal_scrambler":
+						scramblers.append(h)
+
+			for b in balls:
+				var b_alive = b.alive if typeof(b) != TYPE_DICTIONARY else b.get("alive", false)
+				if not b_alive: continue
+				var bx = b.x if typeof(b) != TYPE_DICTIONARY else b.get("x", 0.0)
+				var by = b.y if typeof(b) != TYPE_DICTIONARY else b.get("y", 0.0)
+				var is_scrambled_ai = false
+				for s in scramblers:
+					var sx = s.x if typeof(s) != TYPE_DICTIONARY else s.get("x", 0.0)
+					var sy = s.y if typeof(s) != TYPE_DICTIONARY else s.get("y", 0.0)
+					var srad = s.radius if typeof(s) != TYPE_DICTIONARY else s.get("radius", 400.0)
+					if (sx - bx) * (sx - bx) + (sy - by) * (sy - by) < srad * srad:
+						is_scrambled_ai = true
+						break
+				if is_scrambled_ai:
+					var b_has_scrambled = b.is_scrambled_ai if "is_scrambled_ai" in b else (b.get("is_scrambled_ai", false) if typeof(b) == TYPE_DICTIONARY else false)
+					if not b_has_scrambled:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["is_scrambled_ai"] = true
+							b["base_perception_radius_scrambler"] = b.get("perception_radius", 250.0)
+						else:
+							if "is_scrambled_ai" in b: b.is_scrambled_ai = true
+							elif b.has_method("set_meta"): b.set_meta("is_scrambled_ai", true)
+							var bas_perc = b.perception_radius if "perception_radius" in b else 250.0
+							if "base_perception_radius_scrambler" in b: b.base_perception_radius_scrambler = bas_perc
+							elif b.has_method("set_meta"): b.set_meta("base_perception_radius_scrambler", bas_perc)
+					if typeof(b) == TYPE_DICTIONARY:
+						b["perception_radius"] = 30.0
+					elif "perception_radius" in b:
+						b.perception_radius = 30.0
+				else:
+					var b_has_scrambled = b.is_scrambled_ai if "is_scrambled_ai" in b else (b.get("is_scrambled_ai", false) if typeof(b) == TYPE_DICTIONARY else false)
+					if b_has_scrambled:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["is_scrambled_ai"] = false
+							if b.has("base_perception_radius_scrambler"):
+								b["perception_radius"] = b["base_perception_radius_scrambler"]
+								b.erase("base_perception_radius_scrambler")
+						else:
+							if "is_scrambled_ai" in b: b.is_scrambled_ai = false
+							elif b.has_method("set_meta"): b.set_meta("is_scrambled_ai", false)
+							var bps = null
+							if "base_perception_radius_scrambler" in b: bps = b.base_perception_radius_scrambler
+							elif b.has_method("get_meta") and b.has_meta("base_perception_radius_scrambler"): bps = b.get_meta("base_perception_radius_scrambler")
+							if bps != null:
+								if "perception_radius" in b: b.perception_radius = bps
+
 			for m in missiles:
+				var is_scrambled_missile = false
+				var mx_tmp = m.x if typeof(m) != TYPE_DICTIONARY else m.get("x", 0.0)
+				var my_tmp = m.y if typeof(m) != TYPE_DICTIONARY else m.get("y", 0.0)
+				for s in scramblers:
+					var sx = s.x if typeof(s) != TYPE_DICTIONARY else s.get("x", 0.0)
+					var sy = s.y if typeof(s) != TYPE_DICTIONARY else s.get("y", 0.0)
+					var srad = s.radius if typeof(s) != TYPE_DICTIONARY else s.get("radius", 400.0)
+					if (sx - mx_tmp) * (sx - mx_tmp) + (sy - my_tmp) * (sy - my_tmp) < srad * srad:
+						is_scrambled_missile = true
+						break
 				var mx = m.x if typeof(m) != TYPE_DICTIONARY else m.get("x", 0.0)
 				var my = m.y if typeof(m) != TYPE_DICTIONARY else m.get("y", 0.0)
 				var owner_id = null
@@ -2791,6 +2858,19 @@ class GameMode:
 					var desired_vy = (dy/dist) * 300.0
 
 					var steer_factor = 5.0 * delta
+
+					if is_scrambled_missile:
+						var sang = m.scramble_angle if "scramble_angle" in m else (m.get("scramble_angle", randf() * 6.28) if typeof(m) == TYPE_DICTIONARY else (m.get_meta("scramble_angle") if m.has_method("get_meta") and m.has_meta("scramble_angle") else randf() * 6.28))
+						sang += 15.0 * delta
+						if typeof(m) == TYPE_DICTIONARY:
+							m["scramble_angle"] = sang
+						else:
+							if "scramble_angle" in m: m.scramble_angle = sang
+							elif m.has_method("set_meta"): m.set_meta("scramble_angle", sang)
+						desired_vx = 300.0 * cos(sang)
+						desired_vy = 300.0 * sin(sang)
+						steer_factor = 10.0 * delta
+
 					mvx += (desired_vx - mvx) * steer_factor
 					mvy += (desired_vy - mvy) * steer_factor
 
@@ -73488,3 +73568,5 @@ class SilentWorldMutatorMode extends GameMode:
 					b.silence_timer = current_silence if current_silence > 2.0 else 2.0
 					var current_silencer = b.silencer_timer if "silencer_timer" in b else 0.0
 					b.silencer_timer = current_silencer if current_silencer > 2.0 else 2.0
+
+GAME_MODES["signal_scrambler"] = load("res://src/ai/signal_scrambler_mode.gd").new()
