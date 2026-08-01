@@ -55903,7 +55903,186 @@ class HotPotatoMode:
 
 			hazards.append(bomb)
 
+
+class CenterWhiteHoleMode extends GameMode:
+	var wh_id = 999998
+	var growth_rate = 5.0
+	var push_strength = 200.0
+	var push_growth_rate = 10.0
+	var shrink_rate = 10.0
+	var min_x: float = 0.0
+	var max_x: float = 1000.0
+	var min_y: float = 0.0
+	var max_y: float = 1000.0
+	var damage = 10.0
+
+	func _init():
+		super()
+		name = "Center White Hole"
+		description = "A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+			else:
+				if "width" in world.arena: arena_width = world.arena.width
+				if "height" in world.arena: arena_height = world.arena.height
+
+		min_x = 0.0
+		max_x = arena_width
+		min_y = 0.0
+		max_y = arena_height
+
+		if not "hazards" in world.arena:
+			world.arena.hazards = []
+
+		var cx = arena_width / 2.0
+		var cy = arena_height / 2.0
+
+		var existing = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "white_hole" and h.get("id", null) == wh_id:
+					existing = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "white_hole" and h.get("id") == wh_id:
+					existing = h
+					break
+
+		if not existing:
+			world.arena.hazards.append({
+				"id": wh_id,
+				"x": cx,
+				"y": cy,
+				"radius": 10.0,
+				"kind": "white_hole",
+				"damage": damage,
+				"active": true
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		if max_x - min_x > 50.0:
+			min_x += shrink_rate * delta
+			max_x -= shrink_rate * delta
+
+		if max_y - min_y > 50.0:
+			min_y += shrink_rate * delta
+			max_y -= shrink_rate * delta
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = str(b.get("ball_type", ""))
+			elif typeof(b) == TYPE_OBJECT:
+				b_type = str(b.get("ball_type")) if b.has_method("get") and b.get("ball_type") != null else ""
+
+			if is_alive and b_type != "spectator":
+				var bx = 0.0
+				var by = 0.0
+				var r = 15.0
+				var hp = 100.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					r = b.get("radius", 15.0)
+					hp = b.get("hp", 100.0)
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get"):
+						if b.get("x") != null: bx = b.get("x")
+						if b.get("y") != null: by = b.get("y")
+						if b.get("radius") != null: r = b.get("radius")
+						if b.get("hp") != null: hp = b.get("hp")
+
+				if bx - r < min_x or bx + r > max_x or by - r < min_y or by + r > max_y:
+					hp -= 10.0 * delta
+					if hp <= 0.0:
+						hp = 0.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["alive"] = false
+							b["killer"] = "Shrinking Boundary"
+						elif typeof(b) == TYPE_OBJECT:
+							b.set("alive", false)
+							b.set("killer", "Shrinking Boundary")
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = hp
+					elif typeof(b) == TYPE_OBJECT:
+						b.set("hp", hp)
+
+		if not "hazards" in world.arena:
+			return
+
+		var wh = null
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY:
+				if h.get("kind", "") == "white_hole" and h.get("id", null) == wh_id:
+					wh = h
+					break
+			elif typeof(h) == TYPE_OBJECT:
+				if h.get("kind") == "white_hole" and h.get("id") == wh_id:
+					wh = h
+					break
+
+		if wh == null:
+			return
+
+		if typeof(wh) == TYPE_DICTIONARY:
+			wh["radius"] += growth_rate * delta
+		elif typeof(wh) == TYPE_OBJECT:
+			wh.set("radius", wh.get("radius") + growth_rate * delta)
+
+		push_strength += push_growth_rate * delta
+
+		var wh_x = wh.get("x") if typeof(wh) == TYPE_OBJECT else wh["x"]
+		var wh_y = wh.get("y") if typeof(wh) == TYPE_OBJECT else wh["y"]
+
+		for b in balls:
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", true)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.has_method("get") and b.get("alive") != null else true
+
+			if not is_alive:
+				continue
+
+			var bx = b.get("x") if typeof(b) == TYPE_OBJECT else b["x"]
+			var by = b.get("y") if typeof(b) == TYPE_OBJECT else b["y"]
+
+			var dx = bx - wh_x
+			var dy = by - wh_y
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 0:
+				var pull_x = (dx / dist) * push_strength * delta
+				var pull_y = (dy / dist) * push_strength * delta
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if "vx" in b and "vy" in b:
+						b["vx"] += pull_x
+						b["vy"] += pull_y
+				elif typeof(b) == TYPE_OBJECT:
+					if b.has_method("get") and b.get("vx") != null and b.get("vy") != null:
+						b.set("vx", b.get("vx") + pull_x)
+						b.set("vy", b.get("vy") + pull_y)
+
 var GAME_MODES = {
+	"center_white_hole": CenterWhiteHoleMode.new(),
 	"hot_potato": HotPotatoMode.new(),
 
     "decoy_swap": DecoySwapMode.new(),

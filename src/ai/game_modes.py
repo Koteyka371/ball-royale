@@ -34485,7 +34485,125 @@ class HotPotatoMode(GameMode):
 
             world.arena.hazards.append(bomb)
 
+
+class CenterWhiteHoleMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Center White Hole"
+        self.description = "A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges."
+        self.wh_id = 999998
+        self.growth_rate = 5.0
+        self.push_strength = 200.0
+        self.push_growth_rate = 10.0
+        self.shrink_rate = 10.0
+        self.min_x = 0.0
+        self.max_x = 1000.0
+        self.min_y = 0.0
+        self.max_y = 1000.0
+        self.damage = 10.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.min_x = 0.0
+        self.max_x = arena_width
+        self.min_y = 0.0
+        self.max_y = arena_height
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        existing = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "white_hole" and getattr(h, "id", None) == self.wh_id), None)
+        if not existing:
+            try:
+                from arena.procedural_arena import Hazard
+                wh = Hazard(
+                    id=self.wh_id,
+                    x=cx,
+                    y=cy,
+                    radius=10.0,
+                    kind="white_hole",
+                    damage=self.damage
+                )
+                world.arena.hazards.append(wh)
+            except ImportError:
+                class MockHazard:
+                    def __init__(self, id, x, y, radius, kind, damage):
+                        self.id = id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                wh = MockHazard(self.wh_id, cx, cy, 10.0, "white_hole", self.damage)
+                world.arena.hazards.append(wh)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        # Shrink arena bounds inwards
+        if self.max_x - self.min_x > 50.0:
+            self.min_x += self.shrink_rate * delta
+            self.max_x -= self.shrink_rate * delta
+
+        if self.max_y - self.min_y > 50.0:
+            self.min_y += self.shrink_rate * delta
+            self.max_y -= self.shrink_rate * delta
+
+        # Apply boundary damage directly without modifying world.arena width/height to avoid issues
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                bx = getattr(b, "x", 0.0)
+                by = getattr(b, "y", 0.0)
+                radius = getattr(b, "radius", 15.0)
+                # Check if outside safe boundary
+                if bx - radius < self.min_x or bx + radius > self.max_x or by - radius < self.min_y or by + radius > self.max_y:
+                    b.hp -= 10.0 * delta
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        b.killer = "Shrinking Boundary"
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        wh = next((h for h in world.arena.hazards if getattr(h, "kind", "") == "white_hole" and getattr(h, "id", None) == self.wh_id), None)
+        if not wh:
+            return
+
+        wh.radius += self.growth_rate * delta
+        self.push_strength += self.push_growth_rate * delta
+
+        wh_x = getattr(wh, "x", 0.0)
+        wh_y = getattr(wh, "y", 0.0)
+
+        for b in balls:
+            if not getattr(b, "alive", True):
+                continue
+
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+
+            dx = bx - wh_x
+            dy = by - wh_y
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 0:
+                push_x = (dx / dist) * self.push_strength * delta
+                push_y = (dy / dist) * self.push_strength * delta
+
+                if hasattr(b, "vx") and hasattr(b, "vy"):
+                    b.vx += push_x
+                    b.vy += push_y
+
 GAME_MODES = {
+    'center_white_hole': CenterWhiteHoleMode(),
     'hot_potato': HotPotatoMode(),
 
     'time_loop': TimeLoopMode(),
