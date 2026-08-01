@@ -34485,7 +34485,63 @@ class HotPotatoMode(GameMode):
 
             world.arena.hazards.append(bomb)
 
+
+class WhiteHoleMode(SafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "White Hole"
+        self.description = "A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges."
+        self.white_hole_radius = 50.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        # Ensure zone stays exactly in the center
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_target_x = self.zone_x
+        self.zone_target_y = self.zone_y
+
+        super().tick(world, balls, delta)
+
+        center_x = self.zone_x
+        center_y = self.zone_y
+
+        self.white_hole_radius += 2.0 * delta
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                dx = center_x - b.x
+                dy = center_y - b.y
+                dist = math.hypot(dx, dy)
+
+                if dist > 0:
+                    # Push AWAY from center
+                    # Use similar formula to BlackHoleMode, but push out instead of in
+                    push_strength = 20000.0 / (dist * dist)
+                    radius_multiplier = self.white_hole_radius / 50.0
+                    push_strength *= radius_multiplier
+
+                    # Cap max push
+                    push_strength = min(push_strength, 150.0 * radius_multiplier)
+                    if getattr(world, 'gravity_reversal_active', False):
+                        push_strength = -push_strength
+
+                    b.x -= (dx / dist) * push_strength * delta
+                    b.y -= (dy / dist) * push_strength * delta
+
 GAME_MODES = {
+    'white_hole': WhiteHoleMode(),
     'hot_potato': HotPotatoMode(),
 
     'time_loop': TimeLoopMode(),
