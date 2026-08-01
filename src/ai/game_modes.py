@@ -36828,7 +36828,7 @@ class RubberBandMode(GameMode):
 
                     # Check for entities between them to deal damage
                     for other in balls:
-                        if not getattr(other, "alive", False) or other == b1 or other == b2:
+                        if not getattr(other, "alive", False) or other == b1 or other == b2 or getattr(other, "team", None) == getattr(b1, "team", None):
                             continue
 
                         # Line segment check: b1 to b2
