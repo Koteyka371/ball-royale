@@ -43892,6 +43892,140 @@ class AuctionEventMode(GameMode):
 GAME_MODES['auction_event'] = AuctionEventMode()
 
 
+class CloneConfusionEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Clone Confusion Event"
+        self.description = "An arena event where every player is cloned for 10 seconds. The clones mimic the players' inputs but in reverse, causing confusion and distracting enemies. Destroying a clone deals damage to the original."
+        self.duration = 10.0
+        self.timer = 0.0
+        self.prev_hp_map = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import copy
+        import random
+
+        self.timer = 0.0
+        self.prev_hp_map = {}
+
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") else 1000
+
+        for b in balls:
+            if getattr(b, "alive", False) and not getattr(b, "is_decoy", False) and not getattr(b, "is_illusion", False) and getattr(b, "ball_type", None) != "spectator" and getattr(b, "ball_type", None) != "mimic_decoy":
+                if isinstance(b, dict):
+                    decoy = copy.deepcopy(b)
+                else:
+                    decoy = copy.copy(b)
+
+                if hasattr(world, "next_id"):
+                    if isinstance(decoy, dict):
+                        decoy["id"] = world.next_id
+                    else:
+                        decoy.id = world.next_id
+                    world.next_id += 1
+                else:
+                    new_id = random.randint(100000, 999999)
+                    if isinstance(decoy, dict):
+                        decoy["id"] = new_id
+                    else:
+                        decoy.id = new_id
+
+                if isinstance(decoy, dict):
+                    decoy["is_decoy"] = True
+                    decoy["decoy_timer"] = 10.0
+                    decoy["is_illusion"] = True
+                    decoy["illusion_timer"] = 10.0
+                    decoy["skill"] = None
+                    decoy["active_skill"] = None
+                    decoy["brain"] = None
+                    decoy["clone_confusion_owner_id"] = b.get("id") if isinstance(b, dict) else getattr(b, "id")
+                    self.prev_hp_map[decoy["id"]] = decoy.get("hp", 100)
+                else:
+                    decoy.is_decoy = True
+                    decoy.decoy_timer = 10.0
+                    decoy.is_illusion = True
+                    decoy.illusion_timer = 10.0
+                    decoy.skill = None
+                    decoy.active_skill = None
+                    decoy.brain = None
+                    decoy.clone_confusion_owner_id = getattr(b, "id")
+                    self.prev_hp_map[decoy.id] = getattr(decoy, "hp", 100)
+
+                if hasattr(world, "balls"):
+                    world.balls.append(decoy)
+                elif isinstance(world, dict) and "balls" in world:
+                    world["balls"].append(decoy)
+
+    def tick(self, world, balls, delta=0.016):
+        self.timer += delta
+
+        for b in balls:
+            owner_id = None
+            clone_id = None
+            clone_hp = 0.0
+            clone_alive = False
+
+            if isinstance(b, dict):
+                owner_id = b.get("clone_confusion_owner_id")
+                clone_id = b.get("id")
+                clone_hp = b.get("hp", 0)
+                clone_alive = b.get("alive", False)
+            else:
+                owner_id = getattr(b, "clone_confusion_owner_id", None)
+                clone_id = getattr(b, "id", None)
+                clone_hp = getattr(b, "hp", 0)
+                clone_alive = getattr(b, "alive", False)
+
+            if owner_id is not None and clone_id in self.prev_hp_map:
+                owner = None
+                for other in balls:
+                    other_id = other.get("id") if isinstance(other, dict) else getattr(other, "id", None)
+                    if other_id == owner_id:
+                        owner = other
+                        break
+
+                prev_hp = self.prev_hp_map[clone_id]
+                damage_taken = prev_hp - clone_hp
+
+                owner_alive = owner.get("alive", False) if isinstance(owner, dict) else getattr(owner, "alive", False)
+
+                if owner and owner_alive and damage_taken > 0:
+                    if hasattr(world, "_deal_damage"):
+                        world._deal_damage(None, owner, damage_taken)
+                    elif isinstance(world, dict) and "_deal_damage" in world:
+                        world["_deal_damage"](None, owner, damage_taken)
+                    else:
+                        if isinstance(owner, dict):
+                            owner["hp"] = owner.get("hp", 0) - damage_taken
+                        else:
+                            owner.hp -= damage_taken
+
+                self.prev_hp_map[clone_id] = clone_hp
+
+                if clone_alive and owner and owner_alive:
+                    owner_vx = owner.get("vx", 0.0) if isinstance(owner, dict) else getattr(owner, "vx", 0.0)
+                    owner_vy = owner.get("vy", 0.0) if isinstance(owner, dict) else getattr(owner, "vy", 0.0)
+                    owner_x = owner.get("x", 0.0) if isinstance(owner, dict) else getattr(owner, "x", 0.0)
+                    owner_y = owner.get("y", 0.0) if isinstance(owner, dict) else getattr(owner, "y", 0.0)
+                    owner_tx = owner.get("target_x", owner_x) if isinstance(owner, dict) else getattr(owner, "target_x", owner_x)
+                    owner_ty = owner.get("target_y", owner_y) if isinstance(owner, dict) else getattr(owner, "target_y", owner_y)
+
+                    if isinstance(b, dict):
+                        b["vx"] = -owner_vx
+                        b["vy"] = -owner_vy
+                        b["target_x"] = owner_x - (owner_tx - owner_x)
+                        b["target_y"] = owner_y - (owner_ty - owner_y)
+                    else:
+                        b.vx = -owner_vx
+                        b.vy = -owner_vy
+                        b.target_x = owner_x - (owner_tx - owner_x)
+                        b.target_y = owner_y - (owner_ty - owner_y)
+
+GAME_MODES['clone_confusion_event'] = CloneConfusionEventMode()
+
+
 class BountyExtractionMode(GameMode):
     def __init__(self):
         super().__init__()

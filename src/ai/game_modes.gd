@@ -68668,6 +68668,197 @@ class AuctionEventMode extends GameMode:
 GAME_MODES['auction_event'] = AuctionEventMode.new()
 
 
+class CloneConfusionEventMode extends GameMode:
+	var duration: float = 10.0
+	var timer: float = 0.0
+	var prev_hp_map: Dictionary = {}
+
+	func _init() -> void:
+		super._init()
+		name = "Clone Confusion Event"
+		description = "An arena event where every player is cloned for 10 seconds. The clones mimic the players' inputs but in reverse, causing confusion and distracting enemies. Destroying a clone deals damage to the original."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = 0.0
+		prev_hp_map = {}
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = float(arena.get("width", 1000.0))
+				arena_height = float(arena.get("height", 1000.0))
+			elif typeof(arena) == TYPE_OBJECT:
+				arena_width = float(arena.get("width") if "width" in arena else 1000.0)
+				arena_height = float(arena.get("height") if "height" in arena else 1000.0)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			else:
+				arena_width = float(world.arena.get("width") if "width" in world.arena else 1000.0)
+				arena_height = float(world.arena.get("height") if "height" in world.arena else 1000.0)
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.get("alive", false): is_alive = true
+			elif typeof(b) == TYPE_OBJECT and b.get("alive"): is_alive = true
+
+			var is_decoy = false
+			if typeof(b) == TYPE_DICTIONARY and b.get("is_decoy", false): is_decoy = true
+			elif typeof(b) == TYPE_OBJECT and b.get("is_decoy"): is_decoy = true
+
+			var is_illusion = false
+			if typeof(b) == TYPE_DICTIONARY and b.get("is_illusion", false): is_illusion = true
+			elif typeof(b) == TYPE_OBJECT and "is_illusion" in b and b.get("is_illusion"): is_illusion = true
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type", "")
+			elif typeof(b) == TYPE_OBJECT: b_type = b.get("ball_type")
+
+			if is_alive and not is_decoy and not is_illusion and b_type != "spectator" and b_type != "mimic_decoy":
+				var decoy = null
+				if typeof(b) == TYPE_DICTIONARY:
+					decoy = b.duplicate(true)
+				else:
+					decoy = {}
+					var props = ["id", "x", "y", "vx", "vy", "radius", "hp", "max_hp", "alive", "team", "ball_type", "speed", "damage", "base_speed", "target_x", "target_y"]
+					for p in props:
+						if p in b:
+							decoy[p] = b.get(p)
+
+				var next_id = randi() % 900000 + 100000
+				if typeof(world) == TYPE_OBJECT and "next_id" in world:
+					next_id = world.next_id
+					world.next_id += 1
+				elif typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+					next_id = world["next_id"]
+					world["next_id"] += 1
+
+				if typeof(decoy) == TYPE_DICTIONARY:
+					decoy["id"] = next_id
+					decoy["is_decoy"] = true
+					decoy["decoy_timer"] = 10.0
+					decoy["is_illusion"] = true
+					decoy["illusion_timer"] = 10.0
+					decoy["skill"] = null
+					decoy["active_skill"] = null
+					decoy["brain"] = null
+					decoy["clone_confusion_owner_id"] = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					prev_hp_map[decoy["id"]] = decoy.get("hp", 100)
+				else:
+					decoy.set("id", next_id)
+					if "is_decoy" in decoy: decoy.set("is_decoy", true)
+					if "decoy_timer" in decoy: decoy.set("decoy_timer", 10.0)
+					if "is_illusion" in decoy: decoy.set("is_illusion", true)
+					if "illusion_timer" in decoy: decoy.set("illusion_timer", 10.0)
+					if "skill" in decoy: decoy.set("skill", null)
+					if "active_skill" in decoy: decoy.set("active_skill", null)
+					if "brain" in decoy: decoy.set("brain", null)
+					decoy.set_meta("clone_confusion_owner_id", b.get("id"))
+					prev_hp_map[decoy.get("id")] = decoy.get("hp", 100)
+
+				if typeof(world) == TYPE_OBJECT and "balls" in world:
+					world.balls.append(decoy)
+				elif typeof(world) == TYPE_DICTIONARY and "balls" in world:
+					world["balls"].append(decoy)
+				else:
+					balls.append(decoy)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		timer += delta
+
+		for b in balls:
+			var owner_id = null
+			var clone_id = null
+			var clone_hp = 0.0
+			var clone_alive = false
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("clone_confusion_owner_id"):
+					owner_id = b.get("clone_confusion_owner_id")
+					clone_id = b.get("id")
+					clone_hp = b.get("hp", 0)
+					clone_alive = b.get("alive", false)
+			elif typeof(b) == TYPE_OBJECT:
+				if b.has_meta("clone_confusion_owner_id"):
+					owner_id = b.get_meta("clone_confusion_owner_id")
+				elif "clone_confusion_owner_id" in b:
+					owner_id = b.get("clone_confusion_owner_id")
+				if owner_id != null:
+					clone_id = b.get("id")
+					clone_hp = b.get("hp")
+					clone_alive = b.get("alive")
+
+			if owner_id != null and prev_hp_map.has(clone_id):
+				var owner = null
+				for other in balls:
+					var other_id = null
+					if typeof(other) == TYPE_DICTIONARY: other_id = other.get("id")
+					elif typeof(other) == TYPE_OBJECT: other_id = other.get("id")
+					if other_id == owner_id:
+						owner = other
+						break
+
+				var prev_hp = prev_hp_map[clone_id]
+				var damage_taken = prev_hp - clone_hp
+
+				var owner_alive = false
+				if owner != null:
+					if typeof(owner) == TYPE_DICTIONARY: owner_alive = owner.get("alive", false)
+					else: owner_alive = owner.get("alive")
+
+				if owner != null and owner_alive and damage_taken > 0:
+					if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+						world._deal_damage(null, owner, damage_taken)
+					else:
+						var owner_hp = 0.0
+						if typeof(owner) == TYPE_DICTIONARY: owner_hp = owner.get("hp", 0)
+						else: owner_hp = owner.get("hp")
+						if typeof(owner) == TYPE_DICTIONARY: owner["hp"] = owner_hp - damage_taken
+						else: owner.set("hp", owner_hp - damage_taken)
+
+				prev_hp_map[clone_id] = clone_hp
+
+				if clone_alive and owner != null and owner_alive:
+					var owner_vx = 0.0
+					var owner_vy = 0.0
+					var owner_x = 0.0
+					var owner_y = 0.0
+					var owner_tx = 0.0
+					var owner_ty = 0.0
+
+					if typeof(owner) == TYPE_DICTIONARY:
+						owner_vx = float(owner.get("vx", 0.0))
+						owner_vy = float(owner.get("vy", 0.0))
+						owner_x = float(owner.get("x", 0.0))
+						owner_y = float(owner.get("y", 0.0))
+						owner_tx = float(owner.get("target_x", owner_x))
+						owner_ty = float(owner.get("target_y", owner_y))
+					else:
+						owner_vx = float(owner.get("vx"))
+						owner_vy = float(owner.get("vy"))
+						owner_x = float(owner.get("x"))
+						owner_y = float(owner.get("y"))
+						owner_tx = float(owner.get("target_x") if "target_x" in owner else owner_x)
+						owner_ty = float(owner.get("target_y") if "target_y" in owner else owner_y)
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["vx"] = -owner_vx
+						b["vy"] = -owner_vy
+						b["target_x"] = owner_x - (owner_tx - owner_x)
+						b["target_y"] = owner_y - (owner_ty - owner_y)
+					else:
+						b.set("vx", -owner_vx)
+						b.set("vy", -owner_vy)
+						if "target_x" in b: b.set("target_x", owner_x - (owner_tx - owner_x))
+						if "target_y" in b: b.set("target_y", owner_y - (owner_ty - owner_y))
+
+GAME_MODES['clone_confusion_event'] = CloneConfusionEventMode.new()
+
+
 class BountyExtractionMode extends GameMode:
 	var extraction_zone_x: float = 500.0
 	var extraction_zone_y: float = 500.0
