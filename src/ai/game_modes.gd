@@ -34545,7 +34545,7 @@ class InvisibleDecoysMode extends GameMode:
 class ExtremeWeatherMode extends GameMode:
 	var weather_timer: float = 0.0
 	var current_weather: String = "clear"
-	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+	var weathers: Array = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "magnetic_storm"]
 	var flood_level: float = 0.0
 
 	func _init():
@@ -34951,6 +34951,91 @@ class ExtremeWeatherMode extends GameMode:
 				elif self.has_method("set_meta"): self.set_meta("tsunami_spawned", false)
 				if "tsunami_hazards" in self: self.tsunami_hazards = []
 				elif self.has_method("set_meta"): self.set_meta("tsunami_hazards", [])
+
+		if current_weather == "magnetic_storm":
+			var metal_balls = []
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+				else:
+					if "alive" in b: is_alive = b.alive
+
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					b_type = b.get("ball_type", "")
+				else:
+					if "ball_type" in b: b_type = b.ball_type
+
+				if is_alive and b_type != "spectator":
+					b_type = b_type.to_lower()
+					var traits = []
+					if typeof(b) == TYPE_DICTIONARY:
+						traits = b.get("traits", [])
+					elif "traits" in b:
+						traits = b.traits
+
+					var is_metal = false
+					if b_type.find("metal") != -1 or b_type.find("armor") != -1:
+						is_metal = true
+					else:
+						for tr in traits:
+							if typeof(tr) == TYPE_STRING:
+								if tr.to_lower().find("metal") != -1 or tr.to_lower().find("armor") != -1:
+									is_metal = true
+									break
+
+					if is_metal:
+						metal_balls.append(b)
+
+			# Pull metal balls towards each other
+			for i in range(metal_balls.size()):
+				for j in range(metal_balls.size()):
+					if i != j:
+						var b1 = metal_balls[i]
+						var b2 = metal_balls[j]
+						var b1_x = 0.0; var b1_y = 0.0
+						var b2_x = 0.0; var b2_y = 0.0
+						if typeof(b1) == TYPE_DICTIONARY:
+							b1_x = b1.get("x", 0.0); b1_y = b1.get("y", 0.0)
+						else:
+							if "x" in b1: b1_x = b1.x
+							if "y" in b1: b1_y = b1.y
+						if typeof(b2) == TYPE_DICTIONARY:
+							b2_x = b2.get("x", 0.0); b2_y = b2.get("y", 0.0)
+						else:
+							if "x" in b2: b2_x = b2.x
+							if "y" in b2: b2_y = b2.y
+
+						var dx = b2_x - b1_x
+						var dy = b2_y - b1_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist > 0 and dist < 600.0:
+							var pull_force = 15000.0 / (dist * dist)
+							pull_force = min(pull_force, 400.0)
+							if typeof(b1) == TYPE_DICTIONARY:
+								b1["vx"] = b1.get("vx", 0.0) + (dx / dist) * pull_force * delta
+								b1["vy"] = b1.get("vy", 0.0) + (dy / dist) * pull_force * delta
+							else:
+								if "vx" in b1: b1.vx += (dx / dist) * pull_force * delta
+								if "vy" in b1: b1.vy += (dy / dist) * pull_force * delta
+
+			# Disable tracking projectiles
+			if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+				for h in world.arena.hazards:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						h_kind = h.get("kind", "")
+					elif typeof(h) == TYPE_OBJECT:
+						if "kind" in h: h_kind = h.kind
+
+					if h_kind == "tracking_projectile":
+						if typeof(h) == TYPE_DICTIONARY:
+							h["kind"] = "projectile"
+							if h.has("target_id"): h.erase("target_id")
+						elif typeof(h) == TYPE_OBJECT:
+							if "kind" in h: h.kind = "projectile"
+							if "target_id" in h: h.target_id = null
 
 		if current_weather == "celestial_alignment":
 			var boss = null

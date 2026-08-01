@@ -21861,7 +21861,7 @@ class ExtremeWeatherMode(GameMode):
         self.description = "Dynamic arena cycles through extreme weather events every 15 seconds. Collect weather-resistant boosters to survive!"
         self.weather_timer = 0.0
         self.current_weather = "clear"
-        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon"]
+        self.weathers = ["blizzard", "heatwave", "acid_rain", "hurricane", "tsunami", "meteor_shower", "ice", "earthquake", "violent_quake", "giant_flood", "solar_eclipse", "celestial_alignment", "slight_breeze", "light_rain", "monsoon", "magnetic_storm"]
         self.flood_level = 0.0
         import random
         self.random = random
@@ -22332,6 +22332,37 @@ class ExtremeWeatherMode(GameMode):
                 for h in h_to_remove:
                     if h in world.arena.hazards:
                         world.arena.hazards.remove(h)
+
+        if self.current_weather == "magnetic_storm":
+            metal_balls = []
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    b_type = getattr(b, "ball_type", "").lower()
+                    traits = getattr(b, "traits", [])
+                    if "metal" in b_type or "armor" in b_type or "metal" in traits or "armor" in traits:
+                        metal_balls.append(b)
+
+            # Pull metal balls towards each other
+            import math
+            for i, b1 in enumerate(metal_balls):
+                for j, b2 in enumerate(metal_balls):
+                    if i != j:
+                        dx = getattr(b2, "x", 0) - getattr(b1, "x", 0)
+                        dy = getattr(b2, "y", 0) - getattr(b1, "y", 0)
+                        dist = math.hypot(dx, dy)
+                        if dist > 0 and dist < 600.0:
+                            pull_force = 15000.0 / (dist * dist)
+                            pull_force = min(pull_force, 400.0)
+                            b1.vx = getattr(b1, "vx", 0) + (dx / dist) * pull_force * delta
+                            b1.vy = getattr(b1, "vy", 0) + (dy / dist) * pull_force * delta
+
+            # Disable tracking projectiles
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "tracking_projectile":
+                        # Turn them into dummy projectiles
+                        h.kind = "projectile"
+                        h.target_id = None
 
         if self.current_weather in ["earthquake", "violent_quake"] and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
