@@ -1878,6 +1878,70 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        # Clone death handler for holographic decoy module is handled in the damage phase, but spawn here
+        if getattr(self.ball, "holographic_decoy_timer", 0.0) > 0.0:
+            self.ball.holographic_decoy_timer -= delta
+            if getattr(self.ball, "holographic_decoy_spawn_timer", 0.0) > 0.0:
+                self.ball.holographic_decoy_spawn_timer -= delta
+            if getattr(self.ball, "holographic_decoy_spawn_timer", 0.0) <= 0.0 and self.ball.holographic_decoy_timer > 0.0:
+                self.ball.holographic_decoy_spawn_timer = 5.0
+                import copy
+                import math
+                if hasattr(self.world, "balls"):
+                    clone = copy.copy(self.ball)
+                    clone.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                    if hasattr(self.world, "next_id"):
+                        self.world.next_id += 1
+
+                    clone.hp = 1.0
+                    clone.max_hp = 1.0
+                    clone.damage = 0.0
+                    if hasattr(clone, "base_damage"): clone.base_damage = 0.0
+                    clone.is_holographic_clone = True
+                    clone.holographic_owner_id = self.ball.id
+
+                    # Offset slightly
+                    angle = __import__('random').random() * 2 * math.pi
+                    clone.x += math.cos(angle) * 15
+                    clone.y += math.sin(angle) * 15
+
+                    # Also need to reset timers that might make it independently act like an AI
+                    clone.skill_timer = 9999.0
+                    clone.attack_timer = 9999.0
+                    clone.SKILL = None
+                    clone.skill = None
+                    clone.active_skill = None
+
+                    self.world.balls.append(clone)
+
+        if getattr(self.ball, "is_holographic_clone", False):
+            owner_id = getattr(self.ball, "holographic_owner_id", None)
+            owner = None
+            if owner_id is not None and hasattr(self.world, "balls"):
+                owner = next((b for b in self.world.balls if getattr(b, "id", None) == owner_id and getattr(b, "alive", True)), None)
+
+            if owner:
+                self.ball.vx = getattr(owner, "vx", 0.0)
+                self.ball.vy = getattr(owner, "vy", 0.0)
+                self.ball.mimic_attack = True # visually mimic if needed
+
+                # Check for explosion on death
+                if getattr(self.ball, "hp", 1.0) <= 0.0 and not getattr(self.ball, "holographic_exploded", False):
+                    self.ball.holographic_exploded = True
+                    import math
+                    if hasattr(self.world, "balls"):
+                        for b in self.world.balls:
+                            if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(self.ball, "team", None):
+                                dist = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
+                                if dist <= 150.0:
+                                    b.is_blinded = True
+                                    b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 3.0)
+                                    b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), 3.0)
+
+                return # Skip normal AI movement/attacks
+            else:
+                self.ball.hp = 0 # Die if owner dies
+
 
         if getattr(self.ball, "spectral_burn_timer", 0.0) > 0.0:
             self.ball.spectral_burn_timer -= delta
@@ -15984,6 +16048,11 @@ class Action:
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "holographic_decoy_module":
+                    self.ball.holographic_decoy_timer = 15.0
+                    self.ball.holographic_decoy_spawn_timer = 0.0
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "hologram_booster":

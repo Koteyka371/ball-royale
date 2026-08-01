@@ -3406,6 +3406,206 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+        # Clone death handler for holographic decoy module
+        var holographic_decoy_timer = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("holographic_decoy_timer"): holographic_decoy_timer = float(self.ball["holographic_decoy_timer"])
+        elif typeof(self.ball) == TYPE_OBJECT and "holographic_decoy_timer" in self.ball: holographic_decoy_timer = float(self.ball.holographic_decoy_timer)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("holographic_decoy_timer"): holographic_decoy_timer = float(self.ball.get_meta("holographic_decoy_timer"))
+
+        if holographic_decoy_timer > 0.0:
+            holographic_decoy_timer -= delta
+            if typeof(self.ball) == TYPE_DICTIONARY: self.ball["holographic_decoy_timer"] = holographic_decoy_timer
+            elif typeof(self.ball) == TYPE_OBJECT and "holographic_decoy_timer" in self.ball: self.ball.holographic_decoy_timer = holographic_decoy_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("holographic_decoy_timer", holographic_decoy_timer)
+
+            var spawn_timer = 0.0
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("holographic_decoy_spawn_timer"): spawn_timer = float(self.ball["holographic_decoy_spawn_timer"])
+            elif typeof(self.ball) == TYPE_OBJECT and "holographic_decoy_spawn_timer" in self.ball: spawn_timer = float(self.ball.holographic_decoy_spawn_timer)
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("holographic_decoy_spawn_timer"): spawn_timer = float(self.ball.get_meta("holographic_decoy_spawn_timer"))
+
+            if spawn_timer > 0.0:
+                spawn_timer -= delta
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["holographic_decoy_spawn_timer"] = spawn_timer
+                elif typeof(self.ball) == TYPE_OBJECT and "holographic_decoy_spawn_timer" in self.ball: self.ball.holographic_decoy_spawn_timer = spawn_timer
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("holographic_decoy_spawn_timer", spawn_timer)
+
+            if spawn_timer <= 0.0 and holographic_decoy_timer > 0.0:
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["holographic_decoy_spawn_timer"] = 5.0
+                elif typeof(self.ball) == TYPE_OBJECT and "holographic_decoy_spawn_timer" in self.ball: self.ball.holographic_decoy_spawn_timer = 5.0
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("holographic_decoy_spawn_timer", 5.0)
+
+                if "balls" in self.world:
+                    var clone = null
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        clone = self.ball.duplicate()
+                    elif self.ball.has_method("duplicate"):
+                        clone = self.ball.duplicate()
+
+                    if clone != null:
+                        var self_id = -1
+                        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): self_id = self.ball["id"]
+                        elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: self_id = self.ball.id
+                        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("id"): self_id = self.ball.get_meta("id")
+
+                        var new_id = randi() % 90000 + 10000
+
+                        if typeof(clone) == TYPE_DICTIONARY:
+                            clone["id"] = new_id
+                            clone["hp"] = 1.0
+                            clone["max_hp"] = 1.0
+                            clone["damage"] = 0.0
+                            if clone.has("base_damage"): clone["base_damage"] = 0.0
+                            clone["is_holographic_clone"] = true
+                            clone["holographic_owner_id"] = self_id
+
+                            var angle = randf() * 2.0 * PI
+                            clone["x"] += cos(angle) * 15.0
+                            clone["y"] += sin(angle) * 15.0
+                            clone["skill_timer"] = 9999.0
+                            clone["attack_timer"] = 9999.0
+                        elif clone.has_method("set_meta"):
+                            if "id" in clone: clone.id = new_id
+                            if "hp" in clone: clone.hp = 1.0
+                            if "max_hp" in clone: clone.max_hp = 1.0
+                            if "damage" in clone: clone.damage = 0.0
+                            if "base_damage" in clone: clone.base_damage = 0.0
+
+                            clone.set_meta("is_holographic_clone", true)
+                            clone.set_meta("holographic_owner_id", self_id)
+
+                            var angle = randf() * 2.0 * PI
+                            if "x" in clone: clone.x += cos(angle) * 15.0
+                            if "y" in clone: clone.y += sin(angle) * 15.0
+
+                            clone.set_meta("skill_timer", 9999.0)
+                            clone.set_meta("attack_timer", 9999.0)
+
+                        self.world.balls.append(clone)
+
+        var is_holo = false
+        if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_holographic_clone"): is_holo = self.ball["is_holographic_clone"]
+        elif typeof(self.ball) == TYPE_OBJECT and "is_holographic_clone" in self.ball: is_holo = self.ball.is_holographic_clone
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_holographic_clone"): is_holo = self.ball.get_meta("is_holographic_clone")
+
+        if is_holo:
+            var owner_id = null
+            if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("holographic_owner_id"): owner_id = self.ball["holographic_owner_id"]
+            elif typeof(self.ball) == TYPE_OBJECT and "holographic_owner_id" in self.ball: owner_id = self.ball.holographic_owner_id
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("holographic_owner_id"): owner_id = self.ball.get_meta("holographic_owner_id")
+
+            var owner = null
+            if owner_id != null and "balls" in self.world:
+                for b in self.world.balls:
+                    var b_id = -2
+                    if typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b["id"]
+                    elif typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                    var b_alive = true
+                    if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+                    elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                    if b_id == owner_id and b_alive:
+                        owner = b
+                        break
+
+            if owner != null:
+                var o_vx = 0.0
+                var o_vy = 0.0
+                if typeof(owner) == TYPE_DICTIONARY:
+                    o_vx = float(owner.get("vx", 0.0))
+                    o_vy = float(owner.get("vy", 0.0))
+                else:
+                    if "vx" in owner: o_vx = float(owner.vx)
+                    if "vy" in owner: o_vy = float(owner.vy)
+
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["vx"] = o_vx
+                    self.ball["vy"] = o_vy
+                    self.ball["mimic_attack"] = true
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "vx" in self.ball: self.ball.vx = o_vx
+                    if "vy" in self.ball: self.ball.vy = o_vy
+                    if self.ball.has_method("set_meta"): self.ball.set_meta("mimic_attack", true)
+
+                var curr_hp = 1.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): curr_hp = float(self.ball["hp"])
+                elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: curr_hp = float(self.ball.hp)
+
+                var exploded = false
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("holographic_exploded"): exploded = self.ball["holographic_exploded"]
+                elif typeof(self.ball) == TYPE_OBJECT and "holographic_exploded" in self.ball: exploded = self.ball.holographic_exploded
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("holographic_exploded"): exploded = self.ball.get_meta("holographic_exploded")
+
+                if curr_hp <= 0.0 and not exploded:
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["holographic_exploded"] = true
+                    elif typeof(self.ball) == TYPE_OBJECT and "holographic_exploded" in self.ball: self.ball.holographic_exploded = true
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("holographic_exploded", true)
+
+                    var my_team = null
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = self.ball["team"]
+                    elif typeof(self.ball) == TYPE_OBJECT and "team" in self.ball: my_team = self.ball.team
+
+                    var my_x = 0.0
+                    var my_y = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        my_x = float(self.ball.get("x", 0.0))
+                        my_y = float(self.ball.get("y", 0.0))
+                    else:
+                        if "x" in self.ball: my_x = float(self.ball.x)
+                        if "y" in self.ball: my_y = float(self.ball.y)
+
+                    if "balls" in self.world:
+                        for b in self.world.balls:
+                            var b_alive = true
+                            if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+                            elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+                            elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+
+                            var b_team = null
+                            if typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+                            elif typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+
+                            if b_alive and b_team != my_team:
+                                var bx = 0.0
+                                var by = 0.0
+                                if typeof(b) == TYPE_DICTIONARY:
+                                    bx = float(b.get("x", 0.0))
+                                    by = float(b.get("y", 0.0))
+                                else:
+                                    if "x" in b: bx = float(b.x)
+                                    if "y" in b: by = float(b.y)
+
+                                var dist = sqrt((bx - my_x)*(bx - my_x) + (by - my_y)*(by - my_y))
+                                if dist <= 150.0:
+                                    var bt = 0.0
+                                    var ct = 0.0
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        bt = float(b.get("blindness_timer", 0.0))
+                                        ct = float(b.get("confusion_timer", 0.0))
+                                    else:
+                                        if "blindness_timer" in b: bt = float(b.blindness_timer)
+                                        if "confusion_timer" in b: ct = float(b.confusion_timer)
+
+                                    if typeof(b) == TYPE_DICTIONARY:
+                                        b["is_blinded"] = true
+                                        b["blindness_timer"] = max(bt, 3.0)
+                                        b["confusion_timer"] = max(ct, 3.0)
+                                    elif typeof(b) == TYPE_OBJECT:
+                                        if "is_blinded" in b: b.is_blinded = true
+                                        if "blindness_timer" in b: b.blindness_timer = max(bt, 3.0)
+                                        if "confusion_timer" in b: b.confusion_timer = max(ct, 3.0)
+                                        if b.has_method("set_meta"):
+                                            b.set_meta("is_blinded", true)
+                                            b.set_meta("blindness_timer", max(bt, 3.0))
+                                            b.set_meta("confusion_timer", max(ct, 3.0))
+
+                return
+            else:
+                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = 0.0
+                elif typeof(self.ball) == TYPE_OBJECT and "hp" in self.ball: self.ball.hp = 0.0
+
 
 	var spectral_timer = 0.0
 	if typeof(self.ball) == TYPE_OBJECT:
@@ -31285,6 +31485,17 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+            elif "kind" in nearest and nearest.kind == "holographic_decoy_module":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("holographic_decoy_timer", 15.0)
+                    self.ball.set_meta("holographic_decoy_spawn_timer", 0.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["holographic_decoy_timer"] = 15.0
+                    self.ball["holographic_decoy_spawn_timer"] = 0.0
+                if "boosters" in self.world:
+                    var b_idx = self.world.boosters.find(nearest)
+                    if b_idx != -1:
+                        self.world.boosters.remove_at(b_idx)
             elif "kind" in nearest and nearest.kind == "hologram_booster":
                 for i in range(1):
                     var clone = null
