@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1746] Decoy Clone Upgrade — *2026-08-01 05:16:07 UTC*
+
+When a decoy clone is deployed, it actively moves towards nearby enemies instead of just fleeing, and occasionally shoots fake projectiles.
+
+---
+
 ## [idea-1735] Magnetic Storm Weather — *2026-08-01 05:01:11 UTC*
 
 Add a magnetic storm weather event that aggressively pulls metallic balls (like metal_drone) toward each other and disables tracking projectiles.
