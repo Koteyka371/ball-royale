@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1731] Decoy Explosion Booster — *2026-08-01 04:32:50 UTC*
+
+A booster that allows a player's fake ball decoys (or any decoy they produce) to explode on death, dealing small area-of-effect damage to nearby enemies and pushing them back.
+
+---
+
 ## [idea-1740] Molten Rock Golem Entity — *2026-08-01 02:19:15 UTC*
 
 Introduce a neutral AI entity, the Molten Golem, which spawns exclusively in lava environments or during extreme heatwaves. It slowly roams the arena, throwing chunks of magma at the nearest players. If defeated, it splits into multiple smaller lava puddles and drops a high-tier Fire core or item, providing a high-risk, high-reward encounter in hazardous areas.
