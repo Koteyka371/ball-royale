@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1752] Trickster Mirror Image Dash — *2026-08-01 22:54:00 UTC*
+
+Trickster can dash a short distance and leave behind a temporary mirror image that mimics their previous movement path for 2 seconds before dissipating, adding confusing mobility.
+
+---
+
 ## [idea-1728] Mirror Image Event — *2026-08-01 20:28:52 UTC*
 
 An arena event where every player is cloned for 10 seconds. The clones mimic the players' inputs but in reverse, causing confusion and distracting enemies. Destroying a clone deals damage to the original.
