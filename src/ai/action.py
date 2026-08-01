@@ -1900,6 +1900,41 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        if getattr(self.ball, "is_mirror_clone", False):
+            # Find owner
+            owner = None
+            for b in self.world.balls:
+                if getattr(b, "id", None) == getattr(self.ball, "owner_id", None) and getattr(b, "alive", True):
+                    owner = b
+                    break
+
+            if owner:
+                # Mirror velocity (reverse direction)
+                self.ball.vx = -owner.vx
+                self.ball.vy = -owner.vy
+
+                # Apply velocity directly for dummy physics
+                self.ball.x += self.ball.vx * delta
+                self.ball.y += self.ball.vy * delta
+
+                # Wall bounds check
+                arena = getattr(self.world, 'arena', None)
+                if arena:
+                    width = getattr(arena, 'width', 1000.0)
+                    height = getattr(arena, 'height', 1000.0)
+                    r = getattr(self.ball, 'radius', 15.0)
+                    if self.ball.x < r: self.ball.x = r
+                    if self.ball.x > width - r: self.ball.x = width - r
+                    if self.ball.y < r: self.ball.y = r
+                    if self.ball.y > height - r: self.ball.y = height - r
+
+            # Die if time runs out or owner is dead
+            if getattr(self.ball, "decoy_timer", 0.0) > 0:
+                self.ball.decoy_timer -= delta
+                if self.ball.decoy_timer <= 0 or not owner:
+                    self.ball.alive = False
+            return
+
         # LootBug ambush logic
         if getattr(self.ball, "BALL_TYPE", "") == "loot_bug" and getattr(self.ball, "is_disguised", False):
             import math

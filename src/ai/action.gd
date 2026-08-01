@@ -3427,6 +3427,99 @@ func _init(ball_ref, world_ref):
     self.world = world_ref
 
 func execute(strategy: String, delta: float):
+
+	var is_mirror_clone = false
+	if typeof(ball) == TYPE_OBJECT and "is_mirror_clone" in ball: is_mirror_clone = ball.is_mirror_clone
+	elif typeof(ball) == TYPE_DICTIONARY and ball.has("is_mirror_clone"): is_mirror_clone = ball.is_mirror_clone
+
+	if is_mirror_clone:
+		var owner = null
+		var my_owner_id = null
+		if typeof(ball) == TYPE_OBJECT and "owner_id" in ball: my_owner_id = ball.owner_id
+		elif typeof(ball) == TYPE_DICTIONARY and ball.has("owner_id"): my_owner_id = ball.owner_id
+
+		var world_balls = []
+		if typeof(world) == TYPE_OBJECT and "balls" in world: world_balls = world.balls
+		elif typeof(world) == TYPE_DICTIONARY and world.has("balls"): world_balls = world.balls
+
+		for b in world_balls:
+			var b_id = null
+			if typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+			elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+
+			var is_alive = false
+			if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b.alive
+
+			if b_id != null and b_id == my_owner_id and is_alive:
+				owner = b
+				break
+
+		if owner != null:
+			var owner_vx = 0.0
+			if typeof(owner) == TYPE_OBJECT and "vx" in owner: owner_vx = owner.vx
+			elif typeof(owner) == TYPE_DICTIONARY and owner.has("vx"): owner_vx = owner.vx
+
+			var owner_vy = 0.0
+			if typeof(owner) == TYPE_OBJECT and "vy" in owner: owner_vy = owner.vy
+			elif typeof(owner) == TYPE_DICTIONARY and owner.has("vy"): owner_vy = owner.vy
+
+			if typeof(ball) == TYPE_OBJECT and "vx" in ball: ball.vx = -owner_vx
+			elif typeof(ball) == TYPE_DICTIONARY: ball["vx"] = -owner_vx
+
+			if typeof(ball) == TYPE_OBJECT and "vy" in ball: ball.vy = -owner_vy
+			elif typeof(ball) == TYPE_DICTIONARY: ball["vy"] = -owner_vy
+
+			var bx = 0.0
+			if typeof(ball) == TYPE_OBJECT and "x" in ball: bx = ball.x
+			elif typeof(ball) == TYPE_DICTIONARY and ball.has("x"): bx = ball.x
+
+			var by = 0.0
+			if typeof(ball) == TYPE_OBJECT and "y" in ball: by = ball.y
+			elif typeof(ball) == TYPE_DICTIONARY and ball.has("y"): by = ball.y
+
+			bx += (-owner_vx) * delta
+			by += (-owner_vy) * delta
+
+			var arena_w = 1000.0
+			var arena_h = 1000.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world:
+				var arena = world.arena
+				if typeof(arena) == TYPE_OBJECT:
+					if "width" in arena: arena_w = arena.width
+					if "height" in arena: arena_h = arena.height
+				elif typeof(arena) == TYPE_DICTIONARY:
+					if arena.has("width"): arena_w = arena.width
+					if arena.has("height"): arena_h = arena.height
+
+			var br = 15.0
+			if typeof(ball) == TYPE_OBJECT and "radius" in ball: br = ball.radius
+			elif typeof(ball) == TYPE_DICTIONARY and ball.has("radius"): br = ball.radius
+
+			if bx < br: bx = br
+			if bx > arena_w - br: bx = arena_w - br
+			if by < br: by = br
+			if by > arena_h - br: by = arena_h - br
+
+			if typeof(ball) == TYPE_OBJECT and "x" in ball: ball.x = bx
+			elif typeof(ball) == TYPE_DICTIONARY: ball["x"] = bx
+			if typeof(ball) == TYPE_OBJECT and "y" in ball: ball.y = by
+			elif typeof(ball) == TYPE_DICTIONARY: ball["y"] = by
+
+		var decoy_timer = 0.0
+		if typeof(ball) == TYPE_OBJECT and "decoy_timer" in ball: decoy_timer = ball.decoy_timer
+		elif typeof(ball) == TYPE_DICTIONARY and ball.has("decoy_timer"): decoy_timer = ball.decoy_timer
+
+		if decoy_timer > 0:
+			decoy_timer -= delta
+			if typeof(ball) == TYPE_OBJECT and "decoy_timer" in ball: ball.decoy_timer = decoy_timer
+			elif typeof(ball) == TYPE_DICTIONARY: ball["decoy_timer"] = decoy_timer
+
+			if decoy_timer <= 0 or owner == null:
+				if typeof(ball) == TYPE_OBJECT and "alive" in ball: ball.alive = false
+				elif typeof(ball) == TYPE_DICTIONARY: ball["alive"] = false
+		return
+
         var my_ball_type = self.ball.BALL_TYPE if "BALL_TYPE" in self.ball else (self.ball.get("BALL_TYPE") if typeof(self.ball) == TYPE_DICTIONARY else "")
         if my_ball_type == "":
             my_ball_type = self.ball.ball_type if "ball_type" in self.ball else (self.ball.get_ball_type() if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_ball_type") else "")

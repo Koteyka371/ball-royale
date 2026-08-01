@@ -46901,3 +46901,90 @@ class SilentWorldMutatorMode(GameMode):
                 b.silencer_timer = max(getattr(b, 'silencer_timer', 0.0), 2.0)
 
 GAME_MODES['silent_world_mutator'] = SilentWorldMutatorMode()
+
+
+class MirrorCloneEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Mirror Clone Event"
+        self.description = "Every player is cloned for 10 seconds. Clones mimic inputs in reverse. Destroying a clone deals damage to the original."
+        self.event_timer = 20.0
+        self.is_cloned = False
+        self.clone_duration = 10.0
+        self.clone_timer = 0.0
+
+    class MirrorClone:
+        def __init__(self, target_ball):
+            self.owner_id = getattr(target_ball, "id", None)
+            self.x = getattr(target_ball, "x", 0.0)
+            self.y = getattr(target_ball, "y", 0.0)
+            self.vx = getattr(target_ball, "vx", 0.0)
+            self.vy = getattr(target_ball, "vy", 0.0)
+            self.radius = getattr(target_ball, "radius", 15.0)
+            self.hp = getattr(target_ball, "hp", 100.0)
+            self.max_hp = getattr(target_ball, "max_hp", 100.0)
+            self.alive = True
+            self.team = getattr(target_ball, "team", "neutral")
+            self.is_decoy = True
+            self.is_mirror_clone = True
+            self.decoy_type = "mirror_clone"
+            self.kind = "mirror_clone"
+            self.decoy_timer = 10.0
+            self.prev_hp = self.hp
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        self.event_timer -= delta
+
+        if self.event_timer <= 0.0 and not self.is_cloned:
+            self.is_cloned = True
+            self.clone_timer = self.clone_duration
+            if hasattr(world, "add_event"):
+                world.add_event("mirror_clone_start", {"message": "Mirror Clones spawned!"})
+
+            new_clones = []
+            for b in list(balls):
+                if getattr(b, "alive", False) and not getattr(b, "is_decoy", False) and not getattr(b, "is_mirror_clone", False) and getattr(b, "ball_type", "") != "spectator":
+                    clone = self.MirrorClone(b)
+                    if hasattr(world, "next_id"):
+                        clone.id = world.next_id
+                        world.next_id += 1
+                    else:
+                        clone.id = 88888 + getattr(b, "id", 0)
+
+                    new_clones.append(clone)
+
+            if hasattr(world, "balls"):
+                world.balls.extend(new_clones)
+
+        elif self.is_cloned:
+            self.clone_timer -= delta
+            if self.clone_timer <= 0.0:
+                self.is_cloned = False
+                self.event_timer = 20.0
+                if hasattr(world, "add_event"):
+                    world.add_event("mirror_clone_end", {"message": "Mirror Clones vanished!"})
+
+                # Remove remaining clones
+                for b in list(balls):
+                    if getattr(b, "is_mirror_clone", False):
+                        b.alive = False
+
+            # Check clone damage and apply to owner
+            for b in list(balls):
+                if getattr(b, "is_mirror_clone", False) and getattr(b, "alive", True):
+                    current_hp = getattr(b, "hp", 0.0)
+                    prev_hp = getattr(b, "prev_hp", current_hp)
+                    if current_hp < prev_hp:
+                        damage_taken = prev_hp - current_hp
+                        b.prev_hp = current_hp
+
+                        # Find owner and apply damage
+                        for owner in list(balls):
+                            if getattr(owner, "id", None) == getattr(b, "owner_id", None) and getattr(owner, "alive", True):
+                                owner.hp -= damage_taken
+                                if owner.hp <= 0:
+                                    owner.alive = False
+                                break
+
+GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode()
