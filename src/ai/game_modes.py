@@ -46358,17 +46358,19 @@ class QuantumWormholeMode(GameMode):
         self.wormholes = []
         self.setup_done = False
 
-        # We will create two wormholes
+        import random
+        # We will create two wormholes randomly positioned in the arena
+        pad = 50.0
         w1 = {
-            "x": 150.0,
-            "y": arena_h / 2,
+            "x": random.uniform(pad, arena_w - pad),
+            "y": random.uniform(pad, arena_h - pad),
             "radius": 50.0,
             "cooldown": 0.0,
             "linked_idx": 1
         }
         w2 = {
-            "x": arena_w - 150.0,
-            "y": arena_h / 2,
+            "x": random.uniform(pad, arena_w - pad),
+            "y": random.uniform(pad, arena_h - pad),
             "radius": 50.0,
             "cooldown": 0.0,
             "linked_idx": 0
