@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1754] Vampiric Auras — *2026-08-01 17:41:27 UTC*
+
+Players drop a temporary vampiric aura upon elimination that slowly drains health from enemies standing inside it while healing allies.
+
+---
+
 ## [idea-1743] Wormhole Portals — *2026-08-01 14:05:25 UTC*
 
 Pairs of connected wormholes spawn randomly in the arena. Entering one immediately teleports the player to the other, maintaining their momentum.
