@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1742] White Hole Repulsor Mode — *2026-08-01 04:53:29 UTC*
+
+A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges.
+
+---
+
 ## [idea-1731] Decoy Explosion Booster — *2026-08-01 04:32:50 UTC*
 
 A booster that allows a player's fake ball decoys (or any decoy they produce) to explode on death, dealing small area-of-effect damage to nearby enemies and pushing them back.
