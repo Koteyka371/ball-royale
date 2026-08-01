@@ -40773,6 +40773,10 @@ class FactionWarMode(GameMode):
         self.season_ended = False
         self.winning_faction = None
         self.season_timer = 300.0
+        self.superweapon_spawned = False
+        self.superweapon_pos = None
+        self.superweapon_faction = None
+        self.superweapon_radius = 20.0
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -40780,6 +40784,89 @@ class FactionWarMode(GameMode):
             self.season_timer -= delta
             if self.season_timer <= 0:
                 self.end_season(world)
+
+        if not self.superweapon_spawned:
+            diff = self.light_points - self.dark_points
+            if diff >= 5:
+                self.superweapon_spawned = True
+                self.superweapon_faction = "Dark"
+                self.superweapon_pos = (0.0, 0.0)
+            elif diff <= -5:
+                self.superweapon_spawned = True
+                self.superweapon_faction = "Light"
+                self.superweapon_pos = (0.0, 0.0)
+
+        if self.superweapon_spawned and self.superweapon_pos:
+            import math
+            for b in balls:
+                if isinstance(b, dict):
+                    if not b.get("active", True) or not b.get("alive", True): continue
+                    b_x, b_y = b.get("x", 0.0), b.get("y", 0.0)
+                    b_type = b.get("ball_type", "")
+                    faction = b.get("faction")
+                    b_radius = b.get("radius", 15.0)
+                else:
+                    if not getattr(b, "active", True) or not getattr(b, "alive", True): continue
+                    b_x, b_y = b.x, b.y
+                    b_type = getattr(b, "ball_type", "")
+                    faction = getattr(b, "faction", None)
+                    b_radius = getattr(b, "radius", 15.0)
+
+                pm = getattr(world, "profile_manager", None)
+                if pm and b_type == "local_player" and hasattr(pm, "get_faction"):
+                    faction = pm.get_faction()
+
+                if not faction:
+                    faction = "Light" if hash(b_type) % 2 == 0 else "Dark"
+
+                if faction == self.superweapon_faction:
+                    dx = b_x - self.superweapon_pos[0]
+                    dy = b_y - self.superweapon_pos[1]
+                    if math.hypot(dx, dy) <= self.superweapon_radius + b_radius:
+                        self.trigger_superweapon(world, balls, self.superweapon_faction)
+                        self.superweapon_pos = None
+                        break
+
+    def trigger_superweapon(self, world, balls, triggering_faction):
+        import random
+        enemy_faction = "Light" if triggering_faction == "Dark" else "Dark"
+        enemy_balls = []
+        for b in balls:
+            if isinstance(b, dict):
+                if not b.get("active", True) or not b.get("alive", True): continue
+                b_type = b.get("ball_type", "")
+                faction = b.get("faction")
+            else:
+                if not getattr(b, "active", True) or not getattr(b, "alive", True): continue
+                b_type = getattr(b, "ball_type", "")
+                faction = getattr(b, "faction", None)
+
+            pm = getattr(world, "profile_manager", None)
+            if pm and b_type == "local_player" and hasattr(pm, "get_faction"):
+                faction = pm.get_faction()
+
+            if not faction:
+                faction = "Light" if hash(b_type) % 2 == 0 else "Dark"
+
+            if faction == enemy_faction:
+                enemy_balls.append(b)
+
+        if enemy_balls:
+            num_to_eliminate = max(1, len(enemy_balls) // 2)
+            targets = random.sample(enemy_balls, num_to_eliminate)
+            for t in targets:
+                if hasattr(world, "_deal_damage"):
+                    hp = t.get("hp", 100) if isinstance(t, dict) else getattr(t, "hp", 100)
+                    world._deal_damage(None, t, hp + 9999)
+                else:
+                    if isinstance(t, dict):
+                        t["hp"] = -1
+                        t["active"] = False
+                        t["alive"] = False
+                    else:
+                        t.hp = -1
+                        t.active = False
+                        t.alive = False
 
     def on_ball_died(self, world, ball, killer):
         if hasattr(super(), "on_ball_died"):

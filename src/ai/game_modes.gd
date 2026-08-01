@@ -63532,6 +63532,10 @@ class FactionWarMode extends GameMode:
 	var season_ended: bool = false
 	var winning_faction = null
 	var season_timer: float = 300.0
+	var superweapon_spawned: bool = false
+	var superweapon_pos = null
+	var superweapon_faction = null
+	var superweapon_radius: float = 20.0
 
 	func _init():
 		super()
@@ -63544,6 +63548,134 @@ class FactionWarMode extends GameMode:
 			season_timer -= delta
 			if season_timer <= 0:
 				end_season(world)
+
+		if not superweapon_spawned:
+			var diff = light_points - dark_points
+			if diff >= 5:
+				superweapon_spawned = true
+				superweapon_faction = "Dark"
+				superweapon_pos = Vector2(0.0, 0.0)
+			elif diff <= -5:
+				superweapon_spawned = true
+				superweapon_faction = "Light"
+				superweapon_pos = Vector2(0.0, 0.0)
+
+		if superweapon_spawned and superweapon_pos != null:
+			for b in balls:
+				var is_active = true
+				var is_alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("active"): is_active = b["active"]
+					if b.has("alive"): is_alive = b["alive"]
+				else:
+					if "active" in b: is_active = b.active
+					if "alive" in b: is_alive = b.alive
+
+				if not is_active or not is_alive: continue
+
+				var b_x = 0.0
+				var b_y = 0.0
+				var b_type = ""
+				var faction = null
+				var b_radius = 15.0
+
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): b_x = b["x"]
+					if b.has("y"): b_y = b["y"]
+					if b.has("ball_type"): b_type = b["ball_type"]
+					if b.has("faction"): faction = b["faction"]
+					if b.has("radius"): b_radius = b["radius"]
+				else:
+					if "x" in b: b_x = b.x
+					if "y" in b: b_y = b.y
+					if "ball_type" in b: b_type = b.ball_type
+					if "faction" in b: faction = b.faction
+					if "radius" in b: b_radius = b.radius
+
+				var pm = null
+				if typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+					pm = world.profile_manager
+				elif typeof(world) == TYPE_DICTIONARY and world.has("profile_manager"):
+					pm = world["profile_manager"]
+
+				if pm != null and b_type == "local_player" and pm.has_method("get_faction"):
+					faction = pm.get_faction()
+
+				if faction == null:
+					if b_type.hash() % 2 == 0: faction = "Light"
+					else: faction = "Dark"
+
+				if faction == superweapon_faction:
+					var dx = b_x - superweapon_pos.x
+					var dy = b_y - superweapon_pos.y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= superweapon_radius + b_radius:
+						trigger_superweapon(world, balls, superweapon_faction)
+						superweapon_pos = null
+						break
+
+	func trigger_superweapon(world, balls, triggering_faction):
+		var enemy_faction = "Light"
+		if triggering_faction == "Light": enemy_faction = "Dark"
+		var enemy_balls = []
+
+		for b in balls:
+			var is_active = true
+			var is_alive = true
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("active"): is_active = b["active"]
+				if b.has("alive"): is_alive = b["alive"]
+			else:
+				if "active" in b: is_active = b.active
+				if "alive" in b: is_alive = b.alive
+
+			if not is_active or not is_alive: continue
+
+			var b_type = ""
+			var faction = null
+
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.has("ball_type"): b_type = b["ball_type"]
+				if b.has("faction"): faction = b["faction"]
+			else:
+				if "ball_type" in b: b_type = b.ball_type
+				if "faction" in b: faction = b.faction
+
+			var pm = null
+			if typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+				pm = world.profile_manager
+			elif typeof(world) == TYPE_DICTIONARY and world.has("profile_manager"):
+				pm = world["profile_manager"]
+
+			if pm != null and b_type == "local_player" and pm.has_method("get_faction"):
+				faction = pm.get_faction()
+
+			if faction == null:
+				if b_type.hash() % 2 == 0: faction = "Light"
+				else: faction = "Dark"
+
+			if faction == enemy_faction:
+				enemy_balls.append(b)
+
+		if enemy_balls.size() > 0:
+			var num_to_eliminate = max(1, enemy_balls.size() / 2)
+			enemy_balls.shuffle()
+			for i in range(num_to_eliminate):
+				var t = enemy_balls[i]
+				if typeof(world) == TYPE_OBJECT and world.has_method("_deal_damage"):
+					var hp = 100
+					if typeof(t) == TYPE_DICTIONARY and t.has("hp"): hp = t["hp"]
+					elif "hp" in t: hp = t.hp
+					world._deal_damage(null, t, hp + 9999)
+				else:
+					if typeof(t) == TYPE_DICTIONARY:
+						t["hp"] = -1
+						t["active"] = false
+						t["alive"] = false
+					else:
+						t.hp = -1
+						t.active = false
+						t.alive = false
 
 	func on_ball_died(world, ball, killer):
 		if super.has_method("on_ball_died"):
