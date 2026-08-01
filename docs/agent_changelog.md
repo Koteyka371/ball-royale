@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1743] Wormhole Portals — *2026-08-01 14:05:25 UTC*
+
+Pairs of connected wormholes spawn randomly in the arena. Entering one immediately teleports the player to the other, maintaining their momentum.
+
+---
+
 ## [idea-1733] Geyser Hazard — *2026-08-01 12:49:58 UTC*
 
 Add a new geyser hazard that erupts periodically, launching players high into the air (disabling ground friction and granting temporary immunity to ground hazards) but dealing fall damage upon landing.
