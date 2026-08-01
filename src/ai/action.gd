@@ -1787,7 +1787,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 	elif "kinetic_shield_stored_damage" in attacker:
 		a_stored_dmg = float(attacker.kinetic_shield_stored_damage)
 
-	if a_stored_dmg >= 100.0 and not is_ranged_attack:
+	if a_stored_dmg > 0.0 and not is_ranged_attack:
 		original_damage += a_stored_dmg
 		var cur_speed_boost_timer = 0.0
 		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("has_meta") and attacker.has_meta("speed_boost_timer"):
