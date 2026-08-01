@@ -1032,6 +1032,33 @@ class GameMode:
                                     world.add_event("grave_trap_explosion", {"x": getattr(h, "x", 0.0), "y": getattr(h, "y", 0.0)})
                                 break
 
+                elif getattr(h, "kind", "") == "bone_wall":
+                    if not getattr(h, "active", True) or getattr(h, "hp", 1.0) <= 0:
+                        hazards_to_remove.append(h)
+                        import math
+                        import random
+                        for i in range(6):
+                            angle = i * (math.pi / 3.0)
+                            fragment_id = len(world.arena.hazards) + random.randint(10000, 99999) + i
+                            try:
+                                from arena.procedural_arena import Hazard
+                                frag = Hazard(id=fragment_id, x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind="bone_fragment", damage=30.0)
+                            except ImportError:
+                                class DummyHazard:
+                                    def __init__(self, id, x, y, radius, kind, damage):
+                                        self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                frag = DummyHazard(id=fragment_id, x=getattr(h, "x", 0.0), y=getattr(h, "y", 0.0), radius=15.0, kind="bone_fragment", damage=30.0)
+
+                            setattr(frag, "vx", math.cos(angle) * 300.0)
+                            setattr(frag, "vy", math.sin(angle) * 300.0)
+                            setattr(frag, "duration", 2.0)
+                            setattr(frag, "owner_team", getattr(h, "owner_team", ""))
+                            new_fragments.append(frag)
+
+                        if hasattr(world, "add_event"):
+                            world.add_event("bone_wall_shrapnel", {"x": getattr(h, "x", 0.0), "y": getattr(h, "y", 0.0)})
+                        continue
+
                 elif getattr(h, "kind", "") == "deployable_hologram_trap":
                     for b in balls:
                         if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(h, "owner_team", "") and not getattr(b, "is_hologram", False):
