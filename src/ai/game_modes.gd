@@ -56683,7 +56683,123 @@ class MicroclimateHazardMode extends GameMode:
 									b.set("vx", b.get("vx") * 0.95)
 									b.set("vy", b.get("vy") * 0.95)
 
+
+class GeyserHazardMode extends GameMode:
+	var spawn_timer = 0.0
+
+	func _init():
+		super._init()
+		self.name = "Geyser Hazards"
+		self.description = "Erupting geysers that launch players into the air and cause fall damage."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if world == null or not ("arena" in world): return
+		if not ("hazards" in world.arena): world.arena.hazards = []
+		for i in range(3):
+			var hazard = {}
+			hazard["id"] = world.arena.hazards.size() + 5000 + i
+			hazard["x"] = randf_range(200, 800)
+			hazard["y"] = randf_range(200, 800)
+			hazard["radius"] = 40.0
+			hazard["kind"] = "geyser"
+			hazard["damage"] = 0.0
+			hazard["erupt_timer"] = randf_range(0.0, 5.0)
+			hazard["is_erupting"] = false
+			world.arena.hazards.append(hazard)
+
+	func tick(world, balls, delta = 0.016):
+		if world == null or not ("arena" in world) or not ("hazards" in world.arena): return
+
+		for h in world.arena.hazards:
+			var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+			if kind == "geyser":
+				var timer = h.get("erupt_timer", 0.0) if typeof(h) == TYPE_DICTIONARY else h.erupt_timer
+				timer -= delta
+				if timer <= 0:
+					var is_erupting = not (h.get("is_erupting", false) if typeof(h) == TYPE_DICTIONARY else h.is_erupting)
+					if typeof(h) == TYPE_DICTIONARY:
+						h["is_erupting"] = is_erupting
+						h["erupt_timer"] = 2.0 if is_erupting else randf_range(3.0, 6.0)
+					else:
+						h.is_erupting = is_erupting
+						h.erupt_timer = 2.0 if is_erupting else randf_range(3.0, 6.0)
+				else:
+					if typeof(h) == TYPE_DICTIONARY:
+						h["erupt_timer"] = timer
+					else:
+						h.erupt_timer = timer
+
+		for b in balls:
+			var b_alive = false
+			if typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: b_alive = b.alive
+			if not b_alive: continue
+
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+			if b_type == "spectator": continue
+
+			var z_height = b.get("z_height", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.z_height if "z_height" in b else (b.get_meta("z_height") if b.has_method("has_meta") and b.has_meta("z_height") else 0.0))
+			var z_velocity = b.get("z_velocity", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.z_velocity if "z_velocity" in b else (b.get_meta("z_velocity") if b.has_method("has_meta") and b.has_meta("z_velocity") else 0.0))
+
+			if z_height > 0:
+				var new_vel = z_velocity - (980.0 * delta)
+				var new_height = z_height + (new_vel * delta)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["is_frictionless"] = true
+					b["z_velocity"] = new_vel
+					b["z_height"] = new_height
+				elif typeof(b) == TYPE_OBJECT:
+					if "is_frictionless" in b: b.is_frictionless = true
+					elif b.has_method("set_meta"): b.set_meta("is_frictionless", true)
+					if "z_velocity" in b: b.z_velocity = new_vel
+					elif b.has_method("set_meta"): b.set_meta("z_velocity", new_vel)
+					if "z_height" in b: b.z_height = new_height
+					elif b.has_method("set_meta"): b.set_meta("z_height", new_height)
+
+				if new_height <= 0:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["z_height"] = 0.0
+						b["is_frictionless"] = false
+					elif typeof(b) == TYPE_OBJECT:
+						if "z_height" in b: b.z_height = 0.0
+						elif b.has_method("set_meta"): b.set_meta("z_height", 0.0)
+						if "is_frictionless" in b: b.is_frictionless = false
+						elif b.has_method("set_meta"): b.set_meta("is_frictionless", false)
+
+					var fall_damage = max(0, -new_vel * 0.1)
+					if fall_damage > 10.0:
+						if world.has_method("_deal_damage"):
+							world._deal_damage(null, b, fall_damage)
+			else:
+				for h in world.arena.hazards:
+					var kind = h.get("kind", "") if typeof(h) == TYPE_DICTIONARY else (h.kind if "kind" in h else "")
+					var is_erupting = h.get("is_erupting", false) if typeof(h) == TYPE_DICTIONARY else (h.is_erupting if "is_erupting" in h else false)
+					if kind == "geyser" and is_erupting:
+						var b_x = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else (b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else 0.0))
+						var b_y = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else (b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else 0.0))
+						var b_r = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else (b.radius if "radius" in b else (b.get_meta("radius") if b.has_method("has_meta") and b.has_meta("radius") else 15.0))
+						var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else 0.0)
+						var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else 0.0)
+						var h_r = h.get("radius", 40.0) if typeof(h) == TYPE_DICTIONARY else (h.radius if "radius" in h else 40.0)
+
+						var dist_sq = (b_x - h_x)*(b_x - h_x) + (b_y - h_y)*(b_y - h_y)
+						if dist_sq <= (h_r + b_r)*(h_r + b_r):
+							if typeof(b) == TYPE_DICTIONARY:
+								b["z_velocity"] = 800.0
+								b["z_height"] = 0.1
+								b["is_frictionless"] = true
+							elif typeof(b) == TYPE_OBJECT:
+								if "z_velocity" in b: b.z_velocity = 800.0
+								elif b.has_method("set_meta"): b.set_meta("z_velocity", 800.0)
+								if "z_height" in b: b.z_height = 0.1
+								elif b.has_method("set_meta"): b.set_meta("z_height", 0.1)
+								if "is_frictionless" in b: b.is_frictionless = true
+								elif b.has_method("set_meta"): b.set_meta("is_frictionless", true)
+
 var GAME_MODES = {
+	"geyser_hazards": GeyserHazardMode.new(),
 	"microclimate_hazards": MicroclimateHazardMode.new(),
 	"molten_golem": MoltenGolemMode.new(),
 	"white_hole": WhiteHoleMode.new(),

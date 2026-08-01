@@ -35002,7 +35002,89 @@ class MicroclimateHazardMode(GameMode):
 
 from ai.signal_scrambler_mode import SignalScramblerMode
 
+
+class GeyserHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Geyser Hazards"
+        self.description = "Erupting geysers that launch players into the air and cause fall damage."
+        self.spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            hazard_class = None
+        if hazard_class is None or not hasattr(hazard_class, "__init__"):
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+            hazard_class = FallbackHazard
+
+        # Spawn some geysers
+        import random as _rnd
+        for i in range(3):
+            x = _rnd.uniform(200, 800)
+            y = _rnd.uniform(200, 800)
+            h = hazard_class(len(world.arena.hazards) + 5000 + i, x, y, 40.0, "geyser", 0.0)
+            h.erupt_timer = _rnd.uniform(0.0, 5.0)
+            h.is_erupting = False
+            world.arena.hazards.append(h)
+
+    def tick(self, world, balls, delta=0.016):
+        import random as _rnd
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"): return
+
+        # Erupt geysers
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "geyser":
+                h.erupt_timer = getattr(h, "erupt_timer", 0.0) - delta
+                if h.erupt_timer <= 0:
+                    h.is_erupting = not getattr(h, "is_erupting", False)
+                    h.erupt_timer = 2.0 if h.is_erupting else _rnd.uniform(3.0, 6.0)
+
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+            if getattr(b, "ball_type", "") == "spectator": continue
+
+            # Apply gravity to z_velocity if airborne
+            z_height = getattr(b, "z_height", 0.0)
+            z_velocity = getattr(b, "z_velocity", 0.0)
+
+            if z_height > 0:
+                b.is_frictionless = True
+                b.z_velocity = z_velocity - (980.0 * delta)
+                b.z_height = z_height + (b.z_velocity * delta)
+
+                # Check for landing
+                if b.z_height <= 0:
+                    b.z_height = 0.0
+                    b.is_frictionless = False
+                    fall_damage = max(0, -b.z_velocity * 0.1) # Simple damage calculation based on impact speed
+                    if fall_damage > 10.0:
+                        world._deal_damage(None, b, fall_damage)
+            else:
+                # Check for geyser launch
+                for h in world.arena.hazards:
+                    if getattr(h, "kind", "") == "geyser" and getattr(h, "is_erupting", False):
+                        dist_sq = (getattr(b, "x", 0.0) - getattr(h, "x", 0.0))**2 + (getattr(b, "y", 0.0) - getattr(h, "y", 0.0))**2
+                        h_rad = getattr(h, "radius", 40.0)
+                        if dist_sq <= (h_rad + getattr(b, "radius", 15.0))**2:
+                            b.z_velocity = 800.0  # Launch speed
+                            b.z_height = 0.1      # Get off the ground
+                            b.is_frictionless = True
+
 GAME_MODES = {
+    'geyser_hazards': GeyserHazardMode(),
     'signal_scrambler': SignalScramblerMode(),
     'microclimate_hazards': MicroclimateHazardMode(),
     'molten_golem': MoltenGolemMode(),
