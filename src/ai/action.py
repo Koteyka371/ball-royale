@@ -6288,12 +6288,63 @@ class Action:
                             owner = b
                             break
 
-                if owner and getattr(owner, "alive", True):
-                    self.ball.vx = getattr(owner, "vx", 0.0)
-                    self.ball.vy = getattr(owner, "vy", 0.0)
+                nearest_enemy = None
+                min_dist = float('inf')
+                if hasattr(self.world, "balls"):
+                    for b in self.world.balls:
+                        if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                            import math
+                            d = math.hypot(self.ball.x - getattr(b, "x", 0.0), self.ball.y - getattr(b, "y", 0.0))
+                            if d < min_dist:
+                                min_dist = d
+                                nearest_enemy = b
+
+                if nearest_enemy and min_dist < 400.0:
+                    # Move towards enemy
+                    dx = nearest_enemy.x - self.ball.x
+                    dy = nearest_enemy.y - self.ball.y
+                    dist = max(0.0001, min_dist)
+                    speed = getattr(self.ball, "speed", 100.0)
+                    self.ball.vx = (dx / dist) * speed
+                    self.ball.vy = (dy / dist) * speed
+
+                    # Occasionally shoot fake projectiles
+                    if not hasattr(self.ball, "fake_projectile_timer"):
+                        self.ball.fake_projectile_timer = 2.0
+
+                    self.ball.fake_projectile_timer -= delta
+                    if self.ball.fake_projectile_timer <= 0:
+                        if __import__('random').random() < 0.3:  # 30% chance to shoot when timer is up
+                            if hasattr(self.world, "projectiles"):
+                                # Use a dictionary so it mimics the GDScript behavior and doesn't cause AttributeErrors
+                                # if code expects specific objects
+                                # Note: the game usually uses objects for projectiles, so we might need a generic object,
+                                # but the action code itself creates simple objects via `type("Projectile", (), {})`
+                                proj = type("Projectile", (), {})()
+                                proj.id = getattr(self.world, "next_id", __import__('random').randint(10000, 99999))
+                                if hasattr(self.world, "next_id"):
+                                    self.world.next_id += 1
+                                proj.x = self.ball.x
+                                proj.y = self.ball.y
+                                proj.vx = (dx / dist) * 300.0
+                                proj.vy = (dy / dist) * 300.0
+                                proj.damage = 0.0  # Fake projectile does no damage
+                                proj.radius = 5.0
+                                proj.duration = 2.0
+                                proj.active = True
+                                proj.owner_id = self.ball.id
+                                proj.team = getattr(self.ball, "team", "")
+                                proj.kind = "projectile_basic"
+                                proj.is_fake = True
+                                self.world.projectiles.append(proj)
+                        self.ball.fake_projectile_timer = 1.0 + __import__('random').random()
                 else:
-                    self.ball.vx = 0.0
-                    self.ball.vy = 0.0
+                    if owner and getattr(owner, "alive", True):
+                        self.ball.vx = getattr(owner, "vx", 0.0)
+                        self.ball.vy = getattr(owner, "vy", 0.0)
+                    else:
+                        self.ball.vx = 0.0
+                        self.ball.vy = 0.0
 
                 self.ball.x += getattr(self.ball, "vx", 0.0) * delta
                 self.ball.y += getattr(self.ball, "vy", 0.0) * delta

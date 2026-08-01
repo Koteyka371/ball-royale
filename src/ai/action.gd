@@ -9321,18 +9321,127 @@ func execute(strategy: String, delta: float):
 					owner = b
 					break
 
+		var nearest_enemy = null
+		var min_dist = 999999.0
+		var my_team = ""
+		if "team" in self.ball: my_team = self.ball.team
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+		elif "ball_type" in self.ball: my_team = self.ball.ball_type
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): my_team = self.ball.get_meta("ball_type")
+
+		var mx = 0.0
+		var my = 0.0
+		if "x" in self.ball: mx = self.ball.x
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("x"): mx = self.ball.get_meta("x")
+		if "y" in self.ball: my = self.ball.y
+		elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): my = self.ball.get_meta("y")
+
+		if world != null and "balls" in world:
+			for b in world.balls:
+				var b_alive = true
+				if "alive" in b: b_alive = b.alive
+				elif b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+				if not b_alive: continue
+
+				var b_team = ""
+				if "team" in b: b_team = b.team
+				elif b.has_method("get_meta") and b.has_meta("team"): b_team = b.get_meta("team")
+				elif "ball_type" in b: b_team = b.ball_type
+				elif b.has_method("get_meta") and b.has_meta("ball_type"): b_team = b.get_meta("ball_type")
+
+				if b_team != my_team:
+					var bx = 0.0
+					if "x" in b: bx = b.x
+					elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+					var by = 0.0
+					if "y" in b: by = b.y
+					elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+					var d = sqrt(pow(mx - bx, 2) + pow(my - by, 2))
+					if d < min_dist:
+						min_dist = d
+						nearest_enemy = b
+
 		var ovx = 0.0
 		var ovy = 0.0
-		if owner != null:
-			var o_alive = true
-			if "alive" in owner: o_alive = owner.alive
-			elif owner.has_method("get_meta") and owner.has_meta("alive"): o_alive = owner.get_meta("alive")
 
-			if o_alive:
-				if "vx" in owner: ovx = owner.vx
-				elif owner.has_method("get_meta") and owner.has_meta("vx"): ovx = owner.get_meta("vx")
-				if "vy" in owner: ovy = owner.vy
-				elif owner.has_method("get_meta") and owner.has_meta("vy"): ovy = owner.get_meta("vy")
+		if nearest_enemy != null and min_dist < 400.0:
+			var ex = 0.0
+			if "x" in nearest_enemy: ex = nearest_enemy.x
+			elif nearest_enemy.has_method("get_meta") and nearest_enemy.has_meta("x"): ex = nearest_enemy.get_meta("x")
+			var ey = 0.0
+			if "y" in nearest_enemy: ey = nearest_enemy.y
+			elif nearest_enemy.has_method("get_meta") and nearest_enemy.has_meta("y"): ey = nearest_enemy.get_meta("y")
+
+			var dx = ex - mx
+			var dy = ey - my
+			var dist = max(0.0001, min_dist)
+			var speed = 100.0
+			if "speed" in self.ball: speed = self.ball.speed
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("speed"): speed = self.ball.get_meta("speed")
+
+			ovx = (dx / dist) * speed
+			ovy = (dy / dist) * speed
+
+			var fpt = 0.0
+			if "fake_projectile_timer" in self.ball: fpt = self.ball.fake_projectile_timer
+			elif self.ball.has_method("get_meta") and self.ball.has_meta("fake_projectile_timer"): fpt = self.ball.get_meta("fake_projectile_timer")
+			elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("fake_projectile_timer"): fpt = self.ball.fake_projectile_timer
+
+			if fpt <= 0.0 and not (self.ball.has_method("has_meta") and self.ball.has_meta("fake_projectile_timer")):
+				fpt = 2.0
+				if "fake_projectile_timer" in self.ball: self.ball.fake_projectile_timer = fpt
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("fake_projectile_timer", fpt)
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball.fake_projectile_timer = fpt
+
+			fpt -= delta
+			if "fake_projectile_timer" in self.ball: self.ball.fake_projectile_timer = fpt
+			elif self.ball.has_method("set_meta"): self.ball.set_meta("fake_projectile_timer", fpt)
+			elif typeof(self.ball) == TYPE_DICTIONARY: self.ball.fake_projectile_timer = fpt
+
+			if fpt <= 0:
+				if randf() < 0.3:
+					if world != null and "projectiles" in world:
+						var my_id = null
+						if "id" in self.ball: my_id = self.ball.id
+						elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+						var next_id = randi() % 90000 + 10000
+						if "next_id" in world:
+							next_id = world.next_id
+							world.next_id += 1
+
+						var proj = {
+							"id": next_id,
+							"x": mx,
+							"y": my,
+							"vx": (dx / dist) * 300.0,
+							"vy": (dy / dist) * 300.0,
+							"damage": 0.0,
+							"radius": 5.0,
+							"duration": 2.0,
+							"active": true,
+							"owner_id": my_id,
+							"team": my_team,
+							"kind": "projectile_basic",
+							"is_fake": true
+						}
+						world.projectiles.append(proj)
+				fpt = 1.0 + randf()
+				if "fake_projectile_timer" in self.ball: self.ball.fake_projectile_timer = fpt
+				elif self.ball.has_method("set_meta"): self.ball.set_meta("fake_projectile_timer", fpt)
+				elif typeof(self.ball) == TYPE_DICTIONARY: self.ball.fake_projectile_timer = fpt
+		else:
+			if owner != null:
+				var o_alive = true
+				if "alive" in owner: o_alive = owner.alive
+				elif owner.has_method("get_meta") and owner.has_meta("alive"): o_alive = owner.get_meta("alive")
+
+				if o_alive:
+					if "vx" in owner: ovx = owner.vx
+					elif owner.has_method("get_meta") and owner.has_meta("vx"): ovx = owner.get_meta("vx")
+					if "vy" in owner: ovy = owner.vy
+					elif owner.has_method("get_meta") and owner.has_meta("vy"): ovy = owner.get_meta("vy")
 
 		if "vx" in self.ball: self.ball.vx = ovx
 		elif self.ball.has_method("set_meta"): self.ball.set_meta("vx", ovx)
