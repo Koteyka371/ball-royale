@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1728] Mirror Image Event — *2026-08-01 20:28:52 UTC*
+
+An arena event where every player is cloned for 10 seconds. The clones mimic the players' inputs but in reverse, causing confusion and distracting enemies. Destroying a clone deals damage to the original.
+
+---
+
 ## [idea-1754] Vampiric Auras — *2026-08-01 17:41:27 UTC*
 
 Players drop a temporary vampiric aura upon elimination that slowly drains health from enemies standing inside it while healing allies.
