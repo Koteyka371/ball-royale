@@ -37185,6 +37185,7 @@ func _use_skill():
                         if "skill" in clone: clone.skill = ""
                         if "SKILL" in clone: clone.SKILL = ""
                         if "active_skill" in clone: clone.active_skill = ""
+                        if "brain" in clone: clone.brain = null
                         if "skill_timer" in clone: clone.skill_timer = 9999.0
                         if "invisibility_timer" in clone: clone.invisibility_timer = 0.0
 

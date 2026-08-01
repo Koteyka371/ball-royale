@@ -19110,6 +19110,8 @@ class Action:
                         clone.SKILL = None
                         if hasattr(clone, "active_skill"):
                             clone.active_skill = None
+                        if hasattr(clone, "brain"):
+                            clone.brain = None
                         clone.skill_timer = 9999.0
 
                         clone.is_decoy = True
