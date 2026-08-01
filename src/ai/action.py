@@ -5214,6 +5214,36 @@ class Action:
             self.ball.use_item = False
 
         # Check inventory for reverse_gravity_item
+
+        if hasattr(self.ball, "inventory") and "safe_zone_radar" in self.ball.inventory and getattr(self.ball, "use_item", False):
+            # Reveal safe zone target if applicable
+            if hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "zone_target_x"):
+                target_x = self.world.game_mode.zone_target_x
+                target_y = self.world.game_mode.zone_target_y
+
+                # Visual effect for radar ping
+                if hasattr(self.world, "add_event"):
+                    self.world.add_event("visual_effect", {
+                        "type": "radar_ping",
+                        "x": target_x,
+                        "y": target_y,
+                        "radius": getattr(self.world.game_mode, "zone_radius", 100.0),
+                        "color": "green",
+                        "duration": 5.0
+                    })
+
+                # Give a temporary buff or state to move towards it
+                self.ball.safe_zone_radar_target_x = target_x
+                self.ball.safe_zone_radar_target_y = target_y
+                self.ball.safe_zone_radar_timer = 5.0
+
+            self.ball.inventory.remove("safe_zone_radar")
+            self.ball.use_item = False
+
+        if getattr(self.ball, "safe_zone_radar_timer", 0) > 0:
+            self.ball.safe_zone_radar_timer -= getattr(self.world, "delta", 0.016)
+            if self.ball.safe_zone_radar_timer <= 0:
+                self.ball.safe_zone_radar_timer = 0
         if hasattr(self.ball, "inventory") and "reverse_gravity_item" in self.ball.inventory and getattr(self.ball, "use_item", False):
             # Spawn reverse gravity field hazard in an area
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -17154,6 +17184,10 @@ class Action:
                         self.world.boosters.remove(nearest)
                     if nearest in getattr(self.world.arena, "hazards", []):
                         self.world.arena.hazards.remove(nearest)
+                elif getattr(nearest, "kind", None) == "safe_zone_radar":
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "items") and nearest in self.world.arena.items:
+                        self.world.arena.items.remove(nearest)
+                    self.ball.inventory.append("safe_zone_radar")
                 elif getattr(nearest, "kind", None) == "reverse_gravity_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
@@ -17192,6 +17226,10 @@ class Action:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+                elif getattr(nearest, "kind", None) == "safe_zone_radar":
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "items") and nearest in self.world.arena.items:
+                        self.world.arena.items.remove(nearest)
+                    self.ball.inventory.append("safe_zone_radar")
                 elif getattr(nearest, "kind", None) == "reverse_gravity_item":
                     if not hasattr(self.ball, "inventory"):
                         self.ball.inventory = []
