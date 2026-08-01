@@ -10581,6 +10581,26 @@ class Action:
                                         if hasattr(self.ball, "skill_timer"):
                                             self.ball.skill_timer = max(getattr(self.ball, "skill_timer", 0.0), 2.0)
 
+                                        # Disable thermal vision, advanced optics and stealth drones
+                                        if hasattr(self.ball, "thermal_boots_timer"):
+                                            self.ball.thermal_boots_timer = 0.0
+                                        if hasattr(self.ball, "vision_booster_timer"):
+                                            self.ball.vision_booster_timer = 0.0
+                                            self.ball.vision_booster_applied = False
+                                            if hasattr(self.ball, "base_perception_radius"):
+                                                self.ball.perception_radius = self.ball.base_perception_radius
+                                        if hasattr(self.ball, "stealth_drone_timer"):
+                                            self.ball.stealth_drone_timer = 0.0
+                                            self.ball.has_stealth_drone = False
+                                        # Remove thermal goggles logic or thermal items if they are strictly strings
+                                        if hasattr(self.ball, "inventory"):
+                                            if "thermal_boots" in self.ball.inventory:
+                                                self.ball.inventory.remove("thermal_boots")
+                                            if "thermal_goggles" in self.ball.inventory:
+                                                self.ball.inventory.remove("thermal_goggles")
+                                            if "advanced_optics" in self.ball.inventory:
+                                                self.ball.inventory.remove("advanced_optics")
+
                                         base_speed = getattr(self.ball, "base_speed", 100.0)
                                         if getattr(self.ball, "speed", 0.0) > base_speed:
                                             self.ball.speed = base_speed
