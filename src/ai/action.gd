@@ -3579,27 +3579,53 @@ func execute(strategy: String, delta: float):
 
                                 var dist = sqrt((bx - my_x)*(bx - my_x) + (by - my_y)*(by - my_y))
                                 if dist <= 150.0:
-                                    var bt = 0.0
-                                    var ct = 0.0
-                                    if typeof(b) == TYPE_DICTIONARY:
-                                        bt = float(b.get("blindness_timer", 0.0))
-                                        ct = float(b.get("confusion_timer", 0.0))
-                                    else:
-                                        if "blindness_timer" in b: bt = float(b.blindness_timer)
-                                        if "confusion_timer" in b: ct = float(b.confusion_timer)
+                                    var has_explosive = false
+                                    if typeof(owner) == TYPE_DICTIONARY and owner.has("inventory"):
+                                        if owner["inventory"].has("decoy_trap_booster"): has_explosive = true
+                                    elif typeof(owner) == TYPE_OBJECT and "inventory" in owner:
+                                        if owner.inventory.has("decoy_trap_booster"): has_explosive = true
 
-                                    if typeof(b) == TYPE_DICTIONARY:
-                                        b["is_blinded"] = true
-                                        b["blindness_timer"] = max(bt, 3.0)
-                                        b["confusion_timer"] = max(ct, 3.0)
-                                    elif typeof(b) == TYPE_OBJECT:
-                                        if "is_blinded" in b: b.is_blinded = true
-                                        if "blindness_timer" in b: b.blindness_timer = max(bt, 3.0)
-                                        if "confusion_timer" in b: b.confusion_timer = max(ct, 3.0)
-                                        if b.has_method("set_meta"):
-                                            b.set_meta("is_blinded", true)
-                                            b.set_meta("blindness_timer", max(bt, 3.0))
-                                            b.set_meta("confusion_timer", max(ct, 3.0))
+                                    if has_explosive:
+                                        if self.world.has_method("_deal_damage"):
+                                            self.world._deal_damage(owner, b, 20.0)
+                                        else:
+                                            if typeof(b) == TYPE_DICTIONARY and b.has("hp"): b["hp"] -= 20.0
+                                            elif typeof(b) == TYPE_OBJECT and "hp" in b: b.hp -= 20.0
+
+                                        if dist > 0:
+                                            var nx = (bx - my_x) / dist
+                                            var ny = (by - my_y) / dist
+                                            if typeof(b) == TYPE_DICTIONARY:
+                                                if b.has("vx"): b["vx"] += nx * 400.0
+                                                if b.has("vy"): b["vy"] += ny * 400.0
+                                                b["_knockback_timer"] = 0.5
+                                            elif typeof(b) == TYPE_OBJECT:
+                                                if "vx" in b: b.vx += nx * 400.0
+                                                if "vy" in b: b.vy += ny * 400.0
+                                                if b.has_method("set_meta"): b.set_meta("_knockback_timer", 0.5)
+                                                else: b._knockback_timer = 0.5
+                                    else:
+                                        var bt = 0.0
+                                        var ct = 0.0
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            bt = float(b.get("blindness_timer", 0.0))
+                                            ct = float(b.get("confusion_timer", 0.0))
+                                        else:
+                                            if "blindness_timer" in b: bt = float(b.blindness_timer)
+                                            if "confusion_timer" in b: ct = float(b.confusion_timer)
+
+                                        if typeof(b) == TYPE_DICTIONARY:
+                                            b["is_blinded"] = true
+                                            b["blindness_timer"] = max(bt, 3.0)
+                                            b["confusion_timer"] = max(ct, 3.0)
+                                        elif typeof(b) == TYPE_OBJECT:
+                                            if "is_blinded" in b: b.is_blinded = true
+                                            if "blindness_timer" in b: b.blindness_timer = max(bt, 3.0)
+                                            if "confusion_timer" in b: b.confusion_timer = max(ct, 3.0)
+                                            if b.has_method("set_meta"):
+                                                b.set_meta("is_blinded", true)
+                                                b.set_meta("blindness_timer", max(bt, 3.0))
+                                                b.set_meta("confusion_timer", max(ct, 3.0))
 
                 return
             else:
