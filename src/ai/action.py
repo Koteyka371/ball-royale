@@ -1928,15 +1928,32 @@ class Action:
                 # Check for explosion on death
                 if getattr(self.ball, "hp", 1.0) <= 0.0 and not getattr(self.ball, "holographic_exploded", False):
                     self.ball.holographic_exploded = True
+                    has_explosive_decoy = "decoy_trap_booster" in getattr(owner, "inventory", [])
                     import math
                     if hasattr(self.world, "balls"):
                         for b in self.world.balls:
                             if getattr(b, "alive", True) and getattr(b, "team", None) != getattr(self.ball, "team", None):
                                 dist = math.hypot(b.x - self.ball.x, b.y - self.ball.y)
                                 if dist <= 150.0:
-                                    b.is_blinded = True
-                                    b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 3.0)
-                                    b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), 3.0)
+                                    if has_explosive_decoy:
+                                        if hasattr(self.world, "_deal_damage"):
+                                            self.world._deal_damage(owner, b, 20.0)
+                                        else:
+                                            b.hp -= 20.0
+                                        # pushback
+                                        if dist > 0:
+                                            nx = (b.x - self.ball.x) / dist
+                                            ny = (b.y - self.ball.y) / dist
+                                            b.vx += nx * 400.0
+                                            b.vy += ny * 400.0
+                                            if hasattr(b, "set_meta"):
+                                                b.set_meta("_knockback_timer", 0.5)
+                                            else:
+                                                b._knockback_timer = 0.5
+                                    else:
+                                        b.is_blinded = True
+                                        b.blindness_timer = max(getattr(b, "blindness_timer", 0.0), 3.0)
+                                        b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), 3.0)
 
                 return # Skip normal AI movement/attacks
             else:
