@@ -35158,6 +35158,38 @@ func _use_skill():
                                     elif self.ball is Dictionary: self.ball["is_stunned"] = false
                                     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_stunned", false)
 
+                    # Unleash resonance wave
+                    var my_team = ""
+                    if "team" in self.ball: my_team = self.ball.team
+                    for e in all_entities:
+                        var e_alive = true
+                        if "alive" in e: e_alive = e.alive
+                        elif e is Dictionary and e.has("alive"): e_alive = e.get("alive", true)
+                        elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+
+                        var e_team = ""
+                        if "team" in e: e_team = e.team
+                        elif e is Dictionary and e.has("team"): e_team = e.get("team", "")
+                        elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("team"): e_team = e.get_meta("team")
+
+                        if e_alive and e_team != my_team:
+                            var e_x = e.x if "x" in e else e.get("position").x if e.get("position") != null else 0.0
+                            var e_y = e.y if "y" in e else e.get("position").y if e.get("position") != null else 0.0
+
+                            var dist_origin_sq = (e_x - temp_x) * (e_x - temp_x) + (e_y - temp_y) * (e_y - temp_y)
+                            var dist_dest_sq = (e_x - self.ball.x) * (e_x - self.ball.x) + (e_y - self.ball.y) * (e_y - self.ball.y)
+
+                            if dist_origin_sq < 10000.0 or dist_dest_sq < 10000.0:
+                                var cur_slow = 0.0
+                                if "slow_timer" in e: cur_slow = e.slow_timer
+                                elif e is Dictionary and e.has("slow_timer"): cur_slow = e.get("slow_timer", 0.0)
+                                elif typeof(e) == TYPE_OBJECT and e.has_method("has_meta") and e.has_meta("slow_timer"): cur_slow = e.get_meta("slow_timer")
+
+                                var new_slow = max(cur_slow, 2.0)
+                                if "slow_timer" in e: e.slow_timer = new_slow
+                                elif e is Dictionary: e["slow_timer"] = new_slow
+                                elif typeof(e) == TYPE_OBJECT and e.has_method("set_meta"): e.set_meta("slow_timer", new_slow)
+
             var cd = 4.0
             if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
             elif self.ball is Dictionary and self.ball.has("SKILL_COOLDOWN"): cd = self.ball.get("SKILL_COOLDOWN", 4.0)

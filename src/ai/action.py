@@ -18012,6 +18012,19 @@ class Action:
                                     target.is_stunned = True
                                     self.ball.is_stunned = False
 
+                    # Unleash a small resonance wave at origin and destination
+                    for e in all_entities:
+                        if getattr(e, "alive", True) and getattr(e, "team", "") != getattr(self.ball, "team", ""):
+                            # Distance to origin
+                            dist_origin_sq = (e.x - temp_x)**2 + (e.y - temp_y)**2
+                            if dist_origin_sq < 10000.0: # 100 radius
+                                e.slow_timer = max(getattr(e, "slow_timer", 0.0), 2.0)
+                            # Distance to destination (target is at temp_x, temp_y now, self.ball is at target's original pos)
+                            # Actually self.ball is at the destination
+                            dist_dest_sq = (e.x - self.ball.x)**2 + (e.y - self.ball.y)**2
+                            if dist_dest_sq < 10000.0: # 100 radius
+                                e.slow_timer = max(getattr(e, "slow_timer", 0.0), 2.0)
+
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 4.0)
             elif skill_name == "command":
                 self.ball.team_message = {"type": "buff_command", "radius": 200}
