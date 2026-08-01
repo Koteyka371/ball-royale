@@ -5224,11 +5224,16 @@ class Action:
                     if getattr(hazard, "duration", 0.0) > 0:
                         dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                         if dist <= getattr(hazard, "radius", 200.0):
-                            self.ball.projectile_speed_multiplier = getattr(self.ball, "projectile_speed_multiplier", 1.0) * 3.0
-                            if not hasattr(self.ball, "base_attack_range"):
-                                self.ball.base_attack_range = getattr(self.ball, "attack_range", 150.0)
-                            self.ball.attack_range = self.ball.base_attack_range * 2.0
-                            self.ball.vulnerability_multiplier = getattr(self.ball, "vulnerability_multiplier", 1.0) * 2.0
+                            if not hasattr(self.ball, "base_projectile_speed_multiplier_oz"):
+                                self.ball.base_projectile_speed_multiplier_oz = getattr(self.ball, "projectile_speed_multiplier", 1.0)
+                            if not hasattr(self.ball, "base_vulnerability_multiplier_oz"):
+                                self.ball.base_vulnerability_multiplier_oz = getattr(self.ball, "vulnerability_multiplier", 1.0)
+                            if not hasattr(self.ball, "base_attack_range_oz"):
+                                self.ball.base_attack_range_oz = getattr(self.ball, "attack_range", 150.0)
+
+                            self.ball.projectile_speed_multiplier = self.ball.base_projectile_speed_multiplier_oz * 3.0
+                            self.ball.attack_range = self.ball.base_attack_range_oz * 2.0
+                            self.ball.vulnerability_multiplier = self.ball.base_vulnerability_multiplier_oz * 2.0
 
                 if getattr(hazard, "kind", "") == "mini_black_hole_hazard":
                     if getattr(hazard, "duration", 0.0) > 0:
@@ -15034,6 +15039,17 @@ class Action:
                         self.world.boosters.remove(b)
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                         self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "overload_zone_item":
+                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        if not hasattr(self.ball, "inventory"):
+                            self.ball.inventory = []
+                        self.ball.inventory.append("overload_zone_item")
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "flashbang_booster":
                     dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
