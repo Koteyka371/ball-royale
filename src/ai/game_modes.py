@@ -34869,7 +34869,101 @@ class MoltenGolemMode(GameMode):
         if not golem_found:
             self.golem_id = None
 
+
+class MicroclimateHazardMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Microclimate Hazards"
+        self.description = "Small moving hazards that rapidly flip between extreme weather conditions."
+        self.weather_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+        try:
+            from arena.procedural_arena import Hazard
+            hazard_class = Hazard
+        except ImportError:
+            hazard_class = None
+        if hazard_class is None or not hasattr(hazard_class, "__init__"):
+            class FallbackHazard:
+                def __init__(self, h_id, x, y, radius, kind, damage=0):
+                    self.id = h_id
+                    self.x = x
+                    self.y = y
+                    self.radius = radius
+                    self.kind = kind
+                    self.damage = damage
+                    self.weather = "heatwave"
+                    self.vx = __import__('random').uniform(-100, 100)
+                    self.vy = __import__('random').uniform(-100, 100)
+                    self.active = True
+            hazard_class = FallbackHazard
+
+        for i in range(3):
+            h_id = 14000 + i
+            hx = __import__('random').uniform(100, getattr(world.arena, "width", 1000) - 100)
+            hy = __import__('random').uniform(100, getattr(world.arena, "height", 1000) - 100)
+            hazard = hazard_class(h_id, hx, hy, 120.0, "microclimate", 0.0)
+            hazard.weather = "heatwave"
+            hazard.vx = __import__('random').uniform(-100, 100)
+            hazard.vy = __import__('random').uniform(-100, 100)
+            world.arena.hazards.append(hazard)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        self.weather_timer += delta
+        flip = False
+        if self.weather_timer >= 4.0:
+            self.weather_timer = 0.0
+            flip = True
+
+        import math
+
+        for b in balls:
+            b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                continue
+
+            # Reset speed to base_speed before checking hazards
+            # so we only slow them if they're currently inside a blizzard
+            b.speed = b.base_speed
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "microclimate":
+                    if flip:
+                        h.weather = "blizzard" if getattr(h, "weather", "heatwave") == "heatwave" else "heatwave"
+
+                    if hasattr(h, "x") and hasattr(h, "vx"):
+                        h.x += h.vx * delta
+                        h.y += h.vy * delta
+
+                        arena_w = getattr(world.arena, "width", 1000)
+                        arena_h = getattr(world.arena, "height", 1000)
+                        r = getattr(h, "radius", 120.0)
+                        if h.x < r or h.x > arena_w - r: h.vx *= -1
+                        if h.y < r or h.y > arena_h - r: h.vy *= -1
+
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
+                            if dist < getattr(h, "radius", 120.0):
+                                w = getattr(h, "weather", "heatwave")
+                                if w == "heatwave":
+                                    if hasattr(world, "_deal_damage"):
+                                        world._deal_damage(None, b, 15.0 * delta)
+                                    else:
+                                        b.hp = getattr(b, "hp", 100) - 15.0 * delta
+                                elif w == "blizzard":
+                                    b.speed = getattr(b, "base_speed", getattr(b, "speed", 100.0)) * 0.4
+                                    # Simulate altered friction/slip
+                                    b.vx = getattr(b, "vx", 0) * 0.95
+                                    b.vy = getattr(b, "vy", 0) * 0.95
+
 GAME_MODES = {
+    'microclimate_hazards': MicroclimateHazardMode(),
     'molten_golem': MoltenGolemMode(),
     'white_hole': WhiteHoleMode(),
     'hot_potato': HotPotatoMode(),
