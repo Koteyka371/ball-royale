@@ -55903,7 +55903,98 @@ class HotPotatoMode:
 
 			hazards.append(bomb)
 
+
+class WhiteHoleMode extends SafeZoneMode:
+	var white_hole_radius: float = 50.0
+
+	func _init() -> void:
+		super._init()
+		name = "White Hole"
+		description = "A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_target_x = zone_x
+		zone_target_y = zone_y
+
+		super.tick(world, balls, delta)
+
+		var center_x = zone_x
+		var center_y = zone_y
+
+		white_hole_radius += 2.0 * delta
+
+		for b in balls:
+			var is_alive = false
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				b_type = str(b.get("ball_type", ""))
+			else:
+				is_alive = b.get("alive") if "alive" in b else false
+				b_type = str(b.ball_type) if "ball_type" in b else ""
+
+			if is_alive and b_type != "spectator":
+				var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+
+				var dx = center_x - bx
+				var dy = center_y - by
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 0:
+					var push_strength = 20000.0 / (dist * dist)
+					var radius_multiplier = white_hole_radius / 50.0
+					push_strength *= radius_multiplier
+
+					push_strength = min(push_strength, 150.0 * radius_multiplier)
+
+					var grav_rev = false
+					if typeof(world) == TYPE_DICTIONARY:
+						grav_rev = world.get("gravity_reversal_active", false)
+					elif world != null:
+						if "gravity_reversal_active" in world:
+							grav_rev = world.gravity_reversal_active
+						elif world.has_method("get") and world.get("gravity_reversal_active") != null:
+							grav_rev = world.get("gravity_reversal_active")
+
+					if grav_rev:
+						push_strength = -push_strength
+
+					var nx = bx - (dx / dist) * push_strength * delta
+					var ny = by - (dy / dist) * push_strength * delta
+
+					if typeof(b) == TYPE_DICTIONARY:
+						b["x"] = nx
+						b["y"] = ny
+					else:
+						if "x" in b: b.x = nx
+						if "y" in b: b.y = ny
+
 var GAME_MODES = {
+	"white_hole": WhiteHoleMode.new(),
 	"hot_potato": HotPotatoMode.new(),
 
     "decoy_swap": DecoySwapMode.new(),
