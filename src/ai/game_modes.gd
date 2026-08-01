@@ -73359,6 +73359,7 @@ class VerticalLavaPlatformerMode extends GameMode:
 						elif "hp" in b: b.hp = hp
 
 GAME_MODES['vertical_lava_platformer'] = VerticalLavaPlatformerMode.new()
+GAME_MODES["silent_world_mutator"] = SilentWorldMutatorMode.new()
 
 class AlternatingZoneMode extends GameMode:
 	var zone_x: float = 500.0
@@ -73463,3 +73464,27 @@ class AlternatingZoneMode extends GameMode:
 							if typeof(b) == TYPE_DICTIONARY: b["hp"] = current_hp - (damage_rate * delta)
 							else: b.set("hp", current_hp - (damage_rate * delta))
 
+
+class SilentWorldMutatorMode extends GameMode:
+	func _init():
+		self.name = "Silent World Mutator"
+		self.description = "A game mutator that makes all players completely silent, disabling sound-based traps and effects."
+		self.mutators_active = true
+		self.mutators = ["silent_world"]
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+			if alive and b_type != "spectator":
+				if typeof(b) == TYPE_DICTIONARY:
+					var current_silence = b.get("silence_timer", 0.0)
+					b["silence_timer"] = current_silence if current_silence > 2.0 else 2.0
+					var current_silencer = b.get("silencer_timer", 0.0)
+					b["silencer_timer"] = current_silencer if current_silencer > 2.0 else 2.0
+				else:
+					var current_silence = b.silence_timer if "silence_timer" in b else 0.0
+					b.silence_timer = current_silence if current_silence > 2.0 else 2.0
+					var current_silencer = b.silencer_timer if "silencer_timer" in b else 0.0
+					b.silencer_timer = current_silencer if current_silencer > 2.0 else 2.0

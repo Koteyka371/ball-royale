@@ -46758,3 +46758,21 @@ class RoamingBlackHoleMode(GameMode):
 GAME_MODES["roaming_black_hole"] = RoamingBlackHoleMode()
 from ai.noise_hazard_mode import NoiseHazardMode
 GAME_MODES['noise_hazard_mode'] = NoiseHazardMode()
+
+
+class SilentWorldMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Silent World Mutator"
+        self.description = "A game mutator that makes all players completely silent, disabling sound-based traps and effects."
+        self.mutators_active = True
+        self.mutators = ["silent_world"]
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        for b in balls:
+            if getattr(b, 'alive', False) and getattr(b, 'ball_type', '') != 'spectator':
+                b.silence_timer = max(getattr(b, 'silence_timer', 0.0), 2.0)
+                b.silencer_timer = max(getattr(b, 'silencer_timer', 0.0), 2.0)
+
+GAME_MODES['silent_world_mutator'] = SilentWorldMutatorMode()
