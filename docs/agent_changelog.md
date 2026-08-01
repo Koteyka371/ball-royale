@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1675] Orbital Debris Mutator — *2026-08-01 09:29:33 UTC*
+
+Introduces a game mode mutator where indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully.
+
+---
+
 ## [idea-1726] Chain Lightning Enhancer — *2026-08-01 08:55:19 UTC*
 
 A new booster that increases the bounce limit and damage modifier of lightning strikes.
