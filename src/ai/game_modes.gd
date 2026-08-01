@@ -1799,6 +1799,45 @@ class GameMode:
 											world.add_event("grave_trap_explosion", {"x": h_x, "y": h_y})
 										break
 
+						elif h_kind == "bone_wall":
+							var is_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else (h.active if "active" in h else (h.get_meta("active") if h.has_method("has_meta") and h.has_meta("active") else true))
+							var h_hp = h.get("hp", 1.0) if typeof(h) == TYPE_DICTIONARY else (h.hp if "hp" in h else (h.get_meta("hp") if h.has_method("has_meta") and h.has_meta("hp") else 1.0))
+
+							if not is_active or h_hp <= 0.0:
+								to_remove_grave.append(h)
+
+								var h_x = h.get("x", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.x if "x" in h else (h.get_meta("x") if h.has_method("has_meta") and h.has_meta("x") else 0.0))
+								var h_y = h.get("y", 0.0) if typeof(h) == TYPE_DICTIONARY else (h.y if "y" in h else (h.get_meta("y") if h.has_method("has_meta") and h.has_meta("y") else 0.0))
+								var h_team = h.get("owner_team", "") if typeof(h) == TYPE_DICTIONARY else (h.owner_team if "owner_team" in h else (h.get_meta("owner_team") if h.has_method("has_meta") and h.has_meta("owner_team") else ""))
+
+								var ProceduralArenaScript = load("res://src/arena/procedural_arena.gd")
+								for i in range(6):
+									var angle = i * (PI / 3.0)
+									var frag_id = hazards.size() + (randi() % 90000 + 10000) + i
+									if ProceduralArenaScript != null:
+										var frag = ProceduralArenaScript.Hazard.new(frag_id, h_x, h_y, 15.0, "bone_fragment", 30.0)
+										if frag.has_method("set_meta"):
+											frag.set_meta("duration", 2.0)
+											frag.set_meta("owner_team", h_team)
+											frag.set_meta("vx", cos(angle) * 300.0)
+											frag.set_meta("vy", sin(angle) * 300.0)
+										else:
+											frag.duration = 2.0
+											frag.owner_team = h_team
+											frag.vx = cos(angle) * 300.0
+											frag.vy = sin(angle) * 300.0
+										new_fragments.append(frag)
+									else:
+										var frag = {
+											"id": frag_id, "x": h_x, "y": h_y, "radius": 15.0, "kind": "bone_fragment", "damage": 30.0,
+											"duration": 2.0, "owner_team": h_team, "vx": cos(angle) * 300.0, "vy": sin(angle) * 300.0
+										}
+										new_fragments.append(frag)
+
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("bone_wall_shrapnel", {"x": h_x, "y": h_y})
+								continue
+
 						elif h_kind == "bone_fragment":
 							var dur = 0.0
 							if typeof(h) == TYPE_DICTIONARY:
