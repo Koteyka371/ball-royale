@@ -56510,7 +56510,101 @@ class MoltenGolemMode extends GameMode:
 		if not golem_found:
 			golem_id = null
 
+
+class MicroclimateHazardMode extends GameMode:
+	var weather_timer = 0.0
+
+	func _init():
+		super._init()
+		name = "Microclimate Hazards"
+		description = "Small moving hazards that rapidly flip between extreme weather conditions."
+		weather_timer = 0.0
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if not world.get("arena"): return
+		if not world.arena.get("hazards"): world.arena.set("hazards", [])
+
+		var hazard_class = null
+		if ResourceLoader.exists("res://src/arena/procedural_arena.gd"):
+			var script = load("res://src/arena/procedural_arena.gd")
+			if script and script.has_script_class("Hazard"):
+				hazard_class = script.Hazard
+
+		if hazard_class == null:
+			return
+
+		for i in range(3):
+			var h_id = 14000 + i
+			var arena_w = world.arena.get("width") if world.arena.get("width") != null else 1000
+			var arena_h = world.arena.get("height") if world.arena.get("height") != null else 1000
+			var hx = randf_range(100, arena_w - 100)
+			var hy = randf_range(100, arena_h - 100)
+
+			var hazard = hazard_class.new(h_id, hx, hy, 120.0, "microclimate", 0.0)
+			hazard.set_meta("weather", "heatwave")
+			hazard.set_meta("vx", randf_range(-100, 100))
+			hazard.set_meta("vy", randf_range(-100, 100))
+			hazard.set("active", true)
+			world.arena.hazards.append(hazard)
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		weather_timer += delta
+		var flip = false
+		if weather_timer >= 4.0:
+			weather_timer = 0.0
+			flip = true
+
+		for b in balls:
+			if b.get("base_speed") == null:
+				b.set("base_speed", b.get("speed") if b.get("speed") != null else 100.0)
+			if not b.get("alive") or b.get("ball_type") == "spectator":
+				continue
+			b.set("speed", b.get("base_speed"))
+
+		if world.get("arena") and world.arena.get("hazards"):
+			for h in world.arena.hazards:
+				if h.get("kind") == "microclimate":
+					if flip:
+						var cur = h.get_meta("weather") if h.has_meta("weather") else "heatwave"
+						h.set_meta("weather", "blizzard" if cur == "heatwave" else "heatwave")
+
+					if h.has_meta("vx"):
+						h.set("x", h.get("x") + h.get_meta("vx") * delta)
+						h.set("y", h.get("y") + h.get_meta("vy") * delta)
+
+						var arena_w = world.arena.get("width") if world.arena.get("width") != null else 1000
+						var arena_h = world.arena.get("height") if world.arena.get("height") != null else 1000
+						var r = h.get("radius") if h.get("radius") != null else 120.0
+
+						if h.get("x") < r or h.get("x") > arena_w - r:
+							h.set_meta("vx", -h.get_meta("vx"))
+						if h.get("y") < r or h.get("y") > arena_h - r:
+							h.set_meta("vy", -h.get_meta("vy"))
+
+					for b in balls:
+						if b.get("alive") and b.get("ball_type") != "spectator":
+							var bx = b.get("x") if b.get("x") != null else 0.0
+							var by = b.get("y") if b.get("y") != null else 0.0
+							var hx = h.get("x") if h.get("x") != null else 0.0
+							var hy = h.get("y") if h.get("y") != null else 0.0
+							var dist = sqrt(pow(bx - hx, 2) + pow(by - hy, 2))
+
+							if dist < (h.get("radius") if h.get("radius") != null else 120.0):
+								var w = h.get_meta("weather") if h.has_meta("weather") else "heatwave"
+								if w == "heatwave":
+									if world.has_method("_deal_damage"):
+										world._deal_damage(null, b, 15.0 * delta)
+									else:
+										b.set("hp", b.get("hp") - 15.0 * delta)
+								elif w == "blizzard":
+									b.set("speed", b.get("base_speed") * 0.4)
+									b.set("vx", b.get("vx") * 0.95)
+									b.set("vy", b.get("vy") * 0.95)
+
 var GAME_MODES = {
+	"microclimate_hazards": MicroclimateHazardMode.new(),
 	"molten_golem": MoltenGolemMode.new(),
 	"white_hole": WhiteHoleMode.new(),
 	"hot_potato": HotPotatoMode.new(),
