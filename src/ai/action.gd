@@ -10502,6 +10502,36 @@ func execute(strategy: String, delta: float):
 			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
 				self.ball.set_meta("use_item", false)
 
+		if inv.has("orbital_moon_item") and self.ball.get("use_item", false):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				for i in range(3):
+					var om_id = arena.hazards.size() + i + randi() % 10000
+					var moon = null
+					if load("res://src/arena/procedural_arena.gd") != null:
+						moon = load("res://src/arena/procedural_arena.gd").Hazard.new(om_id, self.ball.x, self.ball.y, 10.0, "orbital_moon", 15.0)
+						var owner_id = -1
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("id"): owner_id = self.ball.id
+						elif typeof(self.ball) == TYPE_OBJECT and "id" in self.ball: owner_id = self.ball.id
+						moon.set_meta("owner_id", owner_id)
+						moon.set_meta("orbit_angle", (2.0 * PI / 3.0) * i)
+						moon.set_meta("orbit_radius", 45.0)
+						moon.set_meta("duration", 15.0)
+						arena.hazards.append(moon)
+			inv.erase("orbital_moon_item")
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["inventory"] = inv
+			elif "inventory" in self.ball:
+				self.ball.inventory = inv
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("inventory", inv)
+			if "use_item" in self.ball:
+				self.ball.use_item = false
+			elif typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["use_item"] = false
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("use_item", false)
+
 		if inv.has("reverse_gravity_item") and self.ball.get("use_item", false):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
