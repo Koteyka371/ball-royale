@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1735] Magnetic Storm Weather — *2026-08-01 05:01:11 UTC*
+
+Add a magnetic storm weather event that aggressively pulls metallic balls (like metal_drone) toward each other and disables tracking projectiles.
+
+---
+
 ## [idea-1742] White Hole Repulsor Mode — *2026-08-01 04:53:29 UTC*
 
 A massive white hole sits in the center of the arena, constantly repelling players towards the outer boundary. Players must fight to stay in the center as the arena slowly shrinks from the edges.
