@@ -73007,16 +73007,19 @@ class QuantumWormholeMode extends GameMode:
 		wormholes = []
 		setup_done = false
 
+		var pad = 50.0
+		var rand = RandomNumberGenerator.new()
+		rand.randomize()
 		var w1 = {
-			"x": 150.0,
-			"y": arena_h / 2.0,
+			"x": rand.randf_range(pad, arena_w - pad),
+			"y": rand.randf_range(pad, arena_h - pad),
 			"radius": 50.0,
 			"cooldown": 0.0,
 			"linked_idx": 1
 		}
 		var w2 = {
-			"x": arena_w - 150.0,
-			"y": arena_h / 2.0,
+			"x": rand.randf_range(pad, arena_w - pad),
+			"y": rand.randf_range(pad, arena_h - pad),
 			"radius": 50.0,
 			"cooldown": 0.0,
 			"linked_idx": 0

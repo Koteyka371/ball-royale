@@ -44,12 +44,23 @@ def test_quantum_wormhole_mode():
     assert isinstance(mode, QuantumWormholeMode)
 
     world = DummyWorld()
-    # Ball inside the first wormhole zone (x=150, y=500)
-    b = DummyBall(150.0, 500.0)
+
+    # Run setup to generate wormholes
+    mode.setup(world, [])
+    mode.setup_done = True
+
+    w1 = mode.wormholes[0]
+    w2 = mode.wormholes[1]
+
+    # Ball inside the first wormhole zone
+    b = DummyBall(w1["x"], w1["y"])
     balls = [b]
 
-    # Run the setup manually or let tick handle it
-    mode.setup(world, balls)
+    # Put hazard and projectile in the first wormhole
+    world.arena.hazards[0].x = w1["x"]
+    world.arena.hazards[0].y = w1["y"]
+    world.projectiles[0].x = w1["x"]
+    world.projectiles[0].y = w1["y"]
 
     # Tick should trigger teleportation
     orig_vx = b.vx
@@ -59,8 +70,8 @@ def test_quantum_wormhole_mode():
 
     assert mode.setup_done
 
-    linked_x = 1000.0 - 150.0
-    linked_y = 500.0
+    linked_x = w2["x"]
+    linked_y = w2["y"]
 
     # Ball should have teleported
     assert b.x == linked_x
