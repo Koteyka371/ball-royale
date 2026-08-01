@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1582] Sniper's Nest Deployable — *2026-08-01 08:19:58 UTC*
+
+An item that players can drop to create a small zone. Any ball inside the zone gains a massive boost to bullet velocity and attack range, but takes double damage from incoming attacks.
+
+---
+
 ## [idea-1732] Weather-Affected AI Vision — *2026-08-01 07:44:26 UTC*
 
 Adjust AI perception ranges dynamically based on severe weather. For example, fog or blizzards drastically reduce the perception_radius of standard AIs, making stealth builds more viable, while clear weather increases it.
