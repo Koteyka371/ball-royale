@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1599] Chain Lightning Relay — *2026-08-01 22:54:05 UTC*
+
+A new hazard or deployable item that acts as a chain lightning relay. When struck by chain lightning (or any electrical effect), it amplifies the damage by 50% and extends the maximum chain jumps by 2, before passing it on to the next targets in range. It also absorbs nearby small electrical attacks to charge up a massive AoE burst.
+
+---
+
 ## [idea-1752] Trickster Mirror Image Dash — *2026-08-01 22:54:00 UTC*
 
 Trickster can dash a short distance and leave behind a temporary mirror image that mimics their previous movement path for 2 seconds before dissipating, adding confusing mobility.
