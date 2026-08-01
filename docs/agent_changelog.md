@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1729] Decoy Swarm Skill — *2026-08-01 11:21:23 UTC*
+
+An active skill that instantly deploys 3 fake balls around the user and briefly cloaks the user for 2 seconds, causing immense confusion during chaotic team fights.
+
+---
+
 ## [idea-1751] Trickster Decoy Resonance — *2026-08-01 10:23:35 UTC*
 
 When Trickster swaps places with a decoy using their skill, it unleashes a small resonance wave at both the origin and destination that briefly slows enemies caught in the radius.
