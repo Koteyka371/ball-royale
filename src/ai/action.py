@@ -11595,9 +11595,9 @@ class Action:
                                     if hasattr(self, "_spawn_skill_particles"):
                                         self._spawn_skill_particles("lightning")
                                     continue
-                                if b_type == "lightning_rod" or getattr(self.ball, "kind", "") == "deployable_lightning_rod":
+                                if b_type == "lightning_rod" or getattr(self.ball, "kind", "") in ["deployable_lightning_rod", "chain_lightning_relay"]:
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100), getattr(self.ball, "hp", 100) + hazard.damage)
-                                    if getattr(self.ball, "kind", "") == "deployable_lightning_rod":
+                                    if getattr(self.ball, "kind", "") in ["deployable_lightning_rod", "chain_lightning_relay"]:
                                         self.ball.charge = getattr(self.ball, "charge", 0.0) + hazard.damage
                                     else:
                                         self.ball.supercharge_timer = 5.0
