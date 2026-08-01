@@ -1,6 +1,9 @@
 
 
 import math
+import random
+import random as _rnd
+import math as _mth
 
 class WeekendBoss:
     def __init__(self, id_val, x, y):
@@ -1605,8 +1608,34 @@ class GameMode:
                                     if hasattr(nemesis, "take_damage"): nemesis.take_damage(getattr(d, "damage", 15.0))
                                     else: nemesis.hp = getattr(nemesis, "hp", 100) - getattr(d, "damage", 15.0)
                                     if d in world.arena.hazards: world.arena.hazards.remove(d)
+            scramblers = [h for h in world.arena.hazards if getattr(h, "kind", "") == "signal_scrambler"]
+            for b in balls:
+                if not getattr(b, "alive", False): continue
+                is_scrambled_ai = False
+                for s in scramblers:
+                    if ((getattr(s, "x", 0) - getattr(b, "x", 0))**2 + (getattr(s, "y", 0) - getattr(b, "y", 0))**2) < getattr(s, "radius", 400.0)**2:
+                        is_scrambled_ai = True
+                        break
+                if is_scrambled_ai:
+                    if not getattr(b, "is_scrambled_ai", False):
+                        b.is_scrambled_ai = True
+                        b.base_perception_radius_scrambler = getattr(b, "perception_radius", 250.0)
+                    b.perception_radius = 30.0
+                else:
+                    if getattr(b, "is_scrambled_ai", False):
+                        b.is_scrambled_ai = False
+                        if hasattr(b, "base_perception_radius_scrambler"):
+                            b.perception_radius = b.base_perception_radius_scrambler
+                            delattr(b, "base_perception_radius_scrambler")
+
             missiles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "homing_missile"]
             for m in missiles:
+                is_scrambled_missile = False
+                for s in scramblers:
+                    if ((getattr(s, "x", 0) - getattr(m, "x", 0))**2 + (getattr(s, "y", 0) - getattr(m, "y", 0))**2) < getattr(s, "radius", 400.0)**2:
+                        is_scrambled_missile = True
+                        break
+
                 target_x = getattr(world.arena, "safe_zone_x", getattr(world.arena, "width", 1000) / 2)
                 target_y = getattr(world.arena, "safe_zone_y", getattr(world.arena, "height", 1000) / 2)
 
@@ -1645,10 +1674,17 @@ class GameMode:
                         setattr(m, "vx", (dx/dist) * 300.0)
                         setattr(m, "vy", (dy/dist) * 300.0)
 
-                    desired_vx = (dx/dist) * 300.0
-                    desired_vy = (dy/dist) * 300.0
+                    if is_scrambled_missile:
+                        if not hasattr(m, "scramble_angle"):
+                            m.scramble_angle = _rnd.uniform(0, 6.28)
+                        m.scramble_angle += 15.0 * delta
+                        desired_vx = 300.0 * _mth.cos(m.scramble_angle)
+                        desired_vy = 300.0 * _mth.sin(m.scramble_angle)
+                    else:
+                        desired_vx = (dx/dist) * 300.0
+                        desired_vy = (dy/dist) * 300.0
 
-                    steer_factor = 5.0 * delta
+                    steer_factor = 5.0 * delta if not is_scrambled_missile else 10.0 * delta
                     m.vx += (desired_vx - m.vx) * steer_factor
                     m.vy += (desired_vy - m.vy) * steer_factor
 
@@ -2812,8 +2848,8 @@ class BattleRoyaleMode(GameMode):
                                     world.add_event("weather_change", {"weather": self.weather})
                                 if self.weather == "wind":
                                     rnd = getattr(self, "random", __import__("random"))
-                                    self.wind_dx = rnd.uniform(-50.0, 50.0)
-                                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+                                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
 
             # Decay progress if nobody is there
             if not teams_present:
@@ -2844,8 +2880,8 @@ class BattleRoyaleMode(GameMode):
                     world.add_event("weather_change", {"weather": self.weather})
 
             if self.weather == "wind":
-                self.wind_dx = rnd.uniform(-50.0, 50.0)
-                self.wind_dy = rnd.uniform(-50.0, 50.0)
+                self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                self.wind_dy = _rnd.uniform(-50.0, 50.0)
 
         if hasattr(world, "arena"):
             world.arena.is_foggy = (self.weather in ["fog", "snow", "blizzard"])
@@ -3599,14 +3635,14 @@ class BattleRoyaleMode(GameMode):
                 arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
                 arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
                 rnd = getattr(self, "random", __import__("random"))
-                tx = rnd.uniform(100.0, arena_width - 100.0)
-                ty = rnd.uniform(100.0, arena_height - 100.0)
+                tx = _rnd.uniform(100.0, arena_width - 100.0)
+                ty = _rnd.uniform(100.0, arena_height - 100.0)
                 try:
                     from arena.procedural_arena import Hazard
                     t_id = len(getattr(world.arena, "hazards", [])) + rnd.randint(10000, 99999)
                     tornado = Hazard(id=t_id, x=tx, y=ty, radius=50.0, kind="tornado", damage=10.0)
-                    setattr(tornado, "vx", rnd.uniform(-100.0, 100.0))
-                    setattr(tornado, "vy", rnd.uniform(-100.0, 100.0))
+                    setattr(tornado, "vx", _rnd.uniform(-100.0, 100.0))
+                    setattr(tornado, "vy", _rnd.uniform(-100.0, 100.0))
                     setattr(tornado, "duration", 9999.0)
                     if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                         world.arena.hazards.append(tornado)
@@ -3623,8 +3659,8 @@ class BattleRoyaleMode(GameMode):
                 arena_width = getattr(world.arena, "width", 1000)
                 arena_height = getattr(world.arena, "height", 1000)
                 rnd = getattr(self, "random", __import__("random"))
-                x = rnd.uniform(200, arena_width - 200)
-                y = rnd.uniform(200, arena_height - 200)
+                x = _rnd.uniform(200, arena_width - 200)
+                y = _rnd.uniform(200, arena_height - 200)
 
                 try:
                     from arena.procedural_arena import Hazard
@@ -3725,8 +3761,8 @@ class BattleRoyaleMode(GameMode):
                 booster_kinds = ["tracker_booster", "tornado_booster", "cursed_relic", "blink_relic", "vampiric_aura_booster", "damage_link_booster", "speed_booster", "hologram_booster", "holographic_decoy_module", "damage_booster", "hp_booster", "vision_booster", "stamina_booster", "pull_booster", "nemesis_booster", "nemesis_shield_booster", "nemesis_drone_booster", "nemesis_compass_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "weather_scanner_item", "aura_booster", "aura_amplifier_trap_booster", "hazard_immunity_booster", "emp_immunity_booster", "cleanse_booster", "fake_booster", "dummy_item", "fake_healing_orb", "cursed_booster", "grapple_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "mirror_shield_booster", "half_reflect_shield_booster", "damage_reflection_booster", "layer_reflect_shield_booster", "projectile_reflect_booster", "deflector_shield_booster", "bounce_shield_booster", "rearm_token", "gravity_well_booster", "reverse_gravity_item", "gravity_boots", "overclock_booster", "chronosphere_booster", "ghost_mode_booster", "sticky_mine_booster", "sticky_bomb_booster", "clone_booster", "flashbang_booster", "nemesis_drone_booster", "decoy_flare_item", "kinetic_shield_booster", "bumper_synergy_booster", "zero_gravity_trap_item", "invisible_status_trap_item", "reverse_gravity_booster", "laser_sight_attachment", "tether_booster", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "quantum_relay_booster", "quantum_swap_powerup", "trap_disarm_kit", "forecast_booster", "weather_booster", "juggernaut_booster", "deployable_time_anomaly", "deployable_decoy_swap_item", "pet_item", "artillery_pet_item", "hazard_jar_item", "ammo_pack", "orbital_mine_immunity_booster", "lightning_rod_item", "orbital_moon_item"]
                 chosen_kind = rnd.choice(booster_kinds)
                 b_id = 9000 + len(world.boosters) + rnd.randint(0, 1000)
-                b_x = rnd.uniform(100, arena_width - 100)
-                b_y = rnd.uniform(100, arena_height - 100)
+                b_x = _rnd.uniform(100, arena_width - 100)
+                b_y = _rnd.uniform(100, arena_height - 100)
                 new_booster = Booster(b_id, b_x, b_y, chosen_kind)
                 world.boosters.append(new_booster)
 
@@ -3766,8 +3802,8 @@ class BattleRoyaleMode(GameMode):
                     world.add_event("weather_change", {"weather": self.weather})
                 if self.weather == "wind":
                     rnd = getattr(self, "random", __import__("random"))
-                    self.wind_dx = rnd.uniform(-50.0, 50.0)
-                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
         else:
             self.weather_timer += delta
             time_until = 15.0 - self.weather_timer
@@ -3794,8 +3830,8 @@ class BattleRoyaleMode(GameMode):
                         world.add_event("weather_change", {"weather": self.weather})
 
                 if self.weather == "wind":
-                    self.wind_dx = rnd.uniform(-50.0, 50.0)
-                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
 
         season_num = 1
         if hasattr(world, "leaderboard_manager"):
@@ -8878,8 +8914,8 @@ class WeatherChaosMode(GameMode):
                                     world.add_event("weather_change", {"weather": self.weather})
                                 if self.weather == "wind":
                                     rnd = getattr(self, "random", __import__("random"))
-                                    self.wind_dx = rnd.uniform(-50.0, 50.0)
-                                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+                                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
 
             # Decay progress if nobody is there
             if not teams_present:
@@ -8907,8 +8943,8 @@ class WeatherChaosMode(GameMode):
                     world.add_event("weather_change", {"weather": self.weather})
                 if self.weather == "wind":
                     rnd = getattr(self, "random", __import__("random"))
-                    self.wind_dx = rnd.uniform(-50.0, 50.0)
-                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
         else:
             self.weather_timer += delta
 
@@ -8959,8 +8995,8 @@ class WeatherChaosMode(GameMode):
                         world.add_event("weather_change", {"weather": self.weather})
 
                 if self.weather == "wind":
-                    self.wind_dx = rnd.uniform(-50.0, 50.0)
-                    self.wind_dy = rnd.uniform(-50.0, 50.0)
+                    self.wind_dx = _rnd.uniform(-50.0, 50.0)
+                    self.wind_dy = _rnd.uniform(-50.0, 50.0)
 
         # Apply weather effects to the arena
         season_num = 1
@@ -34684,6 +34720,8 @@ class WhiteHoleMode(SafeZoneMode):
 
 import math
 import random
+import random as _rnd
+import math as _mth
 
 class MoltenGolemMode(GameMode):
     def __init__(self):
@@ -34962,7 +35000,10 @@ class MicroclimateHazardMode(GameMode):
                                     b.vx = getattr(b, "vx", 0) * 0.95
                                     b.vy = getattr(b, "vy", 0) * 0.95
 
+from ai.signal_scrambler_mode import SignalScramblerMode
+
 GAME_MODES = {
+    'signal_scrambler': SignalScramblerMode(),
     'microclimate_hazards': MicroclimateHazardMode(),
     'molten_golem': MoltenGolemMode(),
     'white_hole': WhiteHoleMode(),
