@@ -73689,3 +73689,186 @@ class SilentWorldMutatorMode extends GameMode:
 					b.silencer_timer = current_silencer if current_silencer > 2.0 else 2.0
 
 GAME_MODES["signal_scrambler"] = load("res://src/ai/signal_scrambler_mode.gd").new()
+
+
+class MirrorCloneEventMode extends GameMode:
+	var event_timer = 20.0
+	var is_cloned = false
+	var clone_duration = 10.0
+	var clone_timer = 0.0
+
+	func _init():
+		name = "Mirror Clone Event"
+		description = "Every player is cloned for 10 seconds. Clones mimic inputs in reverse. Destroying a clone deals damage to the original."
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		event_timer -= delta
+
+		if event_timer <= 0.0 and not is_cloned:
+			is_cloned = true
+			clone_timer = clone_duration
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("mirror_clone_start", {"message": "Mirror Clones spawned!"})
+			elif typeof(world) == TYPE_DICTIONARY and world.has("add_event") and typeof(world.add_event) == TYPE_CALLABLE:
+				world.add_event.call("mirror_clone_start", {"message": "Mirror Clones spawned!"})
+
+			var new_clones = []
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b.alive
+
+				var is_decoy = false
+				if typeof(b) == TYPE_OBJECT and "is_decoy" in b: is_decoy = b.is_decoy
+				elif typeof(b) == TYPE_DICTIONARY and b.has("is_decoy"): is_decoy = b.is_decoy
+
+				var is_mirror_clone = false
+				if typeof(b) == TYPE_OBJECT and "is_mirror_clone" in b: is_mirror_clone = b.is_mirror_clone
+				elif typeof(b) == TYPE_DICTIONARY and b.has("is_mirror_clone"): is_mirror_clone = b.is_mirror_clone
+
+				var b_type = ""
+				if typeof(b) == TYPE_OBJECT and "ball_type" in b: b_type = b.ball_type
+				elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b.ball_type
+
+				if is_alive and not is_decoy and not is_mirror_clone and b_type != "spectator":
+					var clone = {}
+					var b_id = null
+					if typeof(b) == TYPE_OBJECT and "id" in b: b_id = b.id
+					elif typeof(b) == TYPE_DICTIONARY and b.has("id"): b_id = b.id
+
+					var b_x = 0.0
+					if typeof(b) == TYPE_OBJECT and "x" in b: b_x = b.x
+					elif typeof(b) == TYPE_DICTIONARY and b.has("x"): b_x = b.x
+
+					var b_y = 0.0
+					if typeof(b) == TYPE_OBJECT and "y" in b: b_y = b.y
+					elif typeof(b) == TYPE_DICTIONARY and b.has("y"): b_y = b.y
+
+					var b_vx = 0.0
+					if typeof(b) == TYPE_OBJECT and "vx" in b: b_vx = b.vx
+					elif typeof(b) == TYPE_DICTIONARY and b.has("vx"): b_vx = b.vx
+
+					var b_vy = 0.0
+					if typeof(b) == TYPE_OBJECT and "vy" in b: b_vy = b.vy
+					elif typeof(b) == TYPE_DICTIONARY and b.has("vy"): b_vy = b.vy
+
+					var b_radius = 15.0
+					if typeof(b) == TYPE_OBJECT and "radius" in b: b_radius = b.radius
+					elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+
+					var b_hp = 100.0
+					if typeof(b) == TYPE_OBJECT and "hp" in b: b_hp = b.hp
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): b_hp = b.hp
+
+					var b_max_hp = 100.0
+					if typeof(b) == TYPE_OBJECT and "max_hp" in b: b_max_hp = b.max_hp
+					elif typeof(b) == TYPE_DICTIONARY and b.has("max_hp"): b_max_hp = b.max_hp
+
+					var b_team = "neutral"
+					if typeof(b) == TYPE_OBJECT and "team" in b: b_team = b.team
+					elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b.team
+
+					clone["owner_id"] = b_id
+
+					var next_id = 88888 + (b_id if b_id != null else 0)
+					if typeof(world) == TYPE_OBJECT and "next_id" in world:
+						next_id = world.next_id
+						world.next_id += 1
+					elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+						next_id = world.next_id
+						world.next_id += 1
+
+					clone["id"] = next_id
+					clone["x"] = b_x
+					clone["y"] = b_y
+					clone["vx"] = b_vx
+					clone["vy"] = b_vy
+					clone["radius"] = b_radius
+					clone["hp"] = b_hp
+					clone["max_hp"] = b_max_hp
+					clone["alive"] = true
+					clone["team"] = b_team
+					clone["is_decoy"] = true
+					clone["is_mirror_clone"] = true
+					clone["decoy_type"] = "mirror_clone"
+					clone["kind"] = "mirror_clone"
+					clone["decoy_timer"] = 10.0
+					clone["prev_hp"] = b_hp
+					new_clones.append(clone)
+
+			if typeof(world) == TYPE_OBJECT and "balls" in world:
+				for c in new_clones:
+					world.balls.append(c)
+			elif typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+				for c in new_clones:
+					world.balls.append(c)
+
+		elif is_cloned:
+			clone_timer -= delta
+			if clone_timer <= 0.0:
+				is_cloned = false
+				event_timer = 20.0
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("mirror_clone_end", {"message": "Mirror Clones vanished!"})
+				elif typeof(world) == TYPE_DICTIONARY and world.has("add_event") and typeof(world.add_event) == TYPE_CALLABLE:
+					world.add_event.call("mirror_clone_end", {"message": "Mirror Clones vanished!"})
+
+				for b in balls:
+					var is_mirror_clone = false
+					if typeof(b) == TYPE_OBJECT and "is_mirror_clone" in b: is_mirror_clone = b.is_mirror_clone
+					elif typeof(b) == TYPE_DICTIONARY and b.has("is_mirror_clone"): is_mirror_clone = b.is_mirror_clone
+					if is_mirror_clone:
+						if typeof(b) == TYPE_OBJECT and "alive" in b: b.alive = false
+						elif typeof(b) == TYPE_DICTIONARY: b["alive"] = false
+
+			for b in balls:
+				var is_mirror_clone = false
+				if typeof(b) == TYPE_OBJECT and "is_mirror_clone" in b: is_mirror_clone = b.is_mirror_clone
+				elif typeof(b) == TYPE_DICTIONARY and b.has("is_mirror_clone"): is_mirror_clone = b.is_mirror_clone
+
+				var is_alive = false
+				if typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b.alive
+
+				if is_mirror_clone and is_alive:
+					var current_hp = 0.0
+					if typeof(b) == TYPE_OBJECT and "hp" in b: current_hp = b.hp
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"): current_hp = b.hp
+
+					var prev_hp = current_hp
+					if typeof(b) == TYPE_OBJECT and "prev_hp" in b: prev_hp = b.prev_hp
+					elif typeof(b) == TYPE_DICTIONARY and b.has("prev_hp"): prev_hp = b.prev_hp
+
+					if current_hp < prev_hp:
+						var damage_taken = prev_hp - current_hp
+						if typeof(b) == TYPE_OBJECT and "prev_hp" in b: b.prev_hp = current_hp
+						elif typeof(b) == TYPE_DICTIONARY: b["prev_hp"] = current_hp
+
+						var owner_id = null
+						if typeof(b) == TYPE_OBJECT and "owner_id" in b: owner_id = b.owner_id
+						elif typeof(b) == TYPE_DICTIONARY and b.has("owner_id"): owner_id = b.owner_id
+
+						for owner in balls:
+							var owner_alive = false
+							if typeof(owner) == TYPE_OBJECT and "alive" in owner: owner_alive = owner.alive
+							elif typeof(owner) == TYPE_DICTIONARY and owner.has("alive"): owner_alive = owner.alive
+
+							var o_id = null
+							if typeof(owner) == TYPE_OBJECT and "id" in owner: o_id = owner.id
+							elif typeof(owner) == TYPE_DICTIONARY and owner.has("id"): o_id = owner.id
+
+							if o_id != null and o_id == owner_id and owner_alive:
+								var o_hp = 0.0
+								if typeof(owner) == TYPE_OBJECT and "hp" in owner: o_hp = owner.hp
+								elif typeof(owner) == TYPE_DICTIONARY and owner.has("hp"): o_hp = owner.hp
+
+								o_hp -= damage_taken
+
+								if typeof(owner) == TYPE_OBJECT and "hp" in owner: owner.hp = o_hp
+								elif typeof(owner) == TYPE_DICTIONARY: owner["hp"] = o_hp
+
+								if o_hp <= 0:
+									if typeof(owner) == TYPE_OBJECT and "alive" in owner: owner.alive = false
+									elif typeof(owner) == TYPE_DICTIONARY: owner["alive"] = false
+								break
+GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode.new()
