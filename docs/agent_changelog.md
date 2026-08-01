@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1733] Geyser Hazard — *2026-08-01 12:49:58 UTC*
+
+Add a new geyser hazard that erupts periodically, launching players high into the air (disabling ground friction and granting temporary immunity to ground hazards) but dealing fall damage upon landing.
+
+---
+
 ## [idea-1756] Chameleon Mimic Enemy — *2026-08-01 12:35:19 UTC*
 
 A new AI enemy type that spawns disguised as a random booster or health pack. If a player approaches within a short distance, it transforms into an aggressive fast-moving enemy, forcing players to use perception skills or cautiously approach loot.
