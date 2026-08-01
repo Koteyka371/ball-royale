@@ -31005,7 +31005,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -37616,6 +37616,131 @@ func _use_skill():
                                 self.ball.skill_timer = 0.5
                             elif self.ball.has_method("set_meta"):
                                 self.ball.set_meta("skill_timer", 0.5)
+
+        elif skill_name == "trickster_dash":
+            _spawn_skill_particles("dash")
+            var dash_dist = 150.0
+
+            if self.world.has_method("get") and self.world.get("balls") != null:
+                var clone = {}
+                if typeof(self.ball) == TYPE_OBJECT:
+                    clone = self.ball.duplicate()
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    clone = self.ball.duplicate(true)
+
+                var next_id_val = randi_range(10000, 99999)
+                if "next_id" in self.world:
+                    next_id_val = self.world.next_id
+                    self.world.next_id += 1
+
+                if typeof(clone) == TYPE_OBJECT:
+                    if clone.has_method("set_meta"):
+                        clone.set_meta("id", next_id_val)
+                    elif "id" in clone:
+                        clone.id = next_id_val
+                else:
+                    clone["id"] = next_id_val
+
+                var max_hp = 100.0
+                if "max_hp" in self.ball: max_hp = self.ball.max_hp
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("max_hp"): max_hp = self.ball.get_meta("max_hp")
+
+                if typeof(clone) == TYPE_OBJECT:
+                    clone.set("hp", max_hp * 0.5)
+                    clone.set("max_hp", max_hp * 0.5)
+                    clone.set("damage", 0.0)
+                    if clone.has_method("set_meta"):
+                        clone.set_meta("is_decoy_clone", true)
+                        clone.set_meta("is_illusion", true)
+                        clone.set_meta("mimic_owner", self.ball.get("id") if "id" in self.ball else null)
+                        clone.set_meta("mimic_timer", 2.0)
+                        clone.set_meta("is_mirroring", true)
+                        clone.set_meta("skill", null)
+                        clone.set_meta("SKILL", null)
+                        clone.set_meta("active_skill", null)
+                        clone.set_meta("skill_timer", 9999.0)
+                        clone.set_meta("is_decoy", true)
+                        clone.set_meta("decoy_type", "mirror_clone")
+                        clone.set_meta("decoy_timer", 2.0)
+                        clone.set_meta("team", self.ball.get("team") if "team" in self.ball else "neutral")
+                        clone.set_meta("mirror_center_x", self.ball.x)
+                        clone.set_meta("mirror_center_y", self.ball.y)
+                else:
+                    clone["hp"] = max_hp * 0.5
+                    clone["max_hp"] = max_hp * 0.5
+                    clone["damage"] = 0.0
+                    clone["is_decoy_clone"] = true
+                    clone["is_illusion"] = true
+                    clone["mimic_owner"] = self.ball.get("id") if "id" in self.ball else null
+                    clone["mimic_timer"] = 2.0
+                    clone["is_mirroring"] = true
+                    clone["skill"] = null
+                    clone["SKILL"] = null
+                    clone["active_skill"] = null
+                    clone["skill_timer"] = 9999.0
+                    clone["is_decoy"] = true
+                    clone["decoy_type"] = "mirror_clone"
+                    clone["decoy_timer"] = 2.0
+                    clone["team"] = self.ball.get("team") if "team" in self.ball else "neutral"
+                    clone["mirror_center_x"] = self.ball.x
+                    clone["mirror_center_y"] = self.ball.y
+
+                self.world.balls.append(clone)
+
+            var enemies = _get_enemies()
+            if enemies.size() == 0 and self.world.has_method("get") and self.world.get("balls") != null:
+                var my_team = self.ball.get("team") if typeof(self.ball) == TYPE_OBJECT and "team" in self.ball else (self.ball["team"] if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team") else "")
+                for b in self.world.balls:
+                    var b_team = b.get("team") if typeof(b) == TYPE_OBJECT and "team" in b else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else "")
+                    if b_team != my_team and b_team != "":
+                        enemies.append(b)
+            var target = null
+            var alive_enemies = []
+            for e in enemies:
+                var ehp = 1.0
+                if typeof(e) == TYPE_OBJECT and "hp" in e: ehp = e.hp
+                elif typeof(e) == TYPE_DICTIONARY and e.has("hp"): ehp = e.hp
+                if ehp > 0:
+                    alive_enemies.append(e)
+
+            if alive_enemies.size() > 0:
+                var closest_dist = 999999999.0
+                for e in alive_enemies:
+                    var dsq = (e.x - self.ball.x) * (e.x - self.ball.x) + (e.y - self.ball.y) * (e.y - self.ball.y)
+                    if dsq < closest_dist:
+                        closest_dist = dsq
+                        target = e
+
+            var dir_x = 0.0
+            var dir_y = 0.0
+            if target != null:
+                var dx = target.x - self.ball.x
+                var dy = target.y - self.ball.y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist > 0.0001:
+                    dir_x = dx / dist
+                    dir_y = dy / dist
+                else:
+                    var angle = randf_range(0.0, 2.0 * PI)
+                    dir_x = cos(angle)
+                    dir_y = sin(angle)
+            else:
+                var angle = randf_range(0.0, 2.0 * PI)
+                dir_x = cos(angle)
+                dir_y = sin(angle)
+
+            self.ball.x += dir_x * dash_dist
+            self.ball.y += dir_y * dash_dist
+
+            var cd = 5.0
+            if "SKILL_COOLDOWN" in self.ball: cd = self.ball.SKILL_COOLDOWN
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("SKILL_COOLDOWN"): cd = self.ball.get_meta("SKILL_COOLDOWN")
+            if typeof(self.ball) == TYPE_OBJECT:
+                if self.ball.has_method("set"):
+                    self.ball.set("skill_timer", cd)
+            else:
+                self.ball["skill_timer"] = cd
+
         elif skill_name == "trickster_smoke_bomb":
             if "arena" in self.world and "hazards" in self.world.arena:
                 var ProceduralArena = load("res://src/arena/procedural_arena.gd")
