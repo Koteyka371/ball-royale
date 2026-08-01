@@ -12413,8 +12413,8 @@ class Action:
                                     self.ball.take_damage(rate)
                                 elif hasattr(self.ball, "hp"):
                                     self.ball.hp -= rate
-                                    if self.ball.hp <= 0:
-                                        self.ball.alive = False
+                                if hasattr(self.ball, "hp") and self.ball.hp <= 0:
+                                    self.ball.alive = False
                             else:
                                 if hasattr(self.ball, "hp"):
                                     self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + rate)
@@ -12422,7 +12422,7 @@ class Action:
                             # Accumulate healing in the hazard
                             if not hasattr(hazard, "accumulated_healing"):
                                 hazard.accumulated_healing = 0.0
-                            hazard.accumulated_healing += hazard_damage
+                            hazard.accumulated_healing += rate
 
                             # Find ball with lowest HP to heal
                             lowest_hp_ball = None

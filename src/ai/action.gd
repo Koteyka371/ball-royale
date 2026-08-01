@@ -24268,8 +24268,8 @@ func execute(strategy: String, delta: float):
                                 self.ball.take_damage(hazard_damage)
                             elif "hp" in self.ball:
                                 self.ball.hp -= hazard_damage
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = false
+                            if "hp" in self.ball and self.ball.hp <= 0:
+                                self.ball.alive = false
                         else:
                             if "hp" in self.ball:
                                 var b_max = self.ball.max_hp if "max_hp" in self.ball else 100.0
