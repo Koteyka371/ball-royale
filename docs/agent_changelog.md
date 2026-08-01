@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1762] Tethered Teams Mode — *2026-08-01 23:00:21 UTC*
+
+A duos or squads mode where players on the same team are physically tethered together by an elastic band. If they move too far apart, they are pulled back. The tether itself can deal damage to enemies passing through it.
+
+---
+
 ## [idea-1599] Chain Lightning Relay — *2026-08-01 22:54:05 UTC*
 
 A new hazard or deployable item that acts as a chain lightning relay. When struck by chain lightning (or any electrical effect), it amplifies the damage by 50% and extends the maximum chain jumps by 2, before passing it on to the next targets in range. It also absorbs nearby small electrical attacks to charge up a massive AoE burst.
