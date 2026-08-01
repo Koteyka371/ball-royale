@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1679] Holographic Decoy Modules — *2026-08-01 00:56:40 UTC*
+
+Players can equip a holographic decoy module that periodically spawns illusory clones which perfectly mimic the player's movements and attacks, but deal zero damage. They explode into a small blinding flash when destroyed, confusing enemies.
+
+---
+
 ## [idea-1737] Faction Superweapons — *2026-08-01 00:16:41 UTC*
 
 If a faction is losing heavily, they get access to a global superweapon that can instantly eliminate half of the enemy team's players.
