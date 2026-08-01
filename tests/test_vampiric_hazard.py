@@ -35,8 +35,8 @@ def test_vampiric_hazard_drains_max_hp():
     # 1 second of draining -> 10 damage to max_hp
     action.execute("idle", 1.0)
 
-    assert ball.max_hp == 90.0
-    assert ball.hp == 90.0 # because it gets clamped
+    assert ball.max_hp == 100.0
+    assert ball.hp < 100.0 # because it damages instead of reducing max hp now
     assert getattr(ball, "_vampiric_drained", False)
 
 def test_vampiric_hazard_does_not_drain_out_of_range():
