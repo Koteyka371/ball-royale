@@ -1878,6 +1878,30 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+        # LootBug ambush logic
+        if getattr(self.ball, "BALL_TYPE", "") == "loot_bug" and getattr(self.ball, "is_disguised", False):
+            import math
+            trigger_dist = getattr(self.ball, "trigger_distance", 60.0)
+            ambush = False
+            for e in getattr(self.world, "balls", []):
+                if e.id != self.ball.id and getattr(e, "alive", True) and not getattr(e, "is_decoy", False):
+                    # Check if it's an actual enemy
+                    if getattr(e, "team", "") != getattr(self.ball, "team", "") or not getattr(self.ball, "team", ""):
+                        dx = e.x - self.ball.x
+                        dy = e.y - self.ball.y
+                        if math.sqrt(dx*dx + dy*dy) <= trigger_dist:
+                            ambush = True
+                            break
+            if ambush:
+                self.ball.is_disguised = False
+                self.ball.speed = getattr(self.ball, "base_speed", 5.0)
+                # Apply short speed boost when ambushing
+                self.ball.speed_multiplier = 1.5
+                self.ball.speed_multiplier_timer = 2.0
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    self._spawn_skill_particles("ambush_dust")
+
+
         # Clone death handler for holographic decoy module is handled in the damage phase, but spawn here
         if getattr(self.ball, "holographic_decoy_timer", 0.0) > 0.0:
             self.ball.holographic_decoy_timer -= delta
@@ -13621,6 +13645,9 @@ class Action:
                         my_stealth_zones.append(h)
 
         def is_visible(enemy) -> bool:
+            if getattr(enemy, "BALL_TYPE", "") == "loot_bug" and getattr(enemy, "is_disguised", False):
+                return False
+
 
             if getattr(enemy, "ball_type", "") == "chameleon":
                 blend = getattr(enemy, "blend_amount", 0.0)
@@ -13867,7 +13894,20 @@ class Action:
                 if math.sqrt(dx*dx + dy*dy) <= perception_radius:
                     boosters.append(c)
 
-
+        if hasattr(self.world, "balls"):
+            for b in self.world.balls:
+                if getattr(b, "BALL_TYPE", "") == "loot_bug" and getattr(b, "is_disguised", False) and getattr(b, "alive", True):
+                    dx = getattr(b, "x", 0) - self.ball.x
+                    dy = getattr(b, "y", 0) - self.ball.y
+                    if math.sqrt(dx*dx + dy*dy) <= perception_radius:
+                        class FakeLootBugBooster:
+                            def __init__(self, bug):
+                                self.x = bug.x
+                                self.y = bug.y
+                                self.kind = getattr(bug, "disguise_type", "hp_booster")
+                                self.active = True
+                                self.bug = bug
+                        boosters.append(FakeLootBugBooster(b))
 
         return boosters
 
