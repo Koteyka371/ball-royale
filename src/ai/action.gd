@@ -13162,6 +13162,19 @@ func execute(strategy: String, delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("chain_lightning_overload_timer", clo_timer)
 
+    var sct_timer = 0.0
+    if "storm_caller_timer" in self.ball:
+        sct_timer = self.ball.storm_caller_timer
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("storm_caller_timer"):
+        sct_timer = self.ball.get_meta("storm_caller_timer")
+    if sct_timer > 0.0:
+        sct_timer -= delta
+        if sct_timer < 0.0: sct_timer = 0.0
+        if "storm_caller_timer" in self.ball:
+            self.ball.storm_caller_timer = sct_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("storm_caller_timer", sct_timer)
+
     var cl_col_cd = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "_cl_collision_cd" in self.ball:
         cl_col_cd = self.ball._cl_collision_cd
@@ -33714,6 +33727,23 @@ func _collect_booster(delta: float):
                     var idx = self.world.boosters.find(nearest)
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
+
+            elif "kind" in nearest and nearest.kind == "storm_caller_booster":
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("storm_caller_timer", 15.0)
+                elif typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["storm_caller_timer"] = 15.0
+                else:
+                    self.ball.storm_caller_timer = 15.0
+
+                if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                    var idx = self.world.arena.hazards.find(nearest)
+                    if idx != -1:
+                        self.world.arena.hazards.remove_at(idx)
+                if self.world != null and "boosters" in self.world:
+                    var idx = self.world.boosters.find(nearest)
+                    if idx != -1:
+                        self.world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "juggernaut_booster":
                 if self.ball.has_method("set_meta"):
                     self.ball.set_meta("juggernaut_booster_timer", 15.0)
@@ -40146,6 +40176,29 @@ func _use_skill():
                     var max_jumps = 3
                     if is_raining:
                         max_jumps += 1
+                    var clo_active = false
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("chain_lightning_overload_timer") and float(self.ball["chain_lightning_overload_timer"]) > 0:
+                        clo_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and "chain_lightning_overload_timer" in self.ball and float(self.ball.chain_lightning_overload_timer) > 0:
+                        clo_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("chain_lightning_overload_timer") and float(self.ball.get_meta("chain_lightning_overload_timer")) > 0:
+                        clo_active = true
+
+                    if clo_active:
+                        max_jumps += 2
+                        chain_damage *= 1.5
+
+                    var sc_active = false
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("storm_caller_timer") and float(self.ball["storm_caller_timer"]) > 0:
+                        sc_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and "storm_caller_timer" in self.ball and float(self.ball.storm_caller_timer) > 0:
+                        sc_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("storm_caller_timer") and float(self.ball.get_meta("storm_caller_timer")) > 0:
+                        sc_active = true
+
+                    if sc_active:
+                        max_jumps += 4
+                        chain_damage *= 2.0
 
                     var jumps = 0
 
@@ -43589,6 +43642,18 @@ func _resolve_collisions() -> bool:
                     if overload_active:
                         jumps += 2
                         chain_damage *= 1.5
+
+                    var sc_active = false
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("storm_caller_timer") and float(self.ball["storm_caller_timer"]) > 0:
+                        sc_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and "storm_caller_timer" in self.ball and float(self.ball.storm_caller_timer) > 0:
+                        sc_active = true
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("storm_caller_timer") and float(self.ball.get_meta("storm_caller_timer")) > 0:
+                        sc_active = true
+
+                    if sc_active:
+                        jumps += 4
+                        chain_damage *= 2.0
 
                     for _i in range(jumps):
                         var best_dist = 40000.0 # 200 squared

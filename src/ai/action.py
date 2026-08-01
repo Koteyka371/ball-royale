@@ -6136,6 +6136,11 @@ class Action:
             if self.ball.chain_lightning_overload_timer <= 0:
                 self.ball.chain_lightning_overload_timer = 0.0
 
+        if getattr(self.ball, "storm_caller_timer", 0.0) > 0:
+            self.ball.storm_caller_timer -= delta
+            if self.ball.storm_caller_timer <= 0:
+                self.ball.storm_caller_timer = 0.0
+
         if getattr(self.ball, "chain_lightning_timer", 0.0) > 0:
             self.ball.chain_lightning_timer -= delta
             if self.ball.chain_lightning_timer <= 0:
@@ -17356,6 +17361,13 @@ class Action:
                         self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
                         self.world.boosters.remove(nearest)
+
+                elif getattr(nearest, "kind", None) == "storm_caller_booster":
+                    self.ball.storm_caller_timer = 15.0
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and nearest in self.world.arena.hazards:
+                        self.world.arena.hazards.remove(nearest)
+                    if hasattr(self.world, "boosters") and nearest in self.world.boosters:
+                        self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cryogenic_booster":
                     self.ball.cryogenic_booster_timer = 10.0
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
@@ -20879,6 +20891,12 @@ class Action:
                         max_jumps = 3
                         if is_raining:
                             max_jumps += 1
+                        if getattr(self.ball, "chain_lightning_overload_timer", 0.0) > 0.0:
+                            max_jumps += 2
+                            chain_damage *= 1.5
+                        if getattr(self.ball, "storm_caller_timer", 0.0) > 0.0:
+                            max_jumps += 4
+                            chain_damage *= 2.0
 
                         jumps = 0
 
@@ -22317,6 +22335,9 @@ class Action:
                         if getattr(self.ball, "chain_lightning_overload_timer", 0.0) > 0.0:
                             jumps += 2
                             chain_damage *= 1.5
+                        if getattr(self.ball, "storm_caller_timer", 0.0) > 0.0:
+                            jumps += 4
+                            chain_damage *= 2.0
                         for _ in range(jumps):
                             # find next nearest enemy within medium radius (e.g., 200)
                             best_dist = float("inf")
