@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1751] Trickster Decoy Resonance — *2026-08-01 10:23:35 UTC*
+
+When Trickster swaps places with a decoy using their skill, it unleashes a small resonance wave at both the origin and destination that briefly slows enemies caught in the radius.
+
+---
+
 ## [idea-1675] Orbital Debris Mutator — *2026-08-01 09:29:33 UTC*
 
 Introduces a game mode mutator where indestructible debris clusters orbit the center gravity well. The debris blocks projectiles and damages entities upon high-speed collision, forcing players to time their approaches and manage their slingshot trajectories carefully.
