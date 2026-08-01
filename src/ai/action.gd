@@ -2955,6 +2955,27 @@ func _attempt_damage_internal(attacker, target) -> void:
 			var mat = {"id": "mat_" + str(new_id), "x": tx, "y": ty, "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": true}
 			arena.items.append(mat)
 
+		if arena != null and "hazards" in arena:
+			var aura = {}
+			var tx = target.get("x") if "x" in target else 0.0
+			var ty = target.get("y") if "y" in target else 0.0
+			aura["x"] = tx
+			aura["y"] = ty
+			aura["kind"] = "vampiric_puddle"
+			aura["radius"] = 120.0
+			aura["damage"] = 10.0
+			aura["duration"] = 8.0
+			aura["active"] = true
+			var tgt_team = ""
+			if typeof(target) == TYPE_DICTIONARY:
+				tgt_team = target.get("team", "")
+			elif typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("team"):
+				tgt_team = target.get_meta("team")
+			elif "team" in target:
+				tgt_team = target.team
+			aura["team"] = tgt_team
+			arena.hazards.append(aura)
+
 
 	var cl_timer = 0.0
 	if "chain_lightning_timer" in attacker:
@@ -12935,19 +12956,35 @@ func execute(strategy: String, delta: float):
 					my_rad = float(self.ball.radius)
 				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
 				if s_dist <= hazard.get("radius", 0.0) + my_rad:
-					var drain_rate = hazard.get("damage", 5.0)
-					var old_max = self.ball.max_hp if "max_hp" in self.ball else 100.0
-					var new_max = max(10.0, old_max - drain_rate * delta)
+					var h_team = hazard.get("team", "") if hazard.has("team") else ""
+					var b_team = self.ball.team if "team" in self.ball else ""
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"):
+						b_team = self.ball.team
+					var is_enemy = h_team != b_team if h_team != "" else true
+					var drain_rate = hazard.get("damage", 10.0)
+
+					if is_enemy:
+						if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+							self.ball.take_damage(drain_rate * delta)
+						elif "hp" in self.ball:
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["hp"] -= drain_rate * delta
+							else:
+								self.ball.hp -= drain_rate * delta
+					else:
+						var b_max = self.ball.max_hp if "max_hp" in self.ball else 100.0
+						if "hp" in self.ball:
+							var cur_hp = self.ball.get("hp", 100.0) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.hp
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["hp"] = min(b_max, cur_hp + drain_rate * delta)
+							else:
+								self.ball.hp = min(b_max, cur_hp + drain_rate * delta)
+
 					if typeof(self.ball) == TYPE_DICTIONARY:
-						self.ball["max_hp"] = new_max
-						if self.ball.get("hp", 100.0) > new_max:
-							self.ball["hp"] = new_max
 						self.ball["_vampiric_drained"] = true
 					else:
-						self.ball.max_hp = new_max
-						if "hp" in self.ball and self.ball.hp > new_max:
-							self.ball.hp = new_max
-						self.ball.set_meta("_vampiric_drained", true)
+						if self.ball.has_method("set_meta"):
+							self.ball.set_meta("_vampiric_drained", true)
 
 	# Temporal rift logic to modify local delta
     var scrambled_timer = 0.0
@@ -24222,13 +24259,21 @@ func execute(strategy: String, delta: float):
                                     self.ball.alive = false
                         continue
                     elif hazard.kind == "vampiric_puddle":
+                        var h_team = hazard.team if "team" in hazard else ""
+                        var b_team = self.ball.team if "team" in self.ball else ""
+                        var is_enemy = h_team != b_team if h_team != "" else true
                         var hazard_damage = hazard.damage * delta
-                        if self.ball.has_method("take_damage"):
-                            self.ball.take_damage(hazard_damage)
-                        elif "hp" in self.ball:
-                            self.ball.hp -= hazard_damage
-                            if self.ball.hp <= 0:
-                                self.ball.alive = false
+                        if is_enemy:
+                            if self.ball.has_method("take_damage"):
+                                self.ball.take_damage(hazard_damage)
+                            elif "hp" in self.ball:
+                                self.ball.hp -= hazard_damage
+                                if self.ball.hp <= 0:
+                                    self.ball.alive = false
+                        else:
+                            if "hp" in self.ball:
+                                var b_max = self.ball.max_hp if "max_hp" in self.ball else 100.0
+                                self.ball.hp = min(b_max, self.ball.hp + hazard_damage)
 
                         var acc_healing = 0.0
                         if "accumulated_healing" in hazard:

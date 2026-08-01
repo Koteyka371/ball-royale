@@ -1517,6 +1517,28 @@ class Action:
                 mat = {"id": f"mat_{new_id}", "x": getattr(target, "x", 0), "y": getattr(target, "y", 0), "ball_type": "item", "kind": "material", "material_type": mat_type, "radius": 15.0, "active": True}
                 self.world.arena.items.append(mat)
 
+            # Drop vampiric aura booster/puddle on kill
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                class VampiricDrop:
+                    pass
+                aura = VampiricDrop()
+                aura.x = getattr(target, "x", 0)
+                aura.y = getattr(target, "y", 0)
+                aura.kind = "vampiric_puddle"
+                aura.radius = 120.0
+                aura.damage = 10.0 # Drain rate per second
+                aura.duration = 8.0
+                aura.active = True
+                # Use target's team so allies of the defeated player are drained, while enemies (attackers) are healed.
+                # Actually, the task says: "Players drop a temporary vampiric aura upon elimination that slowly drains health from enemies standing inside it while healing allies."
+                # This means it drains enemies of the *dead player* (i.e. the attacker's team) and heals allies of the *dead player*.
+                # Wait, "Players drop a temporary vampiric aura upon elimination that slowly drains health from enemies standing inside it while healing allies."
+                # Does it mean it acts as a puddle owned by the DEAD player? Yes. "healing allies [of the dead player]" and "draining health from enemies [of the dead player]".
+                # So the team should be the target's team.
+                aura.team = getattr(target, "team", "")
+                self.world.arena.hazards.append(aura)
+
+
 
         # Chain lightning effect
         if getattr(attacker, "chain_lightning_timer", 0.0) > 0:
@@ -5993,16 +6015,20 @@ class Action:
                 elif getattr(hazard, "kind", "") == "vampiric_puddle":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 0.0) + getattr(self.ball, "radius", 10.0):
-                        # Shrink max HP by 5 per second
-                        drain_rate = getattr(hazard, "damage", 5.0)
-                        old_max = getattr(self.ball, "max_hp", 100.0)
-                        # We don't want max_hp to go below a certain threshold like 10
-                        new_max = max(10.0, old_max - drain_rate * delta)
-                        self.ball.max_hp = new_max
-                        if getattr(self.ball, "hp", 100.0) > new_max:
-                            self.ball.hp = new_max
+                        hazard_team = getattr(hazard, "team", "")
+                        my_team = getattr(self.ball, "team", "")
+                        is_enemy = hazard_team != my_team if hazard_team else True
 
-                        # Set a flag to easily revert or track if needed
+                        drain_rate = getattr(hazard, "damage", 10.0)
+                        if is_enemy:
+                            if hasattr(self.ball, "take_damage"):
+                                self.ball.take_damage(drain_rate * delta)
+                            elif hasattr(self.ball, "hp"):
+                                self.ball.hp -= drain_rate * delta
+                        else:
+                            if hasattr(self.ball, "hp"):
+                                self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + drain_rate * delta)
+
                         self.ball._vampiric_drained = True
 
         # Temporal rift logic to modify local delta
@@ -12377,13 +12403,21 @@ class Action:
                                         self.ball.alive = False
                             continue
                         elif hazard.kind == "vampiric_puddle":
-                            hazard_damage = hazard.damage * delta
-                            if hasattr(self.ball, "take_damage"):
-                                self.ball.take_damage(hazard_damage)
-                            elif hasattr(self.ball, "hp"):
-                                self.ball.hp -= hazard_damage
-                                if self.ball.hp <= 0:
-                                    self.ball.alive = False
+                            hazard_team = getattr(hazard, "team", "")
+                            my_team = getattr(self.ball, "team", "")
+                            is_enemy = hazard_team != my_team if hazard_team else True
+
+                            rate = hazard.damage * delta
+                            if is_enemy:
+                                if hasattr(self.ball, "take_damage"):
+                                    self.ball.take_damage(rate)
+                                elif hasattr(self.ball, "hp"):
+                                    self.ball.hp -= rate
+                                    if self.ball.hp <= 0:
+                                        self.ball.alive = False
+                            else:
+                                if hasattr(self.ball, "hp"):
+                                    self.ball.hp = min(getattr(self.ball, "max_hp", 100.0), self.ball.hp + rate)
 
                             # Accumulate healing in the hazard
                             if not hasattr(hazard, "accumulated_healing"):
