@@ -58881,6 +58881,15 @@ class RubberBandMode extends GameMode:
 							if not other_alive or other == b1 or other == b2:
 								continue
 
+							var other_team = null
+							if typeof(other) == TYPE_OBJECT and "team" in other:
+								other_team = other.get("team")
+							elif typeof(other) == TYPE_DICTIONARY and other.has("team"):
+								other_team = other["team"]
+
+							if other_team != null and other_team == team:
+								continue
+
 							var other_x = 0.0
 							var other_y = 0.0
 							var other_radius = 15.0

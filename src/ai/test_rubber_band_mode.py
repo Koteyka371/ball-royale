@@ -106,3 +106,16 @@ def test_rubber_band_mode_no_damage_if_not_on_line():
 
 if __name__ == "__main__":
     pytest.main(["-v", "src/ai/test_rubber_band_mode.py"])
+
+def test_rubber_band_mode_teammate_no_damage():
+    mode = GAME_MODES.get("rubber_band")
+    world = MockWorld()
+    b1 = MockBall(1, 100.0, 100.0, "TeamA")
+    b2 = MockBall(2, 500.0, 100.0, "TeamA")
+    b3 = MockBall(3, 300.0, 100.0, "TeamA") # teammate on the line
+
+    balls = [b1, b2, b3]
+    mode.setup(world, balls)
+    mode.tick(world, balls, 0.1)
+
+    assert len(world._deal_damage_calls) == 0
