@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1737] Faction Superweapons — *2026-08-01 00:16:41 UTC*
+
+If a faction is losing heavily, they get access to a global superweapon that can instantly eliminate half of the enemy team's players.
+
+---
+
 ## [idea-1727] Grounding Field — *2026-07-31 23:44:39 UTC*
 
 A deployable hazard that acts as a lightning rod, absorbing incoming lightning strikes and converting them into a healing aura for nearby allies.
