@@ -29303,6 +29303,31 @@ func _collect_booster(delta: float):
                     self.world.boosters.erase(b)
                 if self.world != null and "arena" in self.world and self.world.arena != null and "hazards" in self.world.arena and typeof(self.world.arena.hazards) == TYPE_ARRAY:
                     self.world.arena.hazards.erase(b)
+            elif b_kind == "overload_zone_item":
+                var dx = b_x - ball_x
+                var dy = b_y - ball_y
+                var dist = sqrt(dx*dx + dy*dy)
+                if dist <= ball_rad + b_rad + 5.0:
+                    var inv = []
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("inventory"): inv = self.ball["inventory"]
+                    elif "inventory" in self.ball: inv = self.ball.inventory
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("inventory"): inv = self.ball.get_meta("inventory")
+                    inv.append("overload_zone_item")
+                    if typeof(self.ball) == TYPE_DICTIONARY: self.ball["inventory"] = inv
+                    elif "inventory" in self.ball: self.ball.inventory = inv
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else: b.active = false
+
+                    if self.world != null and "boosters" in self.world:
+                        var b_idx = self.world.boosters.find(b)
+                        if b_idx != -1:
+                            self.world.boosters.remove_at(b_idx)
+                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                        var h_idx = self.world.arena.hazards.find(b)
+                        if h_idx != -1:
+                            self.world.arena.hazards.remove_at(h_idx)
             elif b_kind == "flashbang_booster":
                 var bx = 0.0
                 var by = 0.0
@@ -46453,6 +46478,61 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
+
+                if h_kind == "overload_zone":
+                    var h_dur = 0.0
+                    if "duration" in hazard: h_dur = float(hazard.duration)
+                    elif hazard.has_method("get_meta") and hazard.has_meta("duration"): h_dur = float(hazard.get_meta("duration"))
+                    if h_dur > 0:
+                        var dist = sqrt((self.ball.x - h_x)*(self.ball.x - h_x) + (self.ball.y - h_y)*(self.ball.y - h_y))
+                        if dist <= h_rad:
+                            var psm = 1.0
+                            if "projectile_speed_multiplier" in self.ball: psm = float(self.ball.projectile_speed_multiplier)
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("projectile_speed_multiplier"): psm = float(self.ball.get_meta("projectile_speed_multiplier"))
+                            var has_base_psm = false
+                            if "base_projectile_speed_multiplier_oz" in self.ball: has_base_psm = true
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_projectile_speed_multiplier_oz"): has_base_psm = true
+                            if not has_base_psm:
+                                if "base_projectile_speed_multiplier_oz" in self.ball: self.ball.base_projectile_speed_multiplier_oz = psm
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("base_projectile_speed_multiplier_oz", psm)
+                            else:
+                                if "base_projectile_speed_multiplier_oz" in self.ball: psm = float(self.ball.base_projectile_speed_multiplier_oz)
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("base_projectile_speed_multiplier_oz"): psm = float(self.ball.get_meta("base_projectile_speed_multiplier_oz"))
+
+                            if "projectile_speed_multiplier" in self.ball: self.ball.projectile_speed_multiplier = psm * 3.0
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("projectile_speed_multiplier", psm * 3.0)
+
+                            var has_base_ar = false
+                            if "base_attack_range_oz" in self.ball: has_base_ar = true
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_attack_range_oz"): has_base_ar = true
+                            var current_ar = 150.0
+                            if "attack_range" in self.ball: current_ar = float(self.ball.attack_range)
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("attack_range"): current_ar = float(self.ball.get_meta("attack_range"))
+                            if not has_base_ar:
+                                if "base_attack_range_oz" in self.ball: self.ball.base_attack_range_oz = current_ar
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("base_attack_range_oz", current_ar)
+                            else:
+                                if "base_attack_range_oz" in self.ball: current_ar = float(self.ball.base_attack_range_oz)
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("base_attack_range_oz"): current_ar = float(self.ball.get_meta("base_attack_range_oz"))
+
+                            if "attack_range" in self.ball: self.ball.attack_range = current_ar * 2.0
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("attack_range", current_ar * 2.0)
+
+                            var vm = 1.0
+                            if "vulnerability_multiplier" in self.ball: vm = float(self.ball.vulnerability_multiplier)
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("vulnerability_multiplier"): vm = float(self.ball.get_meta("vulnerability_multiplier"))
+                            var has_base_vm = false
+                            if "base_vulnerability_multiplier_oz" in self.ball: has_base_vm = true
+                            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("base_vulnerability_multiplier_oz"): has_base_vm = true
+                            if not has_base_vm:
+                                if "base_vulnerability_multiplier_oz" in self.ball: self.ball.base_vulnerability_multiplier_oz = vm
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("base_vulnerability_multiplier_oz", vm)
+                            else:
+                                if "base_vulnerability_multiplier_oz" in self.ball: vm = float(self.ball.base_vulnerability_multiplier_oz)
+                                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("base_vulnerability_multiplier_oz"): vm = float(self.ball.get_meta("base_vulnerability_multiplier_oz"))
+
+                            if "vulnerability_multiplier" in self.ball: self.ball.vulnerability_multiplier = vm * 2.0
+                            elif self.ball.has_method("set_meta"): self.ball.set_meta("vulnerability_multiplier", vm * 2.0)
 
                 if h_kind == "sticky_bomb" or h_kind == "sticky_bomb_trap":
                     var attached_id = hazard.attached_id if "attached_id" in hazard else (hazard.get_meta("attached_id") if hazard.has_method("get_meta") and hazard.has_meta("attached_id") else null)
