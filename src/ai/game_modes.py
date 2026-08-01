@@ -34514,6 +34514,21 @@ class WhiteHoleMode(SafeZoneMode):
 
         super().tick(world, balls, delta)
 
+        # Reverse the SafeZoneMode's gravitational pull if collapse is triggered
+        if getattr(self, "collapse_triggered", False):
+            for b in balls:
+                if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                    dx_z = self.zone_x - b.x
+                    dy_z = self.zone_y - b.y
+                    dist_z = math.hypot(dx_z, dy_z)
+                    if dist_z > 0:
+                        pull_strength = 2000.0
+                        if not hasattr(b, "vx"): b.vx = 0.0
+                        if not hasattr(b, "vy"): b.vy = 0.0
+                        # Counteract the inward pull from SafeZoneMode (by pushing out by double that amount to net +2000 outward)
+                        b.vx -= (dx_z / dist_z) * pull_strength * delta * 2.0
+                        b.vy -= (dy_z / dist_z) * pull_strength * delta * 2.0
+
         center_x = self.zone_x
         center_y = self.zone_y
 
@@ -34528,17 +34543,19 @@ class WhiteHoleMode(SafeZoneMode):
                 if dist > 0:
                     # Push AWAY from center
                     # Use similar formula to BlackHoleMode, but push out instead of in
-                    push_strength = 20000.0 / (dist * dist)
+                    push_strength = 2000000.0 / (dist * dist)
                     radius_multiplier = self.white_hole_radius / 50.0
                     push_strength *= radius_multiplier
 
                     # Cap max push
-                    push_strength = min(push_strength, 150.0 * radius_multiplier)
+                    push_strength = min(push_strength, 1500.0 * radius_multiplier)
                     if getattr(world, 'gravity_reversal_active', False):
                         push_strength = -push_strength
 
-                    b.x -= (dx / dist) * push_strength * delta
-                    b.y -= (dy / dist) * push_strength * delta
+                    if not hasattr(b, "vx"): b.vx = 0.0
+                    if not hasattr(b, "vy"): b.vy = 0.0
+                    b.vx -= (dx / dist) * push_strength * delta
+                    b.vy -= (dy / dist) * push_strength * delta
 
 import math
 import random

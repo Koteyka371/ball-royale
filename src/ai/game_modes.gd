@@ -55941,6 +55941,36 @@ class WhiteHoleMode extends SafeZoneMode:
 
 		super.tick(world, balls, delta)
 
+		if collapse_triggered:
+			for b in balls:
+				var is_alive = false
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					b_type = str(b.get("ball_type", ""))
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+					b_type = str(b.ball_type) if "ball_type" in b else ""
+
+				if is_alive and b_type != "spectator":
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+					var dx_z = zone_x - bx
+					var dy_z = zone_y - by
+					var dist_z = sqrt(dx_z*dx_z + dy_z*dy_z)
+					if dist_z > 0:
+						var pull_strength = 2000.0
+						var vx_push = -(dx_z / dist_z) * pull_strength * delta * 2.0
+						var vy_push = -(dy_z / dist_z) * pull_strength * delta * 2.0
+						if typeof(b) == TYPE_DICTIONARY:
+							b["vx"] = b.get("vx", 0.0) + vx_push
+							b["vy"] = b.get("vy", 0.0) + vy_push
+						else:
+							if not "vx" in b: b.vx = 0.0
+							if not "vy" in b: b.vy = 0.0
+							b.vx += vx_push
+							b.vy += vy_push
+
 		var center_x = zone_x
 		var center_y = zone_y
 
@@ -55965,11 +55995,11 @@ class WhiteHoleMode extends SafeZoneMode:
 				var dist = sqrt(dx*dx + dy*dy)
 
 				if dist > 0:
-					var push_strength = 20000.0 / (dist * dist)
+					var push_strength = 2000000.0 / (dist * dist)
 					var radius_multiplier = white_hole_radius / 50.0
 					push_strength *= radius_multiplier
 
-					push_strength = min(push_strength, 150.0 * radius_multiplier)
+					push_strength = min(push_strength, 1500.0 * radius_multiplier)
 
 					var grav_rev = false
 					if typeof(world) == TYPE_DICTIONARY:
@@ -55983,15 +56013,17 @@ class WhiteHoleMode extends SafeZoneMode:
 					if grav_rev:
 						push_strength = -push_strength
 
-					var nx = bx - (dx / dist) * push_strength * delta
-					var ny = by - (dy / dist) * push_strength * delta
+					var vx_push = -(dx / dist) * push_strength * delta
+					var vy_push = -(dy / dist) * push_strength * delta
 
 					if typeof(b) == TYPE_DICTIONARY:
-						b["x"] = nx
-						b["y"] = ny
+						b["vx"] = b.get("vx", 0.0) + vx_push
+						b["vy"] = b.get("vy", 0.0) + vy_push
 					else:
-						if "x" in b: b.x = nx
-						if "y" in b: b.y = ny
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += vx_push
+						b.vy += vy_push
 
 class MoltenGolemMode extends GameMode:
 	var golem_id = null
