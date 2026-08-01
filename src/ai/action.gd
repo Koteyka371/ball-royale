@@ -10667,6 +10667,65 @@ func execute(strategy: String, delta: float):
 			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
 				self.ball.set_meta("use_item", false)
 
+
+		var inv = self.ball.get("inventory") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get("inventory") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get") else [])
+		if typeof(inv) == TYPE_ARRAY and inv.has("safe_zone_radar") and self.ball.get("use_item", false):
+			var gm = null
+			if self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("get"):
+				gm = self.world.get("game_mode")
+			elif typeof(self.world) == TYPE_DICTIONARY and self.world.has("game_mode"):
+				gm = self.world["game_mode"]
+
+			if gm != null:
+				var target_x = 0.0
+				var target_y = 0.0
+				var has_target = false
+
+				if typeof(gm) == TYPE_OBJECT and gm.has_method("get"):
+					if gm.get("zone_target_x") != null:
+						target_x = gm.get("zone_target_x")
+						target_y = gm.get("zone_target_y")
+						has_target = true
+				elif typeof(gm) == TYPE_DICTIONARY and gm.has("zone_target_x"):
+					target_x = gm["zone_target_x"]
+					target_y = gm["zone_target_y"]
+					has_target = true
+
+				if has_target:
+					if self.world != null and typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+						self.world.add_event("visual_effect", {
+							"type": "radar_ping",
+							"x": target_x,
+							"y": target_y,
+							"radius": 100.0,
+							"color": "green",
+							"duration": 5.0
+						})
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						self.ball["safe_zone_radar_target_x"] = target_x
+						self.ball["safe_zone_radar_target_y"] = target_y
+						self.ball["safe_zone_radar_timer"] = 5.0
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+						self.ball.set_meta("safe_zone_radar_target_x", target_x)
+						self.ball.set_meta("safe_zone_radar_target_y", target_y)
+						self.ball.set_meta("safe_zone_radar_timer", 5.0)
+
+			inv.erase("safe_zone_radar")
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["use_item"] = false
+			elif typeof(self.ball) == TYPE_OBJECT:
+				self.ball.set("use_item", false)
+
+		var radar_timer = self.ball.get("safe_zone_radar_timer", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("safe_zone_radar_timer") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("safe_zone_radar_timer") else 0.0)
+		if radar_timer > 0.0:
+			var new_timer = radar_timer - delta
+			if new_timer < 0:
+				new_timer = 0.0
+			if typeof(self.ball) == TYPE_DICTIONARY:
+				self.ball["safe_zone_radar_timer"] = new_timer
+			elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+				self.ball.set_meta("safe_zone_radar_timer", new_timer)
+
 		if inv.has("reverse_gravity_item") and self.ball.get("use_item", false):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena
@@ -33433,6 +33492,12 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         self.world.boosters.remove_at(idx)
 
+            elif "kind" in nearest and nearest.kind == "safe_zone_radar":
+                if self.world != null and "arena" in self.world and "items" in self.world.arena:
+                    var idx = self.world.arena.items.find(nearest)
+                    if idx != -1:
+                        self.world.arena.items.remove_at(idx)
+                inv.append("safe_zone_radar")
             elif "kind" in nearest and nearest.kind == "reverse_gravity_item":
                 var inv = []
                 if "inventory" in self.ball: inv = self.ball.inventory
@@ -50806,6 +50871,31 @@ func _update_skill_timer(delta: float):
         elif self.ball.has_method("set_meta"):
             self.ball.set_meta("homing_missile_tick", hmb_tick)
 
+
+
+
+    var radar_timer_val = self.ball.get("safe_zone_radar_timer", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("safe_zone_radar_timer") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("safe_zone_radar_timer") else 0.0)
+    if radar_timer_val > 0.0:
+        var target_x = self.ball.get("safe_zone_radar_target_x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("safe_zone_radar_target_x") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("safe_zone_radar_target_x") else 0.0)
+        var target_y = self.ball.get("safe_zone_radar_target_y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("safe_zone_radar_target_y") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("safe_zone_radar_target_y") else 0.0)
+        var b_x = self.ball.get("x", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("x") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("x") else self.ball.x if "x" in self.ball else 0.0)
+        var b_y = self.ball.get("y", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("y") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("y") else self.ball.y if "y" in self.ball else 0.0)
+
+        var dx = target_x - b_x
+        var dy = target_y - b_y
+        var dist = sqrt(dx*dx + dy*dy)
+        if dist > 50.0:
+            var b_vx = self.ball.get("vx", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("vx") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vx") else self.ball.vx if "vx" in self.ball else 0.0)
+            var b_vy = self.ball.get("vy", 0.0) if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("vy") if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("vy") else self.ball.vy if "vy" in self.ball else 0.0)
+            b_vx += (dx/dist) * 200.0 * delta
+            b_vy += (dy/dist) * 200.0 * delta
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["vx"] = b_vx
+                self.ball["vy"] = b_vy
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                self.ball.set_meta("vx", b_vx)
+                self.ball.set_meta("vy", b_vy)
 
     var mud_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("mud_debuff_timer"):
