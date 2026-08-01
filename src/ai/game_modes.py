@@ -21947,6 +21947,8 @@ class ExtremeWeatherMode(GameMode):
                 b.base_speed = getattr(b, "speed", 100.0)
             if not getattr(b, "base_damage", None):
                 b.base_damage = getattr(b, "damage", 10.0)
+            if not hasattr(b, "base_perception_radius"):
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
 
     def tick(self, world, balls, delta=0.016):
         super().tick(world, balls, delta)
@@ -22118,6 +22120,31 @@ class ExtremeWeatherMode(GameMode):
             b.damage = getattr(b, "base_damage", 10.0)
             b.steering_mult = 1.0
 
+            if not hasattr(b, "base_perception_radius"):
+                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+
+            # Weather perception multipliers
+            if self.current_weather in ["clear", "slight_breeze"]:
+                b.perception_radius = b.base_perception_radius * 1.5
+            elif self.current_weather == "light_rain":
+                b.perception_radius = b.base_perception_radius * 0.8
+            elif self.current_weather in ["blizzard", "hurricane", "giant_flood"]:
+                b.perception_radius = b.base_perception_radius * 0.2
+            elif self.current_weather in ["acid_rain", "meteor_shower", "heatwave", "monsoon"]:
+                b.perception_radius = b.base_perception_radius * 0.5
+                if self.current_weather == "monsoon":
+                    has_umbrella = getattr(b, "umbrella_booster_timer", 0.0) > 0 or getattr(b, "mega_umbrella_booster_timer", 0.0) > 0
+                    if has_umbrella:
+                        b.perception_radius = b.base_perception_radius
+            elif self.current_weather in ["solar_eclipse", "magnetic_storm"]:
+                b.perception_radius = b.base_perception_radius * 0.2
+            else:
+                b.perception_radius = b.base_perception_radius
+
+            has_vision = getattr(b, "vision_booster_timer", 0.0) > 0 or getattr(b, "mega_vision_booster_timer", 0.0) > 0
+            if has_vision:
+                b.perception_radius = b.base_perception_radius
+
             has_thermal = getattr(b, "thermal_booster_timer", 0.0) > 0 or getattr(b, "mega_thermal_booster_timer", 0.0) > 0 or getattr(b, "snow_globe_immunity_timer", 0.0) > 0
             has_cooling = getattr(b, "cooling_booster_timer", 0.0) > 0 or getattr(b, "mega_cooling_booster_timer", 0.0) > 0
             has_hazmat = getattr(b, "hazmat_booster_timer", 0.0) > 0 or getattr(b, "mega_hazmat_booster_timer", 0.0) > 0
@@ -22219,18 +22246,15 @@ class ExtremeWeatherMode(GameMode):
                     if self.flood_level > 0.8:
                         b.stamina = max(0.0, getattr(b, "stamina", 100.0) - 20.0 * delta)
             elif self.current_weather == "solar_eclipse":
-                if not getattr(b, "vision_booster_timer", 0.0) > 0 and not getattr(b, "mega_vision_booster_timer", 0.0) > 0:
-                    b.perception_radius = 50.0
+                pass
             elif self.current_weather == "celestial_alignment":
                 pass # Logic moved to outside the ball loop
             elif self.current_weather == "monsoon":
                 if not getattr(b, "umbrella_booster_timer", 0.0) > 0 and not getattr(b, "mega_umbrella_booster_timer", 0.0) > 0:
-                    b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 0.4
                     b.speed = getattr(b, "base_speed", 100.0) * 0.75
 
             elif self.current_weather == "monsoon":
                 if not getattr(b, "umbrella_booster_timer", 0.0) > 0 and not getattr(b, "mega_umbrella_booster_timer", 0.0) > 0:
-                    b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 0.4
                     b.speed = getattr(b, "base_speed", 100.0) * 0.75
                 if self.random.random() < 0.1 * delta and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     from arena.procedural_arena import Hazard
@@ -22244,7 +22268,6 @@ class ExtremeWeatherMode(GameMode):
 
             elif self.current_weather == "monsoon":
                 if not getattr(b, "umbrella_booster_timer", 0.0) > 0 and not getattr(b, "mega_umbrella_booster_timer", 0.0) > 0:
-                    b.perception_radius = getattr(b, "base_perception_radius", 150.0) * 0.4
                     b.speed = getattr(b, "base_speed", 100.0) * 0.75
                 if self.random.random() < 0.1 * delta and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                     from arena.procedural_arena import Hazard

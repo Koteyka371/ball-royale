@@ -34726,6 +34726,10 @@ class ExtremeWeatherMode extends GameMode:
 				var dmg = 10.0
 				if "damage" in b: dmg = b.damage
 				b.set_meta("base_damage", dmg)
+			if not b.has_meta("base_perception_radius"):
+				var perc = 250.0
+				if "perception_radius" in b: perc = b.perception_radius
+				b.set_meta("base_perception_radius", perc)
 
 	func tick(world, balls: Array, delta: float = 0.016):
 		super.tick(world, balls, delta)
@@ -34899,6 +34903,33 @@ class ExtremeWeatherMode extends GameMode:
 			if b.has_meta("base_damage"): b.damage = b.get_meta("base_damage")
 			if "steering_mult" in b: b.steering_mult = 1.0
 			elif b.has_method("set_meta"): b.set_meta("steering_mult", 1.0)
+
+			if not b.has_meta("base_perception_radius"):
+				var perc = 250.0
+				if "perception_radius" in b: perc = b.perception_radius
+				b.set_meta("base_perception_radius", perc)
+
+			if "perception_radius" in b:
+				if current_weather in ["clear", "slight_breeze"]:
+					b.perception_radius = b.get_meta("base_perception_radius") * 1.5
+				elif current_weather == "light_rain":
+					b.perception_radius = b.get_meta("base_perception_radius") * 0.8
+				elif current_weather in ["blizzard", "hurricane", "giant_flood"]:
+					b.perception_radius = b.get_meta("base_perception_radius") * 0.2
+				elif current_weather in ["acid_rain", "meteor_shower", "heatwave", "monsoon"]:
+					b.perception_radius = b.get_meta("base_perception_radius") * 0.5
+					if current_weather == "monsoon":
+						var has_umbrella = (b.has_meta("umbrella_booster_timer") and b.get_meta("umbrella_booster_timer") > 0.0) or (b.has_meta("mega_umbrella_booster_timer") and b.get_meta("mega_umbrella_booster_timer") > 0.0)
+						if has_umbrella:
+							b.perception_radius = b.get_meta("base_perception_radius")
+				elif current_weather in ["solar_eclipse", "magnetic_storm"]:
+					b.perception_radius = b.get_meta("base_perception_radius") * 0.2
+				else:
+					b.perception_radius = b.get_meta("base_perception_radius")
+
+				var has_vision = (b.has_meta("vision_booster_timer") and b.get_meta("vision_booster_timer") > 0.0) or (b.has_meta("mega_vision_booster_timer") and b.get_meta("mega_vision_booster_timer") > 0.0)
+				if has_vision:
+					b.perception_radius = b.get_meta("base_perception_radius")
 
 			var has_thermal = (b.has_meta("thermal_booster_timer") and b.get_meta("thermal_booster_timer") > 0.0) or (b.has_meta("mega_thermal_booster_timer") and b.get_meta("mega_thermal_booster_timer") > 0.0) or (b.has_meta("snow_globe_immunity_timer") and b.get_meta("snow_globe_immunity_timer") > 0.0)
 			var has_cooling = (b.has_meta("cooling_booster_timer") and b.get_meta("cooling_booster_timer") > 0.0) or (b.has_meta("mega_cooling_booster_timer") and b.get_meta("mega_cooling_booster_timer") > 0.0)
