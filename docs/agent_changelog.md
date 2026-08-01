@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1732] Weather-Affected AI Vision — *2026-08-01 07:44:26 UTC*
+
+Adjust AI perception ranges dynamically based on severe weather. For example, fog or blizzards drastically reduce the perception_radius of standard AIs, making stealth builds more viable, while clear weather increases it.
+
+---
+
 ## [idea-1745] Bone Splinters — *2026-08-01 05:53:08 UTC*
 
 When the Bone Wall is destroyed, it sends out shrapnel in all directions dealing damage.
