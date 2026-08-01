@@ -22150,12 +22150,17 @@ func execute(strategy: String, delta: float):
                             elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"):
                                 b_type = str(self.ball.get_meta("ball_type")).to_lower()
 
-                            if b_type == "lightning_rod" or b_type == "deployable_lightning_rod":
+                            var b_kind = ""
+                            if "kind" in self.ball: b_kind = str(self.ball.kind)
+                            elif self.ball.has_method("get_meta") and self.ball.has_meta("kind"): b_kind = str(self.ball.get_meta("kind"))
+                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("kind"): b_kind = str(self.ball.kind)
+
+                            if b_type == "lightning_rod" or b_type == "deployable_lightning_rod" or b_kind == "chain_lightning_relay":
                                 if "hp" in self.ball:
                                     var maxhp = 100
                                     if "max_hp" in self.ball:
                                         maxhp = self.ball.max_hp
-                                    if b_type == "deployable_lightning_rod":
+                                    if b_type == "deployable_lightning_rod" or b_kind == "chain_lightning_relay":
                                         if "charge" in self.ball: self.ball.charge = float(self.ball.charge) + float(hazard.damage)
                                         elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["charge"] = float(self.ball.get("charge", 0.0)) + float(hazard.damage)
                                     else:
