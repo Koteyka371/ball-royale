@@ -57124,6 +57124,12 @@ class SolarRadiationStormMode extends GameMode:
 						b.solar_blinded = false
 
 		if is_flaring:
+			var sun_dx = 1.0
+			var sun_dy = 1.0
+			var sun_len = sqrt(sun_dx * sun_dx + sun_dy * sun_dy)
+			sun_dx = sun_dx / sun_len
+			sun_dy = sun_dy / sun_len
+
 			for b in balls:
 				var alive = false
 				var bx = 0.0
