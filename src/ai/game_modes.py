@@ -35154,7 +35154,7 @@ class FrictionZonesMode(GameMode):
                     dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
                     if dist_sq < hazard.radius**2:
                         if hazard.zone_type == "ice":
-                            b.friction_multiplier = 0.1
+                            b.friction_multiplier = 0.0
                             b.is_frictionless = True
                         elif hazard.zone_type == "mud":
                             b.friction_multiplier = 3.0

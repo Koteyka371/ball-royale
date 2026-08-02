@@ -56882,10 +56882,10 @@ class FrictionZonesMode extends GameMode:
 					if dist_sq < pow(h.radius, 2):
 						if h.zone_type == "ice":
 							if typeof(b) == TYPE_DICTIONARY:
-								b["friction_multiplier"] = 0.1
+								b["friction_multiplier"] = 0.0
 								b["is_frictionless"] = true
 							else:
-								b.set("friction_multiplier", 0.1)
+								b.set("friction_multiplier", 0.0)
 								b.set("is_frictionless", true)
 						elif h.zone_type == "mud":
 							if typeof(b) == TYPE_DICTIONARY:

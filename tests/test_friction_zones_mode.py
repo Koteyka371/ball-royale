@@ -49,7 +49,7 @@ def test_friction_zones():
     mode.tick(world, balls, delta=1.0)
 
     if hazard.zone_type == "ice":
-        assert ball.friction_multiplier == 0.1
+        assert ball.friction_multiplier == 0.0
         assert ball.is_frictionless == True
     elif hazard.zone_type == "mud":
         assert ball.friction_multiplier == 3.0
