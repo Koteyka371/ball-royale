@@ -2773,7 +2773,8 @@ class GameMode:
 						if typeof(b) == TYPE_DICTIONARY:
 							b["is_scrambled_ai"] = false
 							if b.has("base_perception_radius_scrambler"):
-								b["perception_radius"] = b["base_perception_radius_scrambler"]
+								if b.get("perception_radius", 0.0) == 30.0:
+										b["perception_radius"] = b["base_perception_radius_scrambler"]
 								b.erase("base_perception_radius_scrambler")
 						else:
 							if "is_scrambled_ai" in b: b.is_scrambled_ai = false
@@ -2782,7 +2783,7 @@ class GameMode:
 							if "base_perception_radius_scrambler" in b: bps = b.base_perception_radius_scrambler
 							elif b.has_method("get_meta") and b.has_meta("base_perception_radius_scrambler"): bps = b.get_meta("base_perception_radius_scrambler")
 							if bps != null:
-								if "perception_radius" in b: b.perception_radius = bps
+								if "perception_radius" in b and b.perception_radius == 30.0: b.perception_radius = bps
 
 			for m in missiles:
 				var is_scrambled_missile = false

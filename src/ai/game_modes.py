@@ -1625,7 +1625,10 @@ class GameMode:
                     if getattr(b, "is_scrambled_ai", False):
                         b.is_scrambled_ai = False
                         if hasattr(b, "base_perception_radius_scrambler"):
-                            b.perception_radius = b.base_perception_radius_scrambler
+                            # Only restore if perception_radius wasn't permanently changed by something else
+                            # and only if it's currently 30.0
+                            if getattr(b, "perception_radius", 0.0) == 30.0:
+                                b.perception_radius = b.base_perception_radius_scrambler
                             delattr(b, "base_perception_radius_scrambler")
 
             missiles = [h for h in world.arena.hazards if getattr(h, "kind", "") == "homing_missile"]
