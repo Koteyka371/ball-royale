@@ -12248,6 +12248,33 @@ func execute(strategy: String, delta: float):
 				if "original_team" in self.ball:
 					self.ball.team = self.ball.original_team
 
+	# Mercenary timer logic
+	var merc_timer = 0.0
+	var is_merc = false
+	if "mercenary_timer" in self.ball:
+		merc_timer = self.ball.mercenary_timer
+		is_merc = self.ball.is_mercenary if "is_mercenary" in self.ball else false
+	elif self.ball.has_method("has_meta") and self.ball.has_meta("mercenary_timer"):
+		merc_timer = self.ball.get_meta("mercenary_timer")
+		is_merc = self.ball.get_meta("is_mercenary") if self.ball.has_meta("is_mercenary") else false
+
+	if is_merc and merc_timer > 0.0:
+		merc_timer -= delta
+		if self.ball.has_method("set_meta"):
+			self.ball.set_meta("mercenary_timer", merc_timer)
+		else:
+			self.ball.mercenary_timer = merc_timer
+
+		if merc_timer <= 0.0:
+			if self.ball.has_method("set_meta"):
+				self.ball.set_meta("is_mercenary", false)
+				if self.ball.has_meta("original_team"):
+					self.ball.set_meta("team", self.ball.get_meta("original_team"))
+			else:
+				self.ball.is_mercenary = false
+				if "original_team" in self.ball:
+					self.ball.team = self.ball.original_team
+
 	# Max HP draining hazard logic
 	# Gravity Well and Repulsor Hazard Logic
 	if world != null and "arena" in world and "hazards" in world.arena:
@@ -31150,7 +31177,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -41971,6 +41998,73 @@ func _use_skill():
                             target.team = my_team
 
                         _spawn_skill_particles("mind_control")
+
+
+        elif skill_name == "hire_mercenary":
+            var cost = 50
+            var current_sp = 0
+            if "skill_points" in self.ball:
+                current_sp = self.ball.skill_points
+            elif self.ball.has_method("has_meta") and self.ball.has_meta("skill_points"):
+                current_sp = self.ball.get_meta("skill_points")
+
+            if current_sp >= cost:
+                var enemies = _get_enemies()
+                if enemies.size() > 0:
+                    var target = null
+                    var min_dist = 9999999.0
+                    for e in enemies:
+                        var is_merc = false
+                        if "is_mercenary" in e: is_merc = e.is_mercenary
+                        elif e.has_method("has_meta") and e.has_meta("is_mercenary"): is_merc = e.get_meta("is_mercenary")
+
+                        if not is_merc:
+                            var dx = e.x - self.ball.x
+                            var dy = e.y - self.ball.y
+                            var dist_sq = dx*dx + dy*dy
+                            if dist_sq < min_dist:
+                                min_dist = dist_sq
+                                target = e
+
+                    if target != null and sqrt(min_dist) <= 300.0:
+                        var orig_team = ""
+                        if "team" in target: orig_team = target.team
+                        elif target.has_method("has_meta") and target.has_meta("team"): orig_team = target.get_meta("team")
+                        elif "ball_type" in target: orig_team = target.ball_type
+
+                        var my_team = ""
+                        if "team" in self.ball: my_team = self.ball.team
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                        elif "ball_type" in self.ball: my_team = self.ball.ball_type
+
+                        if target.has_method("set_meta"):
+                            target.set_meta("is_mercenary", true)
+                            target.set_meta("mercenary_timer", 15.0)
+                            target.set_meta("original_team", orig_team)
+                            target.set_meta("team", my_team)
+                        else:
+                            target.is_mercenary = true
+                            target.mercenary_timer = 15.0
+                            target.original_team = orig_team
+                            target.team = my_team
+
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("skill_points", current_sp - cost)
+                        else:
+                            self.ball.skill_points = current_sp - cost
+
+                        var sk_cd = 5.0
+                        if "SKILL_COOLDOWN" in self.ball: sk_cd = self.ball.SKILL_COOLDOWN
+                        elif self.ball.has_method("has_meta") and self.ball.has_meta("SKILL_COOLDOWN"): sk_cd = self.ball.get_meta("SKILL_COOLDOWN")
+
+                        if self.ball.has_method("set_meta"):
+                            self.ball.set_meta("skill_timer", sk_cd)
+                        else:
+                            self.ball.skill_timer = sk_cd
+
+                        if has_method("_spawn_skill_particles"):
+                            _spawn_skill_particles("shield")
+
         elif skill_name == "ground_pound":
             var pound_radius = 120.0
             var pound_damage = 40.0
