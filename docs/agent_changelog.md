@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1736] Faction Mercenaries — *2026-08-02 07:16:42 UTC*
+
+Players can hire AI mercenaries from the opposing faction using skill points to fight alongside them temporarily.
+
+---
+
 ## [idea-1759] Magnetize Booster — *2026-08-02 06:25:00 UTC*
 
 A booster that applies a magnetic aura to the player, gradually pulling in nearby boosters and enemies towards them.
