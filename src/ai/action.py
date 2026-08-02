@@ -19345,12 +19345,13 @@ class Action:
                 import copy
                 import random
                 if hasattr(self.world, "balls"):
-                    active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id and getattr(b, "alive", True)]
+                    active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == getattr(self.ball, "id", None) and getattr(b, "alive", True)]
                     if active_decoys:
                         decoy = active_decoys[-1]
                         tx, ty = self.ball.x, self.ball.y
 
                         self.ball.x, self.ball.y = decoy.x, decoy.y
+                        decoy.x, decoy.y = tx, ty
 
                         if hasattr(self.world, "add_event"):
                             self.world.add_event("explosion", {"x": tx, "y": ty, "radius": 150.0, "damage": 50.0})
@@ -19372,6 +19373,8 @@ class Action:
                         self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
 
                     else:
+                        import copy
+                        import random
                         decoy = copy.copy(self.ball)
                         decoy.owner_id = getattr(self.ball, "id", None)
                         self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 2.0)

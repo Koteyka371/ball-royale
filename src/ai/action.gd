@@ -37772,6 +37772,13 @@ func _use_skill():
                     if self.ball.has("x"): self.ball["x"] = dx_pos
                     if self.ball.has("y"): self.ball["y"] = dy_pos
 
+                if typeof(decoy) == TYPE_OBJECT:
+                    if "x" in decoy: decoy.x = tx
+                    if "y" in decoy: decoy.y = ty
+                elif typeof(decoy) == TYPE_DICTIONARY:
+                    if decoy.has("x"): decoy["x"] = tx
+                    if decoy.has("y"): decoy["y"] = ty
+
                 if self.world.has_method("add_event"):
                     self.world.add_event("explosion", {"x": tx, "y": ty, "radius": 150.0, "damage": 50.0})
 
