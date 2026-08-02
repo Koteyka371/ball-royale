@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1767] Corrosive Fog Mode — *2026-08-02 13:14:51 UTC*
+
+A thick green fog rolls into the arena at set intervals. While the fog is present, players' maximum HP is temporarily reduced by 30%, and all healing effects are nullified. It requires defensive positioning until the fog clears.
+
+---
+
 ## [idea-1755] Cursed Shrine Mechanic — *2026-08-02 12:09:00 UTC*
 
 A new static arena hazard called the 'Cursed Shrine'. When a player interacts with it, they permanently gain +20% damage and speed but lose 50% of their current and maximum health, creating high-risk, high-reward scenarios in the late game.
