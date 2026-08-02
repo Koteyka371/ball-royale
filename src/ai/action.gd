@@ -419,6 +419,13 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.damage = orig_dmg
 
 func _attempt_damage_internal(attacker, target) -> void:
+	var t_ghost_timer = 0.0
+	if typeof(target) == TYPE_OBJECT and "ghost_booster_timer" in target: t_ghost_timer = target.ghost_booster_timer
+	elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("ghost_booster_timer"): t_ghost_timer = target.get_meta("ghost_booster_timer")
+	elif typeof(target) == TYPE_DICTIONARY and target.has("ghost_booster_timer"): t_ghost_timer = target["ghost_booster_timer"]
+	if t_ghost_timer > 0.0:
+		return
+
 	var intangible = false
 	if typeof(target) == TYPE_DICTIONARY and target.has("intangible"): intangible = target["intangible"]
 	elif typeof(target) == TYPE_OBJECT and "intangible" in target: intangible = target.intangible
@@ -27280,6 +27287,22 @@ func execute(strategy: String, delta: float):
             if self.ball.has_method("set_meta"):
                 self.ball.set_meta("phase_booster_timer", ph_timer)
 
+        var gb_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT and "ghost_booster_timer" in self.ball: gb_timer = float(self.ball.ghost_booster_timer)
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("ghost_booster_timer"): gb_timer = float(self.ball.get_meta("ghost_booster_timer"))
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ghost_booster_timer"): gb_timer = float(self.ball["ghost_booster_timer"])
+        if gb_timer > 0:
+            gb_timer -= delta
+            if gb_timer <= 0:
+                gb_timer = 0.0
+                if typeof(self.ball) == TYPE_OBJECT and "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = false
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", false)
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["ghost_mode_active"] = false
+
+            if typeof(self.ball) == TYPE_OBJECT and "ghost_booster_timer" in self.ball: self.ball.ghost_booster_timer = gb_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("ghost_booster_timer", gb_timer)
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["ghost_booster_timer"] = gb_timer
+
         var emp_imm_timer = 0.0
         if "emp_immunity_timer" in self.ball:
             emp_imm_timer = float(self.ball.emp_immunity_timer)
@@ -30110,6 +30133,53 @@ func _collect_booster(delta: float):
                     if typeof(self.ball) == TYPE_DICTIONARY: self.ball["inventory"] = inv
                     elif "inventory" in self.ball: self.ball.inventory = inv
                     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else: b.active = false
+
+                    if self.world != null and "boosters" in self.world:
+                        var b_idx = self.world.boosters.find(b)
+                        if b_idx != -1:
+                            self.world.boosters.remove_at(b_idx)
+                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                        var h_idx = self.world.arena.hazards.find(b)
+                        if h_idx != -1:
+                            self.world.arena.hazards.remove_at(h_idx)
+            elif b_kind == "ghost_booster":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                else:
+                    if "x" in b: bx = b.x
+                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                    if "y" in b: by = b.y
+                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT:
+                    if "radius" in b: b_radius = b.radius
+                    elif b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                var my_radius = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): my_radius = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "radius" in self.ball: my_radius = self.ball.radius
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+
+                var dist = sqrt(pow(bx - self.ball.x, 2) + pow(by - self.ball.y, 2))
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["ghost_booster_timer"] = 10.0
+                        self.ball["ghost_mode_active"] = true
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "ghost_booster_timer" in self.ball: self.ball.ghost_booster_timer = 10.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_booster_timer", 10.0)
+
+                        if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", true)
 
                     if typeof(b) == TYPE_DICTIONARY: b["active"] = false
                     else: b.active = false
@@ -44109,7 +44179,11 @@ func _clamp_position() -> bool:
     var p_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "phase_booster_timer" in self.ball: p_timer = self.ball.phase_booster_timer
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phase_booster_timer"): p_timer = self.ball.get_meta("phase_booster_timer")
-    if intangible or timer > 0.0 or p_timer > 0.0:
+    var gb_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "ghost_booster_timer" in self.ball: gb_timer = self.ball.ghost_booster_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ghost_booster_timer"): gb_timer = self.ball.get_meta("ghost_booster_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ghost_booster_timer"): gb_timer = self.ball["ghost_booster_timer"]
+    if intangible or timer > 0.0 or p_timer > 0.0 or gb_timer > 0.0:
         return false
 
     var breaching = false
@@ -44252,7 +44326,11 @@ func _resolve_collisions() -> bool:
     var p_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT and "phase_booster_timer" in self.ball: p_timer = self.ball.phase_booster_timer
     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("phase_booster_timer"): p_timer = self.ball.get_meta("phase_booster_timer")
-    if intangible or timer > 0.0 or p_timer > 0.0:
+    var gb_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT and "ghost_booster_timer" in self.ball: gb_timer = self.ball.ghost_booster_timer
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("ghost_booster_timer"): gb_timer = self.ball.get_meta("ghost_booster_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ghost_booster_timer"): gb_timer = self.ball["ghost_booster_timer"]
+    if intangible or timer > 0.0 or p_timer > 0.0 or gb_timer > 0.0:
         return false
     var bounced = false
     var ball_radius = 10.0

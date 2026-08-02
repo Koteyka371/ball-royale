@@ -256,6 +256,8 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+        if getattr(target, "ghost_booster_timer", 0.0) > 0.0:
+            return # Take no damage while ghosted
         if getattr(target, "nemesis_shield_active", False):
             pm = getattr(self.world, "profile_manager", None)
             if pm and hasattr(pm, "is_nemesis") and getattr(attacker, "ball_type", None) and getattr(target, "ball_type", None):
@@ -15435,6 +15437,16 @@ class Action:
                             self.world.boosters.remove(b)
                         if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
                             self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "ghost_booster":
+                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.ghost_booster_timer = 10.0
+                        self.ball.ghost_mode_active = True
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
                 elif getattr(b, "kind", "") == "flashbang_booster":
                     dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
@@ -22571,7 +22583,7 @@ class Action:
         self.ball.y += ny * speed * 0.3
 
     def _clamp_position(self) -> bool:
-        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0 or getattr(self.ball, "ghost_booster_timer", 0.0) > 0.0:
             return False
         bounced = False
         radius = getattr(self.ball, "radius", 10.0)
@@ -22661,7 +22673,7 @@ class Action:
         return bounced
 
     def _resolve_collisions(self) -> bool:
-        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0:
+        if getattr(self.ball, "intangible", False) or getattr(self.ball, "intangible_timer", 0.0) > 0.0 or getattr(self.ball, "phase_booster_timer", 0.0) > 0.0 or getattr(self.ball, "ghost_booster_timer", 0.0) > 0.0:
             return False
         bounced = False
         ball_radius = getattr(self.ball, "radius", 10.0)
@@ -23997,6 +24009,12 @@ class Action:
             self.ball.phase_booster_timer -= delta
             if self.ball.phase_booster_timer < 0:
                 self.ball.phase_booster_timer = 0.0
+
+        if getattr(self.ball, "ghost_booster_timer", 0.0) > 0:
+            self.ball.ghost_booster_timer -= delta
+            if self.ball.ghost_booster_timer <= 0:
+                self.ball.ghost_booster_timer = 0.0
+                self.ball.ghost_mode_active = False
         if getattr(self.ball, "emp_immunity_timer", 0.0) > 0:
             self.ball.emp_immunity_timer -= delta
             if self.ball.emp_immunity_timer < 0:
