@@ -10740,6 +10740,27 @@ class Action:
 
                                         if hasattr(self.ball, "damage_multiplier") and self.ball.damage_multiplier > 1.0:
                                             self.ball.damage_multiplier = 1.0
+                                elif trap_variant == "emp_blast":
+                                    if getattr(hazard, "armed", False):
+                                        hazard.duration = 0.0
+                                        # Temporarily disables thermal vision, advanced optics, and stealth drones
+                                        if hasattr(self.world, "balls"):
+                                            for b in self.world.balls:
+                                                if getattr(b, "alive", True):
+                                                    dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                                    if dist_sq <= 40000.0:  # 200 radius squared
+                                                        # Remove thermal vision
+                                                        if hasattr(b, "has_thermal_vision"): b.has_thermal_vision = False
+                                                        if "thermal_goggles" in getattr(b, "inventory", []): b.inventory.remove("thermal_goggles")
+                                                        # Remove advanced optics
+                                                        if hasattr(b, "advanced_optics_active"): b.advanced_optics_active = False
+                                                        if "advanced_optics" in getattr(b, "inventory", []): b.inventory.remove("advanced_optics")
+                                                        # Remove stealth drone
+                                                        if hasattr(b, "has_stealth_drone"): b.has_stealth_drone = False
+                                                        if "stealth_drone" in getattr(b, "inventory", []): b.inventory.remove("stealth_drone")
+                                                        # Add visual event
+                                                        if hasattr(self.world, "add_event"):
+                                                            self.world.add_event("emp_blast_hit", {"id": getattr(b, "id", None), "x": b.x, "y": b.y})
                                 elif trap_variant == "emp_pulse":
                                     hazard.duration = 0.0
                                     # Temporarily disables thermal vision, advanced optics, and stealth drones

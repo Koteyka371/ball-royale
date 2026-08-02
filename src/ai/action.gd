@@ -21234,6 +21234,54 @@ func execute(strategy: String, delta: float):
                                                 elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("stamina_booster_timer", 0.0)
                                 if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard: hazard.duration = 0.0
+                            elif trap_variant == "emp_blast":
+                                var is_armed = false
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("armed"): is_armed = hazard.get_meta("armed")
+                                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("armed"): is_armed = hazard["armed"]
+                                elif "armed" in hazard: is_armed = hazard.armed
+                                if is_armed:
+                                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                                    elif "duration" in hazard: hazard.duration = 0.0
+
+                                    if "balls" in self.world:
+                                        for b in self.world.balls:
+                                            var b_alive = true
+                                            if typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                                            elif "alive" in b: b_alive = b.alive
+                                            if b_alive:
+                                                var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+                                                var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+                                                var h_x = hazard.get("x") if typeof(hazard) == TYPE_DICTIONARY else hazard.x
+                                                var h_y = hazard.get("y") if typeof(hazard) == TYPE_DICTIONARY else hazard.y
+                                                var dist_sq = pow(b_x - h_x, 2) + pow(b_y - h_y, 2)
+                                                if dist_sq <= 40000.0:
+                                                    if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+                                                        b.set_meta("has_thermal_vision", false)
+                                                        b.set_meta("advanced_optics_active", false)
+                                                        b.set_meta("has_stealth_drone", false)
+                                                    elif typeof(b) == TYPE_DICTIONARY:
+                                                        b["has_thermal_vision"] = false
+                                                        b["advanced_optics_active"] = false
+                                                        b["has_stealth_drone"] = false
+                                                    else:
+                                                        if "has_thermal_vision" in b: b.has_thermal_vision = false
+                                                        if "advanced_optics_active" in b: b.advanced_optics_active = false
+                                                        if "has_stealth_drone" in b: b.has_stealth_drone = false
+
+                                                    var inv = []
+                                                    if typeof(b) == TYPE_DICTIONARY and b.has("inventory"): inv = b["inventory"]
+                                                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("inventory"): inv = b.get_meta("inventory")
+                                                    elif "inventory" in b: inv = b.inventory
+
+                                                    if typeof(inv) == TYPE_ARRAY:
+                                                        inv.erase("thermal_goggles")
+                                                        inv.erase("advanced_optics")
+                                                        inv.erase("stealth_drone")
+
+                                                    if "events" in self.world:
+                                                        self.world.events.append({"type": "emp_blast_hit", "data": {"id": b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null), "x": b_x, "y": b_y}})
+                                                    elif self.world.has_method("add_event"):
+                                                        self.world.add_event("emp_blast_hit", {"id": b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.id if "id" in b else null), "x": b_x, "y": b_y})
                             elif trap_variant == "emp_pulse":
                                 if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                 elif "duration" in hazard: hazard.duration = 0.0
