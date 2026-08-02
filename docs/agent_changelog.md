@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1748] Quantum Tunneler Booster — *2026-08-02 17:30:46 UTC*
+
+A booster that allows a player to briefly pass through hazards, walls, and bumpers without taking damage or knockback. While active, the player becomes slightly transparent and ignores physical collisions, making it useful for escaping tight corners or bypassing defenses.
+
+---
+
 ## [idea-1767] Corrosive Fog Mode — *2026-08-02 13:14:51 UTC*
 
 A thick green fog rolls into the arena at set intervals. While the fog is present, players' maximum HP is temporarily reduced by 30%, and all healing effects are nullified. It requires defensive positioning until the fog clears.
