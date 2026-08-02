@@ -56971,7 +56971,7 @@ class FrictionZonesMode extends GameMode:
 
 		var active_hazards = []
 		for h in world.arena.hazards:
-			if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h.kind.ends_with("_zone"):
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind") and (h.kind == "ice_zone" or h.kind == "mud_zone"):
 				h.duration -= delta
 				if h.duration > 0:
 					active_hazards.append(h)
@@ -56994,34 +56994,64 @@ class FrictionZonesMode extends GameMode:
 				b_type = b.ball_type
 			if b_type == "spectator": continue
 
+			var base_fm = 1.0
+			var base_f = false
+
 			if typeof(b) == TYPE_DICTIONARY:
-				b["friction_multiplier"] = 1.0
-				b["is_frictionless"] = false
+				if not b.has("base_friction_multiplier"):
+					b["base_friction_multiplier"] = b.get("friction_multiplier", 1.0)
+				if not b.has("base_is_frictionless"):
+					b["base_is_frictionless"] = b.get("is_frictionless", false)
+				base_fm = b["base_friction_multiplier"]
+				base_f = b["base_is_frictionless"]
 			else:
-				b.set("friction_multiplier", 1.0)
-				b.set("is_frictionless", false)
+				if not b.has_meta("base_friction_multiplier"):
+					var cur_fm = 1.0
+					if "friction_multiplier" in b: cur_fm = b.friction_multiplier
+					b.set_meta("base_friction_multiplier", cur_fm)
+				if not b.has_meta("base_is_frictionless"):
+					var cur_f = false
+					if "is_frictionless" in b: cur_f = b.is_frictionless
+					b.set_meta("base_is_frictionless", cur_f)
+				base_fm = b.get_meta("base_friction_multiplier")
+				base_f = b.get_meta("base_is_frictionless")
 
 			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
 			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
 
+			var in_ice = false
+			var in_mud = false
+
 			for h in world.arena.hazards:
-				if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h.kind.ends_with("_zone"):
+				if typeof(h) == TYPE_DICTIONARY and h.has("kind") and (h.kind == "ice_zone" or h.kind == "mud_zone"):
 					var dist_sq = pow(bx - h.x, 2) + pow(by - h.y, 2)
 					if dist_sq < pow(h.radius, 2):
-						if h.zone_type == "ice":
-							if typeof(b) == TYPE_DICTIONARY:
-								b["friction_multiplier"] = 0.1
-								b["is_frictionless"] = true
-							else:
-								b.set("friction_multiplier", 0.1)
-								b.set("is_frictionless", true)
-						elif h.zone_type == "mud":
-							if typeof(b) == TYPE_DICTIONARY:
-								b["friction_multiplier"] = 3.0
-							else:
-								b.set("friction_multiplier", 3.0)
+						if h.has("zone_type") and h.zone_type == "ice":
+							in_ice = true
+						elif h.has("zone_type") and h.zone_type == "mud":
+							in_mud = true
 
-
+			if in_ice:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["friction_multiplier"] = 0.1
+					b["is_frictionless"] = true
+				else:
+					b.set("friction_multiplier", 0.1)
+					b.set("is_frictionless", true)
+			elif in_mud:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["friction_multiplier"] = 3.0
+					b["is_frictionless"] = false
+				else:
+					b.set("friction_multiplier", 3.0)
+					b.set("is_frictionless", false)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["friction_multiplier"] = base_fm
+					b["is_frictionless"] = base_f
+				else:
+					b.set("friction_multiplier", base_fm)
+					b.set("is_frictionless", base_f)
 
 class SolarRadiationStormMode extends GameMode:
 	var flare_timer: float = 0.0
