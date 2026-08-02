@@ -57199,7 +57199,112 @@ class SolarRadiationStormMode extends GameMode:
 								b["perception_radius"] = b["base_perception_radius"] * 0.2
 								b["solar_blinded"] = true
 
+
+class ExpandingArenaMode extends GameMode:
+	var expand_timer = 0.0
+	var expand_interval = 10.0
+	var max_width = 2000.0
+	var max_height = 2000.0
+
+	func _init():
+		super._init()
+		name = "Expanding Arena"
+		description = "The arena starts very small and expands over time, revealing new elements and hazards as it grows."
+
+	func setup(world, balls: Array) -> void:
+		if typeof(world) == TYPE_OBJECT and 'arena' in world:
+			world.arena.width = 400.0
+			world.arena.height = 400.0
+
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT:
+					b.x = world.arena.width / 2.0 + (b.get_instance_id() % 100 - 50)
+					b.y = world.arena.height / 2.0 + (b.get_instance_id() % 100 - 50)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b['x'] = world.arena.width / 2.0 + (b.hash() % 100 - 50)
+					b['y'] = world.arena.height / 2.0 + (b.hash() % 100 - 50)
+		elif typeof(world) == TYPE_DICTIONARY and world.has('arena'):
+			world['arena']['width'] = 400.0
+			world['arena']['height'] = 400.0
+
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT:
+					b.x = world['arena']['width'] / 2.0 + (b.get_instance_id() % 100 - 50)
+					b.y = world['arena']['height'] / 2.0 + (b.get_instance_id() % 100 - 50)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b['x'] = world['arena']['width'] / 2.0 + (b.hash() % 100 - 50)
+					b['y'] = world['arena']['height'] / 2.0 + (b.hash() % 100 - 50)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		apply_dynamic_traits(world, balls, delta)
+
+		expand_timer += delta
+		if expand_timer >= expand_interval:
+			expand_timer -= expand_interval
+
+			var old_w = 400.0
+			var old_h = 400.0
+			var has_arena_obj = typeof(world) == TYPE_OBJECT and 'arena' in world
+			var has_arena_dict = typeof(world) == TYPE_DICTIONARY and world.has('arena')
+
+			if has_arena_obj:
+				old_w = world.arena.width if 'width' in world.arena else 400.0
+				old_h = world.arena.height if 'height' in world.arena else 400.0
+			elif has_arena_dict:
+				old_w = world['arena']['width'] if world['arena'].has('width') else 400.0
+				old_h = world['arena']['height'] if world['arena'].has('height') else 400.0
+
+			if old_w < max_width or old_h < max_height:
+				var new_w = min(max_width, old_w * 1.2)
+				var new_h = min(max_height, old_h * 1.2)
+
+				if has_arena_obj:
+					world.arena.width = new_w
+					world.arena.height = new_h
+
+					if 'hazards' in world.arena:
+						var new_hz_x = randf_range(old_w, new_w) if randf() > 0.5 else randf_range(0.0, new_w)
+						var new_hz_y = randf_range(old_h, new_h) if randf() > 0.5 else randf_range(0.0, new_h)
+						var hazard = {}
+						hazard['x'] = new_hz_x
+						hazard['y'] = new_hz_y
+						hazard['radius'] = 30.0
+						hazard['damage'] = 5.0
+						hazard['is_slow'] = false
+						if randf() > 0.5:
+							hazard['damage'] = 0.0
+							hazard['is_slow'] = true
+							hazard['slow_factor'] = 0.5
+							hazard['radius'] = 50.0
+						world.arena.hazards.append(hazard)
+
+					if 'events' in world:
+						world.events.append({'type': 'visual_effect', 'data': {'type': 'expansion_rumble', 'x': new_w/2.0, 'y': new_h/2.0, 'radius': new_w, 'color': 'yellow'}})
+				elif has_arena_dict:
+					world['arena']['width'] = new_w
+					world['arena']['height'] = new_h
+
+					if world['arena'].has('hazards'):
+						var new_hz_x = randf_range(old_w, new_w) if randf() > 0.5 else randf_range(0.0, new_w)
+						var new_hz_y = randf_range(old_h, new_h) if randf() > 0.5 else randf_range(0.0, new_h)
+						var hazard = {}
+						hazard['x'] = new_hz_x
+						hazard['y'] = new_hz_y
+						hazard['radius'] = 30.0
+						hazard['damage'] = 5.0
+						hazard['is_slow'] = false
+						if randf() > 0.5:
+							hazard['damage'] = 0.0
+							hazard['is_slow'] = true
+							hazard['slow_factor'] = 0.5
+							hazard['radius'] = 50.0
+						world['arena']['hazards'].append(hazard)
+
+					if world.has('events'):
+						world['events'].append({'type': 'visual_effect', 'data': {'type': 'expansion_rumble', 'x': new_w/2.0, 'y': new_h/2.0, 'radius': new_w, 'color': 'yellow'}})
+
 var GAME_MODES = {
+	"expanding_arena": ExpandingArenaMode.new(),
 	"geyser_hazards": GeyserHazardMode.new(),
 	"microclimate_hazards": MicroclimateHazardMode.new(),
 	"friction_zones": FrictionZonesMode.new(),

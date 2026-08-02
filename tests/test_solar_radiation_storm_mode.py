@@ -67,5 +67,3 @@ def test_solar_radiation_storm():
     assert not b2.solar_blinded
     assert b2.perception_radius == 250.0
 
-test_solar_radiation_storm()
-print("All assertions passed")

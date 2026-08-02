@@ -35438,7 +35438,78 @@ class SolarRadiationStormMode(GameMode):
                             b.perception_radius = b.base_perception_radius * 0.2
                             b.solar_blinded = True
 
+
+class ExpandingArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Expanding Arena"
+        self.description = "The arena starts very small and expands over time, revealing new elements and hazards as it grows."
+        self.expand_timer = 0.0
+        self.expand_interval = 10.0
+        self.max_width = 2000.0
+        self.max_height = 2000.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        if hasattr(world, "arena"):
+            world.arena.width = 400.0
+            world.arena.height = 400.0
+
+            # Reposition balls to center initially
+            for b in balls:
+                b.x = world.arena.width / 2.0 + (id(b) % 100 - 50)
+                b.y = world.arena.height / 2.0 + (id(b) % 100 - 50)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+
+        if not hasattr(self, "expand_timer"):
+            self.expand_timer = 0.0
+
+        self.expand_timer += delta
+
+        if self.expand_timer >= self.expand_interval:
+            self.expand_timer -= self.expand_interval
+
+            if hasattr(world, "arena"):
+                old_w = getattr(world.arena, "width", 400.0)
+                old_h = getattr(world.arena, "height", 400.0)
+
+                if old_w < self.max_width or old_h < self.max_height:
+                    new_w = min(self.max_width, old_w * 1.2)
+                    new_h = min(self.max_height, old_h * 1.2)
+
+                    world.arena.width = new_w
+                    world.arena.height = new_h
+
+                    # Spawn new hazards on expansion
+                    if hasattr(world.arena, "hazards"):
+                        import random as _rnd
+                        # Randomly pick to spawn a damage zone or a slowing field, but outside the original area
+                        new_hz_x = _rnd.uniform(old_w, new_w) if _rnd.random() > 0.5 else _rnd.uniform(0, new_w)
+                        new_hz_y = _rnd.uniform(old_h, new_h) if _rnd.random() > 0.5 else _rnd.uniform(0, new_h)
+
+                        class ExpandingHazard:
+                            def __init__(self, x, y):
+                                self.x = x
+                                self.y = y
+                                self.radius = 30.0
+                                self.damage = 5.0
+                                self.is_slow = False
+                                if _rnd.random() > 0.5:
+                                    self.damage = 0.0
+                                    self.is_slow = True
+                                    self.slow_factor = 0.5
+                                    self.radius = 50.0
+
+                        hazard = ExpandingHazard(new_hz_x, new_hz_y)
+                        world.arena.hazards.append(hazard)
+
+                        if not hasattr(world, "events"):
+                            world.events = []
+                        world.events.append({'type': 'visual_effect', 'data': {'type': 'expansion_rumble', 'x': new_w/2, 'y': new_h/2, 'radius': new_w, 'color': 'yellow'}})
+
 GAME_MODES = {
+    'expanding_arena': ExpandingArenaMode(),
     'geyser_hazards': GeyserHazardMode(),
     'signal_scrambler': SignalScramblerMode(),
     'microclimate_hazards': MicroclimateHazardMode(),
