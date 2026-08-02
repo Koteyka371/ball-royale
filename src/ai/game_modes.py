@@ -31046,6 +31046,45 @@ class AuraPulseEventMode(GameMode):
                                 else:
                                     setattr(target, key, max(getattr(target, key, 0.0), 5.0))
 
+
+class ExpandingArenaMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Expanding Arena"
+        self.description = "Every 30 seconds the arena size increases by 10%, revealing new space."
+        self.expand_timer = 0.0
+        self.max_size = 2000.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            world.arena.width = min(getattr(world.arena, "width", 500.0), 500.0)
+            world.arena.height = min(getattr(world.arena, "height", 500.0), 500.0)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        self.apply_dynamic_traits(world, balls, delta)
+
+        if not hasattr(self, "expand_timer"):
+            self.expand_timer = 0.0
+
+        self.expand_timer += delta
+
+        if self.expand_timer >= 30.0:
+            self.expand_timer -= 30.0
+
+            if hasattr(world, "arena"):
+                old_w = getattr(world.arena, "width", 500.0)
+                old_h = getattr(world.arena, "height", 500.0)
+
+                new_w = min(self.max_size, old_w * 1.1)
+                new_h = min(self.max_size, old_h * 1.1)
+
+                world.arena.width = new_w
+                world.arena.height = new_h
+
+                if hasattr(world, "add_event"):
+                    world.add_event("arena_expanded", {"width": new_w, "height": new_h})
+
 class ShrinkingArenaMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -35698,6 +35737,7 @@ GAME_MODES = {
     "king_of_the_hill": KingOfTheHillMode(),
     "moving_zone": MovingZoneMode(),
     "vampire_royale": VampireRoyaleMode(),
+    "expanding_arena": ExpandingArenaMode(),
     "shrinking_arena": ShrinkingArenaMode(),
     "battle_royale": BattleRoyaleMode(),
     "team_deathmatch": TeamDeathmatchMode(),

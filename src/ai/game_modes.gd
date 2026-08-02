@@ -50481,6 +50481,62 @@ class AuraPulseEventMode extends GameMode:
 										elif key in target:
 											target.set(key, new_val)
 
+
+
+class ExpandingArenaMode extends GameMode:
+	var expand_timer = 0.0
+	var max_size = 2000.0
+
+	func _init():
+		name = "Expanding Arena"
+		description = "Every 30 seconds the arena size increases by 10%, revealing new space."
+		expand_timer = 0.0
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		if ("arena" in world) and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				world.arena["width"] = min(world.arena.get("width", 500.0), 500.0)
+				world.arena["height"] = min(world.arena.get("height", 500.0), 500.0)
+			else:
+				if "width" in world.arena: world.arena.width = min(world.arena.width, 500.0)
+				if "height" in world.arena: world.arena.height = min(world.arena.height, 500.0)
+
+	func tick(world, balls, delta = 0.016):
+		apply_dynamic_traits(world, balls, delta)
+
+		if not ("expand_timer" in self):
+			expand_timer = 0.0
+
+		expand_timer += delta
+
+		if expand_timer >= 30.0:
+			expand_timer -= 30.0
+
+			if ("arena" in world) and world.arena != null:
+				var old_w = 500.0
+				var old_h = 500.0
+
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					old_w = world.arena.get("width", 500.0)
+					old_h = world.arena.get("height", 500.0)
+				else:
+					if "width" in world.arena: old_w = world.arena.width
+					if "height" in world.arena: old_h = world.arena.height
+
+				var new_w = min(max_size, old_w * 1.1)
+				var new_h = min(max_size, old_h * 1.1)
+
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					world.arena["width"] = new_w
+					world.arena["height"] = new_h
+				else:
+					if "width" in world.arena: world.arena.width = new_w
+					if "height" in world.arena: world.arena.height = new_h
+
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("arena_expanded", {"width": new_w, "height": new_h})
+
 class ShrinkingArenaMode extends GameMode:
 	var shrink_timer = 0.0
 
@@ -57832,6 +57888,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"king_of_the_hill": KingOfTheHillMode.new(),
 	"moving_zone": MovingZoneMode.new(),
 	"vampire_royale": VampireRoyaleMode.new(),
+	"expanding_arena": ExpandingArenaMode.new(),
 	"shrinking_arena": ShrinkingArenaMode.new(),
 	"battle_royale": BattleRoyaleMode.new(),
 	"team_deathmatch": TeamDeathmatchMode.new(),
