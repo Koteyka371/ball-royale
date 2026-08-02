@@ -56894,6 +56894,185 @@ class FrictionZonesMode extends GameMode:
 								b.set("friction_multiplier", 3.0)
 
 
+class CursedShrineMode:
+	extends GameMode
+
+	var shrines = []
+
+	func _init():
+		name = "Cursed Shrine"
+		description = "A new static arena hazard called the 'Cursed Shrine'. When a player interacts with it, they permanently gain +20% damage and speed but lose 50% of their current and maximum health, creating high-risk, high-reward scenarios in the late game."
+
+	func setup(world) -> void:
+		shrines = []
+		var bounds = {'x_min': 0, 'x_max': 800, 'y_min': 0, 'y_max': 600}
+		if world.has("arena") and world.arena.has("bounds"):
+			bounds = world.arena.bounds
+
+		var num_shrines = (randi() % 2) + 2 # 2 to 3
+		for i in range(num_shrines):
+			var x = randf_range(bounds.x_min + 100, bounds.x_max - 100)
+			var y = randf_range(bounds.y_min + 100, bounds.y_max - 100)
+
+			var shrine = {
+				"id": "cursed_shrine_" + str(i),
+				"x": x,
+				"y": y,
+				"radius": 40.0,
+				"kind": "cursed_shrine",
+				"active": true,
+				"used_by": []
+			}
+			shrines.append(shrine)
+			if not world.has("arena"):
+				world.arena = {"hazards": []}
+			if not world.arena.has("hazards"):
+				world.arena.hazards = []
+			world.arena.hazards.append(shrine)
+
+	func tick(world, balls: Array, delta: float) -> void:
+		if typeof(shrines) != TYPE_ARRAY:
+			return
+
+		for shrine in shrines:
+			if typeof(shrine) != TYPE_DICTIONARY or not shrine.has("active") or not shrine.active:
+				continue
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+					is_alive = b.get_meta("alive")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b.alive
+				elif "alive" in b:
+					is_alive = b.alive
+
+				var b_type = ""
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ball_type"):
+					b_type = b.get_meta("ball_type")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+					b_type = b.ball_type
+				elif "ball_type" in b:
+					b_type = b.ball_type
+
+				if not is_alive or b_type == "spectator":
+					continue
+
+				var bid = -1
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id"):
+					bid = b.get_meta("id")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+					bid = b.id
+				elif "id" in b:
+					bid = b.id
+
+				if typeof(shrine.used_by) == TYPE_ARRAY and shrine.used_by.has(bid):
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				var bradius = 10.0
+
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"):
+					bx = b.get_meta("x")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("x"):
+					bx = b.x
+				elif "x" in b:
+					bx = b.x
+
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y"):
+					by = b.get_meta("y")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("y"):
+					by = b.y
+				elif "y" in b:
+					by = b.y
+
+				if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("radius"):
+					bradius = b.get_meta("radius")
+				elif typeof(b) == TYPE_DICTIONARY and b.has("radius"):
+					bradius = b.radius
+				elif "radius" in b:
+					bradius = b.radius
+
+				var dist_sq = (bx - shrine.x) * (bx - shrine.x) + (by - shrine.y) * (by - shrine.y)
+				if dist_sq < (shrine.radius + bradius) * (shrine.radius + bradius):
+					if typeof(shrine.used_by) == TYPE_ARRAY:
+						shrine.used_by.append(bid)
+
+					var b_speed = 100.0
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("base_speed"):
+						b_speed = b.get_meta("base_speed")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("base_speed"):
+						b_speed = b.base_speed
+					elif "base_speed" in b:
+						b_speed = b.base_speed
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("speed"):
+						b_speed = b.get_meta("speed")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("speed"):
+						b_speed = b.speed
+					elif "speed" in b:
+						b_speed = b.speed
+
+					var b_dmg = 1.0
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("damage_multiplier"):
+						b_dmg = b.get_meta("damage_multiplier")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("damage_multiplier"):
+						b_dmg = b.damage_multiplier
+					elif "damage_multiplier" in b:
+						b_dmg = b.damage_multiplier
+
+					var b_maxhp = 100.0
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("base_max_hp"):
+						b_maxhp = b.get_meta("base_max_hp")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("base_max_hp"):
+						b_maxhp = b.base_max_hp
+					elif "base_max_hp" in b:
+						b_maxhp = b.base_max_hp
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("max_hp"):
+						b_maxhp = b.get_meta("max_hp")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("max_hp"):
+						b_maxhp = b.max_hp
+					elif "max_hp" in b:
+						b_maxhp = b.max_hp
+
+					var b_hp = 100.0
+					if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
+						b_hp = b.get_meta("hp")
+					elif typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+						b_hp = b.hp
+					elif "hp" in b:
+						b_hp = b.hp
+
+					b_speed *= 1.2
+					b_dmg *= 1.2
+					b_maxhp *= 0.5
+					b_hp *= 0.5
+
+					if b_hp <= 0.0:
+						b_hp = 1.0
+
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("base_speed", b_speed)
+						b.set_meta("speed", b_speed)
+						b.set_meta("damage_multiplier", b_dmg)
+						b.set_meta("base_max_hp", b_maxhp)
+						b.set_meta("max_hp", b_maxhp)
+						b.set_meta("hp", b_hp)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b.base_speed = b_speed
+						b.speed = b_speed
+						b.damage_multiplier = b_dmg
+						b.base_max_hp = b_maxhp
+						b.max_hp = b_maxhp
+						b.hp = b_hp
+					else:
+						b.base_speed = b_speed
+						b.speed = b_speed
+						b.damage_multiplier = b_dmg
+						b.base_max_hp = b_maxhp
+						b.max_hp = b_maxhp
+						b.hp = b_hp
+
 var GAME_MODES = {
 	"geyser_hazards": GeyserHazardMode.new(),
 	"microclimate_hazards": MicroclimateHazardMode.new(),
@@ -57486,6 +57665,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"disco_floor": DiscoFloorMode.new(),
 	"cursed_buff_zone": CursedBuffZoneMode.new(),
 	"weapon_collection": WeaponCollectionMode.new(),
+	"cursed_shrine": CursedShrineMode.new(),
 	"blacksmith_boss": BlacksmithBossMode.new(),
 	"soul_link": SoulLinkMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),

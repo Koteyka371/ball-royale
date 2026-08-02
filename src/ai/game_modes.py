@@ -35160,6 +35160,91 @@ class FrictionZonesMode(GameMode):
                             b.friction_multiplier = 3.0
 
 
+class CursedShrineMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cursed Shrine"
+        self.description = "A new static arena hazard called the 'Cursed Shrine'. When a player interacts with it, they permanently gain +20% damage and speed but lose 50% of their current and maximum health, creating high-risk, high-reward scenarios in the late game."
+
+    def setup(self, world: 'Any') -> None:
+        self.shrines = []
+        if hasattr(world, 'arena') and hasattr(world.arena, 'bounds'):
+            bounds = world.arena.bounds
+        else:
+            bounds = {'x_min': 0, 'x_max': 800, 'y_min': 0, 'y_max': 600}
+
+        # Place 2-3 cursed shrines randomly
+        import random as _rnd
+        num_shrines = _rnd.randint(2, 3)
+        for _ in range(num_shrines):
+            x = _rnd.uniform(bounds['x_min'] + 100, bounds['x_max'] - 100)
+            y = _rnd.uniform(bounds['y_min'] + 100, bounds['y_max'] - 100)
+
+            # Use FallbackHazard approach for static arena hazard
+            class FallbackHazard:
+                def __init__(self, hid, hx, hy, r):
+                    self.id = hid
+                    self.x = hx
+                    self.y = hy
+                    self.radius = r
+                    self.kind = 'cursed_shrine'
+                    self.active = True
+                    self.used_by = [] # List of ball IDs who used it
+
+            shrine = FallbackHazard(f"cursed_shrine_{len(self.shrines)}", x, y, 40.0)
+            self.shrines.append(shrine)
+            if not hasattr(world, 'arena'):
+                class DummyArena:
+                    def __init__(self):
+                        self.hazards = []
+                world.arena = DummyArena()
+            if not hasattr(world.arena, 'hazards'):
+                world.arena.hazards = []
+            world.arena.hazards.append(shrine)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        if not hasattr(self, 'shrines'):
+            return
+
+        for shrine in self.shrines:
+            if not shrine.active:
+                continue
+
+            for b in balls:
+                if not getattr(b, 'alive', False) or getattr(b, 'ball_type', '') == 'spectator':
+                    continue
+
+                if b.id in shrine.used_by:
+                    continue
+
+                # Interaction logic (proximity)
+                dist_sq = (b.x - shrine.x)**2 + (b.y - shrine.y)**2
+                if dist_sq < (shrine.radius + getattr(b, 'radius', 10.0))**2:
+                    # Player interacted with shrine
+                    shrine.used_by.append(b.id)
+
+                    # Apply permanent +20% damage and speed
+                    if not hasattr(b, 'base_speed'):
+                        b.base_speed = getattr(b, 'speed', 100.0)
+                    b.base_speed *= 1.2
+                    b.speed = b.base_speed
+
+                    if not hasattr(b, 'damage_multiplier'):
+                        b.damage_multiplier = 1.0
+                    b.damage_multiplier *= 1.2
+
+                    # Lose 50% of current and maximum health
+                    if not hasattr(b, 'base_max_hp'):
+                        b.base_max_hp = getattr(b, 'max_hp', 100.0)
+                    b.base_max_hp *= 0.5
+                    b.max_hp = b.base_max_hp
+
+                    b.hp = b.hp * 0.5
+
+                    if b.hp <= 0.0:
+                        b.hp = 1.0 # leave at 1 HP instead of killing immediately just in case, though the description says lose 50% of current HP which should never kill if >0, unless it was 0.
+
+
 GAME_MODES = {
     'geyser_hazards': GeyserHazardMode(),
     'signal_scrambler': SignalScramblerMode(),
@@ -35411,6 +35496,7 @@ GAME_MODES = {
     "disco_floor": DiscoFloorMode(),
     "cursed_buff_zone": CursedBuffZoneMode(),
     "weapon_collection": WeaponCollectionMode(),
+    "cursed_shrine": CursedShrineMode(),
     "blacksmith_boss": BlacksmithBossMode()
 }
 
