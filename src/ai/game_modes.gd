@@ -73780,8 +73780,16 @@ class SilentWorldMutatorMode extends GameMode:
 	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
 		for b in balls:
-			var alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
-			var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.ball_type
+			var alive = false
+			if typeof(b) == TYPE_DICTIONARY: alive = b.get("alive", false)
+			elif "alive" in b: alive = b.alive
+			elif b.has_method("has_meta") and b.has_meta("alive"): alive = b.get_meta("alive")
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY: b_type = b.get("ball_type", "")
+			elif "ball_type" in b: b_type = b.ball_type
+			elif b.has_method("has_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
 			if alive and b_type != "spectator":
 				if typeof(b) == TYPE_DICTIONARY:
 					var current_silence = b.get("silence_timer", 0.0)
@@ -73789,10 +73797,21 @@ class SilentWorldMutatorMode extends GameMode:
 					var current_silencer = b.get("silencer_timer", 0.0)
 					b["silencer_timer"] = current_silencer if current_silencer > 2.0 else 2.0
 				else:
-					var current_silence = b.silence_timer if "silence_timer" in b else 0.0
-					b.silence_timer = current_silence if current_silence > 2.0 else 2.0
-					var current_silencer = b.silencer_timer if "silencer_timer" in b else 0.0
-					b.silencer_timer = current_silencer if current_silencer > 2.0 else 2.0
+					var current_silence = 0.0
+					if "silence_timer" in b: current_silence = b.silence_timer
+					elif b.has_method("has_meta") and b.has_meta("silence_timer"): current_silence = b.get_meta("silence_timer")
+
+					var new_silence = current_silence if current_silence > 2.0 else 2.0
+					if "silence_timer" in b: b.silence_timer = new_silence
+					elif b.has_method("set_meta"): b.set_meta("silence_timer", new_silence)
+
+					var current_silencer = 0.0
+					if "silencer_timer" in b: current_silencer = b.silencer_timer
+					elif b.has_method("has_meta") and b.has_meta("silencer_timer"): current_silencer = b.get_meta("silencer_timer")
+
+					var new_silencer = current_silencer if current_silencer > 2.0 else 2.0
+					if "silencer_timer" in b: b.silencer_timer = new_silencer
+					elif b.has_method("set_meta"): b.set_meta("silencer_timer", new_silencer)
 
 GAME_MODES["signal_scrambler"] = load("res://src/ai/signal_scrambler_mode.gd").new()
 
