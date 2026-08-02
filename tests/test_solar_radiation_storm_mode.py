@@ -38,6 +38,8 @@ def test_solar_radiation_storm():
     b2 = MockBall(500, 500, "normal") # Should damage
 
     mode.setup(world, [b1, b2])
+    # Keep only one wall to prevent random shade on b1
+    mode.solar_walls = [mode.solar_walls[0]]
 
     # Start flaring
     mode.flare_timer = 21.0

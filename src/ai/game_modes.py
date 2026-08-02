@@ -35427,9 +35427,9 @@ class SolarRadiationStormMode(GameMode):
                         if hasattr(b, "take_damage"):
                             b.take_damage(damage, source=None)
                         else:
-                            b.hp = getattr(b, "hp", 100) - damage
+                            b.hp = getattr(b, "hp", 100.0) - damage
                             if b.hp <= 0:
-                                b.hp = 0
+                                b.hp = 0.0
                                 b.alive = False
 
                         if not getattr(b, "solar_blinded", False):
