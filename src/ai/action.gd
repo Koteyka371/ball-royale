@@ -29989,6 +29989,48 @@ func _collect_booster(delta: float):
                         var h_idx = self.world.arena.hazards.find(b)
                         if h_idx != -1:
                             self.world.arena.hazards.remove_at(h_idx)
+            elif b_kind == "anchor_repulsor_booster":
+                var dist = sqrt((b_x - self.ball.x)*(b_x - self.ball.x) + (b_y - self.ball.y)*(b_y - self.ball.y))
+                var rad1 = 10.0
+                if typeof(self.ball) == TYPE_OBJECT and "radius" in self.ball: rad1 = float(self.ball.radius)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): rad1 = float(self.ball["radius"])
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("radius"): rad1 = float(self.ball.get_meta("radius"))
+                var rad2 = 15.0
+                if typeof(b) == TYPE_OBJECT and "radius" in b: rad2 = float(b.radius)
+                elif typeof(b) == TYPE_DICTIONARY and b.has("radius"): rad2 = float(b["radius"])
+                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("radius"): rad2 = float(b.get_meta("radius"))
+                if dist <= rad1 + rad2 + 5.0:
+                    var cur_anchor = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_booster_timer"): cur_anchor = float(self.ball["anchor_booster_timer"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "anchor_booster_timer" in self.ball: cur_anchor = float(self.ball.anchor_booster_timer)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("anchor_booster_timer"): cur_anchor = float(self.ball.get_meta("anchor_booster_timer"))
+
+                    var cur_repulsor = 0.0
+                    if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("anchor_repulsor_timer"): cur_repulsor = float(self.ball["anchor_repulsor_timer"])
+                    elif typeof(self.ball) == TYPE_OBJECT and "anchor_repulsor_timer" in self.ball: cur_repulsor = float(self.ball.anchor_repulsor_timer)
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("anchor_repulsor_timer"): cur_repulsor = float(self.ball.get_meta("anchor_repulsor_timer"))
+
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["anchor_booster_timer"] = max(cur_anchor, 10.0)
+                        self.ball["anchor_repulsor_timer"] = max(cur_repulsor, 10.0)
+                    else:
+                        if "anchor_booster_timer" in self.ball: self.ball.anchor_booster_timer = max(cur_anchor, 10.0)
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("anchor_booster_timer", max(cur_anchor, 10.0))
+
+                        if "anchor_repulsor_timer" in self.ball: self.ball.anchor_repulsor_timer = max(cur_repulsor, 10.0)
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("anchor_repulsor_timer", max(cur_repulsor, 10.0))
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else:
+                        if "active" in b: b.active = false
+                        elif b.has_method("set_meta"): b.set_meta("active", false)
+
+                    if self.world != null and "boosters" in self.world:
+                        var idx = self.world.boosters.find(b)
+                        if idx != -1: self.world.boosters.remove_at(idx)
+                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                        var idx = self.world.arena.hazards.find(b)
+                        if idx != -1: self.world.arena.hazards.remove_at(idx)
             elif b_kind == "flashbang_booster":
                 var bx = 0.0
                 var by = 0.0
@@ -42891,7 +42933,7 @@ func _use_skill():
                     elif typeof(h) == TYPE_OBJECT and h.has_method("has_meta") and h.has_meta("kind"): kind = h.get_meta("kind")
                     elif typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h["kind"]
 
-                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster"]:
+                    if not kind in ["event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "portal_gun_item", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "breaching_booster", "gravity_multiplier_booster", "anchor_booster", "disruptor_booster", "emp_booster", "cursed_relic", "cursed_booster", "exploding_booster", "debuff_booster", "black_hole_grenade_booster", "status_absorber_item", "weather_shield_item", "weather_shield_zone", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "insulator_booster", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster"]:
 
                         var hx = 0.0
                         var hy = 0.0
@@ -47108,6 +47150,112 @@ func _update_skill_timer(delta: float):
                                 if "x" in b: b.x += nx * pull_strength
                                 if "y" in b: b.y += ny * pull_strength
 
+    var anchor_repulsor_timer = 0.0
+    if "anchor_repulsor_timer" in self.ball:
+        anchor_repulsor_timer = float(self.ball.anchor_repulsor_timer)
+    elif self.ball.has_method("get_meta") and self.ball.has_meta("anchor_repulsor_timer"):
+        anchor_repulsor_timer = float(self.ball.get_meta("anchor_repulsor_timer"))
+    if anchor_repulsor_timer > 0:
+        anchor_repulsor_timer -= delta
+        if "anchor_repulsor_timer" in self.ball:
+            self.ball.anchor_repulsor_timer = anchor_repulsor_timer
+        elif self.ball.has_method("set_meta"):
+            self.ball.set_meta("anchor_repulsor_timer", anchor_repulsor_timer)
+
+        if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+            for hazard in self.world.arena.hazards:
+                var emp_timer = 0.0
+                if "emp_disabled_timer" in hazard: emp_timer = hazard.emp_disabled_timer
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("emp_disabled_timer"): emp_timer = hazard["emp_disabled_timer"]
+                elif hazard.has_method("get_meta") and hazard.has_meta("emp_disabled_timer"): emp_timer = hazard.get_meta("emp_disabled_timer")
+                if emp_timer > 0:
+                    continue
+                var kind = ""
+                if "kind" in hazard: kind = hazard.kind
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
+                elif hazard.has_method("get_meta") and hazard.has_meta("kind"): kind = hazard.get_meta("kind")
+
+                if kind in ["booster", "repulsor_booster", "anchor_repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster"]:
+                    continue
+
+                var hx = 0.0
+                var hy = 0.0
+                if "x" in hazard: hx = float(hazard.x)
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = float(hazard["x"])
+                if "y" in hazard: hy = float(hazard.y)
+                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = float(hazard["y"])
+
+                var dx = hx - self.ball.x
+                var dy = hy - self.ball.y
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq < 22500: # 150 range
+                    var dist = sqrt(dist_sq)
+                    if dist > 0.0001:
+                        var nx = dx / dist
+                        var ny = dy / dist
+                        var push_strength = 250.0 * delta
+                        if typeof(hazard) == TYPE_DICTIONARY:
+                            if hazard.has("x"): hazard["x"] += nx * push_strength
+                            if hazard.has("y"): hazard["y"] += ny * push_strength
+                        elif typeof(hazard) == TYPE_OBJECT:
+                            if "x" in hazard: hazard.x += nx * push_strength
+                            if "y" in hazard: hazard.y += ny * push_strength
+
+        # Push enemies away
+        if self.world != null and "balls" in self.world:
+            for b in self.world.balls:
+                if b == self.ball: continue
+                var b_alive = false
+                if "alive" in b: b_alive = b.alive
+                elif typeof(b) == TYPE_DICTIONARY and b.has("alive"): b_alive = b["alive"]
+                if not b_alive: continue
+
+                var b_intangible = false
+                if "intangible" in b: b_intangible = b.intangible
+                elif typeof(b) == TYPE_DICTIONARY and b.has("intangible"): b_intangible = b["intangible"]
+                elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("intangible"): b_intangible = b.get_meta("intangible")
+                if b_intangible: continue
+
+                var b_team = ""
+                if "team" in b: b_team = b.team
+                elif typeof(b) == TYPE_DICTIONARY and b.has("team"): b_team = b["team"]
+
+                var b_type = ""
+                if "ball_type" in b: b_type = b.ball_type
+                elif typeof(b) == TYPE_DICTIONARY and b.has("ball_type"): b_type = b["ball_type"]
+
+                if b_type != "spectator" and b_team != self.ball.team:
+                    var bx = 0.0
+                    var by = 0.0
+                    if "x" in b: bx = float(b.x)
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("x"): bx = float(b["x"])
+                    if "y" in b: by = float(b.y)
+                    elif typeof(b) == TYPE_DICTIONARY and b.has("y"): by = float(b["y"])
+
+                    var dx = bx - self.ball.x
+                    var dy = by - self.ball.y
+                    var dist_sq = dx*dx + dy*dy
+                    if dist_sq < 22500: # 150 range
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.0001:
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            var push_force = 1500.0 * delta
+                            if typeof(b) == TYPE_DICTIONARY:
+                                var bvx = 0.0
+                                var bvy = 0.0
+                                if b.has("vx"): bvx = float(b["vx"])
+                                if b.has("vy"): bvy = float(b["vy"])
+                                b["vx"] = bvx + nx * push_force
+                                b["vy"] = bvy + ny * push_force
+                            elif typeof(b) == TYPE_OBJECT:
+                                var bvx = 0.0
+                                var bvy = 0.0
+                                if "vx" in b: bvx = float(b.vx)
+                                if "vy" in b: bvy = float(b.vy)
+                                b.vx = bvx + nx * push_force
+                                b.vy = bvy + ny * push_force
+
     var repulsor_booster_timer = 0.0
     if "repulsor_booster_timer" in self.ball:
         repulsor_booster_timer = float(self.ball.repulsor_booster_timer)
@@ -47133,7 +47281,7 @@ func _update_skill_timer(delta: float):
                 elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): kind = hazard["kind"]
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): kind = hazard.get_meta("kind")
 
-                if kind in ["booster", "repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster"]:
+                if kind in ["booster", "repulsor_booster", "anchor_repulsor_booster", "healing_spring", "personal_safe_zone", "defensive_shield", "event_horizon_trap", "repulsion_zone", "forecast_booster", "pet_item", "miniature_black_hole_item", "wind_tunnel", "cryogenic_booster"]:
 
                     continue
 
@@ -47500,7 +47648,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_pull_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_pull_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
