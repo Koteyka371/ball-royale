@@ -66755,6 +66755,107 @@ class ZeroGravityMeteorShowerMode extends GameMode:
 
 GAME_MODES["zero_gravity_meteor_shower"] = ZeroGravityMeteorShowerMode.new()
 
+class CursedShrineMode extends GameMode:
+	var shrine_spawned: bool = false
+
+	func _init():
+		super._init()
+		self.name = "Cursed Shrine"
+		self.description = "A mysterious shrine spawns in the center of the arena. Interacting with it grants +20% damage and speed permanently, but halves current and maximum HP."
+		self.shrine_spawned = false
+
+	func setup(world, balls=null) -> void:
+		pass # Base setup doesn't always take 2 args, let's just do nothing for super in GDScript if not needed.
+
+		if typeof(world) == TYPE_OBJECT and not "arena" in world:
+			return
+		if typeof(world) == TYPE_DICTIONARY and not world.has("arena"):
+			return
+
+		var arena = world.arena if typeof(world) == TYPE_OBJECT else world["arena"]
+		if typeof(arena) == TYPE_OBJECT and not "hazards" in arena:
+			arena.hazards = []
+		elif typeof(arena) == TYPE_DICTIONARY and not arena.has("hazards"):
+			arena["hazards"] = []
+
+		var hazards = arena.hazards if typeof(arena) == TYPE_OBJECT else arena["hazards"]
+		var filtered = []
+		for h in hazards:
+			if typeof(h) == TYPE_OBJECT and h.get("kind", "") != "cursed_shrine":
+				filtered.append(h)
+			elif typeof(h) == TYPE_DICTIONARY and h.get("kind", "") != "cursed_shrine":
+				filtered.append(h)
+
+		if typeof(arena) == TYPE_OBJECT:
+			arena.hazards = filtered
+		else:
+			arena["hazards"] = filtered
+
+	func tick(world, delta: float, balls=null) -> void:
+		if world != null and typeof(world) == TYPE_OBJECT and world.has_method("tick"):
+			super.tick(world, balls, delta)
+		else:
+			pass
+		# In GDScript, super.tick can take different args. Let's just avoid calling it if it breaks, or call it correctly.
+		# GameMode tick is `func tick(world, balls, delta: float)` usually
+		# Wait, base GameMode is `func tick(world, balls, delta: float):`
+
+
+		var arena = null
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			arena = world.arena
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena = world["arena"]
+
+		if arena == null:
+			return
+
+		var has_hazards = false
+		if typeof(arena) == TYPE_OBJECT and "hazards" in arena:
+			has_hazards = true
+		elif typeof(arena) == TYPE_DICTIONARY and arena.has("hazards"):
+			has_hazards = true
+
+		if not has_hazards:
+			return
+
+		if not self.shrine_spawned:
+			self.shrine_spawned = true
+
+			var shrine = {}
+			shrine["id"] = 99999
+			if typeof(world) == TYPE_OBJECT and "next_id" in world:
+				shrine["id"] = world.next_id
+				world.next_id += 1
+			elif typeof(world) == TYPE_DICTIONARY and world.has("next_id"):
+				shrine["id"] = world["next_id"]
+				world["next_id"] += 1
+
+			var w_val = 2000.0
+			var h_val = 2000.0
+			if typeof(arena) == TYPE_OBJECT:
+				w_val = arena.get("width", 2000.0)
+				h_val = arena.get("height", 2000.0)
+			elif typeof(arena) == TYPE_DICTIONARY:
+				w_val = arena.get("width", 2000.0)
+				h_val = arena.get("height", 2000.0)
+
+			shrine["x"] = w_val / 2.0
+			shrine["y"] = h_val / 2.0
+			shrine["radius"] = 40.0
+			shrine["kind"] = "cursed_shrine"
+			shrine["active"] = true
+			shrine["used"] = false
+			shrine["damage"] = 0.0
+
+			if typeof(arena) == TYPE_OBJECT:
+				arena.hazards.append(shrine)
+			else:
+				arena["hazards"].append(shrine)
+
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("system_message", {"text": "A Cursed Shrine has appeared!"})
+
 class CursedBoosterMode extends GameMode:
 	func _init():
 		super._init()
