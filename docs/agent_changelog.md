@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1692] Radar Jammer — *2026-08-02 05:30:56 UTC*
+
+A gadget that permanently scrambles homing missiles and AI perception in a large area.
+
+---
+
 ## [idea-1738] Stasis Bubble Booster — *2026-08-02 01:46:29 UTC*
 
 A booster that deploys a stasis bubble around the ball. The bubble completely stops time within a 50-radius around the ball for 3 seconds, freezing projectiles and other balls, but the ball itself can still move freely.
