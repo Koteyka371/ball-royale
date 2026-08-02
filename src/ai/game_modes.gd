@@ -57199,7 +57199,89 @@ class SolarRadiationStormMode extends GameMode:
 								b["perception_radius"] = b["base_perception_radius"] * 0.2
 								b["solar_blinded"] = true
 
+
+class ToxicFogEventMode extends GameMode:
+	var fog_timer = 20.0
+	var fog_active = false
+
+	func _init():
+		name = "Toxic Fog Event"
+		description = "A thick green fog temporarily reduces max HP by 30% and nullifies all healing."
+
+	func setup(world, balls):
+		fog_timer = 20.0
+		fog_active = false
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				b.set_meta("_fog_base_max_hp", float(b.max_hp) if "max_hp" in b else 100.0)
+				b.set_meta("_fog_last_hp", float(b.hp) if "hp" in b else 100.0)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["_fog_base_max_hp"] = float(b.get("max_hp", 100.0))
+				b["_fog_last_hp"] = float(b.get("hp", 100.0))
+
+	func tick(world, balls, delta=0.016):
+		fog_timer -= delta
+		if fog_timer <= 0:
+			if fog_active:
+				fog_active = false
+				fog_timer = 20.0
+			else:
+				fog_active = true
+				fog_timer = 10.0
+
+		for b in balls:
+			var alive = false
+			if typeof(b) == TYPE_OBJECT: alive = b.alive if "alive" in b else false
+			elif typeof(b) == TYPE_DICTIONARY: alive = b.get("alive", false)
+			if not alive:
+				continue
+
+			var base_max_hp = 100.0
+			var current_hp = 100.0
+			var last_hp = 100.0
+
+			if typeof(b) == TYPE_OBJECT:
+				if not b.has_meta("_fog_base_max_hp"):
+					b.set_meta("_fog_base_max_hp", float(b.max_hp) if "max_hp" in b else 100.0)
+					b.set_meta("_fog_last_hp", float(b.hp) if "hp" in b else 100.0)
+				base_max_hp = float(b.get_meta("_fog_base_max_hp"))
+				last_hp = float(b.get_meta("_fog_last_hp"))
+				current_hp = float(b.hp) if "hp" in b else 100.0
+			elif typeof(b) == TYPE_DICTIONARY:
+				if not b.has("_fog_base_max_hp"):
+					b["_fog_base_max_hp"] = float(b.get("max_hp", 100.0))
+					b["_fog_last_hp"] = float(b.get("hp", 100.0))
+				base_max_hp = float(b.get("_fog_base_max_hp"))
+				last_hp = float(b.get("_fog_last_hp"))
+				current_hp = float(b.get("hp", 100.0))
+
+			if fog_active:
+				var new_max_hp = base_max_hp * 0.7
+				if typeof(b) == TYPE_OBJECT: b.max_hp = new_max_hp
+				elif typeof(b) == TYPE_DICTIONARY: b["max_hp"] = new_max_hp
+
+				if current_hp > new_max_hp:
+					current_hp = new_max_hp
+					if typeof(b) == TYPE_OBJECT: b.hp = current_hp
+					elif typeof(b) == TYPE_DICTIONARY: b["hp"] = current_hp
+
+				# Nullify healing
+				if current_hp > last_hp:
+					current_hp = last_hp
+					if typeof(b) == TYPE_OBJECT: b.hp = current_hp
+					elif typeof(b) == TYPE_DICTIONARY: b["hp"] = current_hp
+
+			else:
+				if typeof(b) == TYPE_OBJECT: b.max_hp = base_max_hp
+				elif typeof(b) == TYPE_DICTIONARY: b["max_hp"] = base_max_hp
+
+			if typeof(b) == TYPE_OBJECT:
+				b.set_meta("_fog_last_hp", current_hp)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["_fog_last_hp"] = current_hp
+
 var GAME_MODES = {
+	"toxic_fog_event": ToxicFogEventMode.new(),
 	"geyser_hazards": GeyserHazardMode.new(),
 	"microclimate_hazards": MicroclimateHazardMode.new(),
 	"friction_zones": FrictionZonesMode.new(),
