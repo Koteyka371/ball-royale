@@ -12459,6 +12459,34 @@ func execute(strategy: String, delta: float):
 		for hazard in world.arena.hazards:
 			var kind = hazard.get("kind", "")
 			var is_active = hazard.get("active", true)
+			if kind == "cursed_shrine" and is_active:
+				var dist_sq = (hazard.x - self.ball.x) * (hazard.x - self.ball.x) + (hazard.y - self.ball.y) * (hazard.y - self.ball.y)
+				var h_rad = hazard.get("radius", 30.0)
+				var b_rad = self.ball.get("radius", 10.0)
+				if dist_sq < (h_rad + b_rad) * (h_rad + b_rad):
+					if not hazard.get("used", false):
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["used"] = true
+							hazard["active"] = false
+						elif typeof(hazard) == TYPE_OBJECT:
+							hazard.used = true
+							hazard.active = false
+
+						if "base_damage" in self.ball:
+							self.ball["base_damage"] = float(self.ball.base_damage) * 1.2
+						if "damage" in self.ball:
+							self.ball["damage"] = float(self.ball.damage) * 1.2
+
+						if "base_speed" in self.ball:
+							self.ball["base_speed"] = float(self.ball.base_speed) * 1.2
+						if "speed" in self.ball:
+							self.ball["speed"] = float(self.ball.speed) * 1.2
+
+						if "max_hp" in self.ball:
+							self.ball["max_hp"] = float(self.ball.max_hp) * 0.5
+						if "hp" in self.ball:
+							self.ball["hp"] = float(self.ball.hp) * 0.5
+
 			if (kind == "gravity_well" or kind == "repulsor") and is_active:
 				var hx = float(hazard.x)
 				var hy = float(hazard.y)

@@ -28816,6 +28816,71 @@ class DynamicWindCurrentsMode(GameMode):
                 b.vx += self.wind_dir_x * self.wind_strength * delta
                 b.vy += self.wind_dir_y * self.wind_strength * delta
 
+class CursedShrineMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Cursed Shrine"
+        self.description = "A mysterious shrine spawns in the center of the arena. Interacting with it grants +20% damage and speed permanently, but halves current and maximum HP."
+        self.shrine_spawned = False
+
+    def setup(self, world, balls=None):
+        if hasattr(super(), "setup"):
+            try:
+                super().setup(world, balls)
+            except TypeError:
+                try:
+                    super().setup(world)
+                except Exception:
+                    pass
+        if not hasattr(world, "arena"):
+            return
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        import random
+        # Clear existing shrines if any
+        world.arena.hazards = [h for h in world.arena.hazards if getattr(h, "kind", "") != "cursed_shrine"]
+
+    def tick(self, world, delta: float=None, balls=None) -> None:
+        if delta is None and isinstance(world, (int, float)):
+            delta = world
+            world = None
+        if balls is None and hasattr(world, 'balls'):
+            balls = world.balls
+        try:
+            super().tick(world, delta)
+        except TypeError:
+            try:
+                super().tick(world, balls, delta)
+            except Exception:
+                pass
+
+        if not hasattr(world, "arena") or not hasattr(world.arena, "hazards"):
+            return
+
+        if not self.shrine_spawned:
+            self.shrine_spawned = True
+
+            # Use procedural arena Hazard class if possible, else create mock
+            class ShrineHazard:
+                pass
+            shrine = ShrineHazard()
+            shrine.id = getattr(world, "next_id", 99999)
+            if hasattr(world, "next_id"):
+                world.next_id += 1
+            shrine.x = getattr(world.arena, "width", 2000.0) / 2
+            shrine.y = getattr(world.arena, "height", 2000.0) / 2
+            shrine.radius = 40.0
+            shrine.kind = "cursed_shrine"
+            shrine.active = True
+            shrine.used = False
+            shrine.damage = 0.0
+
+            world.arena.hazards.append(shrine)
+
+            if hasattr(world, "add_event"):
+                world.add_event("system_message", {"text": "A Cursed Shrine has appeared!"})
+
 class CursedBoosterMode(GameMode):
     def __init__(self):
         super().__init__()

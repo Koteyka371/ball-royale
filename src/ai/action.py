@@ -4011,6 +4011,34 @@ class Action:
                     continue
                 if getattr(self.ball, "quantum_state_timer", 0.0) > 0.0:
                     continue
+                if getattr(hazard, "kind", "") == "cursed_shrine":
+                    # Determine interaction range
+                    # Task: "When a player interacts with it, they permanently gain +20% damage and speed but lose 50% of their current and maximum health"
+                    dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
+                    if dist_sq < (getattr(hazard, "radius", 30.0) + getattr(self.ball, "radius", 10.0))**2:
+                        if not getattr(hazard, "used", False):
+                            # Mark as used so it doesn't trigger again
+                            hazard.used = True
+                            hazard.active = False
+
+                            # Give permanent +20% damage and speed
+                            if hasattr(self.ball, "base_damage"):
+                                self.ball.base_damage *= 1.2
+                            if hasattr(self.ball, "damage"):
+                                self.ball.damage *= 1.2
+
+                            if hasattr(self.ball, "base_speed"):
+                                self.ball.base_speed *= 1.2
+                            if hasattr(self.ball, "speed"):
+                                self.ball.speed *= 1.2
+
+                            # Lose 50% current and max health
+                            if hasattr(self.ball, "max_hp"):
+                                self.ball.max_hp *= 0.5
+                            if hasattr(self.ball, "hp"):
+                                self.ball.hp *= 0.5
+
+
                 if getattr(hazard, "kind", "") == "thrown_status_absorber":
                     if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
                         dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
