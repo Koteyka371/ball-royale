@@ -5734,6 +5734,104 @@ func execute(strategy: String, delta: float):
                     if self.ball.has("bone_armor_timer"): bat = self.ball["bone_armor_timer"]
                     self.ball["bone_armor_timer"] = bat + conversion
 
+    var magnetic_aura_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "magnetic_aura_timer" in self.ball: magnetic_aura_timer = self.ball.magnetic_aura_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("magnetic_aura_timer"): magnetic_aura_timer = self.ball.get_meta("magnetic_aura_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("magnetic_aura_timer"):
+        magnetic_aura_timer = self.ball["magnetic_aura_timer"]
+
+    if magnetic_aura_timer > 0.0:
+        magnetic_aura_timer -= delta
+        if magnetic_aura_timer < 0.0:
+            magnetic_aura_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "magnetic_aura_timer" in self.ball: self.ball.magnetic_aura_timer = magnetic_aura_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("magnetic_aura_timer", magnetic_aura_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["magnetic_aura_timer"] = magnetic_aura_timer
+
+        var pull_radius = 300.0
+        var pull_strength = 200.0 * delta
+
+        if self.world != null and "balls" in self.world:
+            for e in self.world.balls:
+                if e != self.ball:
+                    var e_alive = false
+                    if typeof(e) == TYPE_DICTIONARY: e_alive = e.get("alive", true)
+                    elif typeof(e) == TYPE_OBJECT:
+                        if "alive" in e: e_alive = e.alive
+                        elif e.has_method("get_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+
+                    var e_team = ""
+                    if typeof(e) == TYPE_DICTIONARY: e_team = e.get("team", e.get("ball_type", ""))
+                    elif typeof(e) == TYPE_OBJECT:
+                        if "team" in e: e_team = e.team
+                        elif e.has_method("get_meta") and e.has_meta("team"): e_team = e.get_meta("team")
+
+                    var my_team = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY: my_team = self.ball.get("team", self.ball.get("ball_type", ""))
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "team" in self.ball: my_team = self.ball.team
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                    if e_alive and e_team != my_team:
+                        var ex = 0.0
+                        var ey = 0.0
+                        if typeof(e) == TYPE_DICTIONARY:
+                            ex = e.get("x", 0.0)
+                            ey = e.get("y", 0.0)
+                        elif typeof(e) == TYPE_OBJECT:
+                            if "x" in e: ex = e.x
+                            elif e.has_method("get_meta") and e.has_meta("x"): ex = e.get_meta("x")
+                            if "y" in e: ey = e.y
+                            elif e.has_method("get_meta") and e.has_meta("y"): ey = e.get_meta("y")
+
+                        var dx = self.ball.x - ex
+                        var dy = self.ball.y - ey
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq > 0.0001 and dist_sq <= pull_radius*pull_radius:
+                            var dist = sqrt(dist_sq)
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            if typeof(e) == TYPE_DICTIONARY:
+                                e["x"] = ex + nx * pull_strength
+                                e["y"] = ey + ny * pull_strength
+                            elif typeof(e) == TYPE_OBJECT:
+                                if "x" in e: e.x = ex + nx * pull_strength
+                                elif e.has_method("set_meta"): e.set_meta("x", ex + nx * pull_strength)
+                                if "y" in e: e.y = ey + ny * pull_strength
+                                elif e.has_method("set_meta"): e.set_meta("y", ey + ny * pull_strength)
+
+        if self.world != null and "boosters" in self.world:
+            for b in self.world.boosters:
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    bx = b.get("x", 0.0)
+                    by = b.get("y", 0.0)
+                elif typeof(b) == TYPE_OBJECT:
+                    if "x" in b: bx = b.x
+                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                    if "y" in b: by = b.y
+                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                var dx = self.ball.x - bx
+                var dy = self.ball.y - by
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq > 0.0001 and dist_sq <= pull_radius*pull_radius:
+                    var dist = sqrt(dist_sq)
+                    var nx = dx / dist
+                    var ny = dy / dist
+                    if typeof(b) == TYPE_DICTIONARY:
+                        b["x"] = bx + nx * pull_strength
+                        b["y"] = by + ny * pull_strength
+                    elif typeof(b) == TYPE_OBJECT:
+                        if "x" in b: b.x = bx + nx * pull_strength
+                        elif b.has_method("set_meta"): b.set_meta("x", bx + nx * pull_strength)
+                        if "y" in b: b.y = by + ny * pull_strength
+                        elif b.has_method("set_meta"): b.set_meta("y", by + ny * pull_strength)
+
     var t_timer = 0.0
     if typeof(self.ball) == TYPE_OBJECT:
         if "tracker_booster_timer" in self.ball: t_timer = self.ball.tracker_booster_timer
@@ -29635,6 +29733,48 @@ func _collect_booster(delta: float):
                     if typeof(self.ball) == TYPE_DICTIONARY: self.ball["inventory"] = inv
                     elif "inventory" in self.ball: self.ball.inventory = inv
                     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("inventory", inv)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else: b.active = false
+
+                    if self.world != null and "boosters" in self.world:
+                        var b_idx = self.world.boosters.find(b)
+                        if b_idx != -1:
+                            self.world.boosters.remove_at(b_idx)
+                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                        var h_idx = self.world.arena.hazards.find(b)
+                        if h_idx != -1:
+                            self.world.arena.hazards.remove_at(h_idx)
+            elif b_kind == "magnetic_aura_booster":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                else:
+                    if "x" in b: bx = b.x
+                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                    if "y" in b: by = b.y
+                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT:
+                    if "radius" in b: b_radius = b.radius
+                    elif b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                var my_radius = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): my_radius = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "radius" in self.ball: my_radius = self.ball.radius
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+
+                var dist = sqrt(pow(bx - self.ball.x, 2) + pow(by - self.ball.y, 2))
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["magnetic_aura_timer"] = 15.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("magnetic_aura_timer", 15.0)
 
                     if typeof(b) == TYPE_DICTIONARY: b["active"] = false
                     else: b.active = false
