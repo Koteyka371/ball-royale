@@ -35222,27 +35222,42 @@ class FrictionZonesMode(GameMode):
             world.arena.hazards.append(hazard)
 
         for hazard in world.arena.hazards[:]:
-            if getattr(hazard, "kind", "").endswith("_zone"):
+            if getattr(hazard, "kind", "") in ["ice_zone", "mud_zone"]:
                 hazard.duration -= delta
                 if hazard.duration <= 0:
-                    world.arena.hazards.remove(hazard)
+                    if hazard in world.arena.hazards:
+                        world.arena.hazards.remove(hazard)
 
         for b in balls:
             if not getattr(b, "alive", False): continue
             if getattr(b, "ball_type", "") == "spectator": continue
 
-            b.friction_multiplier = 1.0
-            b.is_frictionless = False
+            if not hasattr(b, "base_friction_multiplier"):
+                b.base_friction_multiplier = getattr(b, "friction_multiplier", 1.0)
+            if not hasattr(b, "base_is_frictionless"):
+                b.base_is_frictionless = getattr(b, "is_frictionless", False)
+
+            in_ice = False
+            in_mud = False
 
             for hazard in world.arena.hazards:
-                if getattr(hazard, "kind", "").endswith("_zone"):
+                if getattr(hazard, "kind", "") in ["ice_zone", "mud_zone"]:
                     dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
                     if dist_sq < hazard.radius**2:
-                        if hazard.zone_type == "ice":
-                            b.friction_multiplier = 0.1
-                            b.is_frictionless = True
-                        elif hazard.zone_type == "mud":
-                            b.friction_multiplier = 3.0
+                        if getattr(hazard, "zone_type", "") == "ice":
+                            in_ice = True
+                        elif getattr(hazard, "zone_type", "") == "mud":
+                            in_mud = True
+
+            if in_ice:
+                b.friction_multiplier = 0.1
+                b.is_frictionless = True
+            elif in_mud:
+                b.friction_multiplier = 3.0
+                b.is_frictionless = False
+            else:
+                b.friction_multiplier = getattr(b, "base_friction_multiplier", 1.0)
+                b.is_frictionless = getattr(b, "base_is_frictionless", False)
 
 
 
