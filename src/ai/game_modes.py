@@ -35438,7 +35438,61 @@ class SolarRadiationStormMode(GameMode):
                             b.perception_radius = b.base_perception_radius * 0.2
                             b.solar_blinded = True
 
+
+class ToxicFogEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Toxic Fog Event"
+        self.description = "A thick green fog temporarily reduces max HP by 30% and nullifies all healing."
+        self.fog_timer = 20.0
+        self.fog_active = False
+
+    def setup(self, world, balls):
+        super().setup(world, balls) if hasattr(super(), 'setup') else None
+        self.fog_timer = 20.0
+        self.fog_active = False
+        for b in balls:
+            b._fog_base_max_hp = getattr(b, "max_hp", 100.0)
+            b._fog_last_hp = getattr(b, "hp", 100.0)
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(super(), 'tick'):
+            super().tick(world, balls, delta)
+
+        self.fog_timer -= delta
+        if self.fog_timer <= 0:
+            if self.fog_active:
+                self.fog_active = False
+                self.fog_timer = 20.0
+            else:
+                self.fog_active = True
+                self.fog_timer = 10.0
+
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            if not hasattr(b, "_fog_base_max_hp"):
+                b._fog_base_max_hp = getattr(b, "max_hp", 100.0)
+                b._fog_last_hp = getattr(b, "hp", 100.0)
+
+            if self.fog_active:
+                b.max_hp = b._fog_base_max_hp * 0.7
+                if getattr(b, "hp", 100.0) > b.max_hp:
+                    b.hp = b.max_hp
+
+                # Nullify healing
+                current_hp = getattr(b, "hp", 100.0)
+                last_hp = getattr(b, "_fog_last_hp", 100.0)
+                if current_hp > last_hp:
+                    b.hp = last_hp
+
+            else:
+                b.max_hp = getattr(b, "_fog_base_max_hp", 100.0)
+
+            b._fog_last_hp = getattr(b, "hp", 100.0)
+
 GAME_MODES = {
+    "toxic_fog_event": ToxicFogEventMode(),
     'geyser_hazards': GeyserHazardMode(),
     'signal_scrambler': SignalScramblerMode(),
     'microclimate_hazards': MicroclimateHazardMode(),
