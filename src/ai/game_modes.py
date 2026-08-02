@@ -35083,10 +35083,88 @@ class GeyserHazardMode(GameMode):
                             b.z_height = 0.1      # Get off the ground
                             b.is_frictionless = True
 
+class FrictionZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Friction Zones"
+        self.description = "Zones that randomly spawn and change the friction of the floor. Some zones are icy (zero friction), while others are like mud (high friction)."
+        self.zone_spawn_timer = 0.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): world.arena.hazards = []
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not hasattr(world, "arena"): return
+        if not hasattr(world.arena, "hazards"): return
+
+        self.zone_spawn_timer += delta
+        import random
+        import math
+
+        if self.zone_spawn_timer >= 5.0:
+            self.zone_spawn_timer = 0.0
+
+            try:
+                from arena.procedural_arena import Hazard
+                hazard_class = Hazard
+            except ImportError:
+                class FallbackHazard:
+                    def __init__(self, h_id, x, y, radius, kind, damage=0):
+                        self.id = h_id
+                        self.x = x
+                        self.y = y
+                        self.radius = radius
+                        self.kind = kind
+                        self.damage = damage
+                        self.active = True
+                hazard_class = FallbackHazard
+
+            zone_type = random.choice(["ice", "mud"])
+            hx = random.uniform(200, getattr(world.arena, "width", 1000) - 200)
+            hy = random.uniform(200, getattr(world.arena, "height", 1000) - 200)
+
+            hazard = hazard_class(
+                random.randint(20000, 30000),
+                hx, hy, 150.0,
+                f"{zone_type}_zone", 0.0
+            )
+            hazard.zone_type = zone_type
+            hazard.duration = 10.0
+            world.arena.hazards.append(hazard)
+
+        for hazard in world.arena.hazards[:]:
+            if getattr(hazard, "kind", "").endswith("_zone"):
+                hazard.duration -= delta
+                if hazard.duration <= 0:
+                    world.arena.hazards.remove(hazard)
+
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+            if getattr(b, "ball_type", "") == "spectator": continue
+
+            b.friction_multiplier = 1.0
+            b.is_frictionless = False
+
+            for hazard in world.arena.hazards:
+                if getattr(hazard, "kind", "").endswith("_zone"):
+                    dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                    if dist_sq < hazard.radius**2:
+                        if hazard.zone_type == "ice":
+                            b.friction_multiplier = 0.1
+                            b.is_frictionless = True
+                        elif hazard.zone_type == "mud":
+                            b.friction_multiplier = 3.0
+
+
 GAME_MODES = {
     'geyser_hazards': GeyserHazardMode(),
     'signal_scrambler': SignalScramblerMode(),
     'microclimate_hazards': MicroclimateHazardMode(),
+    'friction_zones': FrictionZonesMode(),
     'molten_golem': MoltenGolemMode(),
     'white_hole': WhiteHoleMode(),
     'hot_potato': HotPotatoMode(),
