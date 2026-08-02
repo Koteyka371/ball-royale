@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1755] Cursed Shrine Mechanic — *2026-08-02 12:09:00 UTC*
+
+A new static arena hazard called the 'Cursed Shrine'. When a player interacts with it, they permanently gain +20% damage and speed but lose 50% of their current and maximum health, creating high-risk, high-reward scenarios in the late game.
+
+---
+
 ## [idea-1765] Aggro Redirect Traps — *2026-08-02 12:08:55 UTC*
 
 Introduce a trap type that spawns a decoy on activation, instantly drawing aggro from nearby AI and forcing them to attack the decoy instead of the player.
