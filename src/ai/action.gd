@@ -20983,6 +20983,91 @@ func execute(strategy: String, delta: float):
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
 
+                            elif trap_variant == "taunt_decoy":
+                                var owner_id = null
+                                if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
+                                    owner_id = hazard.get_meta("owner_id")
+                                elif "owner_id" in hazard:
+                                    owner_id = hazard.owner_id
+
+                                if owner_id != null:
+                                    var owner_ball = null
+                                    var balls_list = []
+                                    if world != null and "balls" in world:
+                                        balls_list = world.balls
+                                    elif world != null and "entities" in world:
+                                        balls_list = world.entities
+
+                                    for b in balls_list:
+                                        if "id" in b and b.id == owner_id:
+                                            owner_ball = b
+                                            break
+
+                                    if owner_ball != null:
+                                        var decoy = null
+                                        if owner_ball.has_method("duplicate"):
+                                            decoy = owner_ball.duplicate()
+                                        elif typeof(owner_ball) == TYPE_DICTIONARY:
+                                            decoy = owner_ball.duplicate()
+
+                                        if decoy != null:
+                                            if "id" in decoy:
+                                                decoy.id = randi() % 90000 + 10000
+                                            if "hp" in decoy and "max_hp" in decoy:
+                                                decoy.max_hp = 100.0
+                                                decoy.hp = 100.0
+                                            if "damage" in decoy:
+                                                decoy.damage = 0.0
+                                            if "vx" in decoy:
+                                                decoy.vx = 0.0
+                                            if "vy" in decoy:
+                                                decoy.vy = 0.0
+                                            if "speed" in decoy:
+                                                decoy.speed = 0.0
+
+                                            if "x" in decoy: decoy.x = hazard.x
+                                            if "y" in decoy: decoy.y = hazard.y
+                                            if "alive" in decoy: decoy.alive = true
+
+                                            if typeof(decoy) == TYPE_OBJECT and decoy.has_method("set_meta"):
+                                                decoy.set_meta("is_decoy", true)
+                                                decoy.set_meta("decoy_timer", 5.0)
+                                                decoy.set_meta("decoy_type", "taunt")
+                                                decoy.set_meta("skill", null)
+                                                decoy.set_meta("active_skill", null)
+                                                decoy.set_meta("SKILL", null)
+                                            elif typeof(decoy) == TYPE_DICTIONARY:
+                                                decoy["is_decoy"] = true
+                                                decoy["decoy_timer"] = 5.0
+                                                decoy["decoy_type"] = "taunt"
+                                                decoy["skill"] = null
+                                                decoy["active_skill"] = null
+                                                decoy["SKILL"] = null
+
+                                            if world != null and "balls" in world:
+                                                world.balls.append(decoy)
+                                                for b in world.balls:
+                                                    var b_id = b.id if "id" in b else (b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id") else null)
+                                                    var b_team = b.team if "team" in b else (b.get_meta("team") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team") else "")
+                                                    var d_team = decoy.team if "team" in decoy else (decoy.get_meta("team") if typeof(decoy) == TYPE_OBJECT and decoy.has_method("has_meta") and decoy.has_meta("team") else "")
+                                                    if b_id != null and decoy.id != null and b_id != decoy.id and b_team != d_team:
+                                                        var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x") else 0.0)
+                                                        var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y") else 0.0)
+                                                        var dx = decoy.x if "x" in decoy else (decoy.get_meta("x") if typeof(decoy) == TYPE_OBJECT and decoy.has_method("has_meta") and decoy.has_meta("x") else 0.0)
+                                                        var dy = decoy.y if "y" in decoy else (decoy.get_meta("y") if typeof(decoy) == TYPE_OBJECT and decoy.has_method("has_meta") and decoy.has_meta("y") else 0.0)
+                                                        var dist_sq = (bx - dx)*(bx - dx) + (by - dy)*(by - dy)
+                                                        if dist_sq < 250000.0:
+                                                            if "target_id" in b: b.target_id = decoy.id
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("target_id", decoy.id)
+                                                            if "aggro_target" in b: b.aggro_target = decoy.id
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("aggro_target", decoy.id)
+                                                            if "chase_target" in b: b.chase_target = decoy.id
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("chase_target", decoy.id)
+
+                                if hazard.has_method("set_meta"):
+                                    hazard.set_meta("duration", 0.0)
+                                elif "duration" in hazard:
+                                    hazard.duration = 0.0
                             elif trap_variant == "decoy":
                                 var owner_id = null
                                 if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
@@ -21046,6 +21131,23 @@ func execute(strategy: String, delta: float):
 
                                             if world != null and "balls" in world:
                                                 world.balls.append(decoy)
+                                                for b in world.balls:
+                                                    var b_id = b.id if "id" in b else (b.get_meta("id") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("id") else null)
+                                                    var b_team = b.team if "team" in b else (b.get_meta("team") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team") else "")
+                                                    var d_team = decoy.team if "team" in decoy else (decoy.get_meta("team") if typeof(decoy) == TYPE_OBJECT and decoy.has_method("has_meta") and decoy.has_meta("team") else "")
+                                                    if b_id != null and decoy.id != null and b_id != decoy.id and b_team != d_team:
+                                                        var bx = b.x if "x" in b else (b.get_meta("x") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x") else 0.0)
+                                                        var by = b.y if "y" in b else (b.get_meta("y") if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("y") else 0.0)
+                                                        var dx = decoy.x if "x" in decoy else (decoy.get_meta("x") if typeof(decoy) == TYPE_OBJECT and decoy.has_method("has_meta") and decoy.has_meta("x") else 0.0)
+                                                        var dy = decoy.y if "y" in decoy else (decoy.get_meta("y") if typeof(decoy) == TYPE_OBJECT and decoy.has_method("has_meta") and decoy.has_meta("y") else 0.0)
+                                                        var dist_sq = (bx - dx)*(bx - dx) + (by - dy)*(by - dy)
+                                                        if dist_sq < 250000.0:
+                                                            if "target_id" in b: b.target_id = decoy.id
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("target_id", decoy.id)
+                                                            if "aggro_target" in b: b.aggro_target = decoy.id
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("aggro_target", decoy.id)
+                                                            if "chase_target" in b: b.chase_target = decoy.id
+                                                            elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"): b.set_meta("chase_target", decoy.id)
 
                                 if hazard.has_method("set_meta"):
                                     hazard.set_meta("duration", 0.0)

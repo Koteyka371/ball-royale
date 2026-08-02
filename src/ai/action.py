@@ -11204,6 +11204,49 @@ class Action:
                                             self.ball.x, self.ball.y = temp_x, temp_y
                                     hazard.duration = 0.0 # Destroy trap
 
+                                elif trap_variant == "taunt_decoy":
+                                    owner_id = getattr(hazard, "owner_id", None)
+                                    owner = None
+                                    if owner_id is not None:
+                                        balls = getattr(self.world, "balls", getattr(self.world, "entities", []))
+                                        for b in balls:
+                                            if getattr(b, "id", None) == owner_id:
+                                                owner = b
+                                                break
+                                    if owner:
+                                        import copy
+                                        import random
+                                        decoy = copy.copy(owner)
+                                        decoy.id = getattr(self.world, "next_id", random.randint(10000, 99999))
+                                        if hasattr(self.world, "next_id"):
+                                            self.world.next_id += 1
+                                        decoy.x = hazard.x
+                                        decoy.y = hazard.y
+                                        decoy.hp = 100.0
+                                        decoy.max_hp = 100.0
+                                        decoy.is_decoy = True
+                                        decoy.decoy_timer = 5.0
+                                        decoy.decoy_type = "taunt"
+                                        decoy.skill = None
+                                        decoy.active_skill = None
+                                        if hasattr(decoy, "SKILL"):
+                                            decoy.SKILL = None
+                                        decoy.vx = 0.0
+                                        decoy.vy = 0.0
+                                        decoy.speed = 0.0
+                                        decoy.damage = 0.0
+                                        decoy.alive = True
+                                        if hasattr(self.world, "balls"):
+                                            self.world.balls.append(decoy)
+                                            # Force nearby AI to aggro the decoy
+                                            for b in self.world.balls:
+                                                if getattr(b, "id", None) != decoy.id and getattr(b, "team", "") != getattr(decoy, "team", ""):
+                                                    dist_sq = (b.x - decoy.x)**2 + (b.y - decoy.y)**2
+                                                    if dist_sq < 250000: # 500 range
+                                                        if hasattr(b, "target_id"): b.target_id = decoy.id
+                                                        if hasattr(b, "aggro_target"): b.aggro_target = decoy.id
+                                                        if hasattr(b, "chase_target"): b.chase_target = decoy.id
+                                    hazard.duration = 0.0 # Destroy trap
                                 elif trap_variant == "decoy":
                                     owner_id = getattr(hazard, "owner_id", None)
                                     owner = None
@@ -11238,6 +11281,14 @@ class Action:
                                         decoy.alive = True
                                         if hasattr(self.world, "balls"):
                                             self.world.balls.append(decoy)
+                                            # Force nearby AI to aggro the decoy
+                                            for b in self.world.balls:
+                                                if getattr(b, "id", None) != decoy.id and getattr(b, "team", "") != getattr(decoy, "team", ""):
+                                                    dist_sq = (b.x - decoy.x)**2 + (b.y - decoy.y)**2
+                                                    if dist_sq < 250000: # 500 range
+                                                        if hasattr(b, "target_id"): b.target_id = decoy.id
+                                                        if hasattr(b, "aggro_target"): b.aggro_target = decoy.id
+                                                        if hasattr(b, "chase_target"): b.chase_target = decoy.id
                                     hazard.duration = 0.0 # Destroy trap
 
                                 else:
