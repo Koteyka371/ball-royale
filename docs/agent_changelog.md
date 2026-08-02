@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1753] Reverse Shifting Map — *2026-08-02 22:22:46 UTC*
+
+An arena mode where the map starts very small and expands over time, with new elements and hazards revealed as it grows.
+
+---
+
 ## [idea-1680] EMP Blast Trap — *2026-08-02 21:15:59 UTC*
 
 A deployable trap that, when triggered, releases an electromagnetic pulse. This pulse temporarily disables the thermal vision, advanced optics, and stealth drones of caught enemies, returning their perception back to standard visual range.
