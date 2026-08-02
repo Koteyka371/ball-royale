@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1680] EMP Blast Trap — *2026-08-02 21:15:59 UTC*
+
+A deployable trap that, when triggered, releases an electromagnetic pulse. This pulse temporarily disables the thermal vision, advanced optics, and stealth drones of caught enemies, returning their perception back to standard visual range.
+
+---
+
 ## [idea-1748] Quantum Tunneler Booster — *2026-08-02 17:30:46 UTC*
 
 A booster that allows a player to briefly pass through hazards, walls, and bumpers without taking damage or knockback. While active, the player becomes slightly transparent and ignores physical collisions, making it useful for escaping tight corners or bypassing defenses.
