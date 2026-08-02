@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1682] Anti-Gravity Repulsor Booster — *2026-08-02 12:00:43 UTC*
+
+A new booster item that grants temporary immunity to all pull-based physics forces (like gravity wells and tornadoes) and emits a small repulsor field, pushing away nearby hazards and enemies for a short duration.
+
+---
+
 ## [idea-1758] Friction Modifier Zone — *2026-08-02 11:19:06 UTC*
 
 Zones that randomly spawn and change the friction of the floor. Some zones are icy (zero friction), while others are like mud (high friction), forcing players to adapt their movement.
