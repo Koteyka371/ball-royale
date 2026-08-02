@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1738] Stasis Bubble Booster — *2026-08-02 01:46:29 UTC*
+
+A booster that deploys a stasis bubble around the ball. The bubble completely stops time within a 50-radius around the ball for 3 seconds, freezing projectiles and other balls, but the ball itself can still move freely.
+
+---
+
 ## [idea-1762] Tethered Teams Mode — *2026-08-01 23:00:21 UTC*
 
 A duos or squads mode where players on the same team are physically tethered together by an elastic band. If they move too far apart, they are pulled back. The tether itself can deal damage to enemies passing through it.
