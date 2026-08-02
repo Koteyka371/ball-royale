@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1758] Friction Modifier Zone — *2026-08-02 11:19:06 UTC*
+
+Zones that randomly spawn and change the friction of the floor. Some zones are icy (zero friction), while others are like mud (high friction), forcing players to adapt their movement.
+
+---
+
 ## [idea-1739] Lava Surfing Skill — *2026-08-02 09:21:39 UTC*
 
 A new movement skill that allows the player to briefly ride on top of damaging hazards like lava or acid. While 'surfing', the player takes no damage from the hazard and instead gains a massive speed boost and leaves a trail of fire. The skill duration is short, requiring precise timing to cross large hazardous pits or to reposition during end-game small safe zones.
