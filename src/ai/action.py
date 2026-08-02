@@ -931,7 +931,7 @@ class Action:
                             original_damage *= (1.0 + (speed / 100.0))
                         break
 
-        if getattr(attacker, "kinetic_shield_stored_damage", 0.0) >= 100.0 and not is_ranged:
+        if getattr(attacker, "kinetic_shield_stored_damage", 0.0) > 0.0 and not is_ranged:
             stored_dmg = attacker.kinetic_shield_stored_damage
             original_damage += stored_dmg
 
