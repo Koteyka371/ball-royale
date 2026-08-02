@@ -23,7 +23,7 @@ class MockHazard:
     def __init__(self, owner_id):
         self.id = 100
         self.kind = "trap"
-        self.trap_variant = "decoy"
+        self.trap_variant = "taunt_decoy"
         self.owner_id = owner_id
         self.x = 50
         self.y = 50
@@ -56,6 +56,7 @@ def test_decoy_trap_spawns_decoy():
 
     world = MockWorld()
     hazard = MockHazard(owner_id=owner.id)
+    hazard.trap_variant = "decoy"
     world.arena.hazards.append(hazard)
     world.balls = [triggering_ball, owner]
 
@@ -76,6 +77,92 @@ def test_decoy_trap_spawns_decoy():
     decoy = world.balls[-1]
     assert getattr(decoy, "is_decoy", False) == True
     assert decoy.decoy_type == "stun_trap"
+    assert decoy.x == hazard.x
+    assert decoy.y == hazard.y
+    assert decoy.vx == 0.0
+    assert decoy.vy == 0.0
+    assert decoy.speed == 0.0
+    assert decoy.id != owner.id
+    assert decoy.hp == 100.0
+
+def test_taunt_decoy_trap_spawns_decoy():
+    # Setup owner and triggering ball
+    owner = MockBall(id=2, x=200, y=200)
+    triggering_ball = MockBall(id=1, x=45, y=45) # Close to hazard at (50, 50)
+    enemy1 = MockBall(id=3, x=60, y=60)
+    enemy1.team = "enemy"
+    enemy1.target_id = 1
+    enemy1.aggro_target = 1
+    enemy2 = MockBall(id=4, x=1000, y=1000)
+    enemy2.team = "enemy"
+    enemy2.target_id = 1
+
+    world = MockWorld()
+    hazard = MockHazard(owner_id=owner.id)
+    hazard.trap_variant = "taunt_decoy"
+    world.arena.hazards.append(hazard)
+    world.balls = [triggering_ball, owner, enemy1, enemy2]
+
+    action = Action(triggering_ball, world)
+
+    # Pre-condition: 4 balls in world
+    assert len(world.balls) == 4
+
+    # Execute action to process hazards
+    action.execute("idle", 0.1)
+
+    # Post-condition: hazard is destroyed (duration=0), a decoy is spawned
+    assert hazard.duration == 0.0
+
+    # 5 balls: triggering_ball, owner, enemy1, enemy2, decoy
+    assert len(world.balls) == 5
+
+    decoy = world.balls[-1]
+    assert getattr(decoy, "is_decoy", False) == True
+    assert decoy.decoy_type == "taunt"
+    assert decoy.x == hazard.x
+    assert decoy.y == hazard.y
+    assert decoy.vx == 0.0
+    assert decoy.vy == 0.0
+    assert decoy.speed == 0.0
+    assert decoy.id != owner.id
+    assert decoy.hp == 100.0
+
+    # Assert aggro logic
+    assert enemy1.target_id == decoy.id
+    assert enemy1.aggro_target == decoy.id
+
+    # Assert out of range enemy does not get aggro'd
+    assert enemy2.target_id == 1
+
+def _disabled_test_taunt_decoy_trap_spawns_decoy():
+    # Setup owner and triggering ball
+    owner = MockBall(id=2, x=200, y=200)
+    triggering_ball = MockBall(id=1, x=45, y=45) # Close to hazard at (50, 50)
+
+    world = MockWorld()
+    hazard = MockHazard(owner_id=owner.id)
+    hazard.trap_variant = "taunt_decoy"
+    world.arena.hazards.append(hazard)
+    world.balls = [triggering_ball, owner]
+
+    action = Action(triggering_ball, world)
+
+    # Pre-condition: only 2 balls in world
+    assert len(world.balls) == 2
+
+    # Execute action to process hazards
+    action.execute("idle", 0.1)
+
+    # Post-condition: hazard is destroyed (duration=0), a decoy is spawned
+    assert hazard.duration == 0.0
+
+    # 3 balls: triggering_ball, owner, decoy
+    assert len(world.balls) == 3
+
+    decoy = world.balls[-1]
+    assert getattr(decoy, "is_decoy", False) == True
+    assert decoy.decoy_type == "taunt"
     assert decoy.x == hazard.x
     assert decoy.y == hazard.y
     assert decoy.vx == 0.0
