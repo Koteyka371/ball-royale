@@ -34,6 +34,7 @@ def test_floor_paint_mode():
     b1.sponsor = None
     b1.is_quantum_entangled = False
     b1.ball_type = "test_ball"
+    b1.hologram_clones = []
 
     b2 = Mock()
     b2.x, b2.y = 300.0, 300.0
@@ -51,6 +52,7 @@ def test_floor_paint_mode():
     b2.sponsor = None
     b2.is_quantum_entangled = False
     b2.ball_type = "test_ball"
+    b2.hologram_clones = []
 
     balls = [b1, b2]
 

@@ -1,3 +1,5 @@
+import sys
+sys.path.append('src')
 import pytest
 from ai.game_modes import MazeSafeZoneMode
 

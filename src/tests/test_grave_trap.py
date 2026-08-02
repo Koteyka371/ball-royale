@@ -1,3 +1,5 @@
+import sys
+sys.path.append('src')
 from ai.game_modes import GameMode
 from ai.test_action_advanced import MockBall, MockWorld
 
