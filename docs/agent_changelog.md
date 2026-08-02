@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1759] Magnetize Booster — *2026-08-02 06:25:00 UTC*
+
+A booster that applies a magnetic aura to the player, gradually pulling in nearby boosters and enemies towards them.
+
+---
+
 ## [idea-1692] Radar Jammer — *2026-08-02 05:30:56 UTC*
 
 A gadget that permanently scrambles homing missiles and AI perception in a large area.
