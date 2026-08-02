@@ -57022,6 +57022,153 @@ class FrictionZonesMode extends GameMode:
 								b.set("friction_multiplier", 3.0)
 
 
+
+class SolarRadiationStormMode extends GameMode:
+	var flare_timer: float = 0.0
+	var flare_interval: float = 20.0
+	var flare_duration: float = 5.0
+	var is_flaring: bool = false
+	var solar_walls: Array = []
+	var sun_dx: float = 0.707
+	var sun_dy: float = 0.707
+
+	func _init():
+		name = "Solar Radiation Storm"
+		description = "Bursts of solar radiation occasionally flare up, granting massive buffs to solar_bot while significantly damaging and blinding other characters in the open. Players must seek shade behind indestructible walls to avoid the effects."
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		flare_timer = 0.0
+		is_flaring = false
+		solar_walls.clear()
+
+		if typeof(world) == TYPE_OBJECT and world.has_method("has_meta") and 'arena' in world:
+			var arena = world.arena
+			var w = 1000.0
+			var h = 1000.0
+			if arena.has("width"): w = arena.width
+			if arena.has("height"): h = arena.height
+
+			for i in range(5):
+				var wall = {
+					"x": randf_range(200, w-200),
+					"y": randf_range(200, h-200),
+					"width": randf_range(100, 200),
+					"height": randf_range(20, 50),
+					"angle": randf_range(0, 3.1415),
+					"destructible": false,
+					"hp": 999999,
+					"max_hp": 999999,
+					"is_solar_shield": true,
+					"kind": "indestructible_wall"
+				}
+				solar_walls.append(wall)
+
+				if not arena.has("hazards"):
+					arena.hazards = []
+				arena.hazards.append(wall)
+
+	func tick(world, balls: Array, delta: float = 0.016):
+		flare_timer += delta
+
+		if not is_flaring and flare_timer >= flare_interval:
+			is_flaring = true
+			flare_timer = 0.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("weather_warning", {"message": "SOLAR RADIATION STORM DETECTED! SEEK SHADE!"})
+
+		elif is_flaring and flare_timer >= flare_duration:
+			is_flaring = false
+			flare_timer = 0.0
+			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+				world.add_event("weather_warning", {"message": "Solar Radiation Storm has passed."})
+
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT:
+					if b.has_meta("solar_blinded") and b.get_meta("solar_blinded"):
+						b.perception_radius = b.get_meta("base_perception_radius", 250.0)
+						b.set_meta("solar_blinded", false)
+				elif b is Dictionary:
+					if b.has("solar_blinded") and b.solar_blinded:
+						b.perception_radius = b.get("base_perception_radius", 250.0)
+						b.solar_blinded = false
+
+		if is_flaring:
+			for b in balls:
+				var alive = false
+				var bx = 0.0
+				var by = 0.0
+				var ball_type = ""
+				var hp = 100.0
+				var max_hp = 100.0
+
+				if typeof(b) == TYPE_OBJECT:
+					alive = b.alive if "alive" in b else false
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+					ball_type = b.ball_type if "ball_type" in b else ""
+					hp = b.hp if "hp" in b else 100.0
+					max_hp = b.max_hp if "max_hp" in b else 100.0
+				elif b is Dictionary:
+					alive = b.get("alive", false)
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+					ball_type = b.get("ball_type", "")
+					hp = b.get("hp", 100.0)
+					max_hp = b.get("max_hp", 100.0)
+
+				if not alive:
+					continue
+
+				var in_shade = false
+				for wall in solar_walls:
+					var wall_dx = bx - wall.x
+					var wall_dy = by - wall.y
+
+					# Check if behind wall relative to sun
+					var dot = wall_dx * sun_dx + wall_dy * sun_dy
+					if dot > 0 and dot < 200:
+						var perp_dist = abs(wall_dx * -sun_dy + wall_dy * sun_dx)
+						if perp_dist < 50.0:
+							in_shade = true
+							break
+
+				if not in_shade:
+					if ball_type == "solar_bot":
+						var new_hp = min(max_hp, hp + 20.0 * delta)
+						if typeof(b) == TYPE_OBJECT:
+							b.hp = new_hp
+							if "speed_multiplier" in b:
+								b.speed_multiplier = max(b.speed_multiplier, 2.0)
+						elif b is Dictionary:
+							b["hp"] = new_hp
+							b["speed_multiplier"] = max(b.get("speed_multiplier", 1.0), 2.0)
+					else:
+						var damage = 30.0 * delta
+						var new_hp = hp - damage
+						if new_hp <= 0:
+							new_hp = 0.0
+							if typeof(b) == TYPE_OBJECT:
+								b.alive = false
+							elif b is Dictionary:
+								b["alive"] = false
+
+						if typeof(b) == TYPE_OBJECT:
+							b.hp = new_hp
+							if not b.has_meta("solar_blinded") or not b.get_meta("solar_blinded"):
+								if not b.has_meta("base_perception_radius"):
+									b.set_meta("base_perception_radius", b.perception_radius if "perception_radius" in b else 250.0)
+								if "perception_radius" in b:
+									b.perception_radius = b.get_meta("base_perception_radius") * 0.2
+								b.set_meta("solar_blinded", true)
+						elif b is Dictionary:
+							b["hp"] = new_hp
+							if not b.get("solar_blinded", false):
+								if not b.has("base_perception_radius"):
+									b["base_perception_radius"] = b.get("perception_radius", 250.0)
+								b["perception_radius"] = b["base_perception_radius"] * 0.2
+								b["solar_blinded"] = true
+
 var GAME_MODES = {
 	"geyser_hazards": GeyserHazardMode.new(),
 	"microclimate_hazards": MicroclimateHazardMode.new(),
@@ -57084,6 +57231,7 @@ var GAME_MODES = {
 	"time_rewind_altar": TimeRewindAltarMode.new(),
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"personal_doppelganger": PersonalDoppelgangerMode.new(),
+	"solar_radiation_storm": SolarRadiationStormMode.new(),
 }
 
 class PersonalDoppelgangerMode extends GameMode:

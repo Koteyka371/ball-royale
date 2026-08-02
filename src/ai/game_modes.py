@@ -35245,6 +35245,119 @@ class FrictionZonesMode(GameMode):
                             b.friction_multiplier = 3.0
 
 
+
+class SolarRadiationStormMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Solar Radiation Storm"
+        self.description = "Bursts of solar radiation occasionally flare up, granting massive buffs to solar_bot while significantly damaging and blinding other characters in the open. Players must seek shade behind indestructible walls to avoid the effects."
+        self.flare_timer = 0.0
+        self.flare_interval = 20.0
+        self.flare_duration = 5.0
+        self.is_flaring = False
+        self.solar_walls = []
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.flare_timer = 0.0
+        self.is_flaring = False
+        self.solar_walls = []
+
+        # Add indestructible walls for shade
+        if hasattr(world, "arena"):
+            import random
+            w = getattr(world.arena, "width", 1000)
+            h = getattr(world.arena, "height", 1000)
+
+            for _ in range(5):
+                wall = type('Wall', (object,), {
+                    'x': random.uniform(200, w-200),
+                    'y': random.uniform(200, h-200),
+                    'width': random.uniform(100, 200),
+                    'height': random.uniform(20, 50),
+                    'angle': random.uniform(0, 3.1415),
+                    'destructible': False,
+                    'hp': 999999,
+                    'max_hp': 999999,
+                    'is_solar_shield': True,
+                    'kind': 'indestructible_wall'
+                })()
+                self.solar_walls.append(wall)
+                if not hasattr(world.arena, "hazards"):
+                    world.arena.hazards = []
+                world.arena.hazards.append(wall)
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        self.flare_timer += delta
+
+        if not self.is_flaring and self.flare_timer >= self.flare_interval:
+            self.is_flaring = True
+            self.flare_timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("weather_warning", {"message": "SOLAR RADIATION STORM DETECTED! SEEK SHADE!"})
+
+        elif self.is_flaring and self.flare_timer >= self.flare_duration:
+            self.is_flaring = False
+            self.flare_timer = 0.0
+            if hasattr(world, "add_event"):
+                world.add_event("weather_warning", {"message": "Solar Radiation Storm has passed."})
+
+            for b in balls:
+                if hasattr(b, "base_perception_radius") and getattr(b, "solar_blinded", False):
+                    b.perception_radius = b.base_perception_radius
+                    b.solar_blinded = False
+
+        if self.is_flaring:
+            import math
+            # sun angle comes from top left
+            sun_dx, sun_dy = 1.0, 1.0
+            sun_len = math.sqrt(sun_dx**2 + sun_dy**2)
+            sun_dx, sun_dy = sun_dx/sun_len, sun_dy/sun_len
+
+            for b in balls:
+                if getattr(b, "alive", True) == False:
+                    continue
+
+                # check if behind wall
+                in_shade = False
+                for wall in self.solar_walls:
+                    # simplified raycast
+                    wall_dx = b.x - wall.x
+                    wall_dy = b.y - wall.y
+
+                    # dot product against sun direction
+                    # Check if behind wall relative to sun
+                    dot = wall_dx * sun_dx + wall_dy * sun_dy
+                    if dot > 0 and dot < 200:
+                        # Also check perpendicular distance so shade is narrow
+                        perp_dist = abs(wall_dx * -sun_dy + wall_dy * sun_dx)
+                        if perp_dist < 50:
+                            in_shade = True
+                            break
+
+                if not in_shade:
+                    if getattr(b, "ball_type", "") == "solar_bot":
+                        # Buff solar_bot
+                        b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 20.0 * delta)
+                        b.speed_multiplier = max(getattr(b, "speed_multiplier", 1.0), 2.0)
+                    else:
+                        # Damage and blind others
+                        damage = 30.0 * delta
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(damage, source=None)
+                        else:
+                            b.hp = getattr(b, "hp", 100) - damage
+                            if b.hp <= 0:
+                                b.hp = 0
+                                b.alive = False
+
+                        if not getattr(b, "solar_blinded", False):
+                            if not hasattr(b, "base_perception_radius"):
+                                b.base_perception_radius = getattr(b, "perception_radius", 250.0)
+                            b.perception_radius = b.base_perception_radius * 0.2
+                            b.solar_blinded = True
+
 GAME_MODES = {
     'geyser_hazards': GeyserHazardMode(),
     'signal_scrambler': SignalScramblerMode(),
@@ -35497,7 +35610,8 @@ GAME_MODES = {
     "disco_floor": DiscoFloorMode(),
     "cursed_buff_zone": CursedBuffZoneMode(),
     "weapon_collection": WeaponCollectionMode(),
-    "blacksmith_boss": BlacksmithBossMode()
+    "blacksmith_boss": BlacksmithBossMode(),
+    "solar_radiation_storm": SolarRadiationStormMode(),
 }
 
 try:
