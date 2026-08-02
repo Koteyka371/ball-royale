@@ -18726,6 +18726,88 @@ class InverseSafeZoneMode(GameMode):
 
         return None
 
+
+class MergingSafeZonesMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Merging Safe Zones"
+        self.description = "Instead of a single large safe zone shrinking, 3-4 smaller safe zones spawn, slowly shrinking and eventually merging into one central safe zone."
+        self.zones = []
+        self.center_x = 500.0
+        self.center_y = 500.0
+        self.merge_progress = 0.0
+        self.merge_speed = 0.05
+        self.shrink_rate = 5.0
+        self.outside_damage_per_second = 10.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        import random
+        import math
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.center_x = arena_width / 2.0
+        self.center_y = arena_height / 2.0
+
+        self.zones = []
+        num_zones = random.randint(3, 4)
+        radius = min(arena_width, arena_height) * 0.25
+
+        for i in range(num_zones):
+            angle = (2 * math.pi / num_zones) * i + random.uniform(-0.2, 0.2)
+            dist = min(arena_width, arena_height) * 0.3
+            self.zones.append({
+                "x": self.center_x + math.cos(angle) * dist,
+                "y": self.center_y + math.sin(angle) * dist,
+                "radius": radius
+            })
+
+        self.merge_progress = 0.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        self.merge_progress += self.merge_speed * delta
+        if self.merge_progress > 1.0:
+            self.merge_progress = 1.0
+
+        # Update zones
+        for zone in self.zones:
+            # Move towards center
+            dx = self.center_x - zone["x"]
+            dy = self.center_y - zone["y"]
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist > 1.0:
+                move_amt = min(dist, 15.0 * delta * (1.0 + self.merge_progress))
+                zone["x"] += (dx / dist) * move_amt
+                zone["y"] += (dy / dist) * move_amt
+
+            # Shrink radius slowly, but increase if they merge?
+            # Or just let them overlap and have a combined radius.
+            zone["radius"] -= self.shrink_rate * delta
+            if zone["radius"] < 50.0:
+                zone["radius"] = 50.0
+
+        # Calculate outside damage
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                in_safe_zone = False
+                for zone in self.zones:
+                    dx = b.x - zone["x"]
+                    dy = b.y - zone["y"]
+                    if dx*dx + dy*dy <= zone["radius"] * zone["radius"]:
+                        in_safe_zone = True
+                        break
+
+                if not in_safe_zone:
+                    b.hp -= self.outside_damage_per_second * delta
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+
 class MicroSafeZonesMode(SafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -35390,6 +35472,7 @@ GAME_MODES = {
     "safe_zone": SafeZoneMode(),
     "mutant_safe_zone": MutantSafeZoneMode(),
     "crowded_safe_zone": CrowdedSafeZoneMode(),
+    "merging_safe_zones": MergingSafeZonesMode(),
     "micro_safe_zones": MicroSafeZonesMode(),
     "hex_grid_royale": HexGridRoyaleMode(),
     "minefield_safe_zone": MinefieldSafeZoneMode(),
