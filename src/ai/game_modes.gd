@@ -29349,6 +29349,133 @@ class InverseSafeZoneMode extends GameMode:
 		return null
 
 
+
+class MergingSafeZonesMode extends GameMode:
+	var zones = []
+	var center_x = 500.0
+	var center_y = 500.0
+	var merge_progress = 0.0
+	var merge_speed = 0.05
+	var shrink_rate = 5.0
+	var outside_damage_per_second = 10.0
+
+	func _init():
+		name = "Merging Safe Zones"
+		description = "Instead of a single large safe zone shrinking, 3-4 smaller safe zones spawn, slowly shrinking and eventually merging into one central safe zone."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.has("arena") and world.arena:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+
+		center_x = arena_width / 2.0
+		center_y = arena_height / 2.0
+
+		zones = []
+		var num_zones = 3 + randi() % 2
+		var radius = min(arena_width, arena_height) * 0.25
+
+		for i in range(num_zones):
+			var angle = (2.0 * PI / float(num_zones)) * i + randf_range(-0.2, 0.2)
+			var dist = min(arena_width, arena_height) * 0.3
+			zones.append({
+				"x": center_x + cos(angle) * dist,
+				"y": center_y + sin(angle) * dist,
+				"radius": radius
+			})
+
+		merge_progress = 0.0
+
+	func tick(world, balls, delta=0.016):
+		merge_progress += merge_speed * delta
+		if merge_progress > 1.0:
+			merge_progress = 1.0
+
+		for zone in zones:
+			var dx = center_x - zone["x"]
+			var dy = center_y - zone["y"]
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 1.0:
+				var move_amt = min(dist, 15.0 * delta * (1.0 + merge_progress))
+				zone["x"] += (dx / dist) * move_amt
+				zone["y"] += (dy / dist) * move_amt
+
+			zone["radius"] -= shrink_rate * delta
+			if zone["radius"] < 50.0:
+				zone["radius"] = 50.0
+
+		for b in balls:
+			var is_alive = false
+			if "alive" in b:
+				is_alive = b.alive
+			elif b is Dictionary and b.has("alive"):
+				is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+				is_alive = b.get_meta("alive")
+
+			var ball_type = ""
+			if "ball_type" in b:
+				ball_type = b.ball_type
+			elif b is Dictionary and b.has("ball_type"):
+				ball_type = b.ball_type
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("ball_type"):
+				ball_type = b.get_meta("ball_type")
+
+			if is_alive and ball_type != "spectator":
+				var in_safe_zone = false
+
+				var bx = 0.0
+				var by = 0.0
+				if "x" in b and "y" in b:
+					bx = b.x
+					by = b.y
+				elif b is Dictionary and b.has("x") and b.has("y"):
+					bx = b.x
+					by = b.y
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("x"):
+					bx = b.get_meta("x")
+					by = b.get_meta("y")
+
+				for zone in zones:
+					var dx = bx - zone["x"]
+					var dy = by - zone["y"]
+					if dx*dx + dy*dy <= zone["radius"] * zone["radius"]:
+						in_safe_zone = true
+						break
+
+				if not in_safe_zone:
+					var old_hp = 0.0
+					if "hp" in b:
+						old_hp = b.hp
+					elif b is Dictionary and b.has("hp"):
+						old_hp = b.hp
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
+						old_hp = b.get_meta("hp")
+
+					var new_hp = old_hp - outside_damage_per_second * delta
+
+					if new_hp <= 0:
+						new_hp = 0
+						if "alive" in b:
+							b.alive = false
+						elif b is Dictionary and b.has("alive"):
+							b.alive = false
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+							b.set_meta("alive", false)
+
+					if "hp" in b:
+						b.hp = new_hp
+					elif b is Dictionary and b.has("hp"):
+						b.hp = new_hp
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
+						b.set_meta("hp", new_hp)
+
 class MicroSafeZonesMode extends SafeZoneMode:
 	var micro_zones: Array = []
 	var micro_zone_timer: float = 0.0
@@ -57462,6 +57589,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"safe_zone": SafeZoneMode.new(),
 	"mutant_safe_zone": MutantSafeZoneMode.new(),
 	"crowded_safe_zone": CrowdedSafeZoneMode.new(),
+	"merging_safe_zones": MergingSafeZonesMode.new(),
 	"micro_safe_zones": MicroSafeZonesMode.new(),
 	"hex_grid_royale": HexGridRoyaleMode.new(),
 	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
