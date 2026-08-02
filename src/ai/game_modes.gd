@@ -56798,9 +56798,106 @@ class GeyserHazardMode extends GameMode:
 								if "is_frictionless" in b: b.is_frictionless = true
 								elif b.has_method("set_meta"): b.set_meta("is_frictionless", true)
 
+class FrictionZonesMode extends GameMode:
+	var zone_spawn_timer: float = 0.0
+
+	func _init().():
+		name = "Friction Zones"
+		description = "Zones that randomly spawn and change the friction of the floor. Some zones are icy (zero friction), while others are like mud (high friction)."
+
+	func setup(world, balls: Array) -> void:
+		.setup(world, balls)
+		if not world.has("arena"): return
+		if not world.arena.has("hazards"): world.arena.hazards = []
+
+	func tick(world, balls: Array, delta: float) -> void:
+		.tick(world, balls, delta)
+
+		if not world.has("arena") or not world.arena.has("hazards"):
+			return
+
+		zone_spawn_timer += delta
+
+		if zone_spawn_timer >= 5.0:
+			zone_spawn_timer = 0.0
+
+			var zone_type = "ice"
+			if randf() > 0.5:
+				zone_type = "mud"
+
+			var hx = rand_range(200, world.arena.get("width", 1000) - 200)
+			var hy = rand_range(200, world.arena.get("height", 1000) - 200)
+
+			var hazard = {
+				"id": randi() % 10000 + 20000,
+				"x": hx,
+				"y": hy,
+				"radius": 150.0,
+				"kind": zone_type + "_zone",
+				"damage": 0.0,
+				"active": true,
+				"zone_type": zone_type,
+				"duration": 10.0
+			}
+			world.arena.hazards.append(hazard)
+
+		var active_hazards = []
+		for h in world.arena.hazards:
+			if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h.kind.ends_with("_zone"):
+				h.duration -= delta
+				if h.duration > 0:
+					active_hazards.append(h)
+			else:
+				active_hazards.append(h)
+		world.arena.hazards = active_hazards
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+			elif typeof(b) == TYPE_OBJECT:
+				is_alive = b.alive
+			if not is_alive: continue
+
+			var b_type = ""
+			if typeof(b) == TYPE_DICTIONARY:
+				b_type = b.get("ball_type", "")
+			elif typeof(b) == TYPE_OBJECT:
+				b_type = b.ball_type
+			if b_type == "spectator": continue
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["friction_multiplier"] = 1.0
+				b["is_frictionless"] = false
+			else:
+				b.set("friction_multiplier", 1.0)
+				b.set("is_frictionless", false)
+
+			var bx = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.x
+			var by = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.y
+
+			for h in world.arena.hazards:
+				if typeof(h) == TYPE_DICTIONARY and h.has("kind") and h.kind.ends_with("_zone"):
+					var dist_sq = pow(bx - h.x, 2) + pow(by - h.y, 2)
+					if dist_sq < pow(h.radius, 2):
+						if h.zone_type == "ice":
+							if typeof(b) == TYPE_DICTIONARY:
+								b["friction_multiplier"] = 0.1
+								b["is_frictionless"] = true
+							else:
+								b.set("friction_multiplier", 0.1)
+								b.set("is_frictionless", true)
+						elif h.zone_type == "mud":
+							if typeof(b) == TYPE_DICTIONARY:
+								b["friction_multiplier"] = 3.0
+							else:
+								b.set("friction_multiplier", 3.0)
+
+
 var GAME_MODES = {
 	"geyser_hazards": GeyserHazardMode.new(),
 	"microclimate_hazards": MicroclimateHazardMode.new(),
+	"friction_zones": FrictionZonesMode.new(),
 	"molten_golem": MoltenGolemMode.new(),
 	"white_hole": WhiteHoleMode.new(),
 	"hot_potato": HotPotatoMode.new(),
