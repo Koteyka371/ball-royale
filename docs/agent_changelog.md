@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1765] Aggro Redirect Traps — *2026-08-02 12:08:55 UTC*
+
+Introduce a trap type that spawns a decoy on activation, instantly drawing aggro from nearby AI and forcing them to attack the decoy instead of the player.
+
+---
+
 ## [idea-1682] Anti-Gravity Repulsor Booster — *2026-08-02 12:00:43 UTC*
 
 A new booster item that grants temporary immunity to all pull-based physics forces (like gravity wells and tornadoes) and emits a small repulsor field, pushing away nearby hazards and enemies for a short duration.
