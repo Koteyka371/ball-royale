@@ -41,6 +41,9 @@ def test_deploy_stasis_bubble():
     assert "deployable_stasis_bubble" not in attacker.inventory
     assert len(world.arena.hazards) == 1
     assert world.arena.hazards[0].kind == "stasis_bubble"
+    assert world.arena.hazards[0].radius == 50.0
+    assert world.arena.hazards[0].duration == 3.0
+    assert world.arena.hazards[0].owner_id == attacker.id
 
 def test_stasis_effect_on_ball():
     ball = MockBall(x=50, y=0)
@@ -51,9 +54,10 @@ def test_stasis_effect_on_ball():
             self.id = "h1"
             self.x = 0
             self.y = 0
-            self.radius = 80
+            self.radius = 50
             self.kind = "stasis_bubble"
             self.duration = 10
+            self.owner_id = 999
 
     world.arena.hazards = [MockHazard()]
 
@@ -81,6 +85,7 @@ def test_stasis_effect_on_projectile():
             self.radius = 20
             self.kind = "stasis_bubble"
             self.duration = 10
+            self.owner_id = 999
 
     world.arena.hazards = [MockHazard()]
 

@@ -3435,10 +3435,11 @@ class Action:
                 elif getattr(hazard, "kind", "") == "stasis_bubble":
                     hx = getattr(hazard, "x", 0.0) - getattr(self.ball, "x", 0.0)
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
-                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 80.0) + getattr(self.ball, "radius", 10.0):
-                        self.ball.freeze_timer = max(getattr(self.ball, "freeze_timer", 0.0), 0.5)
-                        self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
-                        self.ball.stasis_bubble_active = True
+                    if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0) + getattr(self.ball, "radius", 10.0):
+                        if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                            self.ball.freeze_timer = max(getattr(self.ball, "freeze_timer", 0.0), 0.5)
+                            self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
+                            self.ball.stasis_bubble_active = True
 
                 elif getattr(hazard, "kind", "") == "time_bubble":
                     if getattr(hazard, "last_updated_tick", -1) != getattr(self.world, "tick", 0):
@@ -4551,8 +4552,8 @@ class Action:
                             pass
                         else:
                             stasis_id = f"{len(self.world.arena.hazards)}_{self.world.tick}_stasis"
-                            bubble = Hazard(stasis_id, self.ball.x, self.ball.y, 80.0, "stasis_bubble", 0.0)
-                            bubble.duration = 8.0
+                            bubble = Hazard(stasis_id, self.ball.x, self.ball.y, 50.0, "stasis_bubble", 0.0)
+                            bubble.duration = 3.0
                             setattr(bubble, 'owner_id', getattr(self.ball, 'id', None))
                             self.world.arena.hazards.append(bubble)
 
@@ -4609,8 +4610,8 @@ class Action:
                             pass
                         else:
                             stasis_id = f"{len(self.world.arena.hazards)}_{self.world.tick}_stasis"
-                            bubble = Hazard(stasis_id, self.ball.x, self.ball.y, 80.0, "stasis_bubble", 0.0)
-                            bubble.duration = 8.0
+                            bubble = Hazard(stasis_id, self.ball.x, self.ball.y, 50.0, "stasis_bubble", 0.0)
+                            bubble.duration = 3.0
                             setattr(bubble, 'owner_id', getattr(self.ball, 'id', None))
                             self.world.arena.hazards.append(bubble)
 
