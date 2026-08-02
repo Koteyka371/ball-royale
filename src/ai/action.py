@@ -1900,6 +1900,54 @@ class Action:
 
 
     def execute(self, strategy: str, delta: float) -> None:
+
+        if getattr(self.ball, "skill", "") == "hazard_surfing" and getattr(self.ball, "skill_timer", 0.0) <= 0.0:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                surfing = False
+                for hazard in self.world.arena.hazards:
+                    if getattr(hazard, "kind", "") in ["lava", "acid", "fire", "poison", "ice_patch", "slime_puddle"]:
+                        dist_sq = (self.ball.x - getattr(hazard, "x", 0.0))**2 + (self.ball.y - getattr(hazard, "y", 0.0))**2
+                        hr = getattr(hazard, "radius", 50.0)
+                        if dist_sq < (hr + getattr(self.ball, "radius", 10.0))**2:
+                            surfing = True
+                            break
+                if surfing:
+                    self.ball.skill_timer = 3.0  # 3 seconds cooldown
+                    if "hazard_surfing" not in getattr(self.ball, "active_skills", []): self.ball.active_skills = getattr(self.ball, "active_skills", []) + ["hazard_surfing"]
+                    self.ball.surfing_timer = 2.0  # 2 seconds duration
+                    # Add to active skills
+
+        # Handle active hazard surfing
+        if getattr(self.ball, "surfing_timer", 0.0) > 0.0:
+            self.ball.surfing_timer -= delta
+            self.ball.speed_multiplier = max(getattr(self.ball, "speed_multiplier", 1.0), 3.0)
+            self.ball.hazard_immunity_timer = max(getattr(self.ball, "hazard_immunity_timer", 0.0), 0.1)
+
+            # Leave fire trail
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                if getattr(self.ball, "last_surf_fire_time", -1.0) + 0.1 <= getattr(self.world, "time", 0.0):
+                    self.ball.last_surf_fire_time = getattr(self.world, "time", 0.0)
+                    class TrailFire:
+                        pass
+                    tf = TrailFire()
+                    tf.x = self.ball.x
+                    tf.y = self.ball.y
+                    tf.radius = 15.0
+                    tf.damage = 15.0
+                    tf.kind = "fire"
+                    tf.duration = 2.0
+                    tf.owner_id = getattr(self.ball, "id", None)
+                    tf.creation_time = getattr(self.world, "time", 0.0)
+                    self.world.arena.hazards.append(tf)
+        elif getattr(self.ball, "was_surfing", False):
+            self.ball.was_surfing = False
+            self.ball.speed_multiplier = 1.0
+            if "hazard_surfing" in getattr(self.ball, "active_skills", []):
+                self.ball.active_skills.remove("hazard_surfing")
+
+        if getattr(self.ball, "surfing_timer", 0.0) > 0.0:
+            self.ball.was_surfing = True
+
         if getattr(self.ball, "is_mirror_clone", False):
             # Find owner
             owner = None
@@ -15780,7 +15828,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill

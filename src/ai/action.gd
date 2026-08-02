@@ -3432,6 +3432,181 @@ func execute(strategy: String, delta: float):
 	if typeof(ball) == TYPE_OBJECT and "is_mirror_clone" in ball: is_mirror_clone = ball.is_mirror_clone
 	elif typeof(ball) == TYPE_DICTIONARY and ball.has("is_mirror_clone"): is_mirror_clone = ball.is_mirror_clone
 
+
+	# Hazard surfing
+	var skill_val = ""
+	if typeof(ball) == TYPE_OBJECT and "skill" in ball: skill_val = ball.skill
+	elif typeof(ball) == TYPE_DICTIONARY and ball.has("skill"): skill_val = ball.skill
+
+	var skill_timer_val = 0.0
+	if typeof(ball) == TYPE_OBJECT and "skill_timer" in ball: skill_timer_val = ball.skill_timer
+	elif typeof(ball) == TYPE_DICTIONARY and ball.has("skill_timer"): skill_timer_val = ball.skill_timer
+
+	if skill_val == "hazard_surfing" and skill_timer_val <= 0.0:
+		if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			var surfing = false
+			for hazard in world.arena.hazards:
+				var h_kind = ""
+				if typeof(hazard) == TYPE_OBJECT and "kind" in hazard: h_kind = hazard.kind
+				elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("kind"): h_kind = hazard.kind
+
+				if h_kind in ["lava", "acid", "fire", "poison", "ice_patch", "slime_puddle"]:
+					var h_x = 0.0
+					if typeof(hazard) == TYPE_OBJECT and "x" in hazard: h_x = hazard.x
+					elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): h_x = hazard.x
+
+					var h_y = 0.0
+					if typeof(hazard) == TYPE_OBJECT and "y" in hazard: h_y = hazard.y
+					elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): h_y = hazard.y
+
+					var h_r = 50.0
+					if typeof(hazard) == TYPE_OBJECT and "radius" in hazard: h_r = hazard.radius
+					elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_r = hazard.radius
+
+					var b_x = 0.0
+					if typeof(ball) == TYPE_OBJECT and "x" in ball: b_x = ball.x
+					elif typeof(ball) == TYPE_DICTIONARY and ball.has("x"): b_x = ball.x
+
+					var b_y = 0.0
+					if typeof(ball) == TYPE_OBJECT and "y" in ball: b_y = ball.y
+					elif typeof(ball) == TYPE_DICTIONARY and ball.has("y"): b_y = ball.y
+
+					var b_r = 10.0
+					if typeof(ball) == TYPE_OBJECT and "radius" in ball: b_r = ball.radius
+					elif typeof(ball) == TYPE_DICTIONARY and ball.has("radius"): b_r = ball.radius
+
+					var dist_sq = pow(b_x - h_x, 2) + pow(b_y - h_y, 2)
+					if dist_sq < pow(h_r + b_r, 2):
+						surfing = true
+						break
+			if surfing:
+				if typeof(ball) == TYPE_OBJECT:
+					ball.skill_timer = 3.0
+					ball.surfing_timer = 2.0
+					if "active_skills" in ball:
+						var tmp = ball.active_skills.duplicate()
+						if tmp.find("hazard_surfing") == -1:
+							tmp.append("hazard_surfing")
+						ball.active_skills = tmp
+					else:
+						if ball.has_method("set_meta"): ball.set_meta("active_skills", ["hazard_surfing"])
+						else: ball.active_skills = ["hazard_surfing"]
+				elif typeof(ball) == TYPE_DICTIONARY:
+					ball["skill_timer"] = 3.0
+					ball["surfing_timer"] = 2.0
+					if ball.has("active_skills"):
+						var tmp = ball["active_skills"].duplicate()
+						if tmp.find("hazard_surfing") == -1:
+							tmp.append("hazard_surfing")
+						ball["active_skills"] = tmp
+					else:
+						ball["active_skills"] = ["hazard_surfing"]
+
+	var surfing_timer_val = 0.0
+	if typeof(ball) == TYPE_OBJECT and "surfing_timer" in ball: surfing_timer_val = ball.surfing_timer
+	elif typeof(ball) == TYPE_DICTIONARY and ball.has("surfing_timer"): surfing_timer_val = ball.surfing_timer
+
+
+	if surfing_timer_val > 0.0:
+		var new_surfing_timer = surfing_timer_val - delta
+		var current_speed = 1.0
+		var current_immunity = 0.0
+		var last_surf_time = -1.0
+		var ball_id = null
+		var b_x = 0.0
+		var b_y = 0.0
+
+		if typeof(ball) == TYPE_OBJECT:
+			if ball.has_method("set_meta"): ball.set_meta("surfing_timer", new_surfing_timer)
+			else: ball.surfing_timer = new_surfing_timer
+
+			if "speed_multiplier" in ball: current_speed = ball.speed_multiplier
+			if ball.has_method("set_meta"): ball.set_meta("speed_multiplier", max(current_speed, 3.0))
+			else: ball.speed_multiplier = max(current_speed, 3.0)
+
+			if "hazard_immunity_timer" in ball: current_immunity = ball.hazard_immunity_timer
+			if ball.has_method("set_meta"): ball.set_meta("hazard_immunity_timer", max(current_immunity, 0.1))
+			else: ball.hazard_immunity_timer = max(current_immunity, 0.1)
+
+			if "last_surf_fire_time" in ball: last_surf_time = ball.last_surf_fire_time
+			elif ball.has_method("has_meta") and ball.has_meta("last_surf_fire_time"): last_surf_time = ball.get_meta("last_surf_fire_time")
+
+			if "id" in ball: ball_id = ball.id
+			if "x" in ball: b_x = ball.x
+			if "y" in ball: b_y = ball.y
+
+			if ball.has_method("set_meta"): ball.set_meta("was_surfing", true)
+			else: ball.was_surfing = true
+
+		elif typeof(ball) == TYPE_DICTIONARY:
+			ball["surfing_timer"] = new_surfing_timer
+			if ball.has("speed_multiplier"): current_speed = ball["speed_multiplier"]
+			ball["speed_multiplier"] = max(current_speed, 3.0)
+
+			if ball.has("hazard_immunity_timer"): current_immunity = ball["hazard_immunity_timer"]
+			ball["hazard_immunity_timer"] = max(current_immunity, 0.1)
+
+			if ball.has("last_surf_fire_time"): last_surf_time = ball["last_surf_fire_time"]
+			if ball.has("id"): ball_id = ball["id"]
+			if ball.has("x"): b_x = ball["x"]
+			if ball.has("y"): b_y = ball["y"]
+
+			ball["was_surfing"] = true
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+			var world_time = 0.0
+			if typeof(world) == TYPE_OBJECT and "time" in world: world_time = world.time
+			elif typeof(world) == TYPE_DICTIONARY and world.has("time"): world_time = world.time
+
+			if last_surf_time + 0.1 <= world_time:
+				if typeof(ball) == TYPE_OBJECT:
+					if ball.has_method("set_meta"): ball.set_meta("last_surf_fire_time", world_time)
+					else: ball.last_surf_fire_time = world_time
+				elif typeof(ball) == TYPE_DICTIONARY: ball["last_surf_fire_time"] = world_time
+
+				var tf = {}
+				tf["x"] = b_x
+				tf["y"] = b_y
+				tf["radius"] = 15.0
+				tf["damage"] = 15.0
+				tf["kind"] = "fire"
+				tf["duration"] = 2.0
+				tf["owner_id"] = ball_id
+				tf["creation_time"] = world_time
+				world.arena.hazards.append(tf)
+
+	else:
+		var was_surfing = false
+		if typeof(ball) == TYPE_OBJECT:
+			if "was_surfing" in ball: was_surfing = ball.was_surfing
+			elif ball.has_method("has_meta") and ball.has_meta("was_surfing"): was_surfing = ball.get_meta("was_surfing")
+
+			if was_surfing:
+				if ball.has_method("set_meta"):
+					ball.set_meta("was_surfing", false)
+					ball.set_meta("speed_multiplier", 1.0)
+				else:
+					ball.was_surfing = false
+					ball.speed_multiplier = 1.0
+
+				if "active_skills" in ball:
+					var tmp = ball.active_skills.duplicate()
+					var idx = tmp.find("hazard_surfing")
+					if idx != -1:
+						tmp.remove_at(idx)
+						ball.active_skills = tmp
+		elif typeof(ball) == TYPE_DICTIONARY:
+			if ball.has("was_surfing"): was_surfing = ball["was_surfing"]
+			if was_surfing:
+				ball["was_surfing"] = false
+				ball["speed_multiplier"] = 1.0
+				if ball.has("active_skills"):
+					var tmp = ball["active_skills"].duplicate()
+					var idx = tmp.find("hazard_surfing")
+					if idx != -1:
+						tmp.remove_at(idx)
+						ball["active_skills"] = tmp
+
 	if is_mirror_clone:
 		var owner = null
 		var my_owner_id = null
@@ -31177,7 +31352,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
