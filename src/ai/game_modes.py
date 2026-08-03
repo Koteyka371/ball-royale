@@ -43839,6 +43839,111 @@ class WindstormEventMode(GameMode):
                                 h.x += self.push_dir_x * self.push_strength * delta
                                 h.y += self.push_dir_y * self.push_strength * delta
 
+class SolarWindstormEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Solar Windstorm Event"
+        self.description = "A weather event that randomly applies push forces across the entire arena while drastically increasing the effectiveness of all solar-powered abilities and boosting energy regeneration. Movement against the wind costs extra stamina."
+        self.push_timer = 3.0
+        self.push_duration = 0.0
+        self.push_dir_x = 0.0
+        self.push_dir_y = 0.0
+        self.push_strength = 700.0
+
+        self.event_timer = 20.0
+        self.event_duration = 15.0
+        self.is_active = False
+        import random
+        self.random = random
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        if not self.is_active:
+            self.event_timer -= delta
+            if self.event_timer <= 0.0:
+                self.is_active = True
+                self.event_duration = 15.0
+                if hasattr(world, "add_event"):
+                    world.add_event("solar_windstorm_event_start", {"message": "A solar windstorm is blowing through the arena! Solar abilities are boosted!"})
+                # Immediately start a push
+                self.push_timer = 0.0
+        else:
+            self.event_duration -= delta
+            if self.event_duration <= 0.0:
+                self.is_active = False
+                self.event_timer = 20.0
+                self.push_duration = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("solar_windstorm_event_end", {"message": "The solar windstorm has passed."})
+            else:
+                self.push_timer -= delta
+                if self.push_timer <= 0.0:
+                    if self.push_duration <= 0.0:
+                        import math
+                        angle = self.random.uniform(0, 2 * math.pi)
+                        self.push_dir_x = math.cos(angle)
+                        self.push_dir_y = math.sin(angle)
+                        self.push_duration = self.random.uniform(1.5, 3.0)
+                        if hasattr(world, "add_event"):
+                            world.add_event("solar_wind_gust", {"message": "A strong gust of solar wind hits!"})
+                    else:
+                        self.push_duration -= delta
+                        if self.push_duration <= 0.0:
+                            self.push_timer = self.random.uniform(2.0, 4.0)
+
+                if self.push_duration > 0.0:
+                    import math
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            if not hasattr(b, "vx"):
+                                b.vx = 0.0
+                            if not hasattr(b, "vy"):
+                                b.vy = 0.0
+
+                            # Push force
+                            b.vx += self.push_dir_x * self.push_strength * delta
+                            b.vy += self.push_dir_y * self.push_strength * delta
+
+                            v_mag = math.hypot(b.vx, b.vy)
+                            if v_mag > 0.01:
+                                # Dot product of current velocity with wind direction
+                                dot = (b.vx / v_mag) * self.push_dir_x + (b.vy / v_mag) * self.push_dir_y
+
+                                # Extra stamina cost for moving against the wind
+                                if dot < -0.3:
+                                    if hasattr(b, "stamina"):
+                                        stamina_drain = 20.0 * abs(dot) * delta
+                                        b.stamina = max(0.0, b.stamina - stamina_drain)
+
+                                # Increase speed if moving with the wind
+                                if dot > 0.3:
+                                    b.vx += self.push_dir_x * self.push_strength * dot * 1.5 * delta
+                                    b.vy += self.push_dir_y * self.push_strength * dot * 1.5 * delta
+
+                        # Boost energy regeneration for everyone in the solar wind
+                        if getattr(b, "alive", False):
+                            if hasattr(b, "stamina"):
+                                b.stamina = min(getattr(b, "max_stamina", 100.0), b.stamina + 10.0 * delta)
+
+                            if hasattr(b, "energy"):
+                                b.energy = min(getattr(b, "max_energy", 100.0), b.energy + 10.0 * delta)
+
+                            # Drastically boost solar-powered abilities
+                            if getattr(b, "ball_type", "") == "solar_bot":
+                                b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0 * delta)
+                                b.speed_multiplier = max(getattr(b, "speed_multiplier", 1.0), 1.5)
+
+                    if hasattr(world, 'arena') and hasattr(world.arena, 'hazards'):
+                        for h in world.arena.hazards:
+                            if hasattr(h, 'vx') and hasattr(h, 'vy'):
+                                h.vx += self.push_dir_x * self.push_strength * delta
+                                h.vy += self.push_dir_y * self.push_strength * delta
+                            elif hasattr(h, 'x') and hasattr(h, 'y'):
+                                h.x += self.push_dir_x * self.push_strength * delta
+                                h.y += self.push_dir_y * self.push_strength * delta
+
+
 class VolcanicEruptionEventMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -43965,6 +44070,7 @@ class VolcanicEruptionEventMode(GameMode):
                 world.arena.hazards.append(h)
 
 GAME_MODES['windstorm_event'] = WindstormEventMode()
+GAME_MODES['solar_windstorm_event'] = SolarWindstormEventMode()
 GAME_MODES['volcanic_eruption_event'] = VolcanicEruptionEventMode()
 class EarthquakeEventMode(GameMode):
     def __init__(self):
