@@ -71823,28 +71823,64 @@ class PulsatingCoreMode extends GameMode:
 			spawn_timer = 20.0
 			if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
 				var arena = world.arena
+				var cx = randf_range(200.0, 600.0)
+				var cy = randf_range(200.0, 400.0)
+				var sats = []
+				for i in range(3):
+					var angle = (2 * PI / 3) * i
+					var sx = cx + cos(angle) * 50.0
+					var sy = cy + sin(angle) * 50.0
+					sats.append({
+						"id": randi() % 90000 + 10000,
+						"orbit_angle": angle,
+						"orbit_radius": 50.0,
+						"orbit_speed": 2.0,
+						"is_orbiting": true,
+						"x": sx,
+						"y": sy,
+						"radius": 10.0
+					})
 				var PulsatingCore = {
 					"kind": "pulsating_core",
-					"x": randf_range(200.0, 600.0),
-					"y": randf_range(200.0, 400.0),
+					"x": cx,
+					"y": cy,
 					"radius": 20.0,
 					"pulse_timer": 3.0,
 					"pulse_radius": 250.0,
-					"team": "Team A" if randf() > 0.5 else "Team B"
+					"team": "Team A" if randf() > 0.5 else "Team B",
+					"satellites": sats
 				}
 				if not "hazards" in arena:
 					arena.hazards = []
 				arena.hazards.append(PulsatingCore)
 			elif world != null and typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY:
 				var arena = world.arena
+				var cx = randf_range(200.0, 600.0)
+				var cy = randf_range(200.0, 400.0)
+				var sats = []
+				for i in range(3):
+					var angle = (2 * PI / 3) * i
+					var sx = cx + cos(angle) * 50.0
+					var sy = cy + sin(angle) * 50.0
+					sats.append({
+						"id": randi() % 90000 + 10000,
+						"orbit_angle": angle,
+						"orbit_radius": 50.0,
+						"orbit_speed": 2.0,
+						"is_orbiting": true,
+						"x": sx,
+						"y": sy,
+						"radius": 10.0
+					})
 				var PulsatingCore = {
 					"kind": "pulsating_core",
-					"x": randf_range(200.0, 600.0),
-					"y": randf_range(200.0, 400.0),
+					"x": cx,
+					"y": cy,
 					"radius": 20.0,
 					"pulse_timer": 3.0,
 					"pulse_radius": 250.0,
-					"team": "Team A" if randf() > 0.5 else "Team B"
+					"team": "Team A" if randf() > 0.5 else "Team B",
+					"satellites": sats
 				}
 				if not arena.has("hazards"):
 					arena["hazards"] = []
@@ -71870,6 +71906,52 @@ class PulsatingCoreMode extends GameMode:
 					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_timer"): timer = hazard.pulse_timer
 					elif typeof(hazard) == TYPE_OBJECT and "pulse_timer" in hazard: timer = hazard.pulse_timer
 
+					# Update satellites position
+					var sats = []
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("satellites"): sats = hazard.satellites
+					elif typeof(hazard) == TYPE_OBJECT and "satellites" in hazard: sats = hazard.satellites
+
+					var h_xc = 0.0
+					var h_yc = 0.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): h_xc = hazard.x
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): h_yc = hazard.y
+					elif typeof(hazard) == TYPE_OBJECT and "x" in hazard: h_xc = hazard.x
+					elif typeof(hazard) == TYPE_OBJECT and "y" in hazard: h_yc = hazard.y
+
+					for sat in sats:
+						var is_orb = false
+						if typeof(sat) == TYPE_DICTIONARY and sat.has("is_orbiting"): is_orb = sat.is_orbiting
+						elif typeof(sat) == TYPE_OBJECT and "is_orbiting" in sat: is_orb = sat.is_orbiting
+
+						if is_orb:
+							var o_ang = 0.0
+							var o_spd = 0.0
+							var o_rad = 0.0
+							if typeof(sat) == TYPE_DICTIONARY and sat.has("orbit_angle"): o_ang = sat.orbit_angle
+							elif typeof(sat) == TYPE_OBJECT and "orbit_angle" in sat: o_ang = sat.orbit_angle
+							if typeof(sat) == TYPE_DICTIONARY and sat.has("orbit_speed"): o_spd = sat.orbit_speed
+							elif typeof(sat) == TYPE_OBJECT and "orbit_speed" in sat: o_spd = sat.orbit_speed
+							if typeof(sat) == TYPE_DICTIONARY and sat.has("orbit_radius"): o_rad = sat.orbit_radius
+							elif typeof(sat) == TYPE_OBJECT and "orbit_radius" in sat: o_rad = sat.orbit_radius
+
+							o_ang += o_spd * delta
+							var nx = h_xc + cos(o_ang) * o_rad
+							var ny = h_yc + sin(o_ang) * o_rad
+
+							if typeof(sat) == TYPE_DICTIONARY:
+								sat["orbit_angle"] = o_ang
+								sat["x"] = nx
+								sat["y"] = ny
+							elif typeof(sat) == TYPE_OBJECT:
+								if sat.has_method("set_meta"):
+									sat.set_meta("orbit_angle", o_ang)
+									sat.set_meta("x", nx)
+									sat.set_meta("y", ny)
+								else:
+									sat.orbit_angle = o_ang
+									sat.x = nx
+									sat.y = ny
+
 					timer -= delta
 
 					if timer <= 0:
@@ -71888,6 +71970,75 @@ class PulsatingCoreMode extends GameMode:
 						var h_rad = 250.0
 						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("pulse_radius"): h_rad = hazard.pulse_radius
 						elif typeof(hazard) == TYPE_OBJECT and "pulse_radius" in hazard: h_rad = hazard.pulse_radius
+
+						var sats_after = []
+						if typeof(hazard) == TYPE_DICTIONARY and hazard.has("satellites"): sats_after = hazard.satellites
+						elif typeof(hazard) == TYPE_OBJECT and "satellites" in hazard: sats_after = hazard.satellites
+
+						if not "projectiles" in world:
+							world.projectiles = []
+
+						for sat in sats_after:
+							var o_ang = 0.0
+							var s_x = 0.0
+							var s_y = 0.0
+							var s_r = 10.0
+
+							if typeof(sat) == TYPE_DICTIONARY:
+								if sat.has("orbit_angle"): o_ang = sat.orbit_angle
+								if sat.has("x"): s_x = sat.x
+								if sat.has("y"): s_y = sat.y
+								if sat.has("radius"): s_r = sat.radius
+								sat["is_orbiting"] = false
+							elif typeof(sat) == TYPE_OBJECT:
+								if "orbit_angle" in sat: o_ang = sat.orbit_angle
+								if "x" in sat: s_x = sat.x
+								if "y" in sat: s_y = sat.y
+								if "radius" in sat: s_r = sat.radius
+								if sat.has_method("set_meta"): sat.set_meta("is_orbiting", false)
+								else: sat.is_orbiting = false
+
+							var dir_x = cos(o_ang)
+							var dir_y = sin(o_ang)
+							var sat_spd = 300.0
+
+							var proj = {
+								"id": randi() % 90000 + 10000,
+								"x": s_x,
+								"y": s_y,
+								"vx": dir_x * sat_spd,
+								"vy": dir_y * sat_spd,
+								"radius": s_r,
+								"damage": 15.0,
+								"owner_id": null,
+								"bounce_count": 0,
+								"max_bounces": 3,
+								"active": true,
+								"time_to_live": 5.0
+							}
+							world.projectiles.append(proj)
+
+						var new_sats = []
+						for i in range(3):
+							var angle = (2 * PI / 3) * i
+							var sx = h_x + cos(angle) * 50.0
+							var sy = h_y + sin(angle) * 50.0
+							new_sats.append({
+								"id": randi() % 90000 + 10000,
+								"orbit_angle": angle,
+								"orbit_radius": 50.0,
+								"orbit_speed": 2.0,
+								"is_orbiting": true,
+								"x": sx,
+								"y": sy,
+								"radius": 10.0
+							})
+
+						if typeof(hazard) == TYPE_DICTIONARY:
+							hazard["satellites"] = new_sats
+						elif typeof(hazard) == TYPE_OBJECT:
+							if hazard.has_method("set_meta"): hazard.set_meta("satellites", new_sats)
+							else: hazard.satellites = new_sats
 
 						for b in balls:
 							var is_alive = true
@@ -72192,6 +72343,23 @@ class UnstablePayloadMode extends GameMode:
 				h["mass_timer"] = 0.0
 				h["active"] = true
 
+				var s_sats = []
+				for i in range(4):
+					var angle = (2 * PI / 4) * i
+					var s_x = cx + cos(angle) * 40.0
+					var s_y = cy + sin(angle) * 40.0
+					s_sats.append({
+						"id": randi() % 90000 + 10000,
+						"orbit_angle": angle,
+						"orbit_radius": 40.0,
+						"orbit_speed": 1.5,
+						"is_orbiting": true,
+						"x": s_x,
+						"y": s_y,
+						"radius": 8.0
+					})
+				h["satellites"] = s_sats
+
 				hazards.append(h)
 
 				if typeof(arena) == TYPE_DICTIONARY:
@@ -72273,6 +72441,48 @@ class UnstablePayloadMode extends GameMode:
 				vy = vy * (1.0 - 1.5 * delta)
 				hx += vx * delta
 				hy += vy * delta
+
+				var sats = []
+				if typeof(h) == TYPE_DICTIONARY and h.has("satellites"): sats = h.satellites
+				elif typeof(h) == TYPE_OBJECT and "satellites" in h: sats = h.satellites
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get"):
+					var val = h.get("satellites")
+					if val != null: sats = val
+
+				for sat in sats:
+					var is_orb = false
+					if typeof(sat) == TYPE_DICTIONARY and sat.has("is_orbiting"): is_orb = sat.is_orbiting
+					elif typeof(sat) == TYPE_OBJECT and "is_orbiting" in sat: is_orb = sat.is_orbiting
+
+					if is_orb:
+						var o_ang = 0.0
+						var o_spd = 0.0
+						if typeof(sat) == TYPE_DICTIONARY and sat.has("orbit_angle"): o_ang = sat.orbit_angle
+						elif typeof(sat) == TYPE_OBJECT and "orbit_angle" in sat: o_ang = sat.orbit_angle
+						if typeof(sat) == TYPE_DICTIONARY and sat.has("orbit_speed"): o_spd = sat.orbit_speed
+						elif typeof(sat) == TYPE_OBJECT and "orbit_speed" in sat: o_spd = sat.orbit_speed
+
+						o_ang += o_spd * delta
+						var curr_orbit = h_radius + 20.0
+						var n_x = hx + cos(o_ang) * curr_orbit
+						var n_y = hy + sin(o_ang) * curr_orbit
+
+						if typeof(sat) == TYPE_DICTIONARY:
+							sat["orbit_angle"] = o_ang
+							sat["x"] = n_x
+							sat["y"] = n_y
+							sat["orbit_radius"] = curr_orbit
+						elif typeof(sat) == TYPE_OBJECT:
+							if sat.has_method("set_meta"):
+								sat.set_meta("orbit_angle", o_ang)
+								sat.set_meta("x", n_x)
+								sat.set_meta("y", n_y)
+								sat.set_meta("orbit_radius", curr_orbit)
+							else:
+								sat.orbit_angle = o_ang
+								sat.x = n_x
+								sat.y = n_y
+								sat.orbit_radius = curr_orbit
 
 				var arena_width = 1000.0
 				var arena_height = 1000.0
@@ -72475,6 +72685,68 @@ class UnstablePayloadMode extends GameMode:
 				var idx = hazards.find(h)
 				if idx != -1:
 					hazards.remove_at(idx)
+
+				if not "projectiles" in world:
+					if typeof(world) == TYPE_OBJECT:
+						if world.has_method("set_meta"): world.set_meta("projectiles", [])
+						else: world.projectiles = []
+					elif typeof(world) == TYPE_DICTIONARY:
+						world["projectiles"] = []
+
+				var w_projs = []
+				if typeof(world) == TYPE_OBJECT:
+					if "projectiles" in world: w_projs = world.projectiles
+					elif world.has_method("get"): w_projs = world.get("projectiles")
+				elif typeof(world) == TYPE_DICTIONARY:
+					if world.has("projectiles"): w_projs = world.projectiles
+
+				var sats_after = []
+				if typeof(h) == TYPE_DICTIONARY and h.has("satellites"): sats_after = h.satellites
+				elif typeof(h) == TYPE_OBJECT and "satellites" in h: sats_after = h.satellites
+				elif typeof(h) == TYPE_OBJECT and h.has_method("get"):
+					var val = h.get("satellites")
+					if val != null: sats_after = val
+
+				for sat in sats_after:
+					var o_ang = 0.0
+					var s_x = 0.0
+					var s_y = 0.0
+					var s_r = 8.0
+
+					if typeof(sat) == TYPE_DICTIONARY:
+						if sat.has("orbit_angle"): o_ang = sat.orbit_angle
+						if sat.has("x"): s_x = sat.x
+						if sat.has("y"): s_y = sat.y
+						if sat.has("radius"): s_r = sat.radius
+						sat["is_orbiting"] = false
+					elif typeof(sat) == TYPE_OBJECT:
+						if "orbit_angle" in sat: o_ang = sat.orbit_angle
+						if "x" in sat: s_x = sat.x
+						if "y" in sat: s_y = sat.y
+						if "radius" in sat: s_r = sat.radius
+						if sat.has_method("set_meta"): sat.set_meta("is_orbiting", false)
+						else: sat.is_orbiting = false
+
+					var dir_x = cos(o_ang)
+					var dir_y = sin(o_ang)
+					var sat_spd = 400.0
+
+					var proj = {
+						"id": randi() % 90000 + 10000,
+						"x": s_x,
+						"y": s_y,
+						"vx": dir_x * sat_spd,
+						"vy": dir_y * sat_spd,
+						"radius": s_r,
+						"damage": 25.0,
+						"owner_id": null,
+						"bounce_count": 0,
+						"max_bounces": 2,
+						"active": true,
+						"time_to_live": 4.0
+					}
+					if typeof(w_projs) == TYPE_ARRAY:
+						w_projs.append(proj)
 
 				var blast_radius = 450.0
 				if world != null and typeof(world) == TYPE_OBJECT and world.has_method("add_event"):

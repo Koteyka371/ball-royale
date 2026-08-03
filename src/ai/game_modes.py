@@ -45903,6 +45903,20 @@ class PulsatingCoreMode(GameMode):
                         self.pulse_timer = 3.0
                         self.pulse_radius = 250.0
                         self.team = random.choice(["Team A", "Team B"])
+                        self.satellites = []
+                        import math
+                        for i in range(3):
+                            class Satellite:
+                                def __init__(self, cx, cy, idx):
+                                    self.id = random.randint(10000, 99999)
+                                    self.orbit_angle = (2 * math.pi / 3) * idx
+                                    self.orbit_radius = 50.0
+                                    self.orbit_speed = 2.0
+                                    self.is_orbiting = True
+                                    self.x = cx + math.cos(self.orbit_angle) * self.orbit_radius
+                                    self.y = cy + math.sin(self.orbit_angle) * self.orbit_radius
+                                    self.radius = 10.0
+                            self.satellites.append(Satellite(self.x, self.y, i))
                 if hasattr(world, "arena") and not hasattr(world.arena, "hazards"):
                     world.arena.hazards = []
                 world.arena.hazards.append(PulsatingCore())
@@ -45914,12 +45928,75 @@ class PulsatingCoreMode(GameMode):
             for hazard in world.arena.hazards:
                 if getattr(hazard, "kind", "") == "pulsating_core":
                     hazard.pulse_timer = getattr(hazard, "pulse_timer", 3.0) - delta
+                    # Update satellites position
+                    satellites = getattr(hazard, "satellites", [])
+                    import math
+                    for sat in satellites:
+                        if getattr(sat, "is_orbiting", False):
+                            sat.orbit_angle += sat.orbit_speed * delta
+                            sat.x = hazard.x + math.cos(sat.orbit_angle) * sat.orbit_radius
+                            sat.y = hazard.y + math.sin(sat.orbit_angle) * sat.orbit_radius
+
                     if hazard.pulse_timer <= 0:
                         hazard.pulse_timer = 3.0
                         h_team = getattr(hazard, "team", "")
                         h_x = getattr(hazard, "x", 0.0)
                         h_y = getattr(hazard, "y", 0.0)
                         h_rad = getattr(hazard, "pulse_radius", 250.0)
+
+                        # Orbiting debris logic
+                        satellites = getattr(hazard, "satellites", [])
+                        import random
+
+                        if not hasattr(world, "projectiles"):
+                            world.projectiles = []
+
+                        for sat in satellites:
+                            # Detach and fly outward
+                            sat_angle = getattr(sat, "orbit_angle", 0.0)
+                            dir_x = math.cos(sat_angle)
+                            dir_y = math.sin(sat_angle)
+                            sat_speed = 300.0
+                            sat.vx = dir_x * sat_speed
+                            sat.vy = dir_y * sat_speed
+                            sat.is_orbiting = False
+
+                            # Remove from hazard's satellite list, they become standalone projectiles/hazards
+                            # Ensure we don't duplicate
+                            p_id = getattr(sat, "id", random.randint(10000, 99999))
+                            class SatProjectile:
+                                def __init__(self, x, y, vx, vy, radius, damage, owner_id):
+                                    self.id = p_id
+                                    self.x = x
+                                    self.y = y
+                                    self.vx = vx
+                                    self.vy = vy
+                                    self.radius = radius
+                                    self.damage = damage
+                                    self.owner_id = owner_id
+                                    self.bounce_count = 0
+                                    self.max_bounces = 3
+                                    self.active = True
+                                    self.time_to_live = 5.0
+                            p = SatProjectile(sat.x, sat.y, sat.vx, sat.vy, getattr(sat, "radius", 10.0), 15.0, None)
+                            world.projectiles.append(p)
+
+
+                        hazard.satellites = []
+                        # Spawn new satellites to replace
+                        for i in range(3):
+                            class Satellite:
+                                def __init__(self):
+                                    self.id = random.randint(10000, 99999)
+                                    self.orbit_angle = (2 * math.pi / 3) * i
+                                    self.orbit_radius = 50.0
+                                    self.orbit_speed = 2.0
+                                    self.is_orbiting = True
+                                    self.x = h_x + math.cos(self.orbit_angle) * self.orbit_radius
+                                    self.y = h_y + math.sin(self.orbit_angle) * self.orbit_radius
+                                    self.radius = 10.0
+                            hazard.satellites.append(Satellite())
+
                         for b in balls:
                             if not getattr(b, "alive", True): continue
                             dx = getattr(b, "x", 0.0) - h_x
@@ -46098,6 +46175,22 @@ class UnstablePayloadMode(GameMode):
                             self.damage = damage
                     h = DummyHazardUP(len(world.arena.hazards) + 95000 + random.randint(0, 1000), cx, cy, 20.0, "unstable_payload", 0.0)
 
+                # Add satellites to payload
+                import math
+                h.satellites = []
+                for i in range(4):
+                    class PayloadSatellite:
+                        def __init__(self, cx, cy, idx):
+                            self.id = random.randint(10000, 99999)
+                            self.orbit_angle = (2 * math.pi / 4) * idx
+                            self.orbit_radius = 40.0
+                            self.orbit_speed = 1.5
+                            self.is_orbiting = True
+                            self.x = cx + math.cos(self.orbit_angle) * self.orbit_radius
+                            self.y = cy + math.sin(self.orbit_angle) * self.orbit_radius
+                            self.radius = 8.0
+                    h.satellites.append(PayloadSatellite(h.x, h.y, i))
+
                 setattr(h, "vx", 0.0)
                 setattr(h, "vy", 0.0)
                 setattr(h, "mass_timer", 0.0)
@@ -46123,6 +46216,18 @@ class UnstablePayloadMode(GameMode):
                 h.vy = getattr(h, "vy", 0.0) * (1.0 - 1.5 * delta)
                 h.x += h.vx * delta
                 h.y += h.vy * delta
+
+                # Update satellites position
+                satellites = getattr(h, "satellites", [])
+                import math
+                for sat in satellites:
+                    if getattr(sat, "is_orbiting", False):
+                        sat.orbit_angle += sat.orbit_speed * delta
+                        # Adjust orbit radius based on payload growth
+                        current_orbit = h.radius + 20.0
+                        sat.x = h.x + math.cos(sat.orbit_angle) * current_orbit
+                        sat.y = h.y + math.sin(sat.orbit_angle) * current_orbit
+                        sat.orbit_radius = current_orbit
 
                 # Bounce off walls
                 arena_width = getattr(world.arena, "width", 1000)
@@ -46193,6 +46298,42 @@ class UnstablePayloadMode(GameMode):
 
         for h in hazards_to_remove:
             world.arena.hazards.remove(h)
+
+            # Satellites detach on explosion
+            satellites = getattr(h, "satellites", [])
+            import random
+            import math
+            for sat in satellites:
+                # Detach and fly outward
+                sat_angle = getattr(sat, "orbit_angle", 0.0)
+                dir_x = math.cos(sat_angle)
+                dir_y = math.sin(sat_angle)
+                sat_speed = 400.0
+                sat.vx = dir_x * sat_speed
+                sat.vy = dir_y * sat_speed
+                sat.is_orbiting = False
+
+                # Add to projectiles
+                if hasattr(world, "projectiles"):
+                    p_id = getattr(sat, "id", random.randint(10000, 99999))
+                    class SatProjectile:
+                        def __init__(self, x, y, vx, vy, radius, damage, owner_id):
+                            self.id = p_id
+                            self.x = x
+                            self.y = y
+                            self.vx = vx
+                            self.vy = vy
+                            self.radius = radius
+                            self.damage = damage
+                            self.owner_id = owner_id
+                            self.bounce_count = 0
+                            self.max_bounces = 2
+                            self.active = True
+                            self.time_to_live = 4.0
+                    p = SatProjectile(sat.x, sat.y, sat.vx, sat.vy, getattr(sat, "radius", 8.0), 25.0, None)
+                    world.projectiles.append(p)
+
+            h.satellites = []
 
             # Massive explosion
             blast_radius = 450.0
