@@ -47687,6 +47687,118 @@ from ai.noise_hazard_mode import NoiseHazardMode
 GAME_MODES['noise_hazard_mode'] = NoiseHazardMode()
 
 
+
+class ThermalPayloadMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Thermal Payload"
+        self.description = "A payload mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby."
+        self.payload = None
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000)
+        arena_height = getattr(world.arena, "height", 1000)
+
+        class PayloadObj:
+            pass
+
+        self.payload = PayloadObj()
+        self.payload.ball_type = "payload"
+        self.payload.is_payload = True
+        self.payload.is_invulnerable = True
+        self.payload.speed = 0.0
+        self.payload.vx = 0.0
+        self.payload.vy = 0.0
+        self.payload.damage = 0.0
+        self.payload.max_hp = 10000.0
+        self.payload.hp = 10000.0
+        self.payload.x = arena_width / 2.0
+        self.payload.y = arena_height / 2.0
+        self.payload.alive = True
+        self.payload.team = "Neutral"
+        self.payload.radius = 20.0
+
+        self.payload.aura_radius = 40.0
+        self.payload.unpushed_timer = 0.0
+        self.payload.pushed_this_tick = False
+
+        balls.append(self.payload)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        if not self.payload or not getattr(self.payload, "alive", False):
+            return
+
+        if getattr(self.payload, "hp", 5000.0) < 100.0:
+            self.payload.hp = 5000.0
+
+        pushers_count = 0
+        px = getattr(self.payload, "x", 0)
+        py = getattr(self.payload, "y", 0)
+        pr = getattr(self.payload, "radius", 20.0)
+
+        for b in balls:
+            if b == self.payload or getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", False):
+                continue
+
+            bx = getattr(b, "x", 0)
+            by = getattr(b, "y", 0)
+            br = getattr(b, "radius", 10.0)
+
+            dist = math.hypot(bx - px, by - py)
+
+            if dist <= pr + br + 20.0:
+                pushers_count += 1
+
+        if pushers_count > 0:
+            self.payload.pushed_this_tick = True
+            self.payload.unpushed_timer = 0.0
+            # Exponentially increase aura radius
+            self.payload.aura_radius *= (1.0 + 0.1 * delta * pushers_count)
+            if self.payload.aura_radius > 400.0:
+                self.payload.aura_radius = 400.0
+        else:
+            self.payload.pushed_this_tick = False
+            self.payload.unpushed_timer += delta
+
+        # Apply aura damage
+        aura_rad = self.payload.aura_radius
+        for b in balls:
+            if b == self.payload or getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", False):
+                continue
+            bx = getattr(b, "x", 0)
+            by = getattr(b, "y", 0)
+            dist = math.hypot(bx - px, by - py)
+
+            if dist <= aura_rad:
+                if hasattr(b, "take_damage"):
+                    b.take_damage(5.0 * delta)
+
+        # Venting explosion
+        if self.payload.unpushed_timer >= 3.0:
+            explosion_radius = aura_rad * 1.5
+
+            if hasattr(world, "add_event"):
+                world.add_event("visual_effect", {"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
+
+            for b in balls:
+                if b == self.payload or getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", False):
+                    continue
+                bx = getattr(b, "x", 0)
+                by = getattr(b, "y", 0)
+                dist = math.hypot(bx - px, by - py)
+
+                if dist <= explosion_radius:
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(50.0)
+
+            # Reset
+            self.payload.unpushed_timer = 0.0
+            self.payload.aura_radius = 40.0
+
 class SilentWorldMutatorMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -47790,3 +47902,5 @@ class MirrorCloneEventMode(GameMode):
                                 break
 
 GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode()
+
+GAME_MODES["thermal_payload"] = ThermalPayloadMutatorMode()
