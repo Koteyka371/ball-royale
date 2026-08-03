@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1769] Solar Storm Weather Event — *2026-08-03 02:24:04 UTC*
+
+A new weather event where bursts of solar radiation occasionally flare up, granting massive buffs to solar_bot while significantly damaging and blinding other characters in the open. Players must seek shade behind indestructible walls to avoid the effects.
+
+---
+
 ## [idea-1760] Decoy Swap Skill — *2026-08-03 01:58:19 UTC*
 
 A skill where the player places a decoy. The player can activate the skill a second time to instantly swap places with the decoy, which then explodes to damage nearby enemies.
