@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1772] Shrinking Safe Zones within Danger Zones — *2026-08-03 04:07:44 UTC*
+
+In large danger zones, small temporary 'safe bubbles' appear. Balls must fight for control of these tiny bubbles to survive the danger zone's massive damage pulses. The bubbles slowly drift around the danger zone, forcing continuous movement.
+
+---
+
 ## [idea-1769] Solar Storm Weather Event — *2026-08-03 02:24:04 UTC*
 
 A new weather event where bursts of solar radiation occasionally flare up, granting massive buffs to solar_bot while significantly damaging and blinding other characters in the open. Players must seek shade behind indestructible walls to avoid the effects.
