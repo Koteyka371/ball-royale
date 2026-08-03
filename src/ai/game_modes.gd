@@ -75284,3 +75284,32 @@ class MirrorCloneEventMode extends GameMode:
 GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode.new()
 
 GAME_MODES["thermal_payload"] = ThermalPayloadMutatorMode.new()
+
+
+class TrampolineBoundaryMode extends GameMode:
+    func _init():
+        super._init()
+        self.name = "Trampoline Boundary"
+        self.description = "Instead of taking damage or dying, balls that touch the boundary are violently bounced inward with extreme force, potentially knocking them into hazards or other players. The boundary acts as a massive trampoline."
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        var arena = null
+        if typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            arena = world["arena"]
+        elif typeof(world) == TYPE_OBJECT and "arena" in world:
+            arena = world.arena
+
+        if arena != null:
+            if typeof(arena) == TYPE_DICTIONARY:
+                if not arena.has("boundary_states"):
+                    arena["boundary_states"] = {}
+                for wall in ["top", "bottom", "left", "right"]:
+                    arena["boundary_states"][wall] = "trampoline"
+            else:
+                if not "boundary_states" in arena:
+                    arena.boundary_states = {}
+                for wall in ["top", "bottom", "left", "right"]:
+                    arena.boundary_states[wall] = "trampoline"
+
+GAME_MODES['trampoline_boundary'] = TrampolineBoundaryMode.new()
