@@ -8646,6 +8646,8 @@ func execute(strategy: String, delta: float):
                             if typeof(other) == TYPE_OBJECT:
                                 if "is_bounty" in other and other.is_bounty: is_target = true
                                 elif other.has_method("get_meta") and other.has_meta("is_bounty") and other.get_meta("is_bounty"): is_target = true
+                                if "is_minor_bounty" in other and other.is_minor_bounty: is_target = true
+                                elif other.has_method("get_meta") and other.has_meta("is_minor_bounty") and other.get_meta("is_minor_bounty"): is_target = true
                                 if "high_threat" in other and other.high_threat: is_target = true
                                 elif other.has_method("get_meta") and other.has_meta("high_threat") and other.get_meta("high_threat"): is_target = true
                                 if "is_bounty_target" in other and other.is_bounty_target: is_target = true
@@ -8655,6 +8657,7 @@ func execute(strategy: String, delta: float):
                                 if is_bc and hid == self_id: is_target = true
                             else:
                                 if other.has("is_bounty") and other["is_bounty"]: is_target = true
+                                if other.has("is_minor_bounty") and other["is_minor_bounty"]: is_target = true
                                 if other.has("high_threat") and other["high_threat"]: is_target = true
                                 if other.has("is_bounty_target") and other["is_bounty_target"]: is_target = true
                                 if other.has("is_bounty_contract_target") and other["is_bounty_contract_target"] and other.has("bounty_contract_hunter_id") and other["bounty_contract_hunter_id"] == self_id: is_target = true

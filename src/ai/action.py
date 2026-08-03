@@ -3893,7 +3893,7 @@ class Action:
                 if hasattr(self.world, "balls"):
                     for other in self.world.balls:
                         if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
-                            if getattr(other, "is_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False):
+                            if getattr(other, "is_bounty", False) or getattr(other, "is_minor_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False):
                                 if getattr(other, "stealth_active", False) or getattr(other, "has_stealth_drone", False) or getattr(other, "stealth_booster_timer", 0.0) > 0.0 or getattr(other, "stealth_timer", 0.0) > 0.0:
                                     target_in_stealth = True
 
@@ -3909,7 +3909,7 @@ class Action:
                     if hasattr(self.world, "balls"):
                         for other in self.world.balls:
                             if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
-                                if getattr(other, "is_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False) or (getattr(other, "is_bounty_contract_target", False) and getattr(other, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None)):
+                                if getattr(other, "is_bounty", False) or getattr(other, "is_minor_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False) or (getattr(other, "is_bounty_contract_target", False) and getattr(other, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None)):
                                     if hasattr(self.world, "events"):
                                         self.world.events.append({"type": "bounty_compass", "data": {"target_x": float(other.x), "target_y": float(other.y), "owner_id": getattr(self.ball, "id", None)}})
                                         self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(self.ball.x), "y": float(self.ball.y), "tx": float(other.x), "ty": float(other.y), "color": "orange"}})
