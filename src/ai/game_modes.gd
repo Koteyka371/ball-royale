@@ -29450,31 +29450,51 @@ class MergingSafeZonesMode extends GameMode:
 						break
 
 				if not in_safe_zone:
-					var old_hp = 0.0
-					if "hp" in b:
-						old_hp = b.hp
-					elif b is Dictionary and b.has("hp"):
-						old_hp = b.hp
-					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
-						old_hp = b.get_meta("hp")
+					var current_slow = 0.0
+					if "slow_timer" in b:
+						current_slow = b.slow_timer
+					elif b is Dictionary and b.has("slow_timer"):
+						current_slow = b.slow_timer
+					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("slow_timer"):
+						current_slow = b.get_meta("slow_timer")
+					var new_slow = max(current_slow, 0.5)
 
-					var new_hp = old_hp - outside_damage_per_second * delta
+					if typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("slow_timer", new_slow)
+					elif b is Dictionary:
+						b["slow_timer"] = new_slow
+					else:
+						b.slow_timer = new_slow
 
-					if new_hp <= 0:
-						new_hp = 0
-						if "alive" in b:
-							b.alive = false
-						elif b is Dictionary and b.has("alive"):
-							b.alive = false
-						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
-							b.set_meta("alive", false)
+					var damage = outside_damage_per_second * delta
+					if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+						b.take_damage(damage, "merging_safe_zones")
+					else:
+						var old_hp = 0.0
+						if "hp" in b:
+							old_hp = b.hp
+						elif b is Dictionary and b.has("hp"):
+							old_hp = b.hp
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
+							old_hp = b.get_meta("hp")
 
-					if "hp" in b:
-						b.hp = new_hp
-					elif b is Dictionary and b.has("hp"):
-						b.hp = new_hp
-					elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
-						b.set_meta("hp", new_hp)
+						var new_hp = old_hp - damage
+
+						if new_hp <= 0:
+							new_hp = 0
+							if "alive" in b:
+								b.alive = false
+							elif b is Dictionary and b.has("alive"):
+								b.alive = false
+							elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("alive"):
+								b.set_meta("alive", false)
+
+						if "hp" in b:
+							b.hp = new_hp
+						elif b is Dictionary and b.has("hp"):
+							b.hp = new_hp
+						elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("hp"):
+							b.set_meta("hp", new_hp)
 
 class MicroSafeZonesMode extends SafeZoneMode:
 	var micro_zones: Array = []

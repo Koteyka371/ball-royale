@@ -18803,10 +18803,15 @@ class MergingSafeZonesMode(GameMode):
                         break
 
                 if not in_safe_zone:
-                    b.hp -= self.outside_damage_per_second * delta
-                    if b.hp <= 0:
-                        b.alive = False
-                        b.hp = 0
+                    b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
+                    damage = self.outside_damage_per_second * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(damage, "merging_safe_zones")
+                    else:
+                        b.hp -= damage
+                        if b.hp <= 0:
+                            b.alive = False
+                            b.hp = 0
 
 class MicroSafeZonesMode(SafeZoneMode):
     def __init__(self):
