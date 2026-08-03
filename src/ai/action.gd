@@ -11123,6 +11123,9 @@ func execute(strategy: String, delta: float):
 								if typeof(other_ball) == TYPE_DICTIONARY: other_ball["invert_timer"] = nt
 								elif "invert_timer" in other_ball: other_ball.invert_timer = nt
 								elif typeof(other_ball) == TYPE_OBJECT and other_ball.has_method("set_meta"): other_ball.set_meta("invert_timer", nt)
+			if world != null and "events" in world:
+				var ev = {"type": "emp_wave", "data": {"x": self.ball.x, "y": self.ball.y, "radius": 300.0}}
+				world.events.append(ev)
 			inv.erase("emp_wave_item")
 			if typeof(self.ball) == TYPE_DICTIONARY:
 				self.ball["inventory"] = inv

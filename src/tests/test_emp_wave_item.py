@@ -16,6 +16,7 @@ class MockWorld:
         self.balls = []
         self.boosters = []
         self.arena = type('obj', (object,), {'hazards': []})
+        self.events = []
 
 def test_emp_wave_item_use():
     ball = MockBall(1, "teamA", 0, 0)
@@ -34,3 +35,10 @@ def test_emp_wave_item_use():
     assert far_enemy.invert_timer == 0.0
     assert "emp_wave_item" not in ball.inventory
     assert not ball.use_item
+
+    # Verify the event was added
+    has_event = False
+    for ev in world.events:
+        if ev.get("type") == "emp_wave" and ev["data"]["radius"] == 300.0:
+            has_event = True
+    assert has_event, "emp_wave event not spawned"
