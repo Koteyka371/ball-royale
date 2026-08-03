@@ -15869,6 +15869,9 @@ class GuildVsGuildMode(GameMode):
         self.guilds = {}
 
         try:
+            import math
+            import random
+            from ai.action import Ball
             from system.guild import GuildManager
             gm = GuildManager()
             g_names = list(self.guilds.keys())
@@ -16022,6 +16025,9 @@ class GuildVsGuildMode(GameMode):
     def _end_match(self, winner_guild):
         self.territory_captured = True
         try:
+            import math
+            import random
+            from ai.action import Ball
             from system.guild import GuildManager
             gm = GuildManager()
             gm.capture_territory(winner_guild, "GvG_Arena")
@@ -30384,6 +30390,9 @@ class GuildWarMode(GameMode):
                 self.defender_balls.append(b.id)
 
         try:
+            import math
+            import random
+            from ai.action import Ball
             from system.guild import GuildManager
             gm = GuildManager()
             if self.defender_guild and hasattr(world, 'arena'):
@@ -30392,7 +30401,6 @@ class GuildWarMode(GameMode):
                     if hq_status:
                         defenses = hq_status.get("defenses", {})
                         # Add defensive hazards
-                        import math
                         angle_step = 2 * math.pi / max(1, sum(defenses.values()))
                         current_angle = 0
                         for d_type, amount in defenses.items():
@@ -30410,6 +30418,65 @@ class GuildWarMode(GameMode):
                                     "owner_guild": self.defender_guild
                                 })
                                 current_angle += angle_step
+
+            # Load mercenaries for defender
+            if self.defender_guild and hasattr(gm, 'get_mercenaries'):
+                mercs = gm.get_mercenaries(self.defender_guild)
+                guild_data = gm.get_guild(self.defender_guild)
+                guild_level = guild_data.get("level", 1) if guild_data else 1
+
+
+                for m in mercs:
+                    m_type = m.get("type", "basic")
+                    amount = m.get("amount", 1)
+                    for _ in range(amount):
+                        new_id = random.randint(10000, 90000)
+                        spawn_x = self.hq_x + random.randint(-50, 50)
+                        spawn_y = self.hq_y + random.randint(-50, 50)
+
+                        merc_ball = Ball(new_id, m_type, spawn_x, spawn_y)
+                        merc_ball.hp = 100 + (guild_level * 10)
+                        merc_ball.damage = 10 + (guild_level * 2)
+                        if guild_level >= 5:
+                            merc_ball.traits.append("veteran")
+                        if guild_level >= 10:
+                            merc_ball.traits.append("elite")
+
+                        merc_ball.is_mercenary = True
+                        merc_ball.owner_guild = self.defender_guild
+                        world.balls.append(merc_ball)
+                        self.defender_balls.append(merc_ball.id)
+
+            # Load mercenaries for attacker
+            if self.attacker_guild and hasattr(gm, 'get_mercenaries'):
+                mercs = gm.get_mercenaries(self.attacker_guild)
+                guild_data = gm.get_guild(self.attacker_guild)
+                guild_level = guild_data.get("level", 1) if guild_data else 1
+
+                # Assume attacker spawn area is opposite to HQ (e.g., origin or far edge)
+                spawn_origin_x, spawn_origin_y = 100, 100
+
+                for m in mercs:
+                    m_type = m.get("type", "basic")
+                    amount = m.get("amount", 1)
+                    for _ in range(amount):
+                        new_id = random.randint(10000, 90000)
+                        spawn_x = spawn_origin_x + random.randint(-50, 50)
+                        spawn_y = spawn_origin_y + random.randint(-50, 50)
+
+                        merc_ball = Ball(new_id, m_type, spawn_x, spawn_y)
+                        merc_ball.hp = 100 + (guild_level * 10)
+                        merc_ball.damage = 10 + (guild_level * 2)
+                        if guild_level >= 5:
+                            merc_ball.traits.append("veteran")
+                        if guild_level >= 10:
+                            merc_ball.traits.append("elite")
+
+                        merc_ball.is_mercenary = True
+                        merc_ball.owner_guild = self.attacker_guild
+                        world.balls.append(merc_ball)
+                        self.attacker_balls.append(merc_ball.id)
+
         except (ImportError, AttributeError):
             pass
 

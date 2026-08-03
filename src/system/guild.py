@@ -28,6 +28,8 @@ class GuildManager:
                         }
                     elif "mini_games" not in guild["hq"]:
                         guild["hq"]["mini_games"] = {}
+                    if "mercenaries" not in guild:
+                        guild["mercenaries"] = []
 
                     if "guild_xp" not in guild:
                         guild["guild_xp"] = 0
@@ -125,6 +127,7 @@ class GuildManager:
             "perks": [],
             "active_abilities": [],
             "active_bounties": {},
+            "mercenaries": [],
             "chat_history": [],
             "vault": [],
             "boss_progress": {},
@@ -951,3 +954,33 @@ class GuildManager:
                     self.save()
                     return {"buff": "luck_boost", "duration": 3600}
         return {}
+
+    def hire_mercenaries(self, guild_name, merc_type, cost, amount=1, currency="resources"):
+        if guild_name in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+            if guild.get(currency, 0) >= cost:
+                guild[currency] -= cost
+                mercs = guild.setdefault("mercenaries", [])
+
+                # Check if merc type already exists, if so increment amount
+                found = False
+                for merc in mercs:
+                    if merc.get("type") == merc_type:
+                        merc["amount"] = merc.get("amount", 0) + amount
+                        found = True
+                        break
+
+                if not found:
+                    mercs.append({
+                        "type": merc_type,
+                        "amount": amount
+                    })
+
+                self.save()
+                return True
+        return False
+
+    def get_mercenaries(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("mercenaries", [])
+        return []

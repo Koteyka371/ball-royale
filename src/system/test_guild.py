@@ -547,3 +547,38 @@ def test_boss_mutations(temp_guild_file):
     assert gm.get_boss_mutations(1) == []
     assert gm.get_boss_mutations(2) == [{"type": "damage_reflect", "value": 0.1}]
     assert gm.get_boss_mutations(3) == [{"type": "damage_reflect", "value": 0.1}, {"type": "periodic_minions", "interval": 10}]
+
+def test_hire_mercenaries(temp_guild_file):
+    gm = GuildManager(temp_guild_file)
+    gm.create_guild("MercGuild", "p1")
+
+    # Add currency
+    gm.data["guilds"]["MercGuild"]["resources"] = 500
+    gm.save()
+
+    # Should fail if not enough currency
+    assert gm.hire_mercenaries("MercGuild", "archer", 600) == False
+
+    # Hire one type
+    assert gm.hire_mercenaries("MercGuild", "archer", 200, amount=2) == True
+    assert gm.data["guilds"]["MercGuild"]["resources"] == 300
+
+    # Hire same type to increment amount
+    assert gm.hire_mercenaries("MercGuild", "archer", 100, amount=1) == True
+    assert gm.data["guilds"]["MercGuild"]["resources"] == 200
+
+    # Hire different type
+    assert gm.hire_mercenaries("MercGuild", "tank", 150, amount=1) == True
+    assert gm.data["guilds"]["MercGuild"]["resources"] == 50
+
+    # Verify via get_mercenaries
+    mercs = gm.get_mercenaries("MercGuild")
+    assert len(mercs) == 2
+
+    for merc in mercs:
+        if merc["type"] == "archer":
+            assert merc["amount"] == 3
+        elif merc["type"] == "tank":
+            assert merc["amount"] == 1
+        else:
+            assert False, "Unknown merc type found"

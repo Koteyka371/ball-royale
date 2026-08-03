@@ -37,6 +37,8 @@ func load_guilds():
                 elif not data["guilds"][g_name]["hq"].has("mini_games"):
                     data["guilds"][g_name]["hq"]["mini_games"] = {}
 
+                if not data["guilds"][g_name].has("mercenaries"):
+                    data["guilds"][g_name]["mercenaries"] = []
                 if not data["guilds"][g_name].has("guild_xp"):
                     data["guilds"][g_name]["guild_xp"] = 0
                 if not data["guilds"][g_name].has("perks"):
@@ -156,6 +158,7 @@ func create_guild(guild_name: String, creator_id: String) -> bool:
         "perks": [],
         "active_abilities": [],
         "active_bounties": {},
+        "mercenaries": [],
         "chat_history": [],
         "vault": [],
         "boss_progress": {},
@@ -1170,3 +1173,38 @@ func interact_with_pet(guild_name: String, pet_index: int, action: String) -> Di
                     save_guilds()
                     return {"buff": "luck_boost", "duration": 3600}
     return {}
+
+func hire_mercenaries(guild_name: String, merc_type: String, cost: int, amount: int = 1, currency: String = "resources") -> bool:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has(currency) and guild[currency] >= cost:
+            guild[currency] -= cost
+            if not guild.has("mercenaries"):
+                guild["mercenaries"] = []
+
+            var found = false
+            for merc in guild["mercenaries"]:
+                if merc.has("type") and merc["type"] == merc_type:
+                    if merc.has("amount"):
+                        merc["amount"] += amount
+                    else:
+                        merc["amount"] = amount
+                    found = true
+                    break
+
+            if not found:
+                guild["mercenaries"].append({
+                    "type": merc_type,
+                    "amount": amount
+                })
+
+            save_guilds()
+            return true
+    return false
+
+func get_mercenaries(guild_name: String) -> Array:
+    if data["guilds"].has(guild_name):
+        var guild = data["guilds"][guild_name]
+        if guild.has("mercenaries"):
+            return guild["mercenaries"]
+    return []

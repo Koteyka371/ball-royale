@@ -49531,6 +49531,12 @@ class GuildWarMode extends GameMode:
 				})
 				current_angle += angle_step
 
+			# Since we can't easily query GuildManager from pure AI GDScript dynamically without an instance,
+			# we typically rely on the server to spawn these. However, to match the Python AI logic struct,
+			# we will let the python server push these balls over network, or simulate dummy ones here:
+			# For purely client-side simulation, we would inject them if they exist in state.
+
+
 	func tick(world, delta=0.016):
 		.tick(world, delta)
 
