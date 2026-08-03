@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1775] Stamina Drain Field Event — *2026-08-03 07:14:03 UTC*
+
+An arena-wide event where a localized field appears that slowly drains the stamina of any ball caught inside it, forcing players to avoid the area or risk losing their abilities.
+
+---
+
 ## [idea-1696] Safe Zone Radar Item — *2026-08-03 05:38:41 UTC*
 
 Introduce a rare consumable item (e.g., Safe Zone Radar) that briefly reveals the exact location where the safe zone will shrink to next, giving players a strategic advantage to reposition ahead of time.
