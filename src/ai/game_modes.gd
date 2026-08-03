@@ -57550,7 +57550,227 @@ class ToxicFogEventMode extends GameMode:
 			elif typeof(b) == TYPE_DICTIONARY:
 				b["_fog_last_hp"] = current_hp
 
+class BossEscortMode extends GameMode:
+	var boss_red = null
+	var boss_blue = null
+	var goal_red = Vector2(100.0, 500.0)
+	var goal_blue = Vector2(900.0, 500.0)
+
+	func _init():
+		super._init()
+		name = "Boss Escort"
+
+	func setup(world, balls: Array):
+		super.setup(world, balls)
+		var valid_balls = []
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if b_type != "spectator":
+				valid_balls.append(b)
+
+		var mid = valid_balls.size() / 2
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < mid:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = "Red"
+				else:
+					b.set("team", "Red")
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = "Blue"
+				else:
+					b.set("team", "Blue")
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			arena_width = world.arena.get("width", 1000.0)
+			arena_height = world.arena.get("height", 1000.0)
+
+		boss_red = {
+			"id": 99990,
+			"ball_type": "boss_ai",
+			"team": "Red",
+			"is_payload": true,
+			"is_invulnerable": false,
+			"speed": 20.0,
+			"vx": 0.0,
+			"vy": 0.0,
+			"damage": 50.0,
+			"max_hp": 5000.0,
+			"hp": 5000.0,
+			"x": 200.0,
+			"y": arena_height / 2.0,
+			"radius": 40.0,
+			"alive": true,
+			"attack_cooldown": 0.0,
+			"heal_cooldown": 0.0,
+			"target_x": goal_blue.x,
+			"target_y": goal_blue.y
+		}
+
+		boss_blue = {
+			"id": 99991,
+			"ball_type": "boss_ai",
+			"team": "Blue",
+			"is_payload": true,
+			"is_invulnerable": false,
+			"speed": 20.0,
+			"vx": 0.0,
+			"vy": 0.0,
+			"damage": 50.0,
+			"max_hp": 5000.0,
+			"hp": 5000.0,
+			"x": arena_width - 200.0,
+			"y": arena_height / 2.0,
+			"radius": 40.0,
+			"alive": true,
+			"attack_cooldown": 0.0,
+			"heal_cooldown": 0.0,
+			"target_x": goal_red.x,
+			"target_y": goal_red.y
+		}
+
+		balls.append(boss_red)
+		balls.append(boss_blue)
+
+	func tick(world, balls: Array, delta: float):
+		super.tick(world, balls, delta)
+
+		var bosses = [boss_red, boss_blue]
+		for boss in bosses:
+			if boss == null or not boss.get("alive", false):
+				continue
+
+			var bx = boss["x"]
+			var by = boss["y"]
+			var tx = boss["target_x"]
+			var ty = boss["target_y"]
+			var dx = tx - bx
+			var dy = ty - by
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 5.0:
+				boss["x"] += (dx / dist) * boss["speed"] * delta
+				boss["y"] += (dy / dist) * boss["speed"] * delta
+				bx = boss["x"]
+				by = boss["y"]
+
+			boss["attack_cooldown"] -= delta
+			boss["heal_cooldown"] -= delta
+
+			var enemy_team = "Blue" if boss["team"] == "Red" else "Red"
+
+			if boss["attack_cooldown"] <= 0.0:
+				var attacked = false
+				for b in balls:
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if b_type == "spectator":
+						continue
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not b_alive:
+						continue
+
+					var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+					if b_id == boss["id"]:
+						continue
+
+					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if b_team == enemy_team:
+						var edx = (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")) - bx
+						var edy = (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")) - by
+						var edist = sqrt(edx*edx + edy*edy)
+
+						if edist <= 150.0:
+							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+							var new_hp = max(0.0, bhp - boss["damage"])
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+								if new_hp <= 0: b["alive"] = false
+							else:
+								b.set("hp", new_hp)
+								if new_hp <= 0: b.set("alive", false)
+
+							if edist > 0:
+								var kb = 400.0
+								var nvx = (edx / edist) * kb
+								var nvy = (edy / edist) * kb
+								if typeof(b) == TYPE_DICTIONARY:
+									b["vx"] = b.get("vx", 0.0) + nvx
+									b["vy"] = b.get("vy", 0.0) + nvy
+								else:
+									b.set("vx", b.get("vx", 0.0) + nvx)
+									b.set("vy", b.get("vy", 0.0) + nvy)
+							attacked = true
+
+				if attacked:
+					boss["attack_cooldown"] = 2.0
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("boss_attack", {"x": bx, "y": by, "team": boss["team"]})
+
+			if boss["heal_cooldown"] <= 0.0:
+				var healed = false
+				for b in balls:
+					var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if b_type == "spectator":
+						continue
+					var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not b_alive:
+						continue
+					var b_payload = b.get("is_payload", false) if typeof(b) == TYPE_DICTIONARY else b.get("is_payload")
+					if b_payload:
+						continue
+
+					var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if b_team == boss["team"]:
+						var adx = (b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")) - bx
+						var ady = (b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")) - by
+						var adist = sqrt(adx*adx + ady*ady)
+
+						if adist <= 200.0:
+							var bhp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+							var mhp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+							var new_hp = min(mhp, bhp + 15.0)
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+							else:
+								b.set("hp", new_hp)
+							healed = true
+
+				if healed:
+					boss["heal_cooldown"] = 1.0
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("boss_heal", {"x": bx, "y": by, "team": boss["team"]})
+
+	func check_winner(world, balls: Array):
+		var red_alive = boss_red != null and boss_red.get("alive", false)
+		var blue_alive = boss_blue != null and boss_blue.get("alive", false)
+
+		if not red_alive and not blue_alive:
+			return "Draw"
+		if not red_alive:
+			return "Blue"
+		if not blue_alive:
+			return "Red"
+
+		if red_alive:
+			var dx = goal_blue.x - boss_red["x"]
+			var dy = goal_blue.y - boss_red["y"]
+			if sqrt(dx*dx + dy*dy) < 50.0:
+				return "Red"
+
+		if blue_alive:
+			var dx = goal_red.x - boss_blue["x"]
+			var dy = goal_red.y - boss_blue["y"]
+			if sqrt(dx*dx + dy*dy) < 50.0:
+				return "Blue"
+
+		return null
+
+
 var GAME_MODES = {
+	"boss_escort": BossEscortMode.new(),
 	"toxic_fog_event": ToxicFogEventMode.new(),
 	"geyser_hazards": GeyserHazardMode.new(),
 	"microclimate_hazards": MicroclimateHazardMode.new(),
