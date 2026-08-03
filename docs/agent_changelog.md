@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1766] Swap Decoy Overload — *2026-08-03 00:42:19 UTC*
+
+When multiple decoys are active during the survival swap skill, trigger a chain electrical surge between them instead of just a simple swap, confusing and damaging a larger area.
+
+---
+
 ## [idea-1757] Orbital Debris Hazard — *2026-08-03 00:25:50 UTC*
 
 Small hazards that orbit larger hazards (like gravity wells) periodically detaching and flying outward when the larger hazard explodes or pulses.
