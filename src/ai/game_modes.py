@@ -35591,7 +35591,184 @@ class ToxicFogEventMode(GameMode):
 
             b._fog_last_hp = getattr(b, "hp", 100.0)
 
+class BossEscortMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Boss Escort"
+        self.description = "Each team must escort a powerful boss AI to the enemy base. The boss attacks nearby enemies and heals allies, but moves very slowly."
+        self.boss_red = None
+        self.boss_blue = None
+        self.goal_red = (100.0, 500.0)
+        self.goal_blue = (900.0, 500.0)
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+
+        red_team = []
+        blue_team = []
+
+        for i, b in enumerate(valid_balls):
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        class BossObj:
+            pass
+
+        self.boss_red = BossObj()
+        self.boss_red.ball_type = "boss_ai"
+        self.boss_red.team = "Red"
+        self.boss_red.is_payload = True
+        self.boss_red.is_invulnerable = False
+        self.boss_red.speed = 20.0
+        self.boss_red.vx = 0.0
+        self.boss_red.vy = 0.0
+        self.boss_red.damage = 50.0
+        self.boss_red.max_hp = 5000.0
+        self.boss_red.hp = 5000.0
+        self.boss_red.x = 200.0
+        self.boss_red.y = arena_height / 2.0
+        self.boss_red.radius = 40.0
+        self.boss_red.alive = True
+        self.boss_red.attack_cooldown = 0.0
+        self.boss_red.heal_cooldown = 0.0
+        self.boss_red.target_x = self.goal_blue[0]
+        self.boss_red.target_y = self.goal_blue[1]
+
+        self.boss_blue = BossObj()
+        self.boss_blue.ball_type = "boss_ai"
+        self.boss_blue.team = "Blue"
+        self.boss_blue.is_payload = True
+        self.boss_blue.is_invulnerable = False
+        self.boss_blue.speed = 20.0
+        self.boss_blue.vx = 0.0
+        self.boss_blue.vy = 0.0
+        self.boss_blue.damage = 50.0
+        self.boss_blue.max_hp = 5000.0
+        self.boss_blue.hp = 5000.0
+        self.boss_blue.x = arena_width - 200.0
+        self.boss_blue.y = arena_height / 2.0
+        self.boss_blue.radius = 40.0
+        self.boss_blue.alive = True
+        self.boss_blue.attack_cooldown = 0.0
+        self.boss_blue.heal_cooldown = 0.0
+        self.boss_blue.target_x = self.goal_red[0]
+        self.boss_blue.target_y = self.goal_red[1]
+
+        balls.append(self.boss_red)
+        balls.append(self.boss_blue)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().tick(world, balls, delta)
+        import math
+
+        # Process each boss
+        for boss in [self.boss_red, self.boss_blue]:
+            if not boss or not getattr(boss, "alive", False):
+                continue
+
+            # Movement towards goal
+            dx = boss.target_x - boss.x
+            dy = boss.target_y - boss.y
+            dist = math.hypot(dx, dy)
+            if dist > 5.0:
+                boss.x += (dx / dist) * boss.speed * delta
+                boss.y += (dy / dist) * boss.speed * delta
+
+            # Boss Abilities
+            boss.attack_cooldown -= delta
+            boss.heal_cooldown -= delta
+
+            enemy_team = "Blue" if boss.team == "Red" else "Red"
+
+            # Attack nearby enemies
+            if boss.attack_cooldown <= 0:
+                attacked = False
+                for b in balls:
+                    if b == boss or getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", False):
+                        continue
+                    if getattr(b, "team", "") == enemy_team:
+                        edx = getattr(b, "x", 0) - boss.x
+                        edy = getattr(b, "y", 0) - boss.y
+                        edist = math.hypot(edx, edy)
+                        if edist <= 150.0:  # Attack range
+                            b.hp = max(0.0, getattr(b, "hp", 100.0) - boss.damage)
+                            if b.hp <= 0:
+                                b.alive = False
+
+                            # Knockback
+                            if edist > 0:
+                                kb_force = 400.0
+                                b.vx = getattr(b, "vx", 0) + (edx / edist) * kb_force
+                                b.vy = getattr(b, "vy", 0) + (edy / edist) * kb_force
+
+                            attacked = True
+
+                if attacked:
+                    boss.attack_cooldown = 2.0  # Attack every 2 seconds
+                    if hasattr(world, "add_event"):
+                        world.add_event("boss_attack", {"x": boss.x, "y": boss.y, "team": boss.team})
+
+            # Heal nearby allies
+            if boss.heal_cooldown <= 0:
+                healed = False
+                for b in balls:
+                    if b == boss or getattr(b, "ball_type", None) == "spectator" or not getattr(b, "alive", False):
+                        continue
+                    if getattr(b, "team", "") == boss.team and not getattr(b, "is_payload", False):
+                        adx = getattr(b, "x", 0) - boss.x
+                        ady = getattr(b, "y", 0) - boss.y
+                        adist = math.hypot(adx, ady)
+                        if adist <= 200.0:  # Heal range
+                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 15.0)
+                            healed = True
+
+                if healed:
+                    boss.heal_cooldown = 1.0  # Heal every 1 second
+                    if hasattr(world, "add_event"):
+                        world.add_event("boss_heal", {"x": boss.x, "y": boss.y, "team": boss.team})
+
+    def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
+        import math
+        red_boss_alive = self.boss_red and getattr(self.boss_red, "alive", False)
+        blue_boss_alive = self.boss_blue and getattr(self.boss_blue, "alive", False)
+
+        if not red_boss_alive and not blue_boss_alive:
+            return "Draw"
+        if not red_boss_alive:
+            return "Blue"
+        if not blue_boss_alive:
+            return "Red"
+
+        # Win by reaching base
+        if red_boss_alive:
+            dx = self.goal_blue[0] - self.boss_red.x
+            dy = self.goal_blue[1] - self.boss_red.y
+            if math.hypot(dx, dy) < 50.0:
+                return "Red"
+
+        if blue_boss_alive:
+            dx = self.goal_red[0] - self.boss_blue.x
+            dy = self.goal_red[1] - self.boss_blue.y
+            if math.hypot(dx, dy) < 50.0:
+                return "Blue"
+
+        return None
+
+
 GAME_MODES = {
+    "boss_escort": BossEscortMode(),
     "toxic_fog_event": ToxicFogEventMode(),
     'geyser_hazards': GeyserHazardMode(),
     'signal_scrambler': SignalScramblerMode(),
