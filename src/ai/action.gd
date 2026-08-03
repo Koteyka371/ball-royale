@@ -13759,6 +13759,59 @@ func execute(strategy: String, delta: float):
 					else:
 						self.ball.speed = new_speed
 
+			if hazard.get("kind") == "mini_blizzard":
+				var my_rad = 10.0
+				if typeof(self.ball) == TYPE_DICTIONARY:
+					if self.ball.has("radius"): my_rad = float(self.ball["radius"])
+				elif "radius" in self.ball:
+					my_rad = float(self.ball.radius)
+				var s_dist = sqrt((self.ball.x - hazard.x) * (self.ball.x - hazard.x) + (self.ball.y - hazard.y) * (self.ball.y - hazard.y))
+				var h_rad = 30.0
+				if "radius" in hazard: h_rad = float(hazard.radius)
+				if s_dist <= h_rad + my_rad:
+					if typeof(self.ball) == TYPE_DICTIONARY:
+						if self.ball.has("speed_mult"): self.ball["speed_mult"] *= 0.3
+						else: self.ball["speed_mult"] = 0.3
+					elif "speed_mult" in self.ball: self.ball.speed_mult *= 0.3
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+						self.ball.set_meta("speed_mult", self.ball.get_meta("speed_mult", 1.0) * 0.3)
+
+					var freeze_stack = 0.0
+					if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("freeze_stack"): freeze_stack = float(self.ball["freeze_stack"])
+					elif "freeze_stack" in self.ball: freeze_stack = float(self.ball.freeze_stack)
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("freeze_stack"): freeze_stack = float(self.ball.get_meta("freeze_stack"))
+
+					freeze_stack += delta * 20.0
+
+					if freeze_stack >= 100.0:
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["frozen_timer"] = 2.0
+						elif "frozen_timer" in self.ball:
+							self.ball.frozen_timer = 2.0
+						elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+							self.ball.set_meta("frozen_timer", 2.0)
+						freeze_stack = 0.0
+
+					if typeof(self.ball) == TYPE_DICTIONARY: self.ball["freeze_stack"] = freeze_stack
+					elif "freeze_stack" in self.ball: self.ball.freeze_stack = freeze_stack
+					elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("freeze_stack", freeze_stack)
+
+					var dmg = 10.0
+					if typeof(hazard) == TYPE_DICTIONARY and hazard.has("damage"): dmg = float(hazard["damage"])
+					elif "damage" in hazard: dmg = float(hazard.damage)
+
+					if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("take_damage"):
+						self.ball.take_damage(dmg * delta, "mini_blizzard")
+					else:
+						var hp = 100.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("hp"): hp = float(self.ball["hp"])
+						elif "hp" in self.ball: hp = float(self.ball.hp)
+
+						hp -= dmg * delta
+
+						if typeof(self.ball) == TYPE_DICTIONARY: self.ball["hp"] = hp
+						elif "hp" in self.ball: self.ball.hp = hp
+
 			if hazard.get("kind") == "localized_heatwave":
 				var my_rad = 10.0
 				if typeof(self.ball) == TYPE_DICTIONARY:

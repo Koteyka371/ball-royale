@@ -42257,7 +42257,7 @@ class TornadoSwarmEventMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Tornado Swarm Event"
-        self.description = "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados or mini-poison tornadoes."
+        self.description = "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados, mini-poison tornadoes, or mini-blizzards that slow down players."
         self.tornado_spawn_timer = 0.0
         self.tornado_spawn_interval = 2.0
         self.active_event = False
@@ -42317,7 +42317,7 @@ class TornadoSwarmEventMode(GameMode):
             to_remove = []
             for h in list(world.arena.hazards):  # Iterate over copy just in case
                 kind = getattr(h, "kind", "")
-                if kind in ("mini_tornado", "mini_firenado", "mini_poison_tornado"):
+                if kind in ("mini_tornado", "mini_firenado", "mini_poison_tornado", "mini_blizzard"):
                     # Move
                     h.x += getattr(h, "vx", 0.0) * delta
                     h.y += getattr(h, "vy", 0.0) * delta
@@ -42353,7 +42353,7 @@ class TornadoSwarmEventMode(GameMode):
                             if other is h or not getattr(other, "active", True): continue
 
                             other_kind = getattr(other, "kind", "")
-                            if other_kind in ("fire_zone", "lava", "poison_cloud", "poison_nova", "fire_ring"):
+                            if other_kind in ("fire_zone", "lava", "poison_cloud", "poison_nova", "fire_ring", "ice_patch", "ice_patches"):
                                 import math
                                 dist = math.hypot(h.x - other.x, h.y - other.y)
                                 if dist < getattr(h, "radius", 30.0) + getattr(other, "radius", 50.0):
@@ -42363,6 +42363,9 @@ class TornadoSwarmEventMode(GameMode):
                                     elif other_kind in ("poison_cloud", "poison_nova"):
                                         h.kind = "mini_poison_tornado"
                                         h.damage = 25.0
+                                    elif other_kind in ("ice_patch", "ice_patches"):
+                                        h.kind = "mini_blizzard"
+                                        h.damage = 10.0
                                     break
 
             for h in to_remove:
