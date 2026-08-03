@@ -6335,6 +6335,28 @@ class Action:
                         else:
                             self.ball.speed = getattr(self.ball, "base_speed", 150.0) * 0.5
 
+                if getattr(hazard, "kind", "") == "mini_blizzard":
+                    dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
+                    if dist <= getattr(hazard, "radius", 30.0) + getattr(self.ball, "radius", 10.0):
+                        self.ball.speed_mult = getattr(self.ball, "speed_mult", 1.0) * 0.3
+
+                        # Freeze effect
+                        if not hasattr(self.ball, "freeze_stack"):
+                            self.ball.freeze_stack = 0.0
+                        self.ball.freeze_stack += delta * 20.0
+                        if self.ball.freeze_stack >= 100.0:
+                            self.ball.frozen_timer = 2.0
+                            self.ball.freeze_stack = 0.0
+
+                        # Damage
+                        damage = getattr(hazard, "damage", 10.0) * delta
+                        if hasattr(self.ball, "take_damage"):
+                            self.ball.take_damage(damage, "mini_blizzard")
+                        elif hasattr(self.ball, "hp"):
+                            self.ball.hp -= damage
+                            if hasattr(self.ball, "_hp_tracker"):
+                                self.ball._hp_tracker.append((-damage, "mini_blizzard"))
+
                 if getattr(hazard, "kind", "") == "localized_heatwave":
                     dist = math.sqrt((self.ball.x - hazard.x)**2 + (self.ball.y - hazard.y)**2)
                     if dist <= getattr(hazard, "radius", 100.0) + getattr(self.ball, "radius", 10.0):

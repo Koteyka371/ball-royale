@@ -65700,7 +65700,7 @@ class TornadoSwarmEventMode extends GameMode:
 	func _init():
 		super._init()
 		name = "Tornado Swarm Event"
-		description = "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados or mini-poison tornadoes."
+		description = "An arena-wide event where miniature tornadoes spawn periodically across the map for a limited time. They last 10 seconds and have high velocity, causing utter chaos. These miniature tornadoes can also combine with elemental hazards to become mini-firenados, mini-poison tornadoes, or mini-blizzards that slow down players."
 
 	func tick(world, balls, delta = 0.016):
 		super.tick(world, balls, delta)
@@ -65787,7 +65787,7 @@ class TornadoSwarmEventMode extends GameMode:
 			if typeof(h) == TYPE_DICTIONARY and h.has("kind"): kind = h.kind
 			elif typeof(h) == TYPE_OBJECT and "kind" in h: kind = h.kind
 
-			if kind in ["mini_tornado", "mini_firenado", "mini_poison_tornado"]:
+			if kind in ["mini_tornado", "mini_firenado", "mini_poison_tornado", "mini_blizzard"]:
 				var vx = 0.0
 				var vy = 0.0
 				if typeof(h) == TYPE_DICTIONARY:
@@ -65876,7 +65876,7 @@ class TornadoSwarmEventMode extends GameMode:
 						if typeof(other) == TYPE_DICTIONARY and other.has("kind"): other_kind = other.kind
 						elif typeof(other) == TYPE_OBJECT and "kind" in other: other_kind = other.kind
 
-						if other_kind in ["fire_zone", "lava", "poison_cloud", "poison_nova", "fire_ring"]:
+						if other_kind in ["fire_zone", "lava", "poison_cloud", "poison_nova", "fire_ring", "ice_patch", "ice_patches"]:
 							var other_x = 0.0
 							var other_y = 0.0
 							var other_radius = 50.0
@@ -65908,6 +65908,13 @@ class TornadoSwarmEventMode extends GameMode:
 									else:
 										h.kind = "mini_poison_tornado"
 										if "damage" in h: h.damage = 25.0
+								elif other_kind in ["ice_patch", "ice_patches"]:
+									if typeof(h) == TYPE_DICTIONARY:
+										h["kind"] = "mini_blizzard"
+										h["damage"] = 10.0
+									else:
+										h.kind = "mini_blizzard"
+										if "damage" in h: h.damage = 10.0
 								break
 
 		for h in to_remove:
