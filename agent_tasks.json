@@ -30130,7 +30130,7 @@
     },
     {
       "id": "idea-1761",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Shrinking Safe Zones with Multiple Cores",

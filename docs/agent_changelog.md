@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1761] Shrinking Safe Zones with Multiple Cores — *2026-08-03 04:46:07 UTC*
+
+Instead of a single large safe zone shrinking, spawn 3-4 smaller safe zones that slowly shrink and merge together over time. Encourages early-game skirmishes in multiple areas before the final showdown.
+
+---
+
 ## [idea-1724] Reverse Controls Booster — *2026-08-03 04:13:24 UTC*
 
 An active item that, when used, shoots out an EMP wave. Any enemy caught in the wave will have their movement controls scrambled (reversed) for 3 seconds, heavily disorienting them and making it hard for them to dodge incoming attacks or hazards.
