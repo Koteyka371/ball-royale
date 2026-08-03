@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1781] Payload Cargo Buff Variants — *2026-08-03 05:38:36 UTC*
+
+Instead of just energy barriers, payloads can drop other localized zone effects when crossing milestones, such as temporary haste fields, jump pads, or healing springs based on the payload's cargo type.
+
+---
+
 ## [idea-1761] Shrinking Safe Zones with Multiple Cores — *2026-08-03 04:46:07 UTC*
 
 Instead of a single large safe zone shrinking, spawn 3-4 smaller safe zones that slowly shrink and merge together over time. Encourages early-game skirmishes in multiple areas before the final showdown.
