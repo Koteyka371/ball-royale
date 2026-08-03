@@ -36809,13 +36809,13 @@ class TickingPayloadMode extends GameMode:
 	var payload = null
 	var red_goal_x: float = 100.0
 	var blue_goal_x: float = 900.0
-	var timer: float = 120.0
+	var timer: float = 15.0
 	var explosion_radius: float = 200.0
 	var winner_team = null
 
 	func _init() -> void:
 		name = "Ticking Payload"
-		description = "A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby."
+		description = "A single payload that explodes periodically. Teams must push it into the enemy side before the timer runs out and it detonates, dealing massive damage to anyone nearby."
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
 		for b in balls:
@@ -37051,8 +37051,6 @@ class TickingPayloadMode extends GameMode:
 			timer -= delta
 		else:
 			if payload != null and typeof(payload) == TYPE_DICTIONARY and payload.get("alive", false):
-				payload["alive"] = false
-				payload["hp"] = 0
 				for b in balls:
 					if b != payload:
 						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
@@ -37078,8 +37076,14 @@ class TickingPayloadMode extends GameMode:
 									var d = world.get_meta("dead_balls")
 									d.append(b)
 									world.set_meta("dead_balls", d)
-				winner_team = "Draw"
-			return
+				# Payload explodes but resets timer instead of dying
+				timer = 15.0
+				if typeof(world) == TYPE_DICTIONARY:
+					if "events" in world:
+						world["events"].append({"type": "visual_effect", "data": {"type": "massive_explosion", "x": payload.get("x", 0), "y": payload.get("y", 0), "radius": explosion_radius}})
+				elif typeof(world) == TYPE_OBJECT:
+					if world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "massive_explosion", "x": payload.get("x", 0), "y": payload.get("y", 0), "radius": explosion_radius})
 
 		if payload != null and typeof(payload) == TYPE_DICTIONARY and payload.get("alive", false):
 			var red_count = 0

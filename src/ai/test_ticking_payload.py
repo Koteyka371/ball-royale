@@ -67,8 +67,9 @@ def test_ticking_payload_explode_on_timer():
 
     mode.tick(world, balls, 1.0)
 
-    assert not mode.payload.alive
-    assert mode.winner == "Draw"
+    assert mode.payload.alive
+    assert mode.winner is None
+    assert mode.timer == 15.0
 
     assert not b1.alive
     assert b1.hp == 0
