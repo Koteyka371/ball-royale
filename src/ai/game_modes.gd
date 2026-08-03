@@ -3043,8 +3043,15 @@ class GameMode:
 						if world.has_method("_deal_damage"):
 							world._deal_damage(owner, b, dmg)
 						else:
-							if typeof(b) == TYPE_DICTIONARY and b.has("hp"): b.hp -= dmg
-							elif typeof(b) == TYPE_OBJECT and "hp" in b: b.hp -= dmg
+							if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+								b.hp -= dmg
+								if b.hp <= 0:
+									b.alive = false
+							elif typeof(b) == TYPE_OBJECT and "hp" in b:
+								b.hp -= dmg
+								if b.hp <= 0:
+									if "alive" in b:
+										b.alive = false
 						hit = true
 						break
 

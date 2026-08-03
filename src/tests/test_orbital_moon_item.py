@@ -48,7 +48,7 @@ def test_orbital_moon_item():
         assert getattr(h, "owner_id") == owner.id
 
     gm = GameMode()
-    gm.tick(world, [owner, enemy], 1.0)
+    gm.tick(world, [owner, enemy], 0.016)
 
     # move an enemy into the path
     m = arena.hazards[0]
@@ -56,7 +56,7 @@ def test_orbital_moon_item():
     enemy.y = m.y
 
     hp_before = enemy.hp
-    gm.tick(world, [owner, enemy], 1.0)
+    gm.tick(world, [owner, enemy], 0.016)
 
     assert enemy.hp < hp_before
     assert len(arena.hazards) == 2 # one consumed
