@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1785] Saboteur Traps on Payloads — *2026-08-03 16:07:01 UTC*
+
+Players can attach hidden saboteur traps (like an EMP or a virus) to enemy payloads when they get close. After a delay, the trap explodes, disabling the payload's abilities (like its shield or turrets) and slowing it down, forcing the defending team to 'defuse' it by standing near it.
+
+---
+
 ## [idea-1778] Bounty Hunter Minor Synergy — *2026-08-03 15:26:53 UTC*
 
 Bounty Hunter entities receive passive tracking pings towards any player marked with a minor bounty, making dynamic bounty claiming inherently risky but highly rewarding.
