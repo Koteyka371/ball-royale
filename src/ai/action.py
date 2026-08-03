@@ -3925,7 +3925,10 @@ class Action:
                     if hasattr(self.world, "balls"):
                         for other in self.world.balls:
                             if getattr(other, "id", -1) != getattr(self.ball, "id", -1) and getattr(other, "alive", True):
-                                if getattr(other, "is_bounty", False) or getattr(other, "is_minor_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False) or (getattr(other, "is_bounty_contract_target", False) and getattr(other, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None)):
+                                is_bounty_hunter = getattr(self.ball, "ball_type", getattr(self.ball.__class__, "BALL_TYPE", "")) == "bounty_hunter"
+                                is_contract = getattr(other, "is_bounty_contract_target", False) and getattr(other, "bounty_contract_hunter_id", None) == getattr(self.ball, "id", None)
+                                is_general_bounty = getattr(other, "is_bounty", False) or getattr(other, "is_minor_bounty", False) or getattr(other, "high_threat", False) or getattr(other, "is_bounty_target", False)
+                                if (is_bounty_hunter and is_general_bounty) or is_contract:
                                     if hasattr(self.world, "events"):
                                         self.world.events.append({"type": "bounty_compass", "data": {"target_x": float(other.x), "target_y": float(other.y), "owner_id": getattr(self.ball, "id", None)}})
                                         self.world.events.append({"type": "visual_effect", "data": {"type": "line", "x": float(self.ball.x), "y": float(self.ball.y), "tx": float(other.x), "ty": float(other.y), "color": "orange"}})

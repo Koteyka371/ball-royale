@@ -39,3 +39,29 @@ def test_bounty_hunter_tracks_minor_bounty():
     assert len(compass_events) == 1
     assert compass_events[0]["data"]["target_x"] == 200
     assert compass_events[0]["data"]["owner_id"] == 1
+
+def test_normal_ball_does_not_track_minor_bounty():
+    world = MockWorld()
+    hunter = MockEntity(id=1, x=0, y=0, ball_type="normal")
+    target = MockEntity(id=3, x=200, y=0, is_minor_bounty=True)
+    world.balls = [hunter, target]
+    action = Action(hunter, world)
+    hunter.bounty_indicator_timer = 0.0
+    action.execute("idle", 0.1)
+    compass_events = [e for e in world.events if e["type"] == "bounty_compass"]
+    assert len(compass_events) == 0
+
+def test_normal_ball_with_contract_tracks_only_contract():
+    world = MockWorld()
+    hunter = MockEntity(id=1, x=0, y=0, ball_type="normal")
+    contract_target = MockEntity(id=2, x=100, y=0)
+    contract_target.is_bounty_contract_target = True
+    contract_target.bounty_contract_hunter_id = 1
+    minor_bounty_target = MockEntity(id=3, x=200, y=0, is_minor_bounty=True)
+    world.balls = [hunter, contract_target, minor_bounty_target]
+    action = Action(hunter, world)
+    hunter.bounty_indicator_timer = 0.0
+    action.execute("idle", 0.1)
+    compass_events = [e for e in world.events if e["type"] == "bounty_compass"]
+    assert len(compass_events) == 1
+    assert compass_events[0]["data"]["target_x"] == 100
