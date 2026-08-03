@@ -6224,7 +6224,8 @@ class DualPayloadMode(GameMode):
                             from arena.procedural_arena import Hazard
                             import random
                             h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                            drop = Hazard(h_id, px, getattr(self.payload_red, "y", 0), 40.0, "energy_barrier", 0.0)
+                            cargo = getattr(self.payload_red, "cargo_type", "energy_barrier")
+                            drop = Hazard(h_id, px, getattr(self.payload_red, "y", 0), 40.0, cargo, 0.0)
                             setattr(drop, 'duration', 15.0)
                             setattr(drop, 'team', "Red")
                             world.arena.hazards.append(drop)
@@ -6326,7 +6327,8 @@ class DualPayloadMode(GameMode):
                             from arena.procedural_arena import Hazard
                             import random
                             h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                            drop = Hazard(h_id, px, getattr(self.payload_blue, "y", 0), 40.0, "energy_barrier", 0.0)
+                            cargo = getattr(self.payload_blue, "cargo_type", "energy_barrier")
+                            drop = Hazard(h_id, px, getattr(self.payload_blue, "y", 0), 40.0, cargo, 0.0)
                             setattr(drop, 'duration', 15.0)
                             setattr(drop, 'team', "Blue")
                             world.arena.hazards.append(drop)
@@ -6879,7 +6881,8 @@ class EscortMode(GameMode):
                         from arena.procedural_arena import Hazard
                         import random
                         h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                        drop = Hazard(h_id, getattr(self.payload, "x", 0), getattr(self.payload, "y", 0), 40.0, "energy_barrier", 0.0)
+                        cargo = getattr(self.payload, "cargo_type", "energy_barrier")
+                        drop = Hazard(h_id, getattr(self.payload, "x", 0), getattr(self.payload, "y", 0), 40.0, cargo, 0.0)
                         setattr(drop, 'duration', 15.0)
                         setattr(drop, 'team', getattr(self.payload, "team", "Defenders"))
                         world.arena.hazards.append(drop)
@@ -23406,7 +23409,8 @@ class TickingPayloadMode(GameMode):
                                 from arena.procedural_arena import Hazard
                                 import random
                                 h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                                drop = Hazard(h_id, px, getattr(self.payload, "y", 0), 40.0, "energy_barrier", 0.0)
+                                cargo = getattr(self.payload, "cargo_type", "energy_barrier")
+                                drop = Hazard(h_id, px, getattr(self.payload, "y", 0), 40.0, cargo, 0.0)
                                 setattr(drop, 'duration', 15.0)
                                 setattr(drop, 'team', "Red")
                                 world.arena.hazards.append(drop)
@@ -23420,7 +23424,8 @@ class TickingPayloadMode(GameMode):
                                 from arena.procedural_arena import Hazard
                                 import random
                                 h_id = len(world.arena.hazards) + random.randint(1000, 9999)
-                                drop = Hazard(h_id, px, getattr(self.payload, "y", 0), 40.0, "energy_barrier", 0.0)
+                                cargo = getattr(self.payload, "cargo_type", "energy_barrier")
+                                drop = Hazard(h_id, px, getattr(self.payload, "y", 0), 40.0, cargo, 0.0)
                                 setattr(drop, 'duration', 15.0)
                                 setattr(drop, 'team', "Blue")
                                 world.arena.hazards.append(drop)
