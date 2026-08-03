@@ -6829,6 +6829,52 @@ class EscortMode(GameMode):
 
             speed_mult = 1.0 + (nearby_teammates * 0.5)
 
+            # Saboteur Logic
+            payload_team = getattr(self.payload, "team", "Defenders")
+            if not getattr(self.payload, "sabotaged", False):
+                for b in balls:
+                    if getattr(b, "team", "") != payload_team and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False):
+                        b_dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0))
+                        if b_dist <= 50.0:
+                            if getattr(b, "saboteur_cooldown", 0.0) <= 0.0:
+                                b.saboteur_cooldown = 15.0
+                                self.payload.saboteur_trap_timer = 5.0
+                                self.payload.has_saboteur_trap = True
+                                if hasattr(world, "add_event"):
+                                    world.add_event("trap_planted", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+                    if getattr(b, "saboteur_cooldown", 0.0) > 0.0:
+                        b.saboteur_cooldown -= delta
+
+            if getattr(self.payload, "has_saboteur_trap", False):
+                self.payload.saboteur_trap_timer -= delta
+                if self.payload.saboteur_trap_timer <= 0.0:
+                    self.payload.sabotaged = True
+                    self.payload.has_saboteur_trap = False
+                    self.payload.abilities_disabled = True
+                    self.payload.defuse_progress = 0.0
+                    if hasattr(world, "add_event"):
+                        world.add_event("trap_exploded", {"x": getattr(self.payload, "x", 0), "y": getattr(self.payload, "y", 0)})
+
+            if getattr(self.payload, "sabotaged", False):
+                speed_mult *= 0.5
+                self.payload.abilities_disabled = True
+
+                defusers = 0
+                for b in balls:
+                    if getattr(b, "team", "") == payload_team and getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator" and not getattr(b, "is_payload", False):
+                        b_dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0))
+                        if b_dist <= 50.0:
+                            defusers += 1
+
+                if defusers > 0:
+                    self.payload.defuse_progress = getattr(self.payload, "defuse_progress", 0.0) + delta * defusers
+                    if self.payload.defuse_progress >= 5.0:
+                        self.payload.sabotaged = False
+                        self.payload.abilities_disabled = False
+                        self.payload.defuse_progress = 0.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("trap_defused", {"x": getattr(self.payload, "x", 0), "y": getattr(self.payload, "y", 0)})
+
             # Check if payload is in anti-payload hazard zone
             if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
                 for h in world.arena.hazards:

@@ -10867,6 +10867,104 @@ class EscortMode extends GameMode:
 
 				var speed_mult = 1.0 + (nearby_teammates * 0.5)
 
+				var is_sabotaged = payload.get("sabotaged", false) if typeof(payload) == TYPE_DICTIONARY else (payload.get("sabotaged") if payload.get("sabotaged") != null else false)
+				if not is_sabotaged:
+					for b in balls:
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						var b_is_payload = b.get("is_payload", false) if typeof(b) == TYPE_DICTIONARY else (b.get("is_payload") if b.get("is_payload") != null else false)
+						if b_team != payload_team and b_alive and b_type != "spectator" and not b_is_payload:
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var b_dist = sqrt(pow(bx - px, 2) + pow(by - py, 2))
+							if b_dist <= 50.0:
+								var s_cd = b.get("saboteur_cooldown", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("saboteur_cooldown") if b.get("saboteur_cooldown") != null else 0.0)
+								if s_cd <= 0.0:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["saboteur_cooldown"] = 15.0
+									else:
+										b.set("saboteur_cooldown", 15.0)
+									if typeof(payload) == TYPE_DICTIONARY:
+										payload["saboteur_trap_timer"] = 5.0
+										payload["has_saboteur_trap"] = true
+									else:
+										payload.set("saboteur_trap_timer", 5.0)
+										payload.set("has_saboteur_trap", true)
+									if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+										world.add_event("trap_planted", {"x": bx, "y": by})
+
+						var s_cd_current = b.get("saboteur_cooldown", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("saboteur_cooldown") if b.get("saboteur_cooldown") != null else 0.0)
+						if s_cd_current > 0.0:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["saboteur_cooldown"] = s_cd_current - delta
+							else:
+								b.set("saboteur_cooldown", s_cd_current - delta)
+
+				var has_trap = payload.get("has_saboteur_trap", false) if typeof(payload) == TYPE_DICTIONARY else (payload.get("has_saboteur_trap") if payload.get("has_saboteur_trap") != null else false)
+				if has_trap:
+					var trap_timer = payload.get("saboteur_trap_timer", 0.0) if typeof(payload) == TYPE_DICTIONARY else (payload.get("saboteur_trap_timer") if payload.get("saboteur_trap_timer") != null else 0.0)
+					trap_timer -= delta
+					if trap_timer <= 0.0:
+						if typeof(payload) == TYPE_DICTIONARY:
+							payload["sabotaged"] = true
+							payload["has_saboteur_trap"] = false
+							payload["abilities_disabled"] = true
+							payload["defuse_progress"] = 0.0
+						else:
+							payload.set("sabotaged", true)
+							payload.set("has_saboteur_trap", false)
+							payload.set("abilities_disabled", true)
+							payload.set("defuse_progress", 0.0)
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("trap_exploded", {"x": px, "y": py})
+					else:
+						if typeof(payload) == TYPE_DICTIONARY:
+							payload["saboteur_trap_timer"] = trap_timer
+						else:
+							payload.set("saboteur_trap_timer", trap_timer)
+
+				is_sabotaged = payload.get("sabotaged", false) if typeof(payload) == TYPE_DICTIONARY else (payload.get("sabotaged") if payload.get("sabotaged") != null else false)
+				if is_sabotaged:
+					speed_mult *= 0.5
+					if typeof(payload) == TYPE_DICTIONARY:
+						payload["abilities_disabled"] = true
+					else:
+						payload.set("abilities_disabled", true)
+
+					var defusers = 0
+					for b in balls:
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						var b_is_payload = b.get("is_payload", false) if typeof(b) == TYPE_DICTIONARY else (b.get("is_payload") if b.get("is_payload") != null else false)
+						if b_team == payload_team and b_alive and b_type != "spectator" and not b_is_payload:
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var b_dist = sqrt(pow(bx - px, 2) + pow(by - py, 2))
+							if b_dist <= 50.0:
+								defusers += 1
+
+					if defusers > 0:
+						var defuse_prog = payload.get("defuse_progress", 0.0) if typeof(payload) == TYPE_DICTIONARY else (payload.get("defuse_progress") if payload.get("defuse_progress") != null else 0.0)
+						defuse_prog += delta * defusers
+						if defuse_prog >= 5.0:
+							if typeof(payload) == TYPE_DICTIONARY:
+								payload["sabotaged"] = false
+								payload["abilities_disabled"] = false
+								payload["defuse_progress"] = 0.0
+							else:
+								payload.set("sabotaged", false)
+								payload.set("abilities_disabled", false)
+								payload.set("defuse_progress", 0.0)
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("trap_defused", {"x": px, "y": py})
+						else:
+							if typeof(payload) == TYPE_DICTIONARY:
+								payload["defuse_progress"] = defuse_prog
+							else:
+								payload.set("defuse_progress", defuse_prog)
+
 				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
 					for h in world.arena.hazards:
 						if h.kind == "anti_payload_zone":
