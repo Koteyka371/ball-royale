@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1770] Quantum Tunnels Mode — *2026-08-03 11:18:29 UTC*
+
+Pairs of tunnels spawn across the map. Traveling through a tunnel immediately teleports you to the other end, but also applies a temporary speed boost and leaves a damaging energy trail behind the player.
+
+---
+
 ## [idea-1775] Stamina Drain Field Event — *2026-08-03 07:14:03 UTC*
 
 An arena-wide event where a localized field appears that slowly drains the stamina of any ball caught inside it, forcing players to avoid the area or risk losing their abilities.
