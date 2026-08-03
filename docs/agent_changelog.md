@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1776] Payload Overload Mod — *2026-08-03 15:09:01 UTC*
+
+An arena mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby.
+
+---
+
 ## [idea-1715] Orbiting Moons Item — *2026-08-03 13:55:41 UTC*
 
 An item that spawns 3 small moons orbiting the player, dealing damage on touch.
