@@ -8699,26 +8699,30 @@ func execute(strategy: String, delta: float):
 
                         if other_id != self_id and other_alive:
                             var is_target = false
+                            var is_general_target = false
+                            var is_contract_target = false
                             if typeof(other) == TYPE_OBJECT:
-                                if "is_bounty" in other and other.is_bounty: is_target = true
-                                elif other.has_method("get_meta") and other.has_meta("is_bounty") and other.get_meta("is_bounty"): is_target = true
-                                if "is_minor_bounty" in other and other.is_minor_bounty: is_target = true
-                                elif other.has_method("get_meta") and other.has_meta("is_minor_bounty") and other.get_meta("is_minor_bounty"): is_target = true
-                                if "high_threat" in other and other.high_threat: is_target = true
-                                elif other.has_method("get_meta") and other.has_meta("high_threat") and other.get_meta("high_threat"): is_target = true
-                                if "is_bounty_target" in other and other.is_bounty_target: is_target = true
-                                elif other.has_method("get_meta") and other.has_meta("is_bounty_target") and other.get_meta("is_bounty_target"): is_target = true
+                                if "is_bounty" in other and other.is_bounty: is_general_target = true
+                                elif other.has_method("get_meta") and other.has_meta("is_bounty") and other.get_meta("is_bounty"): is_general_target = true
+                                if "is_minor_bounty" in other and other.is_minor_bounty: is_general_target = true
+                                elif other.has_method("get_meta") and other.has_meta("is_minor_bounty") and other.get_meta("is_minor_bounty"): is_general_target = true
+                                if "high_threat" in other and other.high_threat: is_general_target = true
+                                elif other.has_method("get_meta") and other.has_meta("high_threat") and other.get_meta("high_threat"): is_general_target = true
+                                if "is_bounty_target" in other and other.is_bounty_target: is_general_target = true
+                                elif other.has_method("get_meta") and other.has_meta("is_bounty_target") and other.get_meta("is_bounty_target"): is_general_target = true
                                 var is_bc = other.is_bounty_contract_target if "is_bounty_contract_target" in other else other.get_meta("is_bounty_contract_target") if other.has_method("get_meta") and other.has_meta("is_bounty_contract_target") else false
                                 var hid = other.bounty_contract_hunter_id if "bounty_contract_hunter_id" in other else other.get_meta("bounty_contract_hunter_id") if other.has_method("get_meta") and other.has_meta("bounty_contract_hunter_id") else null
-                                if is_bc and hid == self_id: is_target = true
+                                if is_bc and hid == self_id: is_contract_target = true
                             else:
-                                if other.has("is_bounty") and other["is_bounty"]: is_target = true
-                                if other.has("is_minor_bounty") and other["is_minor_bounty"]: is_target = true
-                                if other.has("high_threat") and other["high_threat"]: is_target = true
-                                if other.has("is_bounty_target") and other["is_bounty_target"]: is_target = true
-                                if other.has("is_bounty_contract_target") and other["is_bounty_contract_target"] and other.has("bounty_contract_hunter_id") and other["bounty_contract_hunter_id"] == self_id: is_target = true
+                                if other.has("is_bounty") and other["is_bounty"]: is_general_target = true
+                                if other.has("is_minor_bounty") and other["is_minor_bounty"]: is_general_target = true
+                                if other.has("high_threat") and other["high_threat"]: is_general_target = true
+                                if other.has("is_bounty_target") and other["is_bounty_target"]: is_general_target = true
+                                if other.has("is_bounty_contract_target") and other["is_bounty_contract_target"] and other.has("bounty_contract_hunter_id") and other["bounty_contract_hunter_id"] == self_id: is_contract_target = true
 
-                            if is_target:
+                            var is_bounty_hunter = (b_type_ind == "bounty_hunter")
+                            if (is_bounty_hunter and is_general_target) or is_contract_target:
+                                var is_target = true
                                 var is_disguised = false
                                 if typeof(self.ball) == TYPE_OBJECT:
                                     if "is_disguised" in self.ball and self.ball.is_disguised: is_disguised = true
