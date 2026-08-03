@@ -22235,8 +22235,8 @@ func execute(strategy: String, delta: float):
                                     if owner_ball != null and owner_ball != self.ball:
                                         var temp_x = owner_ball.x
                                         var temp_y = owner_ball.y
-                                        owner_ball.x = old_x
-                                        owner_ball.y = old_y
+                                        owner_ball.x = self.ball.x
+                                        owner_ball.y = self.ball.y
                                         self.ball.x = temp_x
                                         self.ball.y = temp_y
 

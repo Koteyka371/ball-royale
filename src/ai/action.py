@@ -11311,7 +11311,7 @@ class Action:
                                         if owner and owner != self.ball:
                                             # Swap positions
                                             temp_x, temp_y = owner.x, owner.y
-                                            owner.x, owner.y = old_x, old_y
+                                            owner.x, owner.y = self.ball.x, self.ball.y
                                             self.ball.x, self.ball.y = temp_x, temp_y
                                     hazard.duration = 0.0 # Destroy trap
 
