@@ -5609,21 +5609,107 @@ func execute(strategy: String, delta: float):
                 target_id = self.ball["survival_swap_target_id"]
 
             if target_id != -1 and self.world != null and "balls" in self.world:
+                var my_id = -1
+                if "id" in self.ball: my_id = self.ball.id
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("id"): my_id = self.ball.get_meta("id")
+
+                var active_decoys = []
                 for b in self.world.balls:
-                    var b_id = -2
-                    if "id" in b: b_id = b.id
-                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+                    var b_alive = true
+                    if "alive" in b: b_alive = b.alive
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
 
-                    if b_id == target_id:
-                        var b_alive = true
-                        if "alive" in b: b_alive = b.alive
-                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
+                    var b_is_decoy = false
+                    if "is_decoy" in b and b.is_decoy: b_is_decoy = true
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): b_is_decoy = true
 
-                        var b_is_decoy = false
-                        if "is_decoy" in b and b.is_decoy: b_is_decoy = true
-                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("is_decoy") and b.get_meta("is_decoy"): b_is_decoy = true
+                    var b_owner_id = -2
+                    if "owner_id" in b: b_owner_id = b.owner_id
+                    elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("owner_id"): b_owner_id = b.get_meta("owner_id")
 
-                        if b_alive and b_is_decoy:
+                    if b_alive and b_is_decoy and b_owner_id == my_id:
+                        active_decoys.append(b)
+
+                var my_team = ""
+                if "team" in self.ball: my_team = str(self.ball.team)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = str(self.ball["team"])
+                elif "ball_type" in self.ball: my_team = str(self.ball.ball_type)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_team = str(self.ball["ball_type"])
+
+                if active_decoys.size() > 1:
+                    for decoy in active_decoys:
+                        var d_x = 0.0
+                        var d_y = 0.0
+                        if "x" in decoy: d_x = decoy.x
+                        elif typeof(decoy) == TYPE_DICTIONARY and decoy.has("x"): d_x = decoy["x"]
+                        if "y" in decoy: d_y = decoy.y
+                        elif typeof(decoy) == TYPE_DICTIONARY and decoy.has("y"): d_y = decoy["y"]
+
+                        for enemy in self.world.balls:
+                            var e_alive = true
+                            if "alive" in enemy: e_alive = enemy.alive
+                            elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("get_meta") and enemy.has_meta("alive"): e_alive = enemy.get_meta("alive")
+
+                            if not e_alive: continue
+
+                            var e_team = ""
+                            if "team" in enemy: e_team = str(enemy.team)
+                            elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("team"): e_team = str(enemy["team"])
+                            elif "ball_type" in enemy: e_team = str(enemy.ball_type)
+                            elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("ball_type"): e_team = str(enemy["ball_type"])
+
+                            if e_team != my_team:
+                                var e_x = 0.0
+                                var e_y = 0.0
+                                if "x" in enemy: e_x = enemy.x
+                                elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("x"): e_x = enemy["x"]
+                                if "y" in enemy: e_y = enemy.y
+                                elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("y"): e_y = enemy["y"]
+
+                                var dist_sq = (e_x - d_x) * (e_x - d_x) + (e_y - d_y) * (e_y - d_y)
+                                if dist_sq <= 200.0 * 200.0:
+                                    if "is_confused" in enemy: enemy.is_confused = true
+                                    elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("set_meta"): enemy.set_meta("is_confused", true)
+                                    elif typeof(enemy) == TYPE_DICTIONARY: enemy["is_confused"] = true
+
+                                    var cur_conf = 0.0
+                                    if "confusion_timer" in enemy: cur_conf = enemy.confusion_timer
+                                    elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("get_meta") and enemy.has_meta("confusion_timer"): cur_conf = enemy.get_meta("confusion_timer")
+                                    elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("confusion_timer"): cur_conf = enemy["confusion_timer"]
+
+                                    var new_conf = max(cur_conf, 4.0)
+                                    if "confusion_timer" in enemy: enemy.confusion_timer = new_conf
+                                    elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("set_meta"): enemy.set_meta("confusion_timer", new_conf)
+                                    elif typeof(enemy) == TYPE_DICTIONARY: enemy["confusion_timer"] = new_conf
+
+                                    var hp = 100.0
+                                    if "hp" in enemy: hp = enemy.hp
+                                    elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("get_meta") and enemy.has_meta("hp"): hp = enemy.get_meta("hp")
+                                    elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("hp"): hp = enemy["hp"]
+
+                                    hp -= 30.0
+
+                                    if "hp" in enemy: enemy.hp = hp
+                                    elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("set"): enemy.set("hp", hp)
+                                    elif typeof(enemy) == TYPE_DICTIONARY: enemy["hp"] = hp
+
+                                    if hp <= 0.0:
+                                        if "alive" in enemy: enemy.alive = false
+                                        elif typeof(enemy) == TYPE_OBJECT and enemy.has_method("set"): enemy.set("alive", false)
+                                        elif typeof(enemy) == TYPE_DICTIONARY: enemy["alive"] = false
+
+                        if "hp" in decoy: decoy.hp = 0
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set"): decoy.set("hp", 0)
+
+                        if "alive" in decoy: decoy.alive = false
+                        elif typeof(decoy) == TYPE_OBJECT and decoy.has_method("set"): decoy.set("alive", false)
+                else:
+                    for b in active_decoys:
+                        var b_id = -2
+                        if "id" in b: b_id = b.id
+                        elif typeof(b) == TYPE_OBJECT and b.has_method("get_meta") and b.has_meta("id"): b_id = b.get_meta("id")
+
+                        if b_id == target_id:
                             var tx = self.ball.x
                             var ty = self.ball.y
 
@@ -5636,13 +5722,6 @@ func execute(strategy: String, delta: float):
                             elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("x", tx)
                             if "y" in b: b.y = ty
                             elif typeof(b) == TYPE_OBJECT and b.has_method("set"): b.set("y", ty)
-
-                            # Apply confusion
-                            var my_team = ""
-                            if "team" in self.ball: my_team = str(self.ball.team)
-                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team"): my_team = str(self.ball["team"])
-                            elif "ball_type" in self.ball: my_team = str(self.ball.ball_type)
-                            elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): my_team = str(self.ball["ball_type"])
 
                             for enemy in self.world.balls:
                                 var e_alive = true
