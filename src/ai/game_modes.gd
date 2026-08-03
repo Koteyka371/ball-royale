@@ -43138,6 +43138,38 @@ class CollapsingBubblesMode extends GameMode:
 			if b["collapsing"]:
 				b["radius"] -= 50.0 * delta
 
+			var vx = 0.0
+			if b.has("vx"): vx = b["vx"]
+			var vy = 0.0
+			if b.has("vy"): vy = b["vy"]
+
+			b["x"] += vx * delta
+			b["y"] += vy * delta
+
+			var aw = 1000.0
+			var ah = 1000.0
+			if ("arena" in world) and world.arena != null:
+				if typeof(world.arena) == TYPE_DICTIONARY:
+					aw = float(world.arena.get("width", 1000.0))
+					ah = float(world.arena.get("height", 1000.0))
+				elif typeof(world.arena) == TYPE_OBJECT and world.arena.has_method("get"):
+					aw = float(world.arena.get("width"))
+					ah = float(world.arena.get("height"))
+
+			if b["x"] - b["radius"] < 0:
+				b["x"] = b["radius"]
+				if b.has("vx"): b["vx"] *= -1
+			elif b["x"] + b["radius"] > aw:
+				b["x"] = aw - b["radius"]
+				if b.has("vx"): b["vx"] *= -1
+
+			if b["y"] - b["radius"] < 0:
+				b["y"] = b["radius"]
+				if b.has("vy"): b["vy"] *= -1
+			elif b["y"] + b["radius"] > ah:
+				b["y"] = ah - b["radius"]
+				if b.has("vy"): b["vy"] *= -1
+
 			if b["radius"] > 0:
 				active_bubbles.append(b)
 
@@ -43206,6 +43238,8 @@ class CollapsingBubblesMode extends GameMode:
 		bubbles.append({
 			"x": x,
 			"y": y,
+			"vx": randf_range(-50.0, 50.0),
+			"vy": randf_range(-50.0, 50.0),
 			"radius": radius,
 			"timer": randf_range(10.0, 20.0),
 			"collapsing": false

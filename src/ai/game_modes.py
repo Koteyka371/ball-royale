@@ -38953,6 +38953,27 @@ class CollapsingBubblesMode(GameMode):
             if b["collapsing"]:
                 b["radius"] -= 50.0 * delta
 
+            b["x"] += b.get("vx", 0.0) * delta
+            b["y"] += b.get("vy", 0.0) * delta
+
+            # Bounce off walls
+            if hasattr(world, "arena") and world.arena:
+                aw = getattr(world.arena, "width", 1000)
+                ah = getattr(world.arena, "height", 1000)
+                if b["x"] - b["radius"] < 0:
+                    b["x"] = b["radius"]
+                    b["vx"] *= -1
+                elif b["x"] + b["radius"] > aw:
+                    b["x"] = aw - b["radius"]
+                    b["vx"] *= -1
+
+                if b["y"] - b["radius"] < 0:
+                    b["y"] = b["radius"]
+                    b["vy"] *= -1
+                elif b["y"] + b["radius"] > ah:
+                    b["y"] = ah - b["radius"]
+                    b["vy"] *= -1
+
             if b["radius"] > 0:
                 active_bubbles.append(b)
 
@@ -38998,6 +39019,8 @@ class CollapsingBubblesMode(GameMode):
         self.bubbles.append({
             "x": x,
             "y": y,
+            "vx": random.uniform(-50.0, 50.0),
+            "vy": random.uniform(-50.0, 50.0),
             "radius": radius,
             "timer": random.uniform(10.0, 20.0),
             "collapsing": False
