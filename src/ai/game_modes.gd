@@ -40692,12 +40692,12 @@ class DecreasingSafeZonesMode extends GameMode:
 
 class MultipleSafeZonesMode extends GameMode:
 	var zones = []
-	var split_timer = 0.0
+	var merge_timer = 0.0
 	var min_zone_radius = 50.0
 
 	func _init():
 		name = "Multiple Safe Zones"
-		description = "Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and splitting over time."
+		description = "Instead of one big safe zone, multiple tiny safe zones spawn randomly across the map, shrinking and merging over time."
 
 	func setup(world, balls: Array):
 		super.setup(world, balls)
@@ -40712,25 +40712,29 @@ class MultipleSafeZonesMode extends GameMode:
 				arena_height = float(world.arena.get("height"))
 
 		zones.clear()
-		var init_radius = min(arena_width, arena_height) / 2.0
-		zones.append({
-			"x": arena_width / 2.0,
-			"y": arena_height / 2.0,
-			"radius": init_radius,
-			"target_radius": init_radius,
-			"target_x": arena_width / 2.0,
-			"target_y": arena_height / 2.0
-		})
-		split_timer = randf_range(10.0, 20.0)
+		var num_zones = randi() % 2 + 3
+		var base_radius = (min(arena_width, arena_height) / 2.0) * 0.5
+		for i in range(num_zones):
+			var x = randf_range(base_radius, arena_width - base_radius)
+			var y = randf_range(base_radius, arena_height - base_radius)
+			zones.append({
+				"x": x,
+				"y": y,
+				"radius": base_radius,
+				"target_radius": base_radius,
+				"target_x": x,
+				"target_y": y
+			})
+		merge_timer = randf_range(10.0, 20.0)
 
 	func tick(world, balls: Array, delta: float = 0.016):
 		if not ("dead_balls" in world):
 			world["dead_balls"] = []
 
-		split_timer -= delta
-		if split_timer <= 0.0:
-			split_timer = randf_range(15.0, 25.0)
-			_split_zones(world)
+		merge_timer -= delta
+		if merge_timer <= 0.0:
+			merge_timer = randf_range(15.0, 25.0)
+			_merge_zones(world)
 
 		var arena_width = 1000.0
 		var arena_height = 1000.0
@@ -40805,53 +40809,56 @@ class MultipleSafeZonesMode extends GameMode:
 				else:
 					b.set("hp", hp)
 
-	func _split_zones(world):
-		var arena_width = 1000.0
-		var arena_height = 1000.0
-		if ("arena" in world) and world.arena != null:
-			if typeof(world.arena) == TYPE_DICTIONARY:
-				arena_width = float(world.arena.get("width", 1000.0))
-				arena_height = float(world.arena.get("height", 1000.0))
-			elif world.arena.has_method("get"):
-				arena_width = float(world.arena.get("width"))
-				arena_height = float(world.arena.get("height"))
+	func _merge_zones(world):
+		if zones.size() <= 1:
+			return
+
+		var min_dist = 9999999.0
+		var closest_pair = [0, 1]
+		for i in range(zones.size()):
+			for j in range(i + 1, zones.size()):
+				var dx = zones[i]["x"] - zones[j]["x"]
+				var dy = zones[i]["y"] - zones[j]["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+				if dist < min_dist:
+					min_dist = dist
+					closest_pair = [i, j]
+
+		var i = closest_pair[0]
+		var j = closest_pair[1]
+		var z1 = zones[i]
+		var z2 = zones[j]
+
+		var new_area = (PI * z1["radius"] * z1["radius"]) + (PI * z2["radius"] * z2["radius"])
+		var new_radius = sqrt(new_area / PI)
+
+		var w1 = z1["radius"] * z1["radius"]
+		var w2 = z2["radius"] * z2["radius"]
+		var total_w = w1 + w2
+
+		var new_x = 0.0
+		var new_y = 0.0
+		if total_w == 0.0:
+			new_x = (z1["x"] + z2["x"]) / 2.0
+			new_y = (z1["y"] + z2["y"]) / 2.0
+		else:
+			new_x = (z1["x"] * w1 + z2["x"] * w2) / total_w
+			new_y = (z1["y"] * w1 + z2["y"] * w2) / total_w
+
+		var new_zone = {
+			"x": new_x,
+			"y": new_y,
+			"radius": new_radius,
+			"target_radius": new_radius,
+			"target_x": new_x,
+			"target_y": new_y
+		}
 
 		var new_zones = []
-		for zone in zones:
-			if zone["radius"] < min_zone_radius * 2:
-				new_zones.append(zone)
-				continue
-
-			var r1 = zone["radius"] * 0.7
-			var r2 = zone["radius"] * 0.7
-
-			var angle1 = randf_range(0.0, 2 * PI)
-			var angle2 = angle1 + PI
-
-			var dist = zone["radius"] * 0.5
-
-			var x1 = zone["x"] + cos(angle1) * dist
-			var y1 = zone["y"] + sin(angle1) * dist
-
-			var x2 = zone["x"] + cos(angle2) * dist
-			var y2 = zone["y"] + sin(angle2) * dist
-
-			x1 = max(r1, min(arena_width - r1, x1))
-			y1 = max(r1, min(arena_height - r1, y1))
-			x2 = max(r2, min(arena_width - r2, x2))
-			y2 = max(r2, min(arena_height - r2, y2))
-
-			new_zones.append({
-				"x": x1, "y": y1, "radius": r1, "target_radius": r1,
-				"target_x": randf_range(r1, arena_width - r1),
-				"target_y": randf_range(r1, arena_height - r1)
-			})
-			new_zones.append({
-				"x": x2, "y": y2, "radius": r2, "target_radius": r2,
-				"target_x": randf_range(r2, arena_width - r2),
-				"target_y": randf_range(r2, arena_height - r2)
-			})
-
+		for idx in range(zones.size()):
+			if idx != i and idx != j:
+				new_zones.append(zones[idx])
+		new_zones.append(new_zone)
 		zones = new_zones
 
 

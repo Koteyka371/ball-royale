@@ -33,28 +33,36 @@ def test_multiple_safe_zones_mode():
     mode = GAME_MODES["multiple_safe_zones"]
     world = MockWorld()
 
+    # Move balls so they are likely inside / outside dynamically generated zones.
+    # We will manually set zones after setup to guarantee this test passes properly
     b_inside = MockBall(500, 500)
-    b_outside = MockBall(100, 100)
+    b_outside = MockBall(10, 10)
 
     balls = [b_inside, b_outside]
 
     mode.setup(world, balls)
 
-    assert len(mode.zones) == 1
-    assert mode.zones[0]["x"] == 500.0
-    assert mode.zones[0]["y"] == 500.0
+    # Should create 3 or 4 zones initially
+    assert len(mode.zones) in [3, 4]
+    initial_zone_count = len(mode.zones)
+
+    # Overwrite one zone to strictly contain b_inside but not b_outside for damage test
+    mode.zones[0]["x"] = 500.0
+    mode.zones[0]["y"] = 500.0
+    mode.zones[0]["radius"] = 100.0
+    for z in mode.zones[1:]:
+        z["x"] = 900.0
+        z["y"] = 900.0
+        z["radius"] = 50.0
 
     # Test tick (outside takes damage)
     mode.tick(world, balls, 1.0)
     assert b_inside.hp == 100
     assert b_outside.hp < 100
 
-    # Test split
-    mode.split_timer = 0.0
+    # Test merge
+    mode.merge_timer = 0.0
     mode.tick(world, balls, 1.0)
 
-    # Initial radius 500. After split, it should be 2.
-    assert len(mode.zones) == 2
-    # Radius of each new zone should be smaller
-    assert mode.zones[0]["radius"] < 500.0
-    assert mode.zones[1]["radius"] < 500.0
+    # After merge, the number of zones should decrease by 1
+    assert len(mode.zones) == initial_zone_count - 1
