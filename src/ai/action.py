@@ -6361,7 +6361,7 @@ class Action:
                             self.ball.freeze_stack = 0.0
                         self.ball.freeze_stack += delta * 20.0
                         if self.ball.freeze_stack >= 100.0:
-                            self.ball.frozen_timer = 2.0
+                            self.ball.frozen_timer = max(getattr(self.ball, "frozen_timer", 0.0), 2.0)
                             self.ball.freeze_stack = 0.0
 
                         # Damage

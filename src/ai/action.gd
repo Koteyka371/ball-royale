@@ -13840,12 +13840,20 @@ func execute(strategy: String, delta: float):
 					freeze_stack += delta * 20.0
 
 					if freeze_stack >= 100.0:
-						if typeof(self.ball) == TYPE_DICTIONARY:
-							self.ball["frozen_timer"] = 2.0
+						var current_frozen_timer = 0.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("frozen_timer"):
+							current_frozen_timer = float(self.ball["frozen_timer"])
 						elif "frozen_timer" in self.ball:
-							self.ball.frozen_timer = 2.0
+							current_frozen_timer = float(self.ball.frozen_timer)
+						elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("frozen_timer"):
+							current_frozen_timer = float(self.ball.get_meta("frozen_timer"))
+						var new_frozen_timer = max(current_frozen_timer, 2.0)
+						if typeof(self.ball) == TYPE_DICTIONARY:
+							self.ball["frozen_timer"] = new_frozen_timer
+						elif "frozen_timer" in self.ball:
+							self.ball.frozen_timer = new_frozen_timer
 						elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-							self.ball.set_meta("frozen_timer", 2.0)
+							self.ball.set_meta("frozen_timer", new_frozen_timer)
 						freeze_stack = 0.0
 
 					if typeof(self.ball) == TYPE_DICTIONARY: self.ball["freeze_stack"] = freeze_stack
