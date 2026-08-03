@@ -74819,6 +74819,144 @@ class AlternatingZoneMode extends GameMode:
 							else: b.set("hp", current_hp - (damage_rate * delta))
 
 
+
+class ThermalPayloadMutatorMode extends GameMode:
+    var payload
+
+    func _init():
+        super._init()
+        self.name = "Thermal Payload"
+        self.description = "A payload mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby."
+        self.payload = null
+
+    func setup(world, balls: Array) -> void:
+        super.setup(world, balls)
+        var arena_width = 1000.0
+        var arena_height = 1000.0
+        if typeof(world) == TYPE_OBJECT and 'arena' in world:
+            arena_width = world.arena.width
+            arena_height = world.arena.height
+        elif typeof(world) == TYPE_DICTIONARY and world.has('arena'):
+            arena_width = world.arena.width
+            arena_height = world.arena.height
+
+        self.payload = {}
+        self.payload["ball_type"] = "payload"
+        self.payload["is_payload"] = true
+        self.payload["is_invulnerable"] = true
+        self.payload["speed"] = 0.0
+        self.payload["vx"] = 0.0
+        self.payload["vy"] = 0.0
+        self.payload["damage"] = 0.0
+        self.payload["max_hp"] = 10000.0
+        self.payload["hp"] = 10000.0
+        self.payload["x"] = arena_width / 2.0
+        self.payload["y"] = arena_height / 2.0
+        self.payload["alive"] = true
+        self.payload["team"] = "Neutral"
+        self.payload["radius"] = 20.0
+
+        self.payload["aura_radius"] = 40.0
+        self.payload["unpushed_timer"] = 0.0
+        self.payload["pushed_this_tick"] = false
+
+        balls.append(self.payload)
+
+    func tick(world, balls: Array, delta: float = 0.016) -> void:
+        super.tick(world, balls, delta)
+
+        if not self.payload or not self.payload.get("alive", false):
+            return
+
+        if self.payload.get("hp", 5000.0) < 100.0:
+            self.payload["hp"] = 5000.0
+
+        var pushers_count = 0
+        var px = self.payload.get("x", 0.0)
+        var py = self.payload.get("y", 0.0)
+        var pr = self.payload.get("radius", 20.0)
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT:
+                if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
+                    continue
+                var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
+                var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
+                var br = b.get_meta("radius") if b.has_method("has_meta") and b.has_meta("radius") else (b.radius if 'radius' in b else 10.0)
+                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+                if dist <= pr + br + 20.0:
+                    pushers_count += 1
+            elif typeof(b) == TYPE_DICTIONARY:
+                if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
+                    continue
+                var bx = b.get("x", 0.0)
+                var by = b.get("y", 0.0)
+                var br = b.get("radius", 10.0)
+                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+                if dist <= pr + br + 20.0:
+                    pushers_count += 1
+
+        if pushers_count > 0:
+            self.payload["pushed_this_tick"] = true
+            self.payload["unpushed_timer"] = 0.0
+            self.payload["aura_radius"] *= (1.0 + 0.1 * delta * pushers_count)
+            if self.payload["aura_radius"] > 400.0:
+                self.payload["aura_radius"] = 400.0
+        else:
+            self.payload["pushed_this_tick"] = false
+            self.payload["unpushed_timer"] += delta
+
+        var aura_rad = self.payload.get("aura_radius", 40.0)
+
+        for b in balls:
+            if typeof(b) == TYPE_OBJECT:
+                if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
+                    continue
+                var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
+                var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
+                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+                if dist <= aura_rad:
+                    if b.has_method("take_damage"):
+                        b.take_damage(5.0 * delta)
+            elif typeof(b) == TYPE_DICTIONARY:
+                if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
+                    continue
+                var bx = b.get("x", 0.0)
+                var by = b.get("y", 0.0)
+                var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+                if dist <= aura_rad:
+                    pass
+
+        if self.payload.get("unpushed_timer", 0.0) >= 3.0:
+            var explosion_radius = aura_rad * 1.5
+
+            if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+                world.add_event("visual_effect", {"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
+            elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+                world.events.append({"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
+
+            for b in balls:
+                if typeof(b) == TYPE_OBJECT:
+                    if b == self.payload or (b.has_method("has_meta") and b.has_meta("ball_type") and b.get_meta("ball_type") == "spectator") or ('ball_type' in b and b.ball_type == "spectator") or (b.has_method("has_meta") and b.has_meta("alive") and not b.get_meta("alive")) or ('alive' in b and not b.alive):
+                        continue
+                    var bx = b.get_meta("x") if b.has_method("has_meta") and b.has_meta("x") else (b.x if 'x' in b else 0.0)
+                    var by = b.get_meta("y") if b.has_method("has_meta") and b.has_meta("y") else (b.y if 'y' in b else 0.0)
+                    var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+                    if dist <= explosion_radius:
+                        if b.has_method("take_damage"):
+                            b.take_damage(50.0)
+                elif typeof(b) == TYPE_DICTIONARY:
+                    if b == self.payload or b.get("ball_type") == "spectator" or not b.get("alive", false):
+                        continue
+                    var bx = b.get("x", 0.0)
+                    var by = b.get("y", 0.0)
+                    var dist = sqrt((bx - px)*(bx - px) + (by - py)*(by - py))
+                    if dist <= explosion_radius:
+                        pass
+
+            self.payload["unpushed_timer"] = 0.0
+            self.payload["aura_radius"] = 40.0
+
 class SilentWorldMutatorMode extends GameMode:
 	func _init():
 		self.name = "Silent World Mutator"
@@ -75046,3 +75184,5 @@ class MirrorCloneEventMode extends GameMode:
 									elif typeof(owner) == TYPE_DICTIONARY: owner["alive"] = false
 								break
 GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode.new()
+
+GAME_MODES["thermal_payload"] = ThermalPayloadMutatorMode.new()
