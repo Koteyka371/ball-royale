@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1696] Safe Zone Radar Item — *2026-08-03 05:38:41 UTC*
+
+Introduce a rare consumable item (e.g., Safe Zone Radar) that briefly reveals the exact location where the safe zone will shrink to next, giving players a strategic advantage to reposition ahead of time.
+
+---
+
 ## [idea-1781] Payload Cargo Buff Variants — *2026-08-03 05:38:36 UTC*
 
 Instead of just energy barriers, payloads can drop other localized zone effects when crossing milestones, such as temporary haste fields, jump pads, or healing springs based on the payload's cargo type.
