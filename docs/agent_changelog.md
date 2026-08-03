@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1793] Bouncy Boundaries — *2026-08-03 16:13:01 UTC*
+
+Instead of taking damage or dying, balls that touch the boundary are violently bounced inward with extreme force, potentially knocking them into hazards or other players. The boundary acts as a massive trampoline.
+
+---
+
 ## [idea-1785] Saboteur Traps on Payloads — *2026-08-03 16:07:01 UTC*
 
 Players can attach hidden saboteur traps (like an EMP or a virus) to enemy payloads when they get close. After a delay, the trap explodes, disabling the payload's abilities (like its shield or turrets) and slowing it down, forcing the defending team to 'defuse' it by standing near it.
