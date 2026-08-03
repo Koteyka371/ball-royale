@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1771] Quantum Shifter Trap — *2026-08-03 20:32:59 UTC*
+
+A deployable trap that, when triggered, instantly swaps the position of the victim with the trapper, confusing the enemy and allowing the trapper to escape or set up a secondary ambush.
+
+---
+
 ## [idea-1793] Bouncy Boundaries — *2026-08-03 16:13:01 UTC*
 
 Instead of taking damage or dying, balls that touch the boundary are violently bounced inward with extreme force, potentially knocking them into hazards or other players. The boundary acts as a massive trampoline.
