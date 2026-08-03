@@ -23165,11 +23165,11 @@ class TickingPayloadMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Ticking Payload"
-        self.description = "A single payload starts in the center with a ticking timer. If it reaches an enemy goal before time runs out, it explodes and deals massive damage to the enemy team's core. If the timer runs out while it's in the middle, it explodes and kills players nearby."
+        self.description = "A single payload that explodes periodically. Teams must push it into the enemy side before the timer runs out and it detonates, dealing massive damage to anyone nearby."
         self.payload = None
         self.red_goal_x = 100.0
         self.blue_goal_x = 900.0
-        self.timer = 120.0
+        self.timer = 15.0
         self.explosion_radius = 200.0
         self.winner = None
 
@@ -23333,8 +23333,6 @@ class TickingPayloadMode(GameMode):
             self.timer -= delta
         else:
             if getattr(self.payload, "alive", False):
-                self.payload.alive = False
-                self.payload.hp = 0
                 import math
                 for b in balls:
                     if getattr(b, "alive", False) and b != self.payload and getattr(b, "ball_type", None) != "spectator":
@@ -23344,8 +23342,10 @@ class TickingPayloadMode(GameMode):
                             b.alive = False
                             if hasattr(world, "dead_balls"):
                                 world.dead_balls.append(b)
-                self.winner = "Draw"
-            return
+                # Payload explodes but resets timer instead of dying
+                self.timer = 15.0
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "massive_explosion", "x": self.payload.x, "y": self.payload.y, "radius": self.explosion_radius})
 
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
 
