@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1777] Solar Wind Weather Event — *2026-08-03 01:37:59 UTC*
+
+A weather event that randomly applies push forces across the entire arena while drastically increasing the effectiveness of all solar-powered abilities and boosting energy regeneration. Movement against the wind costs extra stamina.
+
+---
+
 ## [idea-1766] Swap Decoy Overload — *2026-08-03 00:42:19 UTC*
 
 When multiple decoys are active during the survival swap skill, trigger a chain electrical surge between them instead of just a simple swap, confusing and damaging a larger area.
