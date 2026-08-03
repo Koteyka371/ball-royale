@@ -2768,23 +2768,40 @@ class Action:
                 self.ball.survival_swap_timer = 0.0
                 target_id = getattr(self.ball, "survival_swap_target_id", None)
                 if target_id is not None and hasattr(self.world, "balls"):
-                    for b in getattr(self.world, "balls", []):
-                        if getattr(b, "id", None) == target_id and getattr(b, "alive", True) and getattr(b, "is_decoy", False):
-                            # Swap positions
-                            tx, ty = self.ball.x, self.ball.y
-                            self.ball.x, self.ball.y = b.x, b.y
-                            b.x, b.y = tx, ty
-                            # Apply confusion
-                            for enemy in [e for e in getattr(self.world, "balls", []) if getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]:
-                                dist_sq = (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2
-                                if dist_sq <= 150.0**2:
-                                    enemy.is_confused = True
-                                    enemy.confusion_timer = max(getattr(enemy, "confusion_timer", 0.0), 3.0)
+                    active_decoys = [b for b in getattr(self.world, "balls", []) if getattr(b, "alive", True) and getattr(b, "is_decoy", False) and getattr(b, "owner_id", None) == self.ball.id]
 
-                            # Remove decoy
-                            b.hp = 0
-                            b.alive = False
-                            break
+                    if len(active_decoys) > 1:
+                        # Chain electrical surge
+                        for decoy in active_decoys:
+                            for enemy in [e for e in getattr(self.world, "balls", []) if getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]:
+                                dist_sq = (enemy.x - decoy.x)**2 + (enemy.y - decoy.y)**2
+                                if dist_sq <= 200.0**2:
+                                    enemy.is_confused = True
+                                    enemy.confusion_timer = max(getattr(enemy, "confusion_timer", 0.0), 4.0)
+                                    enemy.hp -= 30.0
+                                    if enemy.hp <= 0:
+                                        enemy.alive = False
+
+                            decoy.hp = 0
+                            decoy.alive = False
+                    else:
+                        for b in active_decoys:
+                            if getattr(b, "id", None) == target_id:
+                                # Swap positions
+                                tx, ty = self.ball.x, self.ball.y
+                                self.ball.x, self.ball.y = b.x, b.y
+                                b.x, b.y = tx, ty
+                                # Apply confusion
+                                for enemy in [e for e in getattr(self.world, "balls", []) if getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", ""))]:
+                                    dist_sq = (enemy.x - self.ball.x)**2 + (enemy.y - self.ball.y)**2
+                                    if dist_sq <= 150.0**2:
+                                        enemy.is_confused = True
+                                        enemy.confusion_timer = max(getattr(enemy, "confusion_timer", 0.0), 3.0)
+
+                                # Remove decoy
+                                b.hp = 0
+                                b.alive = False
+                                break
 
 
         # Equipped Aura logic
