@@ -1802,6 +1802,62 @@ func _attempt_damage_internal(attacker, target) -> void:
 		elif "speed_boost_timer" in attacker:
 			cur_speed_boost_timer = float(attacker.speed_boost_timer)
 
+		# Knockback buff logic
+		var kb_force = 5000.0 * (a_stored_dmg / 10.0)
+		kb_force = min(kb_force, 20000.0)
+		if kb_force > 0.0:
+			var dx = 0.0
+			var dy = 0.0
+			var target_x = 0.0
+			var target_y = 0.0
+			var attacker_x = 0.0
+			var attacker_y = 0.0
+
+			if typeof(target) == TYPE_DICTIONARY:
+				target_x = target.get("x", 0.0)
+				target_y = target.get("y", 0.0)
+			else:
+				target_x = target.x if "x" in target else 0.0
+				target_y = target.y if "y" in target else 0.0
+
+			if typeof(attacker) == TYPE_DICTIONARY:
+				attacker_x = attacker.get("x", 0.0)
+				attacker_y = attacker.get("y", 0.0)
+			else:
+				attacker_x = attacker.x if "x" in attacker else 0.0
+				attacker_y = attacker.y if "y" in attacker else 0.0
+
+			dx = target_x - attacker_x
+			dy = target_y - attacker_y
+			var dist = sqrt(dx*dx + dy*dy)
+			if dist > 0.0001:
+				var nx = dx / dist
+				var ny = dy / dist
+				var target_mass = 1.0
+				if typeof(target) == TYPE_DICTIONARY:
+					target_mass = target.get("mass", 1.0)
+				else:
+					if target.has_method("has_meta") and target.has_meta("mass"):
+						target_mass = float(target.get_meta("mass"))
+					elif "mass" in target:
+						target_mass = float(target.mass)
+
+				var kb_ax = nx * (kb_force / target_mass)
+				var kb_ay = ny * (kb_force / target_mass)
+
+				if typeof(target) != TYPE_DICTIONARY and target.has_method("set_meta"):
+					var cur_vx = float(target.get_meta("vx")) if target.has_meta("vx") else 0.0
+					var cur_vy = float(target.get_meta("vy")) if target.has_meta("vy") else 0.0
+					target.set_meta("vx", cur_vx + kb_ax)
+					target.set_meta("vy", cur_vy + kb_ay)
+					target.set_meta("_knockback_timer", 1.0)
+				elif typeof(target) != TYPE_DICTIONARY:
+					var cur_vx = target.vx if "vx" in target else 0.0
+					var cur_vy = target.vy if "vy" in target else 0.0
+					target.vx = cur_vx + kb_ax
+					target.vy = cur_vy + kb_ay
+					target._knockback_timer = 1.0
+
 		if typeof(attacker) != TYPE_DICTIONARY and attacker.has_method("set_meta"):
 			attacker.set_meta("speed_boost_timer", cur_speed_boost_timer + 3.0)
 			attacker.set_meta("kinetic_shield_active", false)
