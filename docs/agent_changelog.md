@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1649] Kinetic Energy Battery — *2026-08-03 13:29:43 UTC*
+
+A booster item that stores kinetic energy from taking damage and converting a percentage of it into a massive movement speed and knockback buff once the energy threshold is reached.
+
+---
+
 ## [idea-1770] Quantum Tunnels Mode — *2026-08-03 11:18:29 UTC*
 
 Pairs of tunnels spawn across the map. Traveling through a tunnel immediately teleports you to the other end, but also applies a temporary speed boost and leaves a damaging energy trail behind the player.
