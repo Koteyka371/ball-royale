@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1724] Reverse Controls Booster — *2026-08-03 04:13:24 UTC*
+
+An active item that, when used, shoots out an EMP wave. Any enemy caught in the wave will have their movement controls scrambled (reversed) for 3 seconds, heavily disorienting them and making it hard for them to dodge incoming attacks or hazards.
+
+---
+
 ## [idea-1772] Shrinking Safe Zones within Danger Zones — *2026-08-03 04:07:44 UTC*
 
 In large danger zones, small temporary 'safe bubbles' appear. Balls must fight for control of these tiny bubbles to survive the danger zone's massive damage pulses. The bubbles slowly drift around the danger zone, forcing continuous movement.
