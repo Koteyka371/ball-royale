@@ -5378,6 +5378,8 @@ class Action:
                         if dist_emp < 300.0:  # EMP wave radius
                             if getattr(other_ball, "emp_immunity_timer", 0.0) <= 0:
                                 other_ball.invert_timer = max(getattr(other_ball, "invert_timer", 0.0), 3.0)
+            if hasattr(self.world, "events"):
+                self.world.events.append({'type': 'emp_wave', 'data': {'x': self.ball.x, 'y': self.ball.y, 'radius': 300.0}})
             self.ball.inventory.remove("emp_wave_item")
             self.ball.use_item = False
 
