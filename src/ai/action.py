@@ -988,6 +988,22 @@ class Action:
             original_damage += stored_dmg
             # Apply speed boost
             attacker.speed_boost_timer = getattr(attacker, "speed_boost_timer", 0.0) + 3.0
+
+            # Massive knockback buff logic
+            kb_force = 5000.0 * (stored_dmg / 10.0)  # scale with damage
+            kb_force = min(kb_force, 20000.0)
+            if kb_force > 0:
+                import math
+                dx = target.x - attacker.x
+                dy = target.y - attacker.y
+                dist = math.hypot(dx, dy)
+                if dist > 0.0001:
+                    nx = dx / dist
+                    ny = dy / dist
+                    target.vx = getattr(target, "vx", 0.0) + nx * (kb_force / getattr(target, "mass", 1.0))
+                    target.vy = getattr(target, "vy", 0.0) + ny * (kb_force / getattr(target, "mass", 1.0))
+                    setattr(target, "_knockback_timer", 1.0)
+
             # Remove shield
             attacker.kinetic_shield_active = False
             attacker.kinetic_shield_stored_damage = 0.0
