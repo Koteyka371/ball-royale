@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1760] Decoy Swap Skill — *2026-08-03 01:58:19 UTC*
+
+A skill where the player places a decoy. The player can activate the skill a second time to instantly swap places with the decoy, which then explodes to damage nearby enemies.
+
+---
+
 ## [idea-1777] Solar Wind Weather Event — *2026-08-03 01:37:59 UTC*
 
 A weather event that randomly applies push forces across the entire arena while drastically increasing the effectiveness of all solar-powered abilities and boosting energy regeneration. Movement against the wind costs extra stamina.
