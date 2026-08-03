@@ -60398,38 +60398,7 @@ class UndergroundTunnelMode extends GameMode:
 			elif b.has_method("has_meta") and b.has_meta("alive"): b_alive = b.get_meta("alive")
 			if not b_alive: continue
 
-			var is_underground = false
-			if "underground" in b: is_underground = b.underground
-			elif b.has_method("has_meta") and b.has_meta("underground"): is_underground = b.get_meta("underground")
 
-			if is_underground:
-				var tx = b.x
-				var ty = b.y
-				if "tunnel_target_x" in b: tx = b.tunnel_target_x
-				elif b.has_method("has_meta") and b.has_meta("tunnel_target_x"): tx = b.get_meta("tunnel_target_x")
-				if "tunnel_target_y" in b: ty = b.tunnel_target_y
-				elif b.has_method("has_meta") and b.has_meta("tunnel_target_y"): ty = b.get_meta("tunnel_target_y")
-
-				var dx = tx - b.x
-				var dy = ty - b.y
-				var dist = sqrt(dx*dx + dy*dy)
-
-				if dist <= travel_speed * delta:
-					b.x = tx
-					b.y = ty
-					if "underground" in b: b.underground = false
-					elif b.has_method("set_meta"): b.set_meta("underground", false)
-
-					if "is_invisible" in b: b.is_invisible = false
-					elif b.has_method("set_meta"): b.set_meta("is_invisible", false)
-
-					if "tunnel_cooldown" in b: b.tunnel_cooldown = 1.0
-					elif b.has_method("set_meta"): b.set_meta("tunnel_cooldown", 1.0)
-				else:
-					b.x += (dx / dist) * travel_speed * delta
-					b.y += (dy / dist) * travel_speed * delta
-
-				continue
 
 			var cd = 0.0
 			if "tunnel_cooldown" in b: cd = b.tunnel_cooldown
@@ -60444,42 +60413,108 @@ class UndergroundTunnelMode extends GameMode:
 			for t in tunnels:
 				var dist_a = sqrt(pow(b.x - t.x1, 2) + pow(b.y - t.y1, 2))
 				if dist_a < tunnel_radius:
-					if "underground" in b: b.underground = true
-					elif b.has_method("set_meta"): b.set_meta("underground", true)
+					b.x = t.x2
+					b.y = t.y2
 
-					if "is_invisible" in b: b.is_invisible = true
-					elif b.has_method("set_meta"): b.set_meta("is_invisible", true)
+					if "tunnel_cooldown" in b: b.tunnel_cooldown = 1.0
+					elif b.has_method("set_meta"): b.set_meta("tunnel_cooldown", 1.0)
 
-					if "tunnel_target_x" in b: b.tunnel_target_x = t.x2
-					elif b.has_method("set_meta"): b.set_meta("tunnel_target_x", t.x2)
+					var current_sbt = 0.0
+					if "speed_boost_timer" in b:
+						current_sbt = b.speed_boost_timer
+					elif b.has_method("has_meta") and b.has_meta("speed_boost_timer"):
+						current_sbt = b.get_meta("speed_boost_timer")
 
-					if "tunnel_target_y" in b: b.tunnel_target_y = t.y2
-					elif b.has_method("set_meta"): b.set_meta("tunnel_target_y", t.y2)
+					if "speed_boost_timer" in b:
+						b.speed_boost_timer = current_sbt + 3.0
+					elif b.has_method("set_meta"):
+						b.set_meta("speed_boost_timer", current_sbt + 3.0)
 
-					if "vx" in b: b.vx = 0.0
-					elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
-					if "vy" in b: b.vy = 0.0
-					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
+					if "speed_boost_multiplier" in b:
+						b.speed_boost_multiplier = 1.5
+					elif b.has_method("set_meta"):
+						b.set_meta("speed_boost_multiplier", 1.5)
+
+					if world != null and "arena" in world and world.arena != null:
+						if "hazards" in world.arena:
+							var b_team = ""
+							if "team" in b:
+								b_team = b.team
+							elif b.has_method("has_meta") and b.has_meta("team"):
+								b_team = b.get_meta("team")
+
+							var trail_node = {
+								"id": "electric_trail_" + str(randi() % 90000 + 10000),
+								"kind": "deployable_thin_hazard_line",
+								"x": t.x1,
+								"y": t.y1,
+								"start_x": t.x1,
+								"start_y": t.y1,
+								"end_x": t.x2,
+								"end_y": t.y2,
+								"team": b_team,
+								"damage": 30.0,
+								"active": true,
+								"hit_ids": [],
+								"duration": 5.0
+							}
+							if typeof(world.arena.hazards) == TYPE_ARRAY:
+								world.arena.hazards.append(trail_node)
+							elif world.arena.has_method("append_hazard"):
+								world.arena.append_hazard(trail_node)
 					break
 
 				var dist_b = sqrt(pow(b.x - t.x2, 2) + pow(b.y - t.y2, 2))
 				if dist_b < tunnel_radius:
-					if "underground" in b: b.underground = true
-					elif b.has_method("set_meta"): b.set_meta("underground", true)
+					b.x = t.x1
+					b.y = t.y1
 
-					if "is_invisible" in b: b.is_invisible = true
-					elif b.has_method("set_meta"): b.set_meta("is_invisible", true)
+					if "tunnel_cooldown" in b: b.tunnel_cooldown = 1.0
+					elif b.has_method("set_meta"): b.set_meta("tunnel_cooldown", 1.0)
 
-					if "tunnel_target_x" in b: b.tunnel_target_x = t.x1
-					elif b.has_method("set_meta"): b.set_meta("tunnel_target_x", t.x1)
+					var current_sbt = 0.0
+					if "speed_boost_timer" in b:
+						current_sbt = b.speed_boost_timer
+					elif b.has_method("has_meta") and b.has_meta("speed_boost_timer"):
+						current_sbt = b.get_meta("speed_boost_timer")
 
-					if "tunnel_target_y" in b: b.tunnel_target_y = t.y1
-					elif b.has_method("set_meta"): b.set_meta("tunnel_target_y", t.y1)
+					if "speed_boost_timer" in b:
+						b.speed_boost_timer = current_sbt + 3.0
+					elif b.has_method("set_meta"):
+						b.set_meta("speed_boost_timer", current_sbt + 3.0)
 
-					if "vx" in b: b.vx = 0.0
-					elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
-					if "vy" in b: b.vy = 0.0
-					elif b.has_method("set_meta"): b.set_meta("vy", 0.0)
+					if "speed_boost_multiplier" in b:
+						b.speed_boost_multiplier = 1.5
+					elif b.has_method("set_meta"):
+						b.set_meta("speed_boost_multiplier", 1.5)
+
+					if world != null and "arena" in world and world.arena != null:
+						if "hazards" in world.arena:
+							var b_team = ""
+							if "team" in b:
+								b_team = b.team
+							elif b.has_method("has_meta") and b.has_meta("team"):
+								b_team = b.get_meta("team")
+
+							var trail_node = {
+								"id": "electric_trail_" + str(randi() % 90000 + 10000),
+								"kind": "deployable_thin_hazard_line",
+								"x": t.x2,
+								"y": t.y2,
+								"start_x": t.x2,
+								"start_y": t.y2,
+								"end_x": t.x1,
+								"end_y": t.y1,
+								"team": b_team,
+								"damage": 30.0,
+								"active": true,
+								"hit_ids": [],
+								"duration": 5.0
+							}
+							if typeof(world.arena.hazards) == TYPE_ARRAY:
+								world.arena.hazards.append(trail_node)
+							elif world.arena.has_method("append_hazard"):
+								world.arena.append_hazard(trail_node)
 					break
 
 class ColorTrailMode extends GameMode:

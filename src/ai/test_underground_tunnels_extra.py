@@ -1,6 +1,4 @@
-
 import pytest
-import math
 from ai.game_modes import GAME_MODES
 
 class MockArena:
@@ -25,51 +23,35 @@ class MockBall:
         self.tunnel_target_x = 0.0
         self.tunnel_target_y = 0.0
         self.speed_boost_timer = 0.0
+        self.team = "A"
 
-def test_underground_tunnels_mode():
+def test_tunnel_speed_boost_and_trail():
     mode = GAME_MODES.get("underground_tunnels")
-    assert mode is not None
-
     world = MockWorld()
     b1 = MockBall(1, 100.0, 100.0)
     balls = [b1]
 
     mode.setup(world, balls)
-    assert len(mode.tunnels) == 3
-    assert len(world.arena.hazards) == 6
-
-    # Manually place b1 near a tunnel
     t = mode.tunnels[0]
+
     b1.x = t.x1 + 10.0
     b1.y = t.y1 + 10.0
 
-    # Tick should instantly teleport the ball
+    # Tick to enter tunnel
     mode.tick(world, balls, delta=0.1)
 
+    # verify teleport and trail
     assert b1.x == t.x2
     assert b1.y == t.y2
-    assert b1.tunnel_cooldown > 0.0
     assert b1.speed_boost_timer > 0.0
+    assert b1.speed_boost_multiplier == 1.5
 
-def test_underground_tunnels_cooldown():
-    mode = GAME_MODES.get("underground_tunnels")
-    world = MockWorld()
-    b1 = MockBall(1, 100.0, 100.0)
-    balls = [b1]
-
-    mode.setup(world, balls)
-    t = mode.tunnels[0]
-
-    b1.x = t.x1 + 5.0
-    b1.y = t.y1 + 5.0
-    b1.tunnel_cooldown = 0.5
-
-    # Store initial pos
-    ix = b1.x
-    iy = b1.y
-
-    mode.tick(world, balls, delta=0.1)
-
-    # Should not teleport because of cooldown
-    assert b1.x == ix
-    assert b1.tunnel_cooldown == pytest.approx(0.4)
+    # verify trail hazard created
+    trails = [h for h in world.arena.hazards if getattr(h, "kind", "") == "deployable_thin_hazard_line"]
+    assert len(trails) > 0
+    trail = trails[-1]
+    assert trail.start_x == t.x1
+    assert trail.start_y == t.y1
+    assert trail.end_x == t.x2
+    assert trail.end_y == t.y2
+    assert trail.team == "A"

@@ -37806,29 +37806,7 @@ class UndergroundTunnelMode(GameMode):
             if not getattr(b, "alive", True):
                 continue
 
-            is_underground = getattr(b, "underground", False)
-            if is_underground:
-                # Travel towards target
-                tx = getattr(b, "tunnel_target_x", b.x)
-                ty = getattr(b, "tunnel_target_y", b.y)
-                dx = tx - b.x
-                dy = ty - b.y
-                dist = math.sqrt(dx*dx + dy*dy)
-
-                if dist <= self.travel_speed * delta:
-                    # Arrived
-                    b.x = tx
-                    b.y = ty
-                    b.underground = False
-                    b.is_invisible = False
-                    b.tunnel_cooldown = 1.0
-                else:
-                    b.x += (dx / dist) * self.travel_speed * delta
-                    b.y += (dy / dist) * self.travel_speed * delta
-
-                continue
-
-            # Handle entry if not underground
+            # Handle entry
             cd = getattr(b, "tunnel_cooldown", 0.0)
             if cd > 0:
                 b.tunnel_cooldown = max(0.0, cd - delta)
@@ -37839,23 +37817,63 @@ class UndergroundTunnelMode(GameMode):
                 # Check entrance A
                 dist_a = math.sqrt((b.x - t.x1)**2 + (b.y - t.y1)**2)
                 if dist_a < self.tunnel_radius:
-                    b.underground = True
-                    b.is_invisible = True
-                    b.tunnel_target_x = t.x2
-                    b.tunnel_target_y = t.y2
-                    b.vx = 0.0
-                    b.vy = 0.0
+                    b.x = t.x2
+                    b.y = t.y2
+                    b.tunnel_cooldown = 1.0
+
+                    b.speed_boost_timer = getattr(b, 'speed_boost_timer', 0.0) + 3.0
+                    b.speed_boost_multiplier = 1.5
+
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        class ElectricTrailObj:
+                            pass
+                        trail = ElectricTrailObj()
+                        import random
+                        trail.id = "electric_trail_" + str(random.randint(10000, 99999))
+                        trail.kind = "deployable_thin_hazard_line"
+                        trail.x = t.x1
+                        trail.y = t.y1
+                        trail.start_x = t.x1
+                        trail.start_y = t.y1
+                        trail.end_x = t.x2
+                        trail.end_y = t.y2
+                        trail.team = getattr(b, "team", "")
+                        trail.damage = 30.0
+                        trail.active = True
+                        trail.hit_ids = []
+                        trail.duration = 5.0
+                        world.arena.hazards.append(trail)
                     break
 
                 # Check entrance B
                 dist_b = math.sqrt((b.x - t.x2)**2 + (b.y - t.y2)**2)
                 if dist_b < self.tunnel_radius:
-                    b.underground = True
-                    b.is_invisible = True
-                    b.tunnel_target_x = t.x1
-                    b.tunnel_target_y = t.y1
-                    b.vx = 0.0
-                    b.vy = 0.0
+                    b.x = t.x1
+                    b.y = t.y1
+                    b.tunnel_cooldown = 1.0
+
+                    b.speed_boost_timer = getattr(b, 'speed_boost_timer', 0.0) + 3.0
+                    b.speed_boost_multiplier = 1.5
+
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        class ElectricTrailObj:
+                            pass
+                        trail = ElectricTrailObj()
+                        import random
+                        trail.id = "electric_trail_" + str(random.randint(10000, 99999))
+                        trail.kind = "deployable_thin_hazard_line"
+                        trail.x = t.x2
+                        trail.y = t.y2
+                        trail.start_x = t.x2
+                        trail.start_y = t.y2
+                        trail.end_x = t.x1
+                        trail.end_y = t.y1
+                        trail.team = getattr(b, "team", "")
+                        trail.damage = 30.0
+                        trail.active = True
+                        trail.hit_ids = []
+                        trail.duration = 5.0
+                        world.arena.hazards.append(trail)
                     break
 
 GAME_MODES["underground_tunnels"] = UndergroundTunnelMode()
