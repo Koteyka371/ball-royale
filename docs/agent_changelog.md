@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1784] Hot Potato Payload — *2026-08-03 13:46:02 UTC*
+
+A single payload that explodes periodically. Teams must push it into the enemy side before the timer runs out and it detonates, dealing massive damage to anyone nearby.
+
+---
+
 ## [idea-1649] Kinetic Energy Battery — *2026-08-03 13:29:43 UTC*
 
 A booster item that stores kinetic energy from taking damage and converting a percentage of it into a massive movement speed and knockback buff once the energy threshold is reached.
