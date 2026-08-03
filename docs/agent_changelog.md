@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1757] Orbital Debris Hazard — *2026-08-03 00:25:50 UTC*
+
+Small hazards that orbit larger hazards (like gravity wells) periodically detaching and flying outward when the larger hazard explodes or pulses.
+
+---
+
 ## [idea-1753] Reverse Shifting Map — *2026-08-02 22:22:46 UTC*
 
 An arena mode where the map starts very small and expands over time, with new elements and hazards revealed as it grows.
