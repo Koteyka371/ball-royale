@@ -69526,6 +69526,77 @@ class CorruptionZoneMode extends GameMode:
 GAME_MODES["corruption_zones"] = CorruptionZoneMode.new()
 
 
+class StaminaDrainZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 200.0
+	var drain_rate: float = 15.0
+	var hazard_obj = null
+
+	func _init() -> void:
+		super._init()
+		name = "Stamina Drain Zone"
+		description = "A localized field appears that slowly drains the stamina of any ball caught inside it, forcing players to avoid the area or risk losing their abilities."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and ("arena" in world):
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY:
+				arena_width = float(arena.get("width", 1000.0))
+				arena_height = float(arena.get("height", 1000.0))
+			elif typeof(arena) == TYPE_OBJECT:
+				arena_width = float(arena.get("width") if "width" in arena else 1000.0)
+				arena_height = float(arena.get("height") if "height" in arena else 1000.0)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY:
+				arena_width = float(world.arena.get("width", 1000.0))
+				arena_height = float(world.arena.get("height", 1000.0))
+			else:
+				arena_width = float(world.arena.get("width") if "width" in world.arena else 1000.0)
+				arena_height = float(world.arena.get("height") if "height" in world.arena else 1000.0)
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+
+		hazard_obj = {
+			"id": "stamina_drain_zone",
+			"x": zone_x,
+			"y": zone_y,
+			"radius": zone_radius,
+			"kind": "stamina_drain_zone",
+			"damage": 0.0,
+			"active": true
+		}
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+				world.arena.hazards.append(hazard_obj)
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				world.arena.hazards.append(hazard_obj)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+				world.arena.hazards.append(hazard_obj)
+			elif typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				world.arena.hazards.append(hazard_obj)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var alive = b.get("alive") if typeof(b) == TYPE_DICTIONARY else b.alive
+			if alive:
+				var bx = float(b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.x)
+				var by = float(b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.y)
+				var dist_sq = pow(bx - zone_x, 2) + pow(by - zone_y, 2)
+				if dist_sq <= pow(zone_radius, 2):
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.has("stamina"):
+							b["stamina"] = max(0.0, float(b["stamina"]) - drain_rate * delta)
+					else:
+						if "stamina" in b:
+							b.stamina = max(0.0, float(b.stamina) - drain_rate * delta)
+
 class VampiricZoneMode extends GameMode:
 	var zone_x: float = 500.0
 	var zone_y: float = 500.0
@@ -69661,6 +69732,7 @@ class VampiricZoneMode extends GameMode:
 							closest_enemy["hp"] = min(float(closest_enemy.get("hp", 0.0)) + damage, max_hp)
 
 GAME_MODES["vampiric_zone"] = VampiricZoneMode.new()
+GAME_MODES["stamina_drain_zone"] = StaminaDrainZoneMode.new()
 
 class TornadoHazardMode extends GameMode:
 	var tornado_spawn_timer: float = 0.0
