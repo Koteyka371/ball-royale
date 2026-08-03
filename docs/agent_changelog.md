@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1778] Bounty Hunter Minor Synergy — *2026-08-03 15:26:53 UTC*
+
+Bounty Hunter entities receive passive tracking pings towards any player marked with a minor bounty, making dynamic bounty claiming inherently risky but highly rewarding.
+
+---
+
 ## [idea-1776] Payload Overload Mod — *2026-08-03 15:09:01 UTC*
 
 An arena mutator where the payload's damage aura exponentially increases in radius if it is continuously pushed by players. If the pushers step away for too long, the payload vents the built-up heat in a massive explosion, damaging everyone nearby.
