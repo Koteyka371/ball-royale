@@ -13566,6 +13566,12 @@ class Action:
                         elif hit_wall == "right": ix = getattr(self.world, "width", 1000) - margin
 
                         self.world.arena.hazards.append(DefensiveShieldHazard(ix, iy))
+                elif wall_state == "trampoline":
+                    center_x = getattr(self.world, "width", 1000) / 2.0
+                    center_y = getattr(self.world, "height", 1000) / 2.0
+                    import random
+                    angle = _math.atan2(center_y - self.ball.y, center_x - self.ball.x) + random.uniform(-0.3, 0.3)
+                    new_speed = max(speed * 3.0, 5000.0)
                 elif wall_state == "abyss":
                     if getattr(self.ball, "glider_booster_timer", 0.0) > 0.0:
                         # Glider allows ignoring the abyss death zone completely
@@ -13622,7 +13628,7 @@ class Action:
 
                 is_pinball_mutator = gm and getattr(gm, "name", "") == "Pinball Mutator"
 
-                if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice" or is_pinball_mutator:
+                if wall_state in ["bouncy", "damaged_bouncy", "abyss", "ice", "trampoline"] or is_pinball_mutator:
                     pass # Bouncy walls don't deal damage (abyss is already handled)
                 elif wall_state == "spikes":
                     if getattr(self.ball, "cosmetic", "").lower().replace(" ", "_") != "hover_boots":

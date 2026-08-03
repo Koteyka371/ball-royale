@@ -26977,6 +26977,27 @@ func execute(strategy: String, delta: float):
                         "active": true
                     }
                     self.world.arena.hazards.append(shield_hazard)
+            elif wall_state == "trampoline":
+                var center_x = 500.0
+                var center_y = 500.0
+                if typeof(self.world) == TYPE_DICTIONARY:
+                    if self.world.has("width"): center_x = float(self.world["width"]) / 2.0
+                    if self.world.has("height"): center_y = float(self.world["height"]) / 2.0
+                elif typeof(self.world) == TYPE_OBJECT:
+                    if "width" in self.world: center_x = float(self.world.width) / 2.0
+                    if "height" in self.world: center_y = float(self.world.height) / 2.0
+                var bx = 0.0
+                var by = 0.0
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    if self.ball.has("x"): bx = float(self.ball["x"])
+                    if self.ball.has("y"): by = float(self.ball["y"])
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if self.ball.has_method("has_meta") and self.ball.has_meta("x"): bx = float(self.ball.get_meta("x"))
+                    elif "x" in self.ball: bx = float(self.ball.x)
+                    if self.ball.has_method("has_meta") and self.ball.has_meta("y"): by = float(self.ball.get_meta("y"))
+                    elif "y" in self.ball: by = float(self.ball.y)
+                angle = atan2(center_y - by, center_x - bx) + randf_range(-0.3, 0.3)
+                new_speed = max(speed * 3.0, 5000.0)
             elif wall_state == "abyss":
                 var gbt = 0.0
                 if "glider_booster_timer" in self.ball: gbt = float(self.ball.glider_booster_timer)
@@ -27053,7 +27074,7 @@ func execute(strategy: String, delta: float):
             elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("ball_type"): b_type = self.ball["ball_type"]
             var is_agile_bouncer = b_type in ["ninja", "assassin", "rogue"]
 
-            if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice":
+            if wall_state == "bouncy" or wall_state == "damaged_bouncy" or wall_state == "abyss" or wall_state == "ice" or wall_state == "trampoline":
                 pass
             elif wall_state == "spikes":
                 var cosmetic_wall = ""

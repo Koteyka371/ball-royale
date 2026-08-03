@@ -47904,3 +47904,20 @@ class MirrorCloneEventMode(GameMode):
 GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode()
 
 GAME_MODES["thermal_payload"] = ThermalPayloadMutatorMode()
+
+
+class TrampolineBoundaryMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Trampoline Boundary"
+        self.description = "Instead of taking damage or dying, balls that touch the boundary are violently bounced inward with extreme force, potentially knocking them into hazards or other players. The boundary acts as a massive trampoline."
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            if not hasattr(world.arena, "boundary_states"):
+                world.arena.boundary_states = {}
+            for wall in ["top", "bottom", "left", "right"]:
+                world.arena.boundary_states[wall] = "trampoline"
+
+GAME_MODES['trampoline_boundary'] = TrampolineBoundaryMode()
