@@ -10037,7 +10037,16 @@ class DualPayloadMode extends GameMode:
 						if red_x >= m:
 							to_remove.append(m)
 							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
-							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, red_x, red_y, 40.0, "energy_barrier", 0.0)
+							var cargo = "energy_barrier"
+							if typeof(payload_red) == TYPE_DICTIONARY:
+								if payload_red.has("cargo_type"):
+									cargo = payload_red["cargo_type"]
+							else:
+								if payload_red.has_method("get"):
+									var got = payload_red.get("cargo_type")
+									if got != null:
+										cargo = got
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, red_x, red_y, 40.0, cargo, 0.0)
 							drop.set_meta("duration", 15.0)
 							drop.set_meta("team", "Red")
 							world.arena.hazards.append(drop)
@@ -10172,7 +10181,16 @@ class DualPayloadMode extends GameMode:
 						if blue_x <= m:
 							to_remove.append(m)
 							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
-							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, blue_x, blue_y, 40.0, "energy_barrier", 0.0)
+							var cargo = "energy_barrier"
+							if typeof(payload_blue) == TYPE_DICTIONARY:
+								if payload_blue.has("cargo_type"):
+									cargo = payload_blue["cargo_type"]
+							else:
+								if payload_blue.has_method("get"):
+									var got = payload_blue.get("cargo_type")
+									if got != null:
+										cargo = got
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, blue_x, blue_y, 40.0, cargo, 0.0)
 							drop.set_meta("duration", 15.0)
 							drop.set_meta("team", "Blue")
 							world.arena.hazards.append(drop)
@@ -10950,7 +10968,16 @@ class EscortMode extends GameMode:
 
 					if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
 						var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
-						var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, py, 40.0, "energy_barrier", 0.0)
+						var cargo = "energy_barrier"
+						if typeof(payload) == TYPE_DICTIONARY:
+							if payload.has("cargo_type"):
+								cargo = payload["cargo_type"]
+						else:
+							if payload.has_method("get"):
+								var got = payload.get("cargo_type")
+								if got != null:
+									cargo = got
+						var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, py, 40.0, cargo, 0.0)
 						drop.set_meta("duration", 15.0)
 						var p_team = payload.get("team", "Defenders") if typeof(payload) == TYPE_DICTIONARY else payload.get("team")
 						if p_team == null: p_team = "Defenders"
@@ -37118,14 +37145,32 @@ class TickingPayloadMode extends GameMode:
 						if px >= m and m > 500.0 and red_count > blue_count:
 							crossed.append(m)
 							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
-							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, payload.get("y", 0.0), 40.0, "energy_barrier", 0.0)
+							var cargo = "energy_barrier"
+							if typeof(payload) == TYPE_DICTIONARY:
+								if payload.has("cargo_type"):
+									cargo = payload["cargo_type"]
+							else:
+								if payload.has_method("get"):
+									var got = payload.get("cargo_type")
+									if got != null:
+										cargo = got
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, payload.get("y", 0.0), 40.0, cargo, 0.0)
 							drop.set_meta("duration", 15.0)
 							drop.set_meta("team", "Red")
 							world.arena.hazards.append(drop)
 						elif px <= m and m < 500.0 and blue_count > red_count:
 							crossed.append(m)
 							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
-							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, payload.get("y", 0.0), 40.0, "energy_barrier", 0.0)
+							var cargo = "energy_barrier"
+							if typeof(payload) == TYPE_DICTIONARY:
+								if payload.has("cargo_type"):
+									cargo = payload["cargo_type"]
+							else:
+								if payload.has_method("get"):
+									var got = payload.get("cargo_type")
+									if got != null:
+										cargo = got
+							var drop = load("res://src/arena/procedural_arena.gd").Hazard.new(h_id, px, payload.get("y", 0.0), 40.0, cargo, 0.0)
 							drop.set_meta("duration", 15.0)
 							drop.set_meta("team", "Blue")
 							world.arena.hazards.append(drop)
