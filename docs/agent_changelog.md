@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1715] Orbiting Moons Item — *2026-08-03 13:55:41 UTC*
+
+An item that spawns 3 small moons orbiting the player, dealing damage on touch.
+
+---
+
 ## [idea-1784] Hot Potato Payload — *2026-08-03 13:46:02 UTC*
 
 A single payload that explodes periodically. Teams must push it into the enemy side before the timer runs out and it detonates, dealing massive damage to anyone nearby.
