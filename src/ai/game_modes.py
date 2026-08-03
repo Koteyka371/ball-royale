@@ -1749,7 +1749,12 @@ class GameMode:
                     r_sum = getattr(m, "radius", 10.0) + getattr(b, "radius", 15.0)
                     if dist_sq < r_sum**2:
                         # Damage on touch
-                        world._deal_damage(owner, b, getattr(m, "damage", 15.0))
+                        if hasattr(world, "_deal_damage"):
+                            world._deal_damage(owner, b, getattr(m, "damage", 15.0))
+                        else:
+                            b.hp -= getattr(m, "damage", 15.0)
+                            if b.hp <= 0:
+                                b.alive = False
                         hit = True
                         break # Only hit one target per moon to consume it
 
