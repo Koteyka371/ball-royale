@@ -11,17 +11,17 @@
     "agent-2": {
       "name": "Jules Behaviors",
       "area": "behaviors",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1649",
+      "status": "assigned",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-3": {
       "name": "Jules Tests",
       "area": "tests",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1667",
+      "status": "assigned",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-4": {
@@ -91,9 +91,9 @@
     "agent-11": {
       "name": "Jules Worker 11",
       "area": "innovation",
-      "task_id": null,
-      "status": "idle",
-      "started_at": null,
+      "task_id": "idea-1747",
+      "status": "assigned",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-12": {
@@ -123,17 +123,17 @@
     "agent-15": {
       "name": "Jules Worker 15",
       "area": "meta",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1763",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-16": {
       "name": "Jules Worker 16",
       "area": "innovation",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1764",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-17": {
@@ -155,41 +155,41 @@
     "agent-19": {
       "name": "Jules Worker 19",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1771",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 1
     },
     "agent-20": {
       "name": "Jules Worker 20",
       "area": "content",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1773",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-21": {
       "name": "Jules Worker 21",
       "area": "ai-core",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1774",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-22": {
       "name": "Jules Worker 22",
       "area": "behaviors",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1775",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 1
     },
     "agent-23": {
       "name": "Jules Worker 23",
       "area": "tests",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1778",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-24": {
@@ -203,17 +203,17 @@
     "agent-25": {
       "name": "Jules Worker 25",
       "area": "meta",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1779",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     },
     "agent-26": {
       "name": "Jules Worker 26",
       "area": "innovation",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1783",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 1
     },
     "agent-27": {
@@ -243,9 +243,9 @@
     "agent-30": {
       "name": "Jules Worker 30",
       "area": "meta",
-      "status": "idle",
-      "task_id": null,
-      "started_at": null,
+      "status": "assigned",
+      "task_id": "idea-1784",
+      "started_at": "2026-08-03T04:12:36.614793+00:00",
       "cycles_today": 0
     }
   },
