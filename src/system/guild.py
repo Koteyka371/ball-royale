@@ -303,6 +303,48 @@ class GuildManager:
         self.save()
         return True
 
+    def register_alliance_for_tournament(self, guild_name, tournament_id):
+        cluster = self.get_alliance_cluster(guild_name)
+        if not cluster:
+            return False
+        success = False
+        for g_name in cluster:
+            guild = self.data["guilds"][g_name]
+            if "alliance_tournaments" not in guild:
+                guild["alliance_tournaments"] = []
+            if tournament_id not in guild["alliance_tournaments"]:
+                guild["alliance_tournaments"].append(tournament_id)
+                success = True
+        if success:
+            self.save()
+        return success
+
+    def process_alliance_tournament_results(self, tournament_id, rankings):
+        # rankings: list of dicts [{"guild_name": str, "rank": int}]
+        # guild_name serves as the representative of the alliance
+        for entry in rankings:
+            rep_guild = entry["guild_name"]
+            rank = entry["rank"]
+            cluster = self.get_alliance_cluster(rep_guild)
+            for g_name in cluster:
+                if g_name in self.data["guilds"]:
+                    guild = self.data["guilds"][g_name]
+                    if "alliance_tournaments" in guild and tournament_id in guild["alliance_tournaments"]:
+                        if rank == 1:
+                            guild.setdefault("titles", []).append("Alliance Champion")
+                            guild.setdefault("cosmetic_auras", []).append("Alliance Victor Aura")
+                            guild["prestige_pool"] = guild.get("prestige_pool", 0) + 20000
+                            guild["bank"] = guild.get("bank", 0) + 50000
+                        elif rank <= 3:
+                            guild.setdefault("titles", []).append("Alliance Finalist")
+                            guild["prestige_pool"] = guild.get("prestige_pool", 0) + 10000
+                            guild["bank"] = guild.get("bank", 0) + 20000
+                        elif rank <= 10:
+                            guild["prestige_pool"] = guild.get("prestige_pool", 0) + 2000
+                            guild["bank"] = guild.get("bank", 0) + 5000
+        self.save()
+        return True
+
     def get_guild_buffs(self, guild_name):
         if guild_name in self.data["guilds"]:
             return self.data["guilds"][guild_name]["buffs"]

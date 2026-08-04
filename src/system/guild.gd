@@ -410,6 +410,64 @@ func process_tournament_results(tournament_id: String, rankings: Array) -> bool:
     save_guilds()
     return true
 
+func register_alliance_for_tournament(guild_name: String, tournament_id: String) -> bool:
+    var cluster = get_alliance_cluster(guild_name)
+    if cluster.size() == 0:
+        return false
+    var success = false
+    for g_name in cluster:
+        var guild = data["guilds"][g_name]
+        if not guild.has("alliance_tournaments"):
+            guild["alliance_tournaments"] = []
+        if not guild["alliance_tournaments"].has(tournament_id):
+            guild["alliance_tournaments"].append(tournament_id)
+            success = true
+    if success:
+        save_guilds()
+    return success
+
+func process_alliance_tournament_results(tournament_id: String, rankings: Array) -> bool:
+    for entry in rankings:
+        var rep_guild = entry["guild_name"]
+        var rank = entry["rank"]
+        var cluster = get_alliance_cluster(rep_guild)
+        for g_name in cluster:
+            if data["guilds"].has(g_name):
+                var guild = data["guilds"][g_name]
+                if guild.has("alliance_tournaments") and guild["alliance_tournaments"].has(tournament_id):
+                    if rank == 1:
+                        if not guild.has("titles"):
+                            guild["titles"] = []
+                        guild["titles"].append("Alliance Champion")
+                        if not guild.has("cosmetic_auras"):
+                            guild["cosmetic_auras"] = []
+                        guild["cosmetic_auras"].append("Alliance Victor Aura")
+                        if not guild.has("prestige_pool"):
+                            guild["prestige_pool"] = 0
+                        guild["prestige_pool"] += 20000
+                        if not guild.has("bank"):
+                            guild["bank"] = 0
+                        guild["bank"] += 50000
+                    elif rank <= 3:
+                        if not guild.has("titles"):
+                            guild["titles"] = []
+                        guild["titles"].append("Alliance Finalist")
+                        if not guild.has("prestige_pool"):
+                            guild["prestige_pool"] = 0
+                        guild["prestige_pool"] += 10000
+                        if not guild.has("bank"):
+                            guild["bank"] = 0
+                        guild["bank"] += 20000
+                    elif rank <= 10:
+                        if not guild.has("prestige_pool"):
+                            guild["prestige_pool"] = 0
+                        guild["prestige_pool"] += 2000
+                        if not guild.has("bank"):
+                            guild["bank"] = 0
+                        guild["bank"] += 5000
+    save_guilds()
+    return true
+
 func get_guild_buffs(guild_name: String) -> Dictionary:
     if data["guilds"].has(guild_name):
         return data["guilds"][guild_name]["buffs"]

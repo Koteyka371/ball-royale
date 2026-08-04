@@ -547,3 +547,49 @@ def test_boss_mutations(temp_guild_file):
     assert gm.get_boss_mutations(1) == []
     assert gm.get_boss_mutations(2) == [{"type": "damage_reflect", "value": 0.1}]
     assert gm.get_boss_mutations(3) == [{"type": "damage_reflect", "value": 0.1}, {"type": "periodic_minions", "interval": 10}]
+
+def test_alliance_tournament(temp_guild_file):
+    gm = GuildManager(str(temp_guild_file))
+    gm.create_guild("AlphaGuild", "Player1")
+    gm.create_guild("BetaGuild", "Player2")
+    gm.create_guild("GammaGuild", "Player3")
+
+    # Form an alliance
+    gm.form_alliance("AlphaGuild", "BetaGuild")
+
+    # Register the alliance for a tournament via the representative guild
+    assert gm.register_alliance_for_tournament("AlphaGuild", "AllianceTourney_1") is True
+
+    # Check that both allied guilds are registered
+    assert "AllianceTourney_1" in gm.data["guilds"]["AlphaGuild"]["alliance_tournaments"]
+    assert "AllianceTourney_1" in gm.data["guilds"]["BetaGuild"]["alliance_tournaments"]
+
+    # The non-allied guild shouldn't be registered
+    assert "alliance_tournaments" not in gm.data["guilds"]["GammaGuild"]
+
+    # Process results with AlphaGuild ranking 1st (as representative)
+    gm.process_alliance_tournament_results("AllianceTourney_1", [{"guild_name": "AlphaGuild", "rank": 1}])
+
+    # Check shared rewards for both allied guilds
+    alpha = gm.data["guilds"]["AlphaGuild"]
+    beta = gm.data["guilds"]["BetaGuild"]
+
+    assert "Alliance Champion" in alpha.get("titles", [])
+    assert "Alliance Champion" in beta.get("titles", [])
+    assert "Alliance Victor Aura" in alpha.get("cosmetic_auras", [])
+    assert "Alliance Victor Aura" in beta.get("cosmetic_auras", [])
+    assert alpha.get("prestige_pool", 0) == 20000
+    assert beta.get("prestige_pool", 0) == 20000
+    assert alpha.get("bank", 0) == 50000
+    assert beta.get("bank", 0) == 50000
+
+    # Process a different tournament where they rank 3rd
+    gm.register_alliance_for_tournament("BetaGuild", "AllianceTourney_2")
+    gm.process_alliance_tournament_results("AllianceTourney_2", [{"guild_name": "BetaGuild", "rank": 3}])
+
+    assert "Alliance Finalist" in alpha.get("titles", [])
+    assert "Alliance Finalist" in beta.get("titles", [])
+    assert alpha.get("prestige_pool", 0) == 30000 # 20000 + 10000
+    assert beta.get("prestige_pool", 0) == 30000
+    assert alpha.get("bank", 0) == 70000 # 50000 + 20000
+    assert beta.get("bank", 0) == 70000
