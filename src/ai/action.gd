@@ -31914,7 +31914,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -42844,6 +42844,84 @@ func _use_skill():
 
 
 
+        elif skill_name == "instant_swap":
+            var valid_targets = []
+
+            # Add enemies
+            if "balls" in self.world:
+                for e in self.world.balls:
+                    var e_alive = e.get("alive", true) if typeof(e) == TYPE_DICTIONARY else getattr(e, "alive", true)
+                    var e_id = e.get("id", null) if typeof(e) == TYPE_DICTIONARY else getattr(e, "id", null)
+                    var e_team = e.get("team", "") if typeof(e) == TYPE_DICTIONARY else getattr(e, "team", "")
+                    var b_team = self.ball.get("team", "") if typeof(self.ball) == TYPE_DICTIONARY else getattr(self.ball, "team", "")
+                    var e_type = e.get("ball_type", "") if typeof(e) == TYPE_DICTIONARY else getattr(e, "ball_type", "")
+                    var e_intangible = e.get("intangible", false) if typeof(e) == TYPE_DICTIONARY else getattr(e, "intangible", false)
+
+                    if e_id != self.ball.id and e_alive and e_team != b_team and e_type != "spectator" and not e_intangible:
+                        valid_targets.append(e)
+
+            # Add hazards
+            if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                for h in self.world.arena.hazards:
+                    valid_targets.append(h)
+
+            if valid_targets.size() > 0:
+                var target = valid_targets[0]
+                var min_dist_sq = INF
+                for t in valid_targets:
+                    var t_x = t.get("x", 0.0) if typeof(t) == TYPE_DICTIONARY else getattr(t, "x", 0.0)
+                    var t_y = t.get("y", 0.0) if typeof(t) == TYPE_DICTIONARY else getattr(t, "y", 0.0)
+                    var dist_sq = (t_x - self.ball.x) * (t_x - self.ball.x) + (t_y - self.ball.y) * (t_y - self.ball.y)
+                    if dist_sq < min_dist_sq:
+                        min_dist_sq = dist_sq
+                        target = t
+
+                var target_x = target.get("x", 0.0) if typeof(target) == TYPE_DICTIONARY else getattr(target, "x", 0.0)
+                var target_y = target.get("y", 0.0) if typeof(target) == TYPE_DICTIONARY else getattr(target, "y", 0.0)
+
+                var temp_x = self.ball.x
+                var temp_y = self.ball.y
+
+                self.ball.x = target_x
+                self.ball.y = target_y
+
+                if typeof(target) == TYPE_DICTIONARY:
+                    target["x"] = temp_x
+                    target["y"] = temp_y
+                else:
+                    if target.has_method("set_x"):
+                        target.set_x(temp_x)
+                        target.set_y(temp_y)
+                    else:
+                        target.x = temp_x
+                        target.y = temp_y
+
+                # Activate hazard if it's one
+                if "arena" in self.world and typeof(self.world.arena) == TYPE_OBJECT and "hazards" in self.world.arena:
+                    if target in self.world.arena.hazards:
+                        if typeof(target) == TYPE_DICTIONARY:
+                            target["active"] = true
+                            var d = target.get("duration", 0.0)
+                            if d < 2.0:
+                                target["duration"] = max(d, 3.0)
+                        else:
+                            if target.has_method("set_active"):
+                                target.set_active(true)
+                            else:
+                                target.active = true
+
+                            var d = getattr(target, "duration", 0.0)
+                            if d < 2.0:
+                                if target.has_method("set_duration"):
+                                    target.set_duration(max(d, 3.0))
+                                else:
+                                    target.duration = max(d, 3.0)
+
+                if "events" in self.world:
+                    self.world.events.append({"type": "instant_swap", "data": {"x1": temp_x, "y1": temp_y, "x2": self.ball.x, "y2": self.ball.y}})
+
+                var cd = getattr(self.ball, "SKILL_COOLDOWN", 8.0) if typeof(self.ball) == TYPE_OBJECT else self.ball.get("SKILL_COOLDOWN", 8.0)
+                self.ball.skill_timer = cd
         elif skill_name == "throw_position_swap_grenade":
             if "hazards" in self.world.arena:
                 var hazards = self.world.arena.hazards

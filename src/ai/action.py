@@ -20299,6 +20299,42 @@ class Action:
 
 
 
+            elif skill_name == "instant_swap":
+                import math
+
+                valid_targets = []
+
+                # Add enemies using robust finding logic
+                if hasattr(self.world, "balls"):
+                    for e in self.world.balls:
+                        if e.id != self.ball.id and getattr(e, "alive", True) and getattr(e, "team", "") != getattr(self.ball, "team", "") and getattr(e, "ball_type", "") != "spectator" and not getattr(e, "intangible", False):
+                            valid_targets.append(e)
+
+                # Add hazards
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        valid_targets.append(h)
+
+                if valid_targets:
+                    target = min(valid_targets, key=lambda t: (t.x - self.ball.x)**2 + (t.y - self.ball.y)**2)
+
+                    # Swap positions
+                    temp_x, temp_y = self.ball.x, self.ball.y
+                    self.ball.x, self.ball.y = target.x, target.y
+                    target.x, target.y = temp_x, temp_y
+
+                    # If target is a hazard, activate it
+                    if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                        if target in self.world.arena.hazards:
+                            setattr(target, 'active', True)
+                            if getattr(target, 'duration', 0.0) < 2.0:
+                                setattr(target, 'duration', max(getattr(target, 'duration', 0.0), 3.0))
+
+                    # Visual event
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({"type": "instant_swap", "data": {"x1": temp_x, "y1": temp_y, "x2": self.ball.x, "y2": self.ball.y}})
+
+                    self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 8.0)
             elif skill_name == "throw_position_swap_grenade":
                 if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                     enemies = self._get_enemies()
