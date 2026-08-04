@@ -69,6 +69,38 @@ class GameMode:
                 is_dict = isinstance(hazard, dict)
                 h_kind = hazard.get("kind", "") if is_dict else getattr(hazard, "kind", "")
 
+
+                if h_kind == "magnetic_field":
+                    m_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
+                    m_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)
+                    m_radius = hazard.get("radius", 300.0) if is_dict else getattr(hazard, "radius", 300.0)
+
+                    for b in balls:
+                        is_alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+                        if not is_alive: continue
+                        b_type = b.get("ball_type", "") if isinstance(b, dict) else getattr(b, "ball_type", "")
+                        if b_type == "spectator": continue
+
+                        b_x = b.get("x", 0.0) if isinstance(b, dict) else getattr(b, "x", 0.0)
+                        b_y = b.get("y", 0.0) if isinstance(b, dict) else getattr(b, "y", 0.0)
+
+                        import math
+                        dx = m_x - b_x
+                        dy = m_y - b_y
+                        dist = math.hypot(dx, dy)
+                        if 0 < dist < m_radius:
+                            pull_strength = 200.0 * (1.0 - dist / m_radius)
+                            move_dist = min(pull_strength * delta, dist)
+                            move_x = (dx / dist) * move_dist
+                            move_y = (dy / dist) * move_dist
+
+                            if isinstance(b, dict):
+                                b["x"] = b_x + move_x
+                                b["y"] = b_y + move_y
+                            else:
+                                b.x = b_x + move_x
+                                b.y = b_y + move_y
+
                 if h_kind == "kinetic_reflector":
                     m_x = hazard.get("x", 0.0) if is_dict else getattr(hazard, "x", 0.0)
                     m_y = hazard.get("y", 0.0) if is_dict else getattr(hazard, "y", 0.0)

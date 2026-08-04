@@ -11637,6 +11637,24 @@ func execute(strategy: String, delta: float):
 					elif "inventory" in self.ball: self.ball.inventory = inv
 
 
+
+		if inv.has("deployable_magnetic_field"):
+			if world != null and "arena" in world and "hazards" in world.arena:
+				var arena = world.arena
+				var m_id = arena.hazards.size() + randi() % 10000 + 10000
+				var mf = null
+				if load("res://src/arena/procedural_arena.gd") != null:
+					mf = load("res://src/arena/procedural_arena.gd").Hazard.new(m_id, self.ball.x, self.ball.y, 300.0, "magnetic_field", 0.0)
+					if mf != null:
+						if "duration" in mf: mf.duration = 10.0
+						elif mf.has_method("set"): mf.set("duration", 10.0)
+						var b_id = null
+						if "id" in self.ball: b_id = self.ball.id
+						if "owner_id" in mf: mf.owner_id = b_id
+						elif mf.has_method("set"): mf.set("owner_id", b_id)
+						arena.hazards.append(mf)
+					inv.erase("deployable_magnetic_field")
+
 		if inv.has("deployable_gravity_well"):
 			if world != null and "arena" in world and "hazards" in world.arena:
 				var arena = world.arena

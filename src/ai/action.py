@@ -4847,6 +4847,22 @@ class Action:
                             pass
 
 
+
+        if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_magnetic_field" in self.ball.inventory:
+            if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                except ImportError:
+                    pass
+                else:
+                    import random
+                    m_id = len(self.world.arena.hazards) + random.randint(10000, 99999)
+                    mf = Hazard(m_id, self.ball.x, self.ball.y, 300.0, "magnetic_field", 0.0)
+                    setattr(mf, 'duration', 10.0)
+                    setattr(mf, 'owner_id', getattr(self.ball, 'id', None))
+                    self.world.arena.hazards.append(mf)
+                    self.ball.inventory.remove("deployable_magnetic_field")
+
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory") and "deployable_gravity_well" in self.ball.inventory:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 try:
