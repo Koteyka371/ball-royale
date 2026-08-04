@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1773] Quantum Swap Ability — *2026-08-04 04:17:14 UTC*
+
+An active ability that allows a ball to instantly swap positions with a targeted enemy or hazard. When swapping with a hazard, the hazard is activated at its new location, potentially turning a safe area into a death trap for nearby opponents.
+
+---
+
 ## [idea-1797] Alliance Tournaments — *2026-08-04 00:53:15 UTC*
 
 Host special alliance tournaments where partnered guilds can form combined teams to compete against other alliances. Winning these tournaments would yield unique cosmetics or high resource rewards shared among all allied guilds.
