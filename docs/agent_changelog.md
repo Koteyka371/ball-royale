@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1795] Magnetic Push/Pull Mechanics — *2026-08-04 10:13:52 UTC*
+
+Introduce magnetic fields that can alter ball movement trajectories and pull payload toward the objective when properly placed.
+
+---
+
 ## [idea-1780] Mirage Decoy Generator — *2026-08-04 09:08:00 UTC*
 
 A deployable item that creates 3 distinct hologram decoys that mimic the player's movement patterns for 10 seconds. Enemies hitting a decoy get slightly slowed and take minor psychic damage.
