@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1791] Shrinking Micro Safe Zones — *2026-08-04 07:11:31 UTC*
+
+Similar to decreasing safe zones, but instead of the number of zones decreasing, the size of each zone decreases until they disappear completely, encouraging tight close-combat scenarios.
+
+---
+
 ## [idea-1779] Minor Bounty Degradation — *2026-08-04 06:57:45 UTC*
 
 Minor bounties decay over time (e.g. after 30 seconds), turning into temporary speed or damage debuffs rather than immediately expiring to prolong the tension and encourage the minor bounty to play aggressively to cleanse it.
