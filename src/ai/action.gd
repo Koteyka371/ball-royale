@@ -3564,6 +3564,77 @@ func _init(ball_ref, world_ref):
 
 func execute(strategy: String, delta: float):
 
+	# Snowball growth on ice patches
+	var is_snowball = false
+	if typeof(ball) == TYPE_DICTIONARY:
+		is_snowball = ball.get("ball_type", "") == "snowball" or ball.get("skin", "") == "snowball"
+	else:
+		is_snowball = ("ball_type" in ball and ball.ball_type == "snowball") or ("skin" in ball and ball.skin == "snowball")
+
+	if is_snowball and "arena" in world and "hazards" in world.arena:
+		var on_ice = false
+		for hazard in world.arena.hazards:
+			var h_kind = ""
+			var h_active = true
+			var h_flare = false
+			var h_x = 0.0
+			var h_y = 0.0
+			var h_rad = 50.0
+
+			if typeof(hazard) == TYPE_DICTIONARY:
+				h_kind = hazard.get("kind", "")
+				h_active = hazard.get("active", true)
+				h_flare = hazard.get("is_disabled_by_flare", false)
+				h_x = hazard.get("x", 0.0)
+				h_y = hazard.get("y", 0.0)
+				h_rad = hazard.get("radius", 50.0)
+			else:
+				if "kind" in hazard: h_kind = hazard.kind
+				if "active" in hazard: h_active = hazard.active
+				if "is_disabled_by_flare" in hazard: h_flare = hazard.is_disabled_by_flare
+				if "x" in hazard: h_x = hazard.x
+				if "y" in hazard: h_y = hazard.y
+				if "radius" in hazard: h_rad = hazard.radius
+
+			if (h_kind == "ice_patch" or h_kind == "ice_patches") and h_active and not h_flare:
+				var ball_x = ball.get("x", 0.0) if typeof(ball) == TYPE_DICTIONARY else ball.x
+				var ball_y = ball.get("y", 0.0) if typeof(ball) == TYPE_DICTIONARY else ball.y
+				var ball_rad = ball.get("radius", 10.0) if typeof(ball) == TYPE_DICTIONARY else ball.radius
+
+				var dx = ball_x - h_x
+				var dy = ball_y - h_y
+				var dist_sq = dx * dx + dy * dy
+				if dist_sq < (h_rad + ball_rad) * (h_rad + ball_rad):
+					on_ice = true
+					break
+
+		if on_ice:
+			var vx = ball.get("vx", 0.0) if typeof(ball) == TYPE_DICTIONARY else ball.vx
+			var vy = ball.get("vy", 0.0) if typeof(ball) == TYPE_DICTIONARY else ball.vy
+			var speed_sq = vx * vx + vy * vy
+
+			if speed_sq > 10.0:
+				var speed = sqrt(speed_sq)
+
+				var base_radius = ball.get("base_radius", 10.0) if typeof(ball) == TYPE_DICTIONARY else (ball.base_radius if "base_radius" in ball else 10.0)
+				var base_damage = ball.get("base_damage", 10.0) if typeof(ball) == TYPE_DICTIONARY else (ball.base_damage if "base_damage" in ball else 10.0)
+				var current_radius = ball.get("radius", 10.0) if typeof(ball) == TYPE_DICTIONARY else ball.radius
+				var current_damage = ball.get("damage", 10.0) if typeof(ball) == TYPE_DICTIONARY else ball.damage
+
+				var growth_rate = (speed / 100.0) * delta * 2.0
+				var max_radius = base_radius * 3.0
+				var max_damage = base_damage * 3.0
+
+				var new_radius = min(max_radius, current_radius + growth_rate)
+				var new_damage = min(max_damage, current_damage + growth_rate * (base_damage / base_radius))
+
+				if typeof(ball) == TYPE_DICTIONARY:
+					ball["radius"] = new_radius
+					ball["damage"] = new_damage
+				else:
+					ball.radius = new_radius
+					ball.damage = new_damage
+
 	var is_mirror_clone = false
 	if typeof(ball) == TYPE_OBJECT and "is_mirror_clone" in ball: is_mirror_clone = ball.is_mirror_clone
 	elif typeof(ball) == TYPE_DICTIONARY and ball.has("is_mirror_clone"): is_mirror_clone = ball.is_mirror_clone

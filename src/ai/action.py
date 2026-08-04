@@ -1937,6 +1937,45 @@ class Action:
 
     def execute(self, strategy: str, delta: float) -> None:
 
+        # Snowball growth on ice patches
+        is_snowball = getattr(self.ball, "ball_type", "") == "snowball" or getattr(self.ball, "skin", "") == "snowball"
+        if is_snowball and hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+            on_ice = False
+            for hazard in self.world.arena.hazards:
+                if getattr(hazard, "kind", "") in ["ice_patch", "ice_patches"] and getattr(hazard, "active", True) and not getattr(hazard, "is_disabled_by_flare", False):
+                    dist_sq = (self.ball.x - getattr(hazard, "x", 0.0))**2 + (self.ball.y - getattr(hazard, "y", 0.0))**2
+                    hr = getattr(hazard, "radius", 50.0)
+                    if dist_sq < (hr + getattr(self.ball, "radius", 10.0))**2:
+                        on_ice = True
+                        break
+
+            if on_ice:
+                # Calculate movement speed
+                vx = getattr(self.ball, "vx", 0.0)
+                vy = getattr(self.ball, "vy", 0.0)
+                speed_sq = vx*vx + vy*vy
+
+                if speed_sq > 10.0:  # Only grow if moving
+                    import math
+                    speed = math.sqrt(speed_sq)
+
+                    # Base values to track max growth
+                    base_radius = getattr(self.ball, "base_radius", 10.0)
+                    base_damage = getattr(self.ball, "base_damage", 10.0)
+
+                    # Increase radius and damage based on speed and time
+                    growth_rate = (speed / 100.0) * delta * 2.0
+
+                    # Cap growth to 3x base values
+                    max_radius = base_radius * 3.0
+                    max_damage = base_damage * 3.0
+
+                    new_radius = min(max_radius, getattr(self.ball, "radius", 10.0) + growth_rate)
+                    new_damage = min(max_damage, getattr(self.ball, "damage", 10.0) + growth_rate * (base_damage / base_radius))
+
+                    self.ball.radius = new_radius
+                    self.ball.damage = new_damage
+
         if getattr(self.ball, "skill", "") == "hazard_surfing" and getattr(self.ball, "skill_timer", 0.0) <= 0.0:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 surfing = False
