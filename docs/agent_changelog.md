@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1779] Minor Bounty Degradation — *2026-08-04 06:57:45 UTC*
+
+Minor bounties decay over time (e.g. after 30 seconds), turning into temporary speed or damage debuffs rather than immediately expiring to prolong the tension and encourage the minor bounty to play aggressively to cleanse it.
+
+---
+
 ## [idea-1773] Quantum Swap Ability — *2026-08-04 04:17:14 UTC*
 
 An active ability that allows a ball to instantly swap positions with a targeted enemy or hazard. When swapping with a hazard, the hazard is activated at its new location, potentially turning a safe area into a death trap for nearby opponents.
