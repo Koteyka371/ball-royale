@@ -7799,6 +7799,17 @@ class Action:
                                     self.world.events.append({"type": "visual_effect", "data": {"type": "decoy_explosion", "x": b.x, "y": b.y, "radius": radius}})
 
                             decoy_element = getattr(b, "element", None)
+
+                            # Extreme weather decoy interactions
+                            if hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "current_weather"):
+                                weather = self.world.game_mode.current_weather
+                                if weather == "blizzard" or weather == "ice":
+                                    decoy_element = "ice"
+                                elif weather == "heatwave":
+                                    decoy_element = "fire"
+                                elif weather == "hurricane" or weather == "magnetic_storm":
+                                    decoy_element = "lightning"
+
                             if decoy_element:
                                 radius *= 1.25
 
@@ -8032,6 +8043,45 @@ class Action:
                                         other.y -= (dy/dist) * pull_strength
 
                             # Spawn poison cloud (if applicable based on some logic) or scorched earth for resonance
+                            if hasattr(self.world, "game_mode") and hasattr(self.world.game_mode, "current_weather"):
+                                weather = self.world.game_mode.current_weather
+                                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                    if weather == "acid_rain":
+                                        try:
+                                            from arena.procedural_arena import Hazard
+                                            p_id = getattr(self.world, "next_id", 9000 + len(self.world.arena.hazards))
+                                            if hasattr(self.world, "next_id"): self.world.next_id += 1
+                                            puddle = Hazard(id=p_id, x=b.x, y=b.y, radius=100.0, kind="neutralizing_puddle", damage=0.0)
+                                            setattr(puddle, "duration", 10.0)
+                                            self.world.arena.hazards.append(puddle)
+                                        except Exception:
+                                            class MockHz: pass
+                                            puddle = MockHz()
+                                            puddle.id = getattr(self.world, "next_id", 9000)
+                                            puddle.x = b.x
+                                            puddle.y = b.y
+                                            puddle.radius = 100.0
+                                            puddle.kind = "neutralizing_puddle"
+                                            puddle.duration = 10.0
+                                            self.world.arena.hazards.append(puddle)
+                                    elif weather == "blizzard" or weather == "ice":
+                                        try:
+                                            from arena.procedural_arena import Hazard
+                                            i_id = getattr(self.world, "next_id", 9000 + len(self.world.arena.hazards))
+                                            if hasattr(self.world, "next_id"): self.world.next_id += 1
+                                            ice = Hazard(id=i_id, x=b.x, y=b.y, radius=100.0, kind="ice_patch", damage=0.0)
+                                            setattr(ice, "duration", 10.0)
+                                            self.world.arena.hazards.append(ice)
+                                        except Exception:
+                                            class MockHz: pass
+                                            ice = MockHz()
+                                            ice.id = getattr(self.world, "next_id", 9000)
+                                            ice.x = b.x
+                                            ice.y = b.y
+                                            ice.radius = 100.0
+                                            ice.kind = "ice_patch"
+                                            ice.duration = 10.0
+                                            self.world.arena.hazards.append(ice)
                             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                 if resonance:
                                     import random
