@@ -33709,6 +33709,113 @@ class ArtifactUpgraderMode extends GameMode:
 									b["speed"] = bspd
 
 
+
+class AllianceTournamentMode extends GameMode:
+	var alliances = {}
+	var alliance_clans = {}
+	var scores = {}
+	var current_round = 1
+	var max_wins_needed = 2
+	var tournament_over = false
+	var winner_alliance = null
+	var survival_points = {"AllianceA": 0.0, "AllianceB": 0.0}
+	var elimination_points = {"AllianceA": 0, "AllianceB": 0}
+	var prev_alive = {}
+
+	func _init():
+		name = "alliance_tournament"
+		desc = "Multi-round alliance tournament between combined teams"
+
+	func setup(world_ref, balls_ref: Array):
+		super.setup(world_ref, balls_ref)
+		alliances = {}
+		scores = {"AllianceA": 0, "AllianceB": 0}
+		current_round = 1
+		tournament_over = false
+		winner_alliance = null
+		survival_points = {"AllianceA": 0.0, "AllianceB": 0.0}
+		elimination_points = {"AllianceA": 0, "AllianceB": 0}
+		prev_alive = {}
+
+		alliance_clans = {
+			"AllianceA": ["Guild1", "Guild2"],
+			"AllianceB": ["Guild3", "Guild4"]
+		}
+
+		if balls.size() >= 2:
+			var mid = balls.size() / 2
+			var g1 = []
+			var g2 = []
+			for i in range(mid):
+				g1.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+			for i in range(mid, balls.size()):
+				g2.append(balls[i].get_meta("id") if balls[i].has_method("get_meta") and balls[i].has_meta("id") else balls[i].id)
+			alliances["AllianceA"] = g1
+			alliances["AllianceB"] = g2
+
+	func _tick(delta: float):
+		super._tick(delta)
+		if tournament_over:
+			return
+
+		var alive_counts = {"AllianceA": 0, "AllianceB": 0}
+		for alliance in alliances.keys():
+			for ball in world.balls:
+				var bid = ball.get_meta("id") if ball.has_method("get_meta") and ball.has_meta("id") else ball.id
+				if alliances[alliance].has(bid):
+					var is_alive = ball.get_meta("alive") if ball.has_method("get_meta") and ball.has_meta("alive") else ball.alive
+					var was_alive = true
+					if prev_alive.has(bid):
+						was_alive = prev_alive[bid]
+
+					if is_alive:
+						alive_counts[alliance] += 1
+						survival_points[alliance] += delta
+					elif was_alive and not is_alive:
+						var opp_alliance = "AllianceB" if alliance == "AllianceA" else "AllianceA"
+						elimination_points[opp_alliance] += 1
+
+					prev_alive[bid] = is_alive
+
+		var round_winner = null
+		if alive_counts["AllianceA"] > 0 and alive_counts["AllianceB"] == 0:
+			round_winner = "AllianceA"
+		elif alive_counts["AllianceB"] > 0 and alive_counts["AllianceA"] == 0:
+			round_winner = "AllianceB"
+		elif alive_counts["AllianceA"] == 0 and alive_counts["AllianceB"] == 0:
+			round_winner = "Draw"
+
+		if round_winner != null:
+			if round_winner != "Draw":
+				scores[round_winner] += 1
+
+			if scores["AllianceA"] >= max_wins_needed:
+				_end_tournament("AllianceA")
+			elif scores["AllianceB"] >= max_wins_needed:
+				_end_tournament("AllianceB")
+			else:
+				current_round += 1
+				_reset_round()
+
+	func _reset_round():
+		for ball in world.balls:
+			if ball.has_method("set_meta"):
+				ball.set_meta("alive", true)
+				var max_hp = ball.get_meta("max_hp") if ball.has_meta("max_hp") else 100.0
+				ball.set_meta("hp", max_hp)
+			else:
+				ball.alive = true
+				var max_hp = 100.0
+				if "max_hp" in ball:
+					max_hp = ball.max_hp
+				ball.hp = max_hp
+
+	func _end_tournament(winner_alliance):
+		tournament_over = true
+		self.winner_alliance = winner_alliance
+		# ClanManager logic not typically executed directly in GDScript AI tick in this project,
+		# but placeholder left for completeness or signal emission if needed.
+
 class ClanTournamentMode extends GameMode:
 	var clans = {}
 	var scores = {}
@@ -58368,6 +58475,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"weapon_collection": WeaponCollectionMode.new(),
 	"blacksmith_boss": BlacksmithBossMode.new(),
 	"soul_link": SoulLinkMode.new(),
+	"alliance_tournament": AllianceTournamentMode.new(),
 	"clan_tournament": ClanTournamentMode.new(),
 	"tag_team": TagTeamMode.new(),
 	"rubber_band": RubberBandMode.new(),

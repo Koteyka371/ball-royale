@@ -36528,6 +36528,117 @@ class SoulLinkMode(GameMode):
                 for eff in self.status_effects:
                     setattr(state, eff, getattr(b, eff, 0.0))
 
+
+class AllianceTournamentMode(GameMode):
+    """Two alliances (groups of partnered guilds) face off in a multi-round tournament. Winning yields unique cosmetics and high resource rewards shared among all allied guilds."""
+    def __init__(self):
+        super().__init__()
+        self.name = "alliance_tournament"
+        self.desc = "Multi-round alliance tournament between combined teams"
+        self.alliances = {}
+        self.alliance_clans = {}
+        self.scores = {}
+        self.current_round = 1
+        self.max_wins_needed = 2  # Best of 3
+        self.tournament_over = False
+        self.winner_alliance = None
+        self.survival_points = {"AllianceA": 0.0, "AllianceB": 0.0}
+        self.elimination_points = {"AllianceA": 0, "AllianceB": 0}
+        self.prev_alive = {}
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.world = world
+        self.alliances = {}
+        self.scores = {"AllianceA": 0, "AllianceB": 0}
+        self.current_round = 1
+        self.tournament_over = False
+        self.winner_alliance = None
+        self.survival_points = {"AllianceA": 0.0, "AllianceB": 0.0}
+        self.elimination_points = {"AllianceA": 0, "AllianceB": 0}
+        self.prev_alive = {}
+
+        self.alliance_clans = {
+            "AllianceA": ["Guild1", "Guild2"],
+            "AllianceB": ["Guild3", "Guild4"]
+        }
+
+        if len(balls) >= 2:
+            mid = len(balls) // 2
+            alliance1_balls = balls[:mid]
+            alliance2_balls = balls[mid:]
+            self.alliances["AllianceA"] = [b.id for b in alliance1_balls]
+            self.alliances["AllianceB"] = [b.id for b in alliance2_balls]
+
+    def _tick(self, delta):
+        if self.tournament_over:
+            return
+
+        alive_counts = {"AllianceA": 0, "AllianceB": 0}
+        for alliance, members in self.alliances.items():
+            for ball in self.world.balls:
+                if ball.id in members:
+                    is_alive = getattr(ball, "alive", False)
+                    was_alive = self.prev_alive.get(ball.id, True)
+
+                    if is_alive:
+                        alive_counts[alliance] += 1
+                        self.survival_points[alliance] += delta
+                    elif was_alive and not is_alive:
+                        # Ball died this tick
+                        opp_alliance = "AllianceB" if alliance == "AllianceA" else "AllianceA"
+                        self.elimination_points[opp_alliance] += 1
+
+                    self.prev_alive[ball.id] = is_alive
+
+        # Check if a round has ended
+        round_winner = None
+        if alive_counts["AllianceA"] > 0 and alive_counts["AllianceB"] == 0:
+            round_winner = "AllianceA"
+        elif alive_counts["AllianceB"] > 0 and alive_counts["AllianceA"] == 0:
+            round_winner = "AllianceB"
+        elif alive_counts["AllianceA"] == 0 and alive_counts["AllianceB"] == 0:
+            round_winner = "Draw"
+
+        if round_winner:
+            if round_winner != "Draw":
+                self.scores[round_winner] += 1
+
+            if self.scores.get("AllianceA", 0) >= self.max_wins_needed:
+                self._end_tournament("AllianceA")
+            elif self.scores.get("AllianceB", 0) >= self.max_wins_needed:
+                self._end_tournament("AllianceB")
+            else:
+                self.current_round += 1
+                self._reset_round()
+
+    def _reset_round(self):
+        for ball in self.world.balls:
+            ball.alive = True
+            ball.hp = getattr(ball, "max_hp", 100.0)
+
+    def _end_tournament(self, winner_alliance):
+        self.tournament_over = True
+        self.winner_alliance = winner_alliance
+        try:
+            from system.clan import ClanManager
+            cm = ClanManager()
+            total_points = 1000 + int(self.survival_points[winner_alliance] * 0.2) + (self.elimination_points[winner_alliance] * 100)
+            winning_clans = self.alliance_clans.get(winner_alliance, [])
+            for clan in winning_clans:
+                if clan not in cm.data["clans"]:
+                    cm.create_clan(clan, "system")
+                cm.add_clan_points(clan, total_points)
+                cm.unlock_cosmetic(clan, "Alliance_Champion_Aura")
+                cm.unlock_cosmetic(clan, "Alliance_Victory_Banner")
+                if "stash" not in cm.data["clans"][clan]:
+                    cm.data["clans"][clan]["stash"] = {}
+                cm.data["clans"][clan]["stash"]["alliance_tokens"] = cm.data["clans"][clan]["stash"].get("alliance_tokens", 0) + 50
+            cm.save()
+        except Exception:
+            pass
+
+
 class ClanTournamentMode(GameMode):
     """Two clans face off against each other in a multi-round tournament. Winning yields special clan cosmetics and bonus clan points."""
     def __init__(self):
@@ -36748,6 +36859,7 @@ class ResonanceChainMode(GameMode):
 GAME_MODES["resonance_chain"] = ResonanceChainMode()
 
 
+GAME_MODES["alliance_tournament"] = AllianceTournamentMode()
 GAME_MODES["clan_tournament"] = ClanTournamentMode()
 GAME_MODES["reversed_input"] = ReversedInputMode()
 GAME_MODES["scrambler_drones"] = ScramblerDroneMode()
