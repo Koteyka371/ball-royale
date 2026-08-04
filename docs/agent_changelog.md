@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1678] Snowball Fight Mode — *2026-08-04 12:13:46 UTC*
+
+Balls turn into snowballs that grow as they move across ice patches and deal damage based on size.
+
+---
+
 ## [idea-1750] Decoy Weather Transmitters — *2026-08-04 10:13:56 UTC*
 
 An item that allows a player to place a fake weather station. When an enemy tries to capture it, it instead emits an EMP or a localized debuff storm.
