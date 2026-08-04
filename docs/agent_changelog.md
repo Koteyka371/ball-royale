@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1749] Quantum Weather Anomalies — *2026-08-04 18:06:42 UTC*
+
+A rare hazard where weather conditions in a small sector flip between extreme opposites (e.g., heatwave to blizzard) every few seconds, requiring rapid adaptation to moving and fighting.
+
+---
+
 ## [idea-1796] Guild Mercenaries — *2026-08-04 18:01:40 UTC*
 
 Allow guilds to hire AI-controlled mercenary balls to defend their territories or attack rival guilds during wars. These mercenaries could have distinct traits or abilities based on the level of the guild.
