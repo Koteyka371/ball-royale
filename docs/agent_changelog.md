@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1786] Payload Overcharge Events — *2026-08-04 14:31:26 UTC*
+
+Occasionally, a neutral overcharge battery spawns on the map. If a player brings it to their team's payload, it unlocks a massive temporary boost (e.g., global healing aura, immense speed, or instant destruction of enemy structures) for 15 seconds, creating high-priority secondary objectives.
+
+---
+
 ## [idea-1678] Snowball Fight Mode — *2026-08-04 12:13:46 UTC*
 
 Balls turn into snowballs that grow as they move across ice patches and deal damage based on size.
