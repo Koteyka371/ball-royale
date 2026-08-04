@@ -5026,7 +5026,7 @@ func execute(strategy: String, delta: float):
 						kind = hazard.get_meta("kind")
 					elif "kind" in hazard:
 						kind = hazard.kind
-				if kind in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper"]:
+				if kind in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper"]:
 					var hx = 0.0
 					var hy = 0.0
 					if typeof(hazard) == TYPE_DICTIONARY:
@@ -24362,7 +24362,7 @@ func execute(strategy: String, delta: float):
                                         elif typeof(events) == TYPE_ARRAY:
                                             events.append({'type': 'visual_effect', 'data': {'type': 'link_line', 'x': self.ball.x, 'y': self.ball.y, 'target_x': target_x, 'target_y': target_y, 'color': 'purple'}})
 
-                    elif hazard.kind in ["bumper", "chain_reaction_bumper"]:
+                    elif hazard.kind in ["bumper", "chain_reaction_bumper", "time_dilation_bumper"]:
 
                         var dx = self.ball.x - hazard.x
                         var dy = self.ball.y - hazard.y
@@ -24552,6 +24552,47 @@ func execute(strategy: String, delta: float):
                                 bumper_combo = self.ball.get_meta("bumper_combo")
                             elif "bumper_combo" in self.ball:
                                 bumper_combo = self.ball.bumper_combo
+
+                            # Time Dilation Bumper Logic
+                            if hazard.kind == "time_dilation_bumper":
+                                var current_tick = 0
+                                if "tick" in self.world: current_tick = self.world.tick
+
+                                var last_tick = -100
+                                if typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("time_dilation_last_tick"):
+                                    last_tick = hazard.get_meta("time_dilation_last_tick")
+                                elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("time_dilation_last_tick"):
+                                    last_tick = hazard.time_dilation_last_tick
+                                elif "time_dilation_last_tick" in hazard:
+                                    last_tick = hazard.time_dilation_last_tick
+
+                                if current_tick - last_tick > 60:
+                                    if typeof(hazard) == TYPE_OBJECT and hazard.has_method("set_meta"):
+                                        if "time_dilation_last_tick" in hazard: hazard.time_dilation_last_tick = current_tick
+                                        else: hazard.set_meta("time_dilation_last_tick", current_tick)
+                                    elif "time_dilation_last_tick" in hazard:
+                                        hazard.time_dilation_last_tick = current_tick
+                                    elif typeof(hazard) == TYPE_DICTIONARY:
+                                        hazard["time_dilation_last_tick"] = current_tick
+
+                                    if "arena" in self.world and "hazards" in self.world.arena:
+                                        var td_zone = {
+                                            "id": 999000 + int(randf() * 100000.0),
+                                            "kind": "temporal_bubble",
+                                            "x": hazard.x,
+                                            "y": hazard.y,
+                                            "radius": 200.0,
+                                            "duration": 3.0,
+                                            "active": true
+                                        }
+                                        if typeof(self.world.arena.hazards) == TYPE_ARRAY:
+                                            self.world.arena.hazards.append(td_zone)
+                                        elif typeof(self.world.arena.hazards) == TYPE_OBJECT and self.world.arena.hazards.has_method("append"):
+                                            self.world.arena.hazards.append(td_zone)
+
+                                        if "events" in self.world:
+                                            if typeof(self.world.events) == TYPE_ARRAY or (typeof(self.world.events) == TYPE_OBJECT and self.world.events.has_method("append")):
+                                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': hazard.x, 'y': hazard.y, 'radius': 200.0, 'color': 'cyan'}})
 
                             # Chain Reaction Logic
                             if hazard.kind == "chain_reaction_bumper":
