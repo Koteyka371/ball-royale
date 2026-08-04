@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1780] Mirage Decoy Generator — *2026-08-04 09:08:00 UTC*
+
+A deployable item that creates 3 distinct hologram decoys that mimic the player's movement patterns for 10 seconds. Enemies hitting a decoy get slightly slowed and take minor psychic damage.
+
+---
+
 ## [idea-1790] Reverse Safe Zones — *2026-08-04 07:55:06 UTC*
 
 Safe zones periodically swap. If you are inside a safe zone, you are taking continuous damage, meaning players need to constantly move out of the safe zones to avoid getting killed. After a while, they might swap back or become deadly.
