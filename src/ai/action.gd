@@ -15996,6 +15996,16 @@ func execute(strategy: String, delta: float):
                                                     break
 
                                         var decoy_element = b.element if "element" in b else (b.get_meta("element") if b.has_method("get_meta") and b.has_meta("element") else null)
+
+                                        if world != null and "game_mode" in world and world.game_mode != null and "current_weather" in world.game_mode:
+                                            var weather = world.game_mode.current_weather
+                                            if weather == "blizzard" or weather == "ice":
+                                                decoy_element = "ice"
+                                            elif weather == "heatwave":
+                                                decoy_element = "fire"
+                                            elif weather == "hurricane" or weather == "magnetic_storm":
+                                                decoy_element = "lightning"
+
                                         if decoy_element == "fire":
                                             if "burn_timer" in other: other.burn_timer += 5.0
                                             elif other.has_method("set_meta"):
@@ -16299,6 +16309,29 @@ func execute(strategy: String, delta: float):
                                         other.y -= (dy_other/dist_other) * pull_strength
 
                         if world != null and "arena" in world and world.arena != null and "hazards" in world.arena:
+                            if "game_mode" in world and world.game_mode != null and "current_weather" in world.game_mode:
+                                var weather = world.game_mode.current_weather
+                                if weather == "acid_rain":
+                                    var ScriptType = load("res://src/arena/procedural_arena.gd")
+                                    if ScriptType != null and ScriptType.has_method("new"):
+                                        var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+                                        if HazardClass != null:
+                                            var p_id = 10000 + (randi() % 90000)
+                                            var puddle = HazardClass.new(p_id, b.x, b.y, 100.0, "neutralizing_puddle", 0.0)
+                                            if "duration" in puddle: puddle.duration = 10.0
+                                            elif puddle.has_method("set_meta"): puddle.set_meta("duration", 10.0)
+                                            world.arena.hazards.append(puddle)
+                                elif weather == "blizzard" or weather == "ice":
+                                    var ScriptType = load("res://src/arena/procedural_arena.gd")
+                                    if ScriptType != null and ScriptType.has_method("new"):
+                                        var HazardClass = load("res://src/arena/procedural_arena.gd").Hazard
+                                        if HazardClass != null:
+                                            var i_id = 10000 + (randi() % 90000)
+                                            var ice = HazardClass.new(i_id, b.x, b.y, 100.0, "ice_patch", 0.0)
+                                            if "duration" in ice: ice.duration = 10.0
+                                            elif ice.has_method("set_meta"): ice.set_meta("duration", 10.0)
+                                            world.arena.hazards.append(ice)
+
                             if resonance:
                                 var ScriptType = load("res://src/arena/procedural_arena.gd")
                                 if ScriptType != null and ScriptType.has_method("new"):
