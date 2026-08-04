@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1725] Time-Dilation Bumper — *2026-08-04 15:10:53 UTC*
+
+A variant of the standard bumper that, upon collision, not only knocks the player back but temporarily slows down the game time in a localized area around the bumper. It creates a matrix-style slow-motion zone, letting players plan their next bounce or dodge precisely while inside the bubble.
+
+---
+
 ## [idea-1802] Solar Flare Mode — *2026-08-04 15:10:47 UTC*
 
 An intense event where the sun emits random bursts of solar energy. During a flare, balls take DOT damage over time if not hiding in shadows or under indestructible walls. Electronic items and shields are temporarily disabled.
