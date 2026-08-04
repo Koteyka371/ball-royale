@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1788] Tug of War Multiple Payloads — *2026-08-04 17:17:05 UTC*
+
+Spawn three payloads instead of one.
+
+---
+
 ## [idea-1667] Snowball Growth — *2026-08-04 16:07:59 UTC*
 
 Rolling on ice patches makes the ball gradually increase in size and mass, increasing its collision damage and knockback but decreasing its acceleration.
