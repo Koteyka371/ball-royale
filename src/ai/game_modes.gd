@@ -10055,6 +10055,150 @@ class DualPayloadMode extends GameMode:
 		var center_x = arena_width / 2.0
 		var center_y = arena_height / 2.0
 
+		var battery_timer = self.get_meta("battery_spawn_timer") if self.has_meta("battery_spawn_timer") else 0.0
+		battery_timer += delta
+		if battery_timer >= 25.0:
+			battery_timer = 0.0
+			if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+				var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+				var hx = center_x + randf_range(-400.0, 400.0)
+				var hy = center_y + randf_range(-400.0, 400.0)
+				var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArenaModule and "Hazard" in ProceduralArenaModule:
+					var drop = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 20.0, "overcharge_battery", 0.0)
+					world.arena.hazards.append(drop)
+					if world.has_method("add_event"):
+						world.add_event("battery_spawned", {"x": hx, "y": hy})
+		self.set_meta("battery_spawn_timer", battery_timer)
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+			var hazards_to_remove = []
+			for h in world.arena.hazards:
+				if h.kind == "overcharge_battery":
+					for b in balls:
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if b_alive and b_type != "spectator":
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var dx = bx - h.x
+							var dy = by - h.y
+							if sqrt(dx*dx + dy*dy) <= 20.0 + (b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")):
+								if typeof(b) == TYPE_DICTIONARY:
+									b["has_overcharge_battery"] = true
+								elif b.has_method("set_meta"):
+									b.set_meta("has_overcharge_battery", true)
+								hazards_to_remove.append(h)
+								if world.has_method("add_event"):
+									world.add_event("battery_picked_up", {"team": b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")})
+								break
+			for h in hazards_to_remove:
+				world.arena.hazards.erase(h)
+
+		var oc_balls = self.get_meta("overcharged_balls") if self.has_meta("overcharged_balls") else []
+		var currently_overcharged = []
+
+		for b in balls:
+			var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			var has_batt = b.get("has_overcharge_battery", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("has_overcharge_battery") if b.has_method("has_meta") and b.has_meta("has_overcharge_battery") else false)
+			if b_alive and has_batt:
+				var team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+				var p = null
+				if team == "Red": p = payload_red
+				elif team == "Blue": p = payload_blue
+
+				if p != null:
+					var p_alive = p.get("alive", false) if typeof(p) == TYPE_DICTIONARY else p.get("alive")
+					if p_alive:
+						var px = p.get("x", 0.0) if typeof(p) == TYPE_DICTIONARY else p.get("x")
+						var py = p.get("y", 0.0) if typeof(p) == TYPE_DICTIONARY else p.get("y")
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var pr = p.get("radius", 20.0) if typeof(p) == TYPE_DICTIONARY else p.get("radius")
+						var br = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+						if pr == null: pr = 20.0
+						if br == null: br = 15.0
+						var dx = bx - px
+						var dy = by - py
+						if sqrt(dx*dx + dy*dy) <= pr + br + 50.0:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["has_overcharge_battery"] = false
+							elif b.has_method("set_meta"):
+								b.set_meta("has_overcharge_battery", false)
+							if typeof(p) == TYPE_DICTIONARY:
+								p["is_payload_overcharged"] = true
+								p["payload_overcharge_timer"] = 15.0
+							elif p.has_method("set_meta"):
+								p.set_meta("is_payload_overcharged", true)
+								p.set_meta("payload_overcharge_timer", 15.0)
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("battery_delivered", {"team": team})
+
+							if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+								var h_to_rem = []
+								for h in world.arena.hazards:
+									var ht = h.get_meta("team") if h.has_method("has_meta") and h.has_meta("team") else ""
+									if ht != "" and ht != team:
+										h_to_rem.append(h)
+								for h in h_to_rem:
+									world.arena.hazards.erase(h)
+
+		for p in [payload_red, payload_blue]:
+			if p != null:
+				var is_oc = p.get("is_payload_overcharged", false) if typeof(p) == TYPE_DICTIONARY else (p.get_meta("is_payload_overcharged") if p.has_method("has_meta") and p.has_meta("is_payload_overcharged") else false)
+				if is_oc:
+					var o_timer = (p.get("payload_overcharge_timer", 0.0) if typeof(p) == TYPE_DICTIONARY else (p.get_meta("payload_overcharge_timer") if p.has_method("has_meta") and p.has_meta("payload_overcharge_timer") else 0.0)) - delta
+					if o_timer <= 0:
+						if typeof(p) == TYPE_DICTIONARY:
+							p["is_payload_overcharged"] = false
+							p["payload_overcharge_timer"] = 0.0
+						elif p.has_method("set_meta"):
+							p.set_meta("is_payload_overcharged", false)
+							p.set_meta("payload_overcharge_timer", 0.0)
+					else:
+						if typeof(p) == TYPE_DICTIONARY:
+							p["payload_overcharge_timer"] = o_timer
+						elif p.has_method("set_meta"):
+							p.set_meta("payload_overcharge_timer", o_timer)
+						var pt = p.get("team", "") if typeof(p) == TYPE_DICTIONARY else p.get("team")
+						for b in balls:
+							var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+							var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+							var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+							if b_alive and b_team == pt and b_type != "spectator" and typeof(b) == TYPE_OBJECT and typeof(p) == TYPE_OBJECT and b != p:
+								var bid = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+								currently_overcharged.append(bid)
+								var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+								var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = min(max_hp, hp + 30.0 * delta)
+								else:
+									b.set("hp", min(max_hp, hp + 30.0 * delta))
+
+								if not oc_balls.has(bid):
+									oc_balls.append(bid)
+									if typeof(b) == TYPE_DICTIONARY:
+										b["_orig_battery_speed"] = b.get("speed", 100.0)
+										b["speed"] = b["_orig_battery_speed"] * 1.5
+									elif b.has_method("set_meta"):
+										b.set_meta("_orig_battery_speed", b.get("speed"))
+										b.set("speed", b.get("speed") * 1.5)
+
+		var lost = []
+		for bid in oc_balls:
+			if not currently_overcharged.has(bid):
+				lost.append(bid)
+
+		for b in balls:
+			var bid = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+			if lost.has(bid):
+				if typeof(b) == TYPE_DICTIONARY and b.has("_orig_battery_speed"):
+					b["speed"] = b["_orig_battery_speed"]
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("_orig_battery_speed"):
+					b.set("speed", b.get_meta("_orig_battery_speed"))
+				oc_balls.erase(bid)
+		self.set_meta("overcharged_balls", oc_balls)
+
 		anti_payload_timer += delta
 		if anti_payload_timer >= 15.0:
 			anti_payload_timer = 0.0

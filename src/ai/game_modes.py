@@ -6174,6 +6174,105 @@ class DualPayloadMode(GameMode):
                                 world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
                             break
 
+        # Overcharge Battery logic
+        self.battery_spawn_timer = getattr(self, "battery_spawn_timer", 0.0) + delta
+        if self.battery_spawn_timer >= 25.0:
+            self.battery_spawn_timer = 0.0
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                import random
+                h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                hx = center_x + random.uniform(-400, 400)
+                hy = center_y + random.uniform(-400, 400)
+                try:
+                    from arena.procedural_arena import Hazard
+                    drop = Hazard(h_id, hx, hy, 20.0, "overcharge_battery", 0.0)
+                except ImportError:
+                    class DummyHazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                    drop = DummyHazard(h_id, hx, hy, 20.0, "overcharge_battery", 0.0)
+                world.arena.hazards.append(drop)
+                if hasattr(world, "add_event"):
+                    world.add_event("battery_spawned", {"x": hx, "y": hy})
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards[:]:
+                if getattr(h, "kind", "") == "overcharge_battery":
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
+                            if dist <= getattr(h, "radius", 20.0) + getattr(b, "radius", 15.0):
+                                b.has_overcharge_battery = True
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                                if hasattr(world, "add_event"):
+                                    world.add_event("battery_picked_up", {"team": getattr(b, "team", "")})
+                                break
+
+        if not hasattr(self, "overcharged_balls"):
+            self.overcharged_balls = set()
+        currently_overcharged = set()
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "has_overcharge_battery", False):
+                payload = None
+                if getattr(b, "team", "") == "Red": payload = getattr(self, "payload_red", None)
+                elif getattr(b, "team", "") == "Blue": payload = getattr(self, "payload_blue", None)
+
+                # Check for standard payload (like in TickingPayloadMode)
+                if not payload and getattr(self, "payload", None):
+                    payload = getattr(self, "payload", None)
+
+                if payload and getattr(payload, "alive", False):
+                    import math
+                    px = getattr(payload, "x", 0)
+                    py = getattr(payload, "y", 0)
+                    if isinstance(px, (int, float)) and isinstance(py, (int, float)):
+                        dist = math.hypot(getattr(b, "x", 0) - px, getattr(b, "y", 0) - py)
+                        if dist <= getattr(payload, "radius", 20.0) + getattr(b, "radius", 15.0) + 50.0:
+                            b.has_overcharge_battery = False
+                            payload.is_payload_overcharged = True
+                            payload.payload_overcharge_timer = 15.0
+                            if hasattr(world, "add_event"):
+                                world.add_event("battery_delivered", {"team": getattr(b, "team", "")})
+                            # Destroy enemy structures
+                            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                                for h in world.arena.hazards[:]:
+                                    hteam = getattr(h, "team", "")
+                                    if hteam and hteam != getattr(b, "team", "") and h in world.arena.hazards:
+                                        world.arena.hazards.remove(h)
+
+        for p in [self.payload_red, self.payload_blue]:
+            if p and getattr(p, "is_payload_overcharged", False):
+                o_timer = getattr(p, "payload_overcharge_timer", 0.0) - delta
+                if o_timer <= 0:
+                    p.is_payload_overcharged = False
+                    p.payload_overcharge_timer = 0.0
+                else:
+                    p.payload_overcharge_timer = o_timer
+                    team = getattr(p, "team", "")
+                    for b in balls:
+                        if getattr(b, "alive", False) and getattr(b, "team", "") == team and getattr(b, "ball_type", None) != "spectator" and b != p:
+                            bid = getattr(b, "id", id(b))
+                            currently_overcharged.add(bid)
+                            b.hp = min(getattr(b, "max_hp", 100.0), getattr(b, "hp", 100.0) + 30.0 * delta)
+                            if bid not in self.overcharged_balls:
+                                self.overcharged_balls.add(bid)
+                                b._orig_battery_speed = getattr(b, "speed", 100.0)
+                                b.speed = b._orig_battery_speed * 1.5
+
+        lost_overcharge = self.overcharged_balls - currently_overcharged
+        for b in balls:
+            bid = getattr(b, "id", id(b))
+            if bid in lost_overcharge:
+                if hasattr(b, "_orig_battery_speed"):
+                    b.speed = b._orig_battery_speed
+                self.overcharged_balls.remove(bid)
+        for bid in list(lost_overcharge):
+            if bid in self.overcharged_balls:
+                self.overcharged_balls.remove(bid)
+
         self.anti_payload_timer = getattr(self, "anti_payload_timer", 0.0) + delta
         if self.anti_payload_timer >= 15.0:
             self.anti_payload_timer = 0.0
