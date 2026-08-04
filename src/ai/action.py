@@ -4494,6 +4494,32 @@ class Action:
             self.ball.decoy_swap_cooldown -= delta
 
         if strategy in ("flee", "defend", "attack") and hasattr(self.ball, "inventory"):
+            if "deployable_fake_weather_station" in self.ball.inventory:
+                self.ball.inventory.remove("deployable_fake_weather_station")
+                station_id = getattr(self.world, "next_id", 0)
+                if hasattr(self.world, "next_id"):
+                    self.world.next_id += 1
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        station = Hazard(station_id, self.ball.x, self.ball.y, 60.0, "deployable_fake_weather_station", 0.0)
+                    except:
+                        class FakeHazard:
+                            pass
+                        station = FakeHazard()
+                        station.id = station_id
+                        station.x = self.ball.x
+                        station.y = self.ball.y
+                        station.kind = "deployable_fake_weather_station"
+                        station.damage = 0.0
+                        station.active = True
+                        station.duration = 60.0
+
+                    setattr(station, "radius", 150.0)
+                    setattr(station, "capture_progress", 0.0)
+                    setattr(station, "owner_id", getattr(self.ball, "id", None))
+                    self.world.arena.hazards.append(station)
+
             if "deployable_decoy_swap_item" in self.ball.inventory:
                 import copy
                 import random as _rnd
@@ -9053,6 +9079,43 @@ class Action:
                                                     other_hazard.vx = (dx / dist) * speed
                                                     other_hazard.vy = (dy / dist) * speed
 
+
+                    elif hazard.kind == "deployable_fake_weather_station":
+                        current_tick = getattr(self.world, "tick", 0)
+                        last_updated = getattr(hazard, "last_updated_tick", -1)
+                        if last_updated != current_tick:
+                            hazard.last_updated_tick = current_tick
+
+                            owner_id = getattr(hazard, "owner_id", None)
+
+                            # Find who is trying to capture it
+                            capturers = []
+                            if hasattr(self.world, "balls"):
+                                for b in self.world.balls:
+                                    if getattr(b, "alive", True) and getattr(b, "id", None) != owner_id:
+                                        dist_sq = (b.x - hazard.x)**2 + (b.y - hazard.y)**2
+                                        if dist_sq <= getattr(hazard, "radius", 150.0)**2:
+                                            capturers.append(b)
+
+                            if capturers:
+                                progress = getattr(hazard, "capture_progress", 0.0)
+                                progress += 20.0 * delta
+                                setattr(hazard, "capture_progress", progress)
+
+                                if progress >= 100.0:
+                                    # Trigger EMP/debuff storm
+                                    hazard.active = False
+                                    if hasattr(self.world, "events"):
+                                        self.world.events.append({'type': 'emp_pulse_hit', 'data': {'x': hazard.x, 'y': hazard.y, 'radius': 250.0}})
+
+                                    for b in capturers:
+                                        if hasattr(b, "hp"):
+                                            b.hp -= 30.0
+                                            if b.hp <= 0:
+                                                b.alive = False
+                                        # Debuff
+                                        setattr(b, "speed_debuff_timer", 5.0)
+                                        setattr(b, "speed_debuff_multiplier", 0.5)
 
                     elif hazard.kind == "deployable_swap_trap":
                         current_tick = getattr(self.world, "tick", 0)
