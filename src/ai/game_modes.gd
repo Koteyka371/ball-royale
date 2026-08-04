@@ -76553,4 +76553,133 @@ class TugOfWarMultiplePayloadsMode extends GameMode:
 
 		return null
 
+
+class ElectricDecoyLinkMode extends GameMode:
+    func _init():
+        self.name = "Electric Decoy Link"
+        self.description = "Generating more than 5 decoys causes them to link together with electricity, damaging enemies that cross the connections."
+
+    func tick(world, balls, delta=0.016):
+        var decoys_by_owner = {}
+        for b in balls:
+            var is_decoy = false
+            var b_alive = false
+            if typeof(b) == TYPE_DICTIONARY:
+                if b.has("is_decoy"): is_decoy = b.is_decoy
+                if b.has("alive"): b_alive = b.alive
+            elif typeof(b) == TYPE_OBJECT:
+                if "is_decoy" in b: is_decoy = b.is_decoy
+                if "alive" in b: b_alive = b.alive
+
+            if is_decoy and b_alive:
+                var oid = null
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("owner_id"): oid = b.owner_id
+                elif "owner_id" in b:
+                    oid = b.owner_id
+
+                if oid != null:
+                    if not decoys_by_owner.has(oid):
+                        decoys_by_owner[oid] = []
+                    decoys_by_owner[oid].append(b)
+
+        for oid in decoys_by_owner.keys():
+            var decoys = decoys_by_owner[oid]
+            if decoys.size() > 5:
+                var owner_team = "neutral"
+                if typeof(decoys[0]) == TYPE_DICTIONARY:
+                    if decoys[0].has("team"): owner_team = decoys[0].team
+                elif "team" in decoys[0]:
+                    owner_team = decoys[0].team
+
+                for i in range(decoys.size()):
+                    for j in range(i + 1, decoys.size()):
+                        var d1 = decoys[i]
+                        var d2 = decoys[j]
+
+                        var ax = 0.0
+                        var ay = 0.0
+                        var bx = 0.0
+                        var by = 0.0
+
+                        if typeof(d1) == TYPE_DICTIONARY:
+                            if d1.has("x"): ax = d1.x
+                            if d1.has("y"): ay = d1.y
+                        else:
+                            if "x" in d1: ax = d1.x
+                            if "y" in d1: ay = d1.y
+
+                        if typeof(d2) == TYPE_DICTIONARY:
+                            if d2.has("x"): bx = d2.x
+                            if d2.has("y"): by = d2.y
+                        else:
+                            if "x" in d2: bx = d2.x
+                            if "y" in d2: by = d2.y
+
+                        var l2 = (bx - ax)*(bx - ax) + (by - ay)*(by - ay)
+
+                        for enemy in balls:
+                            var e_alive = false
+                            var e_decoy = false
+                            var e_team = "neutral"
+                            var px = 0.0
+                            var py = 0.0
+                            var rad = 10.0
+
+                            if typeof(enemy) == TYPE_DICTIONARY:
+                                if enemy.has("alive"): e_alive = enemy.alive
+                                if enemy.has("is_decoy"): e_decoy = enemy.is_decoy
+                                if enemy.has("team"): e_team = enemy.team
+                                if enemy.has("x"): px = enemy.x
+                                if enemy.has("y"): py = enemy.y
+                                if enemy.has("radius"): rad = enemy.radius
+                            else:
+                                if "alive" in enemy: e_alive = enemy.alive
+                                if "is_decoy" in enemy: e_decoy = enemy.is_decoy
+                                if "team" in enemy: e_team = enemy.team
+                                if "x" in enemy: px = enemy.x
+                                if "y" in enemy: py = enemy.y
+                                if "radius" in enemy: rad = enemy.radius
+
+                            if not e_alive or e_decoy or e_team == owner_team:
+                                continue
+
+                            var dist = 0.0
+                            if l2 == 0.0:
+                                dist = sqrt((px - ax)*(px - ax) + (py - ay)*(py - ay))
+                            else:
+                                var t = max(0.0, min(1.0, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+                                var proj_x = ax + t * (bx - ax)
+                                var proj_y = ay + t * (by - ay)
+                                dist = sqrt((px - proj_x)*(px - proj_x) + (py - proj_y)*(py - proj_y))
+
+                            if dist <= rad + 2.0:
+                                var dmg = 25.0 * delta
+                                if typeof(enemy) == TYPE_OBJECT and enemy.has_method("take_damage"):
+                                    enemy.take_damage(dmg)
+                                elif typeof(enemy) == TYPE_DICTIONARY and enemy.has("hp"):
+                                    enemy.hp -= dmg
+                                    if enemy.hp <= 0:
+                                        enemy.alive = false
+                                elif "hp" in enemy:
+                                    enemy.hp -= dmg
+                                    if enemy.hp <= 0:
+                                        enemy.alive = false
+
+                                var events = null
+                                if typeof(world) == TYPE_DICTIONARY and world.has("events"):
+                                    events = world.events
+                                elif typeof(world) == TYPE_OBJECT and "events" in world:
+                                    events = world.events
+
+                                if events != null:
+                                    var has_spark = false
+                                    for ev in events:
+                                        if typeof(ev) == TYPE_DICTIONARY and ev.has("type") and ev.type == "electric_link_spark":
+                                            has_spark = true
+                                            break
+                                    if not has_spark:
+                                        events.append({"type": "electric_link_spark", "data": {"x": px, "y": py, "radius": 5.0}})
+
 GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
+GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode.new()

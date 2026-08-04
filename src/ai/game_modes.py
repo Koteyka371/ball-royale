@@ -48811,4 +48811,75 @@ class TugOfWarMultiplePayloadsMode(GameMode):
 
         return None
 
+
+class ElectricDecoyLinkMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Electric Decoy Link"
+        self.description = "Generating more than 5 decoys causes them to link together with electricity, damaging enemies that cross the connections."
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        # Group decoys by owner
+        decoys_by_owner = {}
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "is_decoy", False):
+                owner_id = getattr(b, "owner_id", None)
+                if owner_id is not None:
+                    if owner_id not in decoys_by_owner:
+                        decoys_by_owner[owner_id] = []
+                    decoys_by_owner[owner_id].append(b)
+
+        for owner_id, decoys in decoys_by_owner.items():
+            if len(decoys) > 5:
+                # Find the owner team
+                owner_team = "neutral"
+                if decoys:
+                    owner_team = getattr(decoys[0], "team", "neutral")
+
+                # For every pair of decoys for this owner, check if an enemy crosses the line
+                for i in range(len(decoys)):
+                    for j in range(i + 1, len(decoys)):
+                        d1 = decoys[i]
+                        d2 = decoys[j]
+
+                        ax, ay = d1.x, d1.y
+                        bx, by = d2.x, d2.y
+
+                        l2 = (bx - ax)**2 + (by - ay)**2
+
+                        for enemy in balls:
+                            if not getattr(enemy, "alive", False) or getattr(enemy, "is_decoy", False) or getattr(enemy, "team", "") == owner_team:
+                                continue
+
+                            px, py = enemy.x, enemy.y
+                            dist = 0.0
+                            if l2 == 0:
+                                dist = math.hypot(px - ax, py - ay)
+                            else:
+                                t = max(0, min(1, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+                                proj_x = ax + t * (bx - ax)
+                                proj_y = ay + t * (by - ay)
+                                dist = math.hypot(px - proj_x, py - proj_y)
+
+                            rad = getattr(enemy, "radius", 10.0)
+                            if dist <= rad + 2.0:
+                                dmg = 25.0 * delta
+                                if hasattr(enemy, "take_damage"):
+                                    enemy.take_damage(dmg)
+                                else:
+                                    enemy.hp -= dmg
+                                    if enemy.hp <= 0:
+                                        enemy.alive = False
+
+                                if hasattr(world, "events"):
+                                    # Create a small lightning effect
+                                    if not any(e.get("type") == "electric_link_spark" for e in getattr(world, "events", [])):
+                                        world.events.append({
+                                            "type": "electric_link_spark",
+                                            "data": {"x": px, "y": py, "radius": 5.0}
+                                        })
+
 GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode()
+GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode()
