@@ -113,6 +113,66 @@ class GameMode:
 					if is_dict and "kind" in hazard: h_kind = hazard.kind
 					elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
+
+					if h_kind == "magnetic_field":
+						var m_x = 0.0
+						var m_y = 0.0
+						var m_radius = 300.0
+						if typeof(hazard) == TYPE_DICTIONARY:
+							if "x" in hazard: m_x = hazard.x
+							if "y" in hazard: m_y = hazard.y
+							if "radius" in hazard: m_radius = hazard.radius
+						elif typeof(hazard) == TYPE_OBJECT:
+							if "x" in hazard: m_x = float(hazard.x)
+							elif hazard.has_method("get_meta") and hazard.has_meta("x"): m_x = hazard.get_meta("x")
+							if "y" in hazard: m_y = float(hazard.y)
+							elif hazard.has_method("get_meta") and hazard.has_meta("y"): m_y = hazard.get_meta("y")
+							if "radius" in hazard: m_radius = float(hazard.radius)
+							elif hazard.has_method("get_meta") and hazard.has_meta("radius"): m_radius = hazard.get_meta("radius")
+
+						for b in balls:
+							var is_alive = false
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY:
+								if "alive" in b: is_alive = b.alive
+								if "ball_type" in b: b_type = b.ball_type
+							elif typeof(b) == TYPE_OBJECT:
+								if "alive" in b: is_alive = b.alive
+								elif b.has_method("get_meta") and b.has_meta("alive"): is_alive = b.get_meta("alive")
+								if "ball_type" in b: b_type = b.ball_type
+								elif b.has_method("get_meta") and b.has_meta("ball_type"): b_type = b.get_meta("ball_type")
+
+							if not is_alive or b_type == "spectator":
+								continue
+
+							var b_x = 0.0
+							var b_y = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								if "x" in b: b_x = b.x
+								if "y" in b: b_y = b.y
+							elif typeof(b) == TYPE_OBJECT:
+								if "x" in b: b_x = float(b.x)
+								elif b.has_method("get_meta") and b.has_meta("x"): b_x = b.get_meta("x")
+								if "y" in b: b_y = float(b.y)
+								elif b.has_method("get_meta") and b.has_meta("y"): b_y = b.get_meta("y")
+
+							var dx = m_x - b_x
+							var dy = m_y - b_y
+							var dist = sqrt(dx*dx + dy*dy)
+							if dist > 0.0 and dist < m_radius:
+								var pull_strength = 200.0 * (1.0 - dist / m_radius)
+								var move_dist = min(pull_strength * delta, dist)
+								var move_x = (dx / dist) * move_dist
+								var move_y = (dy / dist) * move_dist
+								if typeof(b) == TYPE_DICTIONARY:
+									if "x" in b: b["x"] = b_x + move_x
+									if "y" in b: b["y"] = b_y + move_y
+								elif typeof(b) == TYPE_OBJECT:
+									if "x" in b: b.x = b_x + move_x
+									elif b.has_method("set_meta"): b.set_meta("x", b_x + move_x)
+									if "y" in b: b.y = b_y + move_y
+									elif b.has_method("set_meta"): b.set_meta("y", b_y + move_y)
+
 					if h_kind == "kinetic_reflector":
 						var m_x = 0.0
 						if is_dict and "x" in hazard: m_x = hazard.x
