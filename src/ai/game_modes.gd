@@ -27706,7 +27706,7 @@ class TugOfWarMode extends GameMode:
 						if vel_along_normal < 0:
 							var restitution = 1.2
 							var speed_mult = 1.0
-							if "mutators" in self and "bouncy_payload" in self.mutators:
+							if ("mutators" in self and "bouncy_payload" in self.mutators) or ("mutators" in world and "bouncy_payload" in world.mutators):
 								restitution = 12.0
 								speed_mult = 10.0
 
@@ -27742,7 +27742,7 @@ class TugOfWarMode extends GameMode:
 					py = arena_height - 50.0
 					pvy = -pvy * 0.9
 				var speed = sqrt(pvx * pvx + pvy * pvy)
-				var max_speed = 15000.0 if ("mutators" in self and "bouncy_payload" in self.mutators) else 1500.0
+				var max_speed = 15000.0 if (("mutators" in self and "bouncy_payload" in self.mutators) or ("mutators" in world and "bouncy_payload" in world.mutators)) else 1500.0
 				if speed > max_speed:
 					pvx = (pvx / speed) * max_speed
 					pvy = (pvy / speed) * max_speed
