@@ -36311,7 +36311,18 @@ func _use_skill():
                     elif hazard.has_method("has_meta") and hazard.has_meta("active"): active = hazard.get_meta("active")
 
                     if kind == "sound_mine" and active:
-                        if skill_name in ["dash", "sonar_ping", "forecast_ping", "stamina_dash", "phantom_stride", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"]:
+                        var mutators_active = false
+                        if typeof(self.world) == TYPE_DICTIONARY: mutators_active = self.world.get("mutators_active", false)
+                        elif "mutators_active" in self.world: mutators_active = self.world.mutators_active
+
+                        var has_silent_world = false
+                        if mutators_active:
+                            var mutators_list = []
+                            if typeof(self.world) == TYPE_DICTIONARY: mutators_list = self.world.get("mutators", [])
+                            elif "mutators" in self.world: mutators_list = self.world.mutators
+                            has_silent_world = "silent_world" in mutators_list
+
+                        if not has_silent_world and skill_name in ["dash", "sonar_ping", "forecast_ping", "stamina_dash", "phantom_stride", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"]:
                             var h_x = 0.0
                             if "x" in hazard: h_x = hazard.x
                             var h_y = 0.0

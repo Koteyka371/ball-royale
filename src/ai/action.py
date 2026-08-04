@@ -18543,6 +18543,8 @@ class Action:
                         if math.hypot(hazard.x - self.ball.x, hazard.y - self.ball.y) < 200.0:
                             hazard.is_exploded = True
                     if getattr(hazard, "kind", "") == "sound_mine" and getattr(hazard, "active", True):
+                        if getattr(self.world, 'mutators_active', False) and 'silent_world' in getattr(self.world, 'mutators', []):
+                            continue
                         if skill_name in ("dash", "sonar_ping", "forecast_ping", "stamina_dash", "phantom_stride", "ground_pound", "explosion", "fireball", "arena_shout", "rage_burst", "lightning_strike", "elemental_burst", "multishot", "perfect_strike"):
                             dist_sq = (hazard.x - self.ball.x)**2 + (hazard.y - self.ball.y)**2
                             r = getattr(hazard, "radius", 100.0)
