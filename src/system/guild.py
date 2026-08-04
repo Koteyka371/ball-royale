@@ -529,6 +529,41 @@ class GuildManager:
         return False
 
 
+
+    def hire_mercenary(self, guild_name, target_guild, cost):
+        if guild_name in self.data["guilds"] and target_guild in self.data["guilds"]:
+            guild = self.data["guilds"][guild_name]
+
+            if "wars" in guild and target_guild in guild["wars"]:
+                if guild.get("resources", 0) >= cost:
+                    guild["resources"] -= cost
+
+                    if "mercenaries" not in guild:
+                        guild["mercenaries"] = []
+
+                    level = guild.get("level", 1)
+
+                    traits = ["basic"]
+                    if level >= 5:
+                        traits.append("veteran")
+                    if level >= 10:
+                        traits.append("elite")
+
+                    mercenary = {
+                        "target": target_guild,
+                        "traits": traits,
+                        "level": level
+                    }
+                    guild["mercenaries"].append(mercenary)
+                    self.save()
+                    return True
+        return False
+
+    def get_hired_mercenaries(self, guild_name):
+        if guild_name in self.data["guilds"]:
+            return self.data["guilds"][guild_name].get("mercenaries", [])
+        return []
+
     def get_alliance_cluster(self, guild_name):
         cluster = set()
         if guild_name in self.data["guilds"]:
