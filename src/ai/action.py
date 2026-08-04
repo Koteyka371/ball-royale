@@ -11496,6 +11496,7 @@ class Action:
                                     hazard.duration = 0.0 # Destroy trap
 
                                 elif trap_variant == "swap":
+                                    # Swap positions with the trap owner (idea-1763)
                                     owner_id = getattr(hazard, "owner_id", None)
                                     if owner_id is not None:
                                         # Find owner ball
@@ -11506,7 +11507,7 @@ class Action:
                                                 owner = b
                                                 break
                                         if owner and owner != self.ball:
-                                            # Swap positions
+                                            # Swap positions logic implementation
                                             temp_x, temp_y = owner.x, owner.y
                                             owner.x, owner.y = self.ball.x, self.ball.y
                                             self.ball.x, self.ball.y = temp_x, temp_y
