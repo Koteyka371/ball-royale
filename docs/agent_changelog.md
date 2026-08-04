@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1750] Decoy Weather Transmitters — *2026-08-04 10:13:56 UTC*
+
+An item that allows a player to place a fake weather station. When an enemy tries to capture it, it instead emits an EMP or a localized debuff storm.
+
+---
+
 ## [idea-1795] Magnetic Push/Pull Mechanics — *2026-08-04 10:13:52 UTC*
 
 Introduce magnetic fields that can alter ball movement trajectories and pull payload toward the objective when properly placed.
