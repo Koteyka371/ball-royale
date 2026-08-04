@@ -17320,6 +17320,7 @@ class TugOfWarMode(GameMode):
         self.red_goal_x = 100.0
         self.blue_goal_x = 900.0
         self.timer = 180.0
+        self.mutators = []
 
     def setup(self, world, balls) -> None:
         super().setup(world, balls)
@@ -17408,13 +17409,17 @@ class TugOfWarMode(GameMode):
                     dvx = b_vx - pvx
                     dvy = b_vy - pvy
                     vel_along_normal = dvx * nx + dvy * ny
-
                     if vel_along_normal < 0:
                         restitution = 1.2
+                        speed_mult = 1.0
+                        if hasattr(self, "mutators") and "bouncy_payload" in self.mutators:
+                            restitution = 12.0
+                            speed_mult = 10.0
+
                         impulse = -(1 + restitution) * vel_along_normal
 
-                        pvx -= nx * impulse * 1.5
-                        pvy -= ny * impulse * 1.5
+                        pvx -= nx * impulse * 1.5 * speed_mult
+                        pvy -= ny * impulse * 1.5 * speed_mult
                         if hasattr(b, "vx"): b.vx += nx * impulse * 0.5
                         if hasattr(b, "vy"): b.vy += ny * impulse * 0.5
 
@@ -17436,11 +17441,11 @@ class TugOfWarMode(GameMode):
             elif py > arena_height - 50.0:
                 py = arena_height - 50.0
                 pvy = -pvy * 0.9
-
             speed = math.hypot(pvx, pvy)
-            if speed > 1500.0:
-                pvx = (pvx / speed) * 1500.0
-                pvy = (pvy / speed) * 1500.0
+            max_speed = 15000.0 if (hasattr(self, "mutators") and "bouncy_payload" in self.mutators) else 1500.0
+            if speed > max_speed:
+                pvx = (pvx / speed) * max_speed
+                pvy = (pvy / speed) * max_speed
 
             self.payload.x = px
             self.payload.y = py

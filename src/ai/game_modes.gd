@@ -27080,6 +27080,7 @@ class TugOfWarMode extends GameMode:
 	var red_goal_x: float = 100.0
 	var blue_goal_x: float = 900.0
 	var timer: float = 180.0
+	var mutators: Array = []
 
 	func _init() -> void:
 		name = "Tug of War"
@@ -27421,13 +27422,18 @@ class TugOfWarMode extends GameMode:
 						var dvx = b_vx - pvx
 						var dvy = b_vy - pvy
 						var vel_along_normal = dvx * nx + dvy * ny
-
 						if vel_along_normal < 0:
 							var restitution = 1.2
+							var speed_mult = 1.0
+							if "mutators" in self and "bouncy_payload" in self.mutators:
+								restitution = 12.0
+								speed_mult = 10.0
+
 							var impulse = -(1.0 + restitution) * vel_along_normal
 
-							pvx -= nx * impulse * 1.5
-							pvy -= ny * impulse * 1.5
+							pvx -= nx * impulse * 1.5 * speed_mult
+							pvy -= ny * impulse * 1.5 * speed_mult
+
 
 							if typeof(b) == TYPE_DICTIONARY:
 								if b.has("vx"): b["vx"] += nx * impulse * 0.5
@@ -27454,11 +27460,12 @@ class TugOfWarMode extends GameMode:
 				elif py > arena_height - 50.0:
 					py = arena_height - 50.0
 					pvy = -pvy * 0.9
-
 				var speed = sqrt(pvx * pvx + pvy * pvy)
-				if speed > 1500.0:
-					pvx = (pvx / speed) * 1500.0
-					pvy = (pvy / speed) * 1500.0
+				var max_speed = 15000.0 if ("mutators" in self and "bouncy_payload" in self.mutators) else 1500.0
+				if speed > max_speed:
+					pvx = (pvx / speed) * max_speed
+					pvy = (pvy / speed) * max_speed
+
 
 				if typeof(payload) == TYPE_DICTIONARY:
 					payload["x"] = px
