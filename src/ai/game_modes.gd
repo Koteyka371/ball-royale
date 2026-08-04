@@ -1799,6 +1799,83 @@ class GameMode:
 											world.add_event("grave_trap_explosion", {"x": h_x, "y": h_y})
 										break
 
+						elif h_kind == "deployable_hologram_trap":
+							for b in balls:
+								var is_alive = b.alive if typeof(b) == TYPE_OBJECT and "alive" in b else (b["alive"] if typeof(b) == TYPE_DICTIONARY and b.has("alive") else false)
+								var b_team = b.team if typeof(b) == TYPE_OBJECT and "team" in b else (b["team"] if typeof(b) == TYPE_DICTIONARY and b.has("team") else "")
+								var is_holo = false
+								if typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("is_hologram"): is_holo = b.get_meta("is_hologram")
+								elif typeof(b) == TYPE_DICTIONARY and b.has("is_hologram"): is_holo = b["is_hologram"]
+								elif typeof(b) == TYPE_OBJECT and "is_hologram" in b: is_holo = b.is_hologram
+
+								if is_alive and b_team != h_team and not is_holo:
+									var b_x = b.x if typeof(b) == TYPE_OBJECT and "x" in b else (b["x"] if typeof(b) == TYPE_DICTIONARY and b.has("x") else 0.0)
+									var b_y = b.y if typeof(b) == TYPE_OBJECT and "y" in b else (b["y"] if typeof(b) == TYPE_DICTIONARY and b.has("y") else 0.0)
+									var b_r = b.radius if typeof(b) == TYPE_OBJECT and "radius" in b else (b["radius"] if typeof(b) == TYPE_DICTIONARY and b.has("radius") else 15.0)
+									var dist = sqrt(pow(b_x - h_x, 2) + pow(b_y - h_y, 2))
+									if dist <= h_r + b_r:
+										hazards_to_remove.append(h)
+										for i in range(3):
+											var clone = null
+											if typeof(b) == TYPE_DICTIONARY: clone = b.duplicate(true)
+											elif typeof(b) == TYPE_OBJECT and b.has_method("duplicate"): clone = b.duplicate()
+
+											if clone != null:
+												var b_id = b.id if typeof(b) == TYPE_OBJECT and "id" in b else (b["id"] if typeof(b) == TYPE_DICTIONARY and b.has("id") else 0)
+												var c_id = 150000 + randi() % 99999
+												if typeof(clone) == TYPE_DICTIONARY:
+													clone["id"] = c_id
+													clone["x"] = b_x + randf_range(-40, 40)
+													clone["y"] = b_y + randf_range(-40, 40)
+													clone["damage"] = 0.0
+													clone["is_hologram"] = true
+													clone["hologram_owner_id"] = b_id
+													clone["is_delayed_clone"] = true
+													clone["hp"] = 10.0
+													clone["max_hp"] = 10.0
+													clone["clone_duration"] = 10.0
+													clone["is_hologram_trap_clone"] = true
+													clone["skill"] = null
+													clone["active_skill"] = null
+													clone["brain"] = null
+												else:
+													if "id" in clone: clone.id = c_id
+													if "x" in clone: clone.x = b_x + randf_range(-40, 40)
+													if "y" in clone: clone.y = b_y + randf_range(-40, 40)
+													if "damage" in clone: clone.damage = 0.0
+													if "hp" in clone: clone.hp = 10.0
+													if "max_hp" in clone: clone.max_hp = 10.0
+
+													if clone.has_method("set_meta"):
+														clone.set_meta("is_hologram", true)
+														clone.set_meta("hologram_owner_id", b_id)
+														clone.set_meta("is_delayed_clone", true)
+														clone.set_meta("clone_duration", 10.0)
+														clone.set_meta("is_hologram_trap_clone", true)
+													elif "is_hologram" in clone:
+														clone.is_hologram = true
+														clone.hologram_owner_id = b_id
+														clone.is_delayed_clone = true
+														clone.clone_duration = 10.0
+														clone.is_hologram_trap_clone = true
+													if "skill" in clone: clone.skill = ""
+													if "active_skill" in clone: clone.active_skill = null
+
+												if typeof(b) == TYPE_OBJECT:
+													var h_clones = []
+													if b.has_method("has_meta") and b.has_meta("hologram_clones"): h_clones = b.get_meta("hologram_clones")
+													elif "hologram_clones" in b: h_clones = b.hologram_clones
+													h_clones.append(clone)
+													if b.has_method("set_meta"): b.set_meta("hologram_clones", h_clones)
+													elif "hologram_clones" in b: b.hologram_clones = h_clones
+												elif typeof(b) == TYPE_DICTIONARY:
+													if not b.has("hologram_clones"): b["hologram_clones"] = []
+													b["hologram_clones"].append(clone)
+
+												if typeof(world) == TYPE_OBJECT and "balls" in world and typeof(world.balls) == TYPE_ARRAY:
+													world.balls.append(clone)
+										break
+
 						elif h_kind == "bone_wall":
 							var is_active = h.get("active", true) if typeof(h) == TYPE_DICTIONARY else (h.active if "active" in h else (h.get_meta("active") if h.has_method("has_meta") and h.has_meta("active") else true))
 							var h_hp = h.get("hp", 1.0) if typeof(h) == TYPE_DICTIONARY else (h.hp if "hp" in h else (h.get_meta("hp") if h.has_method("has_meta") and h.has_meta("hp") else 1.0))

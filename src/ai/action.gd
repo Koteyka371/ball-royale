@@ -511,6 +511,73 @@ func _attempt_damage_internal(attacker, target) -> void:
 				events.append({'type': 'visual_effect', 'data': {'type': 'shield_block', 'x': tgt_x, 'y': tgt_y}})
 			return
 
+	var is_target_holo = false
+	if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("is_hologram"): is_target_holo = target.get_meta("is_hologram")
+	elif typeof(target) == TYPE_DICTIONARY and target.has("is_hologram"): is_target_holo = target.is_hologram
+	elif typeof(target) == TYPE_OBJECT and "is_hologram" in target: is_target_holo = target.is_hologram
+
+	if is_target_holo:
+		var is_trap_clone = false
+		if typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("is_hologram_trap_clone"): is_trap_clone = target.get_meta("is_hologram_trap_clone")
+		elif typeof(target) == TYPE_DICTIONARY and target.has("is_hologram_trap_clone"): is_trap_clone = target.is_hologram_trap_clone
+		elif typeof(target) == TYPE_OBJECT and "is_hologram_trap_clone" in target: is_trap_clone = target.is_hologram_trap_clone
+
+		if is_trap_clone:
+			var is_stunned = false
+			if typeof(attacker) == TYPE_OBJECT and "is_stunned" in attacker: is_stunned = attacker.is_stunned
+			elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("is_stunned"): is_stunned = attacker.is_stunned
+			elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("is_stunned"): is_stunned = attacker.get_meta("is_stunned")
+
+			if not is_stunned:
+				var speed_mult = 1.0
+				if typeof(attacker) == TYPE_OBJECT and "speed_mult" in attacker: speed_mult = attacker.speed_mult
+				elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("speed_mult"): speed_mult = attacker.speed_mult
+				elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("speed_mult"): speed_mult = attacker.get_meta("speed_mult")
+
+				speed_mult *= 0.9
+
+				if typeof(attacker) == TYPE_OBJECT and "speed_mult" in attacker: attacker.speed_mult = speed_mult
+				elif typeof(attacker) == TYPE_DICTIONARY: attacker.speed_mult = speed_mult
+				elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"): attacker.set_meta("speed_mult", speed_mult)
+		if typeof(attacker) == TYPE_OBJECT and "minimap_ping_timer" in attacker: attacker.minimap_ping_timer = 3.0
+		elif typeof(attacker) == TYPE_DICTIONARY: attacker.minimap_ping_timer = 3.0
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"): attacker.set_meta("minimap_ping_timer", 3.0)
+
+		var att_x = 0.0
+		var att_y = 0.0
+		if typeof(attacker) == TYPE_OBJECT:
+			if "x" in attacker: att_x = attacker.x
+			if "y" in attacker: att_y = attacker.y
+		elif typeof(attacker) == TYPE_DICTIONARY:
+			if attacker.has("x"): att_x = attacker.x
+			if attacker.has("y"): att_y = attacker.y
+
+		if self.world != null and "events" in self.world and typeof(self.world.events) == TYPE_ARRAY:
+			self.world.events.append({'type': 'minimap_ping', 'data': {'x': att_x, 'y': att_y, 'color': 'red', 'duration': 3.0}})
+
+		var is_att_alive = true
+		if typeof(attacker) == TYPE_OBJECT and "alive" in attacker: is_att_alive = attacker.alive
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("alive"): is_att_alive = attacker.alive
+
+		if is_att_alive:
+			if typeof(attacker) == TYPE_OBJECT and "hp" in attacker:
+				attacker.hp -= 5.0
+				if attacker.hp <= 0:
+					attacker.alive = false
+					var holo_owner = "deployable_hologram_trap"
+					if typeof(target) == TYPE_OBJECT and "hologram_owner_id" in target: holo_owner = target.hologram_owner_id
+					elif typeof(target) == TYPE_DICTIONARY and target.has("hologram_owner_id"): holo_owner = target.hologram_owner_id
+					if "killer" in attacker: attacker.killer = holo_owner
+					elif typeof(attacker) == TYPE_DICTIONARY: attacker.killer = holo_owner
+			elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("hp"):
+				attacker.hp -= 5.0
+				if attacker.hp <= 0:
+					attacker.alive = false
+					var holo_owner = "deployable_hologram_trap"
+					if typeof(target) == TYPE_OBJECT and "hologram_owner_id" in target: holo_owner = target.hologram_owner_id
+					elif typeof(target) == TYPE_DICTIONARY and target.has("hologram_owner_id"): holo_owner = target.hologram_owner_id
+					attacker.killer = holo_owner
+
 
 	var att_btype = ""
 	var att_team = ""

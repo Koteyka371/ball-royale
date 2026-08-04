@@ -284,18 +284,35 @@ class Action:
             })
 
         if getattr(target, "is_hologram", False):
-            attacker.minimap_ping_timer = 3.0
-            if hasattr(self.world, "events"):
-                events = self.world.events if isinstance(self.world.events, list) else []
-                events.append({'type': 'minimap_ping', 'data': {'x': attacker.x, 'y': attacker.y, 'color': 'red', 'duration': 3.0}})
+            if getattr(target, "is_hologram_trap_clone", False):
+                attacker.minimap_ping_timer = 3.0
+                if hasattr(self.world, "events"):
+                    events = self.world.events if isinstance(self.world.events, list) else []
+                    events.append({'type': 'minimap_ping', 'data': {'x': attacker.x, 'y': attacker.y, 'color': 'red', 'duration': 3.0}})
 
-            minor_damage = 5.0
-            if getattr(attacker, "alive", True):
-                if hasattr(attacker, "hp"):
-                    attacker.hp -= minor_damage
-                    if attacker.hp <= 0:
-                        attacker.alive = False
-                        attacker.killer = getattr(target, "hologram_owner_id", "deployable_hologram_trap")
+                minor_damage = 5.0
+                if getattr(attacker, "alive", True):
+                    if hasattr(attacker, "hp"):
+                        attacker.hp -= minor_damage
+                        if attacker.hp <= 0:
+                            attacker.alive = False
+                            attacker.killer = getattr(target, "hologram_owner_id", "deployable_hologram_trap")
+
+                    if not getattr(attacker, "is_stunned", False):
+                        attacker.speed_mult = getattr(attacker, "speed_mult", 1.0) * 0.9
+            else:
+                attacker.minimap_ping_timer = 3.0
+                if hasattr(self.world, "events"):
+                    events = self.world.events if isinstance(self.world.events, list) else []
+                    events.append({'type': 'minimap_ping', 'data': {'x': attacker.x, 'y': attacker.y, 'color': 'red', 'duration': 3.0}})
+
+                minor_damage = 5.0
+                if getattr(attacker, "alive", True):
+                    if hasattr(attacker, "hp"):
+                        attacker.hp -= minor_damage
+                        if attacker.hp <= 0:
+                            attacker.alive = False
+                            attacker.killer = getattr(target, "hologram_owner_id", "deployable_hologram_trap")
 
         # Chameleon logic
         if getattr(attacker, "ball_type", "") == "chameleon" and getattr(attacker, "team", "") != getattr(target, "team", ""):
