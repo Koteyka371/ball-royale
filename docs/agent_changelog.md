@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1744] Silent Steps Mutator — *2026-08-04 22:08:13 UTC*
+
+A game mutator that makes all players completely silent, disabling sound-based traps and effects.
+
+---
+
 ## [idea-1805] Mirror Dimension Event — *2026-08-04 19:10:17 UTC*
 
 Balls enter a mirror dimension where they interact with shadows of other balls.
