@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1797] Alliance Tournaments — *2026-08-04 00:53:15 UTC*
+
+Host special alliance tournaments where partnered guilds can form combined teams to compete against other alliances. Winning these tournaments would yield unique cosmetics or high resource rewards shared among all allied guilds.
+
+---
+
 ## [idea-1771] Quantum Shifter Trap — *2026-08-03 20:32:59 UTC*
 
 A deployable trap that, when triggered, instantly swaps the position of the victim with the trapper, confusing the enemy and allowing the trapper to escape or set up a secondary ambush.
