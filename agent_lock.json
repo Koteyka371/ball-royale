@@ -171,9 +171,9 @@
     "agent-21": {
       "name": "Jules Worker 21",
       "area": "ai-core",
-      "status": "assigned",
+      "status": "working",
       "task_id": "idea-1813",
-      "started_at": "2026-08-04T23:30:06.902970+00:00",
+      "started_at": "2026-08-04T23:33:49.371859+00:00",
       "cycles_today": 0
     },
     "agent-22": {
