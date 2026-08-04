@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1794] Weather-Adaptive Decoys — *2026-08-04 14:40:27 UTC*
+
+Decoys deployed by tricksters or traps dynamically inherit properties based on the current extreme weather. For example, a decoy placed in a blizzard might explode into a freezing blast instead of standard damage, or a decoy in acid rain could leave behind a neutralizing puddle upon destruction.
+
+---
+
 ## [idea-1786] Payload Overcharge Events — *2026-08-04 14:31:26 UTC*
 
 Occasionally, a neutral overcharge battery spawns on the map. If a player brings it to their team's payload, it unlocks a massive temporary boost (e.g., global healing aura, immense speed, or instant destruction of enemy structures) for 15 seconds, creating high-priority secondary objectives.
