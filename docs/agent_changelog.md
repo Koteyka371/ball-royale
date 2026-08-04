@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1796] Guild Mercenaries — *2026-08-04 18:01:40 UTC*
+
+Allow guilds to hire AI-controlled mercenary balls to defend their territories or attack rival guilds during wars. These mercenaries could have distinct traits or abilities based on the level of the guild.
+
+---
+
 ## [idea-1783] Escort Boss Mode — *2026-08-04 17:41:12 UTC*
 
 Each team must escort a powerful boss AI to the enemy base. The boss attacks nearby enemies and heals allies, but moves very slowly.
