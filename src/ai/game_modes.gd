@@ -36378,7 +36378,7 @@ class SolarFlareMode extends GameMode:
 	func _init():
 		super()
 		name = "Solar Flare"
-		description = "Periodically, the arena suffers an extreme solar flare that disables all deployed hazards and traps and prevents active skills from regenerating for 5 seconds."
+		description = "During a flare, balls take DOT damage over time if not hiding in shadows or under indestructible walls. Electronic items and shields are temporarily disabled."
 
 	func tick(world, balls: Array, delta: float = 0.016) -> void:
 		super.tick(world, balls, delta)
@@ -36393,9 +36393,9 @@ class SolarFlareMode extends GameMode:
 				world.set_meta("solar_flare_active", true) if world.has_method("set_meta") else null
 
 			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
-				world.add_event("solar_flare_start", {"message": "Solar Flare Active! Hazards disabled and skills paused!"})
+				world.add_event("solar_flare_start", {"message": "Solar Flare Active! Seek shadow or indestructible walls!"})
 			elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
-				world.events.append({"type": "solar_flare_start", "message": "Solar Flare Active! Hazards disabled and skills paused!"})
+				world.events.append({"type": "solar_flare_start", "message": "Solar Flare Active! Seek shadow or indestructible walls!"})
 
 			for b in balls:
 				if typeof(b) == TYPE_DICTIONARY:
@@ -36429,6 +36429,7 @@ class SolarFlareMode extends GameMode:
 				if typeof(b) == TYPE_DICTIONARY:
 					if b.has("base_perception_radius"):
 						b["perception_radius"] = b["base_perception_radius"]
+					b["electronic_items_disabled"] = false
 				elif typeof(b) == TYPE_OBJECT:
 					if b.has_meta("base_perception_radius"):
 						var b_pr = b.get_meta("base_perception_radius")
@@ -36436,6 +36437,10 @@ class SolarFlareMode extends GameMode:
 							b.perception_radius = b_pr
 						elif b.has_method("set_meta"):
 							b.set_meta("perception_radius", b_pr)
+					if "electronic_items_disabled" in b:
+						b.electronic_items_disabled = false
+					elif b.has_method("set_meta"):
+						b.set_meta("electronic_items_disabled", false)
 
 		var hazards = null
 		if typeof(world) == TYPE_DICTIONARY and ("arena" in world) and typeof(world.arena) == TYPE_DICTIONARY and world.arena.has("hazards"):
@@ -36458,6 +36463,148 @@ class SolarFlareMode extends GameMode:
 						h["is_disabled_by_flare"] = is_flaring
 					elif typeof(h) == TYPE_OBJECT:
 						h.set_meta("is_disabled_by_flare", is_flaring) if h.has_method("set_meta") else null
+
+		if is_flaring:
+			var sun_dx = 1.0
+			var sun_dy = 1.0
+			var sun_len = sqrt(sun_dx * sun_dx + sun_dy * sun_dy)
+			sun_dx = sun_dx / sun_len
+			sun_dy = sun_dy / sun_len
+
+			var walls = []
+			var shadows = []
+			if hazards != null and typeof(hazards) == TYPE_ARRAY:
+				for h in hazards:
+					var hk = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						hk = h.get("kind", "")
+					elif typeof(h) == TYPE_OBJECT:
+						if h.has_method("get_meta") and h.has_meta("kind"):
+							hk = h.get_meta("kind")
+						elif "kind" in h:
+							hk = h.kind
+					if hk == "indestructible_wall":
+						walls.append(h)
+					elif hk.find("shadow") != -1:
+						shadows.append(h)
+
+			for b in balls:
+				var alive = true
+				if typeof(b) == TYPE_DICTIONARY:
+					alive = b.get("alive", true)
+				elif typeof(b) == TYPE_OBJECT:
+					alive = b.get_meta("alive") if b.has_meta("alive") else (b.alive if "alive" in b else true)
+
+				if not alive:
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					bx = b.get("x", 0.0)
+					by = b.get("y", 0.0)
+				elif typeof(b) == TYPE_OBJECT:
+					bx = b.x if "x" in b else 0.0
+					by = b.y if "y" in b else 0.0
+
+				var in_shade = false
+				for s in shadows:
+					var sx = 0.0
+					var sy = 0.0
+					var sr = 0.0
+					if typeof(s) == TYPE_DICTIONARY:
+						sx = s.get("x", 0.0)
+						sy = s.get("y", 0.0)
+						sr = s.get("radius", 0.0)
+					elif typeof(s) == TYPE_OBJECT:
+						sx = s.x if "x" in s else 0.0
+						sy = s.y if "y" in s else 0.0
+						sr = s.radius if "radius" in s else 0.0
+
+					var dx = bx - sx
+					var dy = by - sy
+					if sqrt(dx*dx + dy*dy) <= sr:
+						in_shade = true
+						break
+
+				if not in_shade:
+					for w in walls:
+						var wx = 0.0
+						var wy = 0.0
+						var ww = 50.0
+						var wh = 50.0
+						if typeof(w) == TYPE_DICTIONARY:
+							wx = w.get("x", 0.0)
+							wy = w.get("y", 0.0)
+							ww = w.get("width", 50.0)
+							wh = w.get("height", 50.0)
+						elif typeof(w) == TYPE_OBJECT:
+							wx = w.x if "x" in w else 0.0
+							wy = w.y if "y" in w else 0.0
+							ww = w.width if "width" in w else 50.0
+							wh = w.height if "height" in w else 50.0
+
+						var dx = bx - wx
+						var dy = by - wy
+						var dot = dx * sun_dx + dy * sun_dy
+						if dot > 0 and dot < 200:
+							var perp_dist = abs(dx * -sun_dy + dy * sun_dx)
+							var max_dim = max(ww, wh)
+							if perp_dist < max_dim:
+								in_shade = true
+								break
+
+				if not in_shade:
+					var damage = 25.0 * delta
+					if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+						b.take_damage(damage, null)
+					else:
+						var hp = 100.0
+						if typeof(b) == TYPE_DICTIONARY:
+							hp = b.get("hp", 100.0)
+							b["hp"] = hp - damage
+							if b["hp"] <= 0:
+								b["hp"] = 0.0
+								b["alive"] = false
+						elif typeof(b) == TYPE_OBJECT:
+							hp = b.get_meta("hp") if b.has_meta("hp") else (b.hp if "hp" in b else 100.0)
+							var nhp = hp - damage
+							if "hp" in b:
+								b.hp = nhp
+							elif b.has_method("set_meta"):
+								b.set_meta("hp", nhp)
+
+							if nhp <= 0:
+								if "hp" in b:
+									b.hp = 0.0
+								elif b.has_method("set_meta"):
+									b.set_meta("hp", 0.0)
+								if "alive" in b:
+									b.alive = false
+								elif b.has_method("set_meta"):
+									b.set_meta("alive", false)
+
+				var shields = ["shield_active", "has_aegis_shield", "mirror_shield_active", "directional_shield_active", "deflector_shield_active", "kinetic_shield_active", "nemesis_shield_active", "bubble_shield_active", "plasma_shield_active", "crystal_armor_active"]
+				for s in shields:
+					if typeof(b) == TYPE_DICTIONARY:
+						if b.get(s, false):
+							b[s] = false
+					elif typeof(b) == TYPE_OBJECT:
+						var val = b.get_meta(s) if b.has_meta(s) else (b.get(s) if s in b else false)
+						if val:
+							if s in b:
+								b.set(s, false)
+							elif b.has_method("set_meta"):
+								b.set_meta(s, false)
+
+				if typeof(b) == TYPE_DICTIONARY:
+					b["electronic_items_disabled"] = true
+				elif typeof(b) == TYPE_OBJECT:
+					if "electronic_items_disabled" in b:
+						b.electronic_items_disabled = true
+					elif b.has_method("set_meta"):
+						b.set_meta("electronic_items_disabled", true)
+
 
 class ReverseTugOfWarMode extends GameMode:
 	var payload = null
