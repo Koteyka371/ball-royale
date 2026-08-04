@@ -75920,3 +75920,177 @@ class SuddenDeathEventMode extends "res://src/ai/game_modes.gd".GameMode:
 				b._sudden_death_last_hp = current_hp
 
 GAME_MODES['sudden_death_event'] = SuddenDeathEventMode.new()
+
+
+class BossEscortMode extends GameMode:
+	var bosses_spawned = false
+	var base_a_x = 100.0
+	var base_a_y = 500.0
+	var base_b_x = 900.0
+	var base_b_y = 500.0
+	var bosses = []
+	var winner_team = ""
+
+	func _init():
+		name = "Boss Escort"
+		description = "Each team must escort a powerful boss AI to the enemy base. The boss attacks nearby enemies and heals allies, but moves very slowly."
+
+	func setup(world: Object, balls: Array):
+		super.setup(world, balls)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world and "arena" in world and world.arena != null:
+			arena_width = world.arena.get("width", 1000)
+			arena_height = world.arena.get("height", 1000)
+
+		base_a_x = arena_width * 0.1
+		base_a_y = arena_height / 2.0
+		base_b_x = arena_width * 0.9
+		base_b_y = arena_height / 2.0
+
+		var b_a = {
+			"id": randi() % 100000 + 100000,
+			"x": base_a_x,
+			"y": base_a_y,
+			"team": "Team A",
+			"ball_type": "boss",
+			"alive": true,
+			"hp": 5000.0,
+			"max_hp": 5000.0,
+			"speed": 10.0,
+			"vx": 0.0,
+			"vy": 0.0,
+			"radius": 30.0,
+			"target_x": base_b_x,
+			"target_y": base_b_y,
+			"attack_cooldown": 0.0,
+			"heal_cooldown": 0.0,
+			"is_boss_ai": true
+		}
+		var b_b = {
+			"id": randi() % 100000 + 100000,
+			"x": base_b_x,
+			"y": base_b_y,
+			"team": "Team B",
+			"ball_type": "boss",
+			"alive": true,
+			"hp": 5000.0,
+			"max_hp": 5000.0,
+			"speed": 10.0,
+			"vx": 0.0,
+			"vy": 0.0,
+			"radius": 30.0,
+			"target_x": base_a_x,
+			"target_y": base_a_y,
+			"attack_cooldown": 0.0,
+			"heal_cooldown": 0.0,
+			"is_boss_ai": true
+		}
+
+		bosses = [b_a, b_b]
+
+		for b in bosses:
+			balls.append(b)
+
+		var team_a = []
+		var team_b = []
+		for b in balls:
+			var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type if "ball_type" in b else ""
+			var is_boss = b.get("is_boss_ai", false) if typeof(b) == TYPE_DICTIONARY else false
+			if not is_boss and b_type != "spectator":
+				if team_a.size() <= team_b.size():
+					if typeof(b) == TYPE_DICTIONARY:
+						b["team"] = "Team A"
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("team", "Team A")
+					elif "team" in b:
+						b.team = "Team A"
+					team_a.append(b)
+				else:
+					if typeof(b) == TYPE_DICTIONARY:
+						b["team"] = "Team B"
+					elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+						b.set_meta("team", "Team B")
+					elif "team" in b:
+						b.team = "Team B"
+					team_b.append(b)
+
+	func tick(world: Object, balls: Array, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		for boss in bosses:
+			if not boss.get("alive", false):
+				continue
+
+			var dx = boss.get("target_x", 0) - boss.get("x", 0)
+			var dy = boss.get("target_y", 0) - boss.get("y", 0)
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist > 50:
+				var nx = dx / dist
+				var ny = dy / dist
+				boss["x"] = boss.get("x", 0) + nx * boss.get("speed", 10.0) * delta
+				boss["y"] = boss.get("y", 0) + ny * boss.get("speed", 10.0) * delta
+			else:
+				winner_team = boss.get("team", "")
+				break
+
+			var atk_cd = boss.get("attack_cooldown", 0.0) - delta
+			boss["attack_cooldown"] = atk_cd
+
+			var heal_cd = boss.get("heal_cooldown", 0.0) - delta
+			boss["heal_cooldown"] = heal_cd
+
+			var boss_x = boss.get("x", 0)
+			var boss_y = boss.get("y", 0)
+			var boss_team = boss.get("team", "")
+
+			for b in balls:
+				var is_boss = b.get("is_boss_ai", false) if typeof(b) == TYPE_DICTIONARY else false
+				var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive if "alive" in b else false
+				var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.ball_type if "ball_type" in b else ""
+
+				if is_boss or not b_alive or b_type == "spectator":
+					continue
+
+				var b_team = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					b_team = b.get("team", "")
+				elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("team"):
+					b_team = b.get_meta("team")
+				elif "team" in b:
+					b_team = b.team
+
+				var b_x = b.get("x", 0) if typeof(b) == TYPE_DICTIONARY else b.x if "x" in b else 0
+				var b_y = b.get("y", 0) if typeof(b) == TYPE_DICTIONARY else b.y if "y" in b else 0
+				var b_dist = sqrt(pow(b_x - boss_x, 2) + pow(b_y - boss_y, 2))
+
+				if b_team != boss_team and b_dist < 150:
+					if atk_cd <= 0:
+						if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+							b.take_damage(20.0)
+						else:
+							var cur_hp = b.get("hp", 100) if typeof(b) == TYPE_DICTIONARY else b.hp if "hp" in b else 100
+							var new_hp = cur_hp - 20.0
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = new_hp
+								if new_hp <= 0: b["alive"] = false
+							else:
+								b.hp = new_hp
+								if new_hp <= 0: b.alive = false
+						boss["attack_cooldown"] = 1.0
+						atk_cd = 1.0
+				elif b_team == boss_team and b_dist < 200:
+					if heal_cd <= 0:
+						var cur_hp = b.get("hp", 100) if typeof(b) == TYPE_DICTIONARY else b.hp if "hp" in b else 100
+						var max_hp = b.get("max_hp", 100) if typeof(b) == TYPE_DICTIONARY else b.max_hp if "max_hp" in b else 100
+						var new_hp = min(cur_hp + 10.0, max_hp)
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = new_hp
+						else:
+							b.hp = new_hp
+						boss["heal_cooldown"] = 2.0
+						heal_cd = 2.0
+
+GAME_MODES['boss_escort'] = BossEscortMode.new()

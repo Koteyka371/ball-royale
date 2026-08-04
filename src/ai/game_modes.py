@@ -48412,3 +48412,114 @@ class SuddenDeathEventMode(GameMode):
                 setattr(b, "_sudden_death_last_hp", current_hp)
 
 GAME_MODES['sudden_death_event'] = SuddenDeathEventMode()
+
+
+class BossEscortMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Boss Escort"
+        self.description = "Each team must escort a powerful boss AI to the enemy base. The boss attacks nearby enemies and heals allies, but moves very slowly."
+        self.bosses_spawned = False
+        self.base_a_x, self.base_a_y = 100.0, 500.0
+        self.base_b_x, self.base_b_y = 900.0, 500.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        if hasattr(world, "arena"):
+            arena_width = getattr(world.arena, "width", 1000)
+            arena_height = getattr(world.arena, "height", 1000)
+            self.base_a_x, self.base_a_y = arena_width * 0.1, arena_height / 2
+            self.base_b_x, self.base_b_y = arena_width * 0.9, arena_height / 2
+
+        class BossAI:
+            def __init__(self, x, y, team, target_x, target_y):
+                self.id = id(self) % 100000
+                self.x = x
+                self.y = y
+                self.team = team
+                self.ball_type = "boss"
+                self.alive = True
+                self.hp = 5000.0
+                self.max_hp = 5000.0
+                self.speed = 10.0
+                self.vx = 0.0
+                self.vy = 0.0
+                self.radius = 30.0
+                self.target_x = target_x
+                self.target_y = target_y
+                self.attack_cooldown = 0.0
+                self.heal_cooldown = 0.0
+
+            def take_damage(self, amount, source=None):
+                self.hp -= amount
+                if self.hp <= 0:
+                    self.alive = False
+
+        self.bosses = [
+            BossAI(self.base_a_x, self.base_a_y, "Team A", self.base_b_x, self.base_b_y),
+            BossAI(self.base_b_x, self.base_b_y, "Team B", self.base_a_x, self.base_a_y)
+        ]
+        balls.extend(self.bosses)
+
+        team_a = []
+        team_b = []
+        for b in balls:
+            if b not in self.bosses and getattr(b, "ball_type", "") != "spectator":
+                if len(team_a) <= len(team_b):
+                    b.team = "Team A"
+                    team_a.append(b)
+                else:
+                    b.team = "Team B"
+                    team_b.append(b)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        if not hasattr(self, 'bosses'):
+            return
+
+        for boss in self.bosses:
+            if not getattr(boss, "alive", False):
+                continue
+
+            # Move towards target base slowly
+            dx = boss.target_x - boss.x
+            dy = boss.target_y - boss.y
+            dist = math.hypot(dx, dy)
+            if dist > 50: # Arrival threshold
+                nx, ny = dx / dist, dy / dist
+                boss.x += nx * boss.speed * delta
+                boss.y += ny * boss.speed * delta
+            else:
+                # Reached enemy base! Win condition
+                self.winner = boss.team
+                break
+
+            # Attack enemies / heal allies
+            boss.attack_cooldown = getattr(boss, 'attack_cooldown', 0) - delta
+            boss.heal_cooldown = getattr(boss, 'heal_cooldown', 0) - delta
+
+            for b in balls:
+                if b == boss or not getattr(b, "alive", False) or getattr(b, "ball_type", "") == "spectator":
+                    continue
+
+                b_team = getattr(b, "team", "")
+                dist = math.hypot(getattr(b, "x", 0) - boss.x, getattr(b, "y", 0) - boss.y)
+
+                if b_team != boss.team and dist < 150:
+                    # Enemy nearby, attack
+                    if boss.attack_cooldown <= 0:
+                        if hasattr(b, "take_damage"):
+                            b.take_damage(20.0, source=boss)
+                        else:
+                            b.hp = getattr(b, "hp", 100) - 20.0
+                        boss.attack_cooldown = 1.0 # 1 attack per sec
+
+                elif b_team == boss.team and dist < 200:
+                    # Ally nearby, heal
+                    if boss.heal_cooldown <= 0:
+                        b.hp = min(getattr(b, "hp", 100) + 10.0, getattr(b, "max_hp", 100))
+                        boss.heal_cooldown = 2.0 # 1 heal per 2 sec
+
+GAME_MODES["boss_escort"] = BossEscortMode()
