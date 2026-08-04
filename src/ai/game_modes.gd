@@ -40891,17 +40891,18 @@ class DecreasingSafeZonesMode extends GameMode:
 
 	func _init():
 		name = "Decreasing Safe Zones"
-		description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round."
+		description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The size of each safe zone decreases each round until they disappear completely, encouraging tight close-combat scenarios."
 
 	func setup(world, balls: Array) -> void:
 		super.setup(world, balls)
 		round_timer = max_round_timer
 		num_zones = 5
+		zone_radius = 80.0
 		_spawn_zones(world)
 
 	func _spawn_zones(world) -> void:
 		zones.clear()
-		if num_zones <= 0:
+		if num_zones <= 0 or zone_radius <= 0:
 			return
 
 		var arena_width = 1000.0
@@ -40974,7 +40975,7 @@ class DecreasingSafeZonesMode extends GameMode:
 					else:
 						b.set("hp", hp)
 
-			num_zones -= 1
+			zone_radius = max(0.0, zone_radius - 20.0)
 			round_timer = max_round_timer
 			_spawn_zones(world)
 

@@ -59,6 +59,7 @@ def test_decreasing_safe_zones_mode():
     assert b_outside.id in world.dead_balls
 
     # Setup for next round should have happened
-    assert mode.num_zones == 4
-    assert len(mode.zones) == 4
+    assert mode.num_zones == 5
+    assert len(mode.zones) == 5
+    assert mode.zone_radius == 60.0
     assert mode.round_timer == mode.max_round_timer

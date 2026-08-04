@@ -25157,7 +25157,7 @@ class DecreasingSafeZonesMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Decreasing Safe Zones"
-        self.description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The number of safe zones decreases each round."
+        self.description = "Periodically, several small safe zones appear across the map. When the timer hits zero, players not inside a safe zone take massive damage. The size of each safe zone decreases each round until they disappear completely, encouraging tight close-combat scenarios."
         self.round_timer = 15.0
         self.max_round_timer = 15.0
         self.num_zones = 5
@@ -25168,12 +25168,13 @@ class DecreasingSafeZonesMode(GameMode):
         super().setup(world, balls)
         self.round_timer = self.max_round_timer
         self.num_zones = 5
+        self.zone_radius = 80.0
         self._spawn_zones(world)
 
     def _spawn_zones(self, world):
         import random
         self.zones = []
-        if self.num_zones <= 0:
+        if self.num_zones <= 0 or self.zone_radius <= 0:
             return
 
         arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
@@ -25222,7 +25223,7 @@ class DecreasingSafeZonesMode(GameMode):
                                 world.add_event("ball_died", {"id": b.id, "reason": "decreasing_safe_zones", "killer_id": -1})
 
             # Setup next round
-            self.num_zones -= 1
+            self.zone_radius = max(0.0, self.zone_radius - 20.0)
             self.round_timer = self.max_round_timer
             self._spawn_zones(world)
 
