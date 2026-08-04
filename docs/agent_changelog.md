@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1790] Reverse Safe Zones — *2026-08-04 07:55:06 UTC*
+
+Safe zones periodically swap. If you are inside a safe zone, you are taking continuous damage, meaning players need to constantly move out of the safe zones to avoid getting killed. After a while, they might swap back or become deadly.
+
+---
+
 ## [idea-1791] Shrinking Micro Safe Zones — *2026-08-04 07:11:31 UTC*
 
 Similar to decreasing safe zones, but instead of the number of zones decreasing, the size of each zone decreases until they disappear completely, encouraging tight close-combat scenarios.
