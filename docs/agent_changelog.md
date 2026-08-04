@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1811] Decoy Overdrive — *2026-08-04 22:08:20 UTC*
+
+A mode where generating more than 5 decoys causes them to link together with electricity, damaging any enemies that cross the connection.
+
+---
+
 ## [idea-1744] Silent Steps Mutator — *2026-08-04 22:08:13 UTC*
 
 A game mutator that makes all players completely silent, disabling sound-based traps and effects.
