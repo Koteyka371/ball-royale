@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1667] Snowball Growth — *2026-08-04 16:07:59 UTC*
+
+Rolling on ice patches makes the ball gradually increase in size and mass, increasing its collision damage and knockback but decreasing its acceleration.
+
+---
+
 ## [idea-1789] Bouncy Payload Mod — *2026-08-04 16:07:53 UTC*
 
 Add a mutator that makes the Tug of War payload 10x bouncier and faster.
