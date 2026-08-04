@@ -48492,6 +48492,83 @@ GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode()
 GAME_MODES["thermal_payload"] = ThermalPayloadMutatorMode()
 
 
+class ExtremeMicroclimateMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Extreme Microclimate"
+        self.description = "A rare hazard where weather conditions in a small sector flip between extreme opposites (e.g., heatwave to blizzard) every few seconds, requiring rapid adaptation to moving and fighting."
+        self.sectors = []
+        self.flip_timer = 0.0
+        self.flip_interval = 5.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        arena_w = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_h = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.sectors = []
+        for _ in range(3):
+            self.sectors.append({
+                "x": random.uniform(100, arena_w - 100),
+                "y": random.uniform(100, arena_h - 100),
+                "radius": random.uniform(120, 180),
+                "weather": random.choice(["heatwave", "blizzard"])
+            })
+        self.flip_timer = 0.0
+
+        for b in balls:
+            if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator":
+                b.base_speed = getattr(b, "base_speed", getattr(b, "speed", 100.0))
+                b.base_damage = getattr(b, "base_damage", getattr(b, "damage", 10.0))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+
+        if not hasattr(self, "sectors"):
+            return
+
+        self.flip_timer += delta
+        if self.flip_timer >= self.flip_interval:
+            self.flip_timer = 0.0
+            for sector in self.sectors:
+                if sector["weather"] == "heatwave":
+                    sector["weather"] = "blizzard"
+                else:
+                    sector["weather"] = "heatwave"
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            in_sector = None
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            for sector in self.sectors:
+                dist_sq = (bx - sector["x"])**2 + (by - sector["y"])**2
+                if dist_sq <= sector["radius"]**2:
+                    in_sector = sector
+                    break
+
+            if in_sector:
+                base_speed = getattr(b, "base_speed", 100.0)
+
+                if in_sector["weather"] == "heatwave":
+                    b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), 0.1)
+                    b.speed_boost_multiplier = 1.3
+                    # Apply small damage over time
+                    b.hp -= 2.0 * delta
+                    if b.hp <= 0:
+                        b.alive = False
+
+                elif in_sector["weather"] == "blizzard":
+                    b.speed_debuff_timer = max(getattr(b, "speed_debuff_timer", 0.0), 0.1)
+                    b.speed_debuff_multiplier = 0.6
+                    # Apply extremely small damage (freeze)
+                    b.hp -= 0.5 * delta
+                    if b.hp <= 0:
+                        b.alive = False
+
 class TrampolineBoundaryMode(GameMode):
     def __init__(self):
         super().__init__()
@@ -48506,6 +48583,7 @@ class TrampolineBoundaryMode(GameMode):
             for wall in ["top", "bottom", "left", "right"]:
                 world.arena.boundary_states[wall] = "trampoline"
 
+GAME_MODES['extreme_microclimate'] = ExtremeMicroclimateMode()
 GAME_MODES['trampoline_boundary'] = TrampolineBoundaryMode()
 
 class SuddenDeathEventMode(GameMode):
