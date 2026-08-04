@@ -101,6 +101,9 @@ def test_deployable_hologram_trap():
     # Check enemy took minor feedback damage (5.0)
     assert enemy.hp == initial_hp - 5.0
 
+    # Check enemy got slowed
+    assert getattr(enemy, "speed_mult", 1.0) == 0.9
+
     # Check enemy revealed on minimap
     assert getattr(enemy, "minimap_ping_timer", 0.0) == 3.0
 

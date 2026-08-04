@@ -1091,6 +1091,7 @@ class GameMode:
                                     clone.hp = 10.0 # Make them fragile
                                     clone.max_hp = 10.0
                                     clone.clone_duration = 10.0
+                                    clone.is_hologram_trap_clone = True
 
                                     # Explicitly clear abilities for holograms
                                     clone.skill = None
