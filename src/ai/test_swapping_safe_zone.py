@@ -9,6 +9,11 @@ class MockArena:
 class MockWorld:
     def __init__(self):
         self.arena = MockArena()
+        self.events = []
+        self._events = []
+
+    def add_event(self, event_type, data):
+        self._events.append((event_type, data))
 
 class MockBall:
     def __init__(self, x, y):
@@ -62,3 +67,6 @@ def test_swapping_safe_zone_tick():
     # Now inside is dangerous, b1 should take damage, b2 should be safe
     # But note that `tick` applies damage *after* swapping.
     assert b1.damage_taken > 0
+
+    assert len(world.events) > 0
+    assert len(world._events) > 0

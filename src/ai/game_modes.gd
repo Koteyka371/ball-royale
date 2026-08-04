@@ -57912,14 +57912,51 @@ class SwappingSafeZoneMode extends GameMode:
 		zone_radius = min(arena_width, arena_height) * 0.4
 		swap_timer = 0.0
 		inside_is_safe = true
-
 	func tick(world, balls: Array, delta: float) -> void:
 		swap_timer += delta
+
+		# Continuous visual indicator of the zone
+		if world.has_method("add_event"):
+			var zone_type = "safe_zone_indicator"
+			var zone_color = "green"
+			if not inside_is_safe:
+				zone_type = "danger_zone_indicator"
+				zone_color = "red"
+
+			world.add_event("visual_effect", {
+				"type": zone_type,
+				"x": zone_x,
+				"y": zone_y,
+				"radius": zone_radius,
+				"duration": delta * 2,
+				"color": zone_color
+			})
+
 		if swap_timer >= swap_interval:
 			swap_timer = 0.0
 			inside_is_safe = not inside_is_safe
 
+			if world.has_method("add_event"):
+				world.add_event("zone_swap", {"message": "Safe Zone Swapped!"})
+
+			if "events" in world:
+				var flash_color = "green"
+				if not inside_is_safe:
+					flash_color = "red"
+				world.events.append({
+					"type": "visual_effect",
+					"data": {
+						"type": "zone_flash",
+						"x": zone_x,
+						"y": zone_y,
+						"radius": zone_radius,
+						"color": flash_color,
+						"duration": 1.0
+					}
+				})
+
 		var damage_this_tick = damage_per_second * delta
+
 
 		for b in balls:
 			if not b.get("alive") or b.get("ball_type") == "spectator":

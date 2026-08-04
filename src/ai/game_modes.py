@@ -35796,16 +35796,42 @@ class SwappingSafeZoneMode(GameMode):
         self.zone_radius = min(arena_width, arena_height) * 0.4
         self.swap_timer = 0.0
         self.inside_is_safe = True
-
     def tick(self, world, balls, delta=0.016):
         import math
 
         self.swap_timer += delta
+
+        # Continuous visual indicator of the zone
+        if hasattr(world, "add_event"):
+            world.add_event("visual_effect", {
+                "type": "safe_zone_indicator" if self.inside_is_safe else "danger_zone_indicator",
+                "x": self.zone_x,
+                "y": self.zone_y,
+                "radius": self.zone_radius,
+                "duration": delta * 2,
+                "color": "green" if self.inside_is_safe else "red"
+            })
+
         if self.swap_timer >= self.swap_interval:
             self.swap_timer = 0.0
             self.inside_is_safe = not self.inside_is_safe
+            if hasattr(world, "add_event"):
+                world.add_event("zone_swap", {"message": "Safe Zone Swapped!"})
+            if hasattr(world, "events"):
+                world.events.append({
+                    "type": "visual_effect",
+                    "data": {
+                        "type": "zone_flash",
+                        "x": self.zone_x,
+                        "y": self.zone_y,
+                        "radius": self.zone_radius,
+                        "color": "green" if self.inside_is_safe else "red",
+                        "duration": 1.0
+                    }
+                })
 
         damage_this_tick = self.damage_per_second * delta
+
 
         for b in balls:
             if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
