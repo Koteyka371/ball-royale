@@ -22490,6 +22490,7 @@ func execute(strategy: String, delta: float):
                                 elif "duration" in hazard:
                                     hazard.duration = 0.0
                             elif trap_variant == "swap":
+                                # Swap positions with the trap owner (idea-1763)
                                 var owner_id = null
                                 if hazard.has_method("get_meta") and hazard.has_meta("owner_id"):
                                     owner_id = hazard.get_meta("owner_id")
@@ -22510,6 +22511,7 @@ func execute(strategy: String, delta: float):
                                             break
 
                                     if owner_ball != null and owner_ball != self.ball:
+                                        # Swap positions logic implementation
                                         var temp_x = owner_ball.x
                                         var temp_y = owner_ball.y
                                         owner_ball.x = self.ball.x
