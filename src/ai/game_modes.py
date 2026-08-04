@@ -17544,7 +17544,7 @@ class TugOfWarMode(GameMode):
                     if vel_along_normal < 0:
                         restitution = 1.2
                         speed_mult = 1.0
-                        if hasattr(self, "mutators") and "bouncy_payload" in self.mutators:
+                        if (hasattr(self, "mutators") and "bouncy_payload" in self.mutators) or (hasattr(world, "mutators") and "bouncy_payload" in world.mutators):
                             restitution = 12.0
                             speed_mult = 10.0
 
@@ -17574,7 +17574,7 @@ class TugOfWarMode(GameMode):
                 py = arena_height - 50.0
                 pvy = -pvy * 0.9
             speed = math.hypot(pvx, pvy)
-            max_speed = 15000.0 if (hasattr(self, "mutators") and "bouncy_payload" in self.mutators) else 1500.0
+            max_speed = 15000.0 if ((hasattr(self, "mutators") and "bouncy_payload" in self.mutators) or (hasattr(world, "mutators") and "bouncy_payload" in world.mutators)) else 1500.0
             if speed > max_speed:
                 pvx = (pvx / speed) * max_speed
                 pvy = (pvy / speed) * max_speed
