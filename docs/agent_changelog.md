@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1798] Stellar Conjunction Event — *2026-08-04 15:47:12 UTC*
+
+An extremely rare late-game event where all balls' cooldowns are permanently reduced by 50% but damage taken is doubled, forcing a high-stakes fast-paced ending to the match.
+
+---
+
 ## [idea-1725] Time-Dilation Bumper — *2026-08-04 15:10:53 UTC*
 
 A variant of the standard bumper that, upon collision, not only knocks the player back but temporarily slows down the game time in a localized area around the bumper. It creates a matrix-style slow-motion zone, letting players plan their next bounce or dodge precisely while inside the bubble.
