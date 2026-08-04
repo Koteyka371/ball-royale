@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1802] Solar Flare Mode — *2026-08-04 15:10:47 UTC*
+
+An intense event where the sun emits random bursts of solar energy. During a flare, balls take DOT damage over time if not hiding in shadows or under indestructible walls. Electronic items and shields are temporarily disabled.
+
+---
+
 ## [idea-1794] Weather-Adaptive Decoys — *2026-08-04 14:40:27 UTC*
 
 Decoys deployed by tricksters or traps dynamically inherit properties based on the current extreme weather. For example, a decoy placed in a blizzard might explode into a freezing blast instead of standard damage, or a decoy in acid rain could leave behind a neutralizing puddle upon destruction.
