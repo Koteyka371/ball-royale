@@ -2467,7 +2467,7 @@ class Action:
             closest_bumper = None
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                 for hazard in self.world.arena.hazards:
-                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper"]:
+                    if getattr(hazard, "kind", "") in ["bumper", "electric_bumper", "magnetic_bumper", "link_bumper", "chain_reaction_bumper", "time_dilation_bumper"]:
                         dx = hazard.x - self.ball.x
                         dy = hazard.y - self.ball.y
                         dist_sq = dx*dx + dy*dy
@@ -12584,7 +12584,7 @@ class Action:
                                                 'type': 'visual_effect',
                                                 'data': {'type': 'link_line', 'x': self.ball.x, 'y': self.ball.y, 'target_x': target.x, 'target_y': target.y, 'color': 'purple'}
                                             })
-                        elif hazard.kind in ["bumper", "chain_reaction_bumper"]:
+                        elif hazard.kind in ["bumper", "chain_reaction_bumper", "time_dilation_bumper"]:
 
                             dx = self.ball.x - hazard.x
                             dy = self.ball.y - hazard.y
@@ -12658,6 +12658,29 @@ class Action:
                                     self.ball.attack_speed_buff_timer = getattr(self.ball, "attack_speed_buff_timer", 0.0) + 3.0
                                     if not ks_active:
                                         self.ball.speed_boost_timer = getattr(self.ball, "speed_boost_timer", 0.0) + 3.0
+
+                                # Time Dilation Bumper Logic
+                                if hazard.kind == "time_dilation_bumper":
+                                    current_tick = getattr(self.world, "tick", 0)
+                                    last_tick = getattr(hazard, "time_dilation_last_tick", -100)
+                                    # Cooldown of 60 ticks (approx 1 second)
+                                    if current_tick - last_tick > 60:
+                                        hazard.time_dilation_last_tick = current_tick
+                                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                            import random as _rnd
+                                            bubble_id = 999000 + len(self.world.arena.hazards) + _rnd.randint(0, 10000)
+                                            # Using a dynamically created generic class without a local def, or just type()
+                                            td_zone = type("Hazard", (), {})()
+                                            td_zone.id = bubble_id
+                                            td_zone.kind = "temporal_bubble"
+                                            td_zone.x = hazard.x
+                                            td_zone.y = hazard.y
+                                            td_zone.radius = 200.0
+                                            td_zone.duration = 3.0
+                                            td_zone.active = True
+                                            self.world.arena.hazards.append(td_zone)
+                                            if hasattr(self.world, "events"):
+                                                self.world.events.append({'type': 'visual_effect', 'data': {'type': 'explosion', 'x': hazard.x, 'y': hazard.y, 'radius': 200.0, 'color': 'cyan'}})
 
                                 # Chain Reaction Logic
                                 if hazard.kind == "chain_reaction_bumper":

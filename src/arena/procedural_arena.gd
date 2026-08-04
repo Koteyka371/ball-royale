@@ -216,7 +216,10 @@ func generate():
         elif r < 0.96:
             kind = "magnet"
         elif r < 0.98:
-            kind = "bumper" if randf() < 0.8 else "chain_reaction_bumper"
+            var r_bump = randf()
+            if r_bump < 0.7: kind = "bumper"
+            elif r_bump < 0.85: kind = "chain_reaction_bumper"
+            else: kind = "time_dilation_bumper"
         elif r < 0.983:
             kind = "shrink_ray_trap"
         elif r < 0.985:
@@ -299,7 +302,7 @@ func generate():
             hazards.append(new_hazard)
             continue
 
-        elif kind == "bumper":
+        elif kind in ["bumper", "time_dilation_bumper"]:
             radius = rng.randf_range(30.0, 60.0)
             damage = 0.0
             var s = get_random_spawn_point(radius)
