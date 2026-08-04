@@ -58382,6 +58382,7 @@ class SwappingSafeZoneMode extends GameMode:
 		return sqrt(dx * dx + dy * dy)
 
 var GAME_MODES = {
+	"extreme_microclimate": ExtremeMicroclimateMode.new(),
 	"boss_escort": BossEscortMode.new(),
 	"toxic_fog_event": ToxicFogEventMode.new(),
 	"geyser_hazards": GeyserHazardMode.new(),
@@ -76121,6 +76122,139 @@ GAME_MODES['mirror_clone_event'] = MirrorCloneEventMode.new()
 GAME_MODES["thermal_payload"] = ThermalPayloadMutatorMode.new()
 
 
+class ExtremeMicroclimateMode extends GameMode:
+	var sectors = []
+	var flip_timer = 0.0
+	var flip_interval = 5.0
+
+	func _init():
+		name = "Extreme Microclimate"
+		description = "A rare hazard where weather conditions in a small sector flip between extreme opposites (e.g., heatwave to blizzard) every few seconds, requiring rapid adaptation to moving and fighting."
+		sectors = []
+		flip_timer = 0.0
+		flip_interval = 5.0
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_w = 1000
+		var arena_h = 1000
+		if typeof(world) == TYPE_OBJECT and world.get("arena") != null:
+			arena_w = world.arena.get("width") if world.arena.get("width") != null else 1000
+			arena_h = world.arena.get("height") if world.arena.get("height") != null else 1000
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+			arena_w = world["arena"].get("width", 1000)
+			arena_h = world["arena"].get("height", 1000)
+
+		sectors.clear()
+		for i in range(3):
+			var weather_choice = "heatwave" if randf() < 0.5 else "blizzard"
+			sectors.append({
+				"x": randf_range(100, arena_w - 100),
+				"y": randf_range(100, arena_h - 100),
+				"radius": randf_range(120, 180),
+				"weather": weather_choice
+			})
+		flip_timer = 0.0
+
+		for b in balls:
+			var is_alive = false
+			var ball_type = null
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.get("alive") != null else false
+				ball_type = b.get("ball_type")
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				ball_type = b.get("ball_type")
+
+			if is_alive and ball_type != "spectator":
+				var speed_val = 100.0
+				var dmg_val = 10.0
+				if typeof(b) == TYPE_OBJECT:
+					speed_val = b.get("speed") if b.get("speed") != null else 100.0
+					dmg_val = b.get("damage") if b.get("damage") != null else 10.0
+					b.set("base_speed", b.get("base_speed") if b.get("base_speed") != null else speed_val)
+					b.set("base_damage", b.get("base_damage") if b.get("base_damage") != null else dmg_val)
+				elif typeof(b) == TYPE_DICTIONARY:
+					speed_val = b.get("speed", 100.0)
+					dmg_val = b.get("damage", 10.0)
+					b["base_speed"] = b.get("base_speed", speed_val)
+					b["base_damage"] = b.get("base_damage", dmg_val)
+
+	func tick(world, balls, delta = 0.016):
+		super.tick(world, balls, delta)
+
+		flip_timer += delta
+		if flip_timer >= flip_interval:
+			flip_timer = 0.0
+			for sector in sectors:
+				if sector["weather"] == "heatwave":
+					sector["weather"] = "blizzard"
+				else:
+					sector["weather"] = "heatwave"
+
+		for b in balls:
+			var is_alive = false
+			var ball_type = null
+			var bx = 0.0
+			var by = 0.0
+
+			if typeof(b) == TYPE_OBJECT:
+				is_alive = b.get("alive") if b.get("alive") != null else false
+				ball_type = b.get("ball_type")
+				bx = b.get("x") if b.get("x") != null else 0.0
+				by = b.get("y") if b.get("y") != null else 0.0
+			elif typeof(b) == TYPE_DICTIONARY:
+				is_alive = b.get("alive", false)
+				ball_type = b.get("ball_type")
+				bx = b.get("x", 0.0)
+				by = b.get("y", 0.0)
+
+			if not is_alive or ball_type == "spectator":
+				continue
+
+			var in_sector = null
+			for sector in sectors:
+				var dist_sq = pow(bx - sector["x"], 2) + pow(by - sector["y"], 2)
+				if dist_sq <= pow(sector["radius"], 2):
+					in_sector = sector
+					break
+
+			if in_sector != null:
+				if in_sector["weather"] == "heatwave":
+					if typeof(b) == TYPE_OBJECT:
+						b.set("speed_boost_timer", max(b.get("speed_boost_timer") if b.get("speed_boost_timer") != null else 0.0, 0.1))
+						b.set("speed_boost_multiplier", 1.3)
+						var hp = b.get("hp") if b.get("hp") != null else 100.0
+						hp -= 2.0 * delta
+						b.set("hp", hp)
+						if hp <= 0:
+							b.set("alive", false)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["speed_boost_timer"] = max(b.get("speed_boost_timer", 0.0), 0.1)
+						b["speed_boost_multiplier"] = 1.3
+						var hp = b.get("hp", 100.0)
+						hp -= 2.0 * delta
+						b["hp"] = hp
+						if hp <= 0:
+							b["alive"] = false
+				elif in_sector["weather"] == "blizzard":
+					if typeof(b) == TYPE_OBJECT:
+						b.set("speed_debuff_timer", max(b.get("speed_debuff_timer") if b.get("speed_debuff_timer") != null else 0.0, 0.1))
+						b.set("speed_debuff_multiplier", 0.6)
+						var hp = b.get("hp") if b.get("hp") != null else 100.0
+						hp -= 0.5 * delta
+						b.set("hp", hp)
+						if hp <= 0:
+							b.set("alive", false)
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["speed_debuff_timer"] = max(b.get("speed_debuff_timer", 0.0), 0.1)
+						b["speed_debuff_multiplier"] = 0.6
+						var hp = b.get("hp", 100.0)
+						hp -= 0.5 * delta
+						b["hp"] = hp
+						if hp <= 0:
+							b["alive"] = false
+
 class TrampolineBoundaryMode extends GameMode:
     func _init():
         super._init()
@@ -76147,6 +76281,7 @@ class TrampolineBoundaryMode extends GameMode:
                 for wall in ["top", "bottom", "left", "right"]:
                     arena.boundary_states[wall] = "trampoline"
 
+GAME_MODES['extreme_microclimate'] = ExtremeMicroclimateMode.new()
 GAME_MODES['trampoline_boundary'] = TrampolineBoundaryMode.new()
 
 class SuddenDeathEventMode extends "res://src/ai/game_modes.gd".GameMode:
