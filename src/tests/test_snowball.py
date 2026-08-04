@@ -83,3 +83,24 @@ def test_snowball_no_growth_wrong_type():
 
     assert b.radius == 10.0
     assert b.damage == 10.0
+
+def test_snowball_mass_and_speed():
+    w = MockWorld()
+    b = MockBall()
+    b.mass = 1.0
+    b.base_mass = 1.0
+    b.speed = 100.0
+    b.base_speed = 100.0
+    w.balls.append(b)
+    h = Hazard(50, 50, 40, "ice_patch")
+    w.arena.hazards.append(h)
+
+    act = Action(b, w)
+
+    assert b.mass == 1.0
+    assert b.speed == 100.0
+    act.execute("idle", 1.0) # move and grow
+
+    assert b.mass > 1.0
+    assert b.speed < 100.0
+    print(f"Mass: {b.mass}, Speed: {b.speed}")
