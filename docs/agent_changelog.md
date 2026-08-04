@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1789] Bouncy Payload Mod — *2026-08-04 16:07:53 UTC*
+
+Add a mutator that makes the Tug of War payload 10x bouncier and faster.
+
+---
+
 ## [idea-1798] Stellar Conjunction Event — *2026-08-04 15:47:12 UTC*
 
 An extremely rare late-game event where all balls' cooldowns are permanently reduced by 50% but damage taken is doubled, forcing a high-stakes fast-paced ending to the match.
