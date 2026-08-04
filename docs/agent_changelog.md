@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1783] Escort Boss Mode — *2026-08-04 17:41:12 UTC*
+
+Each team must escort a powerful boss AI to the enemy base. The boss attacks nearby enemies and heals allies, but moves very slowly.
+
+---
+
 ## [idea-1763] Quantum Swap Mine — *2026-08-04 17:41:05 UTC*
 
 A new trap type that, when triggered, swaps the triggering ball's position with the ball that deployed the trap. Can be used for surprise escapes or aggressive positioning.
