@@ -36128,6 +36128,7 @@ GAME_MODES = {
     "ticking_payload": TickingPayloadMode(),
     "reverse_tug_of_war": ReverseTugOfWarMode(),
     "shared_tug_of_war": SharedTugOfWarMode(),
+
     "reverse_gravity_event": ReverseGravityEventMode(),
     "physics_anomaly_event": PhysicsAnomalyEventMode(),
     "escort": EscortMode(),
@@ -48566,3 +48567,170 @@ class SuddenDeathEventMode(GameMode):
                 setattr(b, "_sudden_death_last_hp", current_hp)
 
 GAME_MODES['sudden_death_event'] = SuddenDeathEventMode()
+
+
+
+class TugOfWarMultiplePayloadsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Tug of War Multiple Payloads"
+        self.description = "Spawn three payloads instead of one. Both teams fight to push/pull the payloads to the opposing team's goal."
+        self.payloads = []
+        self.red_goal_x = 100.0
+        self.blue_goal_x = 900.0
+        self.timer = 180.0
+        self.mutators = []
+
+    def setup(self, world, balls) -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+
+        red_team = []
+        blue_team = []
+
+        for i, b in enumerate(valid_balls):
+            if i < mid:
+                b.team = "Red"
+                red_team.append(b)
+            else:
+                b.team = "Blue"
+                blue_team.append(b)
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.red_goal_x = 100.0
+        self.blue_goal_x = arena_width - 100.0
+
+        class PayloadObj:
+            pass
+
+        self.payloads = []
+        payload_ys = [arena_height * 0.25, arena_height * 0.5, arena_height * 0.75]
+        for py in payload_ys:
+            payload = PayloadObj()
+            payload.ball_type = "payload"
+            payload.is_payload = True
+            payload.is_invulnerable = True
+            payload.speed = 0.0
+            payload.vx = 0.0
+            payload.vy = 0.0
+            payload.base_speed = 0.0
+            payload.damage = 0.0
+            payload.base_damage = 0.0
+            payload.max_hp = 10000.0
+            payload.hp = 10000.0
+            payload.x = arena_width / 2.0
+            payload.y = py
+            payload.alive = True
+            payload.team = "Neutral"
+            payload.radius = 20.0
+            balls.append(payload)
+            self.payloads.append(payload)
+
+    def tick(self, world, balls, delta: float = 0.016) -> None:
+        if getattr(self, "timer", 0) > 0:
+            self.timer -= delta
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        for payload in self.payloads:
+            if payload and getattr(payload, "alive", False):
+                import math
+                if getattr(payload, "hp", 5000.0) < 100.0:
+                    payload.hp = 5000.0
+
+                px = getattr(payload, "x", arena_width / 2.0)
+                py = getattr(payload, "y", arena_height / 2.0)
+                pvx = getattr(payload, "vx", 0.0)
+                pvy = getattr(payload, "vy", 0.0)
+
+                for b in balls:
+                    if b in self.payloads or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+
+                    dx = getattr(b, "x", 0.0) - px
+                    dy = getattr(b, "y", 0.0) - py
+                    dist = math.hypot(dx, dy)
+                    min_dist = getattr(payload, "radius", 20.0) + getattr(b, "radius", 10.0)
+
+                    if 0 < dist < min_dist:
+                        nx = dx / dist
+                        ny = dy / dist
+                        overlap = min_dist - dist
+
+                        px -= nx * overlap * 0.5
+                        b.x += nx * overlap * 0.5
+
+                        b_vx = getattr(b, "vx", 0.0)
+                        b_vy = getattr(b, "vy", 0.0)
+
+                        dvx = b_vx - pvx
+                        dvy = b_vy - pvy
+                        vel_along_normal = dvx * nx + dvy * ny
+                        if vel_along_normal < 0:
+                            restitution = 1.2
+                            speed_mult = 1.0
+
+                            impulse = -(1 + restitution) * vel_along_normal
+
+                            pvx -= nx * impulse * 1.5 * speed_mult
+                            pvy -= ny * impulse * 1.5 * speed_mult
+                            if hasattr(b, "vx"): b.vx += nx * impulse * 0.5
+                            if hasattr(b, "vy"): b.vy += ny * impulse * 0.5
+
+                pvx *= 0.99
+                pvy *= 0.99
+                px += pvx * delta
+                py += pvy * delta
+
+                if px < 50.0:
+                    px = 50.0
+                    pvx = -pvx * 0.9
+                elif px > arena_width - 50.0:
+                    px = arena_width - 50.0
+                    pvx = -pvx * 0.9
+
+                if py < 50.0:
+                    py = 50.0
+                    pvy = -pvy * 0.9
+                elif py > arena_height - 50.0:
+                    py = arena_height - 50.0
+                    pvy = -pvy * 0.9
+                speed = math.hypot(pvx, pvy)
+                max_speed = 1500.0
+                if speed > max_speed:
+                    pvx = (pvx / speed) * max_speed
+                    pvy = (pvy / speed) * max_speed
+
+                payload.x = px
+                payload.y = py
+                payload.vx = pvx
+                payload.vy = pvy
+
+    def check_winner(self, world, balls):
+        red_score = sum(1 for p in self.payloads if getattr(p, "x", 500) < self.red_goal_x + 50)
+        blue_score = sum(1 for p in self.payloads if getattr(p, "x", 500) > self.blue_goal_x - 50)
+
+        if getattr(self, "timer", 0) <= 0:
+            if red_score > blue_score:
+                return "Blue" # Blue pushed them left
+            elif blue_score > red_score:
+                return "Red" # Red pushed them right
+            else:
+                return "Draw"
+
+        # Check if all 3 are on one side
+        if red_score == 3:
+            return "Blue"
+        elif blue_score == 3:
+            return "Red"
+
+        return None
+
+GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode()

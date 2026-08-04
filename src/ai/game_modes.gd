@@ -58879,6 +58879,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"ticking_payload": TickingPayloadMode.new(),
 	"reverse_tug_of_war": ReverseTugOfWarMode.new(),
 	"shared_tug_of_war": SharedTugOfWarMode.new(),
+
 	"reverse_gravity_event": ReverseGravityEventMode.new(),
 	"physics_anomaly_event": PhysicsAnomalyEventMode.new(),
 	"escort": EscortMode.new(),
@@ -76211,3 +76212,210 @@ class SuddenDeathEventMode extends "res://src/ai/game_modes.gd".GameMode:
 				b._sudden_death_last_hp = current_hp
 
 GAME_MODES['sudden_death_event'] = SuddenDeathEventMode.new()
+
+
+
+class TugOfWarMultiplePayloadsMode extends GameMode:
+	var payloads = []
+	var red_goal_x: float = 100.0
+	var blue_goal_x: float = 900.0
+	var timer: float = 180.0
+	var mutators = []
+
+	func _init():
+		name = "Tug of War Multiple Payloads"
+		description = "Spawn three payloads instead of one. Both teams fight to push/pull the payloads to the opposing team's goal."
+
+	func setup(world, balls) -> void:
+		super.setup(world, balls)
+
+		if not world.has_method("has_meta") or not world.has_meta("dead_balls"):
+			if typeof(world) == TYPE_DICTIONARY:
+				world["dead_balls"] = []
+			elif world.has_method("set_meta"):
+				world.set_meta("dead_balls", [])
+
+		var valid_balls = []
+		for b in balls:
+			var btype = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+			if btype != "spectator":
+				valid_balls.append(b)
+
+		var mid = valid_balls.size() / 2
+		var red_team = []
+		var blue_team = []
+
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if i < mid:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = "Red"
+				else:
+					b.set("team", "Red")
+				red_team.append(b)
+			else:
+				if typeof(b) == TYPE_DICTIONARY:
+					b["team"] = "Blue"
+				else:
+					b.set("team", "Blue")
+				blue_team.append(b)
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena"):
+			arena_width = world.arena.get("width", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.get("width")
+			arena_height = world.arena.get("height", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.get("height")
+
+		red_goal_x = 100.0
+		blue_goal_x = arena_width - 100.0
+
+		payloads.clear()
+		var payload_ys = [arena_height * 0.25, arena_height * 0.5, arena_height * 0.75]
+		for py in payload_ys:
+			var payload = {}
+			payload["ball_type"] = "payload"
+			payload["is_payload"] = true
+			payload["is_invulnerable"] = true
+			payload["speed"] = 0.0
+			payload["vx"] = 0.0
+			payload["vy"] = 0.0
+			payload["base_speed"] = 0.0
+			payload["damage"] = 0.0
+			payload["base_damage"] = 0.0
+			payload["max_hp"] = 10000.0
+			payload["hp"] = 10000.0
+			payload["x"] = arena_width / 2.0
+			payload["y"] = py
+			payload["alive"] = true
+			payload["team"] = "Neutral"
+			payload["radius"] = 20.0
+			balls.append(payload)
+			payloads.append(payload)
+
+	func tick(world, balls, delta: float = 0.016) -> void:
+		if timer > 0:
+			timer -= delta
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena"):
+			arena_width = world.arena.get("width", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.get("width")
+			arena_height = world.arena.get("height", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else world.arena.get("height")
+
+		for payload in payloads:
+			if payload and payload.get("alive", false):
+				if payload.get("hp", 5000.0) < 100.0:
+					payload["hp"] = 5000.0
+
+				var px = payload.get("x", arena_width / 2.0)
+				var py = payload.get("y", arena_height / 2.0)
+				var pvx = payload.get("vx", 0.0)
+				var pvy = payload.get("vy", 0.0)
+				var pr = payload.get("radius", 20.0)
+
+				for b in balls:
+					if payloads.has(b) or not b.get("alive", false) or b.get("ball_type") == "spectator":
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var br = b.get("radius", 10.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+
+					var dx = bx - px
+					var dy = by - py
+					var dist = sqrt(dx*dx + dy*dy)
+					var min_dist = pr + br
+
+					if dist > 0 and dist < min_dist:
+						var nx = dx / dist
+						var ny = dy / dist
+						var overlap = min_dist - dist
+
+						px -= nx * overlap * 0.5
+
+						if typeof(b) == TYPE_DICTIONARY:
+							b["x"] = bx + nx * overlap * 0.5
+						else:
+							b.set("x", bx + nx * overlap * 0.5)
+
+						var b_vx = b.get("vx", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vx")
+						var b_vy = b.get("vy", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("vy")
+
+						var dvx = b_vx - pvx
+						var dvy = b_vy - pvy
+						var vel_along_normal = dvx * nx + dvy * ny
+
+						if vel_along_normal < 0:
+							var restitution = 1.2
+							var speed_mult = 1.0
+
+							var impulse = -(1 + restitution) * vel_along_normal
+
+							pvx -= nx * impulse * 1.5 * speed_mult
+							pvy -= ny * impulse * 1.5 * speed_mult
+
+							if typeof(b) == TYPE_DICTIONARY:
+								if b.has("vx"): b["vx"] += nx * impulse * 0.5
+								if b.has("vy"): b["vy"] += ny * impulse * 0.5
+							else:
+								if "vx" in b: b.set("vx", b_vx + nx * impulse * 0.5)
+								if "vy" in b: b.set("vy", b_vy + ny * impulse * 0.5)
+
+				pvx *= 0.99
+				pvy *= 0.99
+				px += pvx * delta
+				py += pvy * delta
+
+				if px < 50.0:
+					px = 50.0
+					pvx = -pvx * 0.9
+				elif px > arena_width - 50.0:
+					px = arena_width - 50.0
+					pvx = -pvx * 0.9
+
+				if py < 50.0:
+					py = 50.0
+					pvy = -pvy * 0.9
+				elif py > arena_height - 50.0:
+					py = arena_height - 50.0
+					pvy = -pvy * 0.9
+
+				var speed = sqrt(pvx*pvx + pvy*pvy)
+				var max_speed = 1500.0
+
+				if speed > max_speed:
+					pvx = (pvx / speed) * max_speed
+					pvy = (pvy / speed) * max_speed
+
+				payload["x"] = px
+				payload["y"] = py
+				payload["vx"] = pvx
+				payload["vy"] = pvy
+
+	func check_winner(world, balls):
+		var red_score = 0
+		var blue_score = 0
+
+		for p in payloads:
+			var px = p.get("x", 500)
+			if px < red_goal_x + 50:
+				red_score += 1
+			elif px > blue_goal_x - 50:
+				blue_score += 1
+
+		if timer <= 0:
+			if red_score > blue_score:
+				return "Blue"
+			elif blue_score > red_score:
+				return "Red"
+			else:
+				return "Draw"
+
+		if red_score == 3:
+			return "Blue"
+		elif blue_score == 3:
+			return "Red"
+
+		return null
+
+GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
