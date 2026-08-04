@@ -75648,3 +75648,67 @@ class TrampolineBoundaryMode extends GameMode:
                     arena.boundary_states[wall] = "trampoline"
 
 GAME_MODES['trampoline_boundary'] = TrampolineBoundaryMode.new()
+
+class SuddenDeathEventMode extends "res://src/ai/game_modes.gd".GameMode:
+	var applied_to_balls = {}
+
+	func _init():
+		super._init()
+		name = "Sudden Death Event"
+		description = "An extremely rare late-game event where all balls' cooldowns are permanently reduced by 50% but damage taken is doubled, forcing a high-stakes fast-paced ending to the match."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		applied_to_balls = {}
+		for b in balls:
+			var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp if "hp" in b else 0
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_sudden_death_last_hp"] = b_hp
+			elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+				b.set_meta("_sudden_death_last_hp", b_hp)
+			elif "hp" in b:
+				b._sudden_death_last_hp = b_hp
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.id if "id" in b else null
+
+			if b_id != null and not applied_to_balls.has(b_id):
+				applied_to_balls[b_id] = true
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("skill_cooldown"): b["skill_cooldown"] *= 0.5
+					if b.has("SKILL_COOLDOWN"): b["SKILL_COOLDOWN"] *= 0.5
+				else:
+					if "skill_cooldown" in b: b.skill_cooldown *= 0.5
+					if "SKILL_COOLDOWN" in b: b.SKILL_COOLDOWN *= 0.5
+
+			var b_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp if "hp" in b else 0
+			var last_hp = b_hp
+
+			if typeof(b) == TYPE_DICTIONARY:
+				last_hp = b.get("_sudden_death_last_hp", b_hp)
+			elif typeof(b) == TYPE_OBJECT and b.has_method("has_meta") and b.has_meta("_sudden_death_last_hp"):
+				last_hp = b.get_meta("_sudden_death_last_hp")
+			elif "_sudden_death_last_hp" in b:
+				last_hp = b._sudden_death_last_hp
+
+			if b_hp < last_hp:
+				var damage_taken = last_hp - b_hp
+				var new_hp = b_hp - damage_taken
+				if typeof(b) == TYPE_DICTIONARY:
+					b["hp"] = new_hp
+				else:
+					b.hp = new_hp
+
+			var current_hp = b.get("hp") if typeof(b) == TYPE_DICTIONARY else b.hp if "hp" in b else 0
+
+			if typeof(b) == TYPE_DICTIONARY:
+				b["_sudden_death_last_hp"] = current_hp
+			elif typeof(b) == TYPE_OBJECT and b.has_method("set_meta"):
+				b.set_meta("_sudden_death_last_hp", current_hp)
+			elif "_sudden_death_last_hp" in b:
+				b._sudden_death_last_hp = current_hp
+
+GAME_MODES['sudden_death_event'] = SuddenDeathEventMode.new()

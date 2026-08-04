@@ -48261,3 +48261,62 @@ class TrampolineBoundaryMode(GameMode):
                 world.arena.boundary_states[wall] = "trampoline"
 
 GAME_MODES['trampoline_boundary'] = TrampolineBoundaryMode()
+
+class SuddenDeathEventMode(GameMode):
+    """
+    An extremely rare late-game event where all balls' cooldowns are permanently reduced by 50%
+    but damage taken is doubled, forcing a high-stakes fast-paced ending to the match.
+    """
+    def __init__(self):
+        super().__init__()
+        self.name = "Sudden Death Event"
+        self.description = "An extremely rare late-game event where all balls' cooldowns are permanently reduced by 50% but damage taken is doubled, forcing a high-stakes fast-paced ending to the match."
+        self.applied_to_balls = set()
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.applied_to_balls = set()
+        for b in balls:
+            b_hp = b.get("hp") if isinstance(b, dict) else getattr(b, "hp", 0)
+            if isinstance(b, dict):
+                b["_sudden_death_last_hp"] = b_hp
+            else:
+                setattr(b, "_sudden_death_last_hp", b_hp)
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+
+        for b in balls:
+            b_id = b.get("id") if isinstance(b, dict) else getattr(b, "id", None)
+
+            # Apply permanent 50% cooldown reduction once per ball
+            if b_id is not None and b_id not in self.applied_to_balls:
+                self.applied_to_balls.add(b_id)
+                if isinstance(b, dict):
+                    if "skill_cooldown" in b: b["skill_cooldown"] *= 0.5
+                    if "SKILL_COOLDOWN" in b: b["SKILL_COOLDOWN"] *= 0.5
+                else:
+                    if hasattr(b, "skill_cooldown"): b.skill_cooldown *= 0.5
+                    if hasattr(b, "SKILL_COOLDOWN"): b.SKILL_COOLDOWN *= 0.5
+
+            # Check for damage taken and double it
+            b_hp = b.get("hp") if isinstance(b, dict) else getattr(b, "hp", 0)
+            last_hp = b.get("_sudden_death_last_hp", b_hp) if isinstance(b, dict) else getattr(b, "_sudden_death_last_hp", b_hp)
+
+            if b_hp < last_hp:
+                # Took damage, subtract the exact same amount again (doubling it)
+                damage_taken = last_hp - b_hp
+                new_hp = b_hp - damage_taken
+                if isinstance(b, dict):
+                    b["hp"] = new_hp
+                else:
+                    b.hp = new_hp
+
+            # Update last hp for next tick
+            current_hp = b.get("hp") if isinstance(b, dict) else getattr(b, "hp", 0)
+            if isinstance(b, dict):
+                b["_sudden_death_last_hp"] = current_hp
+            else:
+                setattr(b, "_sudden_death_last_hp", current_hp)
+
+GAME_MODES['sudden_death_event'] = SuddenDeathEventMode()
