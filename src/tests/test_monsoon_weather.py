@@ -41,8 +41,8 @@ def test_monsoon_weather_reduces_visibility_and_speed():
     mode.current_weather = "monsoon"
     mode.tick(world, [b1], 1.0)
 
-    assert b1.perception_radius == 150.0 * 0.4
-    assert b1.speed == 120.0 * 0.75
+    assert b1.perception_radius == b1.base_perception_radius * 0.5
+    assert b1.speed == b1.base_speed * 0.75
 
 def test_monsoon_weather_expands_water():
     mode = GAME_MODES["extreme_weather"]

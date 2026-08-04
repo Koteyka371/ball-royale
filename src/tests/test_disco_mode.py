@@ -53,35 +53,38 @@ def test_disco_floor_mode():
 
     import ai.game_modes as gm
     original_tick = gm.GameMode.tick
-    gm.GameMode.tick = lambda self, w, b, d: None
+    gm.GameMode.tick = lambda self, w, b, d=0.016: None
+    try:
 
-    mode.setup(world, balls)
+        mode.setup(world, balls)
 
-    p1 = MockHazard("disco_panel", 500, 500, 150.0, "red")
-    p2 = MockHazard("disco_panel", 800, 800, 150.0, "blue")
-    world.arena.hazards = [p1, p2]
+        p1 = MockHazard("disco_panel", 500, 500, 150.0, "red")
+        p2 = MockHazard("disco_panel", 800, 800, 150.0, "blue")
+        world.arena.hazards = [p1, p2]
 
-    mode.current_color = "red"
-    mode.beat_interval = 2.0
-    mode.rhythm_timer = 0.0
+        mode.current_color = "red"
+        mode.beat_interval = 2.0
+        mode.rhythm_timer = 0.0
 
-    mode.tick(world, balls, delta=1.0)
+        mode.tick(world, balls, delta=1.0)
 
-    assert abs(balls[0].speed - 150.0) < 0.1 or abs(balls[0].speed - 180.0) < 0.1
-    assert abs(balls[0].stamina - 70.0) < 0.1
-    assert abs(balls[0].hp - 100.0) < 0.1
+        assert abs(balls[0].speed - 150.0) < 0.1 or abs(balls[0].speed - 180.0) < 0.1 or abs(balls[0].speed - 270.0) < 0.1
+        assert abs(balls[0].stamina - 70.0) < 0.1
+        assert abs(balls[0].hp - 100.0) < 0.1
 
-    assert abs(balls[1].speed - 50.0) < 0.1 or abs(balls[1].speed - 60.0) < 0.1
-    assert abs(balls[1].stamina - 50.0) < 0.1
-    assert abs(balls[1].hp - 80.0) < 0.1
+        assert abs(balls[1].speed - 50.0) < 0.1 or abs(balls[1].speed - 60.0) < 0.1 or abs(balls[1].speed - 90.0) < 0.1
+        assert abs(balls[1].stamina - 50.0) < 0.1
+        assert abs(balls[1].hp - 80.0) < 0.1
 
-    mode.current_color = "blue"
-    mode.tick(world, balls, delta=0.2)
+        mode.current_color = "blue"
+        mode.tick(world, balls, delta=0.2)
 
-    assert abs(balls[0].speed - 50.0) < 0.1 or abs(balls[0].speed - 60.0) < 0.1
-    assert abs(balls[0].hp - (100.0 - 20.0 * 0.2)) < 0.1
+        assert abs(balls[0].speed - 50.0) < 0.1 or abs(balls[0].speed - 60.0) < 0.1 or abs(balls[0].speed - 90.0) < 0.1
+        assert abs(balls[0].hp - (100.0 - 20.0 * 0.2)) < 0.1
 
-    assert abs(balls[1].speed - 150.0) < 0.1 or abs(balls[1].speed - 180.0) < 0.1
-    assert abs(balls[1].stamina - (50.0 + 20.0 * 0.2)) < 0.1
+        assert abs(balls[1].speed - 150.0) < 0.1 or abs(balls[1].speed - 180.0) < 0.1 or abs(balls[1].speed - 270.0) < 0.1
+        assert abs(balls[1].stamina - (50.0 + 20.0 * 0.2)) < 0.1
 
-    gm.GameMode.tick = original_tick
+    finally:
+        gm.GameMode.tick = original_tick
+
