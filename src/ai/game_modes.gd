@@ -57884,6 +57884,75 @@ class BossEscortMode extends GameMode:
 		return null
 
 
+
+class SwappingSafeZoneMode extends GameMode:
+	var zone_x: float = 500.0
+	var zone_y: float = 500.0
+	var zone_radius: float = 300.0
+	var swap_timer: float = 0.0
+	var swap_interval: float = 10.0
+	var inside_is_safe: bool = true
+	var damage_per_second: float = 20.0
+
+	func _init():
+		pass
+		name = "Swapping Safe Zone"
+		description = "Safe zones periodically swap. If you are inside a safe zone, you are taking continuous damage, meaning players need to constantly move out of the safe zones to avoid getting killed. After a while, they might swap back or become deadly."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world.get("arena") != null:
+			arena_width = world.arena.get("width") if "width" in world.arena else 1000.0
+			arena_height = world.arena.get("height") if "height" in world.arena else 1000.0
+
+		zone_x = arena_width / 2.0
+		zone_y = arena_height / 2.0
+		zone_radius = min(arena_width, arena_height) * 0.4
+		swap_timer = 0.0
+		inside_is_safe = true
+
+	func tick(world, balls: Array, delta: float) -> void:
+		swap_timer += delta
+		if swap_timer >= swap_interval:
+			swap_timer = 0.0
+			inside_is_safe = not inside_is_safe
+
+		var damage_this_tick = damage_per_second * delta
+
+		for b in balls:
+			if not b.get("alive") or b.get("ball_type") == "spectator":
+				continue
+
+			var dist = hypot(b.x - zone_x, b.y - zone_y)
+			var inside = dist <= zone_radius
+
+			var in_danger = false
+			if inside_is_safe and not inside:
+				in_danger = true
+			elif not inside_is_safe and inside:
+				in_danger = true
+
+			if in_danger:
+				if "slow_timer" in b:
+					b.slow_timer = max(b.slow_timer, 0.5)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["slow_timer"] = max(b.get("slow_timer", 0.0), 0.5)
+				elif b.has_method("set_meta"):
+					b.set_meta("slow_timer", max(b.get_meta("slow_timer") if b.has_meta("slow_timer") else 0.0, 0.5))
+
+				if b.has_method("take_damage"):
+					b.take_damage(damage_this_tick, "swapping_safe_zone")
+				elif "hp" in b:
+					b.hp -= damage_this_tick
+					if b.hp <= 0:
+						b.alive = false
+						b.hp = 0
+
+	func hypot(dx: float, dy: float) -> float:
+		return sqrt(dx * dx + dy * dy)
+
 var GAME_MODES = {
 	"boss_escort": BossEscortMode.new(),
 	"toxic_fog_event": ToxicFogEventMode.new(),
@@ -57915,6 +57984,7 @@ var GAME_MODES = {
 	"reverse_time_penalty": ReverseTimePenaltyMode.new(),
 	"continuous_shrinking_safe_zone": ContinuousShrinkSafeZoneMode.new(),
 	"vulnerability_safe_zone": VulnerabilitySafeZoneMode.new(),
+	"swapping_safe_zone": SwappingSafeZoneMode.new(),
 	"high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode.new(),
 	"implosion_bomb_event": ImplosionBombEventMode.new(),
 	"singularity_bomb_event": SingularityBombEventMode.new(),

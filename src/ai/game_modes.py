@@ -35773,6 +35773,63 @@ class BossEscortMode(GameMode):
         return None
 
 
+
+class SwappingSafeZoneMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Swapping Safe Zone"
+        self.description = "Safe zones periodically swap. If you are inside a safe zone, you are taking continuous damage, meaning players need to constantly move out of the safe zones to avoid getting killed. After a while, they might swap back or become deadly."
+        self.zone_x = 500.0
+        self.zone_y = 500.0
+        self.zone_radius = 300.0
+        self.swap_timer = 0.0
+        self.swap_interval = 10.0
+        self.inside_is_safe = True
+        self.damage_per_second = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+        self.zone_x = arena_width / 2.0
+        self.zone_y = arena_height / 2.0
+        self.zone_radius = min(arena_width, arena_height) * 0.4
+        self.swap_timer = 0.0
+        self.inside_is_safe = True
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        self.swap_timer += delta
+        if self.swap_timer >= self.swap_interval:
+            self.swap_timer = 0.0
+            self.inside_is_safe = not self.inside_is_safe
+
+        damage_this_tick = self.damage_per_second * delta
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            dist = math.hypot(b.x - self.zone_x, b.y - self.zone_y)
+            inside = dist <= self.zone_radius
+
+            in_danger = False
+            if self.inside_is_safe and not inside:
+                in_danger = True
+            elif not self.inside_is_safe and inside:
+                in_danger = True
+
+            if in_danger:
+                b.slow_timer = max(getattr(b, "slow_timer", 0.0), 0.5)
+                if hasattr(b, "take_damage"):
+                    b.take_damage(damage_this_tick, "swapping_safe_zone")
+                elif hasattr(b, "hp"):
+                    b.hp -= damage_this_tick
+                    if b.hp <= 0:
+                        b.alive = False
+                        b.hp = 0
+
 GAME_MODES = {
     "boss_escort": BossEscortMode(),
     "toxic_fog_event": ToxicFogEventMode(),
@@ -35807,6 +35864,7 @@ GAME_MODES = {
     'reverse_time_penalty': ReverseTimePenaltyMode(),
     'continuous_shrinking_safe_zone': ContinuousShrinkSafeZoneMode(),
     'vulnerability_safe_zone': VulnerabilitySafeZoneMode(),
+    'swapping_safe_zone': SwappingSafeZoneMode(),
     'gravity_inversion': GravityInversionMode(),
     "high_speed_reflective_barriers": HighSpeedReflectiveBarriersMode(),
     "implosion_bomb_event": ImplosionBombEventMode(),
