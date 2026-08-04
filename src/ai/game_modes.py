@@ -38238,7 +38238,7 @@ class SolarFlareMode(GameMode):
     def __init__(self):
         super().__init__()
         self.name = "Solar Flare"
-        self.description = "Periodically, the arena suffers an extreme solar flare that disables all deployed hazards and traps and prevents active skills from regenerating for 5 seconds."
+        self.description = "During a flare, balls take DOT damage over time if not hiding in shadows or under indestructible walls. Electronic items and shields are temporarily disabled."
         self.flare_timer = 0.0
         self.flare_interval = 20.0
         self.flare_duration = 5.0
@@ -38254,9 +38254,8 @@ class SolarFlareMode(GameMode):
             self.flare_timer = 0.0
             world.solar_flare_active = True
             if hasattr(world, "add_event"):
-                world.add_event("solar_flare_start", {"message": "Solar Flare Active! Hazards disabled and skills paused!"})
+                world.add_event("solar_flare_start", {"message": "Solar Flare Active! Seek shadow or indestructible walls!"})
 
-            # Temporarily shrink perception radius for all balls
             for b in balls:
                 if not hasattr(b, "base_perception_radius"):
                     b.base_perception_radius = getattr(b, "perception_radius", 250.0)
@@ -38269,16 +38268,72 @@ class SolarFlareMode(GameMode):
             if hasattr(world, "add_event"):
                 world.add_event("solar_flare_end", {"message": "Solar Flare Ended."})
 
-            # Restore perception radius for all balls
             for b in balls:
                 if hasattr(b, "base_perception_radius"):
                     b.perception_radius = b.base_perception_radius
+                b.electronic_items_disabled = False
 
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for h in world.arena.hazards:
                 hk = getattr(h, "kind", "")
                 if hk not in self.excluded_hazards:
                     h.is_disabled_by_flare = self.is_flaring
+
+        if self.is_flaring:
+            import math
+            sun_dx, sun_dy = 1.0, 1.0
+            sun_len = math.sqrt(sun_dx ** 2 + sun_dy ** 2)
+            sun_dx, sun_dy = sun_dx / sun_len, sun_dy / sun_len
+
+            hazards = getattr(world.arena, "hazards", []) if hasattr(world, "arena") else []
+            walls = [h for h in hazards if getattr(h, "kind", "") == "indestructible_wall"]
+            shadows = [h for h in hazards if "shadow" in getattr(h, "kind", "")]
+
+            for b in balls:
+                if getattr(b, "alive", True) == False:
+                    continue
+
+                in_shade = False
+                for s in shadows:
+                    dx = b.x - getattr(s, "x", 0)
+                    dy = b.y - getattr(s, "y", 0)
+                    if math.sqrt(dx**2 + dy**2) <= getattr(s, "radius", 0):
+                        in_shade = True
+                        break
+
+                if not in_shade:
+                    for w in walls:
+                        wx, wy = getattr(w, "x", 0), getattr(w, "y", 0)
+                        dx = b.x - wx
+                        dy = b.y - wy
+                        dot = dx * sun_dx + dy * sun_dy
+                        if 0 < dot < 200:
+                            perp_dist = abs(dx * -sun_dy + dy * sun_dx)
+                            max_dim = max(getattr(w, "width", 50), getattr(w, "height", 50))
+                            if perp_dist < max_dim:
+                                in_shade = True
+                                break
+
+                if not in_shade:
+                    damage = 25.0 * delta
+                    if hasattr(b, "take_damage"):
+                        b.take_damage(damage, source=None)
+                    else:
+                        b.hp = getattr(b, "hp", 100.0) - damage
+                        if b.hp <= 0:
+                            b.hp = 0.0
+                            b.alive = False
+
+                shields = ["shield_active", "has_aegis_shield", "mirror_shield_active",
+                           "directional_shield_active", "deflector_shield_active",
+                           "kinetic_shield_active", "nemesis_shield_active",
+                           "bubble_shield_active", "plasma_shield_active", "crystal_armor_active"]
+                for s in shields:
+                    if getattr(b, s, False):
+                        setattr(b, s, False)
+
+                b.electronic_items_disabled = True
+
 
 GAME_MODES["solar_flare"] = SolarFlareMode()
 
