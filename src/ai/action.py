@@ -1482,6 +1482,7 @@ class Action:
                 attacker.hp = min(getattr(attacker, "hp", 100.0) + (attacker.max_hp - attacker.max_hp / 1.5), attacker.max_hp)
                 attacker.loadout_fragments = getattr(attacker, "loadout_fragments", 0) + 1
                 attacker.is_minor_bounty = True
+                attacker.minor_bounty_timer = 30.0
 
                 # Bonus points and temporary speed buff
                 attacker.score = getattr(attacker, "score", 0) + 150
@@ -3857,6 +3858,17 @@ class Action:
             self.ball.quantum_state_timer -= delta
             # In quantum state, immune to hazards and damage (implemented in take_damage or game loop)
             # Make sure it's untargetable by updating perception (done in scan) or just skipping damage
+
+        if getattr(self.ball, "is_minor_bounty", False):
+            minor_bounty_timer = getattr(self.ball, "minor_bounty_timer", 0.0)
+            if minor_bounty_timer > 0:
+                self.ball.minor_bounty_timer = minor_bounty_timer - delta
+                if self.ball.minor_bounty_timer <= 0:
+                    self.ball.is_minor_bounty = False
+                    self.ball.speed_debuff_timer = max(getattr(self.ball, "speed_debuff_timer", 0.0), 5.0)
+                    self.ball.speed_debuff_multiplier = min(getattr(self.ball, "speed_debuff_multiplier", 1.0), 0.5)
+                    if hasattr(self.world, "add_event"):
+                        self.world.add_event("minor_bounty_expired", {"message": "Minor Bounty expired!"})
 
         if getattr(self.ball, "speed_debuff_timer", 0.0) > 0:
             self.ball.speed_debuff_timer -= delta

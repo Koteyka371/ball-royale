@@ -2898,10 +2898,16 @@ func _attempt_damage_internal(attacker, target) -> void:
 
 			if "is_minor_bounty" in attacker:
 				attacker.is_minor_bounty = true
+				if "minor_bounty_timer" in attacker:
+					attacker.minor_bounty_timer = 30.0
+				elif attacker.has_method("set"):
+					attacker.set("minor_bounty_timer", 30.0)
 			elif typeof(attacker) == TYPE_DICTIONARY:
 				attacker["is_minor_bounty"] = true
+				attacker["minor_bounty_timer"] = 30.0
 			elif attacker.has_method("set_meta"):
 				attacker.set_meta("is_minor_bounty", true)
+				attacker.set_meta("minor_bounty_timer", 30.0)
 
 			# Bonus points and temporary speed buff
 			if "score" in attacker:
@@ -8592,6 +8598,51 @@ func execute(strategy: String, delta: float):
         var new_q_timer = q_timer - delta
         if "quantum_state_timer" in self.ball: self.ball.quantum_state_timer = new_q_timer
         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("quantum_state_timer", new_q_timer)
+
+    var _is_minor_bounty = false
+    if "is_minor_bounty" in self.ball: _is_minor_bounty = self.ball.is_minor_bounty
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("is_minor_bounty"): _is_minor_bounty = self.ball["is_minor_bounty"]
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("is_minor_bounty"): _is_minor_bounty = self.ball.get_meta("is_minor_bounty")
+
+    if _is_minor_bounty:
+        var mb_timer = 0.0
+        if "minor_bounty_timer" in self.ball: mb_timer = float(self.ball.minor_bounty_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("minor_bounty_timer"): mb_timer = float(self.ball["minor_bounty_timer"])
+        elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("minor_bounty_timer"): mb_timer = float(self.ball.get_meta("minor_bounty_timer"))
+
+        if mb_timer > 0.0:
+            mb_timer -= delta
+            if "minor_bounty_timer" in self.ball: self.ball.minor_bounty_timer = mb_timer
+            elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["minor_bounty_timer"] = mb_timer
+            elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("minor_bounty_timer", mb_timer)
+
+            if mb_timer <= 0.0:
+                if "is_minor_bounty" in self.ball: self.ball.is_minor_bounty = false
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["is_minor_bounty"] = false
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("is_minor_bounty", false)
+
+                var current_sd_timer = 0.0
+                if "speed_debuff_timer" in self.ball: current_sd_timer = float(self.ball.speed_debuff_timer)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_debuff_timer"): current_sd_timer = float(self.ball["speed_debuff_timer"])
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_debuff_timer"): current_sd_timer = float(self.ball.get_meta("speed_debuff_timer"))
+
+                var new_sd_timer = max(current_sd_timer, 5.0)
+                if "speed_debuff_timer" in self.ball: self.ball.speed_debuff_timer = new_sd_timer
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed_debuff_timer"] = new_sd_timer
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_timer", new_sd_timer)
+
+                var current_sd_mult = 1.0
+                if "speed_debuff_multiplier" in self.ball: current_sd_mult = float(self.ball.speed_debuff_multiplier)
+                elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_debuff_multiplier"): current_sd_mult = float(self.ball["speed_debuff_multiplier"])
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("speed_debuff_multiplier"): current_sd_mult = float(self.ball.get_meta("speed_debuff_multiplier"))
+
+                var new_sd_mult = min(current_sd_mult, 0.5)
+                if "speed_debuff_multiplier" in self.ball: self.ball.speed_debuff_multiplier = new_sd_mult
+                elif typeof(self.ball) == TYPE_DICTIONARY: self.ball["speed_debuff_multiplier"] = new_sd_mult
+                elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("speed_debuff_multiplier", new_sd_mult)
+
+                if typeof(self.world) == TYPE_OBJECT and self.world.has_method("add_event"):
+                    self.world.add_event("minor_bounty_expired", {"message": "Minor Bounty expired!"})
 
     if "speed_debuff_timer" in self.ball and typeof(self.ball.speed_debuff_timer) in [TYPE_FLOAT, TYPE_INT] and self.ball.speed_debuff_timer > 0.0:
         self.ball.speed_debuff_timer -= delta

@@ -141,3 +141,25 @@ def test_minor_bounty_reward():
     assert attacker.max_hp == 125.0 # 100.0 * 1.25
     assert attacker.hp == 125.0
     assert any(e[0] == "minor_bounty_claimed" for e in world.events)
+
+def test_minor_bounty_decay():
+    world = MockWorld()
+
+    attacker = MockEntity(1)
+    attacker.is_minor_bounty = True
+    attacker.minor_bounty_timer = 2.0
+
+    world.balls = [attacker]
+    action = Action(attacker, world)
+
+    # Tick down a bit, should not remove bounty
+    action.execute("idle", 1.0)
+    assert attacker.is_minor_bounty is True
+    assert attacker.minor_bounty_timer == 1.0
+
+    # Tick past 0, should remove bounty and apply debuff
+    action.execute("idle", 1.5)
+    assert attacker.is_minor_bounty is False
+    assert attacker.speed_debuff_timer == 3.5
+    assert attacker.speed_debuff_multiplier == 0.5
+    assert any(e[0] == "minor_bounty_expired" for e in world.events)
