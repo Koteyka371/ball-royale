@@ -3628,12 +3628,26 @@ func execute(strategy: String, delta: float):
 				var new_radius = min(max_radius, current_radius + growth_rate)
 				var new_damage = min(max_damage, current_damage + growth_rate * (base_damage / base_radius))
 
+				var base_mass = ball.get("base_mass", 1.0) if typeof(ball) == TYPE_DICTIONARY else (ball.base_mass if "base_mass" in ball else (ball.mass if "mass" in ball else 1.0))
+				var current_mass = ball.get("mass", 1.0) if typeof(ball) == TYPE_DICTIONARY else (ball.mass if "mass" in ball else 1.0)
+				var max_mass = base_mass * 3.0
+				var new_mass = min(max_mass, current_mass + growth_rate * (base_mass / base_radius))
+
+				var base_speed = ball.get("base_speed", 100.0) if typeof(ball) == TYPE_DICTIONARY else (ball.base_speed if "base_speed" in ball else (ball.speed if "speed" in ball else 100.0))
+				var current_speed = ball.get("speed", 100.0) if typeof(ball) == TYPE_DICTIONARY else (ball.speed if "speed" in ball else 100.0)
+				var min_speed = base_speed * 0.33
+				var new_speed = max(min_speed, current_speed - growth_rate * (base_speed / base_radius) * 0.5)
+
 				if typeof(ball) == TYPE_DICTIONARY:
 					ball["radius"] = new_radius
 					ball["damage"] = new_damage
+					ball["mass"] = new_mass
+					ball["speed"] = new_speed
 				else:
 					ball.radius = new_radius
 					ball.damage = new_damage
+					ball.mass = new_mass
+					ball.speed = new_speed
 
 	var is_mirror_clone = false
 	if typeof(ball) == TYPE_OBJECT and "is_mirror_clone" in ball: is_mirror_clone = ball.is_mirror_clone

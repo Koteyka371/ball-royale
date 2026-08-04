@@ -1973,8 +1973,18 @@ class Action:
                     new_radius = min(max_radius, getattr(self.ball, "radius", 10.0) + growth_rate)
                     new_damage = min(max_damage, getattr(self.ball, "damage", 10.0) + growth_rate * (base_damage / base_radius))
 
+                    base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
+                    max_mass = base_mass * 3.0
+                    new_mass = min(max_mass, getattr(self.ball, "mass", 1.0) + growth_rate * (base_mass / base_radius))
+
+                    base_speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0))
+                    min_speed = base_speed * 0.33
+                    new_speed = max(min_speed, getattr(self.ball, "speed", 100.0) - growth_rate * (base_speed / base_radius) * 0.5)
+
                     self.ball.radius = new_radius
                     self.ball.damage = new_damage
+                    self.ball.mass = new_mass
+                    self.ball.speed = new_speed
 
         if getattr(self.ball, "skill", "") == "hazard_surfing" and getattr(self.ball, "skill_timer", 0.0) <= 0.0:
             if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
