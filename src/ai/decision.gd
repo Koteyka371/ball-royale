@@ -203,6 +203,12 @@ func choose_action(perception_data: Dictionary, emotion_state: String) -> String
 
     b_type = b_type.to_lower()
 
+
+    if "hyper_aggressiveness" in self.ball:
+        var val = float(self.ball.hyper_aggressiveness)
+        scores["attack"] += 100.0 * val
+        scores["chase"] += 100.0 * val
+        scores["flee"] -= 50.0 * val
     var coach_strategy = ""
     if perception_data.has("coach_strategy"):
         coach_strategy = str(perception_data["coach_strategy"]).to_lower()

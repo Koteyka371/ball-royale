@@ -105,6 +105,31 @@ class CrowdSystem:
                         self._add_viewer_loyalty(user, 20)
                         self.excitement_level += 20.0
 
+
+        elif cmd == "!hyper" and len(parts) >= 4:
+            try:
+                target_id = int(parts[1])
+            except ValueError:
+                target_id = parts[1]
+
+            hyperparam = parts[2].lower()
+            try:
+                value = float(parts[3])
+            except ValueError:
+                return
+
+            target = next((b for b in alive_balls if str(getattr(b, "id", "")) == str(target_id)), None)
+            if target:
+                if hyperparam == "aggressiveness":
+                    target.hyper_aggressiveness = value
+                elif hyperparam == "fleeing_radius":
+                    target.fleeing_radius = value
+                elif hyperparam == "vision_radius":
+                    target.perception_radius = value
+
+                if hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} modified {hyperparam} for Ball {target_id}!"})
+                self.excitement_level += 5.0
         elif cmd == "!control" and len(parts) >= 4:
             hazard_kind = parts[1]
             try:

@@ -141,6 +141,47 @@ func process_external_command(user: String, command: String, balls: Array):
                     _add_viewer_loyalty(user, 20)
                     excitement_level += 20.0
 
+
+    elif cmd == "!hyper" and parts.size() >= 4:
+        var target_id = -1
+        if parts[1].is_valid_int():
+            target_id = parts[1].to_int()
+
+        var hyperparam = parts[2].to_lower()
+        var value = parts[3].to_float()
+
+        var target = null
+        for b in alive_balls:
+            var b_id = -1
+            if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                b_id = b.get("id")
+            elif typeof(b) == TYPE_DICTIONARY and b.has("id"):
+                b_id = b["id"]
+
+            if str(b_id) == str(parts[1]):
+                target = b
+                break
+
+        if target != null:
+            if hyperparam == "aggressiveness":
+                if typeof(target) == TYPE_OBJECT:
+                    target.set("hyper_aggressiveness", value)
+                elif typeof(target) == TYPE_DICTIONARY:
+                    target["hyper_aggressiveness"] = value
+            elif hyperparam == "fleeing_radius":
+                if typeof(target) == TYPE_OBJECT:
+                    target.set("fleeing_radius", value)
+                elif typeof(target) == TYPE_DICTIONARY:
+                    target["fleeing_radius"] = value
+            elif hyperparam == "vision_radius":
+                if typeof(target) == TYPE_OBJECT:
+                    target.set("perception_radius", value)
+                elif typeof(target) == TYPE_DICTIONARY:
+                    target["perception_radius"] = value
+
+            if world != null and world.has_method("add_event"):
+                world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " modified " + hyperparam + " for Ball " + str(parts[1]) + "!"})
+            excitement_level += 5.0
     elif cmd == "!control" and parts.size() >= 4:
         var hazard_kind = parts[1]
         var target_x = parts[2].to_float()

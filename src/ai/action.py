@@ -14101,7 +14101,7 @@ class Action:
         sep_nx, sep_ny = 0.0, 0.0
 
         count = 0
-        perception_radius = self._get_perception_radius()
+        perception_radius = getattr(self.ball, "fleeing_radius", self._get_perception_radius())
 
         for ally in allies:
             dx = self.ball.x - ally.x
@@ -14575,7 +14575,7 @@ class Action:
         dist_sq = dx * dx + dy * dy
         dist = math.sqrt(dist_sq) if dist_sq > 0.0001 else 0.01
 
-        perception_radius = self._get_perception_radius()
+        perception_radius = getattr(self.ball, "fleeing_radius", self._get_perception_radius())
         if dist > perception_radius * 0.8:
             self._idle(delta)
             return

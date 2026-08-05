@@ -28146,7 +28146,7 @@ func _apply_boid_rules(nx: float, ny: float) -> Array:
     var sep_ny = 0.0
 
     var count = 0
-    var perception_radius = self._get_perception_radius()
+    var perception_radius = self.ball.get("fleeing_radius") if "fleeing_radius" in self.ball else self._get_perception_radius()
 
     for ally in allies:
         var dx = self.ball.x - ally.x
@@ -28910,7 +28910,7 @@ func _flee(delta: float):
     if dist_sq > 0.0001:
         dist = sqrt(dist_sq)
 
-    var perception_radius = self._get_perception_radius()
+    var perception_radius = self.ball.get("fleeing_radius") if "fleeing_radius" in self.ball else self._get_perception_radius()
 
     if dist > perception_radius * 0.8:
         _idle(delta)

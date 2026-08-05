@@ -184,6 +184,13 @@ class Decision:
         if charge_level >= 100.0:
             scores["use_skill"] += 3000.0
 
+
+        # Hyperparameters
+        if hasattr(self.ball, "hyper_aggressiveness"):
+            val = self.ball.hyper_aggressiveness
+            scores["attack"] += 100.0 * val
+            scores["chase"] += 100.0 * val
+            scores["flee"] -= 50.0 * val
         coach_strategy = perception_data.get("coach_strategy", "")
         coach_strategy_str = str(coach_strategy).lower() if coach_strategy else ""
 
