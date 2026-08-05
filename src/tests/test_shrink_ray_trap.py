@@ -58,6 +58,8 @@ def test_shrink_ray_trap():
     ball.radius = 5.0
     ball.mass = 0.2
     ball.speed = 150.0
+    ball.max_hp = 50.0
+    ball.base_damage = 10.0
     trap.active = False
 
     assert ball.radius == 5.0
@@ -65,4 +67,6 @@ def test_shrink_ray_trap():
     assert ball.speed == 150.0
     assert getattr(ball, "is_shrunk", False) == True
     assert getattr(ball, "shrink_ray_timer", 0.0) == 5.0
+    assert getattr(ball, "max_hp", 100.0) == 50.0
+    assert getattr(ball, "base_damage", 20.0) == 10.0
     assert not trap.active

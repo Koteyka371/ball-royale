@@ -12924,9 +12924,17 @@ class Action:
                                 self.ball.base_radius = getattr(self.ball, "base_radius", getattr(self.ball, "radius", 10.0))
                                 self.ball.base_mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
                                 self.ball.base_speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0))
+                                self.ball.original_max_hp = getattr(self.ball, "original_max_hp", getattr(self.ball, "max_hp", 100.0))
+                                self.ball.original_base_damage = getattr(self.ball, "original_base_damage", getattr(self.ball, "base_damage", 20.0))
                                 self.ball.radius = self.ball.base_radius * 0.5
                                 self.ball.mass = self.ball.base_mass * 0.2
                                 self.ball.speed = self.ball.base_speed * 1.5
+                                if hasattr(self.ball, "max_hp"):
+                                    self.ball.max_hp = self.ball.original_max_hp * 0.5
+                                    if getattr(self.ball, "hp", 100.0) > self.ball.max_hp:
+                                        self.ball.hp = self.ball.max_hp
+                                if hasattr(self.ball, "base_damage"):
+                                    self.ball.base_damage = self.ball.original_base_damage * 0.5
                             else:
                                 self.ball.shrink_ray_timer = getattr(hazard, "shrink_duration", 5.0)
                             # the trap triggers once and is consumed
@@ -26492,6 +26500,10 @@ class Action:
                 self.ball.radius = getattr(self.ball, "base_radius", getattr(self.ball, "radius", 10.0))
                 self.ball.mass = getattr(self.ball, "base_mass", getattr(self.ball, "mass", 1.0))
                 self.ball.speed = getattr(self.ball, "base_speed", getattr(self.ball, "speed", 100.0))
+                if hasattr(self.ball, "original_max_hp"):
+                    self.ball.max_hp = self.ball.original_max_hp
+                if hasattr(self.ball, "original_base_damage"):
+                    self.ball.base_damage = self.ball.original_base_damage
 
         if hasattr(self.ball, "stutter_timer") and self.ball.stutter_timer > 0:
             self.ball.stutter_timer -= delta
