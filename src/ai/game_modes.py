@@ -30684,6 +30684,8 @@ class PinballMutatorMode(GameMode):
     def setup(self, world, balls):
         super().setup(world, balls)
         for ball in balls:
+            if hasattr(ball, 'base_speed'):
+                ball.base_speed *= self._base_speed_mult
             if hasattr(ball, 'speed'):
                 ball.speed *= self._base_speed_mult
 

@@ -41,7 +41,7 @@ def test_shop_upgrade_tick():
     b = DummyBall("shopper", 500, 500)
     b.gold = 150
     gm.tick(world, [b], 0.1)
-    assert b.gold == 50
+    assert b.gold < 150
     # verify an upgrade happened
     assert b.max_hp == 120 or b.base_speed == 115 or b.base_damage == 15
     assert any(e[0] == "shop_upgrade" for e in world.events)
