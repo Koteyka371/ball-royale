@@ -57,6 +57,7 @@ def test_mirror_shield_reflection():
     action = Action(ball, world)
 
     attacker = MockBall(2, 100, 100)
+    attacker.ball_type = "projectile"
     target = MockBall(1, 0, 0)
     target.mirror_shield_active = True
 

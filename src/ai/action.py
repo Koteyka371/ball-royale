@@ -757,7 +757,7 @@ class Action:
 
 
 
-        if getattr(target, "mirror_shield_active", False) and is_ranged:
+        if getattr(target, "mirror_shield_active", False) and is_projectile_or_laser:
             if not hasattr(target, "suspended_projectiles"):
                 target.suspended_projectiles = []
 

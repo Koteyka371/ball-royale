@@ -1381,7 +1381,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 		elif typeof(target) != TYPE_DICTIONARY and target.has_method("has_meta") and target.has_meta("mirror_shield_active") and target.get_meta("mirror_shield_active"):
 			has_mirror_shield = true
 
-		if has_mirror_shield and is_ranged_attack:
+		if has_mirror_shield and is_laser_proj:
 			var base_dmg_refl = 10.0
 			if "damage" in attacker: base_dmg_refl = float(attacker.damage)
 
