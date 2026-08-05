@@ -5923,6 +5923,115 @@ class ReverseDualPayloadMode(GameMode):
                 if self.payload_blue.x > arena_width - 50.0:
                     self.payload_blue.x = arena_width - 50.0
 
+
+        # Payload dynamic hazards (Conveyors and Destructible Gravity Wells)
+        payloads = [b for b in balls if getattr(b, "is_payload", False) and getattr(b, "alive", False)]
+        if payloads:
+            if not hasattr(world, "payload_hazard_timer"):
+                world.payload_hazard_timer = 0.0
+
+            try:
+                world.payload_hazard_timer += delta
+            except Exception:
+                world.payload_hazard_timer = delta
+
+            if world.payload_hazard_timer >= 20.0:
+                world.payload_hazard_timer = 0.0
+                if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    try:
+                        from arena.procedural_arena import Hazard
+                        import random
+                        import math
+                        target_payload = random.choice(payloads)
+                        hx = getattr(target_payload, "x", 500.0) + random.uniform(-100, 100)
+                        hy = getattr(target_payload, "y", 500.0) + random.uniform(-100, 100)
+                        h_id = 888000 + len(world.arena.hazards) + random.randint(0, 10000)
+
+                        if random.random() < 0.5:
+                            # Payload Conveyor Belt
+                            dx = getattr(target_payload, "x", 500.0) - 500.0
+                            dy = getattr(target_payload, "y", 500.0) - 500.0
+                            dist = math.hypot(dx, dy)
+                            if dist > 0:
+                                dvec = (dx/dist, dy/dist) if random.random() < 0.5 else (-dx/dist, -dy/dist)
+                            else:
+                                dvec = (1.0, 0.0)
+
+                            c = Hazard(id=h_id, x=hx, y=hy, radius=100.0, kind="payload_conveyor_belt", damage=0.0)
+                            setattr(c, "direction_vector", dvec)
+                            setattr(c, "speed_magnitude", 200.0)
+                            setattr(c, "duration", 15.0)
+                            world.arena.hazards.append(c)
+                        else:
+                            # Destructible Gravity Well
+                            gw = Hazard(id=h_id, x=hx, y=hy, radius=150.0, kind="payload_gravity_well", damage=10.0)
+                            setattr(gw, "hp", 500.0)
+                            setattr(gw, "max_hp", 500.0)
+                            setattr(gw, "duration", 15.0)
+                            world.arena.hazards.append(gw)
+                    except ImportError:
+                        pass
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            import math
+            for h in world.arena.hazards[:]:
+                kind = getattr(h, "kind", "")
+                if kind in ["payload_conveyor_belt", "payload_gravity_well"]:
+                    dur = getattr(h, "duration", 15.0) - delta
+                    setattr(h, "duration", dur)
+
+                    if dur <= 0 or (kind == "payload_gravity_well" and getattr(h, "hp", 1.0) <= 0):
+                        if h in world.arena.hazards:
+                            world.arena.hazards.remove(h)
+                        continue
+
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+
+                        hx = getattr(h, "x", 500.0)
+                        hy = getattr(h, "y", 500.0)
+                        bx = getattr(b, "x", 500.0)
+                        by = getattr(b, "y", 500.0)
+                        dx = bx - hx
+                        dy = by - hy
+                        dist = math.hypot(dx, dy)
+                        r = getattr(h, "radius", 100.0)
+
+                        if dist <= r:
+                            if kind == "payload_conveyor_belt":
+                                dvec = getattr(h, "direction_vector", (1.0, 0.0))
+                                mag = getattr(h, "speed_magnitude", 200.0)
+                                if hasattr(b, "vx") and hasattr(b, "vy"):
+                                    mass = getattr(b, "mass", 1.0)
+                                    b.vx += (dvec[0] * mag / mass) * delta
+                                    b.vy += (dvec[1] * mag / mass) * delta
+                                else:
+                                    b.x += dvec[0] * mag * delta
+                                    b.y += dvec[1] * mag * delta
+                            elif kind == "payload_gravity_well":
+                                # Pull
+                                if dist > 0:
+                                    force = 150.0 * (1.0 - dist / max(r, 1.0))
+                                    if hasattr(b, "vx") and hasattr(b, "vy"):
+                                        mass = getattr(b, "mass", 1.0)
+                                        b.vx -= (dx / dist) * force / mass * delta
+                                        b.vy -= (dy / dist) * force / mass * delta
+                                    else:
+                                        b.x -= (dx / dist) * force * delta
+                                        b.y -= (dy / dist) * force * delta
+
+                                # Damage from players
+                                if getattr(b, "ball_type", None) != "payload":
+                                    b_radius = getattr(b, "radius", 15.0)
+                                    if dist <= b_radius + 30.0:
+                                        h.hp -= getattr(b, "damage", 10.0) * delta * 5.0
+                                        # Hazard deals small damage back to players
+                                        if hasattr(b, "hp"):
+                                            b.hp -= getattr(h, "damage", 10.0) * delta
+                                            if b.hp <= 0:
+                                                b.alive = False
+
     def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
         arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
 
