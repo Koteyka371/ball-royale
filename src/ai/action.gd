@@ -25283,18 +25283,34 @@ func execute(strategy: String, delta: float):
                                 if not self.ball.has("base_radius"): self.ball["base_radius"] = self.ball.get("radius", 10.0)
                                 if not self.ball.has("base_mass"): self.ball["base_mass"] = self.ball.get("mass", 1.0)
                                 if not self.ball.has("base_speed"): self.ball["base_speed"] = self.ball.get("speed", 100.0)
+                                if not self.ball.has("original_max_hp"): self.ball["original_max_hp"] = self.ball.get("max_hp", 100.0)
+                                if not self.ball.has("original_base_damage"): self.ball["original_base_damage"] = self.ball.get("base_damage", 20.0)
                                 self.ball["radius"] = self.ball["base_radius"] * 0.5
                                 self.ball["mass"] = self.ball["base_mass"] * 0.2
                                 self.ball["speed"] = self.ball["base_speed"] * 1.5
+                                if self.ball.has("max_hp"):
+                                    self.ball["max_hp"] = self.ball["original_max_hp"] * 0.5
+                                    if self.ball.get("hp", 100.0) > self.ball["max_hp"]:
+                                        self.ball["hp"] = self.ball["max_hp"]
+                                if self.ball.has("base_damage"):
+                                    self.ball["base_damage"] = self.ball["original_base_damage"] * 0.5
                             elif typeof(self.ball) == TYPE_OBJECT:
                                 self.ball.set("is_shrunk", true)
                                 self.ball.set("shrink_ray_timer", shrink_duration)
                                 if not "base_radius" in self.ball: self.ball.set("base_radius", self.ball.get("radius") if "radius" in self.ball else 10.0)
                                 if not "base_mass" in self.ball: self.ball.set("base_mass", self.ball.get("mass") if "mass" in self.ball else 1.0)
                                 if not "base_speed" in self.ball: self.ball.set("base_speed", self.ball.get("speed") if "speed" in self.ball else 100.0)
+                                if not "original_max_hp" in self.ball: self.ball.set("original_max_hp", self.ball.get("max_hp") if "max_hp" in self.ball else 100.0)
+                                if not "original_base_damage" in self.ball: self.ball.set("original_base_damage", self.ball.get("base_damage") if "base_damage" in self.ball else 20.0)
                                 self.ball.set("radius", self.ball.get("base_radius") * 0.5)
                                 self.ball.set("mass", self.ball.get("base_mass") * 0.2)
                                 self.ball.set("speed", self.ball.get("base_speed") * 1.5)
+                                if "max_hp" in self.ball:
+                                    self.ball.set("max_hp", self.ball.get("original_max_hp") * 0.5)
+                                    if self.ball.get("hp") != null and self.ball.get("hp") > self.ball.get("max_hp"):
+                                        self.ball.set("hp", self.ball.get("max_hp"))
+                                if "base_damage" in self.ball:
+                                    self.ball.set("base_damage", self.ball.get("original_base_damage") * 0.5)
                         else:
                             var shrink_duration = 5.0
                             if typeof(hazard) == TYPE_DICTIONARY and hazard.has("shrink_duration"): shrink_duration = hazard["shrink_duration"]
@@ -52543,12 +52559,16 @@ func _update_skill_timer(delta: float):
                 if self.ball.has("base_radius"): self.ball["radius"] = self.ball["base_radius"]
                 if self.ball.has("base_mass"): self.ball["mass"] = self.ball["base_mass"]
                 if self.ball.has("base_speed"): self.ball["speed"] = self.ball["base_speed"]
+                if self.ball.has("original_max_hp"): self.ball["max_hp"] = self.ball["original_max_hp"]
+                if self.ball.has("original_base_damage"): self.ball["base_damage"] = self.ball["original_base_damage"]
             elif typeof(self.ball) == TYPE_OBJECT:
                 self.ball.set("is_shrunk", false)
                 self.ball.set("shrink_ray_timer", 0.0)
                 if "base_radius" in self.ball: self.ball.set("radius", self.ball.get("base_radius"))
                 if "base_mass" in self.ball: self.ball.set("mass", self.ball.get("base_mass"))
                 if "base_speed" in self.ball: self.ball.set("speed", self.ball.get("base_speed"))
+                if "original_max_hp" in self.ball: self.ball.set("max_hp", self.ball.get("original_max_hp"))
+                if "original_base_damage" in self.ball: self.ball.set("base_damage", self.ball.get("original_base_damage"))
         else:
             if typeof(self.ball) == TYPE_DICTIONARY: self.ball["shrink_ray_timer"] = shrink_timer
             elif typeof(self.ball) == TYPE_OBJECT: self.ball.set("shrink_ray_timer", shrink_timer)
