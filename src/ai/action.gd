@@ -9030,6 +9030,61 @@ func execute(strategy: String, delta: float):
     elif self.ball is Dictionary:
         self.ball["nemesis_reveal_timer"] = n_reveal
 
+
+    var srt = 0.0
+    if typeof(self.ball) == TYPE_DICTIONARY:
+        srt = self.ball.get("survival_rewind_timer", 0.0)
+    else:
+        if self.ball.has_method("has_meta") and self.ball.has_meta("survival_rewind_timer"):
+            srt = self.ball.get_meta("survival_rewind_timer")
+        elif "survival_rewind_timer" in self.ball:
+            srt = self.ball.survival_rewind_timer
+
+    if srt > 0.0:
+        srt -= delta
+        if typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["survival_rewind_timer"] = srt
+        else:
+            if self.ball.has_method("set_meta"):
+                self.ball.set_meta("survival_rewind_timer", srt)
+            else:
+                self.ball.survival_rewind_timer = srt
+
+        var hp = float(self.ball.hp) if "hp" in self.ball else float(self.ball.get("hp", 100.0))
+        if hp <= 0.0:
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["survival_rewind_timer"] = 0.0
+                self.ball["alive"] = true
+            else:
+                if self.ball.has_method("set_meta"):
+                    self.ball.set_meta("survival_rewind_timer", 0.0)
+                else:
+                    self.ball.survival_rewind_timer = 0.0
+                if "alive" in self.ball:
+                    self.ball.alive = true
+
+            var state = {}
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                state = self.ball.get("survival_rewind_state", {})
+            else:
+                if self.ball.has_method("has_meta") and self.ball.has_meta("survival_rewind_state"):
+                    state = self.ball.get_meta("survival_rewind_state")
+                elif "survival_rewind_state" in self.ball:
+                    state = self.ball.survival_rewind_state
+
+            if typeof(self.ball) == TYPE_DICTIONARY:
+                self.ball["x"] = state.get("x", self.ball.get("x", 0.0))
+                self.ball["y"] = state.get("y", self.ball.get("y", 0.0))
+                self.ball["hp"] = state.get("hp", self.ball.get("max_hp", 100.0))
+            else:
+                self.ball.x = state.get("x", self.ball.x)
+                self.ball.y = state.get("y", self.ball.y)
+                if "hp" in self.ball:
+                    self.ball.hp = state.get("hp", self.ball.get("max_hp", 100.0))
+            if self.world != null and "events" in self.world:
+                self.world.events.append({"type": "time_rewind", "data": {"id": self.ball.get("id", -1) if typeof(self.ball) == TYPE_DICTIONARY else self.ball.id}})
+            return
+
     var is_rewind = false
     if typeof(self.ball) == TYPE_DICTIONARY:
         if self.ball.get("time_rewind_booster_active", false):
@@ -32262,7 +32317,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'instant_swap']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -37215,6 +37270,30 @@ func _use_skill():
                     if "state_history" in my_ball: my_ball.state_history = []
                     elif my_ball.has_method("set_meta"): my_ball.set_meta("state_history", [])
 
+            elif skill_name == "survival_rewind":
+                if typeof(self.ball) == TYPE_DICTIONARY:
+                    self.ball["survival_rewind_timer"] = 5.0
+                    self.ball["survival_rewind_state"] = {
+                        "x": self.ball.get("x", 0.0),
+                        "y": self.ball.get("y", 0.0),
+                        "hp": self.ball.get("hp", 100.0)
+                    }
+                else:
+                    var hp = float(self.ball.hp) if "hp" in self.ball else float(self.ball.get("hp", 100.0))
+                    if self.ball.has_method("set_meta"):
+                        self.ball.set_meta("survival_rewind_timer", 5.0)
+                        self.ball.set_meta("survival_rewind_state", {
+                            "x": self.ball.x,
+                            "y": self.ball.y,
+                            "hp": hp
+                        })
+                    else:
+                        self.ball.survival_rewind_timer = 5.0
+                        self.ball.survival_rewind_state = {
+                            "x": self.ball.x,
+                            "y": self.ball.y,
+                            "hp": hp
+                        }
         elif skill_name == "time_rewind_self":
             var history = []
             if typeof(my_ball) == TYPE_DICTIONARY:
