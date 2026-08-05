@@ -77365,3 +77365,112 @@ GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode.new()
 
 GAME_MODES["fractal_payload"] = FractalPayloadMode.new()
+class StationaryWindFunnelsMode extends GameMode:
+    var funnels = []
+
+    func _init():
+        name = "Stationary Wind Funnels"
+        description = "Stationary wind funnels that shoot out air constantly in one direction, significantly speeding up balls that enter the stream and acting as a makeshift highway or a trap."
+        kind = "stationary_wind_funnels"
+
+    func setup(world, balls):
+        super.setup(world, balls)
+        var aw = 2000.0
+        var ah = 2000.0
+        if typeof(world) == TYPE_OBJECT and "arena" in world:
+            var ar = world.arena
+            if "width" in ar: aw = ar.width
+            if "height" in ar: ah = ar.height
+        elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+            var ar = world.arena
+            if typeof(ar) == TYPE_DICTIONARY:
+                if ar.has("width"): aw = ar.width
+                if ar.has("height"): ah = ar.height
+            elif typeof(ar) == TYPE_OBJECT:
+                if "width" in ar: aw = ar.width
+                if "height" in ar: ah = ar.height
+
+        funnels = []
+        for i in range(4):
+            var x = aw * (0.2 + 0.6 * randf())
+            var y = ah * (0.2 + 0.6 * randf())
+            var angle = randf() * 2.0 * PI
+            var length = 600.0
+            var width = 150.0
+            var force = 800.0
+
+            funnels.append({
+                "x": x,
+                "y": y,
+                "angle": angle,
+                "length": length,
+                "width": width,
+                "force": force
+            })
+
+            var hz = {
+                "x": x,
+                "y": y,
+                "angle": angle,
+                "length": length,
+                "width": width,
+                "radius": max(length, width) / 2.0,
+                "alive": true,
+                "team": "neutral",
+                "kind": "wind_funnel",
+                "type": "wind_funnel",
+                "start_x": x,
+                "start_y": y,
+                "end_x": x + cos(angle) * length,
+                "end_y": y + sin(angle) * length
+            }
+            if typeof(world) == TYPE_OBJECT and "hazards" in world:
+                world.hazards.append(hz)
+            elif typeof(world) == TYPE_DICTIONARY and world.has("hazards"):
+                world.hazards.append(hz)
+
+    func tick(world, balls, delta):
+        for b in balls:
+            var alive = false
+            var bx = 0.0
+            var by = 0.0
+
+            if typeof(b) == TYPE_OBJECT:
+                if "alive" in b: alive = b.alive
+                if "x" in b: bx = b.x
+                if "y" in b: by = b.y
+            elif typeof(b) == TYPE_DICTIONARY:
+                if b.has("alive"): alive = b.alive
+                if b.has("x"): bx = b.x
+                if b.has("y"): by = b.y
+
+            if not alive:
+                continue
+
+            for f in funnels:
+                var b_rel_x = bx - f.x
+                var b_rel_y = by - f.y
+
+                var fx = cos(f.angle)
+                var fy = sin(f.angle)
+
+                var proj = b_rel_x * fx + b_rel_y * fy
+
+                if proj >= 0.0 and proj <= f.length:
+                    var perp_x = b_rel_x - proj * fx
+                    var perp_y = b_rel_y - proj * fy
+                    var dist_sq = perp_x * perp_x + perp_y * perp_y
+
+                    var hw = f.width / 2.0
+                    if dist_sq <= hw * hw:
+                        var add_vx = fx * f.force * delta
+                        var add_vy = fy * f.force * delta
+
+                        if typeof(b) == TYPE_OBJECT:
+                            if "vx" in b: b.vx += add_vx
+                            if "vy" in b: b.vy += add_vy
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            if b.has("vx"): b.vx += add_vx
+                            if b.has("vy"): b.vy += add_vy
+
+GAME_MODES["stationary_wind_funnels"] = StationaryWindFunnelsMode.new()

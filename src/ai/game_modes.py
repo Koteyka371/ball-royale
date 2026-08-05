@@ -49312,3 +49312,85 @@ class ColorSwapTeamMode(GameMode):
                 world.events.append({"type": "color_swap", "message": "Teams swapped colors!"})
 
 GAME_MODES["color_swap_team"] = ColorSwapTeamMode()
+
+
+class StationaryWindFunnelsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Stationary Wind Funnels"
+        self.description = "Stationary wind funnels that shoot out air constantly in one direction, significantly speeding up balls that enter the stream and acting as a makeshift highway or a trap."
+        self.kind = "stationary_wind_funnels"
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+
+        aw = getattr(world.arena, "width", 2000.0) if hasattr(world, "arena") else 2000.0
+        ah = getattr(world.arena, "height", 2000.0) if hasattr(world, "arena") else 2000.0
+
+        self.funnels = []
+
+        import math, random
+        for _ in range(4):
+            x = aw * (0.2 + 0.6 * random.random())
+            y = ah * (0.2 + 0.6 * random.random())
+            angle = random.uniform(0, 2 * math.pi)
+            length = 600.0
+            width = 150.0
+            force = 800.0
+
+            self.funnels.append({
+                "x": x,
+                "y": y,
+                "angle": angle,
+                "length": length,
+                "width": width,
+                "force": force
+            })
+
+            if not hasattr(world, "hazards"):
+                world.hazards = []
+
+            class WindFunnelHazard:
+                def __init__(self, fx, fy, fangle, flength, fwidth):
+                    self.x = fx
+                    self.y = fy
+                    self.angle = fangle
+                    self.length = flength
+                    self.width = fwidth
+                    self.radius = max(flength, fwidth) / 2
+                    self.alive = True
+                    self.team = "neutral"
+                    self.kind = "wind_funnel"
+                    self.type = "wind_funnel"
+                    self.start_x = fx
+                    self.start_y = fy
+                    self.end_x = fx + math.cos(fangle) * flength
+                    self.end_y = fy + math.sin(fangle) * flength
+
+            world.hazards.append(WindFunnelHazard(x, y, angle, length, width))
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        import math
+        for b in balls:
+            if getattr(b, "alive", False):
+                for funnel in self.funnels:
+                    bx = getattr(b, "x", 0.0) - funnel["x"]
+                    by = getattr(b, "y", 0.0) - funnel["y"]
+
+                    fx = math.cos(funnel["angle"])
+                    fy = math.sin(funnel["angle"])
+
+                    proj = bx * fx + by * fy
+
+                    if 0 <= proj <= funnel["length"]:
+                        perp_x = bx - proj * fx
+                        perp_y = by - proj * fy
+                        dist_sq = perp_x * perp_x + perp_y * perp_y
+
+                        if dist_sq <= (funnel["width"] / 2) ** 2:
+                            if hasattr(b, "vx"):
+                                b.vx += fx * funnel["force"] * delta
+                            if hasattr(b, "vy"):
+                                b.vy += fy * funnel["force"] * delta
+
+GAME_MODES["stationary_wind_funnels"] = StationaryWindFunnelsMode()
