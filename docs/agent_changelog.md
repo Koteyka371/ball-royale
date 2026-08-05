@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1792] Color Match Team Mode — *2026-08-05 19:00:17 UTC*
+
+A team-based mode where balls can only deal damage to enemies of the matching color. Teams periodically swap colors based on a global timer, requiring dynamic positioning and target switching.
+
+---
+
 ## [idea-1827] EMP Payload — *2026-08-05 19:00:12 UTC*
 
 Payload emits a pulse that disables enemy buffs within radius.
