@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1774] Shrink Ray Traps — *2026-08-05 18:01:20 UTC*
+
+A deployable trap that, when an enemy touches it, reduces their size (radius), damage, and max health by 50% for 5 seconds, making them highly vulnerable to being bullied or knocked out of the arena.
+
+---
+
 ## [idea-1824] Viewer Named AI Balls — *2026-08-05 16:54:55 UTC*
 
 Top viewers automatically have AI balls named after them in the next match, inheriting their loyalty badges.
