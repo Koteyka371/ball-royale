@@ -16299,7 +16299,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "skill_reroll_booster":
                     import random
-                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing']
+                    skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook']
                     new_skill = random.choice(skills)
                     self.ball.skill = new_skill
                     self.ball.SKILL = new_skill
@@ -18688,6 +18688,102 @@ class Action:
                     self.world.balls.append(decoy)
 
                 self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 12.0)
+
+
+            elif skill_name == "grapple_hook":
+                self.ball.skill_timer = getattr(self.ball, "SKILL_COOLDOWN", 5.0)
+
+                if hasattr(self.world, "events"):
+                    self.world.events.append({
+                        "type": "visual_effect",
+                        "data": {"type": "grapple_cast", "x": self.ball.x, "y": self.ball.y}
+                    })
+
+                arena_width = getattr(self.world.arena, "width", 1000) if hasattr(self.world, "arena") else 1000
+                arena_height = getattr(self.world.arena, "height", 1000) if hasattr(self.world, "arena") else 1000
+
+                grapple_targets = []
+                # Hazards
+                if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                    for h in self.world.arena.hazards:
+                        dist_sq = (h.x - self.ball.x)**2 + (h.y - self.ball.y)**2
+                        if dist_sq < 250000: # 500 range
+                            grapple_targets.append(("hazard", h, dist_sq))
+
+                closest_target = None
+                closest_target_type = None
+                closest_target_dist_sq = 999999.0
+                for t_type, t, dist_sq in grapple_targets:
+                    if dist_sq < closest_target_dist_sq:
+                        closest_target = t
+                        closest_target_type = t_type
+                        closest_target_dist_sq = dist_sq
+
+                # Wall distances
+                dists = {
+                    "left": self.ball.x,
+                    "right": arena_width - self.ball.x,
+                    "top": self.ball.y,
+                    "bottom": arena_height - self.ball.y
+                }
+                closest_wall = min(dists, key=dists.get)
+                closest_wall_dist = dists[closest_wall]
+
+                # Decide whether to grapple to wall or target based on distance
+                if closest_target and closest_target_dist_sq < (closest_wall_dist ** 2):
+                    # Grapple to hazard
+                    dist = math.sqrt(closest_target_dist_sq)
+                    if dist > 0.0001:
+                        dx = closest_target.x - self.ball.x
+                        dy = closest_target.y - self.ball.y
+
+                        # Pull self towards hazard quickly
+                        pull_speed = 800.0
+
+                        nx = dx / dist
+                        ny = dy / dist
+
+                        self.ball.vx = nx * pull_speed
+                        self.ball.vy = ny * pull_speed
+
+                        if hasattr(self.world, "events"):
+                            self.world.events.append({
+                                "type": "grapple_line",
+                                "source_id": self.ball.id,
+                                "target_x": closest_target.x,
+                                "target_y": closest_target.y
+                            })
+                else:
+                    # Grapple to wall
+                    pull_speed = 800.0
+
+                    target_x = self.ball.x
+                    target_y = self.ball.y
+
+                    if closest_wall == "left":
+                        target_x = 0
+                    elif closest_wall == "right":
+                        target_x = arena_width
+                    elif closest_wall == "top":
+                        target_y = 0
+                    elif closest_wall == "bottom":
+                        target_y = arena_height
+
+                    dx = target_x - self.ball.x
+                    dy = target_y - self.ball.y
+                    dist = math.sqrt(dx**2 + dy**2)
+
+                    if dist > 0.0001:
+                        self.ball.vx = (dx / dist) * pull_speed
+                        self.ball.vy = (dy / dist) * pull_speed
+
+                    if hasattr(self.world, "events"):
+                        self.world.events.append({
+                            "type": "grapple_line",
+                            "source_id": self.ball.id,
+                            "target_x": target_x,
+                            "target_y": target_y
+                        })
 
             elif skill_name == "trickster_swap":
                 all_entities = getattr(self.world, "balls", [])
