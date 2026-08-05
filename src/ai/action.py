@@ -256,6 +256,12 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+        if getattr(self.world, "game_mode", None) and getattr(self.world.game_mode, "kind", "") == "color_swap_team":
+            a_color = getattr(attacker, "current_color", "none")
+            t_color = getattr(target, "current_color", "none")
+            if a_color != t_color:
+                return # Block damage
+
         if getattr(target, "ghost_booster_timer", 0.0) > 0.0:
             return # Take no damage while ghosted
         if getattr(target, "nemesis_shield_active", False):

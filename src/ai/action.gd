@@ -419,6 +419,23 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.damage = orig_dmg
 
 func _attempt_damage_internal(attacker, target) -> void:
+	var mode_kind = ""
+	if "game_mode" in world and world.game_mode != null and "kind" in world.game_mode:
+		mode_kind = world.game_mode.kind
+	if mode_kind == "color_swap_team":
+		var a_color = "none"
+		if typeof(attacker) == TYPE_OBJECT and "current_color" in attacker:
+			a_color = attacker.current_color
+		elif typeof(attacker) == TYPE_DICTIONARY and attacker.has("current_color"):
+			a_color = attacker["current_color"]
+		var t_color = "none"
+		if typeof(target) == TYPE_OBJECT and "current_color" in target:
+			t_color = target.current_color
+		elif typeof(target) == TYPE_DICTIONARY and target.has("current_color"):
+			t_color = target["current_color"]
+		if a_color != t_color:
+			return # Block damage
+
 	var t_ghost_timer = 0.0
 	if typeof(target) == TYPE_OBJECT and "ghost_booster_timer" in target: t_ghost_timer = target.ghost_booster_timer
 	elif typeof(target) == TYPE_OBJECT and target.has_method("has_meta") and target.has_meta("ghost_booster_timer"): t_ghost_timer = target.get_meta("ghost_booster_timer")

@@ -58511,7 +58511,51 @@ class SwappingSafeZoneMode extends GameMode:
 	func hypot(dx: float, dy: float) -> float:
 		return sqrt(dx * dx + dy * dy)
 
+class ColorSwapTeamMode extends GameMode:
+	var colors = ["red", "blue", "green", "yellow"]
+	var swap_interval = 10.0
+	var timer = 0.0
+
+	func _init():
+		name = "Color Swap Team"
+		description = "A team-based mode where balls can only deal damage to enemies of the matching color. Teams periodically swap colors based on a global timer, requiring dynamic positioning and target switching."
+		kind = "color_swap_team"
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var half = balls.size() / 2
+		for i in range(balls.size()):
+			if i < half:
+				balls[i].team = "Team A"
+			else:
+				balls[i].team = "Team B"
+			balls[i].current_color = colors[randi() % colors.size()]
+			balls[i].cosmetic_aura_color = _get_aura_color(balls[i].current_color)
+
+	func _get_aura_color(color_name):
+		if color_name == "red": return [1.0, 0.0, 0.0, 1.0]
+		elif color_name == "blue": return [0.0, 0.0, 1.0, 1.0]
+		elif color_name == "green": return [0.0, 1.0, 0.0, 1.0]
+		elif color_name == "yellow": return [1.0, 1.0, 0.0, 1.0]
+		return [1.0, 1.0, 1.0, 1.0]
+
+	func tick(world, balls, delta):
+		timer += delta
+		if timer >= swap_interval:
+			timer = 0.0
+			for b in balls:
+				var available = []
+				for c in colors:
+					if c != b.current_color:
+						available.append(c)
+				if available.size() > 0:
+					b.current_color = available[randi() % available.size()]
+				b.cosmetic_aura_color = _get_aura_color(b.current_color)
+			if "events" in world:
+				world.events.append({"type": "color_swap", "message": "Teams swapped colors!"})
+
 var GAME_MODES = {
+	"color_swap_team": ColorSwapTeamMode.new(),
 	"extreme_microclimate": ExtremeMicroclimateMode.new(),
 	"boss_escort": BossEscortMode.new(),
 	"toxic_fog_event": ToxicFogEventMode.new(),

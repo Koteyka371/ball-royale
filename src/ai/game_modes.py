@@ -49110,3 +49110,47 @@ GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode()
 
 GAME_MODES["fractal_payload"] = FractalPayloadMode()
+class ColorSwapTeamMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Color Swap Team"
+        self.description = "A team-based mode where balls can only deal damage to enemies of the matching color. Teams periodically swap colors based on a global timer, requiring dynamic positioning and target switching."
+        self.kind = "color_swap_team"
+        self.colors = ["red", "blue", "green", "yellow"]
+        self.swap_interval = 10.0
+        self.timer = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        half = len(balls) // 2
+        for i, b in enumerate(balls):
+            b.team = "Team A" if i < half else "Team B"
+
+        import random as _rnd
+        for b in balls:
+            b.current_color = _rnd.choice(self.colors)
+            b.cosmetic_aura_color = self._get_aura_color(b.current_color)
+
+    def _get_aura_color(self, color_name):
+        colors = {
+            "red": [1.0, 0.0, 0.0, 1.0],
+            "blue": [0.0, 0.0, 1.0, 1.0],
+            "green": [0.0, 1.0, 0.0, 1.0],
+            "yellow": [1.0, 1.0, 0.0, 1.0]
+        }
+        return colors.get(color_name, [1.0, 1.0, 1.0, 1.0])
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        self.timer += delta
+        if self.timer >= self.swap_interval:
+            self.timer = 0.0
+            import random as _rnd
+            for b in balls:
+                available_colors = [c for c in self.colors if c != getattr(b, "current_color", "none")]
+                if not available_colors: available_colors = self.colors
+                b.current_color = _rnd.choice(available_colors)
+                b.cosmetic_aura_color = self._get_aura_color(b.current_color)
+            if hasattr(world, "events"):
+                world.events.append({"type": "color_swap", "message": "Teams swapped colors!"})
+
+GAME_MODES["color_swap_team"] = ColorSwapTeamMode()
