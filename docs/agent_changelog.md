@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1812] Escort Decoys — *2026-08-05 02:13:46 UTC*
+
+Defenders can spawn decoy payloads in EscortMode that mimic the visuals of the real payload, designed to lure attackers away from the main objective.
+
+---
+
 ## [idea-1811] Decoy Overdrive — *2026-08-04 22:08:20 UTC*
 
 A mode where generating more than 5 decoys causes them to link together with electricity, damaging any enemies that cross the connection.
