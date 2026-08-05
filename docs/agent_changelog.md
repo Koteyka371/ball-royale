@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1826] Payload Tug-of-War Map Hazards — *2026-08-05 20:36:14 UTC*
+
+On maps where payloads are active, periodic localized gravity wells or conveyor belts spawn to pull the payload towards or away from the goals. Teams have to coordinate to either ride the conveyors or destroy the gravity wells while keeping pushers nearby.
+
+---
+
 ## [idea-1806] Gravity Swap Mutator — *2026-08-05 19:19:02 UTC*
 
 Periodically, the gravity in the arena flips, pulling balls towards the edges.
