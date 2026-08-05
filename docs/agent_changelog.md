@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1829] Sticky Spiderweb Traps — *2026-08-05 19:12:31 UTC*
+
+Players can deploy spiderweb traps that remain on the field. When an enemy steps on them, their speed is significantly reduced, and they lose the ability to dash or jump. They can slowly wiggle out, or wait for the web to naturally disintegrate. This encourages more strategic defensive play around choke points.
+
+---
+
 ## [idea-1792] Color Match Team Mode — *2026-08-05 19:00:17 UTC*
 
 A team-based mode where balls can only deal damage to enemies of the matching color. Teams periodically swap colors based on a global timer, requiring dynamic positioning and target switching.
