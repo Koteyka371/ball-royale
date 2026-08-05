@@ -7034,6 +7034,47 @@ class EscortMode(GameMode):
                                 world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
                             break
 
+        if not hasattr(self, "random_emp_timer"):
+            self.random_emp_timer = 0.0
+
+        self.random_emp_timer += delta
+        if self.random_emp_timer >= 15.0:
+            self.random_emp_timer = 0.0
+            import random
+            import math
+            if random.random() < 0.3 and self.payload and getattr(self.payload, "alive", False):
+                stolen_shields = 0.0
+                nearby_defenders = []
+
+                for b in balls:
+                    if b == self.payload or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                        continue
+                    dx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                    dy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                    dist = math.hypot(dx, dy)
+
+                    if dist <= 300.0:
+                        team = getattr(b, "team", "")
+                        if team == "Attackers":
+                            shield = getattr(b, "shield", 0.0)
+                            if shield > 0:
+                                stolen_shields += shield
+                                b.shield = 0.0
+                                if hasattr(world, "add_event"):
+                                    world.add_event("shield_destroyed", {"x": getattr(b, "x", 0), "y": getattr(b, "y", 0)})
+                        elif team == "Defenders":
+                            nearby_defenders.append(b)
+
+                if stolen_shields > 0 and nearby_defenders:
+                    health_per_defender = stolen_shields / len(nearby_defenders)
+                    for d in nearby_defenders:
+                        d.max_hp = getattr(d, "max_hp", 100.0) + health_per_defender
+                        d.hp = getattr(d, "hp", 100.0) + health_per_defender
+                        if hasattr(world, "add_event"):
+                            world.add_event("permanent_health_gained", {"x": getattr(d, "x", 0), "y": getattr(d, "y", 0), "amount": health_per_defender})
+                    if hasattr(world, "add_event"):
+                        world.add_event("emp_shield_steal", {"x": getattr(self.payload, "x", 0), "y": getattr(self.payload, "y", 0), "total": stolen_shields})
+
         if not hasattr(self, "pulse_timer"):
             self.pulse_timer = 0.0
 

@@ -11200,6 +11200,71 @@ class EscortMode extends GameMode:
 					var new_hazard = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
 					world.arena.hazards.append(new_hazard)
 
+		if not self.has_meta("random_emp_timer"):
+			self.set_meta("random_emp_timer", 0.0)
+
+		var ret = self.get_meta("random_emp_timer") + delta
+		if ret >= 15.0:
+			ret = 0.0
+			if randf() < 0.3 and payload != null:
+				var stolen_shields = 0.0
+				var nearby_defenders = []
+				var px = payload.get("x") if typeof(payload) == TYPE_DICTIONARY else payload.x
+				var py = payload.get("y") if typeof(payload) == TYPE_DICTIONARY else payload.y
+
+				for b in balls:
+					if typeof(b) == TYPE_DICTIONARY and b.has("id") and typeof(payload) == TYPE_DICTIONARY and payload.has("id") and b["id"] == payload["id"]:
+						continue
+					if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload:
+						continue
+					var balive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+					if not balive:
+						continue
+					var btype = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+					if btype == "spectator":
+						continue
+
+					var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+					var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+					var bdist = sqrt(pow(bx - px, 2) + pow(by - py, 2))
+
+					if bdist <= 300.0:
+						var bteam = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+						if bteam == "Attackers":
+							var shield = b.get("shield", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("shield")
+							if shield != null and shield > 0:
+								stolen_shields += shield
+								if typeof(b) == TYPE_DICTIONARY:
+									b["shield"] = 0.0
+								else:
+									b.set("shield", 0.0)
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									world.add_event("shield_destroyed", {"x": bx, "y": by})
+						elif bteam == "Defenders":
+							nearby_defenders.append(b)
+
+				if stolen_shields > 0.0 and nearby_defenders.size() > 0:
+					var health_per_defender = stolen_shields / nearby_defenders.size()
+					for d in nearby_defenders:
+						var dx = d.get("x", 0.0) if typeof(d) == TYPE_DICTIONARY else d.get("x")
+						var dy = d.get("y", 0.0) if typeof(d) == TYPE_DICTIONARY else d.get("y")
+						var d_max_hp = d.get("max_hp", 100.0) if typeof(d) == TYPE_DICTIONARY else d.get("max_hp")
+						var d_hp = d.get("hp", 100.0) if typeof(d) == TYPE_DICTIONARY else d.get("hp")
+
+						if typeof(d) == TYPE_DICTIONARY:
+							d["max_hp"] = d_max_hp + health_per_defender
+							d["hp"] = d_hp + health_per_defender
+						else:
+							d.set("max_hp", d_max_hp + health_per_defender)
+							d.set("hp", d_hp + health_per_defender)
+
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("permanent_health_gained", {"x": dx, "y": dy, "amount": health_per_defender})
+
+					if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+						world.add_event("emp_shield_steal", {"x": px, "y": py, "total": stolen_shields})
+		self.set_meta("random_emp_timer", ret)
+
 		pulse_timer += delta
 		if pulse_timer >= 5.0:
 			pulse_timer = 0.0
