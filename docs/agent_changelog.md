@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1818] Viewer Betting Mini-Game — *2026-08-05 04:27:42 UTC*
+
+Allow viewers to type '!bet [ball_id] [amount]' to wager loyalty points on a specific ball winning the match. If the ball wins, the viewer gets a payout. This increases viewer engagement and makes the crowd cheer louder for bets placed.
+
+---
+
 ## [idea-1814] Interactive Match Betting — *2026-08-05 02:58:28 UTC*
 
 Allow viewers to type '!bet <ball_id> <amount>' to wager their prestige points or skill points on a specific ball winning the match. If the ball wins, the viewer earns a multiplier based on the underdog odds.
