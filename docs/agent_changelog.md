@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1827] EMP Payload — *2026-08-05 19:00:12 UTC*
+
+Payload emits a pulse that disables enemy buffs within radius.
+
+---
+
 ## [idea-1774] Shrink Ray Traps — *2026-08-05 18:01:20 UTC*
 
 A deployable trap that, when an enemy touches it, reduces their size (radius), damage, and max health by 50% for 5 seconds, making them highly vulnerable to being bullied or knocked out of the arena.
