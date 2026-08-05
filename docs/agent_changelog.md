@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1824] Viewer Named AI Balls — *2026-08-05 16:54:55 UTC*
+
+Top viewers automatically have AI balls named after them in the next match, inheriting their loyalty badges.
+
+---
+
 ## [idea-1768] Blizzard Tornado Event — *2026-08-05 16:54:50 UTC*
 
 A variant of the tornado swarm where mini-tornadoes combine with ice patches to become mini-blizzards that slow down and slowly freeze nearby players.
