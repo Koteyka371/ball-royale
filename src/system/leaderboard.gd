@@ -239,6 +239,26 @@ func record_viewer_loyalty(viewer_id: String, points: int):
     data["viewer_loyalty"][viewer_id] = current_points + points
     save_leaderboard()
 
+func get_top_viewers(limit: int = 5) -> Array:
+    if not data.has("viewer_loyalty"):
+        return []
+
+    var viewers = data["viewer_loyalty"]
+    var sorted_viewers = []
+
+    for v_id in viewers.keys():
+        sorted_viewers.append({
+            "id": v_id,
+            "points": viewers[v_id],
+            "badge": get_viewer_badge(v_id)
+        })
+
+    sorted_viewers.sort_custom(func(a, b): return a["points"] > b["points"])
+
+    if sorted_viewers.size() > limit:
+        return sorted_viewers.slice(0, limit)
+    return sorted_viewers
+
 func get_viewer_badge(viewer_id: String) -> String:
     if not data.has("viewer_loyalty") or not data["viewer_loyalty"].has(viewer_id):
         return ""

@@ -220,6 +220,13 @@ class LeaderboardManager:
         self.data["viewer_loyalty"][viewer_id] = self.data["viewer_loyalty"].get(viewer_id, 0) + points
         self.save()
 
+    def get_top_viewers(self, limit=5):
+        if "viewer_loyalty" not in self.data:
+            return []
+        viewers = self.data["viewer_loyalty"]
+        sorted_viewers = sorted(viewers.items(), key=lambda x: x[1], reverse=True)
+        return [{"id": k, "points": v, "badge": self.get_viewer_badge(k)} for k, v in sorted_viewers[:limit]]
+
     def get_viewer_badge(self, viewer_id: str):
         if "viewer_loyalty" not in self.data:
             return ""

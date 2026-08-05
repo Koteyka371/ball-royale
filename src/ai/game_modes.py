@@ -684,6 +684,28 @@ class GameMode:
                     b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
                     b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
 
+            # Viewer integration: Name AI balls after top viewers
+            if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "get_top_viewers") and getattr(b, "ball_type", None) == "ai" and not getattr(b, "viewer_named", False):
+                top_viewers = world.leaderboard_manager.get_top_viewers(limit=10)
+                if top_viewers:
+                    # Assign a random top viewer who hasn't been assigned yet this match
+                    if not hasattr(world, "_assigned_viewers"):
+                        world._assigned_viewers = set()
+
+                    available_viewers = [v for v in top_viewers if v["id"] not in world._assigned_viewers]
+                    if available_viewers:
+                        import random
+                        viewer = random.choice(available_viewers)
+                        b.id = viewer["id"]
+                        b.viewer_named = True
+                        world._assigned_viewers.add(viewer["id"])
+                        # Apply badge as a trait/tag if they have one
+                        if viewer["badge"]:
+                            if not hasattr(b, "badges"):
+                                b.badges = []
+                            if viewer["badge"] not in b.badges:
+                                b.badges.append(viewer["badge"])
+
             # Apply minor starting traits
             try:
                 from system.lobby import lobby
@@ -13590,6 +13612,28 @@ class BumperBallsMode(GameMode):
                 elif b.sponsor == "vampiric":
                     b.max_hp = getattr(b, "max_hp", 100.0) * 0.9
                     b.hp = min(getattr(b, "hp", 100.0), b.max_hp)
+
+            # Viewer integration: Name AI balls after top viewers
+            if hasattr(world, "leaderboard_manager") and hasattr(world.leaderboard_manager, "get_top_viewers") and getattr(b, "ball_type", None) == "ai" and not getattr(b, "viewer_named", False):
+                top_viewers = world.leaderboard_manager.get_top_viewers(limit=10)
+                if top_viewers:
+                    # Assign a random top viewer who hasn't been assigned yet this match
+                    if not hasattr(world, "_assigned_viewers"):
+                        world._assigned_viewers = set()
+
+                    available_viewers = [v for v in top_viewers if v["id"] not in world._assigned_viewers]
+                    if available_viewers:
+                        import random
+                        viewer = random.choice(available_viewers)
+                        b.id = viewer["id"]
+                        b.viewer_named = True
+                        world._assigned_viewers.add(viewer["id"])
+                        # Apply badge as a trait/tag if they have one
+                        if viewer["badge"]:
+                            if not hasattr(b, "badges"):
+                                b.badges = []
+                            if viewer["badge"] not in b.badges:
+                                b.badges.append(viewer["badge"])
 
             # Apply minor starting traits
             try:

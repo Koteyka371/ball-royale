@@ -1225,6 +1225,60 @@ class GameMode:
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
+			# Viewer integration: Name AI balls after top viewers
+			if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("leaderboard_manager") != null:
+				var lm = world.get("leaderboard_manager")
+				if lm.has_method("get_top_viewers"):
+					var b_type = b.get("ball_type") if "ball_type" in b else ""
+					if b.has_method("get_meta") and b.has_meta("ball_type"):
+						b_type = b.get_meta("ball_type")
+					var v_named = b.get("viewer_named") if "viewer_named" in b else false
+					if b.has_method("get_meta") and b.has_meta("viewer_named"):
+						v_named = b.get_meta("viewer_named")
+
+					if b_type == "ai" and not v_named:
+						var top_viewers = lm.call("get_top_viewers", 10)
+						if top_viewers.size() > 0:
+							var assigned = world.get("_assigned_viewers") if "assigned_viewers" in world else []
+							if world.has_method("get_meta") and world.has_meta("_assigned_viewers"):
+								assigned = world.get_meta("_assigned_viewers")
+
+							var available = []
+							for v in top_viewers:
+								if not assigned.has(v["id"]):
+									available.append(v)
+
+							if available.size() > 0:
+								var viewer = available[randi() % available.size()]
+								if "id" in b:
+									b.id = viewer["id"]
+								elif b.has_method("set_meta"):
+									b.set_meta("id", viewer["id"])
+
+								if "viewer_named" in b:
+									b.viewer_named = true
+								elif b.has_method("set_meta"):
+									b.set_meta("viewer_named", true)
+
+								if viewer["badge"] != "":
+									var b_badges = b.get("badges") if "badges" in b else []
+									if b.has_method("get_meta") and b.has_meta("badges"):
+										b_badges = b.get_meta("badges")
+									if typeof(b_badges) != TYPE_ARRAY:
+										b_badges = []
+									if not b_badges.has(viewer["badge"]):
+										b_badges.append(viewer["badge"])
+									if "badges" in b:
+										b.badges = b_badges
+									elif b.has_method("set_meta"):
+										b.set_meta("badges", b_badges)
+
+								assigned.append(viewer["id"])
+								if "assigned_viewers" in world:
+									world._assigned_viewers = assigned
+								elif world.has_method("set_meta"):
+									world.set_meta("_assigned_viewers", assigned)
+
 			var sponsor = ""
 			if "sponsor" in b:
 				sponsor = b.sponsor
@@ -20930,6 +20984,60 @@ class BumperBallsMode extends GameMode:
 		if not "dead_balls" in world:
 			world.set_meta("dead_balls", []) if world.has_method("set_meta") else null
 		for b in balls:
+			# Viewer integration: Name AI balls after top viewers
+			if typeof(world) == TYPE_OBJECT and world.has_method("get") and world.get("leaderboard_manager") != null:
+				var lm = world.get("leaderboard_manager")
+				if lm.has_method("get_top_viewers"):
+					var b_type = b.get("ball_type") if "ball_type" in b else ""
+					if b.has_method("get_meta") and b.has_meta("ball_type"):
+						b_type = b.get_meta("ball_type")
+					var v_named = b.get("viewer_named") if "viewer_named" in b else false
+					if b.has_method("get_meta") and b.has_meta("viewer_named"):
+						v_named = b.get_meta("viewer_named")
+
+					if b_type == "ai" and not v_named:
+						var top_viewers = lm.call("get_top_viewers", 10)
+						if top_viewers.size() > 0:
+							var assigned = world.get("_assigned_viewers") if "assigned_viewers" in world else []
+							if world.has_method("get_meta") and world.has_meta("_assigned_viewers"):
+								assigned = world.get_meta("_assigned_viewers")
+
+							var available = []
+							for v in top_viewers:
+								if not assigned.has(v["id"]):
+									available.append(v)
+
+							if available.size() > 0:
+								var viewer = available[randi() % available.size()]
+								if "id" in b:
+									b.id = viewer["id"]
+								elif b.has_method("set_meta"):
+									b.set_meta("id", viewer["id"])
+
+								if "viewer_named" in b:
+									b.viewer_named = true
+								elif b.has_method("set_meta"):
+									b.set_meta("viewer_named", true)
+
+								if viewer["badge"] != "":
+									var b_badges = b.get("badges") if "badges" in b else []
+									if b.has_method("get_meta") and b.has_meta("badges"):
+										b_badges = b.get_meta("badges")
+									if typeof(b_badges) != TYPE_ARRAY:
+										b_badges = []
+									if not b_badges.has(viewer["badge"]):
+										b_badges.append(viewer["badge"])
+									if "badges" in b:
+										b.badges = b_badges
+									elif b.has_method("set_meta"):
+										b.set_meta("badges", b_badges)
+
+								assigned.append(viewer["id"])
+								if "assigned_viewers" in world:
+									world._assigned_viewers = assigned
+								elif world.has_method("set_meta"):
+									world.set_meta("_assigned_viewers", assigned)
+
 			var sponsor = ""
 			if "sponsor" in b:
 				sponsor = b.sponsor
