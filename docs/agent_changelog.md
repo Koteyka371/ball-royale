@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1815] Twitch Plays AI Parameters — *2026-08-05 11:03:30 UTC*
+
+Expose basic AI hyperparameters like aggressiveness, fleeing radius, or vision radius to viewers via chat commands, letting the crowd collectively train or alter the AI neural network traits in real-time.
+
+---
+
 ## [idea-1825] Payload Chain Reaction Mode — *2026-08-05 08:18:55 UTC*
 
 When a payload detonates, it spawns 4 smaller payloads that fly in opposite directions. These mini-payloads can be pushed, and if they reach a goal, they detonate for a smaller explosion. This continues down to micro-payloads, creating chaotic endgame situations.
