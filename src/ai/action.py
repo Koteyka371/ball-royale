@@ -11267,6 +11267,8 @@ class Action:
                                         self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)
                                     else:
                                         self.ball.slow_timer = 3.0
+                                    self.ball.is_dashing = False
+                                    self.ball.can_jump = False
 
                                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                                         from arena.procedural_arena import Hazard
@@ -13015,6 +13017,8 @@ class Action:
                                 self.ball.slow_timer = 2.0
                             if hasattr(self.ball, "speed_multiplier"):
                                 self.ball.speed_multiplier = min(getattr(self.ball, "speed_multiplier", 1.0), 0.5)
+                            self.ball.is_dashing = False
+                            self.ball.can_jump = False
                         elif hazard.kind == "tar_puddle":
                             if hasattr(self.ball, "slow_timer"):
                                 self.ball.slow_timer = max(getattr(self.ball, "slow_timer", 0.0), 3.0)
