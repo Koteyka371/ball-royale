@@ -6556,6 +6556,7 @@ class EscortMode(GameMode):
         self.current_waypoint_index = 0
         self.hazard_timer = 0.0
         self.anti_payload_timer = 0.0
+        self.speed_pad_timer = 0.0
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
         for b in balls:
@@ -7143,6 +7144,42 @@ class EscortMode(GameMode):
                 base_speed = getattr(self.payload, "speed", 0.5)
                 self.payload.x += (dx / dist) * base_speed * speed_mult
                 self.payload.y += (dy / dist) * base_speed * speed_mult
+
+            if not hasattr(self, "speed_pad_timer"):
+                self.speed_pad_timer = 0.0
+
+            self.speed_pad_timer += delta
+            if self.speed_pad_timer >= 10.0:
+                self.speed_pad_timer = 0.0
+                if getattr(self, "payload", None) and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                    payload_team = getattr(self.payload, "team", "")
+                    has_nearby = False
+                    for b in balls:
+                        if b == self.payload or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+                        if getattr(b, "team", "") == payload_team:
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0),
+                                              getattr(b, "y", 0) - getattr(self.payload, "y", 0))
+                            if dist <= 150.0:
+                                has_nearby = True
+                                break
+
+                    if has_nearby:
+                        try:
+                            from arena.procedural_arena import Hazard
+                            import random
+                            h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                            hx = getattr(self.payload, "x", 0)
+                            hy = getattr(self.payload, "y", 0)
+                            pad = Hazard(h_id, hx, hy, 40.0, "bounce_pad", 0.0)
+                            setattr(pad, 'duration', 10.0)
+                            setattr(pad, 'team', payload_team)
+                            world.arena.hazards.append(pad)
+                            if hasattr(world, "add_event"):
+                                world.add_event("speed_pad_deployed", {"x": hx, "y": hy})
+                        except ImportError:
+                            pass
 
             self.hazard_timer = getattr(self, "hazard_timer", 0.0) + delta
             risk = path_data.get("risk", "low")

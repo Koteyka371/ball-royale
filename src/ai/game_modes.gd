@@ -10589,6 +10589,7 @@ class EscortMode extends GameMode:
 
 	var decoy = null
 	var decoy_deployed: bool = false
+	var speed_pad_timer: float = 0.0
 	var decoy_exploded: bool = false
 	var decoy_timer: float = 0.0
 	var decoy_path_idx: int = 0
@@ -11441,6 +11442,45 @@ class EscortMode extends GameMode:
 				var dx = target_pos.x - px
 				var dy = target_pos.y - py
 				var dist = sqrt(dx * dx + dy * dy)
+
+				speed_pad_timer += delta
+				if speed_pad_timer >= 10.0:
+					speed_pad_timer = 0.0
+					if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+						var has_nearby = false
+						for b in balls:
+							var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+							if not b_alive: continue
+							var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+							if b_type == "spectator": continue
+							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else b.get("id")
+							var p_id = payload.get("id") if typeof(payload) == TYPE_DICTIONARY else payload.get("id")
+							if b_id != null and p_id != null and b_id == p_id: continue
+							if typeof(b) == TYPE_OBJECT and typeof(payload) == TYPE_OBJECT and b == payload: continue
+
+							var b_team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+							if b_team == payload_team:
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+								var p_x = payload.get("x", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+								var p_y = payload.get("y", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+								var teammate_dist = sqrt(pow(bx - p_x, 2) + pow(by - p_y, 2))
+								if teammate_dist <= 150.0:
+									has_nearby = true
+									break
+
+						if has_nearby:
+							var p_x = payload.get("x", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+							var p_y = payload.get("y", 0.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+							var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+							var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+							if ProceduralArenaModule and "Hazard" in ProceduralArenaModule:
+								var pad = ProceduralArenaModule.Hazard.new(h_id, p_x, p_y, 40.0, "bounce_pad", 0.0)
+								pad.set_meta("duration", 10.0)
+								pad.set_meta("team", payload_team)
+								world.arena.hazards.append(pad)
+								if world.has_method("add_event"):
+									world.add_event("speed_pad_deployed", {"x": p_x, "y": p_y})
 
 				if dist < 10.0 and current_waypoint_index < waypoints.size() - 1:
 					current_waypoint_index += 1
