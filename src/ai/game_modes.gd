@@ -11080,10 +11080,28 @@ class EscortMode extends GameMode:
 							var new_hp = max(0.0, bhp - 20.0)
 							if typeof(b) == TYPE_DICTIONARY:
 								b["hp"] = new_hp
+								b["shield_booster_active"] = false
+								b["speed_boost_timer"] = 0.0
+								b["damage_boost_timer"] = 0.0
+								b["soul_boost_timer"] = 0.0
+								b["invulnerable_timer"] = 0.0
+								b["vampiric_aura_timer"] = 0.0
 								if new_hp <= 0:
 									b["alive"] = false
 							else:
 								b.set("hp", new_hp)
+								if "shield_booster_active" in b: b.shield_booster_active = false
+								elif b.has_method("set"): b.set("shield_booster_active", false)
+								if "speed_boost_timer" in b: b.speed_boost_timer = 0.0
+								elif b.has_method("set"): b.set("speed_boost_timer", 0.0)
+								if "damage_boost_timer" in b: b.damage_boost_timer = 0.0
+								elif b.has_method("set"): b.set("damage_boost_timer", 0.0)
+								if "soul_boost_timer" in b: b.soul_boost_timer = 0.0
+								elif b.has_method("set"): b.set("soul_boost_timer", 0.0)
+								if "invulnerable_timer" in b: b.invulnerable_timer = 0.0
+								elif b.has_method("set"): b.set("invulnerable_timer", 0.0)
+								if "vampiric_aura_timer" in b: b.vampiric_aura_timer = 0.0
+								elif b.has_method("set"): b.set("vampiric_aura_timer", 0.0)
 								if new_hp <= 0:
 									b.set("alive", false)
 

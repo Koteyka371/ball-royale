@@ -6946,6 +6946,12 @@ class EscortMode(GameMode):
                     if dist <= 300.0:
                         if getattr(b, "team", "") == "Attackers":
                             b.hp = max(0.0, getattr(b, "hp", 100.0) - 20.0)
+                            b.shield_booster_active = False
+                            b.speed_boost_timer = 0.0
+                            b.damage_boost_timer = 0.0
+                            b.soul_boost_timer = 0.0
+                            b.invulnerable_timer = 0.0
+                            b.vampiric_aura_timer = 0.0
                             if b.hp <= 0:
                                 b.alive = False
 
