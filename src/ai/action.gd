@@ -32355,7 +32355,7 @@ func _collect_booster(delta: float):
                     if idx != -1:
                         world.boosters.remove_at(idx)
             elif "kind" in nearest and nearest.kind == "skill_reroll_booster":
-                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'instant_swap']
+                var skills = ['ice_trail', 'arena_shout', 'trigger_flipper', 'bite', 'black_hole_summon', 'bump', 'chain_bounce_attack', 'chaos_link', 'chi_blast', 'clone', 'teammate_clone', 'command', 'corpse_explosion', 'devour', 'dash', 'deploy_turret', 'turret_overload', 'elemental_burst', 'energy_shield', 'entangle', 'explosion', 'fireball', 'flare', 'global_mirage', 'ground_pound', 'health_link', 'holy_shield', 'life_drain', 'lightning_strike', 'mass_illusion', 'master_decoys', 'mirage_swarm', 'mimic_clone', 'multishot', 'observe', 'perfect_strike', 'phantom_stride', 'phase_through', 'spectral_burn', 'place_fake_booster', 'place_dummy_item', 'place_fake_flare', 'place_fake_healing_orb', 'poison_nova', 'protect_ally', 'rage_burst', 'sandstorm_cloak', 'smite', 'snipe', 'sonar_ping', 'stamina_dash', 'phantom_stride', 'summon_minions', 'target_strong', 'throw_hazard', 'throw_bomb', 'throw_vortex_grenade', 'throw_decoy', 'throw_disruptor_bomb', 'throw_position_swap_grenade', 'time_rewind', 'time_rewind_self', 'tactical_rewind', 'survival_rewind', 'tracking_beacon', 'trickster_swap', 'orbiting_beefy_decoy', 'trickster_clone', 'trickster_dash', 'reversed_trickster_clone', 'trickster_smoke_bomb', 'wall_jump', 'wave_attack', 'wind_rider', 'yeti_roar', 'impostor_disguise', 'orbital_mines', 'decoy_swap_survival', 'decoy_swap_detonate', 'throw_emp', 'throw_purge_bomb', 'kinetic_echo', 'kinetic_absorber', 'throw_noise_maker', 'deploy_lightning_rod', 'deploy_chain_lightning_relay', 'deploy_electric_beam_trap', 'bounty_trap', 'deploy_teleport_relay', 'deploy_time_anomaly_field', 'deploy_cluster_mines', 'deploy_sunlight_reflector', 'deploy_glass_shield', 'deploy_tracker_drone', 'deploy_distract_drone', 'deploy_fake_balls', 'decoy_swarm', 'hire_mercenary', 'hazard_surfing', 'grapple_hook', 'instant_swap']
                 var new_skill = skills[randi() % skills.size()]
                 ball.skill = new_skill
                 ball.SKILL = new_skill
@@ -36731,6 +36731,113 @@ func _use_skill():
             else:
                 if "skill_timer" in self.ball: self.ball.skill_timer = cd
                 else: self.ball.set_meta("skill_timer", cd)
+        elif skill_name == "grapple_hook":
+            ball.skill_timer = 5.0
+            if "SKILL_COOLDOWN" in ball:
+                ball.skill_timer = ball.SKILL_COOLDOWN
+
+            if "events" in world and world.events != null:
+                world.events.append({"type": "visual_effect", "data": {"type": "grapple_cast", "x": ball.x, "y": ball.y}})
+
+            var arena_width = 1000.0
+            var arena_height = 1000.0
+            if "arena" in world and world.arena != null:
+                if typeof(world.arena) == TYPE_DICTIONARY:
+                    if "width" in world.arena: arena_width = world.arena.width
+                    if "height" in world.arena: arena_height = world.arena.height
+                else:
+                    arena_width = world.arena.width
+                    arena_height = world.arena.height
+
+            var grapple_targets = []
+            if "arena" in world and world.arena != null:
+                var hazards = []
+                if typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:
+                    hazards = world.arena.hazards
+                elif typeof(world.arena) != TYPE_DICTIONARY:
+                    hazards = world.arena.hazards
+
+                for h in hazards:
+                    var hx = 0.0
+                    var hy = 0.0
+                    if typeof(h) == TYPE_DICTIONARY:
+                        hx = h.x
+                        hy = h.y
+                    else:
+                        hx = h.x
+                        hy = h.y
+                    var dist_sq = pow(hx - ball.x, 2) + pow(hy - ball.y, 2)
+                    if dist_sq < 250000:
+                        grapple_targets.append({"type": "hazard", "target": h, "dist_sq": dist_sq, "x": hx, "y": hy})
+
+            var closest_target = null
+            var closest_target_dist_sq = 999999.0
+            var closest_target_x = 0.0
+            var closest_target_y = 0.0
+            for t in grapple_targets:
+                if t.dist_sq < closest_target_dist_sq:
+                    closest_target = t.target
+                    closest_target_dist_sq = t.dist_sq
+                    closest_target_x = t.x
+                    closest_target_y = t.y
+
+            var dists = {
+                "left": ball.x,
+                "right": arena_width - ball.x,
+                "top": ball.y,
+                "bottom": arena_height - ball.y
+            }
+            var closest_wall = "left"
+            var closest_wall_dist = dists["left"]
+            for key in dists.keys():
+                if dists[key] < closest_wall_dist:
+                    closest_wall = key
+                    closest_wall_dist = dists[key]
+
+            if closest_target != null and closest_target_dist_sq < pow(closest_wall_dist, 2):
+                var dist = sqrt(closest_target_dist_sq)
+                if dist > 0.0001:
+                    var dx = closest_target_x - ball.x
+                    var dy = closest_target_y - ball.y
+                    var pull_speed = 800.0
+                    var nx = dx / dist
+                    var ny = dy / dist
+
+                    ball.vx = nx * pull_speed
+                    ball.vy = ny * pull_speed
+
+                    if "events" in world and world.events != null:
+                        world.events.append({
+                            "type": "grapple_line",
+                            "source_id": ball.id,
+                            "target_x": closest_target_x,
+                            "target_y": closest_target_y
+                        })
+            else:
+                var pull_speed = 800.0
+                var target_x = ball.x
+                var target_y = ball.y
+
+                if closest_wall == "left":
+                    ball.vx = -pull_speed
+                    target_x = 0.0
+                elif closest_wall == "right":
+                    ball.vx = pull_speed
+                    target_x = arena_width
+                elif closest_wall == "top":
+                    ball.vy = -pull_speed
+                    target_y = 0.0
+                elif closest_wall == "bottom":
+                    ball.vy = pull_speed
+                    target_y = arena_height
+
+                if "events" in world and world.events != null:
+                    world.events.append({
+                        "type": "grapple_line",
+                        "source_id": ball.id,
+                        "target_x": target_x,
+                        "target_y": target_y
+                    })
 
         elif skill_name == "trickster_swap":
             var all_entities = []
