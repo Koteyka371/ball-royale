@@ -32562,11 +32562,17 @@ class GravityInversionMode(GameMode):
                 if getattr(b, 'ball_type', None) == 'spectator': continue
 
                 # Push outwards from center (simulating pulling to walls)
-                dist = (b.x**2 + b.y**2)**0.5
+                arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+                arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+                cx, cy = arena_width / 2.0, arena_height / 2.0
+
+                dx = b.x - cx
+                dy = b.y - cy
+                dist = (dx**2 + dy**2)**0.5
                 if dist > 0:
                     # Give them some upwards lift as well to simulate "flying"
-                    b.vx += (b.x/dist) * self.inversion_strength * delta
-                    b.vy += (b.y/dist) * self.inversion_strength * delta
+                    b.vx += (dx/dist) * self.inversion_strength * delta
+                    b.vy += (dy/dist) * self.inversion_strength * delta
                     # Added lift to simulate flying to the ceiling if no walls
                     b.vy -= self.inversion_strength * 0.5 * delta
         else:
