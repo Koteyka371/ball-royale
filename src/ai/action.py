@@ -6705,14 +6705,21 @@ class Action:
                     self.ball._exploded = True
                     self.ball.alive = False
                     self.ball.hp = 0
+
+                    explosion_radius = 120.0
+                    confusion_duration = 2.0
+                    if getattr(self.ball, "is_overcharged", False):
+                        explosion_radius = 240.0
+                        confusion_duration = 6.0
+
                     if hasattr(self.world, "events"):
-                        self.world.events.append({'type': 'explosion', 'data': {'x': getattr(self.ball, "x", 0.0), 'y': getattr(self.ball, "y", 0.0), 'radius': 120.0}})
+                        self.world.events.append({'type': 'explosion', 'data': {'x': getattr(self.ball, "x", 0.0), 'y': getattr(self.ball, "y", 0.0), 'radius': explosion_radius}})
                     if hasattr(self.world, "balls"):
                         for b in getattr(self.world, "balls", []):
                             if getattr(b, "alive", True) and getattr(b, "team", getattr(b, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
                                 import math
                                 d = math.sqrt((self.ball.x - getattr(b, "x", 0))**2 + (self.ball.y - getattr(b, "y", 0))**2)
-                                if d <= 120.0:
+                                if d <= explosion_radius:
                                     if hasattr(b, "take_damage"):
                                         b.take_damage(50.0)
                                     else:
@@ -6726,6 +6733,11 @@ class Action:
                                         if not hasattr(b, "base_perception_radius"):
                                             b.base_perception_radius = getattr(b, "perception_radius", 100.0)
                                         b.perception_radius = b.base_perception_radius * 0.5
+
+                                    if getattr(self.ball, "is_overcharged", False):
+                                        if not getattr(b, "is_confused", False):
+                                            b.is_confused = True
+                                        b.confusion_timer = max(getattr(b, "confusion_timer", 0.0), confusion_duration)
                     return
 
             if getattr(self.ball, "alive", True):
