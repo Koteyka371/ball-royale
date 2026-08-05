@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1768] Blizzard Tornado Event — *2026-08-05 16:54:50 UTC*
+
+A variant of the tornado swarm where mini-tornadoes combine with ice patches to become mini-blizzards that slow down and slowly freeze nearby players.
+
+---
+
 ## [idea-1764] Eclipse Trap Booster — *2026-08-05 16:13:58 UTC*
 
 A deployable booster that creates a localized 'eclipse' zone. Any enemies inside the zone suffer from the same blackout debuffs (reduced speed and damage), acting as a powerful tactical counter-measure for light-dependent enemies.
