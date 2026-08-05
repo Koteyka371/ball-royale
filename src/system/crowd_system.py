@@ -238,6 +238,30 @@ class CrowdSystem:
                 if hasattr(self.world, 'add_event'):
                     self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} voted for {option} (Power: {vote_weight})!"})
 
+        elif cmd == "!hyper" and len(parts) >= 3:
+            param = parts[1].lower()
+            try:
+                val = float(parts[2])
+                target_type = "neural"
+                if len(parts) >= 4:
+                    target_type = parts[3].lower()
+
+                changed = 0
+                for b in alive_balls:
+                    if getattr(b, "ball_type", "").lower() == target_type or target_type == "all":
+                        if param in ["aggression", "flee_radius", "perception_radius", "vision_radius"]:
+                            attr_name = "perception_radius" if param == "vision_radius" else param
+                            setattr(b, attr_name, val)
+                            if attr_name == "perception_radius":
+                                b.base_perception_radius = val
+                            changed += 1
+
+                if changed > 0 and hasattr(self.world, 'add_event'):
+                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} changed {param} to {val} for {changed} {target_type} balls!"})
+                    self._add_viewer_loyalty(user, 10)
+            except ValueError:
+                pass
+
         elif cmd == "!bounty" and len(parts) >= 2:
             target_id = None
             try:
