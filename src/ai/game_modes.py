@@ -49446,4 +49446,112 @@ class WindFunnelsMode(GameMode):
                             "data": {"x": b.x, "y": b.y}
                         })
 
+
+class ShiftingMirrorWallsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Shifting Mirror Walls"
+        self.description = "Invisible mirror walls periodically shift around the arena, reflecting projectiles and player movement vectors."
+        self.walls = []
+        self.shift_timer = 0.0
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        self.walls = []
+        self.shift_timer = 0.0
+        self._shift_walls(world)
+
+    def _shift_walls(self, world: 'Any') -> None:
+        import random
+        self.walls = []
+        arena = getattr(world, "arena", None)
+        arena_width = getattr(arena, "width", 1000.0) if arena else 1000.0
+        arena_height = getattr(arena, "height", 1000.0) if arena else 1000.0
+
+        # Create 2-4 random walls
+        num_walls = random.randint(2, 4)
+        for _ in range(num_walls):
+            is_vertical = random.choice([True, False])
+            if is_vertical:
+                pos = random.uniform(100.0, arena_width - 100.0)
+                self.walls.append({"axis": "x", "pos": pos})
+            else:
+                pos = random.uniform(100.0, arena_height - 100.0)
+                self.walls.append({"axis": "y", "pos": pos})
+
+        if hasattr(world, "events"):
+            world.events.append({
+                "type": "mirrors_shifted",
+                "message": "Invisible mirror walls have shifted!"
+            })
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.shift_timer -= delta
+        if self.shift_timer <= 0:
+            self._shift_walls(world)
+            self.shift_timer = 15.0  # Shift every 15 seconds
+
+        # Reflect balls
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            self._handle_reflection(b, world)
+
+        # Reflect projectiles
+        arena = getattr(world, "arena", None)
+        projectiles = getattr(world, "projectiles", [])
+        hazards = getattr(arena, "hazards", []) if arena else []
+        for p in projectiles + hazards:
+            if not getattr(p, "alive", True) and not getattr(p, "hp", 1.0) > 0:
+                continue
+            b_type = getattr(p, "ball_type", getattr(p, "kind", ""))
+            is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"] or getattr(p, "is_projectile", False) or getattr(p, "is_spell", False)
+            if is_proj:
+                self._handle_reflection(p, world)
+
+    def _handle_reflection(self, entity: 'Any', world: 'Any') -> None:
+        x = getattr(entity, "x", 0.0)
+        y = getattr(entity, "y", 0.0)
+        radius = getattr(entity, "radius", 15.0)
+        vx = getattr(entity, "vx", 0.0)
+        vy = getattr(entity, "vy", 0.0)
+
+        bounced = False
+        for wall in self.walls:
+            if wall["axis"] == "x":
+                pos = wall["pos"]
+                next_x = x + vx * 0.016
+                if (x <= pos and next_x + radius >= pos) or (x >= pos and next_x - radius <= pos) or abs(x - pos) < radius or (x < pos and next_x > pos) or (x > pos and next_x < pos):
+                    if vx > 0 and x <= pos + radius:
+                        vx = -vx
+                        x = pos - radius
+                        bounced = True
+                    elif vx < 0 and x >= pos - radius:
+                        vx = -vx
+                        x = pos + radius
+                        bounced = True
+            else:
+                pos = wall["pos"]
+                next_y = y + vy * 0.016
+                if (y <= pos and next_y + radius >= pos) or (y >= pos and next_y - radius <= pos) or abs(y - pos) < radius or (y < pos and next_y > pos) or (y > pos and next_y < pos):
+                    if vy > 0 and y <= pos + radius:
+                        vy = -vy
+                        y = pos - radius
+                        bounced = True
+                    elif vy < 0 and y >= pos - radius:
+                        vy = -vy
+                        y = pos + radius
+                        bounced = True
+
+        if bounced:
+            entity.x = x
+            entity.y = y
+            entity.vx = vx
+            entity.vy = vy
+            if hasattr(world, "events"):
+                world.events.append({"type": "mirror_bounce", "x": x, "y": y})
+
+GAME_MODES["shifting_mirror_walls"] = ShiftingMirrorWallsMode()
+
 GAME_MODES["wind_funnels"] = WindFunnelsMode()

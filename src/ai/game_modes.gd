@@ -77531,4 +77531,178 @@ class WindFunnelsMode extends GameMode:
 							"data": {"x": px, "y": py}
 						})
 
+
+class ShiftingMirrorWallsMode extends GameMode:
+	var walls = []
+	var shift_timer = 0.0
+
+	func _init() -> void:
+		name = "Shifting Mirror Walls"
+		description = "Invisible mirror walls periodically shift around the arena, reflecting projectiles and player movement vectors."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		walls.clear()
+		shift_timer = 0.0
+		_shift_walls(world)
+
+	func _shift_walls(world) -> void:
+		walls.clear()
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+		elif typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var num_walls = randi() % 3 + 2
+		for i in range(num_walls):
+			var is_vertical = (randi() % 2 == 0)
+			if is_vertical:
+				var pos = randf_range(100.0, arena_width - 100.0)
+				walls.append({"axis": "x", "pos": pos})
+			else:
+				var pos = randf_range(100.0, arena_height - 100.0)
+				walls.append({"axis": "y", "pos": pos})
+
+		if typeof(world) == TYPE_DICTIONARY and "events" in world:
+			world.events.append({
+				"type": "mirrors_shifted",
+				"message": "Invisible mirror walls have shifted!"
+			})
+		elif typeof(world) == TYPE_OBJECT and "events" in world:
+			world.events.append({
+				"type": "mirrors_shifted",
+				"message": "Invisible mirror walls have shifted!"
+			})
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		shift_timer -= delta
+		if shift_timer <= 0:
+			_shift_walls(world)
+			shift_timer = 15.0
+
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			if not is_alive: continue
+			_handle_reflection(b, world)
+
+		var projectiles = []
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY:
+			if "projectiles" in world: projectiles = world.projectiles
+			if "arena" in world and "hazards" in world.arena: hazards = world.arena.hazards
+		elif typeof(world) == TYPE_OBJECT:
+			if "projectiles" in world: projectiles = world.projectiles
+			if "arena" in world and world.arena != null and "hazards" in world.arena: hazards = world.arena.hazards
+
+		var all_projs = []
+		for p in projectiles: all_projs.append(p)
+		for h in hazards: all_projs.append(h)
+
+		for p in all_projs:
+			var is_alive = true
+			if typeof(p) == TYPE_DICTIONARY and "alive" in p: is_alive = p.alive
+			elif typeof(p) == TYPE_OBJECT and "alive" in p: is_alive = p.alive
+
+			var hp = 1.0
+			if typeof(p) == TYPE_DICTIONARY and "hp" in p: hp = float(p.hp)
+			elif typeof(p) == TYPE_OBJECT and "hp" in p: hp = float(p.hp)
+
+			if not is_alive and hp <= 0.0: continue
+
+			var b_type = ""
+			if typeof(p) == TYPE_DICTIONARY:
+				if "ball_type" in p: b_type = p.ball_type
+				elif "kind" in p: b_type = p.kind
+			else:
+				if "ball_type" in p: b_type = p.ball_type
+				elif "kind" in p: b_type = p.kind
+				elif p.has_method("get_meta") and p.has_meta("kind"): b_type = p.get_meta("kind")
+
+			var is_proj = b_type in ["projectile", "spell", "fireball", "bullet", "snipe", "laser_beam"]
+			if not is_proj:
+				if typeof(p) == TYPE_DICTIONARY:
+					if "is_projectile" in p and p.is_projectile: is_proj = true
+					elif "is_spell" in p and p.is_spell: is_proj = true
+				else:
+					if "is_projectile" in p and p.is_projectile: is_proj = true
+					elif "is_spell" in p and p.is_spell: is_proj = true
+
+			if is_proj:
+				_handle_reflection(p, world)
+
+	func _handle_reflection(entity, world) -> void:
+		var x = 0.0
+		var y = 0.0
+		var radius = 15.0
+		var vx = 0.0
+		var vy = 0.0
+
+		var is_dict = typeof(entity) == TYPE_DICTIONARY
+
+		if is_dict:
+			if "x" in entity: x = float(entity.x)
+			if "y" in entity: y = float(entity.y)
+			if "radius" in entity: radius = float(entity.radius)
+			if "vx" in entity: vx = float(entity.vx)
+			if "vy" in entity: vy = float(entity.vy)
+		else:
+			if "x" in entity: x = float(entity.x)
+			if "y" in entity: y = float(entity.y)
+			if "radius" in entity: radius = float(entity.radius)
+			if "vx" in entity: vx = float(entity.vx)
+			if "vy" in entity: vy = float(entity.vy)
+
+		var bounced = false
+		for wall in walls:
+			if wall.axis == "x":
+				var pos = wall.pos
+				var next_x = x + vx * 0.016
+				if (x <= pos and next_x + radius >= pos) or (x >= pos and next_x - radius <= pos) or abs(x - pos) < radius or (x < pos and next_x > pos) or (x > pos and next_x < pos):
+					if vx > 0 and x <= pos + radius:
+						vx = -vx
+						x = pos - radius
+						bounced = true
+					elif vx < 0 and x >= pos - radius:
+						vx = -vx
+						x = pos + radius
+						bounced = true
+			else:
+				var pos = wall.pos
+				var next_y = y + vy * 0.016
+				if (y <= pos and next_y + radius >= pos) or (y >= pos and next_y - radius <= pos) or abs(y - pos) < radius or (y < pos and next_y > pos) or (y > pos and next_y < pos):
+					if vy > 0 and y <= pos + radius:
+						vy = -vy
+						y = pos - radius
+						bounced = true
+					elif vy < 0 and y >= pos - radius:
+						vy = -vy
+						y = pos + radius
+						bounced = true
+
+		if bounced:
+			if is_dict:
+				entity.x = x
+				entity.y = y
+				entity.vx = vx
+				entity.vy = vy
+			else:
+				entity.x = x
+				entity.y = y
+				entity.vx = vx
+				entity.vy = vy
+
+			if typeof(world) == TYPE_DICTIONARY and "events" in world:
+				world.events.append({"type": "mirror_bounce", "x": x, "y": y})
+			elif typeof(world) == TYPE_OBJECT and "events" in world:
+				world.events.append({"type": "mirror_bounce", "x": x, "y": y})
+
+GAME_MODES["shifting_mirror_walls"] = ShiftingMirrorWallsMode.new()
+
 GAME_MODES["wind_funnels"] = WindFunnelsMode.new()
