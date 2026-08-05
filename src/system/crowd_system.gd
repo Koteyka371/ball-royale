@@ -22,6 +22,7 @@ var match_started = false
 var match_ended = false
 var external_commands = []
 var has_real_spectators = false
+var active_bets = []
 var viewer_loyalty = {}
 var user_votes = {}
 var viewer_vote_streaks = {}
@@ -352,6 +353,68 @@ func process_external_command(user: String, command: String, balls: Array):
                 world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " placed a bounty on " + b_type + " " + str(target_id) + "!"})
             excitement_level += 10.0
 
+    elif cmd == "!bet" and parts.size() >= 3:
+        var target_id = null
+        if parts[1].is_valid_int():
+            target_id = parts[1].to_int()
+        else:
+            target_id = parts[1]
+
+        var amount_str = parts[2].to_lower()
+        var currency = "skill_points"
+        var amount = 0
+
+        if amount_str.ends_with("sp"):
+            currency = "skill_points"
+            amount_str = amount_str.substr(0, amount_str.length() - 2)
+        elif amount_str.ends_with("pt"):
+            currency = "prestige_tokens"
+            amount_str = amount_str.substr(0, amount_str.length() - 2)
+
+        if amount_str.is_valid_int():
+            amount = amount_str.to_int()
+
+        if amount > 0 and world != null and world.has_method("get_profile_manager"):
+            var pm = world.get_profile_manager()
+            if pm != null and typeof(pm) == TYPE_OBJECT and pm.get("data") != null:
+                var pdata = pm.get("data")
+                if typeof(pdata) == TYPE_DICTIONARY and pdata.has(currency) and pdata[currency] >= amount:
+                    pdata[currency] -= amount
+                    if pm.has_method("save"):
+                        pm.call("save")
+                    elif pm.has_method("save_profile"):
+                        pm.call("save_profile")
+
+                    var target = null
+                    for b in alive_balls:
+                        var b_id = null
+                        if typeof(b) == TYPE_OBJECT and b.has_method("get"):
+                            b_id = b.get("id")
+                        elif typeof(b) == TYPE_DICTIONARY:
+                            b_id = b.get("id", null)
+                        if str(b_id) == str(target_id):
+                            target = b
+                            break
+
+                    if target != null:
+                        var team = "unknown"
+                        if typeof(target) == TYPE_OBJECT and target.has_method("get"):
+                            team = target.get("team")
+                            if team == null or team == "":
+                                team = target.get("ball_type")
+                        elif typeof(target) == TYPE_DICTIONARY:
+                            team = target.get("team", target.get("ball_type", "unknown"))
+
+                        active_bets.append({
+                            "user": user,
+                            "target_id": target_id,
+                            "team": team,
+                            "amount": amount,
+                            "currency": currency
+                        })
+                        if world != null and world.has_method("add_event"):
+                            world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(user) + " bet " + str(amount) + " " + currency + " on " + str(team) + "!"})
+
     elif cmd == "!bribe" and parts.size() >= 2:
         var action = parts[1]
         var option = ""
@@ -558,6 +621,36 @@ func _check_bets_and_winner(balls: Array, current_tick: int):
                             pdata["prestige_tokens"] = cur_tokens + 10
                         if pm.has_method("save"):
                             pm.call("save")
+
+            # Process active bets
+            if active_bets.size() > 0:
+                var multiplier = 3.0 if winner == underdog_team else 1.5
+                var pm = null
+                if world != null and world.has_method("get_profile_manager"):
+                    pm = world.call("get_profile_manager")
+                elif typeof(world) == TYPE_OBJECT and "profile_manager" in world:
+                    pm = world.profile_manager
+
+                if pm != null and typeof(pm) == TYPE_OBJECT and pm.get("data") != null:
+                    var pdata = pm.get("data")
+                    if typeof(pdata) == TYPE_DICTIONARY:
+                        for bet in active_bets:
+                            if bet["team"] == winner:
+                                var winnings = int(bet["amount"] * multiplier)
+                                var cur_val = 0
+                                if pdata.has(bet["currency"]):
+                                    cur_val = pdata[bet["currency"]]
+                                pdata[bet["currency"]] = cur_val + winnings
+                                if world != null and world.has_method("add_event"):
+                                    world.add_event("crowd_cheer", {"message": "Viewer " + _get_user_display(bet["user"]) + " won their bet! Payout: " + str(winnings) + " " + bet["currency"] + "!"})
+                            else:
+                                if world != null and world.has_method("add_event"):
+                                    world.add_event("crowd_throw", {"message": "Viewer " + _get_user_display(bet["user"]) + " lost their bet on " + str(bet["team"]) + "."})
+                        if pm.has_method("save"):
+                            pm.call("save")
+                        elif pm.has_method("save_profile"):
+                            pm.call("save_profile")
+                active_bets.clear()
 
 
 
