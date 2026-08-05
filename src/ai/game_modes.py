@@ -6692,7 +6692,7 @@ class EscortMode(GameMode):
         if getattr(self, "timer", 0) > 0:
             self.timer -= delta
 
-        # Decoy deployment
+        # Decoy payload deployment
         if not getattr(self, "decoy_deployed", False) and getattr(self, "payload", None):
             self.decoy_timer = getattr(self, "decoy_timer", 0.0) + delta
             if self.decoy_timer >= 15.0:
@@ -6703,13 +6703,17 @@ class EscortMode(GameMode):
                 self.decoy = DecoyPayload()
                 self.decoy.id = 99999
                 self.decoy.ball_type = "decoy_payload"
-                self.decoy.team = "Defenders"
+                self.decoy.team = getattr(self.payload, "team", "Defenders")
                 self.decoy.alive = True
+                self.decoy.sprite = getattr(self.payload, "sprite", None)
+                self.decoy.color = getattr(self.payload, "color", None)
+                self.decoy.scale = getattr(self.payload, "scale", 1.0)
+                self.decoy.radius = getattr(self.payload, "radius", 15.0)
                 self.decoy.x = getattr(self.payload, "x", 100.0)
                 self.decoy.y = getattr(self.payload, "y", 500.0)
                 self.decoy.speed = 0.8
                 self.decoy.hp = 200.0
-                self.decoy.radius = 15.0
+                self.decoy.radius = getattr(self.payload, "radius", 15.0)
                 self.decoy.is_invulnerable = False
 
                 # Pick an alternate path

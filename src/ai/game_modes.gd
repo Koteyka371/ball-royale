@@ -10784,23 +10784,45 @@ class EscortMode extends GameMode:
 		if timer > 0.0:
 			timer -= delta
 
-		# Decoy deployment
+		# Decoy payload deployment
 		if not decoy_deployed and payload != null:
 			decoy_timer += delta
 			if decoy_timer >= 15.0:
 				decoy_deployed = true
 
 				# Create decoy dictionary
+				var d_team = "Defenders"
+				var d_radius = 15.0
+				var d_sprite = null
+				var d_color = null
+				var d_scale = 1.0
+
+				if typeof(payload) == TYPE_DICTIONARY:
+					d_team = payload.get("team", "Defenders")
+					d_radius = payload.get("radius", 15.0)
+					d_sprite = payload.get("sprite", null)
+					d_color = payload.get("color", null)
+					d_scale = payload.get("scale", 1.0)
+				else:
+					if "team" in payload: d_team = payload.team
+					if "radius" in payload: d_radius = payload.radius
+					if "sprite" in payload: d_sprite = payload.sprite
+					if "color" in payload: d_color = payload.color
+					if "scale" in payload: d_scale = payload.scale
+
 				decoy = {
 					"id": 99999,
 					"ball_type": "decoy_payload",
-					"team": "Defenders",
+					"team": d_team,
 					"alive": true,
 					"speed": 0.8,
 					"hp": 200.0,
 					"max_hp": 200.0,
-					"radius": 15.0,
-					"is_invulnerable": false
+					"radius": d_radius,
+					"is_invulnerable": false,
+					"sprite": d_sprite,
+					"color": d_color,
+					"scale": d_scale
 				}
 
 				if typeof(payload) == TYPE_DICTIONARY:
