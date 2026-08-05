@@ -4237,6 +4237,12 @@ class Action:
 
         if getattr(self.ball, "cryogenic_booster_timer", 0.0) > 0:
             self.ball.cryogenic_booster_timer -= delta
+            if hasattr(self.world, "balls"):
+                for other in self.world.balls:
+                    if getattr(other, "team", None) != getattr(self.ball, "team", None) and getattr(other, "alive", True):
+                        dist_sq = (other.x - self.ball.x)**2 + (other.y - self.ball.y)**2
+                        if dist_sq <= 40000.0:  # 200 range
+                            other.internal_temperature = getattr(other, "internal_temperature", 20.0) - 50.0 * delta
 
         if getattr(self.ball, "cryogenic_leak_timer", 0.0) > 0:
             self.ball.cryogenic_leak_timer -= delta
@@ -18116,6 +18122,7 @@ class Action:
                         self.world.boosters.remove(nearest)
                 elif getattr(nearest, "kind", None) == "cryogenic_booster":
                     self.ball.cryogenic_booster_timer = 10.0
+                    self.ball.shield_booster_active = True
                     if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
