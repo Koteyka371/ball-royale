@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1833] Shield Breaker Payload Mod — *2026-08-05 22:35:56 UTC*
+
+A random event where the payload emits a pulse that instantly destroys all shields on nearby attackers, while converting their lost shields into permanent health for the defenders.
+
+---
+
 ## [idea-1826] Payload Tug-of-War Map Hazards — *2026-08-05 20:36:14 UTC*
 
 On maps where payloads are active, periodic localized gravity wells or conveyor belts spawn to pull the payload towards or away from the goals. Teams have to coordinate to either ride the conveyors or destroy the gravity wells while keeping pushers nearby.
