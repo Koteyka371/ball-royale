@@ -4167,6 +4167,158 @@ class GameMode:
 							if minion.has("damage"): c_dmg = minion["damage"]
 							minion["damage"] = c_dmg * 2.5
 
+
+		# Payload dynamic hazards (Conveyors and Destructible Gravity Wells)
+		var payloads = []
+		for b in balls:
+			var b_is_payload = b.get("is_payload", false) if typeof(b) == TYPE_DICTIONARY else b.get("is_payload")
+			var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+			if b_is_payload and b_alive:
+				payloads.append(b)
+
+		if payloads.size() > 0:
+			var timer = 0.0
+			if typeof(world) == TYPE_DICTIONARY:
+				timer = world.get("payload_hazard_timer", 0.0)
+			elif typeof(world) == TYPE_OBJECT:
+				timer = world.get("payload_hazard_timer") if "payload_hazard_timer" in world else 0.0
+
+			timer += delta
+
+			if timer >= 20.0:
+				timer = 0.0
+				if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+					var target_payload = payloads[randi() % payloads.size()]
+					var px = target_payload.get("x", 500.0) if typeof(target_payload) == TYPE_DICTIONARY else target_payload.get("x")
+					var py = target_payload.get("y", 500.0) if typeof(target_payload) == TYPE_DICTIONARY else target_payload.get("y")
+					var hx = px + randf_range(-100.0, 100.0)
+					var hy = py + randf_range(-100.0, 100.0)
+					var h_id = 888000 + world.arena.hazards.size() + (randi() % 10000)
+
+					var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+					if ProceduralArenaModule and "Hazard" in ProceduralArenaModule:
+						if randf() < 0.5:
+							# Payload Conveyor Belt
+							var dx = px - 500.0
+							var dy = py - 500.0
+							var dist = sqrt(dx*dx + dy*dy)
+							var dvec = [1.0, 0.0]
+							if dist > 0:
+								if randf() < 0.5:
+									dvec = [dx/dist, dy/dist]
+								else:
+									dvec = [-dx/dist, -dy/dist]
+							var c = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 100.0, "payload_conveyor_belt", 0.0)
+							c.set_meta("direction_vector", dvec)
+							c.set_meta("speed_magnitude", 200.0)
+							c.set_meta("duration", 15.0)
+							world.arena.hazards.append(c)
+						else:
+							# Destructible Gravity Well
+							var gw = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 150.0, "payload_gravity_well", 10.0)
+							gw.set_meta("hp", 500.0)
+							gw.set_meta("max_hp", 500.0)
+							gw.set_meta("duration", 15.0)
+							world.arena.hazards.append(gw)
+
+			if typeof(world) == TYPE_DICTIONARY:
+				world["payload_hazard_timer"] = timer
+			elif typeof(world) == TYPE_OBJECT:
+				world.set("payload_hazard_timer", timer)
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world and "hazards" in world.arena:
+			var hazards_to_remove = []
+			for h in world.arena.hazards:
+				var kind = h.kind if "kind" in h else ""
+				if kind == "payload_conveyor_belt" or kind == "payload_gravity_well":
+					var dur = h.get_meta("duration") if h.has_method("has_meta") and h.has_meta("duration") else 15.0
+					dur -= delta
+					if h.has_method("set_meta"): h.set_meta("duration", dur)
+
+					var h_hp = h.get_meta("hp") if h.has_method("has_meta") and h.has_meta("hp") else 1.0
+
+					if dur <= 0 or (kind == "payload_gravity_well" and h_hp <= 0):
+						hazards_to_remove.append(h)
+						continue
+
+					for b in balls:
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						if not b_alive or b_type == "spectator":
+							continue
+
+						var hx = h.x if "x" in h else 500.0
+						var hy = h.y if "y" in h else 500.0
+						var bx = b.get("x", 500.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+						var by = b.get("y", 500.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+						var dx = bx - hx
+						var dy = by - hy
+						var dist = sqrt(dx*dx + dy*dy)
+						var r = h.radius if "radius" in h else 100.0
+
+						if dist <= r:
+							if kind == "payload_conveyor_belt":
+								var dvec = h.get_meta("direction_vector") if h.has_method("has_meta") and h.has_meta("direction_vector") else [1.0, 0.0]
+								var mag = h.get_meta("speed_magnitude") if h.has_method("has_meta") and h.has_meta("speed_magnitude") else 200.0
+								var mass = b.get("mass", 1.0) if typeof(b) == TYPE_DICTIONARY else b.get("mass")
+								if mass == null: mass = 1.0
+
+								var has_vx = typeof(b) == TYPE_DICTIONARY and b.has("vx") or typeof(b) == TYPE_OBJECT and "vx" in b
+								if has_vx:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["vx"] += (dvec[0] * mag / mass) * delta
+										b["vy"] += (dvec[1] * mag / mass) * delta
+									else:
+										b.set("vx", b.get("vx") + (dvec[0] * mag / mass) * delta)
+										b.set("vy", b.get("vy") + (dvec[1] * mag / mass) * delta)
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["x"] += dvec[0] * mag * delta
+										b["y"] += dvec[1] * mag * delta
+									else:
+										b.set("x", bx + dvec[0] * mag * delta)
+										b.set("y", by + dvec[1] * mag * delta)
+							elif kind == "payload_gravity_well":
+								if dist > 0:
+									var force = 150.0 * (1.0 - dist / max(r, 1.0))
+									var mass = b.get("mass", 1.0) if typeof(b) == TYPE_DICTIONARY else b.get("mass")
+									if mass == null: mass = 1.0
+									var has_vx = typeof(b) == TYPE_DICTIONARY and b.has("vx") or typeof(b) == TYPE_OBJECT and "vx" in b
+									if has_vx:
+										if typeof(b) == TYPE_DICTIONARY:
+											b["vx"] -= (dx / dist) * force / mass * delta
+											b["vy"] -= (dy / dist) * force / mass * delta
+										else:
+											b.set("vx", b.get("vx") - (dx / dist) * force / mass * delta)
+											b.set("vy", b.get("vy") - (dy / dist) * force / mass * delta)
+									else:
+										if typeof(b) == TYPE_DICTIONARY:
+											b["x"] -= (dx / dist) * force * delta
+											b["y"] -= (dy / dist) * force * delta
+										else:
+											b.set("x", bx - (dx / dist) * force * delta)
+											b.set("y", by - (dy / dist) * force * delta)
+
+								if b_type != "payload":
+									var b_radius = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+									if b_radius == null: b_radius = 15.0
+									if dist <= b_radius + 30.0:
+										var dmg = b.get("damage", 10.0) if typeof(b) == TYPE_DICTIONARY else b.get("damage")
+										if dmg == null: dmg = 10.0
+										h_hp -= dmg * delta * 5.0
+										if h.has_method("set_meta"): h.set_meta("hp", h_hp)
+
+										var h_dmg = h.damage if "damage" in h else 10.0
+										if typeof(b) == TYPE_DICTIONARY and b.has("hp"):
+											b["hp"] -= h_dmg * delta
+											if b["hp"] <= 0: b["alive"] = false
+										elif typeof(b) == TYPE_OBJECT and "hp" in b:
+											b.set("hp", b.get("hp") - h_dmg * delta)
+											if b.get("hp") <= 0: b.set("alive", false)
+
+			for h in hazards_to_remove:
+				world.arena.hazards.erase(h)
+
 	func check_winner(world, balls: Array):
 		return null
 
