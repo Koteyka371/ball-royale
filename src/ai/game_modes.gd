@@ -72658,12 +72658,33 @@ class GravityInversionMode extends GameMode:
                 var b_x = b.get("x") if typeof(b) == TYPE_DICTIONARY else b.get_meta("x") if b.has_meta("x") else 0.0
                 var b_y = b.get("y") if typeof(b) == TYPE_DICTIONARY else b.get_meta("y") if b.has_meta("y") else 0.0
 
-                var dist = sqrt(b_x*b_x + b_y*b_y)
+                var arena_width = 1000.0
+                var arena_height = 1000.0
+                if typeof(world) == TYPE_DICTIONARY:
+                    if world.has("arena") and typeof(world.arena) == TYPE_DICTIONARY:
+                        arena_width = world.arena.get("width", 1000.0)
+                        arena_height = world.arena.get("height", 1000.0)
+                else:
+                    if "arena" in world and world.arena != null:
+                        if "width" in world.arena:
+                            arena_width = world.arena.width
+                        elif world.arena.has_method("get"):
+                            arena_width = world.arena.get("width")
+                        if "height" in world.arena:
+                            arena_height = world.arena.height
+                        elif world.arena.has_method("get"):
+                            arena_height = world.arena.get("height")
+                var cx = arena_width / 2.0
+                var cy = arena_height / 2.0
+                var dx = b_x - cx
+                var dy = b_y - cy
+
+                var dist = sqrt(dx*dx + dy*dy)
                 if dist > 0:
                     var vx = b.get("vx") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vx") if b.has_meta("vx") else 0.0
                     var vy = b.get("vy") if typeof(b) == TYPE_DICTIONARY else b.get_meta("vy") if b.has_meta("vy") else 0.0
-                    vx += (b_x/dist) * inversion_strength * delta
-                    vy += (b_y/dist) * inversion_strength * delta
+                    vx += (dx/dist) * inversion_strength * delta
+                    vy += (dy/dist) * inversion_strength * delta
                     vy -= inversion_strength * 0.5 * delta
 
                     if typeof(b) == TYPE_DICTIONARY:
