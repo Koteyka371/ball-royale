@@ -62887,6 +62887,281 @@ class MeteorBombardmentMode extends GameMode:
 				world.arena.hazards.append(HazardObj.new(c["id"], c["x"], c["y"], c["radius"], "meteor_crater", 10))
 
 
+
+class FractalPayloadMode extends GameMode:
+	var payloads = []
+	var red_goal_x: float = 100.0
+	var blue_goal_x: float = 900.0
+
+	func _init():
+		name = "Fractal Payload"
+		description = "When a payload detonates, it spawns 4 smaller payloads that fly in opposite directions. These mini-payloads can be pushed, and if they reach a goal, they detonate for a smaller explosion. This continues down to micro-payloads, creating chaotic endgame situations."
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		pass # Implement similar to TickingPayloadMode if needed
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_DICTIONARY:
+			if not "dead_balls" in world:
+				world["dead_balls"] = []
+		else:
+			if not world.has_meta("dead_balls"):
+				world.set_meta("dead_balls", [])
+
+		var valid_balls = []
+		for b in balls:
+			if typeof(b) == TYPE_DICTIONARY:
+				if b.get("ball_type", "") != "spectator":
+					valid_balls.append(b)
+			else:
+				if b.get("ball_type") != "spectator":
+					valid_balls.append(b)
+
+		var mid = valid_balls.size() / 2
+		for i in range(valid_balls.size()):
+			var b = valid_balls[i]
+			if typeof(b) == TYPE_DICTIONARY:
+				b["team"] = "Red" if i < mid else "Blue"
+			else:
+				b.set("team", "Red" if i < mid else "Blue")
+
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if typeof(world) == TYPE_DICTIONARY:
+			if "arena" in world and world.arena:
+				arena_width = world.arena.get("width", 1000.0)
+				arena_height = world.arena.get("height", 1000.0)
+		else:
+			if world.get("arena"):
+				var arena = world.get("arena")
+				if typeof(arena) == TYPE_DICTIONARY:
+					arena_width = arena.get("width", 1000.0)
+					arena_height = arena.get("height", 1000.0)
+				else:
+					arena_width = arena.get("width")
+					arena_height = arena.get("height")
+
+		red_goal_x = 100.0
+		blue_goal_x = arena_width - 100.0
+		payloads = []
+
+		var payload = {
+			"ball_type": "payload",
+			"is_payload": true,
+			"is_invulnerable": true,
+			"speed": 0.0,
+			"base_speed": 0.0,
+			"damage": 0.0,
+			"base_damage": 0.0,
+			"max_hp": 10000.0,
+			"hp": 10000.0,
+			"x": arena_width / 2.0,
+			"y": arena_height / 2.0,
+			"alive": true,
+			"team": "Neutral",
+			"radius": 40.0,
+			"depth": 0,
+			"timer": 15.0
+		}
+		balls.append(payload)
+		payloads.append(payload)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		var new_payloads = []
+		var active_payloads = []
+
+		for p in payloads:
+			if typeof(p) == TYPE_DICTIONARY and p.get("alive", false):
+				active_payloads.append(p)
+			elif typeof(p) != TYPE_DICTIONARY and p.get("alive"):
+				active_payloads.append(p)
+
+		payloads = active_payloads
+
+		for payload in payloads:
+			if not (typeof(payload) == TYPE_DICTIONARY and payload.get("alive", false)):
+				if typeof(payload) != TYPE_DICTIONARY and not payload.get("alive"):
+					continue
+				elif typeof(payload) == TYPE_DICTIONARY:
+					continue
+
+			var t = payload.get("timer", 15.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("timer")
+			if t == null: t = 15.0
+			t -= delta
+
+			if typeof(payload) == TYPE_DICTIONARY:
+				payload["timer"] = t
+			else:
+				payload.set("timer", t)
+
+			var px = payload.get("x", 500.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("x")
+			var py = payload.get("y", 500.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("y")
+			var depth = payload.get("depth", 0) if typeof(payload) == TYPE_DICTIONARY else payload.get("depth")
+			if depth == null: depth = 0
+
+			var detonate = false
+
+			if px <= red_goal_x or px >= blue_goal_x:
+				detonate = true
+
+			if t <= 0:
+				detonate = true
+
+			if detonate:
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["alive"] = false
+					payload["hp"] = 0
+				else:
+					payload.set("alive", false)
+					payload.set("hp", 0)
+
+				var explosion_radius = max(50.0, 200.0 / pow(2, depth))
+				var explosion_damage = max(20.0, 100.0 / pow(2, depth))
+
+				for b in balls:
+					if b != payload:
+						var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+						var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+						var is_payload = b.get("is_payload", false) if typeof(b) == TYPE_DICTIONARY else b.get("is_payload")
+
+						if b_alive and b_type != "spectator" and not is_payload:
+							var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+							var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+							var dx = bx - px
+							var dy = by - py
+							var dist = sqrt(dx * dx + dy * dy)
+
+							if dist <= explosion_radius:
+								var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+								if typeof(b) == TYPE_DICTIONARY:
+									b["hp"] = hp - explosion_damage
+									if b["hp"] <= 0:
+										b["alive"] = false
+										if typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
+											world["dead_balls"].append(b)
+										elif typeof(world) == TYPE_OBJECT and world.has_meta("dead_balls"):
+											var d = world.get_meta("dead_balls")
+											d.append(b)
+											world.set_meta("dead_balls", d)
+								else:
+									b.set("hp", hp - explosion_damage)
+									if b.get("hp") <= 0:
+										b.set("alive", false)
+										if typeof(world) == TYPE_DICTIONARY and "dead_balls" in world:
+											world["dead_balls"].append(b)
+										elif typeof(world) == TYPE_OBJECT and world.has_meta("dead_balls"):
+											var d = world.get_meta("dead_balls")
+											d.append(b)
+											world.set_meta("dead_balls", d)
+
+				if typeof(world) == TYPE_DICTIONARY:
+					if "events" in world:
+						world["events"].append({"type": "visual_effect", "data": {"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius}})
+				elif typeof(world) == TYPE_OBJECT:
+					if world.has_method("add_event"):
+						world.add_event("visual_effect", {"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
+
+				if depth < 3:
+					for i in range(4):
+						var angle = i * (PI / 2)
+						var offset = 30.0 / pow(2, depth)
+						var p_rad = payload.get("radius", 40.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("radius")
+
+						var new_p = {
+							"ball_type": "payload",
+							"is_payload": true,
+							"is_invulnerable": true,
+							"speed": 0.0,
+							"base_speed": 0.0,
+							"damage": 0.0,
+							"base_damage": 0.0,
+							"max_hp": max(100.0, 10000.0 / pow(2, depth + 1)),
+							"hp": max(100.0, 10000.0 / pow(2, depth + 1)),
+							"x": px + cos(angle) * offset,
+							"y": py + sin(angle) * offset,
+							"alive": true,
+							"team": "Neutral",
+							"radius": max(10.0, p_rad / 2.0),
+							"depth": depth + 1,
+							"timer": 15.0
+						}
+						new_payloads.append(new_p)
+				continue
+
+			var cur_hp = payload.get("hp", 5000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("hp")
+			var m_hp = payload.get("max_hp", 10000.0) if typeof(payload) == TYPE_DICTIONARY else payload.get("max_hp")
+			if cur_hp < 100.0:
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["hp"] = m_hp
+				else:
+					payload.set("hp", m_hp)
+
+			var red_count = 0
+			var blue_count = 0
+
+			for b in balls:
+				if b == payload:
+					continue
+
+				var b_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+				var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+				var is_payload = b.get("is_payload", false) if typeof(b) == TYPE_DICTIONARY else b.get("is_payload")
+
+				if not b_alive or b_type == "spectator" or is_payload:
+					continue
+
+				var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+				var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+				var dx = bx - px
+				var dy = by - py
+				var dist = sqrt(dx * dx + dy * dy)
+				var push_radius = max(50.0, 150.0 / pow(2, depth))
+
+				if dist < push_radius:
+					var team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+					if team == "Red":
+						red_count += 1
+					elif team == "Blue":
+						blue_count += 1
+
+					if team == "Red" or team == "Blue":
+						var hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("hp")
+						var max_hp = b.get("max_hp", 100.0) if typeof(b) == TYPE_DICTIONARY else b.get("max_hp")
+						var heal_rate = max(5.0, 15.0 / pow(2, depth))
+						if hp >= max_hp:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["shield"] = b.get("shield", 0.0) + heal_rate * delta
+							else:
+								var s = b.get("shield")
+								if s == null: s = 0.0
+								b.set("shield", s + heal_rate * delta)
+						else:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["hp"] = min(max_hp, hp + heal_rate * delta)
+							else:
+								b.set("hp", min(max_hp, hp + heal_rate * delta))
+
+			var move_speed = 50.0 * pow(1.2, depth)
+
+			if red_count > blue_count:
+				var speed_mult = 1.0 + ((red_count - 1) * 0.5)
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["x"] += move_speed * delta * (red_count - blue_count) * speed_mult
+				else:
+					payload.set("x", px + move_speed * delta * (red_count - blue_count) * speed_mult)
+			elif blue_count > red_count:
+				var speed_mult = 1.0 + ((blue_count - 1) * 0.5)
+				if typeof(payload) == TYPE_DICTIONARY:
+					payload["x"] -= move_speed * delta * (blue_count - red_count) * speed_mult
+				else:
+					payload.set("x", px - move_speed * delta * (blue_count - red_count) * speed_mult)
+
+		if new_payloads.size() > 0:
+			for np in new_payloads:
+				balls.append(np)
+				payloads.append(np)
+
 GAME_MODES['capture_the_flag_elements_in_battle_royale'] = load("res://src/ai/capture_the_flag_elements_in_battle_royale.gd").CaptureTheFlagElementsInBattleRoyaleMode.new()
 
 GAME_MODES['decoy_trail'] = DecoyTrailMode.new()
@@ -76705,3 +76980,5 @@ class ElectricDecoyLinkMode extends GameMode:
 
 GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode.new()
+
+GAME_MODES["fractal_payload"] = FractalPayloadMode.new()
