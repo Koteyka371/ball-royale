@@ -22321,6 +22321,12 @@ func execute(strategy: String, delta: float):
                                 if "slow_timer" in self.ball: self.ball.slow_timer = max(current_slow, 3.0)
                                 elif self.ball.has_method("set_meta"): self.ball.set_meta("slow_timer", max(current_slow, 3.0))
 
+                                if "is_dashing" in self.ball: self.ball.is_dashing = false
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("is_dashing", false)
+
+                                if "can_jump" in self.ball: self.ball.can_jump = false
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("can_jump", false)
+
                                 if world != null and world.has_method("get_arena") and world.get_arena() != null and "hazards" in world.get_arena():
                                     var spider_web = null
                                     if load("res://src/arena/procedural_arena.gd") != null:
@@ -25528,6 +25534,12 @@ func execute(strategy: String, delta: float):
                         var current_mult = 1.0
                         if self.ball.has_meta("speed_multiplier"): current_mult = self.ball.get_meta("speed_multiplier")
                         self.ball.set_meta("speed_multiplier", min(current_mult, 0.5))
+
+                    if "is_dashing" in self.ball: self.ball.is_dashing = false
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("is_dashing", false)
+
+                    if "can_jump" in self.ball: self.ball.can_jump = false
+                    elif self.ball.has_method("set_meta"): self.ball.set_meta("can_jump", false)
                 elif hazard.kind == "tar_puddle":
                     var current_slow = 0.0
                     if "slow_timer" in self.ball: current_slow = self.ball.slow_timer
