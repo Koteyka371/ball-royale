@@ -10,6 +10,314 @@ class GameMode:
 		pass
 
 	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		var has_payload = false
+		for b in balls:
+			var b_is_payload = false
+			if typeof(b) == TYPE_DICTIONARY:
+				b_is_payload = b.get("is_payload", false)
+			else:
+				b_is_payload = "is_payload" in b and b.is_payload
+			if b_is_payload:
+				has_payload = true
+				break
+
+		if has_payload:
+			var current_timer = 15.0
+			if typeof(world) == TYPE_DICTIONARY:
+				if world.has("payload_anomaly_timer"):
+					current_timer = world["payload_anomaly_timer"]
+			elif typeof(world) == TYPE_OBJECT:
+				if world.has_method("has_meta") and world.has_meta("payload_anomaly_timer"):
+					current_timer = world.get_meta("payload_anomaly_timer")
+				elif "payload_anomaly_timer" in world:
+					current_timer = world.payload_anomaly_timer
+
+			current_timer -= delta
+
+			if typeof(world) == TYPE_DICTIONARY:
+				world["payload_anomaly_timer"] = current_timer
+			elif typeof(world) == TYPE_OBJECT:
+				if "payload_anomaly_timer" in world:
+					world.payload_anomaly_timer = current_timer
+				elif world.has_method("set_meta"):
+					world.set_meta("payload_anomaly_timer", current_timer)
+
+			if current_timer <= 0:
+				if typeof(world) == TYPE_DICTIONARY:
+					world["payload_anomaly_timer"] = 20.0
+				elif typeof(world) == TYPE_OBJECT:
+					if "payload_anomaly_timer" in world:
+						world.payload_anomaly_timer = 20.0
+					elif world.has_method("set_meta"):
+						world.set_meta("payload_anomaly_timer", 20.0)
+				var payloads = []
+				for b in balls:
+					var b_is_payload = false
+					var b_alive = false
+					if typeof(b) == TYPE_DICTIONARY:
+						b_is_payload = b.get("is_payload", false)
+						b_alive = b.get("alive", false)
+					else:
+						b_is_payload = "is_payload" in b and b.is_payload
+						b_alive = "alive" in b and b.alive
+					if b_is_payload and b_alive:
+						payloads.append(b)
+
+				if payloads.size() > 0:
+					var target = payloads[randi() % payloads.size()]
+					var tx = 500.0
+					var ty = 500.0
+					if typeof(target) == TYPE_DICTIONARY:
+						tx = target.get("x", 500.0)
+						ty = target.get("y", 500.0)
+					else:
+						tx = target.x if "x" in target else 500.0
+						ty = target.y if "y" in target else 500.0
+
+					var anomaly_x = tx + randf_range(-300.0, 300.0)
+					var anomaly_y = ty + randf_range(-300.0, 300.0)
+
+					var is_well = randf() > 0.5
+					if is_well:
+						var well = {}
+						well["id"] = 99000 + randi() % 1000
+						well["ball_type"] = "gravity_well"
+						well["team"] = "Neutral"
+						well["x"] = anomaly_x
+						well["y"] = anomaly_y
+						well["hp"] = 500.0
+						well["max_hp"] = 500.0
+						well["alive"] = true
+						well["radius"] = 40.0
+						well["effect_radius"] = 400.0
+						well["is_payload_anomaly"] = true
+						well["speed"] = 0.0
+						well["base_speed"] = 0.0
+						balls.append(well)
+						if world.has_method("add_event"):
+							world.add_event("gravity_well_spawn", {"x": anomaly_x, "y": anomaly_y})
+					else:
+						var dir_x = 1.0 if randf() > 0.5 else -1.0
+						var dir_y = randf_range(-0.5, 0.5)
+						var length = sqrt(dir_x*dir_x + dir_y*dir_y)
+						if length > 0:
+							dir_x /= length
+							dir_y /= length
+
+						var hazard = {
+							"kind": "payload_conveyor",
+							"x": anomaly_x,
+							"y": anomaly_y,
+							"radius": 250.0,
+							"dir_x": dir_x,
+							"dir_y": dir_y,
+							"timer": 15.0
+						}
+
+						var arena = world.get("arena")
+						if arena != null:
+							if not "hazards" in arena:
+								arena.set("hazards", [])
+							var h_list = arena.get("hazards")
+							h_list.append(hazard)
+							arena.set("hazards", h_list)
+
+						if world.has_method("add_event"):
+							world.add_event("conveyor_spawn", {"x": anomaly_x, "y": anomaly_y})
+
+			var wells = []
+			for b in balls:
+				var b_type = ""
+				var b_alive = false
+				var b_is_anomaly = false
+				if typeof(b) == TYPE_DICTIONARY:
+					b_type = b.get("ball_type", "")
+					b_alive = b.get("alive", false)
+					b_is_anomaly = b.get("is_payload_anomaly", false)
+				else:
+					b_type = b.ball_type if "ball_type" in b else ""
+					b_alive = b.alive if "alive" in b else false
+					b_is_anomaly = b.is_payload_anomaly if "is_payload_anomaly" in b else false
+
+				if b_type == "gravity_well" and b_alive and b_is_anomaly:
+					wells.append(b)
+
+			for well in wells:
+				var w_hp = 500.0
+				if typeof(well) == TYPE_DICTIONARY:
+					w_hp = well.get("hp", 500.0)
+				else:
+					w_hp = well.hp if "hp" in well else 500.0
+
+				if w_hp <= 0:
+					if typeof(well) == TYPE_DICTIONARY:
+						well["alive"] = false
+					else:
+						if "alive" in well: well.alive = false
+					continue
+
+				var wx = 0.0
+				var wy = 0.0
+				var effect_rad = 400.0
+				if typeof(well) == TYPE_DICTIONARY:
+					wx = well.get("x", 0.0)
+					wy = well.get("y", 0.0)
+					effect_rad = well.get("effect_radius", 400.0)
+				else:
+					wx = well.x if "x" in well else 0.0
+					wy = well.y if "y" in well else 0.0
+					effect_rad = well.effect_radius if "effect_radius" in well else 400.0
+
+				for b in balls:
+					if typeof(b) == typeof(well) and b == well:
+						continue
+
+					var b_alive = false
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						b_alive = b.get("alive", false)
+						b_type = b.get("ball_type", "")
+					else:
+						b_alive = b.alive if "alive" in b else false
+						b_type = b.ball_type if "ball_type" in b else ""
+
+					if not b_alive or b_type == "spectator":
+						continue
+
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+
+					var dist_sq = (bx - wx) * (bx - wx) + (by - wy) * (by - wy)
+					if dist_sq < effect_rad * effect_rad and dist_sq > 0:
+						var dist = sqrt(dist_sq)
+						var force = (effect_rad - dist) / effect_rad
+						var pull_speed = 300.0 * force
+						var dx = (wx - bx) / dist
+						var dy = (wy - by) / dist
+
+						var b_is_payload = false
+						if typeof(b) == TYPE_DICTIONARY:
+							b_is_payload = b.get("is_payload", false)
+						else:
+							b_is_payload = b.is_payload if "is_payload" in b else false
+
+						if b_is_payload:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["x"] = bx + dx * pull_speed * delta
+								b["y"] = by + dy * pull_speed * delta
+							else:
+								if "x" in b: b.x = bx + dx * pull_speed * delta
+								if "y" in b: b.y = by + dy * pull_speed * delta
+						else:
+							if typeof(b) == TYPE_DICTIONARY:
+								var bvx = b.get("vx", 0.0)
+								var bvy = b.get("vy", 0.0)
+								b["vx"] = bvx + dx * pull_speed * delta * 5.0
+								b["vy"] = bvy + dy * pull_speed * delta * 5.0
+							else:
+								if "vx" in b: b.vx += dx * pull_speed * delta * 5.0
+								if "vy" in b: b.vy += dy * pull_speed * delta * 5.0
+
+			var arena = world.get("arena")
+			if arena != null and "hazards" in arena:
+				var h_list = arena.get("hazards")
+				var new_hazards = []
+				for h in h_list:
+					var h_kind = ""
+					if typeof(h) == TYPE_DICTIONARY:
+						h_kind = h.get("kind", "")
+					else:
+						h_kind = h.kind if "kind" in h else ""
+
+					if h_kind == "payload_conveyor":
+						var cx = 0.0
+						var cy = 0.0
+						var cr = 250.0
+						var cdx = 1.0
+						var cdy = 0.0
+						var timer = 15.0
+
+						if typeof(h) == TYPE_DICTIONARY:
+							cx = h.get("x", 0.0)
+							cy = h.get("y", 0.0)
+							cr = h.get("radius", 250.0)
+							cdx = h.get("dir_x", 1.0)
+							cdy = h.get("dir_y", 0.0)
+							timer = h.get("timer", 15.0)
+						else:
+							cx = h.x if "x" in h else 0.0
+							cy = h.y if "y" in h else 0.0
+							cr = h.radius if "radius" in h else 250.0
+							cdx = h.dir_x if "dir_x" in h else 1.0
+							cdy = h.dir_y if "dir_y" in h else 0.0
+							timer = h.timer if "timer" in h else 15.0
+
+						timer -= delta
+						if typeof(h) == TYPE_DICTIONARY:
+							h["timer"] = timer
+						else:
+							if "timer" in h: h.timer = timer
+
+						for b in balls:
+							var b_alive = false
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY:
+								b_alive = b.get("alive", false)
+								b_type = b.get("ball_type", "")
+							else:
+								b_alive = b.alive if "alive" in b else false
+								b_type = b.ball_type if "ball_type" in b else ""
+
+							if not b_alive or b_type == "spectator":
+								continue
+
+							var bx = 0.0
+							var by = 0.0
+							if typeof(b) == TYPE_DICTIONARY:
+								bx = b.get("x", 0.0)
+								by = b.get("y", 0.0)
+							else:
+								bx = b.x if "x" in b else 0.0
+								by = b.y if "y" in b else 0.0
+
+							var dist_sq = (bx - cx) * (bx - cx) + (by - cy) * (by - cy)
+							if dist_sq < cr * cr:
+								var push_speed = 250.0
+								var b_is_payload = false
+								if typeof(b) == TYPE_DICTIONARY:
+									b_is_payload = b.get("is_payload", false)
+								else:
+									b_is_payload = b.is_payload if "is_payload" in b else false
+
+								if b_is_payload:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["x"] = bx + cdx * push_speed * delta
+										b["y"] = by + cdy * push_speed * delta
+									else:
+										if "x" in b: b.x = bx + cdx * push_speed * delta
+										if "y" in b: b.y = by + cdy * push_speed * delta
+								else:
+									if typeof(b) == TYPE_DICTIONARY:
+										var bvx = b.get("vx", 0.0)
+										var bvy = b.get("vy", 0.0)
+										b["vx"] = bvx + cdx * push_speed * delta * 5.0
+										b["vy"] = bvy + cdy * push_speed * delta * 5.0
+									else:
+										if "vx" in b: b.vx += cdx * push_speed * delta * 5.0
+										if "vy" in b: b.vy += cdy * push_speed * delta * 5.0
+
+						if timer > 0:
+							new_hazards.append(h)
+					else:
+						new_hazards.append(h)
+
+				arena.set("hazards", new_hazards)
 		if world != null:
 			var hazards = []
 			if typeof(world) == TYPE_DICTIONARY and "arena" in world and typeof(world.arena) == TYPE_DICTIONARY and "hazards" in world.arena:

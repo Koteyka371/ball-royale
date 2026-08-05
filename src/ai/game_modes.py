@@ -38,6 +38,201 @@ class GameMode:
         self.description = "Base game mode"
 
     def apply_dynamic_traits(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        # --- Payload Anomaly Logistics ---
+        import random
+        import math
+
+        class AnomalyHazard:
+            pass
+
+        has_payload = False
+        for b in balls:
+            if isinstance(b, dict):
+                if b.get("is_payload", False):
+                    has_payload = True
+                    break
+            else:
+                if getattr(b, "is_payload", False):
+                    has_payload = True
+                    break
+
+        if has_payload:
+            if not hasattr(world, "payload_anomaly_timer") or not isinstance(getattr(world, "payload_anomaly_timer", None), (int, float)):
+                world.payload_anomaly_timer = 15.0
+
+            world.payload_anomaly_timer -= delta
+            if world.payload_anomaly_timer <= 0:
+                world.payload_anomaly_timer = 20.0
+                payloads = []
+                for b in balls:
+                    is_p = False
+                    is_a = False
+                    if isinstance(b, dict):
+                        is_p = b.get("is_payload", False)
+                        is_a = b.get("alive", False)
+                    else:
+                        is_p = getattr(b, "is_payload", False)
+                        is_a = getattr(b, "alive", False)
+                    if is_p and is_a:
+                        payloads.append(b)
+
+                if payloads:
+                    target = random.choice(payloads)
+                    is_well = random.choice([True, False])
+
+                    tx = target.get("x", 500.0) if isinstance(target, dict) else getattr(target, "x", 500.0)
+                    ty = target.get("y", 500.0) if isinstance(target, dict) else getattr(target, "y", 500.0)
+
+                    anomaly_x = tx + random.uniform(-300, 300)
+                    anomaly_y = ty + random.uniform(-300, 300)
+
+                    if is_well:
+                        well = AnomalyHazard()
+                        well.id = 99000 + random.randint(1, 1000)
+                        well.ball_type = "gravity_well"
+                        well.team = "Neutral"
+                        well.x = anomaly_x
+                        well.y = anomaly_y
+                        well.hp = 500.0
+                        well.max_hp = 500.0
+                        well.alive = True
+                        well.radius = 40.0
+                        well.effect_radius = 400.0
+                        well.is_payload_anomaly = True
+                        well.speed = 0.0
+                        well.base_speed = 0.0
+                        balls.append(well)
+                        if hasattr(world, "add_event"):
+                            world.add_event("gravity_well_spawn", {"x": anomaly_x, "y": anomaly_y})
+                    else:
+                        dir_x = random.choice([-1.0, 1.0])
+                        dir_y = random.uniform(-0.5, 0.5)
+                        length = math.hypot(dir_x, dir_y)
+                        if length > 0:
+                            dir_x /= length
+                            dir_y /= length
+
+                        hazard = AnomalyHazard()
+                        hazard.kind = "payload_conveyor"
+                        hazard.x = anomaly_x
+                        hazard.y = anomaly_y
+                        hazard.radius = 250.0
+                        hazard.dir_x = dir_x
+                        hazard.dir_y = dir_y
+                        hazard.timer = 15.0
+
+                        if not hasattr(world.arena, "hazards"):
+                            world.arena.hazards = []
+                        world.arena.hazards.append(hazard)
+                        if hasattr(world, "add_event"):
+                            world.add_event("conveyor_spawn", {"x": anomaly_x, "y": anomaly_y})
+
+            # Process Gravity Wells
+            wells = []
+            for b in balls:
+                b_type = b.get("ball_type", "") if isinstance(b, dict) else getattr(b, "ball_type", "")
+                b_alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+                b_is_anomaly = b.get("is_payload_anomaly", False) if isinstance(b, dict) else getattr(b, "is_payload_anomaly", False)
+                if b_type == "gravity_well" and b_alive and b_is_anomaly:
+                    wells.append(b)
+
+            for well in wells:
+                w_hp = well.get("hp", 500.0) if isinstance(well, dict) else getattr(well, "hp", 500.0)
+                if w_hp <= 0:
+                    if isinstance(well, dict):
+                        well["alive"] = False
+                    else:
+                        well.alive = False
+                    continue
+
+                wx = well.get("x", 0.0) if isinstance(well, dict) else getattr(well, "x", 0.0)
+                wy = well.get("y", 0.0) if isinstance(well, dict) else getattr(well, "y", 0.0)
+                effect_rad = well.get("effect_radius", 400.0) if isinstance(well, dict) else getattr(well, "effect_radius", 400.0)
+
+                for b in balls:
+                    if b == well: continue
+                    b_alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+                    b_type = b.get("ball_type", "") if isinstance(b, dict) else getattr(b, "ball_type", "")
+
+                    if not b_alive or b_type == "spectator": continue
+
+                    bx = b.get("x", 0.0) if isinstance(b, dict) else getattr(b, "x", 0.0)
+                    by = b.get("y", 0.0) if isinstance(b, dict) else getattr(b, "y", 0.0)
+
+                    dist_sq = (bx - wx)**2 + (by - wy)**2
+                    if dist_sq < effect_rad**2 and dist_sq > 0:
+                        dist = math.sqrt(dist_sq)
+                        force = (effect_rad - dist) / effect_rad
+                        pull_speed = 300.0 * force
+                        dx = (wx - bx) / dist
+                        dy = (wy - by) / dist
+
+                        b_is_payload = b.get("is_payload", False) if isinstance(b, dict) else getattr(b, "is_payload", False)
+                        if b_is_payload:
+                            if isinstance(b, dict):
+                                b["x"] = bx + dx * pull_speed * delta
+                                b["y"] = by + dy * pull_speed * delta
+                            else:
+                                b.x = bx + dx * pull_speed * delta
+                                b.y = by + dy * pull_speed * delta
+                        else:
+                            if isinstance(b, dict):
+                                b["vx"] = b.get("vx", 0.0) + dx * pull_speed * delta * 5.0
+                                b["vy"] = b.get("vy", 0.0) + dy * pull_speed * delta * 5.0
+                            else:
+                                b.vx = getattr(b, "vx", 0.0) + dx * pull_speed * delta * 5.0
+                                b.vy = getattr(b, "vy", 0.0) + dy * pull_speed * delta * 5.0
+
+            # Process Conveyors
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                for h in world.arena.hazards:
+                    h_kind = h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")
+                    if h_kind == "payload_conveyor":
+                        cx = h.get("x", 0.0) if isinstance(h, dict) else getattr(h, "x", 0.0)
+                        cy = h.get("y", 0.0) if isinstance(h, dict) else getattr(h, "y", 0.0)
+                        cr = h.get("radius", 250.0) if isinstance(h, dict) else getattr(h, "radius", 250.0)
+                        cdx = h.get("dir_x", 1.0) if isinstance(h, dict) else getattr(h, "dir_x", 1.0)
+                        cdy = h.get("dir_y", 0.0) if isinstance(h, dict) else getattr(h, "dir_y", 0.0)
+
+                        timer = h.get("timer", 15.0) if isinstance(h, dict) else getattr(h, "timer", 15.0)
+                        timer -= delta
+                        if isinstance(h, dict):
+                            h["timer"] = timer
+                        else:
+                            h.timer = timer
+
+                        for b in balls:
+                            b_alive = b.get("alive", False) if isinstance(b, dict) else getattr(b, "alive", False)
+                            b_type = b.get("ball_type", "") if isinstance(b, dict) else getattr(b, "ball_type", "")
+
+                            if not b_alive or b_type == "spectator": continue
+
+                            bx = b.get("x", 0.0) if isinstance(b, dict) else getattr(b, "x", 0.0)
+                            by = b.get("y", 0.0) if isinstance(b, dict) else getattr(b, "y", 0.0)
+
+                            dist_sq = (bx - cx)**2 + (by - cy)**2
+                            if dist_sq < cr**2:
+                                push_speed = 250.0
+                                b_is_payload = b.get("is_payload", False) if isinstance(b, dict) else getattr(b, "is_payload", False)
+
+                                if b_is_payload:
+                                    if isinstance(b, dict):
+                                        b["x"] = bx + cdx * push_speed * delta
+                                        b["y"] = by + cdy * push_speed * delta
+                                    else:
+                                        b.x = bx + cdx * push_speed * delta
+                                        b.y = by + cdy * push_speed * delta
+                                else:
+                                    if isinstance(b, dict):
+                                        b["vx"] = b.get("vx", 0.0) + cdx * push_speed * delta * 5.0
+                                        b["vy"] = b.get("vy", 0.0) + cdy * push_speed * delta * 5.0
+                                    else:
+                                        b.vx = getattr(b, "vx", 0.0) + cdx * push_speed * delta * 5.0
+                                        b.vy = getattr(b, "vy", 0.0) + cdy * push_speed * delta * 5.0
+
+                # Cleanup conveyors
+                world.arena.hazards = [h for h in world.arena.hazards if (h.get("kind", "") if isinstance(h, dict) else getattr(h, "kind", "")) != "payload_conveyor" or (h.get("timer", 0) if isinstance(h, dict) else getattr(h, "timer", 0)) > 0]
+
         if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
             for hazard in world.arena.hazards[:]:
                 if getattr(hazard, "kind", "") == "momentum_mirror":
