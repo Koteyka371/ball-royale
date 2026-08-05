@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1825] Payload Chain Reaction Mode — *2026-08-05 08:18:55 UTC*
+
+When a payload detonates, it spawns 4 smaller payloads that fly in opposite directions. These mini-payloads can be pushed, and if they reach a goal, they detonate for a smaller explosion. This continues down to micro-payloads, creating chaotic endgame situations.
+
+---
+
 ## [idea-1606] Unstable Decoy Overload — *2026-08-05 05:28:39 UTC*
 
 If a decoy clone is hit by a lightning strike event or a static shock booster, it becomes overcharged, increasing its explosion radius and confusing enemies hit for a significantly longer duration before detonating.
