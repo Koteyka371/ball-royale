@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1806] Gravity Swap Mutator — *2026-08-05 19:19:02 UTC*
+
+Periodically, the gravity in the arena flips, pulling balls towards the edges.
+
+---
+
 ## [idea-1829] Sticky Spiderweb Traps — *2026-08-05 19:12:31 UTC*
 
 Players can deploy spiderweb traps that remain on the field. When an enemy steps on them, their speed is significantly reduced, and they lose the ability to dash or jump. They can slowly wiggle out, or wait for the web to naturally disintegrate. This encourages more strategic defensive play around choke points.
