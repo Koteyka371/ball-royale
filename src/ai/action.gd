@@ -10016,8 +10016,18 @@ func execute(strategy: String, delta: float):
 				if "y" in self.ball: by_self = self.ball.y
 				elif self.ball.has_method("get_meta") and self.ball.has_meta("y"): by_self = self.ball.get_meta("y")
 
+				var b_is_overcharged = false
+				if "is_overcharged" in self.ball: b_is_overcharged = self.ball.is_overcharged
+				elif self.ball.has_method("get_meta") and self.ball.has_meta("is_overcharged"): b_is_overcharged = self.ball.get_meta("is_overcharged")
+
+				var explosion_radius = 120.0
+				var confusion_duration = 2.0
+				if b_is_overcharged:
+					explosion_radius = 240.0
+					confusion_duration = 6.0
+
 				if world != null and "events" in world:
-					world.events.append({'type': 'explosion', 'data': {'x': bx_self, 'y': by_self, 'radius': 120.0}})
+					world.events.append({'type': 'explosion', 'data': {'x': bx_self, 'y': by_self, 'radius': explosion_radius}})
 				if world != null and "balls" in world:
 					var my_team = ""
 					if "team" in self.ball: my_team = self.ball.team
@@ -10044,7 +10054,7 @@ func execute(strategy: String, delta: float):
 							elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
 
 							var dist = sqrt(pow(bx_self - bx, 2) + pow(by_self - by, 2))
-							if dist <= 120.0:
+							if dist <= explosion_radius:
 								if b.has_method("take_damage"):
 									b.take_damage(50.0)
 								else:
@@ -10092,6 +10102,24 @@ func execute(strategy: String, delta: float):
 									if "perception_radius" in b: b.perception_radius = b_base_per_rad * 0.5
 									elif b.has_method("set_meta"): b.set_meta("perception_radius", b_base_per_rad * 0.5)
 									elif typeof(b) == TYPE_DICTIONARY: b["perception_radius"] = b_base_per_rad * 0.5
+
+								if b_is_overcharged:
+									var b_is_confused = false
+									if "is_confused" in b: b_is_confused = b.is_confused
+									elif b.has_method("get_meta") and b.has_meta("is_confused"): b_is_confused = b.get_meta("is_confused")
+									if not b_is_confused:
+										if "is_confused" in b: b.is_confused = true
+										elif b.has_method("set_meta"): b.set_meta("is_confused", true)
+										elif typeof(b) == TYPE_DICTIONARY: b["is_confused"] = true
+
+									var cur_conf = 0.0
+									if "confusion_timer" in b: cur_conf = b.confusion_timer
+									elif b.has_method("get_meta") and b.has_meta("confusion_timer"): cur_conf = b.get_meta("confusion_timer")
+
+									var new_conf = max(cur_conf, confusion_duration)
+									if "confusion_timer" in b: b.confusion_timer = new_conf
+									elif b.has_method("set_meta"): b.set_meta("confusion_timer", new_conf)
+									elif typeof(b) == TYPE_DICTIONARY: b["confusion_timer"] = new_conf
 				return
 
 	var is_alive_mine_decoy = true
