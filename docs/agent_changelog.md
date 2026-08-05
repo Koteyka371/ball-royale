@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1820] Time Loop Booster — *2026-08-05 11:11:50 UTC*
+
+When activated, records the player's position and health for 5 seconds. If the player is about to die within this period, they are instantly rewinded to their recorded state.
+
+---
+
 ## [idea-1815] Twitch Plays AI Parameters — *2026-08-05 11:03:30 UTC*
 
 Expose basic AI hyperparameters like aggressiveness, fleeing radius, or vision radius to viewers via chat commands, letting the crowd collectively train or alter the AI neural network traits in real-time.
