@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1764] Eclipse Trap Booster — *2026-08-05 16:13:58 UTC*
+
+A deployable booster that creates a localized 'eclipse' zone. Any enemies inside the zone suffer from the same blackout debuffs (reduced speed and damage), acting as a powerful tactical counter-measure for light-dependent enemies.
+
+---
+
 ## [idea-1816] Grappling Hook Skill — *2026-08-05 13:55:19 UTC*
 
 A new skill that allows balls to shoot a grappling hook at hazards or boundaries to pull themselves quickly out of danger or into better positioning.
