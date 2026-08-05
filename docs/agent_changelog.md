@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1606] Unstable Decoy Overload — *2026-08-05 05:28:39 UTC*
+
+If a decoy clone is hit by a lightning strike event or a static shock booster, it becomes overcharged, increasing its explosion radius and confusing enemies hit for a significantly longer duration before detonating.
+
+---
+
 ## [idea-1818] Viewer Betting Mini-Game — *2026-08-05 04:27:42 UTC*
 
 Allow viewers to type '!bet [ball_id] [amount]' to wager loyalty points on a specific ball winning the match. If the ball wins, the viewer gets a payout. This increases viewer engagement and makes the crowd cheer louder for bets placed.
