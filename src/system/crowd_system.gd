@@ -370,6 +370,9 @@ func process_external_command(user: String, command: String, balls: Array):
         elif amount_str.ends_with("pt"):
             currency = "prestige_tokens"
             amount_str = amount_str.substr(0, amount_str.length() - 2)
+        elif amount_str.ends_with("lp"):
+            currency = "loyalty_points"
+            amount_str = amount_str.substr(0, amount_str.length() - 2)
 
         if amount_str.is_valid_int():
             amount = amount_str.to_int()

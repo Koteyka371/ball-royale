@@ -271,6 +271,9 @@ class CrowdSystem:
             elif amount_str.endswith("pt"):
                 currency = "prestige_tokens"
                 amount_str = amount_str[:-2]
+            elif amount_str.endswith("lp"):
+                currency = "loyalty_points"
+                amount_str = amount_str[:-2]
 
             try:
                 amount = int(amount_str)

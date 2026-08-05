@@ -5,7 +5,7 @@ from system.crowd_system import CrowdSystem
 
 class MockProfileManager:
     def __init__(self):
-        self.data = {"skill_points": 1000, "prestige_tokens": 10}
+        self.data = {"skill_points": 1000, "prestige_tokens": 10, "loyalty_points": 500}
 
     def save(self):
         pass
@@ -59,15 +59,25 @@ def test_interactive_match_betting():
     assert world.profile_manager.data["prestige_tokens"] == 8
     assert len(system.active_bets) == 2
 
+    # Bet on b2 with LP
+    system.queue_external_command("viewer3", "!bet 2 50lp")
+    system.tick(balls, [], 3)
+
+    assert world.profile_manager.data["loyalty_points"] == 450
+    assert len(system.active_bets) == 3
+    assert system.active_bets[2]["currency"] == "loyalty_points"
+
     # Make team B win (Normal multiplier 1.5x)
     b1.alive = False
-    system.tick(balls, [], 3)
+    system.tick(balls, [], 4)
 
     assert system.match_ended == True
     # Viewer 2 won 2 * 1.5 = 3 PT -> 8 + 3 = 11
     # Plus, the team that wins isn't the underdog, wait, if the team isn't underdog does the winner team get any base prestige?
     # Ah, the crowd system gives 10 prestige tokens if UNDERDOG wins. Here team B won, so no bonus 10.
     assert world.profile_manager.data["prestige_tokens"] == 11
+    # Viewer 3 won 50 * 1.5 = 75 LP -> 450 + 75 = 525
+    assert world.profile_manager.data["loyalty_points"] == 525
     # Viewer 1 lost 100 SP, stays at 900
     assert world.profile_manager.data["skill_points"] == 900
 
