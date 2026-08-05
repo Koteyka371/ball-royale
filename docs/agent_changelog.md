@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1816] Grappling Hook Skill — *2026-08-05 13:55:19 UTC*
+
+A new skill that allows balls to shoot a grappling hook at hazards or boundaries to pull themselves quickly out of danger or into better positioning.
+
+---
+
 ## [idea-1747] Laser Reflector Shield Booster — *2026-08-05 12:44:32 UTC*
 
 A new temporary booster that surrounds the player with a mirror shield. Instead of taking damage from laser-based hazards and traps, the player reflects them, turning the hazard into a weapon against enemies.
