@@ -2023,8 +2023,8 @@ class GameMode:
                                                         ptimer = getattr(target, "poison_timer", 0.0)
                                                         target.poison_timer = max(ptimer if isinstance(ptimer, (int, float)) else 0.0, 5.0)
                                                     elif element == "ice":
-                                                        ftimer = getattr(target, "frozen_timer", 0.0)
-                                                        target.frozen_timer = max(ftimer if isinstance(ftimer, (int, float)) else 0.0, 5.0)
+                                                        ftimer = getattr(target, "freeze_timer", 0.0)
+                                                        target.freeze_timer = max(ftimer if isinstance(ftimer, (int, float)) else 0.0, 5.0)
 
                                     b1.aura_explosion_cooldown = 10.0
                                     b2.aura_explosion_cooldown = 10.0
@@ -11865,7 +11865,7 @@ class ShrinkingDangerZoneMode(GameMode):
                         elif debuff == "stun":
                             b.stun_timer = max(getattr(b, "stun_timer", 0.0), 1.0)
                         elif debuff == "freeze":
-                            b.frozen_timer = max(getattr(b, "frozen_timer", 0.0), 1.0)
+                            b.freeze_timer = max(getattr(b, "freeze_timer", 0.0), 1.0)
                     if b.hp <= 0:
                         b.alive = False
                         b.hp = 0
@@ -12543,7 +12543,7 @@ class SafeZoneMode(GameMode):
                         elif debuff == "stun":
                             b.stun_timer = max(getattr(b, "stun_timer", 0.0), 1.0)
                         elif debuff == "freeze":
-                            b.frozen_timer = max(getattr(b, "frozen_timer", 0.0), 1.0)
+                            b.freeze_timer = max(getattr(b, "freeze_timer", 0.0), 1.0)
                     if b.hp <= 0:
                         b.alive = False
                         b.hp = 0
@@ -24733,7 +24733,7 @@ class EntangledArenaMode(GameMode):
         self.name = "Entangled Arena"
         self.description = "An arena mode where random pairs of players become 'entangled'. Damage taken by one is partially shared with the other, but they also share healing and buffs. They can choose to cooperate to take down enemies together or risk hurting themselves by attacking their entangled partner."
         self.prev_state = {}
-        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
 
     class BallState:
         def __init__(self, hp, vx, vy):
@@ -24960,7 +24960,7 @@ class EntanglementMutatorMode(GameMode):
         self.name = "Entanglement Mutator"
         self.description = "Randomly entangles pairs of balls. Any status effect, knockback force, or damage applied to one ball is also mirrored to the other."
         self.prev_state = {}
-        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
 
     class BallState:
         def __init__(self, hp, vx, vy):
@@ -25097,7 +25097,7 @@ class SpreadingEntanglementMutatorMode(GameMode):
         self.name = "Spreading Entanglement Mutator"
         self.description = "Randomly entangles pairs of balls. Entanglement can spread to up to four players if they remain in close proximity."
         self.prev_state = {}
-        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
 
     class BallState:
         def __init__(self, hp, vx, vy):
@@ -29674,7 +29674,7 @@ class EntangledHazardsMode(GameMode):
         super().__init__()
         self.name = "Entangled Hazards"
         self.description = "Hazards spawn in pairs. Damage or status effects taken by a ball near one hazard are partially duplicated to balls near its paired hazard."
-        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
         self.prev_state = {}
         self.hazard_pairs = []
 
@@ -36531,7 +36531,7 @@ class SoulLinkMode(GameMode):
         self.name = "Soul Link"
         self.description = "Players are randomly paired. Damage and status effects taken by one are shared with the other."
         self.prev_state = {}
-        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer"]
+        self.status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer"]
 
     class BallState:
         def __init__(self, hp):
@@ -38657,14 +38657,14 @@ class FreezeTagMode(GameMode):
     def _freeze_ball(self, b: Any) -> None:
         b.is_frozen = True
         b.stun_timer = 9999.0
-        b.frozen_timer = 9999.0
+        b.freeze_timer = 9999.0
         b.vx = 0.0
         b.vy = 0.0
 
     def _unfreeze_ball(self, b: Any) -> None:
         b.is_frozen = False
         b.stun_timer = 0.0
-        b.frozen_timer = 0.0
+        b.freeze_timer = 0.0
 
     def check_winner(self, world: Any, balls: List[Any]) -> Optional[str]:
         alive = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", None) != "spectator"]
@@ -43472,14 +43472,14 @@ class HealerFreezeTagMode(GameMode):
     def _freeze_ball(self, b: 'Any') -> None:
         b.is_frozen = True
         b.stun_timer = 9999.0
-        b.frozen_timer = 9999.0
+        b.freeze_timer = 9999.0
         b.vx = 0.0
         b.vy = 0.0
 
     def _unfreeze_ball(self, b: 'Any') -> None:
         b.is_frozen = False
         b.stun_timer = 0.0
-        b.frozen_timer = 0.0
+        b.freeze_timer = 0.0
 
     def check_winner(self, world: 'Any', balls: 'List[Any]') -> 'Optional[str]':
         playing_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]

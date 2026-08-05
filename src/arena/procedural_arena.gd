@@ -1411,10 +1411,10 @@ func update_zone(current_tick: int, delta: float) -> void:
                 else:
                     h.emp_disabled_timer = edt - delta
 
-            if h.has_method("has_meta") and h.has_meta("frozen_timer"):
-                var ft = h.get_meta("frozen_timer")
+            if h.has_method("has_meta") and h.has_meta("freeze_timer"):
+                var ft = h.get_meta("freeze_timer")
                 if ft > 0:
-                    h.set_meta("frozen_timer", ft - delta)
+                    h.set_meta("freeze_timer", ft - delta)
                     continue
 
             if "kind" in h and h.kind == "flare":

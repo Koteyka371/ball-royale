@@ -11,7 +11,7 @@ class MockEntity:
         self.kind = kind
         self.ball_type = "booster"
         self.duration = 3.0
-        self.frozen_timer = 0.0
+        self.freeze_timer = 0.0
 
     def get(self, key, default=None):
         return getattr(self, key, default)
@@ -82,7 +82,7 @@ def test_collect_freeze_booster():
     # Check ally is not stunned
     assert ally.stun_timer == 0
     # Check hazards are frozen
-    assert hazard1.frozen_timer == 3.0
+    assert hazard1.freeze_timer == 3.0
     # Check booster is removed from hazards
     assert len(world.arena.hazards) == 1
     assert hazard1 in world.arena.hazards

@@ -773,16 +773,16 @@ func _attempt_damage_internal(attacker, target) -> void:
 			# do not return early, let normal damage happen
 
 		var target_frozen = 0.0
-		if typeof(target) == TYPE_DICTIONARY and target.has("frozen_timer"):
-			target_frozen = target.get("frozen_timer")
-		elif typeof(target) == TYPE_OBJECT and "frozen_timer" in target:
-			target_frozen = target.frozen_timer
+		if typeof(target) == TYPE_DICTIONARY and target.has("freeze_timer"):
+			target_frozen = target.get("freeze_timer")
+		elif typeof(target) == TYPE_OBJECT and "freeze_timer" in target:
+			target_frozen = target.freeze_timer
 
 		if is_fire and target_frozen > 0:
 			if typeof(target) == TYPE_DICTIONARY:
-				target["frozen_timer"] = 0.0
+				target["freeze_timer"] = 0.0
 			else:
-				target.frozen_timer = 0.0
+				target.freeze_timer = 0.0
 
 			if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
 				world.add_event("visual_effect", {"type": "ice_shatter", "x": target.x if "x" in target else 0.0, "y": target.y if "y" in target else 0.0})
@@ -12105,7 +12105,7 @@ func execute(strategy: String, delta: float):
 	if (strategy == "flee" or strategy == "defend" or strategy == "attack") and self.ball.has_meta("inventory"):
 		var inv = self.ball.get_meta("inventory")
 		if inv.has("weather_shield"):
-			var weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "frozen_timer"]
+			var weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "freeze_timer"]
 			var absorbed = false
 			for stat in weather_statuses:
 				var stat_val = 0.0
@@ -12163,9 +12163,9 @@ func execute(strategy: String, delta: float):
 
 			elif arena_weather == "blizzard" or arena_weather == "snow":
 				var fz_val = 0.0
-				if "frozen_timer" in self.ball: fz_val = self.ball.frozen_timer
-				elif self.ball is Dictionary and self.ball.has("frozen_timer"): fz_val = self.ball.get("frozen_timer", 0.0)
-				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("frozen_timer"): fz_val = self.ball.get_meta("frozen_timer")
+				if "freeze_timer" in self.ball: fz_val = self.ball.freeze_timer
+				elif self.ball is Dictionary and self.ball.has("freeze_timer"): fz_val = self.ball.get("freeze_timer", 0.0)
+				elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("freeze_timer"): fz_val = self.ball.get_meta("freeze_timer")
 
 				var cold_val = 0.0
 				if "cold" in self.ball: cold_val = self.ball.cold
@@ -14116,20 +14116,20 @@ func execute(strategy: String, delta: float):
 					freeze_stack += delta * 20.0
 
 					if freeze_stack >= 100.0:
-						var current_frozen_timer = 0.0
-						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("frozen_timer"):
-							current_frozen_timer = float(self.ball["frozen_timer"])
-						elif "frozen_timer" in self.ball:
-							current_frozen_timer = float(self.ball.frozen_timer)
-						elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("frozen_timer"):
-							current_frozen_timer = float(self.ball.get_meta("frozen_timer"))
-						var new_frozen_timer = max(current_frozen_timer, 2.0)
+						var current_freeze_timer = 0.0
+						if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("freeze_timer"):
+							current_freeze_timer = float(self.ball["freeze_timer"])
+						elif "freeze_timer" in self.ball:
+							current_freeze_timer = float(self.ball.freeze_timer)
+						elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("get_meta") and self.ball.has_meta("freeze_timer"):
+							current_freeze_timer = float(self.ball.get_meta("freeze_timer"))
+						var new_freeze_timer = max(current_freeze_timer, 2.0)
 						if typeof(self.ball) == TYPE_DICTIONARY:
-							self.ball["frozen_timer"] = new_frozen_timer
-						elif "frozen_timer" in self.ball:
-							self.ball.frozen_timer = new_frozen_timer
+							self.ball["freeze_timer"] = new_freeze_timer
+						elif "freeze_timer" in self.ball:
+							self.ball.freeze_timer = new_freeze_timer
 						elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
-							self.ball.set_meta("frozen_timer", new_frozen_timer)
+							self.ball.set_meta("freeze_timer", new_freeze_timer)
 						freeze_stack = 0.0
 
 					if typeof(self.ball) == TYPE_DICTIONARY: self.ball["freeze_stack"] = freeze_stack
@@ -31486,15 +31486,15 @@ func _collect_booster(delta: float):
                         if not is_disabled:
                             var cur_frozen = 0.0
                             if typeof(h) == TYPE_DICTIONARY:
-                                cur_frozen = float(h.get("frozen_timer", 0.0))
-                                h["frozen_timer"] = max(cur_frozen, 3.0)
+                                cur_frozen = float(h.get("freeze_timer", 0.0))
+                                h["freeze_timer"] = max(cur_frozen, 3.0)
                             elif h.has_method("set_meta"):
-                                cur_frozen = float(h.get_meta("frozen_timer")) if h.has_meta("frozen_timer") else (float(h.frozen_timer) if "frozen_timer" in h else 0.0)
-                                h.set_meta("frozen_timer", max(cur_frozen, 3.0))
-                                if "frozen_timer" in h: h.frozen_timer = max(cur_frozen, 3.0)
-                            elif "frozen_timer" in h:
-                                cur_frozen = float(h.frozen_timer)
-                                h.frozen_timer = max(cur_frozen, 3.0)
+                                cur_frozen = float(h.get_meta("freeze_timer")) if h.has_meta("freeze_timer") else (float(h.freeze_timer) if "freeze_timer" in h else 0.0)
+                                h.set_meta("freeze_timer", max(cur_frozen, 3.0))
+                                if "freeze_timer" in h: h.freeze_timer = max(cur_frozen, 3.0)
+                            elif "freeze_timer" in h:
+                                cur_frozen = float(h.freeze_timer)
+                                h.freeze_timer = max(cur_frozen, 3.0)
 
                 if self.world != null and "events" in self.world:
                     var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else null))
@@ -33665,11 +33665,11 @@ func _collect_booster(delta: float):
 				continue
                         if h != nearest:
                             var current_frozen = 0.0
-                            if "frozen_timer" in h: current_frozen = h.frozen_timer
-                            elif h.has_method("get_meta") and h.has_meta("frozen_timer"): current_frozen = h.get_meta("frozen_timer")
+                            if "freeze_timer" in h: current_frozen = h.freeze_timer
+                            elif h.has_method("get_meta") and h.has_meta("freeze_timer"): current_frozen = h.get_meta("freeze_timer")
                             var new_frozen = max(current_frozen, fduration)
-                            if "frozen_timer" in h: h.frozen_timer = new_frozen
-                            elif h.has_method("set_meta"): h.set_meta("frozen_timer", new_frozen)
+                            if "freeze_timer" in h: h.freeze_timer = new_frozen
+                            elif h.has_method("set_meta"): h.set_meta("freeze_timer", new_frozen)
                     var idx = self.world.arena.hazards.find(nearest)
                     if idx != -1:
                         self.world.arena.hazards.remove_at(idx)
@@ -34238,15 +34238,15 @@ func _collect_booster(delta: float):
                         if not is_disabled:
                             var cur_frozen = 0.0
                             if typeof(h) == TYPE_DICTIONARY:
-                                cur_frozen = float(h.get("frozen_timer", 0.0))
-                                h["frozen_timer"] = max(cur_frozen, 3.0)
+                                cur_frozen = float(h.get("freeze_timer", 0.0))
+                                h["freeze_timer"] = max(cur_frozen, 3.0)
                             elif h.has_method("set_meta"):
-                                cur_frozen = float(h.get_meta("frozen_timer")) if h.has_meta("frozen_timer") else (float(h.frozen_timer) if "frozen_timer" in h else 0.0)
-                                h.set_meta("frozen_timer", max(cur_frozen, 3.0))
-                                if "frozen_timer" in h: h.frozen_timer = max(cur_frozen, 3.0)
-                            elif "frozen_timer" in h:
-                                cur_frozen = float(h.frozen_timer)
-                                h.frozen_timer = max(cur_frozen, 3.0)
+                                cur_frozen = float(h.get_meta("freeze_timer")) if h.has_meta("freeze_timer") else (float(h.freeze_timer) if "freeze_timer" in h else 0.0)
+                                h.set_meta("freeze_timer", max(cur_frozen, 3.0))
+                                if "freeze_timer" in h: h.freeze_timer = max(cur_frozen, 3.0)
+                            elif "freeze_timer" in h:
+                                cur_frozen = float(h.freeze_timer)
+                                h.freeze_timer = max(cur_frozen, 3.0)
 
                 if self.world != null and "events" in self.world:
                     var b_id = self.ball.get("id") if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.get_meta("id") if self.ball.has_method("has_meta") and self.ball.has_meta("id") else (self.ball.id if "id" in self.ball else null))
@@ -36748,7 +36748,7 @@ func _use_skill():
                         elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", 0.0)
 
                         # Transfer ALL status effects
-                        var all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
+                        var all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "freeze_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
                         for effect in all_status:
                             var ball_effect = 0.0
                             if effect in self.ball: ball_effect = self.ball.get(effect)
@@ -36791,7 +36791,7 @@ func _use_skill():
                         elif typeof(target) == TYPE_OBJECT and target.has_method("set_meta"): target.set_meta("confusion_timer", new_confusion)
 
                         # Transfer negative status effects
-                        var status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer"]
+                        var status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "freeze_timer"]
                         for effect in status_effects:
                             var ball_effect = 0.0
                             if effect in self.ball: ball_effect = self.ball.get(effect)
@@ -37125,7 +37125,7 @@ func _use_skill():
                 if "hazards" in arena:
                     for h in arena.hazards:
                         if h.has_method("set_meta"):
-                            h.set_meta("frozen_timer", 2.0)
+                            h.set_meta("freeze_timer", 2.0)
 
         elif skill_name == "time_rewind":
             var r_allies = []
@@ -39559,7 +39559,7 @@ func _use_skill():
                     elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"): self.ball.set_meta("vy", 0.0)
 
                     # Transfer ALL status effects
-                    var all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
+                    var all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "freeze_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
                     for effect in all_status:
                         var ball_effect = 0.0
                         if effect in self.ball: ball_effect = self.ball.get(effect)

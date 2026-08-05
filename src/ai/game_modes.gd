@@ -17486,7 +17486,7 @@ class ShrinkingDangerZoneMode extends GameMode:
 						elif debuff == "stun":
 							b.stun_timer = max(b.get("stun_timer") if b.get("stun_timer") != null else 0.0, 1.0)
 						elif debuff == "freeze":
-							b.frozen_timer = max(b.get("frozen_timer") if b.get("frozen_timer") != null else 0.0, 1.0)
+							b.freeze_timer = max(b.get("freeze_timer") if b.get("freeze_timer") != null else 0.0, 1.0)
 					if b.hp <= 0:
 						b.alive = false
 						b.hp = 0
@@ -18897,7 +18897,7 @@ class SafeZoneMode extends GameMode:
 						elif debuff == "stun":
 							b.stun_timer = max(b.get("stun_timer") if b.get("stun_timer") != null else 0.0, 1.0)
 						elif debuff == "freeze":
-							b.frozen_timer = max(b.get("frozen_timer") if b.get("frozen_timer") != null else 0.0, 1.0)
+							b.freeze_timer = max(b.get("freeze_timer") if b.get("freeze_timer") != null else 0.0, 1.0)
 					if b.hp <= 0:
 						b.alive = false
 						b.hp = 0
@@ -31749,7 +31749,7 @@ class MeteorShowerMode extends GameMode:
 
 class SoulLinkMode extends GameMode:
 	var prev_state: Dictionary = {}
-	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer"]
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer"]
 
 	func _init() -> void:
 		name = "Soul Link"
@@ -39929,8 +39929,8 @@ class FreezeTagMode extends GameMode:
 		elif b.has_method("set_meta"): b.set_meta("is_frozen", true)
 		if "stun_timer" in b: b.stun_timer = 9999.0
 		elif b.has_method("set_meta"): b.set_meta("stun_timer", 9999.0)
-		if "frozen_timer" in b: b.frozen_timer = 9999.0
-		elif b.has_method("set_meta"): b.set_meta("frozen_timer", 9999.0)
+		if "freeze_timer" in b: b.freeze_timer = 9999.0
+		elif b.has_method("set_meta"): b.set_meta("freeze_timer", 9999.0)
 		if "vx" in b: b.vx = 0.0
 		elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
 		if "vy" in b: b.vy = 0.0
@@ -39941,8 +39941,8 @@ class FreezeTagMode extends GameMode:
 		elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
 		if "stun_timer" in b: b.stun_timer = 0.0
 		elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
-		if "frozen_timer" in b: b.frozen_timer = 0.0
-		elif b.has_method("set_meta"): b.set_meta("frozen_timer", 0.0)
+		if "freeze_timer" in b: b.freeze_timer = 0.0
+		elif b.has_method("set_meta"): b.set_meta("freeze_timer", 0.0)
 
 	func check_winner(world, balls):
 		var alive_balls = []
@@ -40216,7 +40216,7 @@ class ShrinkingBoundaryMode extends GameMode:
 
 class EntangledArenaMode extends GameMode:
 	var prev_state: Dictionary = {}
-	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
 
 	func _init() -> void:
 		name = "Entangled Arena"
@@ -40687,7 +40687,7 @@ class EntangledSwapHazardMode extends GameMode:
 
 class EntanglementMutatorMode extends GameMode:
 	var prev_state: Dictionary = {}
-	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
 
 	func _init() -> void:
 		name = "Entanglement Mutator"
@@ -41027,7 +41027,7 @@ class EntanglementMutatorMode extends GameMode:
 
 class SpreadingEntanglementMutatorMode extends GameMode:
 	var prev_state: Dictionary = {}
-	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+	var status_effects: Array = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
 
 	func _init() -> void:
 		name = "Spreading Entanglement Mutator"
@@ -48952,7 +48952,7 @@ class SlimeBossMode extends GameMode:
 
 class EntangledHazardsMode extends GameMode:
 	var prev_state = {}
-	var status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer", "silence_timer"]
+	var status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer", "silence_timer"]
 	var hazard_pairs = []
 
 	func _init():
@@ -49267,8 +49267,8 @@ class HealerFreezeTagMode extends GameMode:
 		elif b.has_method("set_meta"): b.set_meta("is_frozen", true)
 		if "stun_timer" in b: b.stun_timer = 9999.0
 		elif b.has_method("set_meta"): b.set_meta("stun_timer", 9999.0)
-		if "frozen_timer" in b: b.frozen_timer = 9999.0
-		elif b.has_method("set_meta"): b.set_meta("frozen_timer", 9999.0)
+		if "freeze_timer" in b: b.freeze_timer = 9999.0
+		elif b.has_method("set_meta"): b.set_meta("freeze_timer", 9999.0)
 		if "vx" in b: b.vx = 0.0
 		elif b.has_method("set_meta"): b.set_meta("vx", 0.0)
 		if "vy" in b: b.vy = 0.0
@@ -49279,8 +49279,8 @@ class HealerFreezeTagMode extends GameMode:
 		elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
 		if "stun_timer" in b: b.stun_timer = 0.0
 		elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
-		if "frozen_timer" in b: b.frozen_timer = 0.0
-		elif b.has_method("set_meta"): b.set_meta("frozen_timer", 0.0)
+		if "freeze_timer" in b: b.freeze_timer = 0.0
+		elif b.has_method("set_meta"): b.set_meta("freeze_timer", 0.0)
 
 	func check_winner(world, balls):
 		var playing_balls = []
@@ -58749,8 +58749,8 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 								elif b.has_method("set_meta"): b.set_meta("is_frozen", false)
 								if "stun_timer" in b: b.stun_timer = 0.0
 								elif b.has_method("set_meta"): b.set_meta("stun_timer", 0.0)
-								if "frozen_timer" in b: b.frozen_timer = 0.0
-								elif b.has_method("set_meta"): b.set_meta("frozen_timer", 0.0)
+								if "freeze_timer" in b: b.freeze_timer = 0.0
+								elif b.has_method("set_meta"): b.set_meta("freeze_timer", 0.0)
 								if "thaw_progress" in b: b.thaw_progress = 0.0
 								elif b.has_method("set_meta"): b.set_meta("thaw_progress", 0.0)
 						if h_kind == "frost_zone" and is_frozen:

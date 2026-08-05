@@ -1,0 +1,46 @@
+{
+    "clans": {
+        "Guild1": {
+            "members": [
+                "system"
+            ],
+            "roles": {
+                "system": "leader"
+            },
+            "stash": {
+                "alliance_tokens": 50
+            },
+            "quests": [],
+            "points": 1200,
+            "territories": [],
+            "perks": [],
+            "decorations": [],
+            "hub": [],
+            "cosmetics": [
+                "Alliance_Champion_Aura",
+                "Alliance_Victory_Banner"
+            ]
+        },
+        "Guild2": {
+            "members": [
+                "system"
+            ],
+            "roles": {
+                "system": "leader"
+            },
+            "stash": {
+                "alliance_tokens": 50
+            },
+            "quests": [],
+            "points": 1200,
+            "territories": [],
+            "perks": [],
+            "decorations": [],
+            "hub": [],
+            "cosmetics": [
+                "Alliance_Champion_Aura",
+                "Alliance_Victory_Banner"
+            ]
+        }
+    }
+}

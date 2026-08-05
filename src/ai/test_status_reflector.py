@@ -52,7 +52,7 @@ class MockBall:
         self.poison_timer = 0.0
         self.blindness_timer = 0.0
         self.slow_timer = 0.0
-        self.frozen_timer = 0.0
+        self.freeze_timer = 0.0
         self.burn_timer = 0.0
         self.speed_buff_timer = 0.0
         self.damage_buff_timer = 0.0

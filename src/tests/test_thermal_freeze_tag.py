@@ -27,7 +27,7 @@ class MockBall:
         self.ball_type = "normal"
         self._frost_last_hp = hp
         self.stun_timer = 0.0
-        self.frozen_timer = 0.0
+        self.freeze_timer = 0.0
         self.thaw_progress = 0.0
         self.is_bouncy = False
         self.is_ghost = False

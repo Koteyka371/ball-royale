@@ -14,7 +14,7 @@ class MockBall:
         self.y = 0.0
         self.radius = 10.0
         self.stun_timer = 0.0
-        self.frozen_timer = 0.0
+        self.freeze_timer = 0.0
         self.vx = 0.0
         self.vy = 0.0
 

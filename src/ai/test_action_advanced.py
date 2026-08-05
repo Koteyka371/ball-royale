@@ -477,7 +477,7 @@ def test_time_stop_freeze():
     # Give arena hazards
     class MockHazard:
         def __init__(self):
-            self.frozen_timer = 0.0
+            self.freeze_timer = 0.0
             self.kind = "hazard"
 
     h1 = MockHazard()
@@ -490,7 +490,7 @@ def test_time_stop_freeze():
     action.execute("use_skill", 0.1)
 
     assert enemy.stun_timer == 2.0
-    assert h1.frozen_timer == 2.0
+    assert h1.freeze_timer == 2.0
 
 
 def test_bumper_detonation():

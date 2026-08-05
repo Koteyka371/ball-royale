@@ -1065,9 +1065,9 @@ class ProceduralArena:
             for h in self.hazards:
                 if getattr(h, "emp_disabled_timer", 0.0) > 0.0:
                     h.emp_disabled_timer -= delta
-                ft = getattr(h, "frozen_timer", 0.0)
+                ft = getattr(h, "freeze_timer", 0.0)
                 if ft > 0:
-                    h.frozen_timer = ft - delta
+                    h.freeze_timer = ft - delta
                     continue
                 if getattr(h, "kind", "") == "flare":
                     if hasattr(h, "duration"):

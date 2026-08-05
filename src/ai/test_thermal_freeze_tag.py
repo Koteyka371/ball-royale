@@ -49,7 +49,7 @@ class TestThermalFreezeTagMode(unittest.TestCase):
         ball.x = 500
         ball.y = 500
         ball.is_frozen = True
-        ball.frozen_timer = 9999
+        ball.freeze_timer = 9999
         ball.stun_timer = 9999
 
         hazard = MockHazard("heat_zone", 500, 500, 150)
@@ -86,7 +86,7 @@ class TestThermalFreezeTagMode(unittest.TestCase):
         ball.x = 500
         ball.y = 500
         ball.is_frozen = False
-        ball.frozen_timer = 0
+        ball.freeze_timer = 0
         ball.stun_timer = 0
         ball.thaw_progress = 0
 

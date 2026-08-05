@@ -34,7 +34,7 @@ var stun_timer: float
 var poison_timer: float
 var blindness_timer: float
 var slow_timer: float
-var frozen_timer: float
+var freeze_timer: float
 var burn_timer: float
 var emp_immunity_timer: float
 
@@ -71,7 +71,7 @@ func _init(ball_id: int = 0, px: float = 0.0, py: float = 0.0):
 	self.poison_timer = 0.0
 	self.blindness_timer = 0.0
 	self.slow_timer = 0.0
-	self.frozen_timer = 0.0
+	self.freeze_timer = 0.0
 	self.burn_timer = 0.0
 	self.emp_immunity_timer = 0.0
 

@@ -41,7 +41,7 @@ class StatusReflector:
         self.poison_timer = 0.0
         self.blindness_timer = 0.0
         self.slow_timer = 0.0
-        self.frozen_timer = 0.0
+        self.freeze_timer = 0.0
         self.burn_timer = 0.0
         self.emp_immunity_timer = 0.0
 

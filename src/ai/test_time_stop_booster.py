@@ -32,7 +32,7 @@ class MockHazard:
         self.y = y
         self.kind = kind
         self.radius = radius
-        self.frozen_timer = 0.0
+        self.freeze_timer = 0.0
         self.active = True
     def __init__(self, hid, x, y, kind="hazard", radius=10):
         self.id = hid
@@ -40,7 +40,7 @@ class MockHazard:
         self.y = y
         self.kind = kind
         self.radius = radius
-        self.frozen_timer = 0.0
+        self.freeze_timer = 0.0
 
 class MockBall:
     def __init__(self, bid, x, y, radius=10):
@@ -81,7 +81,7 @@ def test_time_stop_booster_collection():
     assert getattr(enemy, "stun_timer", 0.0) >= 3.0
 
     # Validate hazard is frozen
-    assert getattr(hazard, "frozen_timer", 0.0) >= 3.0
+    assert getattr(hazard, "freeze_timer", 0.0) >= 3.0
 
     # Validate event is triggered
     event_types = [e.get("type") for e in world.events]

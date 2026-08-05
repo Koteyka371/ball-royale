@@ -401,8 +401,8 @@ class Action:
                 # do not return early, let normal damage happen
 
             # Hitting a frozen ball with a fire attack
-            if is_fire and getattr(target, "frozen_timer", 0.0) > 0:
-                target.frozen_timer = 0.0
+            if is_fire and getattr(target, "freeze_timer", 0.0) > 0:
+                target.freeze_timer = 0.0
                 if hasattr(self.world, "add_event"):
                     self.world.add_event("visual_effect", {"type": "ice_shatter", "x": target.x, "y": target.y})
 
@@ -5040,7 +5040,7 @@ class Action:
                 if math.sqrt((closest_enemy.x - self.ball.x)**2 + (closest_enemy.y - self.ball.y)**2) < 250.0:
                     # Absorb effects
                     absorbed_effects = {}
-                    status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "frozen_timer"]
+                    status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "confusion_timer", "slow_timer", "freeze_timer"]
                     for eff in status_effects:
                         val = getattr(self.ball, eff, 0.0)
                         if val > 0:
@@ -6484,7 +6484,7 @@ class Action:
                             self.ball.freeze_stack = 0.0
                         self.ball.freeze_stack += delta * 20.0
                         if self.ball.freeze_stack >= 100.0:
-                            self.ball.frozen_timer = max(getattr(self.ball, "frozen_timer", 0.0), 2.0)
+                            self.ball.freeze_timer = max(getattr(self.ball, "freeze_timer", 0.0), 2.0)
                             self.ball.freeze_stack = 0.0
 
                         # Damage
@@ -17118,7 +17118,7 @@ class Action:
                             if getattr(h, 'is_disabled_by_flare', False):
                                 continue
                             if h != nearest:
-                                h.frozen_timer = max(getattr(h, "frozen_timer", 0.0), duration)
+                                h.freeze_timer = max(getattr(h, "freeze_timer", 0.0), duration)
                         if nearest in self.world.arena.hazards:
                             self.world.arena.hazards.remove(nearest)
                     if hasattr(self.world, "boosters") and nearest in self.world.boosters:
@@ -17370,7 +17370,7 @@ class Action:
                         for h in self.world.arena.hazards:
                             if getattr(h, 'is_disabled_by_flare', False):
                                 continue
-                            h.frozen_timer = max(getattr(h, "frozen_timer", 0.0), 3.0)
+                            h.freeze_timer = max(getattr(h, "freeze_timer", 0.0), 3.0)
 
                     if hasattr(self.world, "events"):
                         self.world.events.append({"type": "time_stop", "data": {"id": getattr(self.ball, "id", None)}})
@@ -18720,7 +18720,7 @@ class Action:
                         self.ball.vy = 0.0
 
                         # Transfer ALL status effects to decoy
-                        all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
+                        all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "freeze_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
                         for effect in all_status:
                             ball_effect = getattr(self.ball, effect, 0.0)
                             if ball_effect > 0.0:
@@ -18734,7 +18734,7 @@ class Action:
                         target.confusion_timer = max(getattr(target, "confusion_timer", 0.0), 3.0)
 
                         # Transfer negative status effects
-                        status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer"]
+                        status_effects = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "freeze_timer"]
                         for effect in status_effects:
                             ball_effect = getattr(self.ball, effect, 0.0)
                             if ball_effect > 0.0:
@@ -18963,7 +18963,7 @@ class Action:
                     for h in self.world.arena.hazards:
                         if getattr(h, 'is_disabled_by_flare', False):
                             continue
-                        h.frozen_timer = 2.0
+                        h.freeze_timer = 2.0
 
             elif skill_name == "time_rewind":
                 allies = [b for b in getattr(self.world, "balls", []) if getattr(b, "team", "") == getattr(self.ball, "team", "") and getattr(b, "alive", True)]
@@ -20207,7 +20207,7 @@ class Action:
                             self.ball.vy = 0.0
 
                             # Transfer ALL status effects
-                            all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "frozen_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
+                            all_status = ["stun_timer", "burn_timer", "poison_timer", "blindness_timer", "slow_timer", "freeze_timer", "confusion_timer", "speed_boost_timer", "invulnerability_timer", "shield_timer", "invisible_timer"]
                             for effect in all_status:
                                 ball_effect = getattr(self.ball, effect, 0.0)
                                 if ball_effect > 0.0:
@@ -24277,7 +24277,7 @@ class Action:
                     import math
                     if math.hypot(h.x - self.ball.x, h.y - self.ball.y) <= getattr(h, "radius", 100):
                         # Inside zone, clear weather effects and restore stamina
-                        weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "frozen_timer"]
+                        weather_statuses = ["wet", "cold", "sandblind", "burn_timer", "poison_timer", "slow_timer", "freeze_timer"]
                         for stat in weather_statuses:
                             if getattr(self.ball, stat, 0.0) > 0:
                                 setattr(self.ball, stat, 0.0)
