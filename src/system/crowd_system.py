@@ -32,6 +32,7 @@ class CrowdSystem:
         self.has_real_spectators = False
         self.viewer_loyalty = {}
         self.user_votes = {}
+        self.active_bets = []
 
     def _add_viewer_loyalty(self, user: str, points: int):
         self.viewer_loyalty[user] = self.viewer_loyalty.get(user, 0) + points
@@ -253,6 +254,51 @@ class CrowdSystem:
                     self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} placed a bounty on {b_type} {target_id}!"})
                 self.excitement_level += 10.0
 
+        elif cmd == "!bet" and len(parts) >= 3:
+            target_id = None
+            try:
+                target_id = int(parts[1])
+            except ValueError:
+                target_id = parts[1]
+
+            amount_str = parts[2].lower()
+            currency = "skill_points"
+            amount = 0
+
+            if amount_str.endswith("sp"):
+                currency = "skill_points"
+                amount_str = amount_str[:-2]
+            elif amount_str.endswith("pt"):
+                currency = "prestige_tokens"
+                amount_str = amount_str[:-2]
+
+            try:
+                amount = int(amount_str)
+            except ValueError:
+                pass
+
+            if amount > 0 and hasattr(self.world, "profile_manager"):
+                pm = self.world.profile_manager
+                if hasattr(pm, "data") and pm.data.get(currency, 0) >= amount:
+                    pm.data[currency] -= amount
+                    if hasattr(pm, "save"):
+                        pm.save()
+
+                    target = next((b for b in alive_balls if str(getattr(b, "id", "")) == str(target_id)), None)
+                    if target:
+                        team = getattr(target, "team", getattr(target, "ball_type", "unknown"))
+                        if not hasattr(self, "active_bets"):
+                            self.active_bets = []
+                        self.active_bets.append({
+                            "user": user,
+                            "target_id": target_id,
+                            "team": team,
+                            "amount": amount,
+                            "currency": currency
+                        })
+                        if hasattr(self.world, 'add_event'):
+                            self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(user)} bet {amount} {currency} on {team}!"})
+
         elif cmd == "!bribe" and len(parts) >= 2:
             action = parts[1]
             option = parts[2] if len(parts) >= 3 else None
@@ -446,6 +492,24 @@ class CrowdSystem:
                                     pm.save()
                         except Exception:
                             pass
+
+                # Process active bets
+                if hasattr(self, "active_bets") and getattr(self, "active_bets", []):
+                    multiplier = 3.0 if winner == self.underdog_team else 1.5
+                    pm = getattr(self.world, "profile_manager", None)
+                    if pm and hasattr(pm, "data"):
+                        for bet in self.active_bets:
+                            if bet["team"] == winner:
+                                winnings = int(bet["amount"] * multiplier)
+                                pm.data[bet["currency"]] = pm.data.get(bet["currency"], 0) + winnings
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("crowd_cheer", {"message": f"Viewer {self._get_user_display(bet['user'])} won their bet! Payout: {winnings} {bet['currency']}!"})
+                            else:
+                                if hasattr(self.world, "add_event"):
+                                    self.world.add_event("crowd_throw", {"message": f"Viewer {self._get_user_display(bet['user'])} lost their bet on {bet['team']}."})
+                        if hasattr(pm, "save"):
+                            pm.save()
+                    self.active_bets = []
 
 
 
