@@ -36969,6 +36969,183 @@ class ReversedInputMode(GameMode):
                     b.x -= vx * delta * 2
                     b.y -= vy * delta * 2
 
+
+class FractalPayloadMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Fractal Payload"
+        self.description = "When a payload detonates, it spawns 4 smaller payloads that fly in opposite directions. These mini-payloads can be pushed, and if they reach a goal, they detonate for a smaller explosion. This continues down to micro-payloads, creating chaotic endgame situations."
+        self.payloads = []
+        self.red_goal_x = 100.0
+        self.blue_goal_x = 900.0
+
+        class PayloadObj:
+            pass
+        self.PayloadObj = PayloadObj
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        if not hasattr(world, "dead_balls"):
+            world.dead_balls = []
+
+        valid_balls = [b for b in balls if getattr(b, "ball_type", None) != "spectator"]
+        mid = len(valid_balls) // 2
+        for i, b in enumerate(valid_balls):
+            if i < mid:
+                b.team = "Red"
+            else:
+                b.team = "Blue"
+
+        arena_width = getattr(world.arena, "width", 1000) if hasattr(world, "arena") and world.arena else 1000
+        arena_height = getattr(world.arena, "height", 1000) if hasattr(world, "arena") and world.arena else 1000
+
+        self.red_goal_x = 100.0
+        self.blue_goal_x = arena_width - 100.0
+        self.payloads = []
+
+        payload = self.PayloadObj()
+        payload.ball_type = "payload"
+        payload.is_payload = True
+        payload.is_invulnerable = True
+        payload.speed = 0.0
+        payload.base_speed = 0.0
+        payload.damage = 0.0
+        payload.base_damage = 0.0
+        payload.max_hp = 10000.0
+        payload.hp = 10000.0
+        payload.x = arena_width / 2.0
+        payload.y = arena_height / 2.0
+        payload.alive = True
+        payload.team = "Neutral"
+        payload.radius = 40.0
+        payload.depth = 0
+        payload.timer = 15.0
+
+        balls.append(payload)
+        self.payloads.append(payload)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        import math
+
+        # Clean up dead payloads
+        self.payloads = [p for p in self.payloads if getattr(p, "alive", False)]
+
+        new_payloads = []
+
+        for payload in self.payloads:
+            if not getattr(payload, "alive", False):
+                continue
+
+            payload.timer = getattr(payload, "timer", 15.0) - delta
+
+            px = getattr(payload, "x", 500.0)
+            py = getattr(payload, "y", 500.0)
+            depth = getattr(payload, "depth", 0)
+
+            detonate = False
+
+            # Check goals
+            if px <= self.red_goal_x or px >= self.blue_goal_x:
+                detonate = True
+
+            # Check timer
+            if payload.timer <= 0:
+                detonate = True
+
+            if detonate:
+                payload.alive = False
+                payload.hp = 0
+
+                explosion_radius = max(50.0, 200.0 / (2 ** depth))
+                explosion_damage = max(20.0, 100.0 / (2 ** depth))
+
+                # Deal damage
+                for b in balls:
+                    if getattr(b, "alive", False) and b != payload and getattr(b, "ball_type", None) != "spectator":
+                        dist = math.hypot(getattr(b, "x", 0) - px, getattr(b, "y", 0) - py)
+                        if dist <= explosion_radius:
+                            b.hp = getattr(b, "hp", 100.0) - explosion_damage
+                            if b.hp <= 0:
+                                b.alive = False
+                                if hasattr(world, "dead_balls"):
+                                    world.dead_balls.append(b)
+
+                if hasattr(world, "add_event"):
+                    world.add_event("visual_effect", {"type": "massive_explosion", "x": px, "y": py, "radius": explosion_radius})
+
+                # Spawn smaller payloads if depth < 3
+                if depth < 3:
+                    for i in range(4):
+                        angle = i * (math.pi / 2)
+                        offset = 30.0 / (2 ** depth)
+
+                        new_p = self.PayloadObj()
+                        new_p.ball_type = "payload"
+                        new_p.is_payload = True
+                        new_p.is_invulnerable = True
+                        new_p.speed = 0.0
+                        new_p.base_speed = 0.0
+                        new_p.damage = 0.0
+                        new_p.base_damage = 0.0
+                        new_p.max_hp = max(100.0, 10000.0 / (2 ** (depth + 1)))
+                        new_p.hp = new_p.max_hp
+                        new_p.x = px + math.cos(angle) * offset
+                        new_p.y = py + math.sin(angle) * offset
+                        new_p.alive = True
+                        new_p.team = "Neutral"
+                        new_p.radius = max(10.0, payload.radius / 2)
+                        new_p.depth = depth + 1
+                        new_p.timer = 15.0
+
+                        new_payloads.append(new_p)
+                continue
+
+            # Movement logic if not detonated
+            if getattr(payload, "hp", 5000.0) < 100.0:
+                payload.hp = payload.max_hp
+
+            red_count = 0
+            blue_count = 0
+
+            for b in balls:
+                if getattr(b, "is_payload", False) or not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+
+                dx = getattr(b, "x", 0) - px
+                dy = getattr(b, "y", 0) - py
+                dist = math.hypot(dx, dy)
+
+                push_radius = max(50.0, 150.0 / (2 ** depth))
+
+                if dist < push_radius:
+                    team = getattr(b, "team", "")
+                    if team == "Red":
+                        red_count += 1
+                    elif team == "Blue":
+                        blue_count += 1
+
+                    if team in ["Red", "Blue"]:
+                        max_hp_val = getattr(b, "max_hp", 100.0)
+                        current_hp = getattr(b, "hp", 100.0)
+                        heal_rate = max(5.0, 15.0 / (2 ** depth))
+                        if current_hp >= max_hp_val:
+                            b.shield = getattr(b, "shield", 0.0) + heal_rate * delta
+                        else:
+                            b.hp = min(max_hp_val, current_hp + heal_rate * delta)
+
+            move_speed = 50.0 * (1.2 ** depth) # smaller move faster
+
+            if red_count > blue_count:
+                speed_multiplier = 1.0 + ((red_count - 1) * 0.5)
+                payload.x += move_speed * delta * (red_count - blue_count) * speed_multiplier
+            elif blue_count > red_count:
+                speed_multiplier = 1.0 + ((blue_count - 1) * 0.5)
+                payload.x -= move_speed * delta * (blue_count - red_count) * speed_multiplier
+
+        if new_payloads:
+            balls.extend(new_payloads)
+            self.payloads.extend(new_payloads)
+
 GAME_MODES["rolling_boulders"] = RollingBouldersMode()
 GAME_MODES["soul_link"] = SoulLinkMode()
 
@@ -48887,3 +49064,5 @@ class ElectricDecoyLinkMode(GameMode):
 
 GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode()
+
+GAME_MODES["fractal_payload"] = FractalPayloadMode()
