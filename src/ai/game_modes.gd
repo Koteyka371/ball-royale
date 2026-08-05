@@ -77090,3 +77090,173 @@ GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode.new()
 
 GAME_MODES["fractal_payload"] = FractalPayloadMode.new()
+
+class CrimsonFogMode extends GameMode:
+	var fog_timer = 20.0
+	var fog_active = false
+	var fog_duration = 10.0
+
+	func _init():
+		name = "Crimson Fog"
+		description = "Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt."
+		fog_timer = 20.0
+		fog_active = false
+		fog_duration = 10.0
+
+	func setup(world, balls):
+		if super.has_method("setup"):
+			super.setup(world, balls)
+		fog_timer = 20.0
+		fog_active = false
+		fog_duration = 10.0
+		for b in balls:
+			if typeof(b) == TYPE_OBJECT:
+				b.set_meta("_crimson_fog_last_hp", b.hp if "hp" in b else 100.0)
+			elif typeof(b) == TYPE_DICTIONARY:
+				b["_crimson_fog_last_hp"] = b.get("hp", 100.0)
+
+	func tick(world, balls, delta=0.016):
+		if super.has_method("tick"):
+			super.tick(world, balls, delta)
+
+		if fog_active:
+			fog_duration -= delta
+			if fog_duration <= 0:
+				fog_active = false
+				fog_timer = 20.0
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("weather_end", {"type": "weather_end", "weather": "crimson_fog"})
+				elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world.events.append({"type": "weather_end", "weather": "crimson_fog"})
+				if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+					world.arena.is_foggy = false
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					world.arena["is_foggy"] = false
+		else:
+			fog_timer -= delta
+			if fog_timer <= 0:
+				fog_active = true
+				fog_duration = 10.0
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("weather_start", {"type": "weather_start", "weather": "crimson_fog"})
+				elif typeof(world) == TYPE_DICTIONARY and world.has("events"):
+					world.events.append({"type": "weather_start", "weather": "crimson_fog"})
+				if typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+					world.arena.is_foggy = true
+				elif typeof(world) == TYPE_DICTIONARY and world.has("arena"):
+					world.arena["is_foggy"] = true
+
+		if fog_active:
+			for b in balls:
+				var is_alive = true
+				if typeof(b) == TYPE_OBJECT and "alive" in b:
+					is_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b["alive"]
+
+				if not is_alive:
+					continue
+
+				var last_hp = 100.0
+				var current_hp = 100.0
+
+				if typeof(b) == TYPE_OBJECT:
+					if b.has_meta("_crimson_fog_last_hp"):
+						last_hp = b.get_meta("_crimson_fog_last_hp")
+					elif "hp" in b:
+						last_hp = b.hp
+					if "hp" in b:
+						current_hp = b.hp
+				elif typeof(b) == TYPE_DICTIONARY:
+					last_hp = b.get("_crimson_fog_last_hp", b.get("hp", 100.0))
+					current_hp = b.get("hp", 100.0)
+
+				var damage_taken = last_hp - current_hp
+
+				if damage_taken > 0:
+					var last_attacker_id = null
+					var last_hit_timer = 0.0
+
+					if typeof(b) == TYPE_OBJECT:
+						if b.has_meta("_last_hit_by_id"): last_attacker_id = b.get_meta("_last_hit_by_id")
+						elif "_last_hit_by_id" in b: last_attacker_id = b.get("_last_hit_by_id")
+
+						if b.has_meta("_last_hit_by_timer"): last_hit_timer = b.get_meta("_last_hit_by_timer")
+						elif "_last_hit_by_timer" in b: last_hit_timer = float(b.get("_last_hit_by_timer"))
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.has("_last_hit_by_id"): last_attacker_id = b["_last_hit_by_id"]
+						if b.has("_last_hit_by_timer"): last_hit_timer = float(b["_last_hit_by_timer"])
+
+					if last_attacker_id != null and last_hit_timer > 0:
+						for attacker in balls:
+							var att_id = null
+							var att_alive = true
+							if typeof(attacker) == TYPE_OBJECT:
+								if "id" in attacker: att_id = attacker.id
+								if "alive" in attacker: att_alive = attacker.alive
+							elif typeof(attacker) == TYPE_DICTIONARY:
+								if attacker.has("id"): att_id = attacker["id"]
+								if attacker.has("alive"): att_alive = attacker["alive"]
+
+							if att_id == last_attacker_id and att_alive:
+								var att_max_hp = 100.0
+								var att_hp = 100.0
+								if typeof(attacker) == TYPE_OBJECT:
+									if "max_hp" in attacker: att_max_hp = attacker.max_hp
+									if "hp" in attacker: att_hp = attacker.hp
+								elif typeof(attacker) == TYPE_DICTIONARY:
+									if attacker.has("max_hp"): att_max_hp = attacker["max_hp"]
+									if attacker.has("hp"): att_hp = attacker["hp"]
+
+								var new_hp = min(att_max_hp, att_hp + (damage_taken * 2.0))
+								if typeof(attacker) == TYPE_OBJECT:
+									attacker.hp = new_hp
+								elif typeof(attacker) == TYPE_DICTIONARY:
+									attacker["hp"] = new_hp
+
+								if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+									var ax = 0.0
+									var ay = 0.0
+									if typeof(attacker) == TYPE_OBJECT:
+										if "x" in attacker: ax = attacker.x
+										if "y" in attacker: ay = attacker.y
+									elif typeof(attacker) == TYPE_DICTIONARY:
+										if attacker.has("x"): ax = attacker["x"]
+										if attacker.has("y"): ay = attacker["y"]
+									world.add_event("lifesteal_proc", {"x": ax, "y": ay, "amount": damage_taken * 2.0})
+								break
+
+				var fog_damage = 5.0 * delta
+				if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+					b.take_damage(fog_damage)
+				else:
+					if typeof(b) == TYPE_OBJECT:
+						b.hp = max(0.0, b.hp - fog_damage)
+						if b.hp <= 0:
+							b.alive = false
+					elif typeof(b) == TYPE_DICTIONARY:
+						b["hp"] = max(0.0, b.get("hp", 100.0) - fog_damage)
+						if b["hp"] <= 0:
+							b["alive"] = false
+
+				if typeof(b) == TYPE_OBJECT:
+					b.set_meta("_crimson_fog_last_hp", b.hp if "hp" in b else 100.0)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["_crimson_fog_last_hp"] = b.get("hp", 100.0)
+		else:
+			for b in balls:
+				var is_alive = true
+				if typeof(b) == TYPE_OBJECT and "alive" in b:
+					is_alive = b.alive
+				elif typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b["alive"]
+
+				if not is_alive:
+					continue
+
+				if typeof(b) == TYPE_OBJECT:
+					b.set_meta("_crimson_fog_last_hp", b.hp if "hp" in b else 100.0)
+				elif typeof(b) == TYPE_DICTIONARY:
+					b["_crimson_fog_last_hp"] = b.get("hp", 100.0)
+
+GAME_MODES["crimson_fog"] = CrimsonFogMode.new()

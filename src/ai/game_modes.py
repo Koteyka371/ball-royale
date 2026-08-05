@@ -49110,3 +49110,82 @@ GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode()
 
 GAME_MODES["fractal_payload"] = FractalPayloadMode()
+
+class CrimsonFogMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crimson Fog"
+        self.description = "Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt."
+        self.fog_timer = 20.0
+        self.fog_active = False
+        self.fog_duration = 10.0
+
+    def setup(self, world, balls):
+        if hasattr(super(), 'setup'):
+            super().setup(world, balls)
+        self.fog_timer = 20.0
+        self.fog_active = False
+        self.fog_duration = 10.0
+        for b in balls:
+            b._crimson_fog_last_hp = getattr(b, "hp", 100.0)
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(super(), 'tick'):
+            super().tick(world, balls, delta)
+
+        if self.fog_active:
+            self.fog_duration -= delta
+            if self.fog_duration <= 0:
+                self.fog_active = False
+                self.fog_timer = 20.0
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_end", {"type": "weather_end", "weather": "crimson_fog"})
+                if hasattr(world, "arena"):
+                    world.arena.is_foggy = False
+        else:
+            self.fog_timer -= delta
+            if self.fog_timer <= 0:
+                self.fog_active = True
+                self.fog_duration = 10.0
+                if hasattr(world, "add_event"):
+                    world.add_event("weather_start", {"type": "weather_start", "weather": "crimson_fog"})
+                if hasattr(world, "arena"):
+                    world.arena.is_foggy = True
+
+        if self.fog_active:
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+
+                last_hp = getattr(b, "_crimson_fog_last_hp", getattr(b, "hp", 100.0))
+                current_hp = getattr(b, "hp", 100.0)
+
+                damage_taken = last_hp - current_hp
+
+                if damage_taken > 0:
+                    last_attacker_id = getattr(b, "_last_hit_by_id", None)
+                    if last_attacker_id is not None and getattr(b, "_last_hit_by_timer", 0.0) > 0:
+                        for attacker in balls:
+                            if getattr(attacker, "id", None) == last_attacker_id and getattr(attacker, "alive", True):
+                                attacker.hp = min(getattr(attacker, "max_hp", 100.0), getattr(attacker, "hp", 100.0) + (damage_taken * 2.0))
+                                if hasattr(world, "add_event"):
+                                    world.add_event("lifesteal_proc", {"x": attacker.x, "y": attacker.y, "amount": damage_taken * 2.0})
+                                break
+
+                fog_damage = 5.0 * delta
+                if hasattr(b, "take_damage"):
+                    b.take_damage(fog_damage)
+                else:
+                    b.hp = getattr(b, "hp", 100.0) - fog_damage
+                    if b.hp <= 0:
+                        b.hp = 0.0
+                        b.alive = False
+
+                b._crimson_fog_last_hp = getattr(b, "hp", 100.0)
+        else:
+            for b in balls:
+                if not getattr(b, "alive", True):
+                    continue
+                b._crimson_fog_last_hp = getattr(b, "hp", 100.0)
+
+GAME_MODES["crimson_fog"] = CrimsonFogMode()
