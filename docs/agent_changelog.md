@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1839] Gravity Shifters Mode — *2026-08-05 22:48:52 UTC*
+
+Players periodically swap gravity directions, altering physics unpredictably.
+
+---
+
 ## [idea-1835] Quantum Mirror Maze — *2026-08-05 22:48:48 UTC*
 
 A game mode where invisible mirror walls periodically shift, reflecting projectiles and player movement vectors.
