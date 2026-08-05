@@ -9503,6 +9503,44 @@ func execute(strategy: String, delta: float):
 		if "cryogenic_booster_timer" in self.ball: self.ball.cryogenic_booster_timer = new_c
 		elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("set_meta"): self.ball.set_meta("cryogenic_booster_timer", new_c)
 
+
+		if self.world != null and "balls" in self.world:
+			for other in self.world.balls:
+				var same_team = false
+				if "team" in other and "team" in self.ball and other.team == self.ball.team: same_team = true
+				elif typeof(other) == TYPE_DICTIONARY and other.has("team") and typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("team") and other["team"] == self.ball["team"]: same_team = true
+
+				var alive = true
+				if "alive" in other: alive = other.alive
+				elif typeof(other) == TYPE_DICTIONARY and other.has("alive"): alive = other["alive"]
+
+				if not same_team and alive:
+					var ox = 0.0
+					if "x" in other: ox = other.x
+					elif typeof(other) == TYPE_DICTIONARY and other.has("x"): ox = other["x"]
+					var oy = 0.0
+					if "y" in other: oy = other.y
+					elif typeof(other) == TYPE_DICTIONARY and other.has("y"): oy = other["y"]
+
+					var bx = 0.0
+					if "x" in self.ball: bx = self.ball.x
+					elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): bx = self.ball["x"]
+					var by = 0.0
+					if "y" in self.ball: by = self.ball.y
+					elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): by = self.ball["y"]
+
+					var dist_sq = (ox - bx)*(ox - bx) + (oy - by)*(oy - by)
+					if dist_sq <= 40000.0:
+						var current_temp = 20.0
+						if "internal_temperature" in other: current_temp = float(other.internal_temperature)
+						elif typeof(other) == TYPE_OBJECT and other.has_method("get_meta") and other.has_meta("internal_temperature"): current_temp = float(other.get_meta("internal_temperature"))
+						elif typeof(other) == TYPE_DICTIONARY and other.has("internal_temperature"): current_temp = float(other["internal_temperature"])
+
+						var new_temp = current_temp - 50.0 * delta
+
+						if "internal_temperature" in other: other.internal_temperature = new_temp
+						elif typeof(other) == TYPE_OBJECT and other.has_method("set_meta"): other.set_meta("internal_temperature", new_temp)
+						elif typeof(other) == TYPE_DICTIONARY: other["internal_temperature"] = new_temp
 	var cryo_leak_t = 0.0
 	if "cryogenic_leak_timer" in self.ball: cryo_leak_t = float(self.ball.cryogenic_leak_timer)
 	elif typeof(self.ball) != TYPE_DICTIONARY and self.ball.has_method("get_meta") and self.ball.has_meta("cryogenic_leak_timer"): cryo_leak_t = float(self.ball.get_meta("cryogenic_leak_timer"))
@@ -34618,8 +34656,13 @@ func _collect_booster(delta: float):
 			elif "kind" in nearest and nearest.kind == "cryogenic_booster":
 				if typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
 					self.ball.set_meta("cryogenic_booster_timer", 10.0)
+					self.ball.set_meta("shield_booster_active", true)
+				elif typeof(self.ball) == TYPE_DICTIONARY:
+					self.ball["cryogenic_booster_timer"] = 10.0
+					self.ball["shield_booster_active"] = true
 				else:
 					self.ball.cryogenic_booster_timer = 10.0
+					self.ball.shield_booster_active = true
 
 				if typeof(self.world) == TYPE_DICTIONARY and self.world.has("arena") and typeof(self.world.arena) == TYPE_DICTIONARY and self.world.arena.has("hazards"):
 					var h_idx = self.world.arena.hazards.find(nearest)
