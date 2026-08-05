@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1747] Laser Reflector Shield Booster — *2026-08-05 12:44:32 UTC*
+
+A new temporary booster that surrounds the player with a mirror shield. Instead of taking damage from laser-based hazards and traps, the player reflects them, turning the hazard into a weapon against enemies.
+
+---
+
 ## [idea-1804] Cryogenic Shield Booster — *2026-08-05 11:28:20 UTC*
 
 A booster that not only provides a shield but also emits a freezing aura, rapidly reducing the internal temperature of nearby enemy balls.
