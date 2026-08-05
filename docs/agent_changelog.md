@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1814] Interactive Match Betting — *2026-08-05 02:58:28 UTC*
+
+Allow viewers to type '!bet <ball_id> <amount>' to wager their prestige points or skill points on a specific ball winning the match. If the ball wins, the viewer earns a multiplier based on the underdog odds.
+
+---
+
 ## [idea-1812] Escort Decoys — *2026-08-05 02:13:46 UTC*
 
 Defenders can spawn decoy payloads in EscortMode that mimic the visuals of the real payload, designed to lure attackers away from the main objective.
