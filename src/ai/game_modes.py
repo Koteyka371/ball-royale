@@ -49203,3 +49203,97 @@ class ColorSwapTeamMode(GameMode):
                 world.events.append({"type": "color_swap", "message": "Teams swapped colors!"})
 
 GAME_MODES["color_swap_team"] = ColorSwapTeamMode()
+
+class WindFunnelsMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Wind Funnels"
+        self.description = "Stationary wind funnels shoot out air constantly in one direction, significantly speeding up balls that enter the stream."
+        self.funnels = []
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        import math
+        self.funnels = []
+        arena_width = getattr(world.arena, "width", 1500.0)
+        arena_height = getattr(world.arena, "height", 1000.0)
+
+        # Create 3-5 funnels
+        num_funnels = random.randint(3, 5)
+        for _ in range(num_funnels):
+            x1 = random.uniform(100, arena_width - 100)
+            y1 = random.uniform(100, arena_height - 100)
+            angle = random.uniform(0, 2 * math.pi)
+            length = random.uniform(300, 600)
+            x2 = x1 + math.cos(angle) * length
+            y2 = y1 + math.sin(angle) * length
+
+            # width is the radius of the funnel effect
+            width = random.uniform(40, 80)
+            force = random.uniform(800, 1500)
+
+            self.funnels.append({
+                "x1": x1, "y1": y1,
+                "x2": x2, "y2": y2,
+                "width": width,
+                "force": force,
+                "dir_x": math.cos(angle),
+                "dir_y": math.sin(angle),
+                "length_sq": length * length
+            })
+
+            if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                class FallbackFunnelHazard:
+                    pass
+                f = type('FunnelHazard', (), {})()
+                f.id = "funnel_" + str(random.randint(10000, 99999))
+                f.kind = "wind_funnel_hazard"
+                f.x = x1
+                f.y = y1
+                f.start_x = x1
+                f.start_y = y1
+                f.end_x = x2
+                f.end_y = y2
+                f.radius = width
+                f.wind_force = force
+                f.wind_dir_x = math.cos(angle)
+                f.wind_dir_y = math.sin(angle)
+                world.arena.hazards.append(f)
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float) -> None:
+        super().tick(world, balls, delta)
+        import math
+        import random
+        for b in balls:
+            if not getattr(b, "alive", False): continue
+
+            # Check if ball is in any funnel
+            for f in self.funnels:
+                ax, ay = f["x1"], f["y1"]
+                bx, by = f["x2"], f["y2"]
+                l2 = f["length_sq"]
+                if l2 == 0: continue
+
+                # Projection of b onto line AB
+                px, py = b.x, b.y
+                t = max(0.0, min(1.0, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+                proj_x = ax + t * (bx - ax)
+                proj_y = ay + t * (by - ay)
+
+                dist_sq = (px - proj_x)**2 + (py - proj_y)**2
+                rad = getattr(b, "radius", 10.0)
+                if dist_sq <= (f["width"] + rad)**2:
+                    # Inside funnel, apply force
+                    # Wind tunnels provide significant speed up
+                    if hasattr(b, "vx"): b.vx += f["dir_x"] * f["force"] * delta
+                    if hasattr(b, "vy"): b.vy += f["dir_y"] * f["force"] * delta
+
+                    # Optional: apply visual effect event
+                    if hasattr(world, "events") and random.random() < 0.1:
+                        world.events.append({
+                            "type": "wind_funnel_boost",
+                            "data": {"x": b.x, "y": b.y}
+                        })
+
+GAME_MODES["wind_funnels"] = WindFunnelsMode()

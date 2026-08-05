@@ -77213,3 +77213,105 @@ GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode.new()
 
 GAME_MODES["fractal_payload"] = FractalPayloadMode.new()
+class WindFunnelsMode extends GameMode:
+	var funnels = []
+
+	func _init() -> void:
+		name = "Wind Funnels"
+		description = "Stationary wind funnels shoot out air constantly in one direction, significantly speeding up balls that enter the stream."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		funnels.clear()
+
+		var arena_width = 1500.0
+		var arena_height = 1000.0
+		if "arena" in world:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var num_funnels = randi() % 3 + 3
+		for i in range(num_funnels):
+			var x1 = randf_range(100.0, arena_width - 100.0)
+			var y1 = randf_range(100.0, arena_height - 100.0)
+			var angle = randf_range(0.0, 2.0 * PI)
+			var length = randf_range(300.0, 600.0)
+			var x2 = x1 + cos(angle) * length
+			var y2 = y1 + sin(angle) * length
+
+			var width = randf_range(40.0, 80.0)
+			var force = randf_range(800.0, 1500.0)
+
+			funnels.append({
+				"x1": x1, "y1": y1,
+				"x2": x2, "y2": y2,
+				"width": width,
+				"force": force,
+				"dir_x": cos(angle),
+				"dir_y": sin(angle),
+				"length_sq": length * length
+			})
+
+			if "arena" in world and "hazards" in world.arena:
+				var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+				if ProceduralArena != null:
+					var h_id = 25000 + world.arena.hazards.size() + (randi() % 10000)
+					var f = ProceduralArena.Hazard.new(h_id, x1, y1, width, "wind_funnel_hazard", 0.0)
+					f.set_meta("start_x", x1)
+					f.set_meta("start_y", y1)
+					f.set_meta("end_x", x2)
+					f.set_meta("end_y", y2)
+					f.set_meta("wind_force", force)
+					f.set_meta("wind_dir_x", cos(angle))
+					f.set_meta("wind_dir_y", sin(angle))
+					world.arena.hazards.append(f)
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+		for b in balls:
+			var is_alive = false
+			if typeof(b) == TYPE_DICTIONARY and "alive" in b: is_alive = b.alive
+			elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+			if not is_alive: continue
+
+			var px = 0.0
+			var py = 0.0
+			if typeof(b) == TYPE_DICTIONARY:
+				if "x" in b: px = b.x
+				if "y" in b: py = b.y
+			else:
+				if "x" in b: px = b.x
+				if "y" in b: py = b.y
+
+			var b_rad = 10.0
+			if typeof(b) == TYPE_DICTIONARY and "radius" in b: b_rad = b.radius
+			elif typeof(b) == TYPE_OBJECT and "radius" in b: b_rad = b.radius
+
+			for f in funnels:
+				var ax = f["x1"]
+				var ay = f["y1"]
+				var bx = f["x2"]
+				var by = f["y2"]
+				var l2 = f["length_sq"]
+				if l2 == 0: continue
+
+				var t = max(0.0, min(1.0, ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / l2))
+				var proj_x = ax + t * (bx - ax)
+				var proj_y = ay + t * (by - ay)
+
+				var dist_sq = (px - proj_x)*(px - proj_x) + (py - proj_y)*(py - proj_y)
+				if dist_sq <= (f["width"] + b_rad)*(f["width"] + b_rad):
+					if typeof(b) == TYPE_DICTIONARY:
+						if "vx" in b: b["vx"] += f["dir_x"] * f["force"] * delta
+						if "vy" in b: b["vy"] += f["dir_y"] * f["force"] * delta
+					else:
+						if "vx" in b: b.vx += f["dir_x"] * f["force"] * delta
+						if "vy" in b: b.vy += f["dir_y"] * f["force"] * delta
+
+					if randf() < 0.1 and "events" in world:
+						world.events.append({
+							"type": "wind_funnel_boost",
+							"data": {"x": px, "y": py}
+						})
+
+GAME_MODES["wind_funnels"] = WindFunnelsMode.new()
