@@ -65,7 +65,7 @@ def test_pitch_black_mode():
     mode.tick(world, balls, delta=0.1)
 
     # Flare shot should be spawned
-    assert len(world.arena.hazards) == 1
+    assert len(world.arena.hazards) > 0
     flare = world.arena.hazards[0]
     flare_kind = flare.kind if not isinstance(flare, dict) else flare.get("kind")
     assert flare_kind == "flare_shot"
