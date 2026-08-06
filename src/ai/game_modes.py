@@ -36566,7 +36566,120 @@ class HealingRainMode(GameMode):
                         if hasattr(b, 'base_speed'):
                             b.speed = b.base_speed
 
+class HexedAltarMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Hexed Altar"
+        self.description = "An altar that occasionally applies negative modifiers to players trying to capture it."
+        self.altar = None
+        self.winning_team = None
+
+    def setup(self, world, balls=None):
+        if hasattr(super(), "setup"):
+            try:
+                super().setup(world, balls)
+            except TypeError:
+                try:
+                    super().setup(world)
+                except Exception:
+                    pass
+        arena_w = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        arena_h = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") and world.arena else 1000.0
+        self.altar = {
+            "x": arena_w * 0.5,
+            "y": arena_h * 0.5,
+            "radius": 150.0,
+            "capture_progress": 0.0,
+            "owner": None,
+            "pulse_timer": 3.0
+        }
+        self.winning_team = None
+
+    def tick(self, world, delta: float=None, balls=None) -> None:
+        if delta is None and isinstance(world, (int, float)):
+            delta = world
+            world = None
+        if balls is None and hasattr(world, 'balls'):
+            balls = world.balls
+        try:
+            super().tick(world, delta)
+        except TypeError:
+            try:
+                super().tick(world, balls, delta)
+            except Exception:
+                pass
+
+        if not self.altar or self.winning_team:
+            return
+
+        import math
+
+        self.altar["pulse_timer"] -= delta
+        pulse_now = False
+        if self.altar["pulse_timer"] <= 0.0:
+            self.altar["pulse_timer"] = 3.0
+            pulse_now = True
+
+        team_counts = {}
+        balls_in_radius = []
+        for b in balls:
+            if not getattr(b, "alive", False):
+                continue
+            bx = getattr(b, "x", 0.0)
+            by = getattr(b, "y", 0.0)
+            br = getattr(b, "radius", 10.0)
+
+            dist = math.hypot(bx - self.altar["x"], by - self.altar["y"])
+            if dist <= self.altar["radius"] + br:
+                balls_in_radius.append(b)
+                team = getattr(b, "team", None)
+                if team:
+                    team_counts[team] = team_counts.get(team, 0) + 1
+
+        # Apply occasional negative modifiers (pulse)
+        if pulse_now:
+            for b in balls_in_radius:
+                if hasattr(b, "hp"):
+                    b.hp = max(1.0, b.hp - 10.0)
+                if hasattr(b, "speed"):
+                    b.speed = max(10.0, b.speed * 0.8)
+
+        if not team_counts:
+            # Decay capture progress if empty
+            if self.altar["capture_progress"] > 0:
+                self.altar["capture_progress"] = max(0.0, self.altar["capture_progress"] - 5.0 * delta)
+                if self.altar["capture_progress"] == 0:
+                    self.altar["owner"] = None
+            return
+
+        # Find dominant team
+        max_count = 0
+        max_team = None
+        tie = False
+        for t, count in team_counts.items():
+            if count > max_count:
+                max_count = count
+                max_team = t
+                tie = False
+            elif count == max_count:
+                tie = True
+
+        if not tie and max_team:
+            if self.altar["owner"] == max_team:
+                self.altar["capture_progress"] = min(100.0, self.altar["capture_progress"] + 10.0 * delta)
+                if self.altar["capture_progress"] >= 100.0:
+                    self.winning_team = max_team
+            else:
+                self.altar["capture_progress"] -= 10.0 * delta
+                if self.altar["capture_progress"] <= 0:
+                    self.altar["capture_progress"] = 0.0
+                    self.altar["owner"] = max_team
+        else:
+            # Tie, no progress
+            pass
+
 GAME_MODES = {
+    'hexed_altar': HexedAltarMode(),
     'healing_rain': HealingRainMode(),
     "boss_escort": BossEscortMode(),
     "toxic_fog_event": ToxicFogEventMode(),

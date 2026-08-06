@@ -59195,7 +59195,149 @@ class HealingRainMode extends GameMode:
 							b.set("speed", base_speed)
 							b.set_meta("_healing_rain_slowed", false)
 
+class HexedAltarMode extends GameMode:
+	var altar = null
+	var winning_team = null
+
+	func _init():
+		self.name = "Hexed Altar"
+		self.description = "An altar that occasionally applies negative modifiers to players trying to capture it."
+		self.altar = null
+		self.winning_team = null
+
+	func setup(world, balls=null) -> void:
+		pass
+
+		var arena_w = 1000.0
+		var arena_h = 1000.0
+
+		if typeof(world) == TYPE_DICTIONARY:
+			if world.has("arena"):
+				arena_w = world["arena"].get("width", 1000.0)
+				arena_h = world["arena"].get("height", 1000.0)
+		elif typeof(world) == TYPE_OBJECT:
+			if "arena" in world:
+				arena_w = world.arena.get("width", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else float(world.arena.width)
+				arena_h = world.arena.get("height", 1000.0) if typeof(world.arena) == TYPE_DICTIONARY else float(world.arena.height)
+
+		self.altar = {
+			"x": arena_w * 0.5,
+			"y": arena_h * 0.5,
+			"radius": 150.0,
+			"capture_progress": 0.0,
+			"owner": null,
+			"pulse_timer": 3.0
+		}
+		self.winning_team = null
+
+	func tick(world, delta: float, balls=null) -> void:
+		# Super tick depends on definition, let's skip to logic
+		if typeof(world) == TYPE_OBJECT and world.has_method("tick"):
+			pass
+
+		if self.altar == null or self.winning_team != null:
+			return
+
+		self.altar["pulse_timer"] -= delta
+		var pulse_now = false
+		if self.altar["pulse_timer"] <= 0.0:
+			self.altar["pulse_timer"] = 3.0
+			pulse_now = true
+
+		var balls_to_process = balls
+		if balls == null:
+			if typeof(world) == TYPE_DICTIONARY and world.has("balls"):
+				balls_to_process = world["balls"]
+			elif typeof(world) == TYPE_OBJECT and "balls" in world:
+				balls_to_process = world.balls
+
+		if balls_to_process == null:
+			return
+
+		var team_counts = {}
+		var balls_in_radius = []
+
+		for b in balls_to_process:
+			var alive = false
+			var bx = 0.0
+			var by = 0.0
+			var br = 10.0
+			var team = null
+
+			if typeof(b) == TYPE_DICTIONARY:
+				alive = b.get("alive", false)
+				bx = float(b.get("x", 0.0))
+				by = float(b.get("y", 0.0))
+				br = float(b.get("radius", 10.0))
+				team = b.get("team", null)
+			else:
+				alive = b.get("alive") if "alive" in b else false
+				bx = float(b.get("x") if "x" in b else 0.0)
+				by = float(b.get("y") if "y" in b else 0.0)
+				br = float(b.get("radius") if "radius" in b else 10.0)
+				team = b.get("team") if "team" in b else null
+
+			if not alive:
+				continue
+
+			var dx = bx - self.altar["x"]
+			var dy = by - self.altar["y"]
+			var dist = sqrt(dx*dx + dy*dy)
+
+			if dist <= float(self.altar["radius"]) + br:
+				balls_in_radius.append(b)
+				if team != null:
+					if team_counts.has(team):
+						team_counts[team] += 1
+					else:
+						team_counts[team] = 1
+
+		if pulse_now:
+			for b in balls_in_radius:
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("hp"):
+						b["hp"] = max(1.0, float(b["hp"]) - 10.0)
+					if b.has("speed"):
+						b["speed"] = max(10.0, float(b["speed"]) * 0.8)
+				else:
+					if "hp" in b:
+						b.hp = max(1.0, float(b.hp) - 10.0)
+					if "speed" in b:
+						b.speed = max(10.0, float(b.speed) * 0.8)
+
+		if team_counts.is_empty():
+			if float(self.altar["capture_progress"]) > 0.0:
+				self.altar["capture_progress"] = max(0.0, float(self.altar["capture_progress"]) - 5.0 * delta)
+				if float(self.altar["capture_progress"]) == 0.0:
+					self.altar["owner"] = null
+			return
+
+		var max_count = 0
+		var max_team = null
+		var tie = false
+
+		for t in team_counts.keys():
+			var count = team_counts[t]
+			if count > max_count:
+				max_count = count
+				max_team = t
+				tie = false
+			elif count == max_count:
+				tie = true
+
+		if not tie and max_team != null:
+			if self.altar["owner"] == max_team:
+				self.altar["capture_progress"] = min(100.0, float(self.altar["capture_progress"]) + 10.0 * delta)
+				if float(self.altar["capture_progress"]) >= 100.0:
+					self.winning_team = max_team
+			else:
+				self.altar["capture_progress"] = float(self.altar["capture_progress"]) - 10.0 * delta
+				if float(self.altar["capture_progress"]) <= 0.0:
+					self.altar["capture_progress"] = 0.0
+					self.altar["owner"] = max_team
+
 var GAME_MODES = {
+	"hexed_altar": HexedAltarMode.new(),
 	"healing_rain": HealingRainMode.new(),
 	"color_swap_team": ColorSwapTeamMode.new(),
 	"extreme_microclimate": ExtremeMicroclimateMode.new(),
