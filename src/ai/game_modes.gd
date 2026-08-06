@@ -78507,3 +78507,183 @@ class GhostOrbMode extends GameMode:
 							b.set_meta('stamina', new_stamina)
 
 GAME_MODES["ghost_orb"] = GhostOrbMode.new()
+
+
+class SuperVortexMode extends GameMode:
+	var bhs = []
+	var phase = "split"
+	var phase_timer = 0.0
+	var split_duration = 15.0
+	var merged_duration = 5.0
+	var small_bh_radius = 40.0
+	var super_bh_radius = 120.0
+	var small_pull = 100.0
+	var super_pull = 400.0
+
+	func _init():
+		self.name = "Super Vortex"
+		self.description = "Multiple black holes roam the arena and periodically merge into a massive super-vortex at the center."
+
+	func setup(world, balls):
+		super.setup(world, balls)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+			if world["arena"].has("width"):
+				arena_width = world["arena"]["width"]
+			if world["arena"].has("height"):
+				arena_height = world["arena"]["height"]
+
+		self.bhs = [
+			{"x": arena_width * 0.25, "y": arena_height * 0.25, "vx": 100.0, "vy": 150.0},
+			{"x": arena_width * 0.75, "y": arena_height * 0.25, "vx": -150.0, "vy": 100.0},
+			{"x": arena_width * 0.5, "y": arena_height * 0.75, "vx": 120.0, "vy": -120.0}
+		]
+		self.phase = "split"
+		self.phase_timer = self.split_duration
+
+	func tick(world, balls, delta=0.016):
+		super.tick(world, balls, delta)
+		var arena_width = 1000.0
+		var arena_height = 1000.0
+		if world != null and typeof(world) == TYPE_OBJECT and "arena" in world and world.arena != null:
+			if "width" in world.arena:
+				arena_width = world.arena.width
+			if "height" in world.arena:
+				arena_height = world.arena.height
+		elif typeof(world) == TYPE_DICTIONARY and world.has("arena") and typeof(world["arena"]) == TYPE_DICTIONARY:
+			if world["arena"].has("width"):
+				arena_width = world["arena"]["width"]
+			if world["arena"].has("height"):
+				arena_height = world["arena"]["height"]
+
+		var cx = arena_width / 2.0
+		var cy = arena_height / 2.0
+
+		self.phase_timer -= delta
+		if self.phase_timer <= 0:
+			if self.phase == "split":
+				self.phase = "merged"
+				self.phase_timer = self.merged_duration
+			else:
+				self.phase = "split"
+				self.phase_timer = self.split_duration
+
+		if self.phase == "split":
+			for bh in self.bhs:
+				bh["x"] += bh["vx"] * delta
+				bh["y"] += bh["vy"] * delta
+
+				if bh["x"] - self.small_bh_radius < 0:
+					bh["x"] = self.small_bh_radius
+					bh["vx"] *= -1
+				elif bh["x"] + self.small_bh_radius > arena_width:
+					bh["x"] = arena_width - self.small_bh_radius
+					bh["vx"] *= -1
+
+				if bh["y"] - self.small_bh_radius < 0:
+					bh["y"] = self.small_bh_radius
+					bh["vy"] *= -1
+				elif bh["y"] + self.small_bh_radius > arena_height:
+					bh["y"] = arena_height - self.small_bh_radius
+					bh["vy"] *= -1
+
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b["alive"]
+				elif typeof(b) == TYPE_OBJECT and "alive" in b:
+					is_alive = b.alive
+
+				if not is_alive:
+					continue
+
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+					b_type = b["ball_type"]
+				elif typeof(b) == TYPE_OBJECT and "ball_type" in b:
+					b_type = b.ball_type
+
+				if b_type == "spectator":
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b["x"]
+					if b.has("y"): by = b["y"]
+				else:
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+
+				for bh in self.bhs:
+					var dx = bh["x"] - bx
+					var dy = bh["y"] - by
+					var dist = sqrt(dx * dx + dy * dy)
+					if dist > 0 and dist < 400.0:
+						var pull = self.small_pull * (1.0 - dist / 400.0)
+						if typeof(b) == TYPE_DICTIONARY:
+							if not b.has("vx"): b["vx"] = 0.0
+							if not b.has("vy"): b["vy"] = 0.0
+							b["vx"] += (dx / dist) * pull * delta
+							b["vy"] += (dy / dist) * pull * delta
+						else:
+							if not "vx" in b: b.vx = 0.0
+							if not "vy" in b: b.vy = 0.0
+							b.vx += (dx / dist) * pull * delta
+							b.vy += (dy / dist) * pull * delta
+
+		elif self.phase == "merged":
+			for b in balls:
+				var is_alive = false
+				if typeof(b) == TYPE_DICTIONARY and b.has("alive"):
+					is_alive = b["alive"]
+				elif typeof(b) == TYPE_OBJECT and "alive" in b:
+					is_alive = b.alive
+
+				if not is_alive:
+					continue
+
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY and b.has("ball_type"):
+					b_type = b["ball_type"]
+				elif typeof(b) == TYPE_OBJECT and "ball_type" in b:
+					b_type = b.ball_type
+
+				if b_type == "spectator":
+					continue
+
+				var bx = 0.0
+				var by = 0.0
+				if typeof(b) == TYPE_DICTIONARY:
+					if b.has("x"): bx = b["x"]
+					if b.has("y"): by = b["y"]
+				else:
+					if "x" in b: bx = b.x
+					if "y" in b: by = b.y
+
+				var dx = cx - bx
+				var dy = cy - by
+				var dist = sqrt(dx * dx + dy * dy)
+				if dist > 0:
+					var dist_ratio = dist / 800.0
+					if dist_ratio > 1.0:
+						dist_ratio = 1.0
+					var pull = self.super_pull * (1.0 - dist_ratio)
+					if typeof(b) == TYPE_DICTIONARY:
+						if not b.has("vx"): b["vx"] = 0.0
+						if not b.has("vy"): b["vy"] = 0.0
+						b["vx"] += (dx / dist) * pull * delta
+						b["vy"] += (dy / dist) * pull * delta
+					else:
+						if not "vx" in b: b.vx = 0.0
+						if not "vy" in b: b.vy = 0.0
+						b.vx += (dx / dist) * pull * delta
+						b.vy += (dy / dist) * pull * delta
+
+GAME_MODES["super_vortex"] = SuperVortexMode.new()
