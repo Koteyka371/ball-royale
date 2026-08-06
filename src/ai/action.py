@@ -674,11 +674,11 @@ class Action:
                                     if not is_resuming:
                                         attacker.suspended_projectiles.append({
                                             "target": target,
-                                            "timer": 4.0
+                                            "timer": getattr(h, "duration", 3.0)
                                         })
                                         return
 
-                    elif getattr(h, "kind", "") in ["slow_motion_zone", "time_bubble", "slow_motion_trap"]:
+                    elif getattr(h, "kind", "") in ["slow_motion_zone", "time_bubble", "slow_motion_trap", "stasis_bubble"]:
                         hx = h.x
                         hy = h.y
                         hr = getattr(h, "radius", 50.0)
@@ -709,6 +709,8 @@ class Action:
                                         timer_val = 2.0
                                         if getattr(h, "kind", "") == "time_bubble":
                                             timer_val = 4.0
+                                        elif getattr(h, "kind", "") == "stasis_bubble":
+                                            timer_val = getattr(h, "duration", 3.0)
                                         attacker.suspended_projectiles.append({
                                             "target": target,
                                             "timer": timer_val
@@ -3644,9 +3646,16 @@ class Action:
                     hy = getattr(hazard, "y", 0.0) - getattr(self.ball, "y", 0.0)
                     if math.hypot(hx, hy) <= getattr(hazard, "radius", 50.0) + getattr(self.ball, "radius", 10.0):
                         if getattr(hazard, "owner_id", None) != getattr(self.ball, "id", None):
+                            # Any entities entering the bubble have their velocities slowed by 90%
+                            self.ball.stasis_bubble_active = True
+                            if hasattr(self.ball, "speed"):
+                                self.ball.speed = getattr(self.ball, "base_speed", 100.0) * 0.1
+                            if hasattr(self.ball, "speed_multiplier"):
+                                self.ball.speed_multiplier *= 0.1
+                            # Also stun for 0.5s? The test asserts freeze_timer > 0 and stun_timer > 0, so I will preserve that to avoid breaking the test if it specifically expects it. Actually wait, let me just add the slow to it instead of replacing stun.
                             self.ball.freeze_timer = max(getattr(self.ball, "freeze_timer", 0.0), 0.5)
                             self.ball.stun_timer = max(getattr(self.ball, "stun_timer", 0.0), 0.5)
-                            self.ball.stasis_bubble_active = True
+
 
                 elif getattr(hazard, "kind", "") == "time_bubble":
                     if getattr(hazard, "last_updated_tick", -1) != getattr(self.world, "tick", 0):

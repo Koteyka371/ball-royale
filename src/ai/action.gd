@@ -1297,7 +1297,7 @@ func _attempt_damage_internal(attacker, target) -> void:
 							if new_hp <= 0:
 								h.set_meta("active", false)
 					return
-			elif h_kind == "slow_motion_zone" or h_kind == "time_bubble" or h_kind == "slow_motion_trap":
+			elif h_kind == "slow_motion_zone" or h_kind == "time_bubble" or h_kind == "slow_motion_trap" or h_kind == "stasis_bubble":
 				var hx = float(h.x if "x" in h else h.get_meta("x"))
 				var hy = float(h.y if "y" in h else h.get_meta("y"))
 				var hr = float(h.radius if "radius" in h else (h.get_meta("radius") if h.has_meta("radius") else 50.0))
@@ -1334,6 +1334,15 @@ func _attempt_damage_internal(attacker, target) -> void:
 								var timer_val = 2.0
 								if h_kind == "time_bubble":
 									timer_val = 4.0
+								elif h_kind == "stasis_bubble":
+									if typeof(h) == TYPE_DICTIONARY and h.has("duration"):
+										timer_val = float(h.get("duration", 3.0))
+									elif "duration" in h:
+										timer_val = float(h.duration)
+									elif h.has_method("get_meta") and h.has_meta("duration"):
+										timer_val = float(h.get_meta("duration"))
+									else:
+										timer_val = 3.0
 								sus_proj.append({
 									"target": target,
 									"timer": timer_val
@@ -7463,17 +7472,20 @@ func execute(strategy: String, delta: float):
 		self.ball["fast_motion_zone_active"] = false
 		self.ball["time_bubble_active"] = false
 		self.ball["overdrive_zone_active"] = false
+		self.ball["stasis_bubble_active"] = false
 	else:
 		if self.ball.has_method("set_meta"):
 			self.ball.set_meta("slow_motion_zone_active", false)
 			self.ball.set_meta("fast_motion_zone_active", false)
 			self.ball.set_meta("time_bubble_active", false)
 			self.ball.set_meta("overdrive_zone_active", false)
+			self.ball.set_meta("stasis_bubble_active", false)
 		else:
 			self.ball.slow_motion_zone_active = false
 			self.ball.fast_motion_zone_active = false
 			self.ball.time_bubble_active = false
 			self.ball.overdrive_zone_active = false
+			self.ball.stasis_bubble_active = false
 
 	if typeof(self.ball) == TYPE_DICTIONARY:
 		c_active = self.ball.get("charging_shockwave_shield_active", false)
@@ -8213,6 +8225,66 @@ func execute(strategy: String, delta: float):
 								self.ball.set_meta("speed_multiplier", cur_speed_mult * 0.25)
 							else:
 								self.ball.speed_multiplier = cur_speed_mult * 0.25
+
+				if kind == "stasis_bubble":
+					var hx = hazard.x if "x" in hazard else (hazard["x"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("x"))
+					var hy = hazard.y if "y" in hazard else (hazard["y"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("y"))
+					var h_rad = hazard.radius if "radius" in hazard else (hazard["radius"] if typeof(hazard) == TYPE_DICTIONARY else (hazard.get_meta("radius") if hazard.has_method("get_meta") and hazard.has_meta("radius") else 50.0))
+					var h_owner = hazard.owner_id if "owner_id" in hazard else (hazard["owner_id"] if typeof(hazard) == TYPE_DICTIONARY else (hazard.get_meta("owner_id") if hazard.has_method("get_meta") and hazard.has_meta("owner_id") else null))
+					var dx = hx - (self.ball["x"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.x)
+					var dy = hy - (self.ball["y"] if typeof(self.ball) == TYPE_DICTIONARY else self.ball.y)
+					var dist = sqrt(dx*dx + dy*dy)
+					var b_rad = self.ball["radius"] if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.radius if "radius" in self.ball else 10.0)
+					if dist <= h_rad + b_rad:
+						var b_id = self.ball["id"] if typeof(self.ball) == TYPE_DICTIONARY else (self.ball.id if "id" in self.ball else null)
+						if h_owner != b_id:
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["stasis_bubble_active"] = true
+							else:
+								if self.ball.has_method("set_meta"): self.ball.set_meta("stasis_bubble_active", true)
+								elif "stasis_bubble_active" in self.ball: self.ball.stasis_bubble_active = true
+
+							var cur_base_speed = 100.0
+							if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("base_speed"): cur_base_speed = self.ball["base_speed"]
+							elif typeof(self.ball) == TYPE_OBJECT and "base_speed" in self.ball: cur_base_speed = self.ball.base_speed
+
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["speed"] = cur_base_speed * 0.1
+							else:
+								if self.ball.has_method("set_meta"): self.ball.set_meta("speed", cur_base_speed * 0.1)
+								elif "speed" in self.ball: self.ball.speed = cur_base_speed * 0.1
+
+							var cur_speed_mult = 1.0
+							if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("speed_multiplier"): cur_speed_mult = self.ball["speed_multiplier"]
+							elif typeof(self.ball) == TYPE_OBJECT and "speed_multiplier" in self.ball: cur_speed_mult = self.ball.speed_multiplier
+
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								self.ball["speed_multiplier"] = cur_speed_mult * 0.1
+							else:
+								if self.ball.has_method("set_meta"): self.ball.set_meta("speed_multiplier", cur_speed_mult * 0.1)
+								elif "speed_multiplier" in self.ball: self.ball.speed_multiplier = cur_speed_mult * 0.1
+
+							var f_time = 0.5
+							var s_time = 0.5
+							if typeof(self.ball) == TYPE_DICTIONARY:
+								if self.ball.get("freeze_timer", 0.0) > 0.5: f_time = self.ball.get("freeze_timer", 0.0)
+								if self.ball.get("stun_timer", 0.0) > 0.5: s_time = self.ball.get("stun_timer", 0.0)
+								self.ball["freeze_timer"] = f_time
+								self.ball["stun_timer"] = s_time
+							else:
+								if self.ball.has_method("get_meta"):
+									if self.ball.has_meta("freeze_timer") and self.ball.get_meta("freeze_timer") > 0.5: f_time = self.ball.get_meta("freeze_timer")
+									if self.ball.has_meta("stun_timer") and self.ball.get_meta("stun_timer") > 0.5: s_time = self.ball.get_meta("stun_timer")
+								elif "freeze_timer" in self.ball:
+									if self.ball.freeze_timer > 0.5: f_time = self.ball.freeze_timer
+									if self.ball.stun_timer > 0.5: s_time = self.ball.stun_timer
+
+								if self.ball.has_method("set_meta"):
+									self.ball.set_meta("freeze_timer", f_time)
+									self.ball.set_meta("stun_timer", s_time)
+								elif "freeze_timer" in self.ball:
+									self.ball.freeze_timer = f_time
+									self.ball.stun_timer = s_time
 
 				if kind == "overdrive_zone":
 					var hx = hazard.x if "x" in hazard else (hazard["x"] if typeof(hazard) == TYPE_DICTIONARY else hazard.get_meta("x"))
