@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1851] Low Gravity Events — *2026-08-06 23:26:41 UTC*
+
+Add periods of low gravity to game modes, increasing jump height and decreasing friction.
+
+---
+
 ## [idea-1852] Conveyor Belt Terrain — *2026-08-06 21:57:44 UTC*
 
 Segments of the arena floor that constantly move balls in a particular direction.
