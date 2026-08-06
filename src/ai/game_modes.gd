@@ -78866,3 +78866,104 @@ class SuperVortexMode extends GameMode:
 						b.vy += (dy / dist) * pull * delta
 
 GAME_MODES["super_vortex"] = SuperVortexMode.new()
+
+class CrimsonFogEventMode extends GameMode:
+	var fog_timer = 20.0
+	var fog_duration = 15.0
+	var fog_active = false
+	var health_drain_rate = 10.0
+	var lifesteal_bonus = 2.0
+
+	func _init():
+		name = "Crimson Fog Event"
+		description = "Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt."
+		fog_timer = 20.0
+		fog_active = false
+
+	func setup(world, balls):
+		fog_timer = 20.0
+		fog_active = false
+
+	func tick(world, balls, delta=0.016):
+		fog_timer -= delta
+
+		if fog_timer <= 0:
+			if not fog_active:
+				fog_active = true
+				fog_timer = fog_duration
+				if world.has_method("add_event"):
+					world.add_event("crimson_fog_start", {"message": "A dense crimson fog rolls in! Aggressive attacks restore double health!"})
+
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT:
+						var alive = b.alive if "alive" in b else true
+						if alive:
+							var ls = b.lifesteal if "lifesteal" in b else 0.0
+							b.lifesteal = ls + lifesteal_bonus
+							b.set_meta("_crimson_fog_lifesteal_applied", true)
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.get("alive", true):
+							b["lifesteal"] = b.get("lifesteal", 0.0) + lifesteal_bonus
+							b["_crimson_fog_lifesteal_applied"] = true
+			else:
+				fog_active = false
+				fog_timer = 20.0
+				if world.has_method("add_event"):
+					world.add_event("crimson_fog_end", {"message": "The crimson fog dissipates."})
+
+				for b in balls:
+					if typeof(b) == TYPE_OBJECT:
+						if b.has_method("has_meta") and b.has_meta("_crimson_fog_lifesteal_applied") and b.get_meta("_crimson_fog_lifesteal_applied"):
+							var ls = b.lifesteal if "lifesteal" in b else 0.0
+							b.lifesteal = max(0.0, ls - lifesteal_bonus)
+							b.set_meta("_crimson_fog_lifesteal_applied", false)
+					elif typeof(b) == TYPE_DICTIONARY:
+						if b.get("_crimson_fog_lifesteal_applied", false):
+							b["lifesteal"] = max(0.0, b.get("lifesteal", 0.0) - lifesteal_bonus)
+							b["_crimson_fog_lifesteal_applied"] = false
+
+		if fog_active:
+			var drain = health_drain_rate * delta
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT:
+					var alive = b.alive if "alive" in b else true
+					if alive:
+						if not (b.has_method("has_meta") and b.has_meta("_crimson_fog_lifesteal_applied") and b.get_meta("_crimson_fog_lifesteal_applied")):
+							var ls = b.lifesteal if "lifesteal" in b else 0.0
+							b.lifesteal = ls + lifesteal_bonus
+							b.set_meta("_crimson_fog_lifesteal_applied", true)
+
+						var hp = b.hp if "hp" in b else 100.0
+						hp -= drain
+						b.hp = hp
+						if b.hp <= 0:
+							b.hp = 0
+							if "alive" in b:
+								b.alive = false
+							if "killer" in b:
+								b.killer = "crimson_fog"
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.get("alive", true):
+						if not b.get("_crimson_fog_lifesteal_applied", false):
+							b["lifesteal"] = b.get("lifesteal", 0.0) + lifesteal_bonus
+							b["_crimson_fog_lifesteal_applied"] = true
+
+						b["hp"] = b.get("hp", 100.0) - drain
+						if b["hp"] <= 0:
+							b["hp"] = 0
+							b["alive"] = false
+							b["killer"] = "crimson_fog"
+		else:
+			for b in balls:
+				if typeof(b) == TYPE_OBJECT:
+					if b.has_method("has_meta") and b.has_meta("_crimson_fog_lifesteal_applied") and b.get_meta("_crimson_fog_lifesteal_applied"):
+						var ls = b.lifesteal if "lifesteal" in b else 0.0
+						b.lifesteal = max(0.0, ls - lifesteal_bonus)
+						b.set_meta("_crimson_fog_lifesteal_applied", false)
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.get("_crimson_fog_lifesteal_applied", false):
+						b["lifesteal"] = max(0.0, b.get("lifesteal", 0.0) - lifesteal_bonus)
+						b["_crimson_fog_lifesteal_applied"] = false
+
+
+GAME_MODES["crimson_fog_event"] = CrimsonFogEventMode.new()

@@ -50292,3 +50292,68 @@ class SuperVortexMode(GameMode):
                     b.vy += (dy / dist) * pull * delta
 
 GAME_MODES['super_vortex'] = SuperVortexMode()
+
+class CrimsonFogEventMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crimson Fog Event"
+        self.description = "Periodically, a dense crimson fog rolls into the arena. While in the fog, players continuously lose a small amount of health. However, dealing damage to other players inside the fog restores health equivalent to double the damage dealt."
+        self.fog_timer = 20.0
+        self.fog_duration = 15.0
+        self.fog_active = False
+        self.health_drain_rate = 10.0
+        self.lifesteal_bonus = 2.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls) if hasattr(super(), 'setup') else None
+        self.fog_timer = 20.0
+        self.fog_active = False
+
+    def tick(self, world, balls, delta=0.016):
+        if hasattr(super(), 'tick'):
+            super().tick(world, balls, delta)
+
+        self.fog_timer -= delta
+        if self.fog_timer <= 0:
+            if not self.fog_active:
+                self.fog_active = True
+                self.fog_timer = self.fog_duration
+                if hasattr(world, "add_event"):
+                    world.add_event("crimson_fog_start", {"message": "A dense crimson fog rolls in! Aggressive attacks restore double health!"})
+                # Apply lifesteal bonus
+                for b in balls:
+                    if getattr(b, "alive", False):
+                        b.lifesteal = getattr(b, "lifesteal", 0.0) + self.lifesteal_bonus
+                        b._crimson_fog_lifesteal_applied = True
+            else:
+                self.fog_active = False
+                self.fog_timer = 20.0
+                if hasattr(world, "add_event"):
+                    world.add_event("crimson_fog_end", {"message": "The crimson fog dissipates."})
+                # Remove lifesteal bonus
+                for b in balls:
+                    if getattr(b, "_crimson_fog_lifesteal_applied", False):
+                        b.lifesteal = max(0.0, getattr(b, "lifesteal", 0.0) - self.lifesteal_bonus)
+                        b._crimson_fog_lifesteal_applied = False
+
+        if self.fog_active:
+            drain = self.health_drain_rate * delta
+            for b in balls:
+                if getattr(b, "alive", False):
+                    # Ensure lifesteal is applied if they revived or spawned
+                    if not getattr(b, "_crimson_fog_lifesteal_applied", False):
+                        b.lifesteal = getattr(b, "lifesteal", 0.0) + self.lifesteal_bonus
+                        b._crimson_fog_lifesteal_applied = True
+
+                    b.hp = getattr(b, "hp", 100.0) - drain
+                    if b.hp <= 0:
+                        b.hp = 0
+                        b.alive = False
+                        b.killer = "crimson_fog"
+        else:
+            # Cleanup any lingering buffs (e.g. newly spawned balls when fog ends)
+            for b in balls:
+                if getattr(b, "_crimson_fog_lifesteal_applied", False):
+                    b.lifesteal = max(0.0, getattr(b, "lifesteal", 0.0) - self.lifesteal_bonus)
+                    b._crimson_fog_lifesteal_applied = False
+GAME_MODES['crimson_fog_event'] = CrimsonFogEventMode()
