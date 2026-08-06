@@ -50291,6 +50291,117 @@ class SuperVortexMode(GameMode):
                     b.vx += (dx / dist) * pull * delta
                     b.vy += (dy / dist) * pull * delta
 
+
+class StaticFieldMutatorMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Static Field Mutator"
+        self.description = "Each time a player uses chain lightning, the leftover electric charge stays in the air, creating a static field that slows down all entities and gradually damages those without electric immunity over time."
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+
+        if not hasattr(world, "arena"):
+            return
+
+        if not hasattr(world.arena, "hazards"):
+            world.arena.hazards = []
+
+        if hasattr(world, "events"):
+            for event in world.events:
+                ev_type = None
+                ev_data = None
+                if isinstance(event, tuple) and len(event) == 2:
+                    ev_type = event[0]
+                    ev_data = event[1]
+                elif isinstance(event, dict) and "type" in event:
+                    ev_type = event["type"]
+                    ev_data = event.get("data", {})
+
+                if ev_type == "chain_lightning" and isinstance(ev_data, dict):
+                    # Try to find x, y. The event might only have source/target ids.
+                    hx, hy = None, None
+                    if "x" in ev_data and "y" in ev_data:
+                        hx, hy = ev_data["x"], ev_data["y"]
+                    elif "target" in ev_data:
+                        target_id = ev_data["target"]
+                        for b in balls:
+                            if getattr(b, "id", None) == target_id:
+                                hx, hy = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                                break
+                    elif "source" in ev_data:
+                        source_id = ev_data["source"]
+                        for b in balls:
+                            if getattr(b, "id", None) == source_id:
+                                hx, hy = getattr(b, "x", 0.0), getattr(b, "y", 0.0)
+                                break
+
+                    if hx is not None and hy is not None:
+                        # Append the static field hazard
+                        world.arena.hazards.append({
+                            "kind": "static_field",
+                            "x": hx,
+                            "y": hy,
+                            "radius": 150.0,
+                            "duration": 5.0,
+                            "active": True
+                        })
+
+        active_hazards = []
+        for h in world.arena.hazards:
+            if getattr(h, "kind", "") == "static_field" or (isinstance(h, dict) and h.get("kind") == "static_field"):
+                # Handle dict or object
+                is_dict = isinstance(h, dict)
+                dur = h.get("duration", 0.0) if is_dict else getattr(h, "duration", 0.0)
+                dur -= delta
+                if is_dict:
+                    h["duration"] = dur
+                else:
+                    h.duration = dur
+
+                if dur > 0:
+                    active_hazards.append(h)
+                    hx = h.get("x", 0.0) if is_dict else getattr(h, "x", 0.0)
+                    hy = h.get("y", 0.0) if is_dict else getattr(h, "y", 0.0)
+                    hr = h.get("radius", 150.0) if is_dict else getattr(h, "radius", 150.0)
+                    hr_sq = hr * hr
+
+                    for b in balls:
+                        if not getattr(b, "alive", True):
+                            continue
+
+                        # Check distance
+                        bx = getattr(b, "x", 0.0)
+                        by = getattr(b, "y", 0.0)
+                        dist_sq = (bx - hx)**2 + (by - hy)**2
+                        if dist_sq <= hr_sq:
+                            # Apply slowing effect
+                            b.speed_debuff_timer = max(getattr(b, "speed_debuff_timer", 0.0), 0.5)
+                            b.speed_debuff_multiplier = 0.5
+
+                            # Check electric immunity
+                            is_immune = getattr(b, "electric_immunity", False)
+
+                            # Additional checks from trace for electric/lightning element types
+                            b_type = getattr(b, "ball_type", "").lower()
+                            traits = getattr(b, "traits", [])
+                            if "lightning" in b_type or "lightning" in traits or "electric" in b_type or "electric" in traits:
+                                is_immune = True
+
+                            if not is_immune:
+                                # Apply damage over time
+                                dmg = 10.0 * delta
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(dmg)
+                                else:
+                                    b.hp = getattr(b, "hp", 100.0) - dmg
+            else:
+                active_hazards.append(h)
+
+        world.arena.hazards = active_hazards
+
+GAME_MODES['static_field_mutator'] = StaticFieldMutatorMode()
+
 GAME_MODES['super_vortex'] = SuperVortexMode()
 
 
