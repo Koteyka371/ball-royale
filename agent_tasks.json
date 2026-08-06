@@ -31644,7 +31644,7 @@
     },
     {
       "id": "idea-1850",
-      "status": "todo",
+      "status": "done",
       "area": "innovation",
       "risk": "medium",
       "title": "Static Feedback Loop",

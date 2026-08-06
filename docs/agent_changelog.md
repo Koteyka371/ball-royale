@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1850] Static Feedback Loop — *2026-08-06 23:45:48 UTC*
+
+A new mutator where each time a player uses chain lightning, the leftover electric charge stays in the air, creating a static field that slows down all entities and gradually damages those without electric immunity over time.
+
+---
+
 ## [idea-1863] Twitch Spectator Voting: Hazard Upgrades — *2026-08-06 23:32:52 UTC*
 
 Allow spectators to vote to upgrade a specific hazard (e.g., increase meteor radius, double poison cloud damage) rather than just spawning them. The command !upgrade_hazard <hazard_kind> will let Twitch users spend their loyalty points to enhance the threat level of obstacles, triggering visually unique 'super' hazard effects.
