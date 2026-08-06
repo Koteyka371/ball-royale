@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1809] Kinetic Reversal Mine — *2026-08-06 02:57:26 UTC*
+
+A mine that, instead of dealing damage, reverses the velocity vector of all nearby physics objects and enemies with 2x magnitude when triggered, turning enemy charges or projectiles against them.
+
+---
+
 ## [idea-1845] Supply Drop Orbital Path — *2026-08-06 02:47:50 UTC*
 
 Have supply drops fall from orbit and create a small shockwave upon landing that damages and knocks back any players standing directly underneath the target zone.
