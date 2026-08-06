@@ -78171,6 +78171,51 @@ GAME_MODES["tug_of_war_multiple_payloads"] = TugOfWarMultiplePayloadsMode.new()
 GAME_MODES["electric_decoy_link"] = ElectricDecoyLinkMode.new()
 
 GAME_MODES["fractal_payload"] = FractalPayloadMode.new()
+
+class WindTunnelMode extends GameMode:
+	func _init() -> void:
+		name = "Wind Tunnel"
+		description = "A new hazard 'Wind Tunnel' that generates a narrow, extremely fast wind current across the arena. Any ball entering it gets accelerated to high speeds along the tunnel, allowing for quick escapes or surprise attacks, but making it hard to steer."
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+
+		var arena_width = 1500.0
+		var arena_height = 1000.0
+		if "arena" in world:
+			if "width" in world.arena: arena_width = float(world.arena.width)
+			if "height" in world.arena: arena_height = float(world.arena.height)
+
+		var cx = arena_width / 2.0
+		var cy = arena_height / 2.0
+
+		var angle = randf_range(0.0, 2.0 * PI)
+		var length = max(arena_width, arena_height) * 1.5
+
+		var start_x = cx - cos(angle) * (length / 2.0)
+		var start_y = cy - sin(angle) * (length / 2.0)
+		var end_x = cx + cos(angle) * (length / 2.0)
+		var end_y = cy + sin(angle) * (length / 2.0)
+
+		var width = 100.0
+		var force = 2500.0
+
+		if "arena" in world and "hazards" in world.arena:
+			var ProceduralArena = load("res://src/arena/procedural_arena.gd")
+			if ProceduralArena != null:
+				var h_id = 30000 + world.arena.hazards.size() + (randi() % 10000)
+				var f = ProceduralArena.Hazard.new(h_id, cx, cy, width, "wind_tunnel", 0.0)
+				f.set_meta("start_x", start_x)
+				f.set_meta("start_y", start_y)
+				f.set_meta("end_x", end_x)
+				f.set_meta("end_y", end_y)
+				f.set_meta("wind_force", force)
+				f.set_meta("wind_dir_x", cos(angle))
+				f.set_meta("wind_dir_y", sin(angle))
+				world.arena.hazards.append(f)
+
+GAME_MODES["wind_tunnel"] = WindTunnelMode.new()
+
 class WindFunnelsMode extends GameMode:
 	var funnels = []
 

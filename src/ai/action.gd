@@ -51340,15 +51340,63 @@ func _update_skill_timer(delta: float):
                                 self.ball.set("wet_debuff_timer", 3.0)
 
                 if h_kind == "wind_tunnel":
-                                    var dx = hazard.x - self.ball.x
-                                    var dy = hazard.y - self.ball.y
-                                    var dist = sqrt(dx*dx + dy*dy)
+                                    var has_line = false
+                                    if "start_x" in hazard and "end_x" in hazard: has_line = true
+                                    elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("start_x") and hazard.has("end_x"): has_line = true
+                                    elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("has_meta") and hazard.has_meta("start_x") and hazard.has_meta("end_x"): has_line = true
+
                                     var h_rad = 150.0
                                     if "radius" in hazard: h_rad = float(hazard.radius)
                                     elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("radius"): h_rad = float(hazard["radius"])
                                     elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = float(hazard.get_meta("radius"))
 
-                                    if dist < h_rad:
+                                    var in_tunnel = false
+                                    if has_line:
+                                        var ax = 0.0
+                                        var ay = 0.0
+                                        var bx = 0.0
+                                        var by = 0.0
+                                        if "start_x" in hazard: ax = float(hazard.start_x)
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("start_x"): ax = float(hazard["start_x"])
+                                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("start_x"): ax = float(hazard.get_meta("start_x"))
+                                        if "start_y" in hazard: ay = float(hazard.start_y)
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("start_y"): ay = float(hazard["start_y"])
+                                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("start_y"): ay = float(hazard.get_meta("start_y"))
+                                        if "end_x" in hazard: bx = float(hazard.end_x)
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("end_x"): bx = float(hazard["end_x"])
+                                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("end_x"): bx = float(hazard.get_meta("end_x"))
+                                        if "end_y" in hazard: by = float(hazard.end_y)
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("end_y"): by = float(hazard["end_y"])
+                                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("end_y"): by = float(hazard.get_meta("end_y"))
+
+                                        var line_dx = bx - ax
+                                        var line_dy = by - ay
+                                        var l2 = line_dx*line_dx + line_dy*line_dy
+                                        if l2 > 0:
+                                            var t = max(0.0, min(1.0, ((self.ball.x - ax) * line_dx + (self.ball.y - ay) * line_dy) / l2))
+                                            var proj_x = ax + t * line_dx
+                                            var proj_y = ay + t * line_dy
+                                            var dxx = self.ball.x - proj_x
+                                            var dyy = self.ball.y - proj_y
+                                            var dist_sq = dxx*dxx + dyy*dyy
+                                            if dist_sq < h_rad * h_rad:
+                                                in_tunnel = true
+                                    else:
+                                        var hx = 0.0
+                                        var hy = 0.0
+                                        if "x" in hazard: hx = float(hazard.x)
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("x"): hx = float(hazard["x"])
+                                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("x"): hx = float(hazard.get_meta("x"))
+                                        if "y" in hazard: hy = float(hazard.y)
+                                        elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("y"): hy = float(hazard["y"])
+                                        elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("y"): hy = float(hazard.get_meta("y"))
+                                        var dxx = hx - self.ball.x
+                                        var dyy = hy - self.ball.y
+                                        var dist = sqrt(dxx*dxx + dyy*dyy)
+                                        if dist < h_rad:
+                                            in_tunnel = true
+
+                                    if in_tunnel:
                                         var force = 1500.0 * delta
                                         if "wind_force" in hazard: force = float(hazard.wind_force) * delta
                                         elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("wind_force"): force = float(hazard["wind_force"]) * delta
@@ -51364,21 +51412,18 @@ func _update_skill_timer(delta: float):
                                         elif typeof(hazard) == TYPE_DICTIONARY and hazard.has("wind_dir_y"): wdir_y = float(hazard["wind_dir_y"])
                                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("get_meta") and hazard.has_meta("wind_dir_y"): wdir_y = float(hazard.get_meta("wind_dir_y"))
 
-                                        if "x" in self.ball: self.ball.x += wdir_x * force
-                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("x"): self.ball["x"] += wdir_x * force
-                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("x"): self.ball.set_meta("x", self.ball.get_meta("x") + wdir_x * force)
-
-                                        if "y" in self.ball: self.ball.y += wdir_y * force
-                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("y"): self.ball["y"] += wdir_y * force
-                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("y"): self.ball.set_meta("y", self.ball.get_meta("y") + wdir_y * force)
-
-                                        if "vx" in self.ball: self.ball.vx += wdir_x * force
-                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vx"): self.ball["vx"] += wdir_x * force
-                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") + wdir_x * force)
-
-                                        if "vy" in self.ball: self.ball.vy += wdir_y * force
-                                        elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("vy"): self.ball["vy"] += wdir_y * force
-                                        elif self.ball.has_method("set_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") + wdir_y * force)
+                                        if typeof(self.ball) == TYPE_DICTIONARY:
+                                            if self.ball.has("x"): self.ball["x"] += wdir_x * force
+                                            if self.ball.has("y"): self.ball["y"] += wdir_y * force
+                                            if self.ball.has("vx"): self.ball["vx"] += wdir_x * force
+                                            if self.ball.has("vy"): self.ball["vy"] += wdir_y * force
+                                        else:
+                                            self.ball.x += wdir_x * force
+                                            self.ball.y += wdir_y * force
+                                            if "vx" in self.ball: self.ball.vx += wdir_x * force
+                                            elif self.ball.has_method("set_meta") and self.ball.has_meta("vx"): self.ball.set_meta("vx", self.ball.get_meta("vx") + wdir_x * force)
+                                            if "vy" in self.ball: self.ball.vy += wdir_y * force
+                                            elif self.ball.has_method("set_meta") and self.ball.has_meta("vy"): self.ball.set_meta("vy", self.ball.get_meta("vy") + wdir_y * force)
 
                 if h_kind == "repulsion_zone":
                                     var dx = hazard.x - self.ball.x

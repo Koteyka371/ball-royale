@@ -50054,6 +50054,57 @@ GAME_MODES["shifting_mirror_walls"] = ShiftingMirrorWallsMode()
 
 GAME_MODES["wind_funnels"] = WindFunnelsMode()
 
+class WindTunnelMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Wind Tunnel"
+        self.description = "A new hazard 'Wind Tunnel' that generates a narrow, extremely fast wind current across the arena. Any ball entering it gets accelerated to high speeds along the tunnel, allowing for quick escapes or surprise attacks, but making it hard to steer."
+
+    def setup(self, world: 'Any', balls: 'List[Any]') -> None:
+        super().setup(world, balls)
+        import random
+        import math
+
+        arena_width = getattr(world.arena, "width", 1500.0)
+        arena_height = getattr(world.arena, "height", 1000.0)
+
+        # Create one big wind tunnel across the arena
+        cx = arena_width / 2.0
+        cy = arena_height / 2.0
+
+        angle = random.uniform(0, math.pi * 2)
+        length = max(arena_width, arena_height) * 1.5
+
+        start_x = cx - math.cos(angle) * (length / 2.0)
+        start_y = cy - math.sin(angle) * (length / 2.0)
+        end_x = cx + math.cos(angle) * (length / 2.0)
+        end_y = cy + math.sin(angle) * (length / 2.0)
+
+        width = 100.0 # narrow
+        force = 2500.0 # extremely fast
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            class FallbackFunnelHazard:
+                pass
+            f = type('WindTunnelHazard', (), {})()
+            f.id = "wind_tunnel_" + str(random.randint(10000, 99999))
+            f.kind = "wind_tunnel"
+            f.x = cx
+            f.y = cy
+            f.start_x = start_x
+            f.start_y = start_y
+            f.end_x = end_x
+            f.end_y = end_y
+            f.radius = width
+            f.wind_force = force
+            f.wind_dir_x = math.cos(angle)
+            f.wind_dir_y = math.sin(angle)
+            f.active = True
+            world.arena.hazards.append(f)
+
+GAME_MODES["wind_tunnel"] = WindTunnelMode()
+
+
 class GhostOrbMode(GameMode):
     def __init__(self):
         super().__init__()
