@@ -36481,7 +36481,58 @@ class SwappingSafeZoneMode(GameMode):
                         b.alive = False
                         b.hp = 0
 
+class HealingRainMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Healing Rain"
+        self.description = "Periodic rain storms that gradually heal players but slow down their movement."
+        self.storm_active = False
+        self.storm_timer = 0.0
+        self.storm_interval = 10.0
+        self.storm_duration = 5.0
+
+    def tick(self, world: 'Any', balls: 'List[Any]', delta: float = 0.016) -> None:
+        super().tick(world, balls, delta)
+        self.storm_timer += delta
+
+        was_active = self.storm_active
+
+        if not self.storm_active and self.storm_timer >= self.storm_interval:
+            self.storm_active = True
+            self.storm_timer = 0.0
+            if hasattr(world, 'add_event'):
+                world.add_event("healing_rain_start", {"message": "A healing rain storm has started! Players are healed but slowed."})
+        elif self.storm_active and self.storm_timer >= self.storm_duration:
+            self.storm_active = False
+            self.storm_timer = 0.0
+            if hasattr(world, 'add_event'):
+                world.add_event("healing_rain_end", {"message": "The healing rain has stopped."})
+
+        if self.storm_active:
+            for b in balls:
+                if not getattr(b, 'alive', True) or getattr(b, 'ball_type', None) == 'spectator':
+                    continue
+
+                # Heal
+                hp = getattr(b, 'hp', 100.0)
+                max_hp = getattr(b, 'max_hp', 100.0)
+                if hp < max_hp:
+                    b.hp = min(max_hp, hp + 10.0 * delta)
+
+                # Slow
+                if hasattr(b, 'base_speed'):
+                    b.speed = b.base_speed * 0.5
+                b._healing_rain_slowed = True
+        else:
+            if was_active:
+                for b in balls:
+                    if getattr(b, '_healing_rain_slowed', False):
+                        b._healing_rain_slowed = False
+                        if hasattr(b, 'base_speed'):
+                            b.speed = b.base_speed
+
 GAME_MODES = {
+    'healing_rain': HealingRainMode(),
     "boss_escort": BossEscortMode(),
     "toxic_fog_event": ToxicFogEventMode(),
     'geyser_hazards': GeyserHazardMode(),
