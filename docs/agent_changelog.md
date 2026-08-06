@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1842] Ghost Orbs — *2026-08-06 02:08:02 UTC*
+
+When a ball dies, it leaves behind a ghost orb that chases living players and drains their stamina if touched.
+
+---
+
 ## [idea-1828] Payload Booster Pad — *2026-08-06 01:56:54 UTC*
 
 Escorting a payload deploys temporary speed boost pads for teammates.
