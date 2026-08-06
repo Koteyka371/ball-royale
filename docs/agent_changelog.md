@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1808] Wind Funnels — *2026-08-06 08:34:20 UTC*
+
+Add stationary wind funnels that shoot out air constantly in one direction, significantly speeding up balls that enter the stream and acting as a makeshift highway or a trap.
+
+---
+
 ## [idea-1787] Stasis Bubble Deployable — *2026-08-06 07:58:07 UTC*
 
 A rare deployable that casts a large stasis bubble around itself. Any entities or projectiles entering the bubble have their velocities slowed by 90% for a short duration.
