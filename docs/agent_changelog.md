@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1845] Supply Drop Orbital Path — *2026-08-06 02:47:50 UTC*
+
+Have supply drops fall from orbit and create a small shockwave upon landing that damages and knocks back any players standing directly underneath the target zone.
+
+---
+
 ## [idea-1847] test — *2026-08-06 02:20:44 UTC*
 
 test
