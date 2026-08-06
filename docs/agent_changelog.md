@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1813] Payload Overcharge — *2026-08-06 01:46:58 UTC*
+
+Attackers can deposit energy cores into the payload. Once 3 energy cores are deposited, the payload gets an 'overcharge' status that causes it to speed up and have a shield for a short duration.
+
+---
+
 ## [idea-1821] Vampiric Leech Beam — *2026-08-06 01:31:49 UTC*
 
 An orbital beam similar to the irradiated zone, but instead of just dealing damage, it siphons HP from any ball inside the radius and heals the ball that called it in (or the lowest HP ball if spawned randomly by the arena).
