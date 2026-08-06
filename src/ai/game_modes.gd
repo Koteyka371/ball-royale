@@ -54145,6 +54145,11 @@ class ExponentialControlPointMode extends GameMode:
 							var cur_dmg = b.get("damage_multiplier") if b.get("damage_multiplier") != null else 1.0
 							b.set_meta("damage_multiplier", cur_dmg * multiplier_buff)
 
+class StaminaVampireMode extends GameMode:
+	func _init():
+		self.name = "Stamina Vampire"
+		self.description = "Stamina regeneration is completely disabled. The only way to restore stamina is by dealing damage to other players."
+
 class VampiricMutatorMode extends GameMode:
 	var health_drain_rate: float = 5.0
 	var lifesteal_bonus: float = 2.0
