@@ -121,3 +121,40 @@ def test_dual_payload_supply_drops():
 
     assert drop not in world.arena.hazards
     assert (player.invulnerable_timer > 0.0 or player.ultimate_charge >= 100.0 or player.shield >= 50.0)
+
+def test_escort_mode_decoy_supply_drops():
+    mode = EscortMode()
+    world = MockWorld()
+
+    payload = MockBall(x=100.0, y=500.0, team="Defenders")
+    payload.alive = True
+    mode.payload = payload
+
+    balls = [payload]
+
+    class DH:
+        def __init__(self, kind, is_decoy=True):
+            self.kind = kind
+            self.x = 100
+            self.y = 100
+            self.radius = 40.0
+            self.is_decoy = is_decoy
+
+    # Manually spawn a decoy hazard
+    decoy_drop = DH("supply_drop", is_decoy=True)
+    world.arena.hazards.append(decoy_drop)
+
+    player = MockBall(x=100.0, y=100.0, team="Attackers")
+    player.hp = 100.0
+    balls.append(player)
+
+    # Tick should trigger collision
+    mode.tick(world, balls, delta=1.0)
+
+    # Decoy should explode and damage player
+    assert decoy_drop not in world.arena.hazards, "Decoy drop should be removed"
+    assert player.hp <= 50.0, "Player should have taken AoE damage from decoy"
+    assert player.stun_timer > 0.0, "Player should be stunned"
+
+    events = [e for e in world.events if e.get("type") == "decoy_supply_drop_exploded"]
+    assert len(events) >= 1, "Should have emitted an explosion event"
