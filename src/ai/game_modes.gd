@@ -59195,6 +59195,169 @@ class HealingRainMode extends GameMode:
 							b.set("speed", base_speed)
 							b.set_meta("_healing_rain_slowed", false)
 
+class GlowingMeteorFragmentsMode extends GameMode:
+	var bombard_timer = 0.0
+	var active_meteors = []
+
+	func _init():
+		super._init()
+		self.name = "Glowing Meteor Fragments"
+		self.description = "Random meteors crash into the arena and leave glowing fragments. Collecting a glowing fragment boosts a player's damage."
+		self.bombard_timer = 0.0
+		self.active_meteors = []
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		if typeof(world) == TYPE_OBJECT and 'arena' in world and world.arena != null:
+			if not 'hazards' in world.arena or world.arena.hazards == null:
+				world.arena.hazards = []
+		elif typeof(world) == TYPE_DICTIONARY and world.has('arena') and world.arena != null:
+			if not world.arena.has('hazards') or world.arena.hazards == null:
+				world.arena['hazards'] = []
+
+		self.bombard_timer = 0.0
+		self.active_meteors = []
+
+	func tick(world, balls: Array, delta: float = 0.016) -> void:
+		super.tick(world, balls, delta)
+
+		self.bombard_timer += delta
+
+		if self.bombard_timer >= 5.0:
+			self.bombard_timer = 0.0
+			var arena_width = 1000.0
+			var arena_height = 1000.0
+
+			if typeof(world) == TYPE_OBJECT and 'arena' in world and world.arena != null:
+				if 'width' in world.arena: arena_width = world.arena.width
+				if 'height' in world.arena: arena_height = world.arena.height
+			elif typeof(world) == TYPE_DICTIONARY and world.has('arena') and world.arena != null:
+				if world.arena.has('width'): arena_width = world.arena.width
+				if world.arena.has('height'): arena_height = world.arena.height
+
+			var num_meteors = randi() % 3 + 1
+			for i in range(num_meteors):
+				var x = randf_range(50.0, arena_width - 50.0)
+				var y = randf_range(50.0, arena_height - 50.0)
+
+				self.active_meteors.append({
+					"id": "meteor_" + str(randi() % 90000 + 10000),
+					"x": x,
+					"y": y,
+					"delay": 2.0,
+					"radius": 40.0
+				})
+
+		var still_active = []
+		var new_fragments = []
+
+		for m in self.active_meteors:
+			m["delay"] -= delta
+			if m["delay"] <= 0:
+				new_fragments.append({
+					"id": "glowing_fragment_" + str(randi() % 90000 + 10000),
+					"x": m["x"],
+					"y": m["y"],
+					"radius": 20.0,
+					"kind": "glowing_fragment",
+					"damage": 0.0
+				})
+			else:
+				still_active.append(m)
+
+		self.active_meteors = still_active
+
+		var hazards = []
+		if typeof(world) == TYPE_OBJECT and 'arena' in world and world.arena != null:
+			if 'hazards' in world.arena:
+				hazards = world.arena.hazards
+		elif typeof(world) == TYPE_DICTIONARY and world.has('arena') and world.arena != null:
+			if world.arena.has('hazards'):
+				hazards = world.arena.hazards
+
+		for f in new_fragments:
+			hazards.append(f)
+
+		var fragments = []
+		for h in hazards:
+			var kind = ""
+			if typeof(h) == TYPE_OBJECT and 'kind' in h: kind = h.kind
+			elif typeof(h) == TYPE_DICTIONARY and h.has('kind'): kind = h["kind"]
+			if kind == "glowing_fragment":
+				fragments.append(h)
+
+		for frag in fragments:
+			var frag_x = 0.0
+			var frag_y = 0.0
+			var f_r = 20.0
+
+			if typeof(frag) == TYPE_OBJECT:
+				if 'x' in frag: frag_x = frag.x
+				if 'y' in frag: frag_y = frag.y
+				if 'radius' in frag: f_r = frag.radius
+			elif typeof(frag) == TYPE_DICTIONARY:
+				if frag.has('x'): frag_x = frag["x"]
+				if frag.has('y'): frag_y = frag["y"]
+				if frag.has('radius'): f_r = frag["radius"]
+
+			var to_remove = false
+			for b in balls:
+				var b_alive = false
+				var b_x = 0.0
+				var b_y = 0.0
+				var b_r = 15.0
+
+				if typeof(b) == TYPE_OBJECT:
+					if 'alive' in b: b_alive = b.alive
+					if 'x' in b: b_x = b.x
+					if 'y' in b: b_y = b.y
+					if 'radius' in b: b_r = b.radius
+				elif typeof(b) == TYPE_DICTIONARY:
+					if b.has('alive'): b_alive = b["alive"]
+					if b.has('x'): b_x = b["x"]
+					if b.has('y'): b_y = b["y"]
+					if b.has('radius'): b_r = b["radius"]
+
+				if b_alive:
+					var dx = b_x - frag_x
+					var dy = b_y - frag_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= b_r + f_r:
+						if typeof(b) == TYPE_OBJECT:
+							if 'damage_boost_timer' in b: b.damage_boost_timer = 10.0
+							elif b.has_method("set"): b.set("damage_boost_timer", 10.0)
+						elif typeof(b) == TYPE_DICTIONARY:
+							b["damage_boost_timer"] = 10.0
+						to_remove = true
+						break
+			if to_remove:
+				hazards.erase(frag)
+
+		var new_hazards = []
+		for h in hazards:
+			var kind = ""
+			if typeof(h) == TYPE_OBJECT and 'kind' in h: kind = h.kind
+			elif typeof(h) == TYPE_DICTIONARY and h.has('kind'): kind = h["kind"]
+			if kind != "meteor_indicator":
+				new_hazards.append(h)
+
+		for m in self.active_meteors:
+			new_hazards.append({
+				"id": m["id"],
+				"x": m["x"],
+				"y": m["y"],
+				"radius": m["radius"],
+				"kind": "meteor_indicator",
+				"damage": 0
+			})
+
+		if typeof(world) == TYPE_OBJECT and 'arena' in world and world.arena != null:
+			if 'hazards' in world.arena:
+				world.arena.hazards = new_hazards
+		elif typeof(world) == TYPE_DICTIONARY and world.has('arena') and world.arena != null:
+			if world.arena.has('hazards'):
+				world.arena["hazards"] = new_hazards
+
 var GAME_MODES = {
 	"healing_rain": HealingRainMode.new(),
 	"color_swap_team": ColorSwapTeamMode.new(),
@@ -59264,6 +59427,7 @@ var GAME_MODES = {
 	"random_teleport_dash": RandomTeleportDashMode.new(),
 	"personal_doppelganger": PersonalDoppelgangerMode.new(),
 	"solar_radiation_storm": SolarRadiationStormMode.new(),
+	"glowing_meteor_fragments": GlowingMeteorFragmentsMode.new(),
 }
 
 class PersonalDoppelgangerMode extends GameMode:
