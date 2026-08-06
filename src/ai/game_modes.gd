@@ -6521,7 +6521,45 @@ class BattleRoyaleMode extends GameMode:
 					}
 					world.arena.hazards.append(h)
 
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+					elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+					if not is_alive: continue
+
+					var bx = 0.0
+					var by = 0.0
+					var rad = 15.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						rad = b.get("radius", 15.0)
+					elif typeof(b) == TYPE_OBJECT:
+						if "x" in b: bx = b.x
+						if "y" in b: by = b.y
+						if "radius" in b: rad = b.radius
+
+					var dx = bx - b_x
+					var dy = by - b_y
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= 40.0 + rad:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = b.get("hp", 100.0) - 30.0
+							if b["hp"] <= 0: b["alive"] = false
+							if dist > 0:
+								b["vx"] = b.get("vx", 0.0) + (dx / dist) * 800.0
+								b["vy"] = b.get("vy", 0.0) + (dy / dist) * 800.0
+						elif typeof(b) == TYPE_OBJECT:
+							if "hp" in b:
+								b.hp -= 30.0
+								if b.hp <= 0: b.alive = false
+							if dist > 0:
+								if "vx" in b: b.vx += (dx / dist) * 800.0
+								if "vy" in b: b.vy += (dy / dist) * 800.0
+
 				if "add_event" in world and world.has_method("add_event"):
+					world.add_event("supply_drop_shockwave", {"x": b_x, "y": b_y, "radius": 40.0})
 					world.add_event("supply_drop", {"message": "A " + chosen_kind + " supply drop has appeared!"})
 
 		# Weather logic
@@ -73287,7 +73325,45 @@ class TelegraphedSupplyDropMode extends GameMode:
 
 				high_tier_drops.append(drop)
 
+				for b in balls:
+					var is_alive = false
+					if typeof(b) == TYPE_DICTIONARY and b.has("alive"): is_alive = b["alive"]
+					elif typeof(b) == TYPE_OBJECT and "alive" in b: is_alive = b.alive
+
+					if not is_alive: continue
+
+					var bx = 0.0
+					var by = 0.0
+					var rad = 15.0
+					if typeof(b) == TYPE_DICTIONARY:
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+						rad = b.get("radius", 15.0)
+					elif typeof(b) == TYPE_OBJECT:
+						if "x" in b: bx = b.x
+						if "y" in b: by = b.y
+						if "radius" in b: rad = b.radius
+
+					var dx = bx - t["x"]
+					var dy = by - t["y"]
+					var dist = sqrt(dx*dx + dy*dy)
+					if dist <= 60.0 + rad:
+						if typeof(b) == TYPE_DICTIONARY:
+							b["hp"] = b.get("hp", 100.0) - 30.0
+							if b["hp"] <= 0: b["alive"] = false
+							if dist > 0:
+								b["vx"] = b.get("vx", 0.0) + (dx / dist) * 800.0
+								b["vy"] = b.get("vy", 0.0) + (dy / dist) * 800.0
+						elif typeof(b) == TYPE_OBJECT:
+							if "hp" in b:
+								b.hp -= 30.0
+								if b.hp <= 0: b.alive = false
+							if dist > 0:
+								if "vx" in b: b.vx += (dx / dist) * 800.0
+								if "vy" in b: b.vy += (dy / dist) * 800.0
+
 				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("supply_drop_shockwave", {"x": t["x"], "y": t["y"], "radius": 60.0})
 					world.add_event("high_tier_drop_landed", {"message": "Supply drop has landed! Capture it!"})
 
 		for tr in telegraphs_to_remove:
