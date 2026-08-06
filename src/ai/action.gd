@@ -31247,6 +31247,15 @@ func _collect_booster(delta: float):
                         if "ghost_mode_active" in self.ball: self.ball.ghost_mode_active = true
                         elif self.ball.has_method("set_meta"): self.ball.set_meta("ghost_mode_active", true)
 
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["intangible"] = true
+                        self.ball["intangible_timer"] = 10.0
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "intangible" in self.ball: self.ball.intangible = true
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible", true)
+                        if "intangible_timer" in self.ball: self.ball.intangible_timer = 10.0
+                        elif self.ball.has_method("set_meta"): self.ball.set_meta("intangible_timer", 10.0)
+
                     if typeof(b) == TYPE_DICTIONARY: b["active"] = false
                     else: b.active = false
 

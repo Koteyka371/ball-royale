@@ -16043,6 +16043,8 @@ class Action:
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.ghost_booster_timer = 10.0
                         self.ball.ghost_mode_active = True
+                        self.ball.intangible = True
+                        self.ball.intangible_timer = 10.0
                         b.active = False
                         if hasattr(self.world, "boosters") and b in self.world.boosters:
                             self.world.boosters.remove(b)
