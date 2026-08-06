@@ -18916,8 +18916,8 @@ class FactoryMode(GameMode):
         self.points_for_kill = 10
         self.arena = ArenaTypes.FactoryArena()
 
-    def update(self, world, delta):
-        super().update(world, delta)
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
 
         if not hasattr(self.arena, "hazards"):
             return
