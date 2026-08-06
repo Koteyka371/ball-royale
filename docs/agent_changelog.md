@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1828] Payload Booster Pad — *2026-08-06 01:56:54 UTC*
+
+Escorting a payload deploys temporary speed boost pads for teammates.
+
+---
+
 ## [idea-1813] Payload Overcharge — *2026-08-06 01:46:58 UTC*
 
 Attackers can deposit energy cores into the payload. Once 3 energy cores are deposited, the payload gets an 'overcharge' status that causes it to speed up and have a shield for a short duration.
