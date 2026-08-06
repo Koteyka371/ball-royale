@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1843] Healing Rain — *2026-08-06 13:06:43 UTC*
+
+Periodic rain storms that gradually heal players but slow down their movement.
+
+---
+
 ## [idea-1856] Black Hole Overdrive Mode — *2026-08-06 12:24:18 UTC*
 
 A game mode where multiple black holes periodically merge into a massive super-vortex.
