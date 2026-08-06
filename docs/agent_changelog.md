@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1782] Payload Reversal Pushback — *2026-08-06 16:13:33 UTC*
+
+If a payload is completely unopposed by its owning team and pushed strictly by defenders for an extended period, it arms an explosive charge that detonates, knocking back the defenders slightly to give the attacking team a chance to recover.
+
+---
+
 ## [idea-1831] Wind Tunnel Arena Hazard — *2026-08-06 14:41:50 UTC*
 
 A new hazard 'Wind Tunnel' that generates a narrow, extremely fast wind current across the arena. Any ball entering it gets accelerated to high speeds along the tunnel, allowing for quick escapes or surprise attacks, but making it hard to steer.
