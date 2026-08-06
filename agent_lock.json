@@ -68,8 +68,8 @@
       "name": "Jules Worker 8",
       "area": "tests",
       "task_id": "idea-1837",
-      "status": "assigned",
-      "started_at": "2026-08-06T23:25:43.166140+00:00",
+      "status": "working",
+      "started_at": "2026-08-06T23:36:04.003719+00:00",
       "cycles_today": 1
     },
     "agent-9": {
