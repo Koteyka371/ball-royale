@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1821] Vampiric Leech Beam — *2026-08-06 01:31:49 UTC*
+
+An orbital beam similar to the irradiated zone, but instead of just dealing damage, it siphons HP from any ball inside the radius and heals the ball that called it in (or the lowest HP ball if spawned randomly by the arena).
+
+---
+
 ## [idea-1839] Gravity Shifters Mode — *2026-08-05 22:48:52 UTC*
 
 Players periodically swap gravity directions, altering physics unpredictably.
