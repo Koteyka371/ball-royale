@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1852] Conveyor Belt Terrain — *2026-08-06 21:57:44 UTC*
+
+Segments of the arena floor that constantly move balls in a particular direction.
+
+---
+
 ## [idea-1848] Quantum Lock Trap — *2026-08-06 21:57:39 UTC*
 
 A deployable trap that, when triggered by an enemy, temporarily freezes their cooldowns and movement for 3 seconds while also increasing the damage they take from all sources by 25%.
