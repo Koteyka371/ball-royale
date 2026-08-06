@@ -419,6 +419,19 @@ func _attempt_damage(attacker, target) -> void:
 			attacker.damage = orig_dmg
 
 func _attempt_damage_internal(attacker, target) -> void:
+	var t_in_dilation = target.in_time_dilation_zone if "in_time_dilation_zone" in target else target.get_meta("in_time_dilation_zone") if typeof(target) == TYPE_OBJECT and target.has_method("get_meta") and target.has_meta("in_time_dilation_zone") else false
+	var has_original_damage = "damage" in attacker or (typeof(attacker) == TYPE_OBJECT and attacker.has_method("has_meta") and attacker.has_meta("damage"))
+	var original_damage_pre = 10.0
+	if has_original_damage:
+		original_damage_pre = float(attacker.damage) if "damage" in attacker else float(attacker.get_meta("damage"))
+
+	if t_in_dilation:
+		var new_dmg = original_damage_pre * 0.5
+		if "damage" in attacker:
+			attacker.damage = new_dmg
+		elif typeof(attacker) == TYPE_OBJECT and attacker.has_method("set_meta"):
+			attacker.set_meta("damage", new_dmg)
+
 	var mode_kind = ""
 	if "game_mode" in world and world.game_mode != null and "kind" in world.game_mode:
 		mode_kind = world.game_mode.kind
