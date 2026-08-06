@@ -7335,22 +7335,57 @@ class EscortMode(GameMode):
 
             nearby_teammates = 0
             payload_team = getattr(self.payload, "team", "")
+            attackers_near = 0
+            defenders_near = 0
+
             for b in balls:
                 if getattr(b, "ball_type", None) == "spectator":
                     continue
                 if not getattr(b, "alive", False) or b == self.payload:
                     continue
-                if getattr(b, "team", "") != payload_team:
-                    continue
 
                 bdx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
                 bdy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
                 bdist = math.hypot(bdx, bdy)
+
+                if bdist <= 150.0:
+                    if getattr(b, "team", "") == "Attackers":
+                        attackers_near += 1
+                    elif getattr(b, "team", "") == "Defenders":
+                        defenders_near += 1
+
+                if getattr(b, "team", "") != payload_team:
+                    continue
+
                 if bdist <= 150.0:
                     nearby_teammates += 1
                     b.speed_boost_timer = max(getattr(b, "speed_boost_timer", 0.0), 2.0)
 
             speed_mult = 1.0 + (nearby_teammates * 0.5)
+
+            if attackers_near == 0 and defenders_near > 0:
+                self.payload.unopposed_timer = getattr(self.payload, "unopposed_timer", 0.0) + delta
+            else:
+                self.payload.unopposed_timer = 0.0
+
+            if getattr(self.payload, "unopposed_timer", 0.0) >= 10.0:
+                self.payload.unopposed_timer = 0.0
+                if hasattr(world, "add_event"):
+                    world.add_event("payload_unopposed_detonation", {"x": getattr(self.payload, "x", 0), "y": getattr(self.payload, "y", 0)})
+
+                for b in balls:
+                    if getattr(b, "ball_type", None) == "spectator":
+                        continue
+                    if not getattr(b, "alive", False) or b == self.payload:
+                        continue
+                    if getattr(b, "team", "") == "Defenders":
+                        bdx = getattr(b, "x", 0) - getattr(self.payload, "x", 0)
+                        bdy = getattr(b, "y", 0) - getattr(self.payload, "y", 0)
+                        bdist = math.hypot(bdx, bdy)
+                        if 0 < bdist <= 200.0:
+                            kb_force = 500.0
+                            b.vx = getattr(b, "vx", 0.0) + (bdx / bdist) * kb_force
+                            b.vy = getattr(b, "vy", 0.0) + (bdy / bdist) * kb_force
 
             # Saboteur Logic
             payload_team = getattr(self.payload, "team", "Defenders")
