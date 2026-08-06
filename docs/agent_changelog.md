@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1848] Quantum Lock Trap — *2026-08-06 21:57:39 UTC*
+
+A deployable trap that, when triggered by an enemy, temporarily freezes their cooldowns and movement for 3 seconds while also increasing the damage they take from all sources by 25%.
+
+---
+
 ## [idea-1799] Repulsion Mine — *2026-08-06 16:13:38 UTC*
 
 A trap that triggers when a player gets close, detonating with a large force that pushes everything away instead of pulling or doing massive damage, useful for denying zones or saving allies.
