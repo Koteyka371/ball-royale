@@ -77197,6 +77197,97 @@ class VerticalLavaPlatformerMode extends GameMode:
 						elif "hp" in b: b.hp = hp
 
 GAME_MODES['vertical_lava_platformer'] = VerticalLavaPlatformerMode.new()
+
+class PeriodicLowGravityMutatorMode extends GameMode:
+	var timer: float = 0.0
+	var duration: float = 10.0
+	var low_grav_active: bool = false
+
+	func _init() -> void:
+		name = "Periodic Low Gravity"
+		description = "Intermittently turns the gravity extremely low, which makes balls jump much further and halves friction. A chaotic mutator that completely changes pacing every few seconds."
+		mutators_active = true
+		mutators = []
+
+	func setup(world, balls: Array) -> void:
+		super.setup(world, balls)
+		timer = 0.0
+		low_grav_active = false
+		mutators = []
+
+	func apply_dynamic_traits(world, balls: Array, delta: float) -> void:
+		super.apply_dynamic_traits(world, balls, delta)
+		timer += delta
+
+		if low_grav_active:
+			if timer >= duration:
+				low_grav_active = false
+				timer = 0.0
+				if "low_gravity" in mutators:
+					mutators.erase("low_gravity")
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("gravity_normal", {"message": "Gravity returned to normal!"})
+
+				# Restore state
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+					if is_alive:
+						var applied = b.get("_periodic_low_grav_applied", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("_periodic_low_grav_applied") if b.has_method("get_meta") and b.has_meta("_periodic_low_grav_applied") else false)
+						if applied:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["is_frictionless"] = b.get("_orig_frictionless", false)
+								if b.has("_orig_mass"): b["mass"] = b["_orig_mass"]
+								b["_periodic_low_grav_applied"] = false
+							else:
+								var orig_fric = b.get_meta("_orig_frictionless") if b.has_meta("_orig_frictionless") else false
+								if "is_frictionless" in b: b.is_frictionless = orig_fric
+								elif b.has_method("set_meta"): b.set_meta("is_frictionless", orig_fric)
+
+								if b.has_meta("_orig_mass"):
+									var om = b.get_meta("_orig_mass")
+									if "mass" in b: b.mass = om
+									elif b.has_method("set_meta"): b.set_meta("mass", om)
+								b.set_meta("_periodic_low_grav_applied", false)
+			else:
+				if not ("low_gravity" in mutators):
+					mutators.append("low_gravity")
+
+				# Apply state once
+				for b in balls:
+					var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.alive
+					if is_alive:
+						var applied = b.get("_periodic_low_grav_applied", false) if typeof(b) == TYPE_DICTIONARY else (b.get_meta("_periodic_low_grav_applied") if b.has_method("get_meta") and b.has_meta("_periodic_low_grav_applied") else false)
+						if not applied:
+							if typeof(b) == TYPE_DICTIONARY:
+								b["_orig_frictionless"] = b.get("is_frictionless", false)
+								b["_orig_mass"] = b.get("mass", 1.0)
+
+								b["is_frictionless"] = true
+								b["mass"] = b["_orig_mass"] * 0.5
+								b["_periodic_low_grav_applied"] = true
+							else:
+								var o_f = b.is_frictionless if "is_frictionless" in b else (b.get_meta("is_frictionless") if b.has_method("get_meta") and b.has_meta("is_frictionless") else false)
+								b.set_meta("_orig_frictionless", o_f)
+
+								var o_m = b.mass if "mass" in b else (b.get_meta("mass") if b.has_method("get_meta") and b.has_meta("mass") else 1.0)
+								b.set_meta("_orig_mass", o_m)
+
+								if "is_frictionless" in b: b.is_frictionless = true
+								elif b.has_method("set_meta"): b.set_meta("is_frictionless", true)
+
+								if "mass" in b: b.mass = o_m * 0.5
+								elif b.has_method("set_meta"): b.set_meta("mass", o_m * 0.5)
+
+								b.set_meta("_periodic_low_grav_applied", true)
+		else:
+			if timer >= duration:
+				low_grav_active = true
+				timer = 0.0
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("gravity_low", {"message": "Low gravity warning!"})
+
+GAME_MODES['periodic_low_gravity_mutator'] = PeriodicLowGravityMutatorMode.new()
+
 GAME_MODES["silent_world_mutator"] = SilentWorldMutatorMode.new()
 
 class AlternatingZoneMode extends GameMode:
