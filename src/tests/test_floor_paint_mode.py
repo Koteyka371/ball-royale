@@ -19,6 +19,8 @@ def test_floor_paint_mode():
     world.boosters = []
 
     b1 = Mock()
+    b1.hologram_clones = []
+    b1.hologram_clones = []
     b1.x, b1.y = 100.0, 100.0
     b1.team = "Red"
     b1.alive = True
@@ -36,6 +38,8 @@ def test_floor_paint_mode():
     b1.ball_type = "test_ball"
 
     b2 = Mock()
+    b2.hologram_clones = []
+    b2.hologram_clones = []
     b2.x, b2.y = 300.0, 300.0
     b2.team = "Blue"
     b2.alive = True

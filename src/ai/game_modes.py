@@ -7034,6 +7034,53 @@ class EscortMode(GameMode):
                                 world.add_event("supply_drop_collected", {"team": getattr(b, "team", "Unknown"), "buff": buff_type})
                             break
 
+
+
+        if not hasattr(self, "energy_core_spawn_timer"):
+            self.energy_core_spawn_timer = 0.0
+        self.energy_core_spawn_timer += delta
+        if self.energy_core_spawn_timer >= 8.0:
+            self.energy_core_spawn_timer = 0.0
+            if getattr(self, "payload", None) and hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                try:
+                    from arena.procedural_arena import Hazard
+                    import random
+                    h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                    hx = getattr(self.payload, "x", 0) + random.uniform(-200, 200)
+                    hy = getattr(self.payload, "y", 0) + random.uniform(-200, 200)
+                    core = Hazard(h_id, hx, hy, 30.0, "energy_core", 0.0)
+                    world.arena.hazards.append(core)
+                except ImportError:
+                    class MockHazard:
+                        def __init__(self, id, x, y, radius, kind, damage):
+                            self.id = id
+                            self.x = x
+                            self.y = y
+                            self.radius = radius
+                            self.kind = kind
+                            self.damage = damage
+                    import random
+                    h_id = len(world.arena.hazards) + random.randint(1000, 9999)
+                    hx = getattr(self.payload, "x", 0) + random.uniform(-200, 200)
+                    hy = getattr(self.payload, "y", 0) + random.uniform(-200, 200)
+                    core = MockHazard(h_id, hx, hy, 30.0, "energy_core", 0.0)
+                    world.arena.hazards.append(core)
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards[:]:
+                if getattr(h, "kind", "") == "energy_core":
+                    for b in balls:
+                        if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                            continue
+                        if getattr(b, "team", "") == "Attackers" and not getattr(b, "has_energy_core", False):
+                            import math
+                            dist = math.hypot(getattr(b, "x", 0) - getattr(h, "x", 0), getattr(b, "y", 0) - getattr(h, "y", 0))
+                            if dist <= getattr(h, "radius", 30.0) + getattr(b, "radius", 15.0):
+                                b.has_energy_core = True
+                                if h in world.arena.hazards:
+                                    world.arena.hazards.remove(h)
+                                break
+
         if not hasattr(self, "random_emp_timer"):
             self.random_emp_timer = 0.0
 
@@ -7289,6 +7336,33 @@ class EscortMode(GameMode):
                 if self.payload.disabled_timer < 0:
                     self.payload.disabled_timer = 0.0
                 speed_mult *= 0.2  # Slow down heavily when disabled
+
+
+            # Energy core deposit logic
+            if getattr(self.payload, "overcharge_timer", 0.0) > 0:
+                self.payload.overcharge_timer -= delta
+                if self.payload.overcharge_timer <= 0:
+                    self.payload.overcharge_timer = 0.0
+                else:
+                    speed_mult *= 2.0
+
+            for b in balls:
+                if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                    continue
+                if getattr(b, "team", "") == "Attackers" and getattr(b, "has_energy_core", False):
+                    import math
+                    dist = math.hypot(getattr(b, "x", 0) - getattr(self.payload, "x", 0), getattr(b, "y", 0) - getattr(self.payload, "y", 0))
+                    if dist <= getattr(b, "radius", 15.0) + getattr(self.payload, "radius", 15.0):
+                        b.has_energy_core = False
+                        self.payload.energy_cores = getattr(self.payload, "energy_cores", 0) + 1
+                        if self.payload.energy_cores >= 3:
+                            self.payload.energy_cores = 0
+                            self.payload.overcharge_timer = 5.0
+                            self.payload.shield = 100.0
+                            self.payload.shield = 100.0
+                            self.payload.shield = 100.0
+                            self.payload.shield = 100.0
+
 
             if dist > 0:
                 base_speed = getattr(self.payload, "speed", 0.5)

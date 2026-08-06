@@ -11200,6 +11200,62 @@ class EscortMode extends GameMode:
 					var new_hazard = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 80.0, "anti_payload_zone", 0.0)
 					world.arena.hazards.append(new_hazard)
 
+
+		if not self.has_meta("energy_core_spawn_timer"):
+			self.set_meta("energy_core_spawn_timer", 0.0)
+		var ec_timer = self.get_meta("energy_core_spawn_timer") + delta
+		self.set_meta("energy_core_spawn_timer", ec_timer)
+		if ec_timer >= 8.0:
+			self.set_meta("energy_core_spawn_timer", 0.0)
+			if payload != null and typeof(world) == TYPE_OBJECT and "arena" in world:
+				if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+					var px = payload.get("x") if typeof(payload) == TYPE_DICTIONARY else payload.x
+					var py = payload.get("y") if typeof(payload) == TYPE_DICTIONARY else payload.y
+					var h_id = world.arena.hazards.size() + (randi() % 9000 + 1000)
+					var hx = px + (randf() * 400.0 - 200.0)
+					var hy = py + (randf() * 400.0 - 200.0)
+					var ProceduralArenaModule = load("res://src/arena/procedural_arena.gd")
+					if ProceduralArenaModule and "Hazard" in ProceduralArenaModule:
+						var core = ProceduralArenaModule.Hazard.new(h_id, hx, hy, 30.0, "energy_core", 0.0)
+						world.arena.hazards.append(core)
+
+		if typeof(world) == TYPE_OBJECT and "arena" in world:
+			if typeof(world.arena) == TYPE_OBJECT and "hazards" in world.arena:
+				var hs = world.arena.hazards.duplicate()
+				for h in hs:
+					if h.get("kind", "") == "energy_core":
+						var h_rad = h.get("radius", 30.0)
+						var h_x = h.get("x", 0.0)
+						var h_y = h.get("y", 0.0)
+						for b in balls:
+							var is_alive = b.get("alive", false) if typeof(b) == TYPE_DICTIONARY else b.get("alive")
+							if not is_alive: continue
+							var b_type = b.get("ball_type") if typeof(b) == TYPE_DICTIONARY else b.get("ball_type")
+							if b_type == "spectator": continue
+
+							var team = b.get("team", "") if typeof(b) == TYPE_DICTIONARY else b.get("team")
+							var has_ec = false
+							if typeof(b) == TYPE_DICTIONARY:
+								has_ec = b.get("has_energy_core", false)
+							else:
+								has_ec = b.has_energy_core if "has_energy_core" in b else (b.get_meta("has_energy_core") if b.has_method("get_meta") and b.has_meta("has_energy_core") else false)
+
+							if team == "Attackers" and not has_ec:
+								var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("x")
+								var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else b.get("y")
+								var b_rad = b.get("radius", 15.0) if typeof(b) == TYPE_DICTIONARY else b.get("radius")
+								var dist = sqrt(pow(bx - h_x, 2) + pow(by - h_y, 2))
+								if dist <= h_rad + b_rad:
+									if typeof(b) == TYPE_DICTIONARY:
+										b["has_energy_core"] = true
+									else:
+										if "has_energy_core" in b: b.has_energy_core = true
+										elif b.has_method("set_meta"): b.set_meta("has_energy_core", true)
+									var idx = world.arena.hazards.find(h)
+									if idx != -1:
+										world.arena.hazards.remove_at(idx)
+									break
+
 		if not self.has_meta("random_emp_timer"):
 			self.set_meta("random_emp_timer", 0.0)
 

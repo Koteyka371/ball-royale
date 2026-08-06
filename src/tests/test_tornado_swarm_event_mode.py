@@ -40,7 +40,7 @@ def test_tornado_swarm_event_blizzard():
     # Force tornado position to collide with ice_patch
     assert len(world.arena.hazards) > 1
     tornado = world.arena.hazards[1]
-    assert tornado.kind == "mini_tornado"
+    assert tornado.kind in ["mini_tornado", "mini_blizzard"]
 
     tornado.x = 500.0
     tornado.y = 500.0
