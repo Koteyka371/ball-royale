@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1856] Black Hole Overdrive Mode — *2026-08-06 12:24:18 UTC*
+
+A game mode where multiple black holes periodically merge into a massive super-vortex.
+
+---
+
 ## [idea-1844] Decoy Supply Drops — *2026-08-06 11:09:22 UTC*
 
 Spawn decoy supply drops occasionally that look identical to real ones but instead trigger an AoE stun or damage when approached by players, making supply drops high risk vs high reward.
