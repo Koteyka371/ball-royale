@@ -78865,4 +78865,153 @@ class SuperVortexMode extends GameMode:
 						b.vx += (dx / dist) * pull * delta
 						b.vy += (dy / dist) * pull * delta
 
+
+class StaticFieldMutatorMode extends GameMode:
+	func _init() -> void:
+		name = "Static Field Mutator"
+		description = "Each time a player uses chain lightning, the leftover electric charge stays in the air, creating a static field that slows down all entities and gradually damages those without electric immunity over time."
+
+	func tick(world: Dictionary, balls: Array, delta: float = 0.016) -> void:
+		if not "arena" in world or typeof(world.arena) != TYPE_DICTIONARY:
+			return
+
+		if not "hazards" in world.arena:
+			world.arena["hazards"] = []
+
+		if "events" in world and typeof(world.events) == TYPE_ARRAY:
+			for ev in world.events:
+				var ev_type = null
+				var ev_data = null
+
+				if typeof(ev) == TYPE_ARRAY and ev.size() >= 2:
+					ev_type = ev[0]
+					ev_data = ev[1]
+				elif typeof(ev) == TYPE_DICTIONARY and ev.has("type"):
+					ev_type = ev["type"]
+					ev_data = ev.get("data", {})
+
+				if ev_type == "chain_lightning" and typeof(ev_data) == TYPE_DICTIONARY:
+					var hx = null
+					var hy = null
+
+					if ev_data.has("x") and ev_data.has("y"):
+						hx = ev_data["x"]
+						hy = ev_data["y"]
+					elif ev_data.has("target"):
+						var target_id = ev_data["target"]
+						for b in balls:
+							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else null)
+							if b_id != null and b_id == target_id:
+								hx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+								hy = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+								break
+					elif ev_data.has("source"):
+						var source_id = ev_data["source"]
+						for b in balls:
+							var b_id = b.get("id") if typeof(b) == TYPE_DICTIONARY else (b.get("id") if "id" in b else null)
+							if b_id != null and b_id == source_id:
+								hx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("x") if "x" in b else 0.0)
+								hy = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.get("y") if "y" in b else 0.0)
+								break
+
+					if hx != null and hy != null:
+						world.arena.hazards.append({
+							"kind": "static_field",
+							"x": hx,
+							"y": hy,
+							"radius": 150.0,
+							"duration": 5.0,
+							"active": true
+						})
+
+		var active_hazards = []
+		for h in world.arena.hazards:
+			var is_static = false
+			if typeof(h) == TYPE_DICTIONARY and h.get("kind") == "static_field":
+				is_static = true
+			elif typeof(h) == TYPE_OBJECT and "kind" in h and h.kind == "static_field":
+				is_static = true
+
+			if is_static:
+				var is_dict = typeof(h) == TYPE_DICTIONARY
+				var dur = h.get("duration", 0.0) if is_dict else (h.duration if "duration" in h else 0.0)
+				dur -= delta
+
+				if is_dict:
+					h["duration"] = dur
+				else:
+					if "duration" in h:
+						h.duration = dur
+					elif h.has_method("set"):
+						h.set("duration", dur)
+
+				if dur > 0:
+					active_hazards.append(h)
+					var hx = h.get("x", 0.0) if is_dict else (h.x if "x" in h else 0.0)
+					var hy = h.get("y", 0.0) if is_dict else (h.y if "y" in h else 0.0)
+					var hr = h.get("radius", 150.0) if is_dict else (h.radius if "radius" in h else 150.0)
+					var hr_sq = hr * hr
+
+					for b in balls:
+						var b_alive = b.get("alive", true) if typeof(b) == TYPE_DICTIONARY else (b.alive if "alive" in b else true)
+						if not b_alive:
+							continue
+
+						var bx = b.get("x", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.x if "x" in b else 0.0)
+						var by = b.get("y", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.y if "y" in b else 0.0)
+						var dist_sq = (bx - hx)*(bx - hx) + (by - hy)*(by - hy)
+
+						if dist_sq <= hr_sq:
+							# Slowing effect
+							var cur_timer = b.get("speed_debuff_timer", 0.0) if typeof(b) == TYPE_DICTIONARY else (b.speed_debuff_timer if "speed_debuff_timer" in b else 0.0)
+							var new_timer = max(cur_timer, 0.5)
+
+							if typeof(b) == TYPE_DICTIONARY:
+								b["speed_debuff_timer"] = new_timer
+								b["speed_debuff_multiplier"] = 0.5
+							else:
+								if "speed_debuff_timer" in b:
+									b.speed_debuff_timer = new_timer
+								elif b.has_method("set"):
+									b.set("speed_debuff_timer", new_timer)
+
+								if "speed_debuff_multiplier" in b:
+									b.speed_debuff_multiplier = 0.5
+								elif b.has_method("set"):
+									b.set("speed_debuff_multiplier", 0.5)
+
+							# Immunity check
+							var is_immune = false
+							if typeof(b) == TYPE_DICTIONARY and b.get("electric_immunity", false):
+								is_immune = true
+							elif typeof(b) == TYPE_OBJECT and "electric_immunity" in b and b.electric_immunity:
+								is_immune = true
+
+							var b_type = b.get("ball_type", "") if typeof(b) == TYPE_DICTIONARY else (b.ball_type if "ball_type" in b else "")
+							b_type = str(b_type).to_lower()
+							var traits = b.get("traits", []) if typeof(b) == TYPE_DICTIONARY else (b.traits if "traits" in b else [])
+
+							if b_type.find("lightning") != -1 or traits.has("lightning") or b_type.find("electric") != -1 or traits.has("electric"):
+								is_immune = true
+
+							if not is_immune:
+								var dmg = 10.0 * delta
+								if typeof(b) == TYPE_OBJECT and b.has_method("take_damage"):
+									b.take_damage(dmg)
+								else:
+									var cur_hp = b.get("hp", 100.0) if typeof(b) == TYPE_DICTIONARY else (b.hp if "hp" in b else 100.0)
+									if typeof(b) == TYPE_DICTIONARY:
+										b["hp"] = cur_hp - dmg
+									else:
+										if "hp" in b:
+											b.hp = cur_hp - dmg
+										elif b.has_method("set"):
+											b.set("hp", cur_hp - dmg)
+			else:
+				active_hazards.append(h)
+
+		world.arena.hazards = active_hazards
+
+
 GAME_MODES["super_vortex"] = SuperVortexMode.new()
+GAME_MODES["static_field_mutator"] = StaticFieldMutatorMode.new()
