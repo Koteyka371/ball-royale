@@ -30,7 +30,7 @@
       "task_id": "idea-1800",
       "status": "working",
       "started_at": "2026-08-06T11:15:46.455714+00:00",
-      "cycles_today": 0
+      "cycles_today": 1
     },
     "agent-5": {
       "name": "Jules Meta",
