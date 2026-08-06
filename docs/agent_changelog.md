@@ -2,6 +2,12 @@
 
 Tracked history of successful tasks completed by autonomous agents.
 
+## [idea-1822] Orbital EMP Blast — *2026-08-06 10:33:41 UTC*
+
+A rare drop that calls down an orbital EMP strike on a massive area. Balls caught in the blast have all buffs stripped and lose all stamina, making them extremely vulnerable, but it deals zero direct damage.
+
+---
+
 ## [idea-1808] Wind Funnels — *2026-08-06 08:34:20 UTC*
 
 Add stationary wind funnels that shoot out air constantly in one direction, significantly speeding up balls that enter the stream and acting as a makeshift highway or a trap.
