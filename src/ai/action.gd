@@ -1850,6 +1850,11 @@ func _attempt_damage_internal(attacker, target) -> void:
 	elif "vulnerability_multiplier" in target:
 		original_damage *= float(target.vulnerability_multiplier)
 
+	if target.has_method("get_meta") and target.has_meta("freeze_trap_vulnerability_timer") and float(target.get_meta("freeze_trap_vulnerability_timer")) > 0.0:
+		original_damage *= 1.25
+	elif "freeze_trap_vulnerability_timer" in target and float(target.freeze_trap_vulnerability_timer) > 0.0:
+		original_damage *= 1.25
+
 	# Damage multiplier if attacker is sliding on ice patch
 	if "arena" in world and world.arena != null and "hazards" in world.arena:
 		for h in world.arena.hazards:
@@ -49439,7 +49444,7 @@ func _update_skill_timer(delta: float):
                 if "kind" in hazard: h_kind = hazard.kind
                 elif hazard.has_method("get_meta") and hazard.has_meta("kind"): h_kind = hazard.get_meta("kind")
 
-                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_pull_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
+                var pullable = ["deployable_proximity_mud_puddle", "overload_zone_item", "deployable_stasis_bubble", "deployable_pull_trap", "deployable_freeze_trap", "deployable_decoy_swap_item", "event_horizon_trap", "repulsion_zone", "vampiric_aura_booster", "healing_spring", "booster", "defensive_shield", "personal_safe_zone", "drone_item", "stealth_drone_item", "shadow_booster", "stealth_booster", "invisibility_booster", "decoy_trap_booster", "vision_booster", "vision_reduction_trap", "decoy_item", "silence_booster", "freeze_booster", "placeable_trap_item", "aura_amplifier_trap_item", "aura_amplifier_trap_booster", "aura_inverter_trap_item", "aura_inverter_trap_booster", "exit_portal_item", "position_swap_item", "position_swap_booster", "magnet_booster", "material_magnet_booster", "stamina_booster", "link_booster", "damage_link_booster", "entanglement_booster", "weather_booster", "portal_gun_item", "clone_booster", "nemesis_drone_booster", "placeable_trap_booster", "nemesis_booster", "nemesis_drone_booster", "nemesis_compass_item", "invert_booster", "hazard_immunity_booster", "phase_booster", "reverse_gravity_booster", "gravity_multiplier_booster", "anchor_booster", "cursed_booster", "exploding_booster", "debuff_booster", "forecast_booster", "grapple_booster", "hookshot_booster", "time_rewind_booster", "time_stop_booster", "instant_rewind_booster", "charging_shockwave_shield_booster", "shield_booster", "blood_magic_booster", "homing_missile_booster", "rearm_token", "skill_reroll_booster", "friendly_fire_reflect_booster", "damage_reflection_booster", "dummy_item", "repulsor_booster", "anchor_repulsor_booster", "gravity_well_booster", "overclock_booster", "chronosphere_booster", "gravity_boots", "thermal_boots", "thermal_boots", "disguised_trap", "booster_trap", "booster_trap_item", "grapple_trap", "grapple_trap_item", "invisible_status_trap", "invisible_status_trap_item", "zero_gravity_trap_item", "weather_shield_item", "weather_shield_zone", "anvil_piece", "legendary_loot", "decoy_flare_item", "decoy_volatile_barrel_item", "crystal_armor_booster", "death_defy_booster", "blink_booster", "quantum_relay_booster", "lightning_rod_item", "juggernaut_booster", "quantum_leap_booster", "pet_item", "wind_tunnel", "cryogenic_booster", "eclipse_booster_item", "eclipse_booster"]
                 if h_rad < 30.0 or pullable.has(h_kind):
                     var dx = self.ball.x - hazard.x
                     var dy = self.ball.y - hazard.y
@@ -51132,6 +51137,77 @@ func _update_skill_timer(delta: float):
                                         if "duration" in hazard: hazard.duration = 0.0
                                         elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
                                         elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+                if h_kind == "deployable_freeze_trap":
+                    var owner_id = null
+                    if "owner_id" in hazard: owner_id = hazard.owner_id
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_id"): owner_id = hazard.get_meta("owner_id")
+
+                    var owner_team = null
+                    if "owner_team" in hazard: owner_team = hazard.owner_team
+                    elif hazard.has_method("get_meta") and hazard.has_meta("owner_team"): owner_team = hazard.get_meta("owner_team")
+
+                    if owner_team == null and typeof(self.world) == TYPE_OBJECT and "balls" in self.world:
+                        for b in self.world.balls:
+                            var cur_b_id = null
+                            if "id" in b: cur_b_id = b.id
+                            elif b.has_method("get_meta") and b.has_meta("id"): cur_b_id = b.get_meta("id")
+                            if cur_b_id == owner_id:
+                                if "team" in b: owner_team = b.team
+                                elif b.has_method("get_meta") and b.has_meta("team"): owner_team = b.get_meta("team")
+                                elif "ball_type" in b: owner_team = b.ball_type
+                                elif b.has_method("get_meta") and b.has_meta("ball_type"): owner_team = b.get_meta("ball_type")
+                                break
+
+                    var b_id = null
+                    if "id" in self.ball: b_id = self.ball.id
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("id"): b_id = self.ball.get_meta("id")
+
+                    var my_team = null
+                    if "team" in self.ball: my_team = self.ball.team
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+                    elif "ball_type" in self.ball: my_team = self.ball.ball_type
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("ball_type"): my_team = self.ball.get_meta("ball_type")
+
+                    var is_enemy = (owner_id != null and b_id != null and owner_id != b_id) and (owner_team == null or owner_team != my_team)
+
+                    if is_enemy:
+                        var h_rad = 60.0
+                        if "radius" in hazard: h_rad = float(hazard.radius)
+                        elif hazard.has_method("get_meta") and hazard.has_meta("radius"): h_rad = float(hazard.get_meta("radius"))
+
+                        var dx = self.ball.x - hazard.x
+                        var dy = self.ball.y - hazard.y
+                        var dist_sq = dx*dx + dy*dy
+
+                        if dist_sq < h_rad * h_rad:
+                            var cur_stun = 0.0
+                            if "stun_timer" in self.ball: cur_stun = float(self.ball.stun_timer)
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("stun_timer"): cur_stun = float(self.ball.get_meta("stun_timer"))
+                            if cur_stun < 3.0:
+                                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["stun_timer"] = 3.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("stun_timer", 3.0)
+                                elif "stun_timer" in self.ball: self.ball.stun_timer = 3.0
+
+                            var cur_cf = 0.0
+                            if "cooldown_freeze_timer" in self.ball: cur_cf = float(self.ball.cooldown_freeze_timer)
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("cooldown_freeze_timer"): cur_cf = float(self.ball.get_meta("cooldown_freeze_timer"))
+                            if cur_cf < 3.0:
+                                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["cooldown_freeze_timer"] = 3.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("cooldown_freeze_timer", 3.0)
+                                elif "cooldown_freeze_timer" in self.ball: self.ball.cooldown_freeze_timer = 3.0
+
+                            var cur_ftv = 0.0
+                            if "freeze_trap_vulnerability_timer" in self.ball: cur_ftv = float(self.ball.freeze_trap_vulnerability_timer)
+                            elif self.ball.has_method("has_meta") and self.ball.has_meta("freeze_trap_vulnerability_timer"): cur_ftv = float(self.ball.get_meta("freeze_trap_vulnerability_timer"))
+                            if cur_ftv < 3.0:
+                                if typeof(self.ball) == TYPE_DICTIONARY: self.ball["freeze_trap_vulnerability_timer"] = 3.0
+                                elif self.ball.has_method("set_meta"): self.ball.set_meta("freeze_trap_vulnerability_timer", 3.0)
+                                elif "freeze_trap_vulnerability_timer" in self.ball: self.ball.freeze_trap_vulnerability_timer = 3.0
+
+                            if "duration" in hazard: hazard.duration = 0.0
+                            elif hazard.has_method("set_meta"): hazard.set_meta("duration", 0.0)
+                            elif typeof(hazard) == TYPE_OBJECT and hazard.has_method("set"): hazard.set("duration", 0.0)
+
                 if h_kind == "deployable_pull_trap":
                     var owner_id = null
                     if "owner_id" in hazard: owner_id = hazard.owner_id
@@ -52650,6 +52726,25 @@ func _update_skill_timer(delta: float):
     var is_windy = arena_obj.get("is_windy") if arena_obj != null and "is_windy" in arena_obj else false
 
     var cooldown_mult = 1.0
+
+    var ftv_t = 0.0
+    if "freeze_trap_vulnerability_timer" in self.ball: ftv_t = float(self.ball.freeze_trap_vulnerability_timer)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("freeze_trap_vulnerability_timer"): ftv_t = float(self.ball.get_meta("freeze_trap_vulnerability_timer"))
+    if ftv_t > 0.0:
+        ftv_t -= delta
+        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["freeze_trap_vulnerability_timer"] = ftv_t
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("freeze_trap_vulnerability_timer", ftv_t)
+        elif "freeze_trap_vulnerability_timer" in self.ball: self.ball.freeze_trap_vulnerability_timer = ftv_t
+
+    var cf_t = 0.0
+    if "cooldown_freeze_timer" in self.ball: cf_t = float(self.ball.cooldown_freeze_timer)
+    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("has_meta") and self.ball.has_meta("cooldown_freeze_timer"): cf_t = float(self.ball.get_meta("cooldown_freeze_timer"))
+    if cf_t > 0.0:
+        cf_t -= delta
+        cooldown_mult = 0.0
+        if typeof(self.ball) == TYPE_DICTIONARY: self.ball["cooldown_freeze_timer"] = cf_t
+        elif self.ball.has_method("set_meta"): self.ball.set_meta("cooldown_freeze_timer", cf_t)
+        elif "cooldown_freeze_timer" in self.ball: self.ball.cooldown_freeze_timer = cf_t
     var smz_active = false
     if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("slow_motion_zone_active"):
         smz_active = self.ball.get("slow_motion_zone_active", false)
