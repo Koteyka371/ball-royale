@@ -43811,6 +43811,165 @@ class OrbitalCrosshairMode(GameMode):
 
 GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode()
 
+class SiphonBeamMode(GameMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Siphon Beam"
+        self.description = "A satellite crosshair slowly tracks players. Upon locking on, it fires an orbital beam creating a siphon zone that damages enemies and heals the lowest HP ball."
+        self.crosshairs = []
+        self.spawn_timer = 0.0
+        self.spawn_interval = 20.0
+
+    def setup(self, world, balls):
+        super().setup(world, balls)
+        self.crosshairs = []
+        self.spawn_timer = 3.0
+
+    def tick(self, world, balls, delta=0.016):
+        import math
+        import random
+        super().tick(world, balls, delta)
+
+        self.spawn_timer -= delta
+        if self.spawn_timer <= 0:
+            self.spawn_timer = self.spawn_interval
+
+            valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+            if valid_balls:
+                target = max(valid_balls, key=lambda b: getattr(b, "score", 0))
+                arena_width = getattr(world.arena, "width", 1000.0) if hasattr(world, "arena") else 1000.0
+                arena_height = getattr(world.arena, "height", 1000.0) if hasattr(world, "arena") else 1000.0
+                cx = random.uniform(100, arena_width - 100)
+                cy = random.uniform(100, arena_height - 100)
+
+                # Determine caller: lowest HP ball if randomly spawned
+                caller = min(valid_balls, key=lambda b: getattr(b, "hp", 100.0))
+
+                self.crosshairs.append({
+                    "x": cx,
+                    "y": cy,
+                    "target_id": getattr(target, "id", None),
+                    "caller_id": getattr(caller, "id", None),
+                    "state": "hunting",
+                    "timer": 0.0,
+                    "radius": 50.0,
+                    "speed": 80.0
+                })
+                if hasattr(world, "add_event"):
+                    world.add_event("crosshair_spawn", {"message": "A siphon crosshair is tracking a target!"})
+
+        active_crosshairs = []
+        for ch in self.crosshairs:
+            if ch["state"] == "hunting":
+                target = next((b for b in balls if getattr(b, "id", None) == ch["target_id"]), None)
+
+                valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+                if valid_balls:
+                    highest_scoring_ball = max(valid_balls, key=lambda b: getattr(b, "score", 0))
+                    if target != highest_scoring_ball:
+                        target = highest_scoring_ball
+                        ch["target_id"] = getattr(target, "id", None)
+
+                ol_t = getattr(target, "orbital_link_timer", 0.0)
+                if target and isinstance(ol_t, (int, float)) and ol_t > 0.0:
+                    enemies = [b for b in balls if getattr(b, "alive", False) and getattr(b, "team", "") != getattr(target, "team", "") and getattr(b, "ball_type", "") != "spectator"]
+                    if enemies:
+                        closest_enemy = min(enemies, key=lambda e: (e.x - target.x)**2 + (e.y - target.y)**2)
+                        target = closest_enemy
+                        ch["target_id"] = getattr(target, "id", None)
+                if not target or not getattr(target, "alive", False):
+                    if not valid_balls:
+                        continue
+
+                dx = target.x - ch["x"]
+                dy = target.y - ch["y"]
+                dist = math.hypot(dx, dy)
+
+                if dist > 5.0:
+                    ch["x"] += (dx / dist) * ch["speed"] * delta
+                    ch["y"] += (dy / dist) * ch["speed"] * delta
+
+                if dist < 20.0:
+                    ch["timer"] += delta
+                    if ch["timer"] >= 2.0:
+                        ch["state"] = "locking"
+                        ch["timer"] = 3.0
+                        if hasattr(world, "add_event"):
+                            world.add_event("crosshair_locking", {"x": ch["x"], "y": ch["y"], "message": "Siphon beam locking on!"})
+                else:
+                    ch["timer"] = max(0.0, ch["timer"] - delta)
+                active_crosshairs.append(ch)
+
+            elif ch["state"] == "locking":
+                ch["timer"] -= delta
+                if ch["timer"] <= 0:
+                    ch["state"] = "firing"
+                    if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+                        try:
+                            from arena.procedural_arena import Hazard
+                            HazardClass = Hazard
+                        except ImportError:
+                            class FallbackHazard:
+                                def __init__(self, id, x, y, radius, kind, damage):
+                                    self.id = id; self.x = x; self.y = y; self.radius = radius; self.kind = kind; self.damage = damage
+                                    self.active = True
+                            HazardClass = FallbackHazard
+
+                        h_id = getattr(world, "next_id", random.randint(100000, 999999))
+                        h = HazardClass(id=h_id, x=ch["x"], y=ch["y"], radius=80.0, kind="siphon_zone", damage=0.0)
+                        setattr(h, "duration", 15.0)
+                        setattr(h, "caller_id", ch.get("caller_id", None))
+                        world.arena.hazards.append(h)
+                        if hasattr(world, "next_id"):
+                            world.next_id += 1
+                        if hasattr(world, "add_event"):
+                            world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Siphon beam fired!"})
+                else:
+                    active_crosshairs.append(ch)
+
+        self.crosshairs = active_crosshairs
+
+        if hasattr(world, "arena") and hasattr(world.arena, "hazards"):
+            for h in world.arena.hazards:
+                if getattr(h, "kind", "") == "siphon_zone" and getattr(h, "active", True):
+                    total_siphoned = 0.0
+                    for b in balls:
+                        ol_t = getattr(b, "orbital_link_timer", 0.0)
+                        if isinstance(ol_t, (int, float)) and ol_t > 0.0:
+                            continue
+                        if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator":
+                            dist = math.hypot(b.x - h.x, b.y - h.y)
+                            if dist <= getattr(h, "radius", 80.0):
+                                if hasattr(b, "stamina"):
+                                    b.stamina = max(0.0, b.stamina - 20.0 * delta)
+                                base_speed_multiplier = getattr(b, "base_speed_multiplier", 1.0)
+                                b.speed_multiplier = base_speed_multiplier * 0.5
+                                damage = 10.0 * delta
+                                if hasattr(b, "take_damage"):
+                                    b.take_damage(damage, source="siphon_zone")
+                                else:
+                                    b.hp -= damage
+                                    if b.hp <= 0:
+                                        b.hp = 0
+                                        b.alive = False
+                                total_siphoned += damage
+
+                    if total_siphoned > 0:
+                        caller_id = getattr(h, "caller_id", None)
+                        caller = next((b for b in balls if getattr(b, "id", None) == caller_id), None)
+                        if caller and getattr(caller, "alive", False) and getattr(caller, "ball_type", "") != "spectator":
+                            max_hp = getattr(caller, "max_hp", 100.0)
+                            caller.hp = min(max_hp, caller.hp + total_siphoned)
+                        else:
+                            valid_balls = [b for b in balls if getattr(b, "alive", False) and getattr(b, "ball_type", "") != "spectator"]
+                            if valid_balls:
+                                lowest_hp_ball = min(valid_balls, key=lambda b: getattr(b, "hp", 100.0))
+                                max_hp = getattr(lowest_hp_ball, "max_hp", 100.0)
+                                lowest_hp_ball.hp = min(max_hp, lowest_hp_ball.hp + total_siphoned)
+
+GAME_MODES['siphon_beam'] = SiphonBeamMode()
+
+
 GAME_MODES['spectator_holograms'] = SpectatorHologramsMode()
 
 GAME_MODES['decoy_network'] = DecoyNetworkMode()

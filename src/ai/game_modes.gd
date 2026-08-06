@@ -68219,6 +68219,429 @@ class OrbitalCrosshairMode extends GameMode:
 
 GAME_MODES['orbital_crosshair'] = OrbitalCrosshairMode.new()
 
+class SiphonBeamMode extends GameMode:
+	var crosshairs = []
+	var spawn_timer = 0.0
+	var spawn_interval = 20.0
+	var rng = RandomNumberGenerator.new()
+
+	func _init() -> void:
+		name = "Siphon Beam"
+		description = "A satellite crosshair slowly tracks players. Upon locking on, it fires an orbital beam creating a siphon zone that damages enemies and heals the lowest HP ball."
+		rng.randomize()
+
+	func setup(world, balls) -> void:
+		super.setup(world, balls)
+		crosshairs = []
+		spawn_timer = 3.0
+
+	func tick(world, balls, delta = 0.016) -> void:
+		super.tick(world, balls, delta)
+		spawn_timer -= delta
+		if spawn_timer <= 0:
+			spawn_timer = spawn_interval
+			var valid_balls = []
+			for b in balls:
+				var is_alive = false
+				var b_type = ""
+				if typeof(b) == TYPE_DICTIONARY:
+					is_alive = b.get("alive", false)
+					b_type = str(b.get("ball_type", ""))
+				else:
+					is_alive = b.get("alive") if "alive" in b else false
+					b_type = str(b.ball_type) if "ball_type" in b else ""
+				if is_alive and b_type != "spectator":
+					valid_balls.append(b)
+
+			if valid_balls.size() > 0:
+				var highest_score = -999999.0
+				var target = null
+				for b in valid_balls:
+					var sc = 0.0
+					if typeof(b) == TYPE_DICTIONARY: sc = b.get("score", 0.0)
+					else: sc = b.score if "score" in b else 0.0
+					if sc > highest_score:
+						highest_score = sc
+						target = b
+
+				var lowest_hp = 999999.0
+				var caller = null
+				for b in valid_balls:
+					var hp = 100.0
+					if typeof(b) == TYPE_DICTIONARY: hp = b.get("hp", 100.0)
+					else: hp = b.hp if "hp" in b else 100.0
+					if hp < lowest_hp:
+						lowest_hp = hp
+						caller = b
+
+				var arena_w = 1000.0
+				var arena_h = 1000.0
+				if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+					var ar = world.get("arena")
+					if typeof(ar) == TYPE_DICTIONARY:
+						arena_w = ar.get("width", 1000.0)
+						arena_h = ar.get("height", 1000.0)
+					elif ar != null:
+						arena_w = ar.width if "width" in ar else 1000.0
+						arena_h = ar.height if "height" in ar else 1000.0
+				elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+					var ar = world.arena
+					if typeof(ar) == TYPE_DICTIONARY:
+						arena_w = ar.get("width", 1000.0)
+						arena_h = ar.get("height", 1000.0)
+					else:
+						arena_w = ar.width if "width" in ar else 1000.0
+						arena_h = ar.height if "height" in ar else 1000.0
+
+				var cx = rng.randf_range(100.0, arena_w - 100.0)
+				var cy = rng.randf_range(100.0, arena_h - 100.0)
+				var tgt_id = null
+				if typeof(target) == TYPE_DICTIONARY: tgt_id = target.get("id")
+				else: tgt_id = target.id if "id" in target else null
+
+				var caller_id = null
+				if typeof(caller) == TYPE_DICTIONARY: caller_id = caller.get("id")
+				else: caller_id = caller.id if "id" in caller else null
+
+				crosshairs.append({
+					"x": cx,
+					"y": cy,
+					"target_id": tgt_id,
+					"caller_id": caller_id,
+					"state": "hunting",
+					"timer": 0.0,
+					"radius": 50.0,
+					"speed": 80.0
+				})
+				if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+					world.add_event("crosshair_spawn", {"message": "A siphon crosshair is tracking a target!"})
+
+		var active_crosshairs = []
+		for ch in crosshairs:
+			if ch["state"] == "hunting":
+				var target = null
+				for b in balls:
+					var b_id = null
+					var is_alive = false
+					var b_type = ""
+					if typeof(b) == TYPE_DICTIONARY:
+						b_id = b.get("id")
+						is_alive = b.get("alive", false)
+						b_type = str(b.get("ball_type", ""))
+					else:
+						b_id = b.id if "id" in b else null
+						is_alive = b.get("alive") if "alive" in b else false
+						b_type = str(b.ball_type) if "ball_type" in b else ""
+					if b_id == ch["target_id"] and is_alive and b_type != "spectator":
+						target = b
+						break
+
+				var ol_timer = 0.0
+				if typeof(target) == TYPE_DICTIONARY:
+					ol_timer = target.get("orbital_link_timer", 0.0)
+				elif target != null and target.has_method("has_meta") and target.has_meta("orbital_link_timer"):
+					ol_timer = target.get_meta("orbital_link_timer")
+				elif target != null and "orbital_link_timer" in target:
+					ol_timer = target.orbital_link_timer
+
+				if ol_timer > 0.0:
+					var enemies = []
+					var target_team = ""
+					if typeof(target) == TYPE_DICTIONARY:
+						target_team = str(target.get("team", ""))
+					elif target != null:
+						target_team = str(target.team) if "team" in target else ""
+					for b in balls:
+						var is_alive = false
+						var b_type = ""
+						var b_team = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							b_type = str(b.get("ball_type", ""))
+							b_team = str(b.get("team", ""))
+						else:
+							is_alive = b.get("alive") if "alive" in b else false
+							b_type = str(b.ball_type) if "ball_type" in b else ""
+							b_team = str(b.team) if "team" in b else ""
+						if is_alive and b_team != target_team and b_type != "spectator":
+							enemies.append(b)
+					if enemies.size() > 0:
+						var min_dist = 999999999.0
+						var closest_enemy = null
+						var tx = 0.0
+						var ty = 0.0
+						if typeof(target) == TYPE_DICTIONARY:
+							tx = target.get("x", 0.0)
+							ty = target.get("y", 0.0)
+						elif target != null:
+							tx = target.x if "x" in target else 0.0
+							ty = target.y if "y" in target else 0.0
+						for e in enemies:
+							var ex = 0.0
+							var ey = 0.0
+							if typeof(e) == TYPE_DICTIONARY:
+								ex = e.get("x", 0.0)
+								ey = e.get("y", 0.0)
+							else:
+								ex = e.x if "x" in e else 0.0
+								ey = e.y if "y" in e else 0.0
+							var dx2 = ex - tx
+							var dy2 = ey - ty
+							var d2 = dx2*dx2 + dy2*dy2
+							if d2 < min_dist:
+								min_dist = d2
+								closest_enemy = e
+						if closest_enemy != null:
+							target = closest_enemy
+							if typeof(target) == TYPE_DICTIONARY: ch["target_id"] = target.get("id")
+							else: ch["target_id"] = target.id if "id" in target else null
+
+				if target == null:
+					var valid_balls = []
+					for b in balls:
+						var is_alive = false
+						var b_type = ""
+						if typeof(b) == TYPE_DICTIONARY:
+							is_alive = b.get("alive", false)
+							b_type = str(b.get("ball_type", ""))
+						else:
+							is_alive = b.get("alive") if "alive" in b else false
+							b_type = str(b.ball_type) if "ball_type" in b else ""
+						if is_alive and b_type != "spectator":
+							valid_balls.append(b)
+					if valid_balls.size() > 0:
+						target = valid_balls[rng.randi() % valid_balls.size()]
+						if typeof(target) == TYPE_DICTIONARY: ch["target_id"] = target.get("id")
+						else: ch["target_id"] = target.id if "id" in target else null
+					else:
+						continue
+
+				var tx = 0.0
+				var ty = 0.0
+				if typeof(target) == TYPE_DICTIONARY:
+					tx = target.get("x", 0.0)
+					ty = target.get("y", 0.0)
+				else:
+					tx = target.x if "x" in target else 0.0
+					ty = target.y if "y" in target else 0.0
+
+				var dx = tx - ch["x"]
+				var dy = ty - ch["y"]
+				var dist = sqrt(dx*dx + dy*dy)
+
+				if dist > 5.0:
+					ch["x"] += (dx / dist) * ch["speed"] * delta
+					ch["y"] += (dy / dist) * ch["speed"] * delta
+
+				if dist < 20.0:
+					ch["timer"] += delta
+					if ch["timer"] >= 2.0:
+						ch["state"] = "locking"
+						ch["timer"] = 3.0
+						if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+							world.add_event("crosshair_locking", {"x": ch["x"], "y": ch["y"], "message": "Siphon beam locking on!"})
+				else:
+					ch["timer"] = max(0.0, ch["timer"] - delta)
+				active_crosshairs.append(ch)
+
+			elif ch["state"] == "locking":
+				ch["timer"] -= delta
+				if ch["timer"] <= 0:
+					ch["state"] = "firing"
+					var has_hazards = false
+					var hazards = []
+					if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+						var arena = world.get("arena")
+						if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+							has_hazards = true
+							hazards = arena.get("hazards")
+						elif arena != null and "hazards" in arena:
+							has_hazards = true
+							hazards = arena.hazards
+					elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+						var arena = world.arena
+						if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena:
+							has_hazards = true
+							hazards = arena.get("hazards")
+						elif "hazards" in arena:
+							has_hazards = true
+							hazards = arena.hazards
+
+					if has_hazards:
+						var HazardObj = load("res://src/arena/procedural_arena.gd")
+						if HazardObj != null:
+							HazardObj = HazardObj.Hazard
+							var next_id = rng.randi_range(100000, 999999)
+							if typeof(world) == TYPE_DICTIONARY and "next_id" in world:
+								next_id = world.get("next_id")
+								world["next_id"] = next_id + 1
+							elif typeof(world) != TYPE_DICTIONARY and "next_id" in world:
+								next_id = world.next_id
+								world.next_id += 1
+							var h = HazardObj.new(next_id, ch["x"], ch["y"], "siphon_zone", 80.0)
+							if h.has_method("set_meta"):
+								h.set_meta("duration", 15.0)
+								h.set_meta("caller_id", ch.get("caller_id", null))
+							if "damage" in h: h.damage = 0.0
+							hazards.append(h)
+							if typeof(world) == TYPE_OBJECT and world.has_method("add_event"):
+								world.add_event("orbital_strike_fired", {"x": ch["x"], "y": ch["y"], "message": "Siphon beam fired!"})
+				else:
+					active_crosshairs.append(ch)
+
+		crosshairs = active_crosshairs
+
+		var hazards = []
+		if typeof(world) == TYPE_DICTIONARY and "arena" in world:
+			var arena = world.get("arena")
+			if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena: hazards = arena.get("hazards")
+			elif arena != null and "hazards" in arena: hazards = arena.hazards
+		elif typeof(world) != TYPE_DICTIONARY and "arena" in world and world.arena != null:
+			var arena = world.arena
+			if typeof(arena) == TYPE_DICTIONARY and "hazards" in arena: hazards = arena.get("hazards")
+			elif "hazards" in arena: hazards = arena.hazards
+
+		for h in hazards:
+			var h_kind = ""
+			var is_active = true
+			var h_x = 0.0
+			var h_y = 0.0
+			var h_radius = 80.0
+			var caller_id = null
+
+			if typeof(h) == TYPE_DICTIONARY:
+				h_kind = h.get("kind", "")
+				is_active = h.get("active", true)
+				h_x = h.get("x", 0.0)
+				h_y = h.get("y", 0.0)
+				h_radius = h.get("radius", 80.0)
+				caller_id = h.get("caller_id", null)
+			else:
+				h_kind = h.kind if "kind" in h else ""
+				if h.has_method("get_meta") and h.has_meta("active"): is_active = h.get_meta("active")
+				elif "active" in h: is_active = h.active
+				h_x = h.x if "x" in h else 0.0
+				h_y = h.y if "y" in h else 0.0
+				h_radius = h.radius if "radius" in h else 80.0
+				if h.has_method("get_meta") and h.has_meta("caller_id"): caller_id = h.get_meta("caller_id")
+
+			if h_kind == "siphon_zone" and is_active:
+				var total_siphoned = 0.0
+				for b in balls:
+					var ol_timer = 0.0
+					if typeof(b) == TYPE_DICTIONARY: ol_timer = b.get("orbital_link_timer", 0.0)
+					elif b.has_method("has_meta") and b.has_meta("orbital_link_timer"): ol_timer = b.get_meta("orbital_link_timer")
+					elif "orbital_link_timer" in b: ol_timer = b.orbital_link_timer
+					if ol_timer > 0.0: continue
+
+					var is_alive = false
+					var b_type = ""
+					var bx = 0.0
+					var by = 0.0
+					if typeof(b) == TYPE_DICTIONARY:
+						is_alive = b.get("alive", false)
+						b_type = str(b.get("ball_type", ""))
+						bx = b.get("x", 0.0)
+						by = b.get("y", 0.0)
+					else:
+						is_alive = b.get("alive") if "alive" in b else false
+						b_type = str(b.ball_type) if "ball_type" in b else ""
+						bx = b.x if "x" in b else 0.0
+						by = b.y if "y" in b else 0.0
+
+					if is_alive and b_type != "spectator":
+						var dx = bx - h_x
+						var dy = by - h_y
+						var dist = sqrt(dx*dx + dy*dy)
+						if dist <= h_radius:
+							if typeof(b) == TYPE_DICTIONARY:
+								var stam = b.get("stamina", 0.0)
+								b["stamina"] = max(0.0, stam - 20.0 * delta)
+								b["speed_multiplier"] = b.get("base_speed_multiplier", 1.0) * 0.5
+								var damage = 10.0 * delta
+								b["hp"] = b.get("hp", 100.0) - damage
+								if b["hp"] <= 0:
+									b["hp"] = 0
+									b["alive"] = false
+								total_siphoned += damage
+							else:
+								var stam = 0.0
+								if b.has_method("has_meta") and b.has_meta("stamina"): stam = b.get_meta("stamina")
+								elif "stamina" in b: stam = b.stamina
+								stam = max(0.0, stam - 20.0 * delta)
+								if b.has_method("set_meta"): b.set_meta("stamina", stam)
+								if "stamina" in b: b.stamina = stam
+
+								var base_sm = 1.0
+								if b.has_method("has_meta") and b.has_meta("base_speed_multiplier"): base_sm = b.get_meta("base_speed_multiplier")
+								elif "base_speed_multiplier" in b: base_sm = b.base_speed_multiplier
+								var sm = base_sm * 0.5
+								if b.has_method("set_meta"): b.set_meta("speed_multiplier", sm)
+								if "speed_multiplier" in b: b.speed_multiplier = sm
+
+								var damage = 10.0 * delta
+								if b.has_method("take_damage"): b.take_damage(damage, "siphon_zone")
+								elif "hp" in b:
+									b.hp -= damage
+									if b.hp <= 0:
+										b.hp = 0
+										b.alive = false
+								total_siphoned += damage
+
+				if total_siphoned > 0:
+					var caller_ball = null
+					if caller_id != null:
+						for b in balls:
+							var b_id = null
+							var is_alive = false
+							var b_type = ""
+							if typeof(b) == TYPE_DICTIONARY:
+								b_id = b.get("id")
+								is_alive = b.get("alive", false)
+								b_type = str(b.get("ball_type", ""))
+							else:
+								b_id = b.id if "id" in b else null
+								is_alive = b.get("alive") if "alive" in b else false
+								b_type = str(b.ball_type) if "ball_type" in b else ""
+							if b_id == caller_id and is_alive and b_type != "spectator":
+								caller_ball = b
+								break
+
+					if caller_ball == null:
+						var lowest_hp = 999999.0
+						for b in balls:
+							var is_alive = false
+							var b_type = ""
+							var hp = 100.0
+							if typeof(b) == TYPE_DICTIONARY:
+								is_alive = b.get("alive", false)
+								b_type = str(b.get("ball_type", ""))
+								hp = b.get("hp", 100.0)
+							else:
+								is_alive = b.get("alive") if "alive" in b else false
+								b_type = str(b.ball_type) if "ball_type" in b else ""
+								hp = b.hp if "hp" in b else 100.0
+							if is_alive and b_type != "spectator":
+								if hp < lowest_hp:
+									lowest_hp = hp
+									caller_ball = b
+
+					if caller_ball != null:
+						if typeof(caller_ball) == TYPE_DICTIONARY:
+							var hp = caller_ball.get("hp", 100.0)
+							var max_hp = caller_ball.get("max_hp", 100.0)
+							caller_ball["hp"] = min(max_hp, hp + total_siphoned)
+						else:
+							var hp = caller_ball.hp if "hp" in caller_ball else 100.0
+							var max_hp = 100.0
+							if caller_ball.has_method("has_meta") and caller_ball.has_meta("max_hp"): max_hp = caller_ball.get_meta("max_hp")
+							elif "max_hp" in caller_ball: max_hp = caller_ball.max_hp
+							var new_hp = min(max_hp, hp + total_siphoned)
+							if "hp" in caller_ball: caller_ball.hp = new_hp
+							elif caller_ball.has_method("set"): caller_ball.set("hp", new_hp)
+
+GAME_MODES['siphon_beam'] = SiphonBeamMode.new()
+
 
 class SharedTugOfWarMode extends TugOfWarMode:
 	var scores = {"Red": 0.0, "Blue": 0.0}
