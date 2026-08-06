@@ -11342,6 +11342,31 @@ class Action:
                                                         b.vy = getattr(b, "vy", 0.0) + ny * knockback
                                                         b.is_frictionless = True # So it ignores drag and gets violently tossed
 
+                                elif trap_variant == "reversal":
+                                    hazard.duration = 0.0 # Destroy trap
+                                    hazard.damage = 0.0
+
+                                    # Create reversal knockback area
+                                    if hasattr(self.world, "balls"):
+                                        import math
+                                        trigger_x, trigger_y = hazard.x, hazard.y
+                                        radius = getattr(hazard, "radius", 40.0) * 3.0 # Massive area
+
+                                        for b in self.world.balls:
+                                            if getattr(b, "alive", True) and getattr(b, "id", None) != getattr(hazard, "owner_id", None):
+                                                dist_sq = (b.x - trigger_x)**2 + (b.y - trigger_y)**2
+                                                if dist_sq < radius * radius:
+                                                    b.vx = getattr(b, "vx", 0.0) * -2.0
+                                                    b.vy = getattr(b, "vy", 0.0) * -2.0
+                                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards"):
+                                            for h in self.world.arena.hazards:
+                                                if getattr(h, "kind", "") in ("projectile", "bomb", "missile", "arrow") and getattr(h, "owner_id", None) != getattr(hazard, "owner_id", None):
+                                                    dist_sq = (h.x - trigger_x)**2 + (h.y - trigger_y)**2
+                                                    if dist_sq < radius * radius:
+                                                        if hasattr(h, "vx"):
+                                                            h.vx = getattr(h, "vx", 0.0) * -2.0
+                                                        if hasattr(h, "vy"):
+                                                            h.vy = getattr(h, "vy", 0.0) * -2.0
                                 elif trap_variant == "leech_seed":
                                     self.ball.leech_seed_timer = max(getattr(self.ball, "leech_seed_timer", 0.0), 5.0)
                                     self.ball.leech_seed_attacker_id = getattr(hazard, "owner_id", None)
