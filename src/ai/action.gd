@@ -31249,6 +31249,48 @@ func _collect_booster(delta: float):
                         var h_idx = self.world.arena.hazards.find(b)
                         if h_idx != -1:
                             self.world.arena.hazards.remove_at(h_idx)
+            elif b_kind == "magnetic_field_booster":
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                else:
+                    if "x" in b: bx = b.x
+                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                    if "y" in b: by = b.y
+                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                var b_radius = 15.0
+                if typeof(b) == TYPE_DICTIONARY and b.has("radius"): b_radius = b.radius
+                elif typeof(b) == TYPE_OBJECT:
+                    if "radius" in b: b_radius = b.radius
+                    elif b.has_method("get_meta") and b.has_meta("radius"): b_radius = b.get_meta("radius")
+
+                var my_radius = 10.0
+                if typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("radius"): my_radius = self.ball.radius
+                elif typeof(self.ball) == TYPE_OBJECT:
+                    if "radius" in self.ball: my_radius = self.ball.radius
+                    elif self.ball.has_method("get_meta") and self.ball.has_meta("radius"): my_radius = self.ball.get_meta("radius")
+
+                var dist = sqrt((bx - ball_x)*(bx - ball_x) + (by - ball_y)*(by - ball_y))
+                if dist <= my_radius + b_radius + 5.0:
+                    if typeof(self.ball) == TYPE_DICTIONARY:
+                        self.ball["magnetic_field_timer"] = 15.0
+                    elif typeof(self.ball) == TYPE_OBJECT and self.ball.has_method("set_meta"):
+                        self.ball.set_meta("magnetic_field_timer", 15.0)
+
+                    if typeof(b) == TYPE_DICTIONARY: b["active"] = false
+                    else: b.active = false
+
+                    if self.world != null and "boosters" in self.world:
+                        var b_idx = self.world.boosters.find(b)
+                        if b_idx != -1:
+                            self.world.boosters.remove_at(b_idx)
+                    if self.world != null and "arena" in self.world and "hazards" in self.world.arena:
+                        var h_idx = self.world.arena.hazards.find(b)
+                        if h_idx != -1:
+                            self.world.arena.hazards.remove_at(h_idx)
             elif b_kind == "anchor_repulsor_booster":
                 var dist = sqrt((b_x - self.ball.x)*(b_x - self.ball.x) + (b_y - self.ball.y)*(b_y - self.ball.y))
                 var rad1 = 10.0
@@ -48760,6 +48802,98 @@ func _update_skill_timer(delta: float):
                             elif typeof(b) == TYPE_OBJECT:
                                 if "x" in b: b.x += nx * pull_strength
                                 if "y" in b: b.y += ny * pull_strength
+
+    var magnetic_field_timer = 0.0
+    if typeof(self.ball) == TYPE_OBJECT:
+        if "magnetic_field_timer" in self.ball: magnetic_field_timer = self.ball.magnetic_field_timer
+        elif self.ball.has_method("has_meta") and self.ball.has_meta("magnetic_field_timer"): magnetic_field_timer = self.ball.get_meta("magnetic_field_timer")
+    elif typeof(self.ball) == TYPE_DICTIONARY and self.ball.has("magnetic_field_timer"):
+        magnetic_field_timer = self.ball["magnetic_field_timer"]
+
+    if magnetic_field_timer > 0.0:
+        magnetic_field_timer -= delta
+        if magnetic_field_timer < 0.0:
+            magnetic_field_timer = 0.0
+        if typeof(self.ball) == TYPE_OBJECT:
+            if "magnetic_field_timer" in self.ball: self.ball.magnetic_field_timer = magnetic_field_timer
+            elif self.ball.has_method("set_meta"): self.ball.set_meta("magnetic_field_timer", magnetic_field_timer)
+        elif typeof(self.ball) == TYPE_DICTIONARY:
+            self.ball["magnetic_field_timer"] = magnetic_field_timer
+
+        var pull_radius = 300.0
+        var pull_strength = 200.0 * delta
+        var push_strength = 100.0 * delta
+
+        if self.world != null and "balls" in self.world:
+            for e in self.world.balls:
+                if e != self.ball:
+                    var e_alive = false
+                    if typeof(e) == TYPE_DICTIONARY: e_alive = e.get("alive", true)
+                    elif typeof(e) == TYPE_OBJECT:
+                        if "alive" in e: e_alive = e.alive
+                        elif e.has_method("get_meta") and e.has_meta("alive"): e_alive = e.get_meta("alive")
+
+                    var e_team = ""
+                    if typeof(e) == TYPE_DICTIONARY: e_team = e.get("team", e.get("ball_type", ""))
+                    elif typeof(e) == TYPE_OBJECT:
+                        if "team" in e: e_team = e.team
+                        elif e.has_method("get_meta") and e.has_meta("team"): e_team = e.get_meta("team")
+
+                    var my_team = ""
+                    if typeof(self.ball) == TYPE_DICTIONARY: my_team = self.ball.get("team", self.ball.get("ball_type", ""))
+                    elif typeof(self.ball) == TYPE_OBJECT:
+                        if "team" in self.ball: my_team = self.ball.team
+                        elif self.ball.has_method("get_meta") and self.ball.has_meta("team"): my_team = self.ball.get_meta("team")
+
+                    if e_alive and e_team != my_team:
+                        var ex = 0.0
+                        var ey = 0.0
+                        if typeof(e) == TYPE_DICTIONARY:
+                            if e.has("x"): ex = e.x
+                            if e.has("y"): ey = e.y
+                        else:
+                            if "x" in e: ex = e.x
+                            elif e.has_method("get_meta") and e.has_meta("x"): ex = e.get_meta("x")
+                            if "y" in e: ey = e.y
+                            elif e.has_method("get_meta") and e.has_meta("y"): ey = e.get_meta("y")
+
+                        var dx = ex - ball_x
+                        var dy = ey - ball_y
+                        var dist_sq = dx*dx + dy*dy
+                        if dist_sq > 0.0001 and dist_sq <= pull_radius*pull_radius:
+                            var dist = sqrt(dist_sq)
+                            var nx = dx / dist
+                            var ny = dy / dist
+                            if typeof(e) == TYPE_OBJECT:
+                                if "x" in e: e.x += nx * push_strength
+                                if "y" in e: e.y += ny * push_strength
+
+        if self.world != null and "boosters" in self.world:
+            for b in self.world.boosters:
+                var bx = 0.0
+                var by = 0.0
+                if typeof(b) == TYPE_DICTIONARY:
+                    if b.has("x"): bx = b.x
+                    if b.has("y"): by = b.y
+                else:
+                    if "x" in b: bx = b.x
+                    elif b.has_method("get_meta") and b.has_meta("x"): bx = b.get_meta("x")
+                    if "y" in b: by = b.y
+                    elif b.has_method("get_meta") and b.has_meta("y"): by = b.get_meta("y")
+
+                var dx = ball_x - bx
+                var dy = ball_y - by
+                var dist_sq = dx*dx + dy*dy
+                if dist_sq > 0.0001 and dist_sq <= pull_radius*pull_radius:
+                    var dist = sqrt(dist_sq)
+                    var nx = dx / dist
+                    var ny = dy / dist
+                    if typeof(b) == TYPE_DICTIONARY:
+                        if b.has("x"): b.x += nx * pull_strength
+                        if b.has("y"): b.y += ny * pull_strength
+                    elif typeof(b) == TYPE_OBJECT:
+                        if "x" in b: b.x += nx * pull_strength
+                        if "y" in b: b.y += ny * pull_strength
 
     var anchor_repulsor_timer = 0.0
     if "anchor_repulsor_timer" in self.ball:
