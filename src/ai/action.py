@@ -256,6 +256,15 @@ class Action:
                 attacker.damage = orig_dmg
 
     def _attempt_damage_internal(self, attacker, target) -> None:
+        original_damage = getattr(attacker, "damage", 10.0)
+        if getattr(target, "in_time_dilation_zone", False):
+            original_damage *= 0.5
+            # Apply to attacker temporarily
+            has_original_damage = hasattr(attacker, "damage")
+            attacker.damage = original_damage
+        else:
+            has_original_damage = hasattr(attacker, "damage")
+
         if getattr(self.world, "game_mode", None) and getattr(self.world.game_mode, "kind", "") == "color_swap_team":
             a_color = getattr(attacker, "current_color", "none")
             t_color = getattr(target, "current_color", "none")

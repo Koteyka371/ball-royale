@@ -12085,6 +12085,36 @@ class MovingSafeZoneMode(GameMode):
 
         return None
 
+
+class TimeDilationSafeZoneMode(MovingSafeZoneMode):
+    def __init__(self):
+        super().__init__()
+        self.name = "Time Dilation Safe Zone"
+        self.description = "A moving safe zone where time passes much slower. Balls inside move at half speed, skill cooldowns regenerate twice as slow, take reduced damage, and are safe from hazards."
+
+    def tick(self, world, balls, delta=0.016):
+        super().tick(world, balls, delta)
+        import math
+
+        for b in balls:
+            if not getattr(b, "alive", False) or getattr(b, "ball_type", None) == "spectator":
+                continue
+
+            bdx = getattr(b, "position", b).x - self.zone_x if hasattr(b, "position") else getattr(b, "x", 0.0) - self.zone_x
+            bdy = getattr(b, "position", b).y - self.zone_y if hasattr(b, "position") else getattr(b, "y", 0.0) - self.zone_y
+            dist = math.sqrt(bdx*bdx + bdy*bdy)
+
+            if dist <= self.zone_radius:
+                b.in_time_dilation_zone = True
+                b.speed = getattr(b, "base_speed", 100.0) * 0.5
+                if hasattr(b, "skill_timer") and b.skill_timer > 0.0:
+                    b.skill_timer = min(getattr(b, "skill_timer", 0.0) + delta * 0.5, 9999.0)
+                b.hazard_immunity_timer = max(getattr(b, "hazard_immunity_timer", 0.0), 0.1)
+            else:
+                if getattr(b, "in_time_dilation_zone", False):
+                    b.speed = getattr(b, "base_speed", 100.0)
+                b.in_time_dilation_zone = False
+
 class PoisonGasZoneMode(MovingSafeZoneMode):
     def __init__(self):
         super().__init__()
@@ -36647,6 +36677,7 @@ GAME_MODES = {
     "minefield_safe_zone": MinefieldSafeZoneMode(),
     "dynamic_safe_zone": DynamicSafeZoneMode(),
     "moving_safe_zone": MovingSafeZoneMode(),
+    "time_dilation_safe_zone": TimeDilationSafeZoneMode(),
     "poison_gas_zone": PoisonGasZoneMode(),
     "bounty_hunt": BountyHuntMode(),
     "bodyguard_bounty": BodyguardBountyMode(),

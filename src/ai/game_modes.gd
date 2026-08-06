@@ -17604,6 +17604,81 @@ class MovingSafeZoneMode extends GameMode:
 
 
 
+
+class TimeDilationSafeZoneMode extends MovingSafeZoneMode:
+	func _init():
+		super._init()
+		self.name = "Time Dilation Safe Zone"
+		self.description = "A moving safe zone where time passes much slower. Balls inside move at half speed, skill cooldowns regenerate twice as slow, take reduced damage, and are safe from hazards."
+
+	func tick(world, balls, delta: float = 0.016):
+		super.tick(world, balls, delta)
+
+		for b in balls:
+			var alive = b.alive if "alive" in b else b.get("alive") if b.has_method("get") and b.has_meta("alive") else false
+			var b_type = b.ball_type if "ball_type" in b else b.get("ball_type") if b.has_method("get") and b.has_meta("ball_type") else ""
+			if not alive or b_type == "spectator":
+				continue
+
+			var pos_x = b.position.x if "position" in b else b.x if "x" in b else b.get("x")
+			var pos_y = b.position.y if "position" in b else b.y if "y" in b else b.get("y")
+			var bdx = pos_x - self.zone_x
+			var bdy = pos_y - self.zone_y
+			var dist = sqrt(bdx * bdx + bdy * bdy)
+
+			if dist <= self.zone_radius:
+				if b is Dictionary:
+					b["in_time_dilation_zone"] = true
+					var b_speed = b.get("base_speed", 100.0)
+					b["speed"] = b_speed * 0.5
+					if "skill_timer" in b and b.get("skill_timer", 0.0) > 0.0:
+						b["skill_timer"] = min(b.get("skill_timer", 0.0) + delta * 0.5, 9999.0)
+					b["hazard_immunity_timer"] = max(b.get("hazard_immunity_timer", 0.0), 0.1)
+				else:
+					if b.has_method("set_meta"):
+						b.set_meta("in_time_dilation_zone", true)
+					elif "in_time_dilation_zone" in b:
+						b.in_time_dilation_zone = true
+
+					var b_speed = b.base_speed if "base_speed" in b else b.get_meta("base_speed") if b.has_method("get_meta") and b.has_meta("base_speed") else 100.0
+					if "speed" in b:
+						b.speed = b_speed * 0.5
+					elif b.has_method("set_meta"):
+						b.set_meta("speed", b_speed * 0.5)
+
+					var s_timer = b.skill_timer if "skill_timer" in b else b.get_meta("skill_timer") if b.has_method("get_meta") and b.has_meta("skill_timer") else 0.0
+					if s_timer > 0.0:
+						if "skill_timer" in b:
+							b.skill_timer = min(s_timer + delta * 0.5, 9999.0)
+						elif b.has_method("set_meta"):
+							b.set_meta("skill_timer", min(s_timer + delta * 0.5, 9999.0))
+
+					var h_timer = b.hazard_immunity_timer if "hazard_immunity_timer" in b else b.get_meta("hazard_immunity_timer") if b.has_method("get_meta") and b.has_meta("hazard_immunity_timer") else 0.0
+					if "hazard_immunity_timer" in b:
+						b.hazard_immunity_timer = max(h_timer, 0.1)
+					elif b.has_method("set_meta"):
+						b.set_meta("hazard_immunity_timer", max(h_timer, 0.1))
+			else:
+				var was_in_zone = false
+				if b is Dictionary:
+					was_in_zone = b.get("in_time_dilation_zone", false)
+					if was_in_zone:
+						b["speed"] = b.get("base_speed", 100.0)
+					b["in_time_dilation_zone"] = false
+				else:
+					was_in_zone = b.in_time_dilation_zone if "in_time_dilation_zone" in b else b.get_meta("in_time_dilation_zone") if b.has_method("get_meta") and b.has_meta("in_time_dilation_zone") else false
+					if was_in_zone:
+						var b_speed = b.base_speed if "base_speed" in b else b.get_meta("base_speed") if b.has_method("get_meta") and b.has_meta("base_speed") else 100.0
+						if "speed" in b:
+							b.speed = b_speed
+						elif b.has_method("set_meta"):
+							b.set_meta("speed", b_speed)
+
+					if b.has_method("set_meta"):
+						b.set_meta("in_time_dilation_zone", false)
+					elif "in_time_dilation_zone" in b:
+						b.in_time_dilation_zone = false
+
 class PoisonGasZoneMode extends MovingSafeZoneMode:
 	var tick_timer: float = 0.0
 
@@ -59568,6 +59643,7 @@ class ThermalFreezeTagMode extends FreezeTagMode:
 	"minefield_safe_zone": MinefieldSafeZoneMode.new(),
 	"dynamic_safe_zone": DynamicSafeZoneMode.new(),
 	"moving_safe_zone": MovingSafeZoneMode.new(),
+	"time_dilation_safe_zone": TimeDilationSafeZoneMode.new(),
 	"poison_gas_zone": PoisonGasZoneMode.new(),
 	"bounty_hunt": BountyHuntMode.new(),
 	"bodyguard_bounty": BodyguardBountyMode.new(),
