@@ -2992,6 +2992,50 @@ class Action:
                         if not isinstance(b, dict):
                             if hasattr(b, "x"): b.x += nx * pull_strength
                             if hasattr(b, "y"): b.y += ny * pull_strength
+
+        if getattr(self.ball, "magnetic_field_timer", 0.0) > 0.0:
+            self.ball.magnetic_field_timer -= delta
+            if self.ball.magnetic_field_timer < 0.0:
+                self.ball.magnetic_field_timer = 0.0
+
+            pull_radius = 300.0
+            pull_strength = 200.0 * delta
+            push_strength = 100.0 * delta
+
+            # Repel enemies
+            if hasattr(self.world, "balls"):
+                for e in self.world.balls:
+                    if e != self.ball and getattr(e, "alive", True) and getattr(e, "team", getattr(e, "ball_type", "")) != getattr(self.ball, "team", getattr(self.ball, "ball_type", "")):
+                        ex = getattr(e, "x", 0.0) if not isinstance(e, dict) else e.get("x", 0.0)
+                        ey = getattr(e, "y", 0.0) if not isinstance(e, dict) else e.get("y", 0.0)
+                        dx = ex - self.ball.x
+                        dy = ey - self.ball.y
+                        dist_sq = dx*dx + dy*dy
+                        if 0.0001 < dist_sq <= pull_radius*pull_radius:
+                            import math as _math
+                            dist = _math.sqrt(dist_sq)
+                            nx = dx / dist
+                            ny = dy / dist
+                            if not isinstance(e, dict):
+                                e.x += nx * push_strength
+                                e.y += ny * push_strength
+
+            # Pull boosters and items
+            if hasattr(self.world, "boosters"):
+                for b in self.world.boosters:
+                    bx = getattr(b, "x", 0.0) if not isinstance(b, dict) else b.get("x", 0.0)
+                    by = getattr(b, "y", 0.0) if not isinstance(b, dict) else b.get("y", 0.0)
+                    dx = self.ball.x - bx
+                    dy = self.ball.y - by
+                    dist_sq = dx*dx + dy*dy
+                    if 0.0001 < dist_sq <= pull_radius*pull_radius:
+                        import math as _math
+                        dist = _math.sqrt(dist_sq)
+                        nx = dx / dist
+                        ny = dy / dist
+                        if not isinstance(b, dict):
+                            if hasattr(b, "x"): b.x += nx * pull_strength
+                            if hasattr(b, "y"): b.y += ny * pull_strength
                         else:
                             b["x"] = bx + nx * pull_strength
                             b["y"] = by + ny * pull_strength
@@ -15892,6 +15936,15 @@ class Action:
                     dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
                     if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
                         self.ball.magnetic_aura_timer = 15.0
+                        b.active = False
+                        if hasattr(self.world, "boosters") and b in self.world.boosters:
+                            self.world.boosters.remove(b)
+                        if hasattr(self.world, "arena") and hasattr(self.world.arena, "hazards") and b in self.world.arena.hazards:
+                            self.world.arena.hazards.remove(b)
+                elif getattr(b, "kind", "") == "magnetic_field_booster":
+                    dist = __import__('math').sqrt((get_bx(b) - self.ball.x)**2 + (get_by(b) - self.ball.y)**2)
+                    if dist <= getattr(self.ball, "radius", 10.0) + getattr(b, "radius", 15.0) + 5.0:
+                        self.ball.magnetic_field_timer = 15.0
                         b.active = False
                         if hasattr(self.world, "boosters") and b in self.world.boosters:
                             self.world.boosters.remove(b)
